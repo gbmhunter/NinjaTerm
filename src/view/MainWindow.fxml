@@ -1,11 +1,40 @@
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:controller="view.MainWindowController"
+      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS">
+    <!--style="-fx-background-color: red;" -->
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<GridPane fx:controller="view.MainWindowController"
-          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+    <GridPane prefHeight="50">
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
+        <Button fx:id="openCloseComPortButton" prefWidth="100" prefHeight="50">Open</Button>
+    </GridPane>
 
-    <Button fx:id="openCloseComPortButton">Open</Button>
+    <TabPane VBox.vgrow="ALWAYS">
 
-</GridPane>
+        <Tab text="Port Settings" closable="false">
+            <VBox>
+                <padding>
+                    <Insets top="10" bottom="10" left="10" right="10"/>
+                </padding>
+                <Label>Test</Label>
+            </VBox>
+        </Tab>
+
+        <Tab text="Terminal" closable="false">
+            <VBox>
+                <padding>
+                    <Insets top="10" bottom="10" left="10" right="10"/>
+                </padding>
+                <Label>Test</Label>
+            </VBox>
+
+        </Tab>
+
+    </TabPane>
+
+</VBox>
