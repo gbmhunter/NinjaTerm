@@ -1,7 +1,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox fx:controller="view.MainWindowController"
+
+<VBox fx:controller="controllers.MainWindowController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS">
@@ -17,12 +18,7 @@
     <TabPane VBox.vgrow="ALWAYS">
 
         <Tab text="Port Settings" closable="false">
-            <VBox>
-                <padding>
-                    <Insets top="10" bottom="10" left="10" right="10"/>
-                </padding>
-                <Label>Test</Label>
-            </VBox>
+            <fx:include source="ComSettings.fxml" />
         </Tab>
 
         <Tab text="Terminal" closable="false">
