@@ -4,19 +4,19 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
-<VBox fx:controller="controllers.ComSettingsController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.ComSettingsController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
+      spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS">
     <!--style="-fx-background-color: red;" -->
-
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
-    <Label>Test</Label>
 
-    <Button>Scan</Button>
-    <ComboBox fx:id="foundComPorts"></ComboBox>
+
+    <Button fx:id="scanButton">Scan</Button>
+    <ComboBox fx:id="foundComPortsComboBox"></ComboBox>
 
 </VBox>
 

@@ -1,0 +1,22 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.StatusBarController"
+      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      spacing="20"
+      prefHeight="50"
+      fillWidth="true" GridPane.vgrow="ALWAYS">
+    <!--style="-fx-background-color: red;" -->
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <Label>Status Bar</Label>
+    <TextFlow fx:id="statusTextFlow"></TextFlow>
+
+</VBox>
+
+
+

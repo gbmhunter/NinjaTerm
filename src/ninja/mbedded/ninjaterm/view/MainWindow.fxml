@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox fx:controller="controllers.MainWindowController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.MainWindowController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS">
@@ -18,7 +18,7 @@
     <TabPane VBox.vgrow="ALWAYS">
 
         <Tab text="Port Settings" closable="false">
-            <fx:include source="ComSettings.fxml" />
+            <fx:include fx:id="comSettings" source="ComSettings.fxml" />
         </Tab>
 
         <Tab text="Terminal" closable="false">
@@ -32,5 +32,7 @@
         </Tab>
 
     </TabPane>
+
+    <fx:include fx:id="statusBar" source="StatusBar.fxml" />
 
 </VBox>

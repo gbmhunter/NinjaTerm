@@ -3,19 +3,19 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import controllers.MainWindowController;
+import ninja.mbedded.ninjaterm.controllers.MainWindowController;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        //Parent root = FXMLLoader.load(getClass().getResource("view/MainWindowController.fxml"));
+        //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowController.fxml"));
 
 
 
         FXMLLoader loader = new FXMLLoader(
                 getClass().getResource(
-                        "view/MainWindow.fxml"
+                        "ninja/mbedded/ninjaterm/view/MainWindow.fxml"
                 )
         );
 
