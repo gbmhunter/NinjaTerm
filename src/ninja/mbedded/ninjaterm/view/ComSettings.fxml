@@ -4,19 +4,37 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+
+<!--
+* Inner content for the "COM Settings" tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-15
+-->
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.ComSettingsController"
-      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS">
     <!--style="-fx-background-color: red;" -->
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
     <padding>
-        <Insets top="10" bottom="10" left="10" right="10"/>
+        <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
 
+    <Button fx:id="scanButton" prefWidth="60">Scan</Button>
+    <ComboBox fx:id="foundComPortsComboBox" prefWidth="100"></ComboBox>
 
-    <Button fx:id="scanButton">Scan</Button>
-    <ComboBox fx:id="foundComPortsComboBox"></ComboBox>
+    <GridPane vgap="10" hgap="10">
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name:</Label>
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="info">xxx</Label>
+        <Label GridPane.rowIndex="1" GridPane.columnIndex="0">ID:</Label>
+        <Label GridPane.rowIndex="1" GridPane.columnIndex="1" styleClass="info">xxx</Label>
+    </GridPane>
 
 </VBox>
 

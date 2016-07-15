@@ -1,12 +1,24 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 
+<!--
+* The main "shell" of the NinjaTerm app. This is the top-most UI node.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-15
+-->
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.MainWindowController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS">
     <!--style="-fx-background-color: red;" -->
+
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
 
     <GridPane prefHeight="50">
         <padding>
@@ -17,7 +29,7 @@
 
     <TabPane VBox.vgrow="ALWAYS">
 
-        <Tab text="Port Settings" closable="false">
+        <Tab text="COM Settings" closable="false">
             <fx:include fx:id="comSettings" source="ComSettings.fxml" />
         </Tab>
 

@@ -25,7 +25,7 @@ public class Main extends Application {
                 loader.getController();
 
         primaryStage.setTitle("NinjaTerm");
-        primaryStage.setScene(new Scene(root, 300, 275));
+        primaryStage.setScene(new Scene(root, 1000, 800));
         primaryStage.show();
 
 

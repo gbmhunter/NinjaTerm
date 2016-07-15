@@ -1,0 +1,13 @@
+/**
+* The default styling of the NinjaTerm app.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-15
+* @last-modified   2016-07-15
+**/
+
+/* The style class "ïnfo" is used for demarking UI labels
+which are displaying dynamic content */
+.info {
+    -fx-text-fill: grey;
+}

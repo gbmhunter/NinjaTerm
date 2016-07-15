@@ -3,6 +3,15 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
+<?import java.net.URL?>
+
+<!--
+* Inner content for the status bar at the bottom of the main NinjaTerm window.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-15
+-->
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       spacing="20"
@@ -12,6 +21,10 @@
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
+
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
 
     <Label>Status Bar</Label>
     <TextFlow fx:id="statusTextFlow"></TextFlow>
