@@ -6,8 +6,25 @@
 * @last-modified   2016-07-15
 **/
 
+/* ============================================================================================= */
+/* ========================= JAVAFX STYLING BASICS (non application specific) ================== */
+/* ============================================================================================= */
+
+/* ScrollPane objects have an annoying grey border by default, lets get rid of this */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* ============================================================================================= */
+/* ===================================== GENERAL NINJATERM STYLING ============================= */
+/* ============================================================================================= */
+
 /* The style class "ïnfo" is used for demarking UI labels
 which are displaying dynamic content */
 .info {
     -fx-text-fill: grey;
+}
+
+.border {
+    -fx-border-color: grey;
 }

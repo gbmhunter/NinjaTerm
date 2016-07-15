@@ -49,9 +49,11 @@ public class ComSettingsController implements Initializable {
         String[] portNames = SerialPortList.getPortNames();
 
         if(portNames.length == 0) {
-            statusBarController.statusTextFlow.getChildren().add(new Text("No COM ports found on this computer."));
+            statusBarController.addMsg("No COM ports found on this computer.");
+            return;
         }
 
+        statusBarController.addMsg(portNames.length + " COM port(s) found.");
         foundComPortsComboBox.getItems().addAll(portNames);
 
     }

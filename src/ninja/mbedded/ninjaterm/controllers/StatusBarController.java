@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import jssc.SerialPortList;
 
@@ -15,7 +16,7 @@ import java.util.ResourceBundle;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-07-10
+ * @last-modified   2016-07-16
  */
 public class StatusBarController implements Initializable {
 
@@ -37,5 +38,8 @@ public class StatusBarController implements Initializable {
         this.mainWindowController = mainWindowController;
     }
 
+    public void addMsg(String msg) {
+        statusTextFlow.getChildren().add(new Text(msg + "\r\n"));
+    }
 
 }
