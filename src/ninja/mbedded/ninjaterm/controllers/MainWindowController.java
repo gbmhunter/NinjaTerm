@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
-import ninja.mbedded.ninjaterm.util.ComPort;
+import ninja.mbedded.ninjaterm.util.comport.ComPort;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -45,6 +45,9 @@ public class MainWindowController implements Initializable {
 
     private ComPort comPort;
 
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

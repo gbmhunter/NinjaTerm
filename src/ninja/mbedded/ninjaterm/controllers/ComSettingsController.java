@@ -6,6 +6,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import ninja.mbedded.ninjaterm.util.comport.BaudRates;
+import ninja.mbedded.ninjaterm.util.comport.Parities;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -29,6 +31,12 @@ public class ComSettingsController implements Initializable {
     @FXML
     public ComboBox<String> foundComPortsComboBox;
 
+    @FXML
+    public ComboBox<BaudRates> baudRateComboBox;
+
+    @FXML
+    public ComboBox<Parities> parityComboBox;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
@@ -45,10 +53,15 @@ public class ComSettingsController implements Initializable {
             scanButtonPressed();
         });
 
-        // Attach handler for selected item change for COM port combo box
-//        foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((changeListener) -> {
-//            selectedComPortChanged();
-//        });
+        //==============================================//
+        //=============== POPULATE COMBOBOXES ==========//
+        //==============================================//
+
+        baudRateComboBox.getItems().setAll(BaudRates.values());
+        baudRateComboBox.getSelectionModel().select(BaudRates.BAUD_9600);
+
+        parityComboBox.getItems().setAll(Parities.values());
+        parityComboBox.getSelectionModel().select(Parities.NONE);
 
     }
 

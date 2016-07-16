@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util;
+package ninja.mbedded.ninjaterm.util.comport;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -9,13 +9,19 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Obhect that represents a single COM port.
+ * Object that represents a single COM port.
  *
- * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-16
- * @since 2016-07-16
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-16
+ * @last-modified   2016-07-16
  */
 public class ComPort {
+
+
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     String comPortName;
 
@@ -25,6 +31,10 @@ public class ComPort {
     SerialPort serialPort;
 
     List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public ComPort(String comPortName) {
         this.comPortName = comPortName;
@@ -71,6 +81,10 @@ public class ComPort {
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setParams(BaudRates baudRate) {
+
     }
 
     public void addOnRxDataListener(OnRxDataListener onRxDataListener) {
