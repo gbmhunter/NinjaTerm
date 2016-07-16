@@ -7,6 +7,8 @@ import javafx.scene.control.ComboBox;
 import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.BaudRates;
+import ninja.mbedded.ninjaterm.util.comport.NumDataBits;
+import ninja.mbedded.ninjaterm.util.comport.NumStopBits;
 import ninja.mbedded.ninjaterm.util.comport.Parities;
 
 import java.net.URL;
@@ -35,7 +37,13 @@ public class ComSettingsController implements Initializable {
     public ComboBox<BaudRates> baudRateComboBox;
 
     @FXML
+    public ComboBox<NumDataBits> numDataBitsComboBox;
+
+    @FXML
     public ComboBox<Parities> parityComboBox;
+
+    @FXML
+    public ComboBox<NumStopBits> numStopBitsComboBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -60,8 +68,14 @@ public class ComSettingsController implements Initializable {
         baudRateComboBox.getItems().setAll(BaudRates.values());
         baudRateComboBox.getSelectionModel().select(BaudRates.BAUD_9600);
 
+        numDataBitsComboBox.getItems().setAll(NumDataBits.values());
+        numDataBitsComboBox.getSelectionModel().select(NumDataBits.EIGHT);
+
         parityComboBox.getItems().setAll(Parities.values());
         parityComboBox.getSelectionModel().select(Parities.NONE);
+
+        numStopBitsComboBox.getItems().setAll(NumStopBits.values());
+        numStopBitsComboBox.getSelectionModel().select(NumStopBits.ONE);
 
     }
 
