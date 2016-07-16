@@ -72,6 +72,9 @@ public class ComSettingsController implements Initializable {
         statusBarController.addMsg(portNames.length + " COM port(s) found.");
         foundComPortsComboBox.getItems().addAll(portNames);
 
+        // Select first one in list for convenience
+        foundComPortsComboBox.getSelectionModel().select(0);
+
     }
 
     public void setComPortManager(ComPortManager comPortManager) {

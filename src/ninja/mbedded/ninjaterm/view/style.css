@@ -29,3 +29,7 @@ which are displaying dynamic content */
 .border {
     -fx-border-color: grey;
 }
+
+.terminal{
+    -fx-fill: green;
+}
