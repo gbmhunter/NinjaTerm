@@ -16,15 +16,11 @@
       stylesheets="@style.css">
     <!--style="-fx-background-color: red;" -->
 
-    <!--<stylesheets>-->
-        <!--<URL value="@style.css"/>-->
-    <!--</stylesheets>-->
-
     <GridPane prefHeight="50">
         <padding>
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
-        <Button fx:id="openCloseComPortButton" prefWidth="100" prefHeight="50">Open</Button>
+        <Button fx:id="openCloseComPortButton" prefWidth="100" prefHeight="50" disable="true">Open</Button>
     </GridPane>
 
     <TabPane VBox.vgrow="ALWAYS">

@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.controllers;
 
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -15,7 +16,7 @@ import java.util.ResourceBundle;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-07-10
+ * @last-modified   2016-07-16
  */
 public class ComSettingsController implements Initializable {
 
@@ -27,16 +28,23 @@ public class ComSettingsController implements Initializable {
     public Button scanButton;
 
     @FXML
-    public ComboBox foundComPortsComboBox;
+    public ComboBox<String> foundComPortsComboBox;
 
     private StatusBarController statusBarController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
+        // Attach handler for "Scan" button press
         scanButton.setOnAction((actionEvent) -> {
             scanButtonPressed();
         });
+
+        // Attach handler for selected item change for COM port combo box
+//        foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((changeListener) -> {
+//            selectedComPortChanged();
+//        });
+
     }
 
     public void setStatusBarController(StatusBarController statusBarController) {
@@ -45,6 +53,9 @@ public class ComSettingsController implements Initializable {
 
     private void scanButtonPressed() {
         System.out.println("Scan button pressed.");
+
+        // Clear any existing COM ports that are in the combobox from a previous scan
+        foundComPortsComboBox.getItems().clear();
 
         String[] portNames = SerialPortList.getPortNames();
 
@@ -57,5 +68,6 @@ public class ComSettingsController implements Initializable {
         foundComPortsComboBox.getItems().addAll(portNames);
 
     }
+
 
 }
