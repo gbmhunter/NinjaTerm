@@ -9,6 +9,8 @@ import javafx.scene.text.TextFlow;
 import jssc.SerialPortList;
 
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
@@ -16,7 +18,7 @@ import java.util.ResourceBundle;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-07-16
+ * @last-modified   2016-07-17
  */
 public class StatusBarController implements Initializable {
 
@@ -38,8 +40,19 @@ public class StatusBarController implements Initializable {
         this.mainWindowController = mainWindowController;
     }
 
+    /**
+     * Prints the given message to the status window. This prepends the current date/time to the massage
+     * as well as adding a carriage return and new-line character to the end of the message.
+     * @param msg   The message you want to print.
+     */
     public void addMsg(String msg) {
-        statusTextFlow.getChildren().add(new Text(msg + "\r\n"));
+
+        // Build up a string of the current date/time (incl. milli-seconds)
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        Date date = new Date();
+        String dateString = sdf.format(date);
+
+        statusTextFlow.getChildren().add(new Text(dateString + ": " + msg + "\r\n"));
     }
 
 }

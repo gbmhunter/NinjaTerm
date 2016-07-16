@@ -20,7 +20,7 @@
         <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
 
-    <Button fx:id="scanButton" prefWidth="60">Scan</Button>
+    <Button fx:id="scanButton" prefWidth="100" prefHeight="30">Scan</Button>
 
     <!-- HBox added here to stop GridPane from taking up entire width of VBox -->
     <HBox>

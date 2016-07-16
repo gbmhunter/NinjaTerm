@@ -46,6 +46,10 @@ which are displaying dynamic content */
 /* ============================================================================================= */
 
 .terminal{
+
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+
     /*-fx-font-smoothing-type: lcd;*/
     -fx-font-family: monospace;
     -fx-font-weight: bold;
