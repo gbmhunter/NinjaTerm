@@ -67,3 +67,17 @@ which are displaying dynamic content */
 .terminal .text {
         -fx-fill: green;
 }
+
+/* =========================================== */
+/* ========= SCROLL-TO-BOTTOM BUTTON ========= */
+/* =========================================== */
+
+.scrollToBottomButton {
+  -fx-background-color: transparent;
+  -fx-graphic: url("xyz.png");
+}
+
+.scrollToBottomButton:hover {
+  -fx-background-color: #dae7f3;
+  -fx-graphic: url("xyz.png");
+}

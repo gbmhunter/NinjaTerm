@@ -1,9 +1,11 @@
 package ninja.mbedded.ninjaterm.controllers;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 
@@ -72,6 +74,7 @@ public class MainWindowController implements Initializable {
                 openCloseComPortButton.setDisable(false);
             }
         });
+
     }
 
     /**

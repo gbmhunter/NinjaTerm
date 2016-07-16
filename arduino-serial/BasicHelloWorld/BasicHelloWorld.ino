@@ -14,7 +14,7 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
   Serial.println("Hello, world!");
-  delay(1000);        // delay in between reads for stability
+  delay(100);        // delay in between reads for stability
 }
 
 
