@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -80,6 +81,16 @@ public class MainWindowController implements Initializable {
             comPort = new ComPort(comSettingsController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             comPort.open();
+
+            comPort.addOnRxDataListener(rxData -> {
+
+                String rxText = rxData.toString();
+
+                Platform.runLater(() -> {
+                    terminalTabController.addRxText(rxText);
+                });
+
+            });
 
             openCloseComPortButton.setText("Close");
         } else {

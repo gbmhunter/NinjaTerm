@@ -9,6 +9,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
@@ -21,7 +22,7 @@
         <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
     <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
-        <TextFlow ></TextFlow>
+        <TextFlow fx:id="rxTextTextFlow" style="-fx-text-fill: green;"><Text style="-fx-text-fill: green;">RX text wil go here.</Text></TextFlow>
     </VBox>
 
 </VBox>
