@@ -27,7 +27,9 @@ which are displaying dynamic content */
 
 /* "border" styleClass is added to various UI elements to give non-intrusive border */
 .border {
-    -fx-border-color: grey;
+    -fx-border-color: lightgrey;
+    -fx-border-radius: 5px;
+    /*-fx-border-insets: 5px;*/
 }
 
 /* ============================================================================================= */

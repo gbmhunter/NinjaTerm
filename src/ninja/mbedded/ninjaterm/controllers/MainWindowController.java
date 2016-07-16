@@ -87,6 +87,15 @@ public class MainWindowController implements Initializable {
 
             comPort.open();
 
+            // Set COM port parameters as specified by user on GUI
+            comPort.setParams(
+                    comSettingsController.baudRateComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsController.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsController.parityComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsController.numStopBitsComboBox.getSelectionModel().getSelectedItem()
+                    );
+
+
             comPort.addOnRxDataListener(rxData -> {
 
                 System.out.println("rxData = " + Arrays.toString(rxData));

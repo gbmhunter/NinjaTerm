@@ -21,19 +21,26 @@
     </padding>
 
     <Button fx:id="scanButton" prefWidth="60">Scan</Button>
-    <ComboBox fx:id="foundComPortsComboBox" prefWidth="100"></ComboBox>
 
-    <GridPane vgap="10" hgap="10" styleClass="comPortParameters">
-        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Baud Rate:</Label>
-        <ComboBox fx:id="baudRateComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-        <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Num. Data Bits:</Label>
-        <ComboBox fx:id="numDataBitsComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-        <Label GridPane.rowIndex="2" GridPane.columnIndex="0">Parity:</Label>
-        <ComboBox fx:id="parityComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        <Label GridPane.rowIndex="3" GridPane.columnIndex="0">Num. Stop Bits:</Label>
-        <ComboBox fx:id="numStopBitsComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+    <!-- HBox added here to stop GridPane from taking up entire width of VBox -->
+    <HBox>
+        <GridPane vgap="10" hgap="10" styleClass="comPortParameters, border">
+            <padding>
+                <Insets top="10" bottom="10" left="10" right="10"/>
+            </padding>
+            <Label      GridPane.rowIndex="0"   GridPane.columnIndex="0">COM Port:</Label>
+            <ComboBox   GridPane.rowIndex="0"   GridPane.columnIndex="1" fx:id="foundComPortsComboBox"></ComboBox>
+            <Label      GridPane.rowIndex="1"   GridPane.columnIndex="0">Baud Rate:</Label>
+            <ComboBox   GridPane.rowIndex="1"   GridPane.columnIndex="1" fx:id="baudRateComboBox"/>
+            <Label      GridPane.rowIndex="2"   GridPane.columnIndex="0">Num. Data Bits:</Label>
+            <ComboBox   GridPane.rowIndex="2"   GridPane.columnIndex="1" fx:id="numDataBitsComboBox"/>
+            <Label      GridPane.rowIndex="3"   GridPane.columnIndex="0">Parity:</Label>
+            <ComboBox   GridPane.rowIndex="3"   GridPane.columnIndex="1" fx:id="parityComboBox"/>
+            <Label      GridPane.rowIndex="4"   GridPane.columnIndex="0">Num. Stop Bits:</Label>
+            <ComboBox   GridPane.rowIndex="4"   GridPane.columnIndex="1" fx:id="numStopBitsComboBox"/>
 
-    </GridPane>
+        </GridPane>
+    </HBox>
 
 </VBox>
 
