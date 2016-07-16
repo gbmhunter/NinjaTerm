@@ -29,16 +29,16 @@ public class StatusBarController implements Initializable {
     @FXML
     public TextFlow statusTextFlow;
 
-    private MainWindowController mainWindowController;
+    //private MainWindowController mainWindowController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
     }
 
-    public void setMainWindowController(MainWindowController mainWindowController) {
-        this.mainWindowController = mainWindowController;
-    }
+//    public void setMainWindowController(MainWindowController mainWindowController) {
+//        this.mainWindowController = mainWindowController;
+//    }
 
     /**
      * Prints the given message to the status window. This prepends the current date/time to the massage

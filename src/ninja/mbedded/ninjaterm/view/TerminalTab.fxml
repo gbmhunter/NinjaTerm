@@ -6,10 +6,11 @@
 * @last-modified   2016-07-16
 -->
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
@@ -22,10 +23,14 @@
         <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
     <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
-        <padding>
-            <Insets top="10" bottom="10" left="10" right="10"/>
-        </padding>
-        <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"><Text styleClass="text">RX text wil go here.</Text></TextFlow>
+        <ScrollPane style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
+            <TextFlow fx:id="rxTextTextFlow" styleClass="terminal" style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
+                <padding>
+                    <Insets top="10" bottom="10" left="10" right="10"/>
+                </padding>
+                <Text styleClass="text">RX text wil go here.</Text>
+            </TextFlow>
+        </ScrollPane>
     </VBox>
 
 </VBox>

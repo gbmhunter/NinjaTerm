@@ -15,6 +15,12 @@
     -fx-background-color: transparent;
 }
 
+/* This makes the background of the inner "viewport" of a scrollpane transparent,
+ which allows the background colour of the parent node to show through */
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
+}
+
 /* ============================================================================================= */
 /* ===================================== GENERAL NINJATERM STYLING ============================= */
 /* ============================================================================================= */
