@@ -31,5 +31,14 @@ which are displaying dynamic content */
 }
 
 .terminal{
-    -fx-fill: green;
+    /*-fx-font-smoothing-type: lcd;*/
+    -fx-font-family: monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* This targets the Text nodes with the terminal TextFlow. These have to have the style class
+"text" added manually (style class is empty by default for a Text node) */
+.terminal .text {
+        -fx-fill: green;
 }

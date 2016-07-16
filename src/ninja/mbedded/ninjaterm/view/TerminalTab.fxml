@@ -22,7 +22,10 @@
         <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
     <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
-        <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"><Text>RX text wil go here.</Text></TextFlow>
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
+        <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"><Text styleClass="text">RX text wil go here.</Text></TextFlow>
     </VBox>
 
 </VBox>
