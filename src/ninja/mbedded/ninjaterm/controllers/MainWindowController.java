@@ -7,7 +7,9 @@ import javafx.scene.control.Button;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.ComPort;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 /**
@@ -84,9 +86,18 @@ public class MainWindowController implements Initializable {
 
             comPort.addOnRxDataListener(rxData -> {
 
-                String rxText = rxData.toString();
+                System.out.println("rxData = " + Arrays.toString(rxData));
+                String rxText;
+                try {
+                    rxText = new String(rxData, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+
+                System.out.println("rxText = " + rxText);
 
                 Platform.runLater(() -> {
+
                     terminalTabController.addRxText(rxText);
                 });
 
