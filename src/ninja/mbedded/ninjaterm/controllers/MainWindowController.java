@@ -10,9 +10,9 @@ import java.util.ResourceBundle;
 /**
  * Controller for the main window of NinjaTerm.
  *
- * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-10
- * @since 2016-07-08
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-08
+ * @last-modified   2016-07-16
  */
 public class MainWindowController implements Initializable {
 
@@ -25,6 +25,9 @@ public class MainWindowController implements Initializable {
 
     @FXML
     public ComSettingsController comSettingsController;
+
+    @FXML
+    public TerminalTabController terminalTabController;
 
     @FXML
     public StatusBarController statusBarController;

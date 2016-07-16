@@ -1,0 +1,30 @@
+<!--
+* Inner content for the "COM Settings" tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-16
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
+      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+      spacing="20"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="@style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="40" bottom="40" left="40" right="40"/>
+    </padding>
+    <VBox VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
+        <TextFlow ></TextFlow>
+    </VBox>
+
+</VBox>
+
+
+

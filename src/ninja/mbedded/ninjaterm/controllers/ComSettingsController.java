@@ -1,12 +1,10 @@
 package ninja.mbedded.ninjaterm.controllers;
 
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.text.Text;
-import jssc.*;
+import jssc.SerialPortList;
 
 import java.net.URL;
 import java.util.ResourceBundle;

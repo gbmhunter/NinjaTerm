@@ -30,13 +30,7 @@
         </Tab>
 
         <Tab text="Terminal" closable="false">
-            <VBox>
-                <padding>
-                    <Insets top="10" bottom="10" left="10" right="10"/>
-                </padding>
-                <Label>Test</Label>
-            </VBox>
-
+            <fx:include fx:id="terminalTab" source="TerminalTab.fxml" />
         </Tab>
 
     </TabPane>
