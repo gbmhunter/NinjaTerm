@@ -3,6 +3,8 @@ package ninja.mbedded.ninjaterm.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import ninja.mbedded.ninjaterm.util.ComPort;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -32,6 +34,15 @@ public class MainWindowController implements Initializable {
     @FXML
     public StatusBarController statusBarController;
 
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
+    private ComPortManager comPortManager;
+
+    private ComPort comPort;
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -57,15 +68,34 @@ public class MainWindowController implements Initializable {
         });
     }
 
+    /**
+     * Handler for the open/close COM port button. Opens and closes the COM port.
+     */
     private void openCloseComPortButtonPressed() {
 
         System.out.println("Button pressed handler called.");
 
         if (openCloseComPortButton.getText().equals("Open")) {
+
+            comPort = new ComPort(comSettingsController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+
+            comPort.open();
+
             openCloseComPortButton.setText("Close");
         } else {
+
+            comPort.close();
+
             openCloseComPortButton.setText("Open");
         }
+
+    }
+
+    public void setComPortManager(ComPortManager comPortManager) {
+        this.comPortManager = comPortManager;
+
+        // Also pass to all child UI objects
+        comSettingsController.setComPortManager(comPortManager);
 
     }
 

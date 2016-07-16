@@ -5,6 +5,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import jssc.SerialPortList;
+import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -28,7 +29,13 @@ public class ComSettingsController implements Initializable {
     @FXML
     public ComboBox<String> foundComPortsComboBox;
 
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
     private StatusBarController statusBarController;
+
+    private ComPortManager comPortManager;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -55,7 +62,7 @@ public class ComSettingsController implements Initializable {
         // Clear any existing COM ports that are in the combobox from a previous scan
         foundComPortsComboBox.getItems().clear();
 
-        String[] portNames = SerialPortList.getPortNames();
+        String[] portNames = comPortManager.scan();
 
         if(portNames.length == 0) {
             statusBarController.addMsg("No COM ports found on this computer.");
@@ -65,6 +72,10 @@ public class ComSettingsController implements Initializable {
         statusBarController.addMsg(portNames.length + " COM port(s) found.");
         foundComPortsComboBox.getItems().addAll(portNames);
 
+    }
+
+    public void setComPortManager(ComPortManager comPortManager) {
+        this.comPortManager = comPortManager;
     }
 
 

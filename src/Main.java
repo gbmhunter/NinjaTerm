@@ -4,6 +4,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.controllers.MainWindowController;
+import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 public class Main extends Application {
 
@@ -21,6 +22,9 @@ public class Main extends Application {
 
         MainWindowController mainWindowController =
                 loader.getController();
+
+        // Inject dependencies
+        mainWindowController.setComPortManager(new ComPortManager());
 
         primaryStage.setTitle("NinjaTerm");
         primaryStage.setScene(new Scene(root, 1000, 800));
