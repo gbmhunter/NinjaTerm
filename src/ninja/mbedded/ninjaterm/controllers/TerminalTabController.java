@@ -101,7 +101,7 @@ public class TerminalTabController implements Initializable {
         //=== SCROLL-TO-BOTTOM BUTTON EVENT HANDLERS ===//
         //==============================================//
 
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {             
+        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
                     scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_HOVER);
                 }
         );

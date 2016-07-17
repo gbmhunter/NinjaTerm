@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-07-15
+* @last-modified   2016-07-17
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -16,11 +16,11 @@
       stylesheets="@style.css">
     <!--style="-fx-background-color: red;" -->
 
-    <GridPane prefHeight="50">
+    <GridPane>
         <padding>
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
-        <Button fx:id="openCloseComPortButton" prefWidth="100" prefHeight="50" disable="true">Open</Button>
+        <Button fx:id="openCloseComPortButton" prefWidth="150" prefHeight="50" disable="true">Open</Button>
     </GridPane>
 
     <TabPane VBox.vgrow="ALWAYS">

@@ -119,11 +119,14 @@ public class MainWindowController implements Initializable {
             });
 
             openCloseComPortButton.setText("Close");
+
+            statusBarController.addMsg(comPort.getName() + " opened.");
+
         } else {
 
             comPort.close();
-
             openCloseComPortButton.setText("Open");
+            statusBarController.addMsg(comPort.getName() + " closed.");
         }
 
     }
