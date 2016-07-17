@@ -43,8 +43,16 @@ public class TerminalTabController implements Initializable {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
+    /**
+     * Opacity for auto-scroll button (which is just an image) when the mouse is not hovering over it.
+     * This needs to be less than when the mouse is hovering on it.
+     */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER = 0.35;
 
+    /**
+     * Opacity for auto-scroll button (which is just an image) when the mouse IS hovering over it.
+     * This needs to be more than when the mouse is not hovering on it.
+     */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
 
     /**
@@ -105,7 +113,7 @@ public class TerminalTabController implements Initializable {
         });
 
         //==============================================//
-        //=== SCROLL-TO-BOTTOM BUTTON EVENT HANDLERS ===//
+        //===== AUTO-SCROLL BUTTON EVENT HANDLERS ======//
         //==============================================//
 
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
@@ -119,17 +127,18 @@ public class TerminalTabController implements Initializable {
         );
 
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
-                    System.out.println("Mouse click detected! " + mouseEvent.getSource());
+                    //System.out.println("Mouse click detected! " + mouseEvent.getSource());
 
                     // Enable auto-scroll
                     autoScrollEnabled = true;
 
+                    // Hide the auto-scroll button. This is made visible again when the user
+                    // manually scrolls.
                     autoScrollButtonPane.setVisible(false);
 
                     // Manually perform one auto-scroll, since the next automatic one won't happen until
                     // the height of rxTextTextFlow changes.
                     rxDataScrollPane.setVvalue(rxTextTextFlow.getHeight());
-
                 }
         );
 
