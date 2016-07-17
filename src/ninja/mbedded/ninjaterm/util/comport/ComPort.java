@@ -12,9 +12,13 @@ import java.util.List;
 /**
  * Object that represents a single COM port.
  *
- * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-16
- * @since 2016-07-16
+ * This acts as a wrapper around the real serial port library (which at the moment is
+ * jSSC). This is done because it is likely that the serial port library will change in
+ * the future, and this means the code changes just have to occur in this file.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-16
+ * @last-modified   2016-07-17
  */
 public class ComPort {
 

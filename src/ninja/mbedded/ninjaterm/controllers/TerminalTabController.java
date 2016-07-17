@@ -17,9 +17,9 @@ import java.util.ResourceBundle;
 /**
  * Controller for the "Terminal" tab which is part of the main window.
  *
- * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-17
- * @since 2016-07-16
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-16
+ * @last-modified   2016-07-17
  */
 public class TerminalTabController implements Initializable {
 
