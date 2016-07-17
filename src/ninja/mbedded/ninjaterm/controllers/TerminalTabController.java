@@ -53,6 +53,8 @@ public class TerminalTabController implements Initializable {
      */
     private Boolean autoScrollEnabled = true;
 
+    private Text terminalText = new Text();
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -73,6 +75,11 @@ public class TerminalTabController implements Initializable {
         // Hide the auto-scroll image-button, this will be made visible
         // when the user manually scrolls
         autoScrollButtonPane.setVisible(false);
+
+        // Add default Text node to text flow. Received text
+        // will be added to this node.
+        rxTextTextFlow.getChildren().add(terminalText);
+        terminalText.setFill(Color.LIME);
 
 
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
@@ -135,9 +142,15 @@ public class TerminalTabController implements Initializable {
      */
     public void addRxText(String rxText) {
 
-        Text text = new Text(rxText);
-        text.setFill(Color.LIME);
-        rxTextTextFlow.getChildren().add(text);
+        // WARNING: This method didn't work well, as it added empty lines depending on whether the
+        // provided rxText had printable chars, or was just a carriage return or new line (or both)
+        //Text text = new Text(rxText);
+        //text.setFill(Color.LIME);
+        //rxTextTextFlow.getChildren().add(text);
+
+        // This was works better!
+        terminalText.setText(terminalText.getText() + rxText);
+
     }
 
 }

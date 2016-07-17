@@ -5,6 +5,7 @@ import jssc.SerialPortException;
 import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class ComPort {
                         throw new RuntimeException(e);
                     }
 
-                    System.out.println("rxData = " + rxData);
+                    System.out.println("rxData = " + Arrays.toString(rxData));
 
                     for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
                         OnRxDataListener onRxDataListener = it.next();
