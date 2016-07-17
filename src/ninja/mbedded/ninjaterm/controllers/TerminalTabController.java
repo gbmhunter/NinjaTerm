@@ -136,7 +136,7 @@ public class TerminalTabController implements Initializable {
     public void addRxText(String rxText) {
 
         Text text = new Text(rxText);
-        text.setFill(Color.GREEN);
+        text.setFill(Color.LIME);
         rxTextTextFlow.getChildren().add(text);
     }
 
