@@ -12,6 +12,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.shape.Rectangle?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
@@ -27,7 +28,7 @@
     <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
     <StackPane VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
         <ScrollPane fx:id="rxDataScrollPane"
-                style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
+                    style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
             <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"
                       style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
                 <padding>
@@ -38,12 +39,14 @@
             </TextFlow>
         </ScrollPane>
         <!-- This image gets placed in the bottom-right hand corner of the above scroll pane -->
-        <ImageView fx:id="scrollToBottomImageView" fitWidth="100" fitHeight="100" StackPane.alignment="BOTTOM_RIGHT"
-                   styleClass="scrollToBottomButton">
-            <image>
-                <Image url="@down-arrow.png"/>
-            </image>
-        </ImageView>
+        <Pane fx:id="autoScrollButtonPane" StackPane.alignment="BOTTOM_RIGHT" translateX="-20" translateY="-20" maxWidth="100" maxHeight="100">
+            <ImageView fx:id="scrollToBottomImageView" fitWidth="100" fitHeight="100"
+                       styleClass="scrollToBottomButton">
+                <image>
+                    <Image url="@down-arrow.png"/>
+                </image>
+            </ImageView>
+        </Pane>
     </StackPane>
 
 
