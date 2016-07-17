@@ -13,7 +13,7 @@
       spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="@style.css" styleClass="comSettings">
+      stylesheets="@../resources/style.css" styleClass="comSettings">
     <!--style="-fx-background-color: red;" -->
 
     <padding>

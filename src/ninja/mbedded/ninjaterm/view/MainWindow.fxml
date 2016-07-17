@@ -13,7 +13,7 @@
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="@style.css">
+      stylesheets="@../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <GridPane>

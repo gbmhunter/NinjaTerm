@@ -13,7 +13,7 @@
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
       fillWidth="true"
-      stylesheets="@style.css">
+      stylesheets="@../resources/style.css">
     <!--style="-fx-background-color: red;" -->
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>

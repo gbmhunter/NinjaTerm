@@ -17,7 +17,7 @@
       spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="@style.css">
+      stylesheets="@../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -50,7 +50,7 @@
             <ImageView fx:id="scrollToBottomImageView" fitWidth="100" fitHeight="100"
                        styleClass="scrollToBottomButton">
                 <image>
-                    <Image url="@down-arrow.png"/>
+                    <Image url="@../resources/down-arrow.png"/>
                 </image>
             </ImageView>
         </Pane>
