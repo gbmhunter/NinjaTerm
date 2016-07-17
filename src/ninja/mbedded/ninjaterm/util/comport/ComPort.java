@@ -22,7 +22,6 @@ import java.util.List;
  */
 public class ComPort {
 
-
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
@@ -38,6 +37,8 @@ public class ComPort {
     private SerialPort serialPort;
 
     private BaudRates baudRate;
+    public BaudRates getBaudRate() { return baudRate; }
+
     private NumDataBits numDataBits;
     private Parities parity;
     private NumStopBits numStopBits;
@@ -49,15 +50,18 @@ public class ComPort {
     //================================================================================================//
 
     public ComPort(String name) {
+
         this.name = name;
+
+        // Create a new jSSC serial port object
+        serialPort = new SerialPort(name);
+
     }
 
     public void open() {
-        serialPort = new SerialPort(name);
 
         try {
             serialPort.openPort();
-
 
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
