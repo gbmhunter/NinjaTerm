@@ -5,18 +5,22 @@ import jssc.SerialPortException;
 import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * Object that represents a single COM port.
  *
- * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-16
- * @since 2016-07-16
+ * This acts as a wrapper around the real serial port library (which at the moment is
+ * jSSC). This is done because it is likely that the serial port library will change in
+ * the future, and this means the code changes just have to occur in this file.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-16
+ * @last-modified   2016-07-17
  */
 public class ComPort {
-
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -33,6 +37,8 @@ public class ComPort {
     private SerialPort serialPort;
 
     private BaudRates baudRate;
+    public BaudRates getBaudRate() { return baudRate; }
+
     private NumDataBits numDataBits;
     private Parities parity;
     private NumStopBits numStopBits;
@@ -44,15 +50,18 @@ public class ComPort {
     //================================================================================================//
 
     public ComPort(String name) {
+
         this.name = name;
+
+        // Create a new jSSC serial port object
+        serialPort = new SerialPort(name);
+
     }
 
     public void open() {
-        serialPort = new SerialPort(name);
 
         try {
             serialPort.openPort();
-
 
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
@@ -72,7 +81,7 @@ public class ComPort {
                         throw new RuntimeException(e);
                     }
 
-                    System.out.println("rxData = " + rxData);
+                    System.out.println("rxData = " + Arrays.toString(rxData));
 
                     for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
                         OnRxDataListener onRxDataListener = it.next();

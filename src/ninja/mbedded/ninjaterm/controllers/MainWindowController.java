@@ -82,7 +82,7 @@ public class MainWindowController implements Initializable {
      */
     private void openCloseComPortButtonPressed() {
 
-        System.out.println("Button pressed handler called.");
+        //System.out.println("Button pressed handler called.");
 
         if (openCloseComPortButton.getText().equals("Open")) {
 
@@ -101,7 +101,7 @@ public class MainWindowController implements Initializable {
 
             comPort.addOnRxDataListener(rxData -> {
 
-                System.out.println("rxData = " + Arrays.toString(rxData));
+                //System.out.println("rxData = " + Arrays.toString(rxData));
                 String rxText;
                 try {
                     rxText = new String(rxData, "UTF-8");
@@ -109,7 +109,7 @@ public class MainWindowController implements Initializable {
                     throw new RuntimeException(e);
                 }
 
-                System.out.println("rxText = " + rxText);
+                //System.out.println("rxText = " + rxText);
 
                 Platform.runLater(() -> {
 
@@ -119,7 +119,6 @@ public class MainWindowController implements Initializable {
             });
 
             openCloseComPortButton.setText("Close");
-
             statusBarController.addMsg(comPort.getName() + " opened.");
 
         } else {
