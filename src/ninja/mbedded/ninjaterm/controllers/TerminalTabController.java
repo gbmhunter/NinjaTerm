@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -38,6 +39,9 @@ public class TerminalTabController implements Initializable {
 
     @FXML
     public ImageView scrollToBottomImageView;
+
+    @FXML
+    public Button clearTextButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -141,6 +145,15 @@ public class TerminalTabController implements Initializable {
                     rxDataScrollPane.setVvalue(rxTextTextFlow.getHeight());
                 }
         );
+
+        //==============================================//
+        //===== CLEAR TEXT BUTTON EVENT HANDLERS ======//
+        //==============================================//
+
+        clearTextButton.setOnAction(event -> {
+            terminalText.setText("");
+        });
+
 
     }
 
