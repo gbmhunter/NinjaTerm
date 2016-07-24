@@ -96,10 +96,14 @@ public class TerminalTabController implements Initializable {
 
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
 
+        //==============================================//
+        //==== AUTO-SCROLL RELATED EVENT HANDLERS ======//
+        //==============================================//
+
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
         rxTextTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("heightProperty changed to " + newValue);
+            //System.out.println("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
                 rxDataScrollPane.setVvalue(rxTextTextFlow.getHeight());
@@ -109,16 +113,17 @@ public class TerminalTabController implements Initializable {
 
         rxDataScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
 
-            // Since the user has now scrolled manually, disable the
+            // If the user scrolled downwards, we don't want to disable auto-scroll,
+            // so check and return if so.
+            if(event.getDeltaY() <= 0)
+                return;
+
+            // Since the user has now scrolled upwards (manually), disable the
             // auto-scroll
             autoScrollEnabled = false;
 
             autoScrollButtonPane.setVisible(true);
         });
-
-        //==============================================//
-        //===== AUTO-SCROLL BUTTON EVENT HANDLERS ======//
-        //==============================================//
 
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
                     scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_HOVER);
