@@ -13,6 +13,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
@@ -62,6 +63,7 @@
 
         <VBox prefWidth="80" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton">Clear Text</Button>
+            <Button fx:id="filtersButton">Filters</Button>
         </VBox>
 
     </HBox>

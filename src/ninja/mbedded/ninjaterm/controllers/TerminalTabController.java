@@ -43,6 +43,9 @@ public class TerminalTabController implements Initializable {
     @FXML
     public Button clearTextButton;
 
+    @FXML
+    public Button filtersButton;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
@@ -157,6 +160,11 @@ public class TerminalTabController implements Initializable {
 
         clearTextButton.setOnAction(event -> {
             terminalText.setText("");
+        });
+
+        filtersButton.setOnAction(event -> {
+            // Show filters window
+
         });
 
 
