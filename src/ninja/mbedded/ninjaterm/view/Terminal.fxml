@@ -1,0 +1,39 @@
+<!--
+* Inner content for the status bar at the bottom of the main NinjaTerm window.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-08-23
+* @last-modified   2016-08-23
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Tab?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalController"
+      xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
+      spacing="20"
+      fillWidth="true"
+      stylesheets="@../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <TabPane VBox.vgrow="ALWAYS">
+
+        <Tab text="COM Settings" closable="false">
+            <fx:include fx:id="comSettings" source="ComSettings.fxml"/>
+        </Tab>
+
+        <Tab text="Terminal" closable="false">
+            <fx:include fx:id="rxTxData" source="RxTxData.fxml" />
+        </Tab>
+
+    </TabPane>
+
+</VBox>
+
+
+

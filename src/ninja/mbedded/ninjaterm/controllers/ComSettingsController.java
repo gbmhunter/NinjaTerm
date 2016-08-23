@@ -1,16 +1,15 @@
 package ninja.mbedded.ninjaterm.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
-import ninja.mbedded.ninjaterm.util.comport.BaudRates;
-import ninja.mbedded.ninjaterm.util.comport.NumDataBits;
-import ninja.mbedded.ninjaterm.util.comport.NumStopBits;
-import ninja.mbedded.ninjaterm.util.comport.Parities;
+import ninja.mbedded.ninjaterm.util.comport.*;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -44,6 +43,9 @@ public class ComSettingsController implements Initializable {
 
     @FXML
     public ComboBox<NumStopBits> numStopBitsComboBox;
+
+    @FXML
+    public Button openCloseComPortButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -113,6 +115,8 @@ public class ComSettingsController implements Initializable {
     public void setComPortManager(ComPortManager comPortManager) {
         this.comPortManager = comPortManager;
     }
+
+
 
 
 }

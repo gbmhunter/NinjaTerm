@@ -27,7 +27,7 @@ public class Main extends Application {
         mainWindowController.setComPortManager(new ComPortManager());
 
         // Peform a scan of the COM ports on start-up
-        mainWindowController.comSettingsController.scanComPorts();
+        mainWindowController.terminalController.comSettingsController.scanComPorts();
 
         primaryStage.setTitle("NinjaTerm");
         primaryStage.setScene(new Scene(root, 1000, 800));

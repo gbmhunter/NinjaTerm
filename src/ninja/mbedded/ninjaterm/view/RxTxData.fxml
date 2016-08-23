@@ -14,7 +14,7 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalTabController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.RxTxDataController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"

@@ -20,17 +20,13 @@
         <padding>
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
-        <Button fx:id="openCloseComPortButton" prefWidth="150" prefHeight="50" disable="true">Open</Button>
+        <Button fx:id="newTerminalButton" prefWidth="150" prefHeight="50" disable="true">New Terminal</Button>
     </GridPane>
 
     <TabPane VBox.vgrow="ALWAYS">
 
-        <Tab text="COM Settings" closable="false">
-            <fx:include fx:id="comSettings" source="ComSettings.fxml"/>
-        </Tab>
-
-        <Tab text="Terminal" closable="false">
-            <fx:include fx:id="terminalTab" source="TerminalTab.fxml" />
+        <Tab text="Terminal 1" closable="false">
+            <fx:include fx:id="terminal" source="Terminal.fxml"/>
         </Tab>
 
     </TabPane>

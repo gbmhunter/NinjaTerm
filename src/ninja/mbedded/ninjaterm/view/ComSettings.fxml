@@ -42,6 +42,8 @@
         </GridPane>
     </HBox>
 
+    <Button fx:id="openCloseComPortButton">Open</Button>
+
 </VBox>
 
 

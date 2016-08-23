@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
  * @since           2016-07-16
  * @last-modified   2016-07-17
  */
-public class TerminalTabController implements Initializable {
+public class RxTxDataController implements Initializable {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
