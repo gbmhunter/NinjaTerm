@@ -1,15 +1,12 @@
 package ninja.mbedded.ninjaterm.controllers;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.*;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -18,7 +15,7 @@ import java.util.ResourceBundle;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-07-16
+ * @last-modified   2016-08-23
  */
 public class ComSettingsController implements Initializable {
 
@@ -27,7 +24,7 @@ public class ComSettingsController implements Initializable {
     //================================================================================================//
 
     @FXML
-    public Button scanButton;
+    public Button reScanButton;
 
     @FXML
     public ComboBox<String> foundComPortsComboBox;
@@ -59,7 +56,7 @@ public class ComSettingsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
 
         // Attach handler for "Scan" button press
-        scanButton.setOnAction((actionEvent) -> {
+        reScanButton.setOnAction((actionEvent) -> {
             scanButtonPressed();
         });
 

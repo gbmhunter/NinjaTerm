@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TabPane;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
@@ -28,6 +29,9 @@ public class TerminalController implements Initializable {
     //================================================================================================//
 
     @FXML
+    public TabPane terminalTabPane;
+
+    @FXML
     public ComSettingsController comSettingsController;
 
     @FXML
@@ -46,6 +50,9 @@ public class TerminalController implements Initializable {
         comSettingsController.openCloseComPortButton.setOnAction((ActionEvent) -> {
             openCloseComPortButtonPressed();
         });
+
+        // Select first tab by default
+        terminalTabPane.getSelectionModel().select(0);
 
     }
 

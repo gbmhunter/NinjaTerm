@@ -21,7 +21,7 @@
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <TabPane VBox.vgrow="ALWAYS" styleClass="minimal">
+    <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
         <Tab text="COM Settings" closable="false">
             <fx:include fx:id="comSettings" source="ComSettings.fxml"/>
