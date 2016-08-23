@@ -17,15 +17,13 @@
     <!--style="-fx-background-color: red;" -->
 
     <MenuBar>
-        <Menu text="File"><MenuItem text="New Terminal"></MenuItem></Menu>
+        <Menu text="File"><MenuItem fx:id="newTerminalMenuItem" text="New Terminal"></MenuItem></Menu>
     </MenuBar>
 
-    <TabPane VBox.vgrow="ALWAYS">
-
-        <Tab text="Terminal 1" closable="false">
-            <fx:include fx:id="terminal" source="Terminal.fxml"/>
-        </Tab>
-
+    <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
+        <!--<Tab text="Terminal 1" closable="true">-->
+            <!--<fx:include fx:id="terminal" source="Terminal.fxml"/>-->
+        <!--</Tab>-->
     </TabPane>
 
     <fx:include fx:id="statusBar" source="StatusBar.fxml"/>

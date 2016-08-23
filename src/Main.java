@@ -13,9 +13,9 @@ public class Main extends Application {
         //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowController.fxml"));
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource(
-                        "ninja/mbedded/ninjaterm/view/MainWindow.fxml"
-                )
+            getClass().getResource(
+                    "ninja/mbedded/ninjaterm/view/MainWindow.fxml"
+            )
         );
 
         Parent root = loader.load();
@@ -25,9 +25,7 @@ public class Main extends Application {
 
         // Inject dependencies
         mainWindowController.setComPortManager(new ComPortManager());
-
-        // Peform a scan of the COM ports on start-up
-        mainWindowController.terminalController.comSettingsController.scanComPorts();
+        mainWindowController.addNewTerminal();
 
         primaryStage.setTitle("NinjaTerm");
         primaryStage.setScene(new Scene(root, 1000, 800));
