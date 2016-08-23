@@ -26,6 +26,9 @@ public class Main extends Application {
         // Inject dependencies
         mainWindowController.setComPortManager(new ComPortManager());
 
+        // Peform a scan of the COM ports on start-up
+        mainWindowController.comSettingsController.scanComPorts();
+
         primaryStage.setTitle("NinjaTerm");
         primaryStage.setScene(new Scene(root, 1000, 800));
         primaryStage.show();

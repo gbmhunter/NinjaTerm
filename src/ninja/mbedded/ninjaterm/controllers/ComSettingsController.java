@@ -86,6 +86,13 @@ public class ComSettingsController implements Initializable {
     private void scanButtonPressed() {
         System.out.println("Scan button pressed.");
 
+        scanComPorts();
+    }
+
+    public void scanComPorts() {
+
+        System.out.println(this.getClass().getName() + ".scanComPorts() called.");
+
         // Clear any existing COM ports that are in the combobox from a previous scan
         foundComPortsComboBox.getItems().clear();
 
@@ -101,7 +108,6 @@ public class ComSettingsController implements Initializable {
 
         // Select first one in list for convenience
         foundComPortsComboBox.getSelectionModel().select(0);
-
     }
 
     public void setComPortManager(ComPortManager comPortManager) {
