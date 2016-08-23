@@ -79,6 +79,20 @@ public class ComSettingsController implements Initializable {
         numStopBitsComboBox.getItems().setAll(NumStopBits.values());
         numStopBitsComboBox.getSelectionModel().select(NumStopBits.ONE);
 
+        // Attach handler for when selected COM port changes. This is responsible for
+        // enabling/disabling the "Open" button as appropriate
+        foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("ComboBox selected item changed.");
+
+            // newValue will be null if a scan was done and no COM ports
+            // were found
+            if (newValue == null) {
+                openCloseComPortButton.setDisable(true);
+            } else {
+                openCloseComPortButton.setDisable(false);
+            }
+        });
+
     }
 
     public void setStatusBarController(StatusBarController statusBarController) {

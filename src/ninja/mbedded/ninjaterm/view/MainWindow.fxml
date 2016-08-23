@@ -16,12 +16,9 @@
       stylesheets="@../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
-    <GridPane>
-        <padding>
-            <Insets top="10" bottom="10" left="10" right="10"/>
-        </padding>
-        <Button fx:id="newTerminalButton" prefWidth="150" prefHeight="50" disable="true">New Terminal</Button>
-    </GridPane>
+    <MenuBar>
+        <Menu text="File"><MenuItem text="New Terminal"></MenuItem></Menu>
+    </MenuBar>
 
     <TabPane VBox.vgrow="ALWAYS">
 

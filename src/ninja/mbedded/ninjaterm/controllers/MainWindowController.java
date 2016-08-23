@@ -22,9 +22,6 @@ public class MainWindowController implements Initializable {
     //================================================================================================//
 
     @FXML
-    public Button newTerminalButton;
-
-    @FXML
     public TerminalController terminalController;
 
     @FXML
@@ -47,22 +44,6 @@ public class MainWindowController implements Initializable {
 
 
         terminalController.setStatusBarController(statusBarController);
-
-
-
-        // Attach handler for when selected COM port changes. This is responsible for
-        // enabling/disabling the "Open" button as appropriate
-//        comSettingsController.foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-//            System.out.println("ComboBox selected item changed.");
-//
-//            // newValue will be null if a scan was done and no COM ports
-//            // were found
-//            if (newValue == null) {
-//                newTerminalButton.setDisable(true);
-//            } else {
-//                newTerminalButton.setDisable(false);
-//            }
-//        });
 
     }
 
