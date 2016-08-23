@@ -42,7 +42,7 @@
         </GridPane>
     </HBox>
 
-    <Button fx:id="openCloseComPortButton">Open</Button>
+    <Button fx:id="openCloseComPortButton" prefWidth="200" prefHeight="40">Open</Button>
 
 </VBox>
 

@@ -1,9 +1,9 @@
 /**
-* The default styling of the NinjaTerm app.
+* Styling of the NinjaTerm app.
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-15
-* @last-modified   2016-07-17
+* @last-modified   2016-08-23
 **/
 
 /* ============================================================================================= */
@@ -39,6 +39,44 @@ which are displaying dynamic content */
 }
 
 /* ============================================================================================= */
+/* ===================================== "MINIMAL" TABPANE STYLING ============================= */
+/* ============================================================================================= */
+
+.tab-pane .minimal {
+    /*-fx-border-color: red;*/
+
+    -fx-tab-min-width: 90px;
+}
+
+/* Get rid of the background colour of the tab header */
+.tab-pane .minimal .tab-header-area .tab-header-background {
+    -fx-opacity: 0;
+    -fx-effect: null;
+}
+
+.tab-pane .minimal .tab {
+    /*-fx-border-color: null;
+    -fx-effect: null;*/
+
+    /* Remove background colour from tabs. This removes the "tab-like appearance" of the
+     tabs */
+    -fx-background-color: null;
+}
+
+/* Tagets the Tab label text */
+.tab-pane .minimal .tab .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #0066ff;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+}
+
+.tab-pane .minimal .tab:hover .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #4d94ff;
+}
+
+/* ============================================================================================= */
 /* ====================================== COM SETTINGS TAB STYLING ============================= */
 /* ============================================================================================= */
 
@@ -48,7 +86,7 @@ which are displaying dynamic content */
 }
 
 /* ============================================================================================= */
-/* ======================================= TERMINAL TAB STYLING ================================ */
+/* ===================================== TX/RX DATA TAB STYLING ================================ */
 /* ============================================================================================= */
 
 .terminal{
