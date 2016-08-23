@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import jssc.SerialPortList;
@@ -53,6 +54,23 @@ public class StatusBarController implements Initializable {
         String dateString = sdf.format(date);
 
         statusTextFlow.getChildren().add(new Text(dateString + ": " + msg + "\r\n"));
+    }
+
+    /**
+     * Prints the given error message to the status window. This prepends the current date/time to the massage
+     * as well as adding a carriage return and new-line character to the end of the message.
+     * @param msg   The error message you want to print.
+     */
+    public void addErr(String msg) {
+
+        // Build up a string of the current date/time (incl. milli-seconds)
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        Date date = new Date();
+        String dateString = sdf.format(date);
+
+        Text text = new Text(dateString + ": ERROR. " + msg + "\r\n");
+        text.setFill(Color.RED);
+        statusTextFlow.getChildren().add(text);
     }
 
 }

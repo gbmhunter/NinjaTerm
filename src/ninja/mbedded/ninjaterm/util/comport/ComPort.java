@@ -58,19 +58,22 @@ public class ComPort {
 
     }
 
-    public void open() {
+    public void open() throws ComPortException {
 
         try {
             serialPort.openPort();
 
         } catch (SerialPortException e) {
+            if(e.getExceptionType() ==  SerialPortException.TYPE_PORT_BUSY) {
+                throw new ComPortException(ComPortException.ExceptionType.COM_PORT_BUSY);
+            }
             throw new RuntimeException(e);
         }
 
         try {
             serialPort.addEventListener((serialPortEvent) -> {
                 if (serialPortEvent.isRXCHAR()) {
-                    System.out.println("Data received!");
+                    //System.out.println("Data received!");
 
                     int numBytes = serialPortEvent.getEventValue();
 
@@ -81,7 +84,7 @@ public class ComPort {
                         throw new RuntimeException(e);
                     }
 
-                    System.out.println("rxData = " + Arrays.toString(rxData));
+                    //System.out.println("rxData = " + Arrays.toString(rxData));
 
                     for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
                         OnRxDataListener onRxDataListener = it.next();

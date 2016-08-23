@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
+import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -66,7 +67,15 @@ public class TerminalController implements Initializable {
 
             comPort = new ComPort(comSettingsController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
-            comPort.open();
+            try {
+                comPort.open();
+            } catch (ComPortException e) {
+                if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
+                    statusBarController.addErr(comPort.getName() + " was busy and could not be opened.");
+                    comPort = null;
+                    return;
+                }
+            }
 
             // Set COM port parameters as specified by user on GUI
             comPort.setParams(
