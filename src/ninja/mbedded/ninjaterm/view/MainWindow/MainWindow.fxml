@@ -9,11 +9,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.MainWindowController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.MainWindow.MainWindowController"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="@../resources/style.css">
+      stylesheets="@../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <MenuBar>
@@ -26,6 +26,6 @@
         <!--</Tab>-->
     </TabPane>
 
-    <fx:include fx:id="statusBar" source="StatusBar.fxml"/>
+    <fx:include fx:id="statusBar" source="StatusBar/StatusBar.fxml"/>
 
 </VBox>

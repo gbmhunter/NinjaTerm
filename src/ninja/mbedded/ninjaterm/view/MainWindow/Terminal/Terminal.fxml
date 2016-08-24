@@ -11,11 +11,11 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.TerminalController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.MainWindow.Terminal.TerminalController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
       fillWidth="true"
-      stylesheets="@../resources/style.css">
+      stylesheets="@../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
@@ -24,11 +24,11 @@
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
         <Tab text="COM Settings" closable="false">
-            <fx:include fx:id="comSettings" source="ComSettings.fxml"/>
+            <fx:include fx:id="comSettings" source="ComSettings/ComSettings.fxml"/>
         </Tab>
 
-        <Tab text="Terminal" closable="false">
-            <fx:include fx:id="rxTxData" source="RxTxData.fxml" />
+        <Tab text="RX/TX" closable="false">
+            <fx:include fx:id="rxTxData" source="RxTx/RxTx.fxml" />
         </Tab>
 
     </TabPane>

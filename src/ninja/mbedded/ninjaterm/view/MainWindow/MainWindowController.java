@@ -1,14 +1,14 @@
-package ninja.mbedded.ninjaterm.controllers;
+package ninja.mbedded.ninjaterm.view.MainWindow;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.TerminalController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 import java.io.IOException;
@@ -70,11 +70,13 @@ public class MainWindowController implements Initializable {
      * well as once on startup.
      */
     public void addNewTerminal() {
-        FXMLLoader loader = new FXMLLoader(
-            getClass().getResource(
-                    "../view/Terminal.fxml"
-            )
-        );
+
+        URL resource = getClass().getResource("Terminal/Terminal.fxml");
+        if(resource == null) {
+            throw new RuntimeException("Resource could not be found. Is URL correct?");
+        }
+
+        FXMLLoader loader = new FXMLLoader(resource);
 
         try {
             Node node = loader.load();

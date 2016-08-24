@@ -3,7 +3,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import ninja.mbedded.ninjaterm.controllers.MainWindowController;
+import ninja.mbedded.ninjaterm.view.MainWindow.MainWindowController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 public class Main extends Application {
@@ -14,7 +14,7 @@ public class Main extends Application {
 
         FXMLLoader loader = new FXMLLoader(
             getClass().getResource(
-                    "ninja/mbedded/ninjaterm/view/MainWindow.fxml"
+                    "ninja/mbedded/ninjaterm/view/MainWindow/MainWindow.fxml"
             )
         );
 

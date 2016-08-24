@@ -1,9 +1,10 @@
-package ninja.mbedded.ninjaterm.controllers;
+package ninja.mbedded.ninjaterm.view.MainWindow.Terminal.ComSettings;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.*;
 

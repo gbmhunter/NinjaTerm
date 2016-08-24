@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.controllers;
+package ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
  * @since           2016-07-16
  * @last-modified   2016-07-17
  */
-public class RxTxDataController implements Initializable {
+public class RxTxController implements Initializable {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//

@@ -1,18 +1,17 @@
-package ninja.mbedded.ninjaterm.controllers;
+package ninja.mbedded.ninjaterm.view.MainWindow.Terminal;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TabPane;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.ComSettings.ComSettingsController;
+import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.RxTxController;
+import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
@@ -35,7 +34,7 @@ public class TerminalController implements Initializable {
     public ComSettingsController comSettingsController;
 
     @FXML
-    public RxTxDataController rxTxDataController;
+    public RxTxController rxTxDataController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//

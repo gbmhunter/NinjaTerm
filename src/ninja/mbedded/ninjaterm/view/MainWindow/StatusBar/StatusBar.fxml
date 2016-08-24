@@ -9,11 +9,11 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.controllers.StatusBarController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
       fillWidth="true"
-      stylesheets="@../resources/style.css">
+      stylesheets="@../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
