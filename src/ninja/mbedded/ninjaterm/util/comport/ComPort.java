@@ -40,8 +40,12 @@ public class ComPort {
     public BaudRates getBaudRate() { return baudRate; }
 
     private NumDataBits numDataBits;
+
     private Parities parity;
+    public Parities getParity() { return parity; }
+
     private NumStopBits numStopBits;
+    public NumStopBits getNumStopBits() { return numStopBits; }
 
     private List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
 

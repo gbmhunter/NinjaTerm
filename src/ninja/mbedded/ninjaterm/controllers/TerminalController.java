@@ -119,9 +119,13 @@ public class TerminalController implements Initializable {
             });
 
             comSettingsController.openCloseComPortButton.setText("Close");
-            statusBarController.addMsg(comPort.getName() + " opened.");
+            statusBarController.addMsg(comPort.getName() + " opened." +
+                    " Buad rate = " + comPort.getBaudRate() + "," +
+                    " parity = " + comPort.getParity() + "," +
+                    " num. stop bits = " + comPort.getNumStopBits() + ".");
 
         } else {
+            // Must be closing COM port
 
             try {
                 comPort.close();
