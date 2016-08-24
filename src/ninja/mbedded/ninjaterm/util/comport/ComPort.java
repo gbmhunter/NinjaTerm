@@ -66,8 +66,10 @@ public class ComPort {
         } catch (SerialPortException e) {
             if(e.getExceptionType() ==  SerialPortException.TYPE_PORT_BUSY) {
                 throw new ComPortException(ComPortException.ExceptionType.COM_PORT_BUSY);
-            }
-            throw new RuntimeException(e);
+            } else if(e.getExceptionType() == SerialPortException.TYPE_PORT_NOT_FOUND) {
+                throw new ComPortException(ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST);
+            } else
+                throw new RuntimeException(e);
         }
 
         try {
@@ -208,7 +210,7 @@ public class ComPort {
         onRxDataListeners.add(onRxDataListener);
     }
 
-    public void close() {
+    public void close() throws ComPortException {
         if (serialPort == null) {
             return;
         }
@@ -216,6 +218,11 @@ public class ComPort {
         try {
             serialPort.closePort();
         } catch (SerialPortException e) {
+
+            if(e.getExceptionType() == SerialPortException.TYPE_CANT_SET_MASK) {
+                throw new ComPortException(ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST);
+            }
+
             throw new RuntimeException(e);
         }
     }

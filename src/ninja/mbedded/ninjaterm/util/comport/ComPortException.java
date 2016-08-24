@@ -7,6 +7,7 @@ public class ComPortException extends Exception  {
 
     public enum ExceptionType {
         COM_PORT_BUSY,
+        COM_PORT_DOES_NOT_EXIST,
     }
 
     public ExceptionType type;

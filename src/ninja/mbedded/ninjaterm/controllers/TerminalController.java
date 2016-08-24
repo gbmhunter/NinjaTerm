@@ -81,6 +81,12 @@ public class TerminalController implements Initializable {
                     statusBarController.addErr(comPort.getName() + " was busy and could not be opened.");
                     comPort = null;
                     return;
+                } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
+                    statusBarController.addErr(comPort.getName() + " no longer exists. Please rescan.");
+                    comPort = null;
+                    return;
+                } else {
+                    throw new RuntimeException(e);
                 }
             }
 
@@ -117,7 +123,19 @@ public class TerminalController implements Initializable {
 
         } else {
 
-            comPort.close();
+            try {
+                comPort.close();
+            } catch (ComPortException e) {
+                if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
+                    statusBarController.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
+
+                    // Since COM port does not exist anymore, set button back to "Open"
+                    comSettingsController.openCloseComPortButton.setText("Open");
+                    return;
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
             comSettingsController.openCloseComPortButton.setText("Open");
             statusBarController.addMsg(comPort.getName() + " closed.");
         }
