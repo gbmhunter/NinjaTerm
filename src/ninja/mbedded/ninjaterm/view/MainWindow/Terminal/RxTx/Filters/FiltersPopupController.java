@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.controllers;
+package ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.Filters;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
