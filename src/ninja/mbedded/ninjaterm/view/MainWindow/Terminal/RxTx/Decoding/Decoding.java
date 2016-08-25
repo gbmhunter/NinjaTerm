@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 
 import java.io.IOException;
@@ -38,13 +39,18 @@ public class Decoding extends VBox {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-
+    private Decoder decoder;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
     public Decoding() {
+
+
+        //! @fix Pass in decoder object
+        this.decoder = new Decoder();
+
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "Decoding.fxml"));
 
@@ -57,8 +63,18 @@ public class Decoding extends VBox {
             throw new RuntimeException(exception);
         }
 
-        // Populate
+        // UI should now be initialised
+
+        // Populate decoding options combobox
         decodingComboBox.getItems().setAll(DecodingOptions.values());
+
+        // Add listener to combobox
+        decodingComboBox.setOnAction(event -> {
+
+            // Bind the decoder decoding option to what has been selected in the
+            // combobox
+            decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
+        });
 
     }
 
