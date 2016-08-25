@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TabPane;
+import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.ComSettings.ComSettingsController;
 import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.RxTxController;
 import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
@@ -42,6 +43,7 @@ public class TerminalController implements Initializable {
 
     private ComPort comPort;
     private StatusBarController statusBarController;
+    private Decoder decoder = new Decoder();
 
 
     @Override
@@ -97,16 +99,12 @@ public class TerminalController implements Initializable {
                     comSettingsController.numStopBitsComboBox.getSelectionModel().getSelectedItem()
             );
 
-
+            // Add a listener to run when RX data is received from the COM port
             comPort.addOnRxDataListener(rxData -> {
 
                 //System.out.println("rxData = " + Arrays.toString(rxData));
                 String rxText;
-                try {
-                    rxText = new String(rxData, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
+                rxText = decoder.parse(rxData);
 
                 //System.out.println("rxText = " + rxText);
 

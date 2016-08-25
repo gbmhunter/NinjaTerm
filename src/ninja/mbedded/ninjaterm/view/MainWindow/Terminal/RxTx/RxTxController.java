@@ -17,6 +17,7 @@ import javafx.scene.text.TextFlow;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import javafx.stage.WindowEvent;
 import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.Decoding.Decoding;
 import org.controlsfx.control.PopOver;
 
@@ -228,6 +229,7 @@ public class RxTxController implements Initializable {
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Decoding");
         decodingPopOver.show(decodingButton.getParent(), clickX, clickY);
+
     }
 
     /**
