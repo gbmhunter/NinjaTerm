@@ -13,6 +13,8 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 /**
@@ -43,6 +45,7 @@ public class MainWindowController implements Initializable {
 
     private ComPortManager comPortManager;
 
+    public List<TerminalController> terminalControllers = new ArrayList<>();
 
 
     //================================================================================================//
@@ -71,6 +74,8 @@ public class MainWindowController implements Initializable {
      */
     public void addNewTerminal() {
 
+        System.out.println(getClass().getName() + ".addNewTerminal() called.");
+
         URL resource = getClass().getResource("Terminal/Terminal.fxml");
         if(resource == null) {
             throw new RuntimeException("Resource could not be found. Is URL correct?");
@@ -80,7 +85,10 @@ public class MainWindowController implements Initializable {
 
         try {
             Node node = loader.load();
+
             TerminalController terminalController = loader.getController();
+            terminalControllers.add(terminalController);
+
             terminalController.setStatusBarController(statusBarController);
             terminalController.comSettingsController.setComPortManager(comPortManager);
             // Peform a scan of the COM ports on start-up

@@ -28,7 +28,7 @@
         </Tab>
 
         <Tab text="RX/TX" closable="false">
-            <fx:include fx:id="rxTxData" source="RxTx/RxTx.fxml" />
+            <fx:include fx:id="rxTx" source="RxTx/RxTx.fxml" />
         </Tab>
 
     </TabPane>

@@ -34,7 +34,7 @@ public class TerminalController implements Initializable {
     public ComSettingsController comSettingsController;
 
     @FXML
-    public RxTxController rxTxDataController;
+    public RxTxController rxTxController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -112,7 +112,7 @@ public class TerminalController implements Initializable {
 
                 Platform.runLater(() -> {
 
-                    rxTxDataController.addRxText(rxText);
+                    rxTxController.addRxText(rxText);
                 });
 
             });

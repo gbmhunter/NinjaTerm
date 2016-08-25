@@ -2,6 +2,8 @@ package ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Point2D;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -14,6 +16,9 @@ import javafx.scene.text.TextFlow;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.Decoding.Decoding;
+import org.controlsfx.control.PopOver;
 
 /**
  * Controller for the "Terminal" tab which is part of the main window.
@@ -44,6 +49,9 @@ public class RxTxController implements Initializable {
     public Button clearTextButton;
 
     @FXML
+    public Button decodingButton;
+
+    @FXML
     public Button filtersButton;
 
     //================================================================================================//
@@ -69,6 +77,8 @@ public class RxTxController implements Initializable {
     private Boolean autoScrollEnabled = true;
 
     private Text terminalText = new Text();
+
+    private PopOver decodingPopOver;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -155,11 +165,26 @@ public class RxTxController implements Initializable {
         );
 
         //==============================================//
-        //===== CLEAR TEXT BUTTON EVENT HANDLERS ======//
+        //====== CLEAR TEXT BUTTON EVENT HANDLERS ======//
         //==============================================//
 
         clearTextButton.setOnAction(event -> {
             terminalText.setText("");
+        });
+
+        decodingButton.setOnAction(event -> {
+
+            if(decodingPopOver == null) {
+                createAndShowDecodingPopover();
+            } else if(decodingPopOver.isShowing()) {
+
+                decodingPopOver.hide();
+            } else if(!decodingPopOver.isShowing()) {
+                decodingPopOver.show(decodingButton.getParent());
+            } else {
+                new RuntimeException("deocdingPopOver state not recognised.");
+            }
+
         });
 
         filtersButton.setOnAction(event -> {
@@ -167,7 +192,42 @@ public class RxTxController implements Initializable {
 
         });
 
+        //historyPopOver.setOnHidden((event) -> sendMsgHistoryBtn.setSelected(false));
 
+    }
+
+    public void createAndShowDecodingPopover() {
+
+        System.out.println(getClass().getName() + ".createAndShowDecodingPopover() called.");
+
+        //==============================================//
+        //=============== DECODING POPOVER =============//
+        //==============================================//
+
+        decodingPopOver = new PopOver();
+
+        Scene scene = decodingButton.getScene();
+
+        final Point2D windowCoord = new Point2D(scene.getWindow()
+                .getX(), scene.getWindow().getY());
+
+        final Point2D sceneCoord = new Point2D(scene.getX(), scene.
+                getY());
+
+        final Point2D nodeCoord = decodingButton.localToScene(0.0,
+                0.0);
+        final double clickX = Math.round(windowCoord.getX()
+                + sceneCoord.getY() + nodeCoord.getX());
+
+        final double clickY = Math.round(windowCoord.getY()
+                + sceneCoord.getY() + nodeCoord.getY());
+
+        Decoding decoding = new Decoding();
+        decodingPopOver.setContentNode(decoding);
+        decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        decodingPopOver.setCornerRadius(4);
+        decodingPopOver.setTitle("Decoding");
+        decodingPopOver.show(decodingButton.getParent(), clickX, clickY);
     }
 
     /**

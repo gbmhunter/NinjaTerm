@@ -29,6 +29,9 @@ public class Main extends Application {
 
         primaryStage.setTitle("NinjaTerm");
         primaryStage.setScene(new Scene(root, 1000, 800));
+
+        //mainWindowController.terminalControllers.get(0).rxTxController.createAndShowDecodingPopover();
+
         primaryStage.show();
 
 
