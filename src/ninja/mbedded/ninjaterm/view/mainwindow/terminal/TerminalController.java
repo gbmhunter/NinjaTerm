@@ -1,22 +1,22 @@
-package ninja.mbedded.ninjaterm.view.MainWindow.Terminal;
+package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.ComSettings.ComSettingsController;
-import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.RxTxController;
-import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.ComSettings.ComSettingsController;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
+import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Controller for the "Terminal" which is part of the main window.
+ * Controller for the "terminal" which is part of the main window.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-08-23
@@ -35,7 +35,10 @@ public class TerminalController implements Initializable {
     public ComSettingsController comSettingsController;
 
     @FXML
-    public RxTxController rxTxController;
+    public RxTxView rxTxView;
+
+    @FXML
+    public Tab rxTxTab;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -54,6 +57,10 @@ public class TerminalController implements Initializable {
 
         // Select first tab by default
         terminalTabPane.getSelectionModel().select(0);
+
+        // Create RX/TX view
+        rxTxView = new RxTxView(decoder);
+        rxTxTab.setContent(rxTxView);
 
     }
 
@@ -110,7 +117,7 @@ public class TerminalController implements Initializable {
 
                 Platform.runLater(() -> {
 
-                    rxTxController.addRxText(rxText);
+                    rxTxView.addRxText(rxText);
                 });
 
             });

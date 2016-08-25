@@ -8,7 +8,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.MainWindow.Terminal.ComSettings.ComSettingsController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminal.ComSettings.ComSettingsController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"

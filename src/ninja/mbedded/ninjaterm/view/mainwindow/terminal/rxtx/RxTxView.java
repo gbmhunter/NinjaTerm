@@ -1,7 +1,7 @@
-package ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx;
+package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -10,25 +10,26 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-import java.net.URL;
-import java.util.ResourceBundle;
+import java.awt.*;
+import java.io.IOException;
 
-import javafx.stage.WindowEvent;
-import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.RxTx.Decoding.Decoding;
+import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
 import org.controlsfx.control.PopOver;
 
 /**
- * Controller for the "Terminal" tab which is part of the main window.
+ * Controller for the "terminal" tab which is part of the main window.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-16
  * @last-modified   2016-07-17
  */
-public class RxTxController implements Initializable {
+public class RxTxView extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -81,18 +82,28 @@ public class RxTxController implements Initializable {
 
     private PopOver decodingPopOver;
 
+    private Decoder decoder;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    /**
-     * Called automatically by system when .fxml file is loaded.
-     *
-     * @param location
-     * @param resources
-     */
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+
+    public RxTxView(Decoder decoder) {
+
+        this.decoder = decoder;
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+                "RxTxView.fxml"));
+
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+
+        try {
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
@@ -197,6 +208,7 @@ public class RxTxController implements Initializable {
 
     }
 
+
     public void createAndShowDecodingPopover() {
 
         System.out.println(getClass().getName() + ".createAndShowDecodingPopover() called.");
@@ -223,12 +235,15 @@ public class RxTxController implements Initializable {
         final double clickY = Math.round(windowCoord.getY()
                 + sceneCoord.getY() + nodeCoord.getY());
 
-        Decoding decoding = new Decoding();
-        decodingPopOver.setContentNode(decoding);
+        Formatting formatting = new Formatting(decoder);
+        decodingPopOver.setContentNode(formatting);
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         decodingPopOver.setCornerRadius(4);
-        decodingPopOver.setTitle("Decoding");
-        decodingPopOver.show(decodingButton.getParent(), clickX, clickY);
+        decodingPopOver.setTitle("Formatting");
+
+        decodingPopOver.show(decodingButton.getScene().getWindow(), clickX - decodingPopOver.getWidth(), clickY);
+        decodingPopOver.setX(clickX - decodingPopOver.getWidth());
+        decodingPopOver.setY(clickY - decodingPopOver.getHeight()/2);
 
     }
 

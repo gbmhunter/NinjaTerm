@@ -9,7 +9,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
       fillWidth="true"

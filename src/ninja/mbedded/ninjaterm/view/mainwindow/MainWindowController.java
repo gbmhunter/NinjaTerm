@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.view.MainWindow;
+package ninja.mbedded.ninjaterm.view.mainwindow;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -7,8 +7,8 @@ import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import ninja.mbedded.ninjaterm.view.MainWindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.MainWindow.Terminal.TerminalController;
+import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 
 import java.io.IOException;
@@ -69,14 +69,14 @@ public class MainWindowController implements Initializable {
     }
 
     /**
-     * Adds a new terminal tab to the main window. Called when the "New Terminal" menu button is clicked, as
+     * Adds a new terminal tab to the main window. Called when the "New terminal" menu button is clicked, as
      * well as once on startup.
      */
     public void addNewTerminal() {
 
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
-        URL resource = getClass().getResource("Terminal/Terminal.fxml");
+        URL resource = getClass().getResource("terminal/terminal.fxml");
         if(resource == null) {
             throw new RuntimeException("Resource could not be found. Is URL correct?");
         }
@@ -95,7 +95,7 @@ public class MainWindowController implements Initializable {
             terminalController.comSettingsController.scanComPorts();
 
             Tab terminalTab = new Tab();
-            terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+            terminalTab.setText("terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
             terminalTab.setContent(node);
 
             terminalTabPane.getTabs().add(terminalTab);

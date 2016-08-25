@@ -29,7 +29,7 @@ public class Decoder {
                 throw new RuntimeException(e);
             }
         } else {
-            throw new RuntimeException("Decoding option was not recognised.");
+            throw new RuntimeException("formatting option was not recognised.");
         }
 
         return output;

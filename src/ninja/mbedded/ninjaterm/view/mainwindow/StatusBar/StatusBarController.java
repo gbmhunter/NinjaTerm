@@ -1,13 +1,10 @@
-package ninja.mbedded.ninjaterm.view.MainWindow.StatusBar;
+package ninja.mbedded.ninjaterm.view.mainwindow.StatusBar;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import jssc.SerialPortList;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
