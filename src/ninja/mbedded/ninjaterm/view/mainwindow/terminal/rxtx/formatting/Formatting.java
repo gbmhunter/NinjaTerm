@@ -69,6 +69,9 @@ public class Formatting extends VBox {
             decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
         });
 
+        // Set default
+        decodingComboBox.getSelectionModel().select(DecodingOptions.UTF8);
+
     }
 
 }

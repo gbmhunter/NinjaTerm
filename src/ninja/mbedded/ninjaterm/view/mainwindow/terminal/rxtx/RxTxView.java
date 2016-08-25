@@ -15,7 +15,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
-import java.awt.*;
 import java.io.IOException;
 
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
@@ -186,15 +185,12 @@ public class RxTxView extends VBox {
 
         decodingButton.setOnAction(event -> {
 
-            if(decodingPopOver == null) {
-                createAndShowDecodingPopover();
-            } else if(decodingPopOver.isShowing()) {
-
+            if(decodingPopOver.isShowing()) {
                 decodingPopOver.hide();
             } else if(!decodingPopOver.isShowing()) {
-                decodingPopOver.show(decodingButton.getParent());
+                showDecodingPopover();
             } else {
-                new RuntimeException("deocdingPopOver state not recognised.");
+                new RuntimeException("decodingPopOver state not recognised.");
             }
 
         });
@@ -204,44 +200,33 @@ public class RxTxView extends VBox {
 
         });
 
-        //historyPopOver.setOnHidden((event) -> sendMsgHistoryBtn.setSelected(false));
-
-    }
-
-
-    public void createAndShowDecodingPopover() {
-
-        System.out.println(getClass().getName() + ".createAndShowDecodingPopover() called.");
-
         //==============================================//
-        //=============== DECODING POPOVER =============//
+        //=============== CREATE POP-OVER ==============//
         //==============================================//
 
         decodingPopOver = new PopOver();
-
-        Scene scene = decodingButton.getScene();
-
-        final Point2D windowCoord = new Point2D(scene.getWindow()
-                .getX(), scene.getWindow().getY());
-
-        final Point2D sceneCoord = new Point2D(scene.getX(), scene.
-                getY());
-
-        final Point2D nodeCoord = decodingButton.localToScene(0.0,
-                0.0);
-        final double clickX = Math.round(windowCoord.getX()
-                + sceneCoord.getY() + nodeCoord.getX());
-
-        final double clickY = Math.round(windowCoord.getY()
-                + sceneCoord.getY() + nodeCoord.getY());
-
         Formatting formatting = new Formatting(decoder);
         decodingPopOver.setContentNode(formatting);
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
 
-        decodingPopOver.show(decodingButton.getScene().getWindow(), clickX - decodingPopOver.getWidth(), clickY);
+    }
+
+
+    public void showDecodingPopover() {
+
+        System.out.println(getClass().getName() + ".showDecodingPopover() called.");
+
+        //==============================================//
+        //=============== DECODING POPOVER =============//
+        //==============================================//
+
+        double clickX = decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinX();
+        double clickY = (decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinY() +
+                decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMaxY())/2;
+
+        decodingPopOver.show(decodingButton.getScene().getWindow());
         decodingPopOver.setX(clickX - decodingPopOver.getWidth());
         decodingPopOver.setY(clickY - decodingPopOver.getHeight()/2);
 
