@@ -143,7 +143,7 @@ public class RxTxView extends VBox {
         // Finally, add the blinking caret as the last child in the TextFlow
         rxTextTextFlow.getChildren().add(caretText);
 
-
+        // Set default opacity for scroll-to-bottom image
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
 
         //==============================================//
