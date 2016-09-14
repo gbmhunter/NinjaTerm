@@ -226,6 +226,8 @@ public class RxTxView extends VBox {
         formatting.wrappingWidthTextField.setText("800");
         formatting.wrappingCheckBox.setSelected(true);
 
+        // This creates the popover, but is not shown until
+        // show() is called.
         decodingPopOver = new PopOver();
         decodingPopOver.setContentNode(formatting);
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);

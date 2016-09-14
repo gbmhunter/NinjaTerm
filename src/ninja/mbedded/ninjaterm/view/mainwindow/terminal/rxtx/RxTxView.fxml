@@ -35,8 +35,8 @@
             <!-- =========================================== -->
             <!-- ================== TERMINAL =============== -->
             <!-- =========================================== -->
-            <ScrollPane fx:id="rxDataScrollPane"
-                        style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
+            <ScrollPane fx:id="rxDataScrollPane">
+                <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
                 <!-- This TextFlow holds the many RX Text objects -->
                 <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"
                           style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
@@ -62,7 +62,10 @@
             </Pane>
         </StackPane>
 
-        <VBox prefWidth="80" spacing="10" alignment="TOP_CENTER">
+        <!-- =========================================== -->
+        <!-- =========== RIGHT-HAND SIDE PANE ========== -->
+        <!-- =========================================== -->
+        <VBox minWidth="80" prefWidth="80" spacing="10" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton">Clear Text</Button>
             <Button fx:id="decodingButton">Decoding</Button>
             <Button fx:id="filtersButton">Filters</Button>
