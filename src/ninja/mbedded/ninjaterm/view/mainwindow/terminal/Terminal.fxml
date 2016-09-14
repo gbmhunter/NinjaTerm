@@ -12,8 +12,8 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController"
-      xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
+<fx:root type="javafx.scene.layout.VBox" id="RxTxController"
+         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       fillWidth="true"
       stylesheets="@../../../resources/style.css">
@@ -35,10 +35,8 @@
         <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
             <!--<RxTxView fx:id="rxTxView"/>-->
         </Tab>
-
     </TabPane>
-
-</VBox>
+</fx:root>
 
 
 

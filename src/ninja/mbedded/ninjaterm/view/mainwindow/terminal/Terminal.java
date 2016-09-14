@@ -2,9 +2,11 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.ComSettings.ComSettingsController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
@@ -12,6 +14,7 @@ import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -22,7 +25,7 @@ import java.util.ResourceBundle;
  * @since           2016-08-23
  * @last-modified   2016-08-23
  */
-public class TerminalController implements Initializable {
+public class Terminal extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -49,8 +52,26 @@ public class TerminalController implements Initializable {
     private Decoder decoder = new Decoder();
 
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public Terminal(StatusBarController statusBarController) {
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+                "Terminal.fxml"));
+
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+
+        try {
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
+
+
+        this.statusBarController = statusBarController;
+        // Set children
+        comSettingsController.setStatusBarController(statusBarController);
+
+
         comSettingsController.openCloseComPortButton.setOnAction((ActionEvent) -> {
             openCloseComPortButtonPressed();
         });
@@ -62,13 +83,6 @@ public class TerminalController implements Initializable {
         rxTxView = new RxTxView(decoder);
         rxTxTab.setContent(rxTxView);
 
-    }
-
-    public void setStatusBarController(StatusBarController statusBarController) {
-        this.statusBarController = statusBarController;
-
-        // Set children
-        comSettingsController.setStatusBarController(statusBarController);
     }
 
     /**

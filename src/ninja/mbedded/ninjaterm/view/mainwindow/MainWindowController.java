@@ -1,17 +1,14 @@
 package ninja.mbedded.ninjaterm.view.mainwindow;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +17,9 @@ import java.util.ResourceBundle;
 /**
  * Controller for the main window of NinjaTerm.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-07-08
- * @last-modified   2016-07-16
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-07-16
+ * @since 2016-07-08
  */
 public class MainWindowController implements Initializable {
 
@@ -45,7 +42,7 @@ public class MainWindowController implements Initializable {
 
     private ComPortManager comPortManager;
 
-    public List<TerminalController> terminalControllers = new ArrayList<>();
+    public List<Terminal> terminals = new ArrayList<>();
 
 
     //================================================================================================//
@@ -63,7 +60,6 @@ public class MainWindowController implements Initializable {
     }
 
 
-
     public void setComPortManager(ComPortManager comPortManager) {
         this.comPortManager = comPortManager;
     }
@@ -76,33 +72,20 @@ public class MainWindowController implements Initializable {
 
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
-        URL resource = getClass().getResource("terminal/terminal.fxml");
-        if(resource == null) {
-            throw new RuntimeException("Resource could not be found. Is URL correct?");
-        }
 
-        FXMLLoader loader = new FXMLLoader(resource);
+        Terminal terminal = new Terminal(statusBarController);
+        terminals.add(terminal);
 
-        try {
-            Node node = loader.load();
+        terminal.comSettingsController.setComPortManager(comPortManager);
+        // Peform a scan of the COM ports on start-up
+        terminal.comSettingsController.scanComPorts();
 
-            TerminalController terminalController = loader.getController();
-            terminalControllers.add(terminalController);
+        Tab terminalTab = new Tab();
+        terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+        terminalTab.setContent(terminal);
 
-            terminalController.setStatusBarController(statusBarController);
-            terminalController.comSettingsController.setComPortManager(comPortManager);
-            // Peform a scan of the COM ports on start-up
-            terminalController.comSettingsController.scanComPorts();
+        terminalTabPane.getTabs().add(terminalTab);
 
-            Tab terminalTab = new Tab();
-            terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
-            terminalTab.setContent(node);
-
-            terminalTabPane.getTabs().add(terminalTab);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
     }
 
