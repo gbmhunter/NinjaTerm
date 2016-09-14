@@ -97,8 +97,6 @@ public class RxTxView extends VBox {
 
     public RxTxView(Decoder decoder) {
 
-        this.decoder = decoder;
-
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "RxTxView.fxml"));
 
@@ -110,6 +108,8 @@ public class RxTxView extends VBox {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+
+        this.decoder = decoder;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
