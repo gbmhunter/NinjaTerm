@@ -3,8 +3,6 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Point2D;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -15,19 +13,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-
-import java.io.IOException;
-
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
 import org.controlsfx.control.PopOver;
 
+import java.io.IOException;
+
 /**
  * Controller for the "terminal" tab which is part of the main window.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-07-16
- * @last-modified   2016-07-17
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-07-17
+ * @since 2016-07-16
  */
 public class RxTxView extends VBox {
 
@@ -146,7 +143,7 @@ public class RxTxView extends VBox {
 
             // If the user scrolled downwards, we don't want to disable auto-scroll,
             // so check and return if so.
-            if(event.getDeltaY() <= 0)
+            if (event.getDeltaY() <= 0)
                 return;
 
             // Since the user has now scrolled upwards (manually), disable the
@@ -192,9 +189,9 @@ public class RxTxView extends VBox {
 
         decodingButton.setOnAction(event -> {
 
-            if(decodingPopOver.isShowing()) {
+            if (decodingPopOver.isShowing()) {
                 decodingPopOver.hide();
-            } else if(!decodingPopOver.isShowing()) {
+            } else if (!decodingPopOver.isShowing()) {
                 showDecodingPopover();
             } else {
                 new RuntimeException("decodingPopOver state not recognised.");
@@ -214,33 +211,20 @@ public class RxTxView extends VBox {
         formatting = new Formatting(decoder);
 
         // Attach a listener to the "Wrapping" checkbox
-        formatting.wrapping.selectedProperty().addListener(
+        formatting.wrappingCheckBox.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-            if(newValue) {
-                System.out.println("\"Wrapping\" checkbox checked.");
+                    updateTextWrapping();
+                });
 
-                Double wrappingWidth;
-                try {
-                    wrappingWidth = Double.parseDouble(formatting.wrappingWidthTextField.getText());
-                } catch(NumberFormatException e) {
-                    System.out.println("ERROR: Wrapping width was not a valid number.");
-                    return;
-                }
-
-                if(wrappingWidth <= 0.0) {
-                    System.out.println("ERROR: Wrapping width must be greater than 0.");
-                    return;
-                }
-
-                // Set the width of the TextFlow UI object. This will set the wrapping width
-                // (there is no wrapping object)
-                rxTextTextFlow.setMaxWidth(wrappingWidth);
-
-            } else {
-                System.out.println("\"Wrapping\" checkbox unchecked.");
-                rxTextTextFlow.setMaxWidth(Double.MAX_VALUE);
-            }
+        // Attach listener to the "Wrapping Width" text field
+        formatting.wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            updateTextWrapping();
         });
+
+        // Set the default wrapping width and then enable wrapping. This should call the event handler
+        // which will update the UI correctly.
+        formatting.wrappingWidthTextField.setText("800");
+        formatting.wrappingCheckBox.setSelected(true);
 
         decodingPopOver = new PopOver();
         decodingPopOver.setContentNode(formatting);
@@ -248,6 +232,38 @@ public class RxTxView extends VBox {
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
 
+    }
+
+    /**
+     * Updates the text wrapping to the current user-selected settings.
+     * Called from both the checkbox and wrapping width textfield listeners.
+     */
+    private void updateTextWrapping() {
+
+        if (formatting.wrappingCheckBox.isSelected()) {
+            System.out.println("\"Wrapping\" checkbox checked.");
+
+            Double wrappingWidth;
+            try {
+                wrappingWidth = Double.parseDouble(formatting.wrappingWidthTextField.getText());
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR: Wrapping width was not a valid number.");
+                return;
+            }
+
+            if (wrappingWidth <= 0.0) {
+                System.out.println("ERROR: Wrapping width must be greater than 0.");
+                return;
+            }
+
+            // Set the width of the TextFlow UI object. This will set the wrapping width
+            // (there is no wrapping object)
+            rxTextTextFlow.setMaxWidth(wrappingWidth);
+
+        } else {
+            System.out.println("\"Wrapping\" checkbox unchecked.");
+            rxTextTextFlow.setMaxWidth(Double.MAX_VALUE);
+        }
     }
 
 
@@ -261,11 +277,11 @@ public class RxTxView extends VBox {
 
         double clickX = decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinX();
         double clickY = (decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinY() +
-                decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMaxY())/2;
+                decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMaxY()) / 2;
 
         decodingPopOver.show(decodingButton.getScene().getWindow());
         decodingPopOver.setX(clickX - decodingPopOver.getWidth());
-        decodingPopOver.setY(clickY - decodingPopOver.getHeight()/2);
+        decodingPopOver.setY(clickY - decodingPopOver.getHeight() / 2);
 
     }
 

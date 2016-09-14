@@ -32,7 +32,7 @@ public class Formatting extends VBox {
     public ComboBox<DecodingOptions> decodingComboBox;
 
     @FXML
-    public CheckBox wrapping;
+    public CheckBox wrappingCheckBox;
 
     @FXML
     public TextField wrappingWidthTextField;

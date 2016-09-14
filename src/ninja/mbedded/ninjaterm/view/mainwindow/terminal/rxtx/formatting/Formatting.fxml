@@ -33,7 +33,7 @@
         <ComboBox fx:id="decodingComboBox"></ComboBox>
     </HBox>
 
-    <CheckBox fx:id="wrapping">Wrapping</CheckBox>
+    <CheckBox fx:id="wrappingCheckBox">Wrapping</CheckBox>
 
     <HBox alignment="CENTER_LEFT" spacing="10">
         <Label>Wrapping Width:</Label>
