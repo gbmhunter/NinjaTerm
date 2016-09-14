@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,6 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
 import org.controlsfx.control.PopOver;
@@ -121,9 +124,23 @@ public class RxTxView extends VBox {
         rxTextTextFlow.getChildren().add(terminalText);
         terminalText.setFill(Color.LIME);
 
-        // Add caret
+        //==============================================//
+        //============== CREATE CARET ==================//
+        //==============================================//
+
+        // Create caret symbol using ANSI character
         Text caretText = new Text("█");
         caretText.setFill(Color.LIME);
+
+        // Add an animation so the caret blinks
+        FadeTransition ft = new FadeTransition(Duration.millis(200), caretText);
+        ft.setFromValue(1.0);
+        ft.setToValue(0.1);
+        ft.setCycleCount(Timeline.INDEFINITE);
+        ft.setAutoReverse(true);
+        ft.play();
+
+        // Finally, add the blinking caret as the last child in the TextFlow
         rxTextTextFlow.getChildren().add(caretText);
 
 
