@@ -1,10 +1,12 @@
 package ninja.mbedded.ninjaterm.view.mainwindow;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
@@ -18,8 +20,8 @@ import java.util.ResourceBundle;
  * Controller for the main window of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-16
  * @since 2016-07-08
+ * @last-modified 2016-09-14
  */
 public class MainWindowController implements Initializable {
 
@@ -29,6 +31,9 @@ public class MainWindowController implements Initializable {
 
     @FXML
     public MenuItem newTerminalMenuItem;
+
+    @FXML
+    public MenuItem exitMenuItem;
 
     @FXML
     public TabPane terminalTabPane;
@@ -55,6 +60,11 @@ public class MainWindowController implements Initializable {
         newTerminalMenuItem.setOnAction(event -> {
             System.out.println("newTerminalMenuItem clicked.");
             addNewTerminal();
+        });
+
+        exitMenuItem.setOnAction(event -> {
+            // Quit the application
+            Platform.exit();
         });
 
     }
