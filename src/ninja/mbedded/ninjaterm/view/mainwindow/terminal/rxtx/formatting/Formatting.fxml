@@ -18,7 +18,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.CheckBox?>
 <fx:root type="javafx.scene.layout.VBox" id="DecodingController"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
          spacing="20"
          fillWidth="true" GridPane.vgrow="ALWAYS"
          stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">

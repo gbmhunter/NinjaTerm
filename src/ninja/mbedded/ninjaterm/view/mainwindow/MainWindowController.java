@@ -95,7 +95,7 @@ public class MainWindowController implements Initializable {
             terminalController.comSettingsController.scanComPorts();
 
             Tab terminalTab = new Tab();
-            terminalTab.setText("terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+            terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
             terminalTab.setContent(node);
 
             terminalTabPane.getTabs().add(terminalTab);
