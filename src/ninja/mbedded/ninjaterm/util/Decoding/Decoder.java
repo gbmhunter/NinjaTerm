@@ -28,6 +28,8 @@ public class Decoder {
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
+        } else if(decodingOption == DecodingOptions.HEX) {
+            output = BytesToString.bytesToHex(data);
         } else {
             throw new RuntimeException("formatting option was not recognised.");
         }
@@ -35,5 +37,7 @@ public class Decoder {
         return output;
 
     }
+
+
 
 }
