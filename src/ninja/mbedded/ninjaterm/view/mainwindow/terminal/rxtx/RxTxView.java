@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
@@ -82,6 +83,12 @@ public class RxTxView extends VBox {
     private PopOver decodingPopOver;
 
     private Decoder decoder;
+
+    /**
+     * This is a UI element whose constructor is called manually. This UI element is inserted
+     * as a child of a pop-over.
+     */
+    Formatting formatting;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -204,8 +211,38 @@ public class RxTxView extends VBox {
         //=============== CREATE POP-OVER ==============//
         //==============================================//
 
+        formatting = new Formatting(decoder);
+
+        // Attach a listener to the "Wrapping" checkbox
+        formatting.wrapping.selectedProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+            if(newValue) {
+                System.out.println("\"Wrapping\" checkbox checked.");
+
+                Double wrappingWidth;
+                try {
+                    wrappingWidth = Double.parseDouble(formatting.wrappingWidthTextField.getText());
+                } catch(NumberFormatException e) {
+                    System.out.println("ERROR: Wrapping width was not a valid number.");
+                    return;
+                }
+
+                if(wrappingWidth <= 0.0) {
+                    System.out.println("ERROR: Wrapping width must be greater than 0.");
+                    return;
+                }
+
+                // Set the width of the TextFlow UI object. This will set the wrapping width
+                // (there is no wrapping object)
+                rxTextTextFlow.setMaxWidth(wrappingWidth);
+
+            } else {
+                System.out.println("\"Wrapping\" checkbox unchecked.");
+                rxTextTextFlow.setMaxWidth(Double.MAX_VALUE);
+            }
+        });
+
         decodingPopOver = new PopOver();
-        Formatting formatting = new Formatting(decoder);
         decodingPopOver.setContentNode(formatting);
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         decodingPopOver.setCornerRadius(4);

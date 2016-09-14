@@ -16,20 +16,30 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.CheckBox?>
 <fx:root type="javafx.scene.layout.VBox" id="DecodingController"
-      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-      spacing="20"
-      fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+         spacing="20"
+         fillWidth="true" GridPane.vgrow="ALWAYS"
+         stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <Label fx:id="decodingLabel">Decoding:</Label>
-    <ComboBox fx:id="decodingComboBox"></ComboBox>
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="decodingLabel">Decoding:</Label>
+        <ComboBox fx:id="decodingComboBox"></ComboBox>
+    </HBox>
 
+    <CheckBox fx:id="wrapping">Wrapping</CheckBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label>Wrapping Width:</Label>
+        <TextField fx:id="wrappingWidthTextField" prefWidth="60"></TextField>
+        <Label>px</Label>
+    </HBox>
 
 </fx:root>
 

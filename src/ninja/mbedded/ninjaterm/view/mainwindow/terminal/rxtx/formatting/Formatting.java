@@ -2,8 +2,10 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
@@ -28,6 +30,12 @@ public class Formatting extends VBox {
 
     @FXML
     public ComboBox<DecodingOptions> decodingComboBox;
+
+    @FXML
+    public CheckBox wrapping;
+
+    @FXML
+    public TextField wrappingWidthTextField;
 
 
     //================================================================================================//
