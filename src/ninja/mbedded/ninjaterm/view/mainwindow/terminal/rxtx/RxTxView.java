@@ -121,6 +121,11 @@ public class RxTxView extends VBox {
         rxTextTextFlow.getChildren().add(terminalText);
         terminalText.setFill(Color.LIME);
 
+        // Add caret
+        Text caretText = new Text("█");
+        caretText.setFill(Color.LIME);
+        rxTextTextFlow.getChildren().add(caretText);
+
 
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
 
@@ -184,6 +189,7 @@ public class RxTxView extends VBox {
         //==============================================//
 
         clearTextButton.setOnAction(event -> {
+            // Clear all the text
             terminalText.setText("");
         });
 
