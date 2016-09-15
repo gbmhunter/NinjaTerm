@@ -6,3 +6,4 @@ vX.X.X
 - "Busy COM port" error is now handled correctly, closes #74.
 - Added flashing caret to end of terminal text.
 - Added "Exit" item to "File" menu, closes #75.
+- Changed colour of open/close button so that it is green/red, and added play/stop icons, closes #76.

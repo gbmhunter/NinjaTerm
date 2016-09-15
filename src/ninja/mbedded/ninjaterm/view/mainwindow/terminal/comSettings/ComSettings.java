@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-08-23
+ * @last-modified   2016-09-15
  */
 public class ComSettings extends VBox {
 

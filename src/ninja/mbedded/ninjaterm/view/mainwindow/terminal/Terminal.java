@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
@@ -12,6 +13,9 @@ import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 import java.io.IOException;
 
@@ -48,6 +52,8 @@ public class Terminal extends VBox {
     private StatusBarController statusBarController;
     private Decoder decoder = new Decoder();
 
+    private GlyphFont fontAwesome;
+
 
     public Terminal(StatusBarController statusBarController) {
 
@@ -79,6 +85,13 @@ public class Terminal extends VBox {
         // Create RX/TX view
         rxTxView = new RxTxView(decoder);
         rxTxTab.setContent(rxTxView);
+
+        // Initialise fontAwesome glyths (these are downloaded from CDN)
+        //! @todo Remove dependency on internet connection
+        fontAwesome = GlyphFontRegistry.font("FontAwesome");
+
+        // Set default style for OpenClose button
+        setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
     }
 
@@ -133,7 +146,9 @@ public class Terminal extends VBox {
 
             });
 
-            comSettings.openCloseComPortButton.setText("Close");
+            // Change "Open" button to "Close" button
+            setOpenCloseButtonStyle(OpenCloseButtonStyles.CLOSE);
+
             statusBarController.addMsg(comPort.getName() + " opened." +
                     " Buad rate = " + comPort.getBaudRate() + "," +
                     " parity = " + comPort.getParity() + "," +
@@ -155,10 +170,33 @@ public class Terminal extends VBox {
                     throw new RuntimeException(e);
                 }
             }
-            comSettings.openCloseComPortButton.setText("Open");
+            setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
+
             statusBarController.addMsg(comPort.getName() + " closed.");
         }
 
+    }
+
+    private enum OpenCloseButtonStyles {
+        OPEN,
+        CLOSE
+    }
+
+    private void setOpenCloseButtonStyle(OpenCloseButtonStyles openCloseButtonStyle) {
+        if(openCloseButtonStyle == OpenCloseButtonStyles.OPEN) {
+            comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.PLAY));
+            comSettings.openCloseComPortButton.setText("Open");
+            comSettings.openCloseComPortButton.getStyleClass().remove("failure");
+            comSettings.openCloseComPortButton.getStyleClass().add("success");
+
+        } else if(openCloseButtonStyle == OpenCloseButtonStyles.CLOSE) {
+            comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.STOP));
+            comSettings.openCloseComPortButton.setText("Close");
+            comSettings.openCloseComPortButton.getStyleClass().remove("success");
+            comSettings.openCloseComPortButton.getStyleClass().add("failure");
+        } else {
+            throw new RuntimeException("openCloseButtonStyle not recognised.");
+        }
     }
 
 }

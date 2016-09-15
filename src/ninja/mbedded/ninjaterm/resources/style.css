@@ -119,3 +119,18 @@ which are displaying dynamic content */
   -fx-background-color: #dae7f3;
   -fx-graphic: url("xyz.png");
 }
+
+/* =========================================== */
+/* ========= SUCCESS/FAILURE BUTTONS ========= */
+/* =========================================== */
+
+.success {
+    // Light green
+    //-fx-background-color: #A1D490;
+    -fx-base: #A1D490;
+}
+
+.failure {
+    // Light red
+    -fx-base: #FFA1A1;
+}
