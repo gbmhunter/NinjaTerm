@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
@@ -159,7 +158,7 @@ public class Terminal extends VBox {
 
                 Platform.runLater(() -> {
 
-                    rxTxView.addRxText(rxText);
+                    rxTxView.addTxRxText(rxText);
                 });
 
             });
@@ -253,6 +252,12 @@ public class Terminal extends VBox {
 
         // Send character to COM port
         comPort.sendData(data);
+
+        // Check if user wants TX chars to be echoed locally onto TX/RX display
+        if(rxTxView.formatting.localTxEchoCheckBox.isSelected()) {
+            // Echo the sent character to the TX/RX display
+            rxTxView.addTxRxText(ke.getCharacter());
+        }
     }
 
 }

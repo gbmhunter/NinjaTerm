@@ -90,7 +90,7 @@ public class RxTxView extends VBox {
      * This is a UI element whose constructor is called manually. This UI element is inserted
      * as a child of a pop-over.
      */
-    Formatting formatting;
+    public Formatting formatting;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -259,31 +259,6 @@ public class RxTxView extends VBox {
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
 
-        //==============================================//
-        //====== TX CHARS PRESSED EVENT HANLDERS =======//
-        //==============================================//
-
-        rxTextTextFlow.addEventHandler(KeyEvent.KEY_RELEASED, (KeyEvent event) -> {
-            if (event.getCode().isLetterKey() || event.getCode().isDigitKey()) {
-                System.out.println("Pressed alphanumeric key.");
-                event.consume();
-            } else {
-                System.out.println("Pressed non-alphanumeric key.");
-                event.consume();
-            }
-        });
-
-        rxDataScrollPane.setFocusTraversable(true);
-        rxDataScrollPane.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
-            System.out.println("Scrollpane key pressed.");
-        });
-
-        rxDataScrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                System.out.println("Key pressed.");
-            }
-        });
-
     }
 
     /**
@@ -340,9 +315,9 @@ public class RxTxView extends VBox {
     /**
      * Adds the given text to the RX terminal display.
      *
-     * @param rxText The text you want to add.
+     * @param text The text you want to add.
      */
-    public void addRxText(String rxText) {
+    public void addTxRxText(String text) {
 
         // WARNING: This method didn't work well, as it added empty lines depending on whether the
         // provided rxText had printable chars, or was just a carriage return or new line (or both)
@@ -351,11 +326,7 @@ public class RxTxView extends VBox {
         //rxTextTextFlow.getChildren().add(text);
 
         // This was works better!
-        terminalText.setText(terminalText.getText() + rxText);
-
-    }
-
-    public void txCharsPressed() {
+        terminalText.setText(terminalText.getText() + text);
 
     }
 

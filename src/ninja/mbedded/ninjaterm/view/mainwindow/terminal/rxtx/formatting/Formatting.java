@@ -37,6 +37,9 @@ public class Formatting extends VBox {
     @FXML
     public TextField wrappingWidthTextField;
 
+    @FXML
+    public CheckBox localTxEchoCheckBox;
+
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//

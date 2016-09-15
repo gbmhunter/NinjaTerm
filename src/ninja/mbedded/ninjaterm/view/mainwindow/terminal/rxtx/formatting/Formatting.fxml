@@ -41,6 +41,8 @@
         <Label>px</Label>
     </HBox>
 
+    <CheckBox fx:id="localTxEchoCheckBox">Local TX Echo</CheckBox>
+
 </fx:root>
 
 
