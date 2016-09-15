@@ -3,22 +3,22 @@ package ninja.mbedded.ninjaterm.util.comport;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
+import ninja.mbedded.ninjaterm.util.Decoding.BytesToString;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * Object that represents a single COM port.
- *
+ * <p>
  * This acts as a wrapper around the real serial port library (which at the moment is
  * jSSC). This is done because it is likely that the serial port library will change in
  * the future, and this means the code changes just have to occur in this file.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-07-16
- * @last-modified   2016-07-17
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-07-17
+ * @since 2016-07-16
  */
 public class ComPort {
 
@@ -27,25 +27,39 @@ public class ComPort {
     //================================================================================================//
 
     private String name;
+
     public String getName() {
         return name;
     }
 
+    private boolean portOpen = false;
+    public boolean isPortOpen() { return portOpen; }
+
     /**
-     * The jSSC object which is actually used to control the COM port.
+     * The jSSC object which is actually used to control the COM port. This is a serial-port library
+     * dependent variable (could be changed if another serial port library is to be used).
      */
     private SerialPort serialPort;
 
     private BaudRates baudRate;
-    public BaudRates getBaudRate() { return baudRate; }
+
+    public BaudRates getBaudRate() {
+        return baudRate;
+    }
 
     private NumDataBits numDataBits;
 
     private Parities parity;
-    public Parities getParity() { return parity; }
+
+    public Parities getParity() {
+        return parity;
+    }
 
     private NumStopBits numStopBits;
-    public NumStopBits getNumStopBits() { return numStopBits; }
+
+    public NumStopBits getNumStopBits() {
+        return numStopBits;
+    }
 
     private List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
 
@@ -68,9 +82,9 @@ public class ComPort {
             serialPort.openPort();
 
         } catch (SerialPortException e) {
-            if(e.getExceptionType() ==  SerialPortException.TYPE_PORT_BUSY) {
+            if (e.getExceptionType() == SerialPortException.TYPE_PORT_BUSY) {
                 throw new ComPortException(ComPortException.ExceptionType.COM_PORT_BUSY);
-            } else if(e.getExceptionType() == SerialPortException.TYPE_PORT_NOT_FOUND) {
+            } else if (e.getExceptionType() == SerialPortException.TYPE_PORT_NOT_FOUND) {
                 throw new ComPortException(ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST);
             } else
                 throw new RuntimeException(e);
@@ -101,6 +115,8 @@ public class ComPort {
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
         }
+
+        portOpen = true;
     }
 
     public void setParams(
@@ -118,7 +134,7 @@ public class ComPort {
         //====== APP BAUD RATE -> jSSC BAUD RATE =======//
         //==============================================//
         int jsscBaudRate;
-        switch(baudRate) {
+        switch (baudRate) {
             case BAUD_9600:
                 jsscBaudRate = 9600;
                 break;
@@ -137,7 +153,7 @@ public class ComPort {
         //==============================================//
 
         int jsscDataBits;
-        switch(numDataBits) {
+        switch (numDataBits) {
             case FIVE:
                 jsscDataBits = 5;
                 break;
@@ -159,7 +175,7 @@ public class ComPort {
         //==============================================//
 
         int jsscParity;
-        switch(parity) {
+        switch (parity) {
             case NONE:
                 jsscParity = SerialPort.PARITY_NONE;
                 break;
@@ -184,7 +200,7 @@ public class ComPort {
         //==============================================//
 
         int jsscNumStopBits;
-        switch(numStopBits) {
+        switch (numStopBits) {
             case ONE:
                 jsscNumStopBits = SerialPort.STOPBITS_1;
                 break;
@@ -210,6 +226,17 @@ public class ComPort {
 
     }
 
+    public void sendData(byte[] data) {
+        System.out.println(getName() + "sendData() called with data = " + BytesToString.bytesToHex(data));
+
+        // Send the data to the serial port library
+        try {
+            serialPort.writeBytes(data);
+        } catch (SerialPortException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void addOnRxDataListener(OnRxDataListener onRxDataListener) {
         onRxDataListeners.add(onRxDataListener);
     }
@@ -223,11 +250,13 @@ public class ComPort {
             serialPort.closePort();
         } catch (SerialPortException e) {
 
-            if(e.getExceptionType() == SerialPortException.TYPE_CANT_SET_MASK) {
+            if (e.getExceptionType() == SerialPortException.TYPE_CANT_SET_MASK) {
                 throw new ComPortException(ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST);
             }
 
             throw new RuntimeException(e);
         }
+
+        portOpen = false;
     }
 }

@@ -50,7 +50,11 @@ public class Terminal extends VBox {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    private ComPort comPort;
+    /**
+     * The COM port instance attached to this terminal.
+     */
+    public ComPort comPort;
+
     private StatusBarController statusBarController;
     private Decoder decoder = new Decoder();
 
@@ -95,7 +99,17 @@ public class Terminal extends VBox {
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
+        rxTxView.setFocusTraversable(true);
 
+        rxTxView.onKeyPressedProperty().set(new EventHandler<KeyEvent>() {
+            @Override public void handle(KeyEvent event) {
+                System.out.println("keyPressedProperty.");
+            }
+        });
+
+        rxTxView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            System.out.println("KEY PRESSED!");
+        });
 
     }
 

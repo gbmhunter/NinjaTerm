@@ -273,8 +273,9 @@ public class RxTxView extends VBox {
             }
         });
 
+        rxDataScrollPane.setFocusTraversable(true);
         rxDataScrollPane.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
-            System.out.println("Pressed key.");
+            System.out.println("Scrollpane key pressed.");
         });
 
         rxDataScrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {

@@ -1,12 +1,12 @@
 package ninja.mbedded.ninjaterm.view.mainwindow;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
@@ -21,8 +21,8 @@ import java.util.ResourceBundle;
  * Controller for the main window of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-07-08
  * @last-modified 2016-09-14
+ * @since 2016-07-08
  */
 public class MainWindowController implements Initializable {
 
@@ -97,10 +97,36 @@ public class MainWindowController implements Initializable {
 
         terminalTabPane.getTabs().add(terminalTab);
 
-        terminalTab.getContent().setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                System.out.println("Key pressed.");
+        // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
+        // letters automatically (so we don't have to worry about them here)
+        terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+            System.out.println("Key '" + ke.getCharacter() + "' pressed in terminal tab.");
+
+            // We only want to send the characters to the serial port if the user pressed them
+            // while the TX/RX tab was selected
+            if (terminal.terminalTabPane.getSelectionModel().getSelectedItem() != terminal.rxTxTab) {
+                return;
             }
+            System.out.println("TX/RX sub-tab selected.");
+
+            /*if (!(ke.getCharacter() || ke.getCode().isDigitKey() || ke.getCode().equals(KeyCode.ENTER))) {
+                return;
+            }
+            System.out.println("Key pressed is alphanumeric or enter.");*/
+
+            // Convert pressed key into a ASCII byte.
+            // Hopefully this is only one character!!!
+            byte[] data = new byte[1];
+            data[0] = (byte)ke.getCharacter().charAt(0);
+
+            if(terminal.comPort == null || terminal.comPort.isPortOpen() == false) {
+                statusBarController.addErr("Cannot send COM port data, port is not open.");
+                return;
+            }
+
+            // Send character to COM port
+            terminal.comPort.sendData(data);
+
         });
 
 
