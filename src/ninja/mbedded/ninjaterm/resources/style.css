@@ -128,9 +128,11 @@ which are displaying dynamic content */
     // Light green
     //-fx-background-color: #A1D490;
     -fx-base: #A1D490;
+    -fx-font-size: 15px;
 }
 
 .failure {
     // Light red
     -fx-base: #FFA1A1;
+    -fx-font-size: 15px;
 }
