@@ -6,7 +6,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
@@ -86,9 +85,9 @@ public class MainWindowController implements Initializable {
         Terminal terminal = new Terminal(statusBarController);
         terminals.add(terminal);
 
-        terminal.comSettingsController.setComPortManager(comPortManager);
+        terminal.comSettings.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminal.comSettingsController.scanComPorts();
+        terminal.comSettings.scanComPorts();
 
         Tab terminalTab = new Tab();
         terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));

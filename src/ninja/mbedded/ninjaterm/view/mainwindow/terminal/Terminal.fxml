@@ -12,11 +12,12 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView?>
+<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings?>
 <fx:root type="javafx.scene.layout.VBox" id="RxTxController"
          xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-      spacing="20"
-      fillWidth="true"
-      stylesheets="@../../../resources/style.css">
+         spacing="20"
+         fillWidth="true"
+         stylesheets="@../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
@@ -25,7 +26,7 @@
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
         <Tab text="COM Settings" closable="false">
-            <fx:include fx:id="comSettings" source="ComSettings/ComSettings.fxml"/>
+            <ComSettings fx:id="comSettings" />
         </Tab>
 
         <!--<Tab text="RX/TX" closable="false">

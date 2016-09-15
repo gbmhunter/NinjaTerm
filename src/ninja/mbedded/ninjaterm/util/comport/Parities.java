@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.comport;
 
 /**
  * Enumerates the available parity options for a COM port. These will be shown by default
- * in the parity selection combobox on the ComSettings screen.
+ * in the parity selection combobox on the comSettings screen.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-16

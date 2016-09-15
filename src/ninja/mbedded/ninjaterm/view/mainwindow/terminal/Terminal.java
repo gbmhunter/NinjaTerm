@@ -3,20 +3,17 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.ComSettings.ComSettingsController;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 /**
  * Controller for the "terminal" which is part of the main window.
@@ -35,7 +32,7 @@ public class Terminal extends VBox {
     public TabPane terminalTabPane;
 
     @FXML
-    public ComSettingsController comSettingsController;
+    public ComSettings comSettings;
 
     @FXML
     public RxTxView rxTxView;
@@ -69,10 +66,10 @@ public class Terminal extends VBox {
 
         this.statusBarController = statusBarController;
         // Set children
-        comSettingsController.setStatusBarController(statusBarController);
+        comSettings.setStatusBarController(statusBarController);
 
 
-        comSettingsController.openCloseComPortButton.setOnAction((ActionEvent) -> {
+        comSettings.openCloseComPortButton.setOnAction((ActionEvent) -> {
             openCloseComPortButtonPressed();
         });
 
@@ -92,9 +89,9 @@ public class Terminal extends VBox {
 
         //System.out.println("Button pressed handler called.");
 
-        if (comSettingsController.openCloseComPortButton.getText().equals("Open")) {
+        if (comSettings.openCloseComPortButton.getText().equals("Open")) {
 
-            comPort = new ComPort(comSettingsController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+            comPort = new ComPort(comSettings.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             try {
                 comPort.open();
@@ -114,10 +111,10 @@ public class Terminal extends VBox {
 
             // Set COM port parameters as specified by user on GUI
             comPort.setParams(
-                    comSettingsController.baudRateComboBox.getSelectionModel().getSelectedItem(),
-                    comSettingsController.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
-                    comSettingsController.parityComboBox.getSelectionModel().getSelectedItem(),
-                    comSettingsController.numStopBitsComboBox.getSelectionModel().getSelectedItem()
+                    comSettings.baudRateComboBox.getSelectionModel().getSelectedItem(),
+                    comSettings.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
+                    comSettings.parityComboBox.getSelectionModel().getSelectedItem(),
+                    comSettings.numStopBitsComboBox.getSelectionModel().getSelectedItem()
             );
 
             // Add a listener to run when RX data is received from the COM port
@@ -136,7 +133,7 @@ public class Terminal extends VBox {
 
             });
 
-            comSettingsController.openCloseComPortButton.setText("Close");
+            comSettings.openCloseComPortButton.setText("Close");
             statusBarController.addMsg(comPort.getName() + " opened." +
                     " Buad rate = " + comPort.getBaudRate() + "," +
                     " parity = " + comPort.getParity() + "," +
@@ -152,13 +149,13 @@ public class Terminal extends VBox {
                     statusBarController.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
 
                     // Since COM port does not exist anymore, set button back to "Open"
-                    comSettingsController.openCloseComPortButton.setText("Open");
+                    comSettings.openCloseComPortButton.setText("Open");
                     return;
                 } else {
                     throw new RuntimeException(e);
                 }
             }
-            comSettingsController.openCloseComPortButton.setText("Open");
+            comSettings.openCloseComPortButton.setText("Open");
             statusBarController.addMsg(comPort.getName() + " closed.");
         }
 

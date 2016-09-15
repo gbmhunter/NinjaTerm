@@ -1,15 +1,15 @@
-package ninja.mbedded.ninjaterm.view.mainwindow.terminal.ComSettings;
+package ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.*;
 
-import java.net.URL;
-import java.util.ResourceBundle;
+import java.io.IOException;
 
 /**
  * Controller for the "COM Settings tab" which is part of the main window.
@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
  * @since           2016-07-10
  * @last-modified   2016-08-23
  */
-public class ComSettingsController implements Initializable {
+public class ComSettings extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -53,8 +53,21 @@ public class ComSettingsController implements Initializable {
 
     private ComPortManager comPortManager;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public ComSettings() {
+
+        System.out.println("ComSettings constructor called.");
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+                "ComSettings.fxml"));
+
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+
+        try {
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
 
         // Attach handler for "Scan" button press
         reScanButton.setOnAction((actionEvent) -> {

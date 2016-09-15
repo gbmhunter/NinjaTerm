@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.comport;
 
 /**
  * Enumerates the available num. stop bit options for a COM port. These will be shown by default
- * in the num. stop bits selection combobox on the ComSettings screen.
+ * in the num. stop bits selection combobox on the comSettings screen.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-17
