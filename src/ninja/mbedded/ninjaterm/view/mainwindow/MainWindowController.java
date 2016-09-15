@@ -1,11 +1,13 @@
 package ninja.mbedded.ninjaterm.view.mainwindow;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
@@ -94,6 +96,12 @@ public class MainWindowController implements Initializable {
         terminalTab.setContent(terminal);
 
         terminalTabPane.getTabs().add(terminalTab);
+
+        terminalTab.getContent().setOnKeyPressed(new EventHandler<KeyEvent>() {
+            public void handle(KeyEvent ke) {
+                System.out.println("Key pressed.");
+            }
+        });
 
 
     }

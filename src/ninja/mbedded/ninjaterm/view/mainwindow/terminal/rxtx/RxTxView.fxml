@@ -43,7 +43,7 @@
                     <padding>
                         <Insets top="10" bottom="10" left="10" right="10"/>
                     </padding>
-                    <Text styleClass="text">RX text wil go here.</Text>
+                    <Text styleClass="text">TX/RX text wil go here.</Text>
                 </TextFlow>
             </ScrollPane>
 

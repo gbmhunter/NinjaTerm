@@ -3,11 +3,13 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
@@ -26,8 +28,8 @@ import java.io.IOException;
  * Controller for the "terminal" tab which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-17
  * @since 2016-07-16
+ * @last-modified 2016-09-15
  */
 public class RxTxView extends VBox {
 
@@ -257,6 +259,30 @@ public class RxTxView extends VBox {
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
 
+        //==============================================//
+        //====== TX CHARS PRESSED EVENT HANLDERS =======//
+        //==============================================//
+
+        rxTextTextFlow.addEventHandler(KeyEvent.KEY_RELEASED, (KeyEvent event) -> {
+            if (event.getCode().isLetterKey() || event.getCode().isDigitKey()) {
+                System.out.println("Pressed alphanumeric key.");
+                event.consume();
+            } else {
+                System.out.println("Pressed non-alphanumeric key.");
+                event.consume();
+            }
+        });
+
+        rxDataScrollPane.addEventHandler(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
+            System.out.println("Pressed key.");
+        });
+
+        rxDataScrollPane.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            public void handle(KeyEvent ke) {
+                System.out.println("Key pressed.");
+            }
+        });
+
     }
 
     /**
@@ -325,6 +351,10 @@ public class RxTxView extends VBox {
 
         // This was works better!
         terminalText.setText(terminalText.getText() + rxText);
+
+    }
+
+    public void txCharsPressed() {
 
     }
 
