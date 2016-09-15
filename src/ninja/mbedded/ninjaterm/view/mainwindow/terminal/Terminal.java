@@ -195,6 +195,10 @@ public class Terminal extends VBox {
 
     }
 
+    /**
+     * Enumerates the available styles for the open-close COM port button.
+     * Used by setOpenCloseButtonStyle().
+     */
     private enum OpenCloseButtonStyles {
         OPEN,
         CLOSE
@@ -215,6 +219,40 @@ public class Terminal extends VBox {
         } else {
             throw new RuntimeException("openCloseButtonStyle not recognised.");
         }
+    }
+
+    /**
+     * Called by event handler registered in MainWindowController when a key is typed while
+     * this terminal tab is selected.
+     * @param ke
+     */
+    public void handleKeyTyped(KeyEvent ke) {
+        System.out.println("Key '" + ke.getCharacter() + "' pressed in terminal tab.");
+
+        // We only want to send the characters to the serial port if the user pressed them
+        // while the TX/RX tab was selected
+        if (terminalTabPane.getSelectionModel().getSelectedItem() != rxTxTab) {
+            return;
+        }
+        System.out.println("TX/RX sub-tab selected.");
+
+            /*if (!(ke.getCharacter() || ke.getCode().isDigitKey() || ke.getCode().equals(KeyCode.ENTER))) {
+                return;
+            }
+            System.out.println("Key pressed is alphanumeric or enter.");*/
+
+        // Convert pressed key into a ASCII byte.
+        // Hopefully this is only one character!!!
+        byte[] data = new byte[1];
+        data[0] = (byte)ke.getCharacter().charAt(0);
+
+        if(comPort == null || comPort.isPortOpen() == false) {
+            statusBarController.addErr("Cannot send COM port data, port is not open.");
+            return;
+        }
+
+        // Send character to COM port
+        comPort.sendData(data);
     }
 
 }
