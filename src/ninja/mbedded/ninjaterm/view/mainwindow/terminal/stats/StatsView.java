@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 
 import java.io.IOException;
 
@@ -31,7 +32,7 @@ public class StatsView extends VBox {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    private Model model;
+    private Stats stats;
 
     public StatsView() {
 
@@ -49,20 +50,20 @@ public class StatsView extends VBox {
 
     }
 
-    public void init(Model model) {
+    public void init(Stats stats) {
 
-        this.model = model;
+        this.stats = stats;
 
         //======================= RX ===================//
-        characterCountTxLabel.setText(Integer.toString(model.numCharactersTx.getValue()));
-        model.numCharactersTx.addListener((observable, oldValue, newValue) -> {
+        characterCountTxLabel.setText(Integer.toString(stats.numCharactersTx.getValue()));
+        stats.numCharactersTx.addListener((observable, oldValue, newValue) -> {
             // Convert new value into string and update label
             characterCountTxLabel.setText(Integer.toString(newValue.intValue()));
         });
 
         //======================= TX ===================//
-        characterCountRxLabel.setText(Integer.toString(model.numCharactersRx.getValue()));
-        model.numCharactersRx.addListener((observable, oldValue, newValue) -> {
+        characterCountRxLabel.setText(Integer.toString(stats.numCharactersRx.getValue()));
+        stats.numCharactersRx.addListener((observable, oldValue, newValue) -> {
             // Convert new value into string and update label
             characterCountRxLabel.setText(Integer.toString(newValue.intValue()));
         });

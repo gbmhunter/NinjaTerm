@@ -10,6 +10,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
@@ -64,7 +65,7 @@ public class TerminalView extends VBox {
 
     private GlyphFont glyphFont;
 
-    private Model model;
+    private Terminal terminal;
 
     public TerminalView() {
 
@@ -82,9 +83,9 @@ public class TerminalView extends VBox {
 
     }
 
-    public void init(Model model, GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Terminal terminal, GlyphFont glyphFont, StatusBarController statusBarController) {
 
-        this.model = model;
+        this.terminal = terminal;
         this.glyphFont = glyphFont;
         this.statusBarController = statusBarController;
 
@@ -125,7 +126,7 @@ public class TerminalView extends VBox {
         //============= INIT STATS SUB-TAB =============//
         //==============================================//
 
-        statsView.init(model);
+        statsView.init(terminal.stats);
 
     }
 
@@ -178,7 +179,7 @@ public class TerminalView extends VBox {
                     rxTxView.addTxRxText(rxText);
 
                     // Update stats in app model
-                    model.numCharactersRx.set(model.numCharactersRx.get() + rxText.length());
+                    terminal.stats.numCharactersRx.set(terminal.stats.numCharactersRx.get() + rxText.length());
 
                 });
 
@@ -275,7 +276,7 @@ public class TerminalView extends VBox {
         comPort.sendData(data);
 
         // Update stats
-        model.numCharactersTx.setValue(model.numCharactersTx.getValue() + 1);
+        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         if(rxTxView.formatting.localTxEchoCheckBox.isSelected()) {

@@ -10,6 +10,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalView;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -106,9 +107,13 @@ public class MainWindowController implements Initializable {
 
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
+        // Create a new Terminal object in the model
+        Terminal terminal = new Terminal();
+        model.terminals.add(terminal);
+
 
         TerminalView terminalView = new TerminalView();
-        terminalView.init(model, glyphFont, statusBarController);
+        terminalView.init(terminal, glyphFont, statusBarController);
         terminalViews.add(terminalView);
 
         terminalView.comSettings.setComPortManager(comPortManager);
