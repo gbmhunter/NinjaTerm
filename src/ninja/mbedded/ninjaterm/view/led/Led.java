@@ -4,21 +4,14 @@ import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
 import javafx.scene.effect.BlurType;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.util.Duration;
-import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 /**
  * Controller for the "StatsView" sub-tab which is part of a terminal tab.
@@ -34,28 +27,49 @@ public class Led extends StackPane {
     //================================================================================================//
 
     @FXML
-    public Circle persistantCircle;
+    public Circle persistentCircle;
 
     @FXML
-    public Circle ledCircle;
+    public Circle flashingCircle;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    public void setColor(Color color) {
-        ledCircle.setFill(color);
-        persistantCircle.setStroke(color);
+    private double radius;
 
-        ledCircle.setEffect(new DropShadow(BlurType.THREE_PASS_BOX, color, 10, 0, 0, 0));
+    private FadeTransition fade;
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
+    public void setColor(Color color) {
+
+        persistentCircle.setStroke(color);
+        persistentCircle.setEffect(new DropShadow(BlurType.THREE_PASS_BOX, color, 10, 0, 0, 0));
+
+        flashingCircle.setFill(color);
+        flashingCircle.setEffect(new DropShadow(BlurType.THREE_PASS_BOX, color, 15, 0, 0, 0));
 
     }
 
     public Color getColor() {
-        return (Color)ledCircle.getFill();
+        return (Color) flashingCircle.getFill();
     }
 
-    private FadeTransition fade;
+    public void setRadius(double radius) {
+        this.radius = radius;
+
+        persistentCircle.setRadius(radius);
+        flashingCircle.setRadius(radius);
+
+    }
+
+    public double getRadius() {
+        return radius;
+    }
+
 
     public Led() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
@@ -70,16 +84,30 @@ public class Led extends StackPane {
             throw new RuntimeException(exception);
         }
 
-        fade = new FadeTransition(Duration.seconds(0.5), ledCircle);
+        //==============================================//
+        //========== PERSISTANT CIRCLE INIT ============//
+        //==============================================//
+        persistentCircle.setFill(Color.TRANSPARENT);
+        persistentCircle.setStroke(Color.RED);
+        persistentCircle.setStrokeWidth(2);
+
+
+        //==============================================//
+        //============= FADING CIRCLE INIT =============//
+        //==============================================//
+
+        flashingCircle.setOpacity(0.0);
+
+        fade = new FadeTransition(Duration.seconds(0.5), flashingCircle);
         fade.setInterpolator(Interpolator.EASE_OUT);
         fade.setFromValue(1.0);
         fade.setToValue(0);
         //fade.setAutoReverse(true);
         fade.setCycleCount(1);
 
-        persistantCircle.setFill(Color.TRANSPARENT);
-        persistantCircle.setStroke(Color.RED);
-        persistantCircle.setStrokeWidth(2);
+
+
+
 
     }
 

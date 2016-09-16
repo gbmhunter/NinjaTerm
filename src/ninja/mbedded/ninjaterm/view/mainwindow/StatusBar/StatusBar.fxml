@@ -37,8 +37,11 @@
         <VBox minWidth="100" maxWidth="100"
         styleClass="border">
             <GridPane vgap="5" hgap="5" alignment="CENTER">
+                <padding>
+                    <Insets top="10" bottom="10" left="10" right="10"/>
+                </padding>
                 <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
-                <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" color="red"/>
+                <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" radius="10" color="red"/>
 
                 <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
                 <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="blueviolet"/>
