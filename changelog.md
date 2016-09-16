@@ -10,3 +10,4 @@ vX.X.X
 - Added ability to send characters to COM port, closes #77.
 - Added local echo option for TX characters, closes #78.
 - Added statistics sub-tab, closes #79.
+- Added flashing TX/RX activity indicators, closes #80.

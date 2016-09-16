@@ -13,7 +13,8 @@
       xmlns:fx="http://javafx.com/fxml"
       stylesheets="@led.css"
 alignment="CENTER">
-    <Circle fx:id="ledCircle" styleClass="ledRe" radius="10"/>
+    <Circle fx:id="persistantCircle" radius="10"/>
+    <Circle fx:id="ledCircle" styleClass="led1" radius="10"/>
 </fx:root>
 
 

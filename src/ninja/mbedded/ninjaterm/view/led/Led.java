@@ -1,10 +1,13 @@
 package ninja.mbedded.ninjaterm.view.led;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -31,6 +34,9 @@ public class Led extends StackPane {
     //================================================================================================//
 
     @FXML
+    public Circle persistantCircle;
+
+    @FXML
     public Circle ledCircle;
 
     //================================================================================================//
@@ -39,6 +45,10 @@ public class Led extends StackPane {
 
     public void setColor(Color color) {
         ledCircle.setFill(color);
+        persistantCircle.setStroke(color);
+
+        ledCircle.setEffect(new DropShadow(BlurType.THREE_PASS_BOX, color, 10, 0, 0, 0));
+
     }
 
     public Color getColor() {
@@ -60,11 +70,17 @@ public class Led extends StackPane {
             throw new RuntimeException(exception);
         }
 
-        fade = new FadeTransition(Duration.seconds(0.3), ledCircle);
-        fade.setFromValue(1);
+        fade = new FadeTransition(Duration.seconds(0.5), ledCircle);
+        fade.setInterpolator(Interpolator.EASE_OUT);
+        fade.setFromValue(1.0);
         fade.setToValue(0);
         //fade.setAutoReverse(true);
         fade.setCycleCount(1);
+
+        persistantCircle.setFill(Color.TRANSPARENT);
+        persistantCircle.setStroke(Color.RED);
+        persistantCircle.setStrokeWidth(2);
+
     }
 
     public void init() {
