@@ -65,7 +65,7 @@
         <!-- =========================================== -->
         <!-- =========== RIGHT-HAND SIDE PANE ========== -->
         <!-- =========================================== -->
-        <VBox minWidth="80" prefWidth="80" spacing="10" alignment="TOP_CENTER">
+        <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton">Clear Text</Button>
             <Button fx:id="decodingButton">Decoding</Button>
             <Button fx:id="filtersButton">Filters</Button>

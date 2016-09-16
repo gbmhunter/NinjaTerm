@@ -34,7 +34,7 @@
         </Tab>-->
 
         <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
-            <!--<RxTxView fx:id="rxTxView"/>-->
+            <RxTxView fx:id="rxTxView"/>
         </Tab>
     </TabPane>
 </fx:root>

@@ -19,8 +19,11 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
 import org.controlsfx.control.PopOver;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.IOException;
 
@@ -92,12 +95,16 @@ public class RxTxView extends VBox {
      */
     public Formatting formatting;
 
+    private StatusBarController statusBarController;
+
+    private GlyphFont glyphFont;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
 
-    public RxTxView(Decoder decoder) {
+    public RxTxView() {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "RxTxView.fxml"));
@@ -110,8 +117,21 @@ public class RxTxView extends VBox {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
+    }
+
+    /**
+     * Initialisation method because we are not allowed to have input parameters in the constructor.
+     * @param glyphFont
+     */
+    public void Init(Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+        this.glyphFont = glyphFont;
+
+        clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
+        decodingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
+        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
+        this.statusBarController = statusBarController;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
@@ -210,6 +230,8 @@ public class RxTxView extends VBox {
         clearTextButton.setOnAction(event -> {
             // Clear all the text
             terminalText.setText("");
+            statusBarController.addMsg("Terminal TX/RX text cleared.");
+
         });
 
         decodingButton.setOnAction(event -> {
@@ -258,7 +280,6 @@ public class RxTxView extends VBox {
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
-
     }
 
     /**

@@ -74,6 +74,9 @@ public class Terminal extends VBox {
             throw new RuntimeException(exception);
         }
 
+        // Initialise fontAwesome glyths (these are downloaded from CDN)
+        //! @todo Remove dependency on internet connection
+        fontAwesome = GlyphFontRegistry.font("FontAwesome");
 
         this.statusBarController = statusBarController;
         // Set children
@@ -88,12 +91,11 @@ public class Terminal extends VBox {
         terminalTabPane.getSelectionModel().select(0);
 
         // Create RX/TX view
-        rxTxView = new RxTxView(decoder);
+        //rxTxView = new RxTxView();
+        rxTxView.Init(decoder, statusBarController, fontAwesome);
         rxTxTab.setContent(rxTxView);
 
-        // Initialise fontAwesome glyths (these are downloaded from CDN)
-        //! @todo Remove dependency on internet connection
-        fontAwesome = GlyphFontRegistry.font("FontAwesome");
+
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -109,6 +111,8 @@ public class Terminal extends VBox {
         rxTxView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             System.out.println("KEY PRESSED!");
         });
+
+        comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.PLAY));
 
     }
 
