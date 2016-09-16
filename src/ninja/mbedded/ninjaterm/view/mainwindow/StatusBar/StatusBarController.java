@@ -1,10 +1,15 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.StatusBar;
 
+import javafx.animation.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
+import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -27,10 +32,33 @@ public class StatusBarController implements Initializable {
     @FXML
     public TextFlow statusTextFlow;
 
-    //private MainWindowController mainWindowController;
+    @FXML
+    public Circle activityTxCircle;
+
+    @FXML
+    public Circle activityRxCircle;
+
+    public GlobalStats globalStats;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
+    }
+
+    public void init(GlobalStats globalStats) {
+        this.globalStats = globalStats;
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(0.3), activityTxCircle);
+        fade.setFromValue(1);
+        fade.setToValue(0);
+        //fade.setAutoReverse(true);
+        fade.setCycleCount(1);
+
+        globalStats.numCharactersTx.addListener((observable, oldValue, newValue) -> {
+            System.out.println("Starting animation.");
+            fade.stop();
+            fade.play();
+        });
 
     }
 

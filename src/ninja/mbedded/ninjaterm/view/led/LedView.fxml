@@ -1,0 +1,16 @@
+<!--
+* Inner content for the "StatsView" sub-tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-09-16
+* @last-modified   2016-09-16
+-->
+<!--style="-fx-background-color: red;" -->
+
+<?import javafx.scene.shape.Circle?>
+<Circle fx:controller="ninja.mbedded.ninjaterm.view.led.LedController"
+        xmlns:fx="http://javafx.com/fxml" radius="5"></Circle>
+
+
+
+

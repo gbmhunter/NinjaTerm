@@ -7,8 +7,12 @@
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Label?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
@@ -19,14 +23,29 @@
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <VBox minHeight="100"
-          maxHeight="100"
-          styleClass="border">
-        <!-- ScrollPane does not exceed it's parent dimensions -->
-        <ScrollPane>
-            <TextFlow fx:id="statusTextFlow"></TextFlow>
-        </ScrollPane>
-    </VBox>
+    <HBox spacing="10">
+        <VBox minHeight="100"
+              maxHeight="100"
+              HBox.hgrow="ALWAYS"
+              styleClass="border">
+            <!-- ScrollPane does not exceed it's parent dimensions -->
+            <ScrollPane>
+                <TextFlow fx:id="statusTextFlow"></TextFlow>
+            </ScrollPane>
+        </VBox>
+        <VBox minWidth="100" maxWidth="100"
+        styleClass="border">
+            <GridPane vgap="5" hgap="5">
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
+                <Circle GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxCircle" radius="5"></Circle>
+
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
+                <fx:include GridPane.rowIndex="1" GridPane.columnIndex="1" source="/ninja/mbedded/ninjaterm/view/led/LedView.fxml"/>
+
+            </GridPane>
+
+        </VBox>
+    </HBox>
 
 </VBox>
 

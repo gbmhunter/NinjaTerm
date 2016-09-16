@@ -10,6 +10,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
@@ -66,6 +67,7 @@ public class TerminalView extends VBox {
     private GlyphFont glyphFont;
 
     private Terminal terminal;
+    private GlobalStats globalStats;
 
     public TerminalView() {
 
@@ -83,9 +85,11 @@ public class TerminalView extends VBox {
 
     }
 
-    public void init(Terminal terminal, GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Terminal terminal, GlobalStats globalStats, GlyphFont glyphFont, StatusBarController statusBarController) {
 
         this.terminal = terminal;
+        this.globalStats = globalStats;
+
         this.glyphFont = glyphFont;
         this.statusBarController = statusBarController;
 
@@ -127,6 +131,8 @@ public class TerminalView extends VBox {
         //==============================================//
 
         statsView.init(terminal.stats);
+
+        statusBarController.init(globalStats);
 
     }
 
@@ -180,6 +186,7 @@ public class TerminalView extends VBox {
 
                     // Update stats in app model
                     terminal.stats.numCharactersRx.set(terminal.stats.numCharactersRx.get() + rxText.length());
+                    globalStats.numCharactersRx.set(globalStats.numCharactersRx.get() + rxText.length());
 
                 });
 
@@ -275,8 +282,9 @@ public class TerminalView extends VBox {
         // Send character to COM port
         comPort.sendData(data);
 
-        // Update stats
+        // Update stats (both local and global)
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
+        globalStats.numCharactersTx.setValue(globalStats.numCharactersTx.getValue() + 1);
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         if(rxTxView.formatting.localTxEchoCheckBox.isSelected()) {

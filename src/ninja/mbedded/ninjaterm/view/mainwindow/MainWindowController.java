@@ -113,7 +113,7 @@ public class MainWindowController implements Initializable {
 
 
         TerminalView terminalView = new TerminalView();
-        terminalView.init(terminal, glyphFont, statusBarController);
+        terminalView.init(terminal, model.globalStats, glyphFont, statusBarController);
         terminalViews.add(terminalView);
 
         terminalView.comSettings.setComPortManager(comPortManager);
