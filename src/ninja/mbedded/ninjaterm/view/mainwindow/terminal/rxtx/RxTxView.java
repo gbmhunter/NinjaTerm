@@ -44,7 +44,7 @@ public class RxTxView extends VBox {
     public ScrollPane rxDataScrollPane;
 
     @FXML
-    public TextFlow rxTextTextFlow;
+    public TextFlow txRxTextFlow;
 
     @FXML
     public TextFlow txTextFlow;
@@ -110,6 +110,12 @@ public class RxTxView extends VBox {
      */
     private TxRx txRx;
 
+    /**
+     * A Text object which holds a flashing caret. This is moved between the shared TX/RX pane and
+     * the TX pane.
+     */
+    private Text caretText;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -149,7 +155,7 @@ public class RxTxView extends VBox {
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
-        rxTextTextFlow.getChildren().clear();
+        txRxTextFlow.getChildren().clear();
 
         // Hide the auto-scroll image-button, this will be made visible
         // when the user manually scrolls
@@ -157,7 +163,7 @@ public class RxTxView extends VBox {
 
         // Add default Text node to text flow. Received text
         // will be added to this node.
-        rxTextTextFlow.getChildren().add(terminalText);
+        txRxTextFlow.getChildren().add(terminalText);
         terminalText.setFill(Color.LIME);
 
         //==============================================//
@@ -165,7 +171,7 @@ public class RxTxView extends VBox {
         //==============================================//
 
         // Create caret symbol using ANSI character
-        Text caretText = new Text("█");
+        caretText = new Text("█");
         caretText.setFill(Color.LIME);
 
         // Add an animation so the caret blinks
@@ -177,7 +183,7 @@ public class RxTxView extends VBox {
         ft.play();
 
         // Finally, add the blinking caret as the last child in the TextFlow
-        rxTextTextFlow.getChildren().add(caretText);
+        txRxTextFlow.getChildren().add(caretText);
 
         // Set default opacity for scroll-to-bottom image
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
@@ -188,11 +194,11 @@ public class RxTxView extends VBox {
 
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
-        rxTextTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
+        txRxTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
             //System.out.println("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
-                rxDataScrollPane.setVvalue(rxTextTextFlow.getHeight());
+                rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
             }
 
         });
@@ -232,8 +238,8 @@ public class RxTxView extends VBox {
                     autoScrollButtonPane.setVisible(false);
 
                     // Manually perform one auto-scroll, since the next automatic one won't happen until
-                    // the height of rxTextTextFlow changes.
-                    rxDataScrollPane.setVvalue(rxTextTextFlow.getHeight());
+                    // the height of txRxTextFlow changes.
+                    rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
                 }
         );
 
@@ -359,11 +365,11 @@ public class RxTxView extends VBox {
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
-            rxTextTextFlow.setMaxWidth(wrappingWidth);
+            txRxTextFlow.setMaxWidth(wrappingWidth);
 
         } else {
             System.out.println("\"Wrapping\" checkbox unchecked.");
-            rxTextTextFlow.setMaxWidth(Double.MAX_VALUE);
+            txRxTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
 
@@ -396,7 +402,7 @@ public class RxTxView extends VBox {
         // provided rxText had printable chars, or was just a carriage return or new line (or both)
         //Text text = new Text(rxText);
         //text.setFill(Color.LIME);
-        //rxTextTextFlow.getChildren().add(text);
+        //txRxTextFlow.getChildren().add(text);
 
         // This was works better!
         terminalText.setText(terminalText.getText() + text);
@@ -414,12 +420,29 @@ public class RxTxView extends VBox {
                 // Hide TX pane
                 txTextFlow.setMinHeight(0.0);
                 txTextFlow.setMaxHeight(0.0);
+
+                // Add the caret in the shared pane
+                if(txRxTextFlow.getChildren().indexOf(caretText) == -1) {
+                    txRxTextFlow.getChildren().add(caretText);
+                }
+
                 break;
             case SEPARATE_TX_RX:
 
                 // Show TX pane
                 txTextFlow.setMinHeight(100.0);
                 txTextFlow.setMaxHeight(100.0);
+
+                // Remove the caret in the shared pane
+                if(txRxTextFlow.getChildren().indexOf(caretText) >= 0) {
+                    txRxTextFlow.getChildren().remove(caretText);
+                }
+
+                // Add the caret to the TX pane
+                if(txTextFlow.getChildren().indexOf(caretText) == -1) {
+                    txTextFlow.getChildren().add(caretText);
+                }
+
                 break;
             default:
                 throw new RuntimeException("selectedLayoutOption unrecognised!");

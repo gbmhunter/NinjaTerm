@@ -8,8 +8,8 @@ import javafx.beans.property.SimpleObjectProperty;
 public class Layout {
 
     public enum LayoutOptions {
-        COMBINED_TX_RX("Combined RX/TX"),
-        SEPARATE_TX_RX("Separate RX/TX"),
+        COMBINED_TX_RX("Combined TX/RX"),
+        SEPARATE_TX_RX("Separate TX/RX"),
         ;
 
         private String label;
