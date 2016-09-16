@@ -89,7 +89,7 @@ which are displaying dynamic content */
 /* ===================================== TX/RX DATA TAB STYLING ================================ */
 /* ============================================================================================= */
 
-.terminal{
+.txRxText {
 
     -fx-border-radius: 5px;
     -fx-background-radius: 5px;
@@ -102,7 +102,7 @@ which are displaying dynamic content */
 
 /* This targets the Text nodes with the terminal TextFlow. These have to have the style class
 "text" added manually (style class is empty by default for a Text node) */
-.terminal .text {
+.txRxText .text {
         -fx-fill: green;
 }
 

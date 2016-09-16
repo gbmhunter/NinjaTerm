@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
+import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.view.mainwindow.MainWindowController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -23,6 +24,9 @@ public class Main extends Application {
         //! @todo Remove dependency on internet connection
         glyphFont = GlyphFontRegistry.font("FontAwesome");
 
+        // Create application model (data/state)
+        Model model = new Model();
+
         FXMLLoader loader = new FXMLLoader(
             getClass().getResource(
                     "ninja/mbedded/ninjaterm/view/mainwindow/MainWindow.fxml"
@@ -33,7 +37,7 @@ public class Main extends Application {
 
         MainWindowController mainWindowController =
                 loader.getController();
-        mainWindowController.init(glyphFont);
+        mainWindowController.init(model, glyphFont);
 
         // Inject dependencies
         mainWindowController.setComPortManager(new ComPortManager());
@@ -50,7 +54,7 @@ public class Main extends Application {
             }
         });*/
 
-        //mainWindowController.terminals.get(0).rxTxView.showDecodingPopover();
+        //mainWindowController.terminalViews.get(0).rxTxView.showDecodingPopover();
 
         primaryStage.show();
 

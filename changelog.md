@@ -9,3 +9,4 @@ vX.X.X
 - Changed colour of open/close button so that it is green/red, and added play/stop icons, closes #76.
 - Added ability to send characters to COM port, closes #77.
 - Added local echo option for TX characters, closes #78.
+- Added statistics sub-tab, closes #79.

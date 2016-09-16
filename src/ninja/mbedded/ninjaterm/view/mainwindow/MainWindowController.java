@@ -6,12 +6,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalView;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -52,10 +52,11 @@ public class MainWindowController implements Initializable {
 
     private ComPortManager comPortManager;
 
-    public List<Terminal> terminals = new ArrayList<>();
+    public List<TerminalView> terminalViews = new ArrayList<>();
 
     private GlyphFont glyphFont;
 
+    private Model model;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -65,9 +66,14 @@ public class MainWindowController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
     }
 
-    public void init(GlyphFont glyphFont) {
+    public void init(Model model, GlyphFont glyphFont) {
 
+        this.model = model;
         this.glyphFont = glyphFont;
+
+        //==============================================//
+        //=================== MENU SETUP ===============//
+        //==============================================//
 
         Glyph glyph = glyphFont.create(FontAwesome.Glyph.TERMINAL);
         glyph.setColor(Color.BLACK);
@@ -101,17 +107,17 @@ public class MainWindowController implements Initializable {
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
 
-        Terminal terminal = new Terminal();
-        terminal.init(glyphFont, statusBarController);
-        terminals.add(terminal);
+        TerminalView terminalView = new TerminalView();
+        terminalView.init(model, glyphFont, statusBarController);
+        terminalViews.add(terminalView);
 
-        terminal.comSettings.setComPortManager(comPortManager);
+        terminalView.comSettings.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminal.comSettings.scanComPorts();
+        terminalView.comSettings.scanComPorts();
 
         Tab terminalTab = new Tab();
         terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
-        terminalTab.setContent(terminal);
+        terminalTab.setContent(terminalView);
 
         terminalTabPane.getTabs().add(terminalTab);
 
@@ -120,7 +126,7 @@ public class MainWindowController implements Initializable {
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
         terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
-            terminal.handleKeyTyped(ke);
+            terminalView.handleKeyTyped(ke);
         });
 
 

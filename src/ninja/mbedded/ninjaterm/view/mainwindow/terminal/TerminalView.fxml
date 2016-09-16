@@ -13,6 +13,7 @@
 <?import javafx.scene.control.Tab?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings?>
+<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView?>
 <fx:root type="javafx.scene.layout.VBox" id="RxTxController"
          xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
          spacing="20"
@@ -35,6 +36,9 @@
 
         <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
             <RxTxView fx:id="rxTxView"/>
+        </Tab>
+        <Tab text="Stats" closable="false">
+            <StatsView fx:id="statsView" />
         </Tab>
     </TabPane>
 </fx:root>

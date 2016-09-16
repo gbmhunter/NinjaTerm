@@ -1,5 +1,5 @@
 <!--
-* Inner content for the "terminal" tab of NinjaTerm
+* Inner content for the "terminalView" tab of NinjaTerm
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
@@ -14,7 +14,7 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
-<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalView.rxtx.RxTxView-->
 <fx:root type="javafx.scene.layout.VBox" id="RxTxController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
@@ -38,7 +38,7 @@
             <ScrollPane fx:id="rxDataScrollPane">
                 <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
                 <!-- This TextFlow holds the many RX Text objects -->
-                <TextFlow fx:id="rxTextTextFlow" styleClass="terminal"
+                <TextFlow fx:id="rxTextTextFlow" styleClass="txRxText"
                           style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
                     <padding>
                         <Insets top="10" bottom="10" left="10" right="10"/>

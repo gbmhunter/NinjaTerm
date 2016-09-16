@@ -24,8 +24,8 @@
     </MenuBar>
 
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
-        <!--<Tab text="terminal 1" closable="true">-->
-            <!--<fx:include fx:id="terminal" source="terminal.fxml"/>-->
+        <!--<Tab text="terminalView 1" closable="true">-->
+            <!--<fx:include fx:id="terminalView" source="terminalView.fxml"/>-->
         <!--</Tab>-->
     </TabPane>
 

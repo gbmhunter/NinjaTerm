@@ -1,5 +1,5 @@
 <!--
-* Inner content for the "terminal" tab of NinjaTerm
+* Inner content for the "terminalView" tab of NinjaTerm
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-30
@@ -14,7 +14,7 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.TextField?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.Filters.FiltersPopupController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalView.rxtx.Filters.FiltersPopupController"
       xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"

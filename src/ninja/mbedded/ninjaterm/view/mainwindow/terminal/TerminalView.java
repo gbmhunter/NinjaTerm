@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,15 +9,16 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
-import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 import java.io.IOException;
 
@@ -27,7 +29,7 @@ import java.io.IOException;
  * @since           2016-08-23
  * @last-modified   2016-08-23
  */
-public class Terminal extends VBox {
+public class TerminalView extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -45,6 +47,9 @@ public class Terminal extends VBox {
     @FXML
     public Tab rxTxTab;
 
+    @FXML
+    public StatsView statsView;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
@@ -59,11 +64,12 @@ public class Terminal extends VBox {
 
     private GlyphFont glyphFont;
 
+    private Model model;
 
-    public Terminal() {
+    public TerminalView() {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "Terminal.fxml"));
+                "TerminalView.fxml"));
 
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -76,8 +82,9 @@ public class Terminal extends VBox {
 
     }
 
-    public void init(GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Model model, GlyphFont glyphFont, StatusBarController statusBarController) {
 
+        this.model = model;
         this.glyphFont = glyphFont;
         this.statusBarController = statusBarController;
 
@@ -113,6 +120,13 @@ public class Terminal extends VBox {
         });
 
         comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+
+        //==============================================//
+        //============= INIT STATS SUB-TAB =============//
+        //==============================================//
+
+        statsView.init(model);
+
     }
 
     /**
@@ -162,6 +176,10 @@ public class Terminal extends VBox {
                 Platform.runLater(() -> {
 
                     rxTxView.addTxRxText(rxText);
+
+                    // Update stats in app model
+                    model.numCharactersRx.set(model.numCharactersRx.get() + rxText.length());
+
                 });
 
             });
@@ -255,6 +273,9 @@ public class Terminal extends VBox {
 
         // Send character to COM port
         comPort.sendData(data);
+
+        // Update stats
+        model.numCharactersTx.setValue(model.numCharactersTx.getValue() + 1);
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         if(rxTxView.formatting.localTxEchoCheckBox.isSelected()) {
