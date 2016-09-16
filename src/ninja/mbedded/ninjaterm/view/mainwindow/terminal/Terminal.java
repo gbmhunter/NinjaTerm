@@ -57,10 +57,10 @@ public class Terminal extends VBox {
     private StatusBarController statusBarController;
     private Decoder decoder = new Decoder();
 
-    private GlyphFont fontAwesome;
+    private GlyphFont glyphFont;
 
 
-    public Terminal(StatusBarController statusBarController) {
+    public Terminal() {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "Terminal.fxml"));
@@ -74,11 +74,13 @@ public class Terminal extends VBox {
             throw new RuntimeException(exception);
         }
 
-        // Initialise fontAwesome glyths (these are downloaded from CDN)
-        //! @todo Remove dependency on internet connection
-        fontAwesome = GlyphFontRegistry.font("FontAwesome");
+    }
 
+    public void init(GlyphFont glyphFont, StatusBarController statusBarController) {
+
+        this.glyphFont = glyphFont;
         this.statusBarController = statusBarController;
+
         // Set children
         comSettings.setStatusBarController(statusBarController);
 
@@ -92,10 +94,8 @@ public class Terminal extends VBox {
 
         // Create RX/TX view
         //rxTxView = new RxTxView();
-        rxTxView.Init(decoder, statusBarController, fontAwesome);
+        rxTxView.Init(decoder, statusBarController, glyphFont);
         rxTxTab.setContent(rxTxView);
-
-
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -112,8 +112,7 @@ public class Terminal extends VBox {
             System.out.println("KEY PRESSED!");
         });
 
-        comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.PLAY));
-
+        comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
     }
 
     /**
@@ -209,13 +208,13 @@ public class Terminal extends VBox {
 
     private void setOpenCloseButtonStyle(OpenCloseButtonStyles openCloseButtonStyle) {
         if(openCloseButtonStyle == OpenCloseButtonStyles.OPEN) {
-            comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.PLAY));
+            comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
             comSettings.openCloseComPortButton.setText("Open");
             comSettings.openCloseComPortButton.getStyleClass().remove("failure");
             comSettings.openCloseComPortButton.getStyleClass().add("success");
 
         } else if(openCloseButtonStyle == OpenCloseButtonStyles.CLOSE) {
-            comSettings.openCloseComPortButton.setGraphic(fontAwesome.create(FontAwesome.Glyph.STOP));
+            comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
             comSettings.openCloseComPortButton.setText("Close");
             comSettings.openCloseComPortButton.getStyleClass().remove("success");
             comSettings.openCloseComPortButton.getStyleClass().add("failure");

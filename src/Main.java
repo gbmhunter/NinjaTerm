@@ -8,12 +8,20 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.view.mainwindow.MainWindowController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import org.controlsfx.glyphfont.GlyphFont;
+import org.controlsfx.glyphfont.GlyphFontRegistry;
 
 public class Main extends Application {
+
+    private GlyphFont glyphFont;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
         //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowController.fxml"));
+
+        // Initialise fontAwesome glyths (these are downloaded from CDN)
+        //! @todo Remove dependency on internet connection
+        glyphFont = GlyphFontRegistry.font("FontAwesome");
 
         FXMLLoader loader = new FXMLLoader(
             getClass().getResource(
@@ -25,6 +33,7 @@ public class Main extends Application {
 
         MainWindowController mainWindowController =
                 loader.getController();
+        mainWindowController.init(glyphFont);
 
         // Inject dependencies
         mainWindowController.setComPortManager(new ComPortManager());

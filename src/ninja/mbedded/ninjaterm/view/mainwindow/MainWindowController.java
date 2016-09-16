@@ -8,9 +8,13 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.Terminal;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.Glyph;
+import org.controlsfx.glyphfont.GlyphFont;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,6 +54,8 @@ public class MainWindowController implements Initializable {
 
     public List<Terminal> terminals = new ArrayList<>();
 
+    private GlyphFont glyphFont;
+
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -57,12 +63,23 @@ public class MainWindowController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+    }
 
+    public void init(GlyphFont glyphFont) {
+
+        this.glyphFont = glyphFont;
+
+        Glyph glyph = glyphFont.create(FontAwesome.Glyph.TERMINAL);
+        glyph.setColor(Color.BLACK);
+        newTerminalMenuItem.setGraphic(glyph);
         newTerminalMenuItem.setOnAction(event -> {
             System.out.println("newTerminalMenuItem clicked.");
             addNewTerminal();
         });
 
+        glyph = glyphFont.create(FontAwesome.Glyph.SIGN_OUT);
+        glyph.setColor(Color.BLACK);
+        exitMenuItem.setGraphic(glyph);
         exitMenuItem.setOnAction(event -> {
             // Quit the application
             Platform.exit();
@@ -84,7 +101,8 @@ public class MainWindowController implements Initializable {
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
 
-        Terminal terminal = new Terminal(statusBarController);
+        Terminal terminal = new Terminal();
+        terminal.init(glyphFont, statusBarController);
         terminals.add(terminal);
 
         terminal.comSettings.setComPortManager(comPortManager);
