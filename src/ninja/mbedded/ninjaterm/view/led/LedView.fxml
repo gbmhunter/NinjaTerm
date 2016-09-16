@@ -7,9 +7,14 @@
 -->
 <!--style="-fx-background-color: red;" -->
 
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Circle?>
-<Circle fx:controller="ninja.mbedded.ninjaterm.view.led.LedController"
-        xmlns:fx="http://javafx.com/fxml" radius="5"></Circle>
+<fx:root type="javafx.scene.layout.StackPane"
+      xmlns:fx="http://javafx.com/fxml"
+      stylesheets="@led.css"
+alignment="CENTER">
+    <Circle fx:id="ledCircle" styleClass="ledRe" radius="10"/>
+</fx:root>
 
 
 

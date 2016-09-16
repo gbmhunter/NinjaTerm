@@ -10,6 +10,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
+import ninja.mbedded.ninjaterm.view.led.Led;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -33,10 +34,10 @@ public class StatusBarController implements Initializable {
     public TextFlow statusTextFlow;
 
     @FXML
-    public Circle activityTxCircle;
+    public Led activityTxLed;
 
     @FXML
-    public Circle activityRxCircle;
+    public Led activityRxLed;
 
     public GlobalStats globalStats;
 
@@ -48,23 +49,15 @@ public class StatusBarController implements Initializable {
     public void init(GlobalStats globalStats) {
         this.globalStats = globalStats;
 
-        FadeTransition fade = new FadeTransition(Duration.seconds(0.3), activityTxCircle);
-        fade.setFromValue(1);
-        fade.setToValue(0);
-        //fade.setAutoReverse(true);
-        fade.setCycleCount(1);
-
         globalStats.numCharactersTx.addListener((observable, oldValue, newValue) -> {
-            System.out.println("Starting animation.");
-            fade.stop();
-            fade.play();
+            activityTxLed.flash();
+        });
+
+        globalStats.numCharactersRx.addListener((observable, oldValue, newValue) -> {
+            activityRxLed.flash();
         });
 
     }
-
-//    public void setMainWindowController(MainWindowController mainWindowController) {
-//        this.mainWindowController = mainWindowController;
-//    }
 
     /**
      * Prints the given message to the status window. This prepends the current date/time to the massage

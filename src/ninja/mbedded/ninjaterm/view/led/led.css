@@ -1,0 +1,17 @@
+
+.ledRed {
+    -fx-fill  : linear-gradient(from 50% 0% to 50% 100%,
+
+                                        rgb(207, 0, 58) 0%,
+
+                                        rgb(129, 0, 33) 100%);
+
+    -fx-stroke: transparent;
+
+
+
+    -fx-effect: innershadow(gaussian, rgba(1, 1, 1, 0.65), 10, 0.5, 0.0, 5.0);
+
+    -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.65), 10, 0.5, 0.0, -5.0);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+}

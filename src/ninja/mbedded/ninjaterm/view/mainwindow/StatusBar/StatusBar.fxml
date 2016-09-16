@@ -13,6 +13,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.Label?>
+<?import ninja.mbedded.ninjaterm.view.led.Led?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
@@ -35,12 +36,12 @@
         </VBox>
         <VBox minWidth="100" maxWidth="100"
         styleClass="border">
-            <GridPane vgap="5" hgap="5">
+            <GridPane vgap="5" hgap="5" alignment="CENTER">
                 <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
-                <Circle GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxCircle" radius="5"></Circle>
+                <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" color="red"/>
 
                 <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
-                <fx:include GridPane.rowIndex="1" GridPane.columnIndex="1" source="/ninja/mbedded/ninjaterm/view/led/LedView.fxml"/>
+                <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="blueviolet"/>
 
             </GridPane>
 
