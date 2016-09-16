@@ -54,7 +54,7 @@ public class Main extends Application {
             }
         });*/
 
-        //mainWindowController.terminalViews.get(0).rxTxView.showDecodingPopover();
+        //mainWindowController.terminalViews.get(0).rxTxView.showPopover();
 
         primaryStage.show();
 

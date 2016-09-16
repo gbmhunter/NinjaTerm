@@ -3,13 +3,11 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
@@ -18,9 +16,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.layout.LayoutView;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -47,6 +47,9 @@ public class RxTxView extends VBox {
     public TextFlow rxTextTextFlow;
 
     @FXML
+    public TextFlow txTextFlow;
+
+    @FXML
     public Pane autoScrollButtonPane;
 
     @FXML
@@ -54,6 +57,9 @@ public class RxTxView extends VBox {
 
     @FXML
     public Button clearTextButton;
+
+    @FXML
+    public Button layoutButton;
 
     @FXML
     public Button decodingButton;
@@ -99,6 +105,11 @@ public class RxTxView extends VBox {
 
     private GlyphFont glyphFont;
 
+    /**
+     * Stores the model which drives this view.
+     */
+    private TxRx txRx;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -123,10 +134,13 @@ public class RxTxView extends VBox {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+    public void Init(TxRx txRx, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+
+        this.txRx = txRx;
         this.glyphFont = glyphFont;
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
+        layoutButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
         decodingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
@@ -234,16 +248,45 @@ public class RxTxView extends VBox {
 
         });
 
+        //==============================================//
+        //============= LAYOUT BUTTON SETUP ============//
+        //==============================================//
+
+        LayoutView layoutView = new LayoutView();
+        layoutView.init(txRx.layout);
+
+        // This creates the popover, but is not shown until
+        // show() is called.
+        PopOver layoutPopover = new PopOver();
+        layoutPopover.setContentNode(layoutView);
+        layoutPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        layoutPopover.setCornerRadius(4);
+        layoutPopover.setTitle("Layout");
+
+        layoutButton.setOnAction(event -> {
+
+            if (layoutPopover.isShowing()) {
+                layoutPopover.hide();
+            } else if (!layoutPopover.isShowing()) {
+                showPopover(layoutButton, layoutPopover);
+            } else {
+                new RuntimeException("layoutPopover state not recognised.");
+            }
+        });
+
+        //==============================================//
+        //=========== DECODING BUTTON SETUP ============//
+        //==============================================//
+
         decodingButton.setOnAction(event -> {
 
             if (decodingPopOver.isShowing()) {
                 decodingPopOver.hide();
             } else if (!decodingPopOver.isShowing()) {
-                showDecodingPopover();
+                showPopover(decodingButton, decodingPopOver);
             } else {
                 new RuntimeException("decodingPopOver state not recognised.");
             }
-
         });
 
         filtersButton.setOnAction(event -> {
@@ -280,6 +323,16 @@ public class RxTxView extends VBox {
         decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         decodingPopOver.setCornerRadius(4);
         decodingPopOver.setTitle("Formatting");
+
+        //==============================================//
+        //========== ATTACH LISTENER TO LAYOUT =========//
+        //==============================================//
+
+        txRx.layout.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
+            System.out.println("Selected layout option has been changed.");
+            updateLayout();
+        });
+
     }
 
     /**
@@ -315,22 +368,21 @@ public class RxTxView extends VBox {
     }
 
 
-    public void showDecodingPopover() {
+    public void showPopover(Button button, PopOver popOver) {
 
-        System.out.println(getClass().getName() + ".showDecodingPopover() called.");
+        System.out.println(getClass().getName() + ".showPopover() called.");
 
         //==============================================//
         //=============== DECODING POPOVER =============//
         //==============================================//
 
-        double clickX = decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinX();
-        double clickY = (decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMinY() +
-                decodingButton.localToScreen(decodingButton.getBoundsInLocal()).getMaxY()) / 2;
+        double clickX = button.localToScreen(button.getBoundsInLocal()).getMinX();
+        double clickY = (button.localToScreen(button.getBoundsInLocal()).getMinY() +
+                button.localToScreen(button.getBoundsInLocal()).getMaxY()) / 2;
 
-        decodingPopOver.show(decodingButton.getScene().getWindow());
-        decodingPopOver.setX(clickX - decodingPopOver.getWidth());
-        decodingPopOver.setY(clickY - decodingPopOver.getHeight() / 2);
-
+        popOver.show(button.getScene().getWindow());
+        popOver.setX(clickX - popOver.getWidth());
+        popOver.setY(clickY - popOver.getHeight() / 2);
     }
 
     /**
@@ -349,6 +401,29 @@ public class RxTxView extends VBox {
         // This was works better!
         terminalText.setText(terminalText.getText() + text);
 
+    }
+
+    /**
+     * Updates the layout of the TX/RX tab based on the layout option selected
+     * in the model.
+     */
+    public void updateLayout() {
+        switch(txRx.layout.selectedLayoutOption.get()) {
+            case COMBINED_TX_RX:
+
+                // Hide TX pane
+                txTextFlow.setMinHeight(0.0);
+                txTextFlow.setMaxHeight(0.0);
+                break;
+            case SEPARATE_TX_RX:
+
+                // Show TX pane
+                txTextFlow.setMinHeight(100.0);
+                txTextFlow.setMaxHeight(100.0);
+                break;
+            default:
+                throw new RuntimeException("selectedLayoutOption unrecognised!");
+        }
     }
 
 }

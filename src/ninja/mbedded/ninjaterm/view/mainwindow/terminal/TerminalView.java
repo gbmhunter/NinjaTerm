@@ -106,7 +106,7 @@ public class TerminalView extends VBox {
 
         // Create RX/TX view
         //rxTxView = new RxTxView();
-        rxTxView.Init(decoder, statusBarController, glyphFont);
+        rxTxView.Init(terminal.txRx, decoder, statusBarController, glyphFont);
         rxTxTab.setContent(rxTxView);
 
         // Set default style for OpenClose button

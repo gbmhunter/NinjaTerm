@@ -1,5 +1,5 @@
 <!--
-* Inner content for the "StatsView" sub-tab of NinjaTerm
+* Inner UI content for the Led component.
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-16
@@ -7,7 +7,6 @@
 -->
 <!--style="-fx-background-color: red;" -->
 
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Circle?>
 <fx:root type="javafx.scene.layout.StackPane"
       xmlns:fx="http://javafx.com/fxml"
