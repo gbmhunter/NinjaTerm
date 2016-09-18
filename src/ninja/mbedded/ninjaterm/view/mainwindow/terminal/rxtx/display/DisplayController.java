@@ -161,6 +161,18 @@ public class DisplayController extends VBox {
             }
         });
 
+        // Disable the wrapping width textfield if wrapping is disabled.
+        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+            wrappingWidthTextField.setDisable(!newValue);
+        });
+
+        // Set default state
+        wrappingWidthTextField.setDisable(!terminal.txRx.display.wrappingEnabled.get());
+
+        //==============================================//
+        //============== BUFFER-SIZE SETUP =============//
+        //==============================================//
+
         // Perform a bi-directional bind, with custom string-to-number conversion which takes care
         // of any errors.
         Bindings.bindBidirectional(bufferSizeTextField.textProperty(), terminal.txRx.display.bufferSizeChars, new NumberStringConverter() {

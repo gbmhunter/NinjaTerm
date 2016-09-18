@@ -15,3 +15,4 @@ vX.X.X
 - Changed the "UTF-8" decoding option to "ASCII", closes #83.
 - Added buffer limit for TX and RX data, closes #86.
 - Added auto-scroll to status message pane, closes #87.
+- Wrapping width textfield is greyed out when wrapping is disabled, closes #88.
