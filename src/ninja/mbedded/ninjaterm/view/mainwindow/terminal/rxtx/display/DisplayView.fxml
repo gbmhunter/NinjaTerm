@@ -42,6 +42,19 @@
 
     <CheckBox fx:id="localTxEchoCheckBox">Local TX Echo</CheckBox>
 
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label fx:id="decodingLabel">Decoding:</Label>
+        <ComboBox fx:id="decodingComboBox"></ComboBox>
+    </HBox>
+
+    <CheckBox fx:id="wrappingCheckBox">Wrapping</CheckBox>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label>Wrapping Width:</Label>
+        <TextField fx:id="wrappingWidthTextField" prefWidth="60"></TextField>
+        <Label>px</Label>
+    </HBox>
+
 </fx:root>
 
 

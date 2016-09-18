@@ -5,7 +5,6 @@ import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -23,8 +22,7 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.layout.LayoutView;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.display.DisplayController;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -69,10 +67,7 @@ public class RxTxController extends VBox {
     public Button clearTextButton;
 
     @FXML
-    public Button layoutButton;
-
-    @FXML
-    public Button decodingButton;
+    public Button displayButton;
 
     @FXML
     public Button filtersButton;
@@ -101,15 +96,7 @@ public class RxTxController extends VBox {
 
     private Text txRxDataText = new Text();
 
-    private PopOver decodingPopOver;
-
     private Decoder decoder;
-
-    /**
-     * This is a UI element whose constructor is called manually. This UI element is inserted
-     * as a child of a pop-over.
-     */
-    public Formatting formatting;
 
     private StatusBarController statusBarController;
 
@@ -129,6 +116,8 @@ public class RxTxController extends VBox {
     private Text caretText;
 
     private ComPort comPort;
+
+    private DisplayController displayController = new DisplayController();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -164,8 +153,7 @@ public class RxTxController extends VBox {
         this.glyphFont = glyphFont;
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
-        layoutButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
-        decodingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
+        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
@@ -276,77 +264,43 @@ public class RxTxController extends VBox {
         //============= LAYOUT BUTTON SETUP ============//
         //==============================================//
 
-        LayoutView layoutView = new LayoutView();
-        layoutView.init(terminal.txRx.layout);
-
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver layoutPopover = new PopOver();
-        layoutPopover.setContentNode(layoutView);
-        layoutPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        layoutPopover.setCornerRadius(4);
-        layoutPopover.setTitle("Layout");
-
-        layoutButton.setOnAction(event -> {
-
-            if (layoutPopover.isShowing()) {
-                layoutPopover.hide();
-            } else if (!layoutPopover.isShowing()) {
-                showPopover(layoutButton, layoutPopover);
-            } else {
-                new RuntimeException("layoutPopover state not recognised.");
-            }
-        });
-
-        //==============================================//
-        //=========== DECODING BUTTON SETUP ============//
-        //==============================================//
-
-        decodingButton.setOnAction(event -> {
-
-            if (decodingPopOver.isShowing()) {
-                decodingPopOver.hide();
-            } else if (!decodingPopOver.isShowing()) {
-                showPopover(decodingButton, decodingPopOver);
-            } else {
-                new RuntimeException("decodingPopOver state not recognised.");
-            }
-        });
-
-        filtersButton.setOnAction(event -> {
-            // Show filters window
-
-        });
-
-        //==============================================//
-        //=============== CREATE POP-OVER ==============//
-        //==============================================//
-
-        formatting = new Formatting(decoder);
+        displayController.init(terminal.txRx.layout, decoder);
 
         // Attach a listener to the "Wrapping" checkbox
-        formatting.wrappingCheckBox.selectedProperty().addListener(
+        displayController.wrappingCheckBox.selectedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
                     updateTextWrapping();
                 });
 
         // Attach listener to the "Wrapping Width" text field
-        formatting.wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        displayController.wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
             updateTextWrapping();
         });
 
         // Set the default wrapping width and then enable wrapping. This should call the event handler
         // which will update the UI correctly.
-        formatting.wrappingWidthTextField.setText("800");
-        formatting.wrappingCheckBox.setSelected(true);
+        displayController.wrappingWidthTextField.setText("800");
+        displayController.wrappingCheckBox.setSelected(true);
+
 
         // This creates the popover, but is not shown until
         // show() is called.
-        decodingPopOver = new PopOver();
-        decodingPopOver.setContentNode(formatting);
-        decodingPopOver.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        decodingPopOver.setCornerRadius(4);
-        decodingPopOver.setTitle("Formatting");
+        PopOver displayPopover = new PopOver();
+        displayPopover.setContentNode(displayController);
+        displayPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        displayPopover.setCornerRadius(4);
+        displayPopover.setTitle("Layout");
+
+        displayButton.setOnAction(event -> {
+
+            if (displayPopover.isShowing()) {
+                displayPopover.hide();
+            } else if (!displayPopover.isShowing()) {
+                showPopover(displayButton, displayPopover);
+            } else {
+                new RuntimeException("displayPopover state not recognised.");
+            }
+        });
 
         //==============================================//
         //========== ATTACH LISTENER TO LAYOUT =========//
@@ -364,7 +318,7 @@ public class RxTxController extends VBox {
         txRxDataText.textProperty().bind(terminal.txRx.txRxData);
         txDataText.textProperty().bind(terminal.txRx.txData);
 
-        // Call this to update the layout of the TX/RX pane into its default
+        // Call this to update the display of the TX/RX pane into its default
         // state
         updateLayout();
     }
@@ -375,12 +329,12 @@ public class RxTxController extends VBox {
      */
     private void updateTextWrapping() {
 
-        if (formatting.wrappingCheckBox.isSelected()) {
+        if (displayController.wrappingCheckBox.isSelected()) {
             System.out.println("\"Wrapping\" checkbox checked.");
 
             Double wrappingWidth;
             try {
-                wrappingWidth = Double.parseDouble(formatting.wrappingWidthTextField.getText());
+                wrappingWidth = Double.parseDouble(displayController.wrappingWidthTextField.getText());
             } catch (NumberFormatException e) {
                 System.out.println("ERROR: Wrapping width was not a valid number.");
                 return;
@@ -506,7 +460,7 @@ public class RxTxController extends VBox {
         terminal.txRx.addTxData(ke.getCharacter());
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
-        /*if(terminal.txRx.layout.localTxEcho.get()) {
+        /*if(terminal.txRx.display.localTxEcho.get()) {
             // Echo the sent character to the TX/RX display
             terminal.txRx.addRxData(ke.getCharacter());
         }*/

@@ -77,8 +77,7 @@
         <!-- =========================================== -->
         <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton" minWidth="100">Clear Text</Button>
-            <Button fx:id="layoutButton" minWidth="100">Layout</Button>
-            <Button fx:id="decodingButton" minWidth="100">Decoding</Button>
+            <Button fx:id="displayButton" minWidth="100">Display</Button>
             <Button fx:id="filtersButton" minWidth="100">Filters</Button>
         </VBox>
 
