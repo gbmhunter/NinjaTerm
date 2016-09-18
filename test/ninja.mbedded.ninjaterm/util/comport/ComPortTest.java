@@ -21,7 +21,9 @@ public class ComPortTest {
     @Test
     public void constructorTest() throws Exception {
 
-        ComPort comPort = new ComPort("COM1");
+        ComPort comPort = new ComPort();
+
+        comPort.setName("COM1");
 
         assertEquals("COM1", comPort.getName());
 

@@ -1,8 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 
 import javafx.application.Platform;
-import javafx.beans.property.IntegerProperty;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
@@ -10,11 +8,10 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
@@ -31,7 +28,7 @@ import java.io.IOException;
  * @since           2016-08-23
  * @last-modified   2016-08-23
  */
-public class TerminalView extends VBox {
+public class TerminalController extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -44,7 +41,7 @@ public class TerminalView extends VBox {
     public ComSettings comSettings;
 
     @FXML
-    public RxTxView rxTxView;
+    public RxTxController rxTxController;
 
     @FXML
     public Tab rxTxTab;
@@ -59,7 +56,7 @@ public class TerminalView extends VBox {
     /**
      * The COM port instance attached to this terminal.
      */
-    public ComPort comPort;
+    public ComPort comPort = new ComPort();
 
     private StatusBarController statusBarController;
     private Decoder decoder = new Decoder();
@@ -69,7 +66,7 @@ public class TerminalView extends VBox {
     private Terminal terminal;
     private Model model;
 
-    public TerminalView() {
+    public TerminalController() {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "TerminalView.fxml"));
@@ -106,16 +103,12 @@ public class TerminalView extends VBox {
         terminalTabPane.getSelectionModel().select(0);
 
         // Create RX/TX view
-        //rxTxView = new RxTxView();
-        rxTxView.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
-        rxTxTab.setContent(rxTxView);
+        //rxTxController = new RxTxController();
+        rxTxController.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
+        rxTxTab.setContent(rxTxController);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
-
-        rxTxView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            System.out.println("KEY PRESSED!");
-        });
 
         comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
 
@@ -139,7 +132,7 @@ public class TerminalView extends VBox {
 
         if (comSettings.openCloseComPortButton.getText().equals("Open")) {
 
-            comPort = new ComPort(comSettings.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+            comPort.setName(comSettings.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             try {
                 comPort.open();
@@ -177,7 +170,7 @@ public class TerminalView extends VBox {
                 Platform.runLater(() -> {
 
                     // Add the received data to the model
-                    //rxTxView.addTxRxText(rxText);
+                    //rxTxController.addTxRxText(rxText);
                     terminal.txRx.addRxData(rxText);
 
                     // Update stats in app model
@@ -260,10 +253,9 @@ public class TerminalView extends VBox {
         }
         System.out.println("TX/RX sub-tab selected.");
 
-            /*if (!(ke.getCharacter() || ke.getCode().isDigitKey() || ke.getCode().equals(KeyCode.ENTER))) {
-                return;
-            }
-            System.out.println("Key pressed is alphanumeric or enter.");*/
+        // Now that we have made sure the RX/TX sub-tab was open when the key was pressed,
+        // call the appropriate function in the RX/TX controller.
+        rxTxController.handleKeyTyped(ke);
 
     }
 

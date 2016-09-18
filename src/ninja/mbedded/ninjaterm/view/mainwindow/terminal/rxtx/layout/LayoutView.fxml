@@ -40,6 +40,8 @@
     <RadioButton fx:id="sendTxCharsOnEnterRadioButton">Send TX chars on enter</RadioButton>
     </VBox>
 
+    <CheckBox fx:id="localTxEchoCheckBox">Local TX Echo</CheckBox>
+
 </fx:root>
 
 

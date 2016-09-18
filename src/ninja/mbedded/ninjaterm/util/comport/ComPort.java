@@ -28,12 +28,11 @@ public class ComPort {
 
     private String name;
 
-    public String getName() {
-        return name;
-    }
-
     private boolean portOpen = false;
-    public boolean isPortOpen() { return portOpen; }
+
+    public boolean isPortOpen() {
+        return portOpen;
+    }
 
     /**
      * The jSSC object which is actually used to control the COM port. This is a serial-port library
@@ -67,16 +66,18 @@ public class ComPort {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public ComPort(String name) {
+    public ComPort() {
+    }
 
-        this.name = name;
-
-        // Create a new jSSC serial port object
-        serialPort = new SerialPort(name);
-
+    public void setName(String name) { this.name = name; }
+    public String getName() {
+        return name;
     }
 
     public void open() throws ComPortException {
+
+        // Create a new jSSC serial port object
+        serialPort = new SerialPort(name);
 
         try {
             serialPort.openPort();

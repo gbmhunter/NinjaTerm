@@ -12,7 +12,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalView;
+import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -53,7 +53,7 @@ public class MainWindowController implements Initializable {
 
     private ComPortManager comPortManager;
 
-    public List<TerminalView> terminalViews = new ArrayList<>();
+    public List<TerminalController> terminalControllers = new ArrayList<>();
 
     private GlyphFont glyphFont;
 
@@ -112,17 +112,17 @@ public class MainWindowController implements Initializable {
         model.terminals.add(terminal);
 
 
-        TerminalView terminalView = new TerminalView();
-        terminalView.init(model, terminal, glyphFont, statusBarController);
-        terminalViews.add(terminalView);
+        TerminalController terminalController = new TerminalController();
+        terminalController.init(model, terminal, glyphFont, statusBarController);
+        terminalControllers.add(terminalController);
 
-        terminalView.comSettings.setComPortManager(comPortManager);
+        terminalController.comSettings.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminalView.comSettings.scanComPorts();
+        terminalController.comSettings.scanComPorts();
 
         Tab terminalTab = new Tab();
         terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
-        terminalTab.setContent(terminalView);
+        terminalTab.setContent(terminalController);
 
         terminalTabPane.getTabs().add(terminalTab);
 
@@ -131,7 +131,7 @@ public class MainWindowController implements Initializable {
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
         terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
-            terminalView.handleKeyTyped(ke);
+            terminalController.handleKeyTyped(ke);
         });
 
 

@@ -1,11 +1,11 @@
 <!--
-* Inner content for the "terminalView" tab of NinjaTerm
+* Inner content for the "terminalController" tab of NinjaTerm
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
 * @last-modified   2016-08-25
 -->
-<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalView.rxtx.RxTxView-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalController.rxtx.RxTxController-->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>

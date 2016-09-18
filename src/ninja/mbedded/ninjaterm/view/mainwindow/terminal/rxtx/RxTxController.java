@@ -39,7 +39,7 @@ import java.io.IOException;
  * @since 2016-07-16
  * @last-modified 2016-09-15
  */
-public class RxTxView extends VBox {
+public class RxTxController extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -130,7 +130,7 @@ public class RxTxView extends VBox {
     //================================================================================================//
 
 
-    public RxTxView() {
+    public RxTxController() {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "RxTxView.fxml"));
@@ -151,6 +151,7 @@ public class RxTxView extends VBox {
      */
     public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
 
+        // Save model
         this.model = model;
         this.terminal = terminal;
 
@@ -489,7 +490,7 @@ public class RxTxView extends VBox {
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         if(terminal.txRx.layout.localTxEcho.get()) {
             // Echo the sent character to the TX/RX display
-            //rxTxView.addTxRxText(ke.getCharacter());
+            terminal.txRx.addRxData(ke.getCharacter());
         }
     }
 

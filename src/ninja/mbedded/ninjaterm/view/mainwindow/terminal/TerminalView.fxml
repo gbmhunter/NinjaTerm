@@ -11,7 +11,7 @@
 <?import javafx.scene.text.TextFlow?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
-<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxView?>
+<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView?>
 <fx:root type="javafx.scene.layout.VBox" id="RxTxController"
@@ -35,7 +35,7 @@
         </Tab>-->
 
         <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
-            <RxTxView fx:id="rxTxView"/>
+            <RxTxController fx:id="rxTxController"/>
         </Tab>
         <Tab text="Stats" closable="false">
             <StatsView fx:id="statsView" />

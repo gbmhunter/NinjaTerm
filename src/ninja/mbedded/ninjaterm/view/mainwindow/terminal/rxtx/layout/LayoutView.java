@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.layout;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -31,6 +32,9 @@ public class LayoutView extends VBox {
 
     @FXML
     public RadioButton sendTxCharsOnEnterRadioButton;
+
+    @FXML
+    public CheckBox localTxEchoCheckBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -82,6 +86,8 @@ public class LayoutView extends VBox {
         sendTxCharsOnEnterRadioButton.setToggleGroup(toggleGroup);
 
 
+        // Bind the model boolean to the checkbox
+        layout.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
 
     }
 
