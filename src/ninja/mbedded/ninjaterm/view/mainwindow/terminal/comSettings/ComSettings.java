@@ -5,6 +5,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.VBox;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.util.comport.*;
@@ -16,7 +18,7 @@ import java.io.IOException;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-09-15
+ * @last-modified   2016-09-18
  */
 public class ComSettings extends VBox {
 
@@ -49,7 +51,7 @@ public class ComSettings extends VBox {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    private StatusBarController statusBarController;
+    private Model model;
 
     private ComPortManager comPortManager;
 
@@ -107,8 +109,8 @@ public class ComSettings extends VBox {
 
     }
 
-    public void setStatusBarController(StatusBarController statusBarController) {
-        this.statusBarController = statusBarController;
+    public void setStatusBarController(Model model) {
+        this.model = model;
     }
 
     private void scanButtonPressed() {
@@ -127,11 +129,11 @@ public class ComSettings extends VBox {
         String[] portNames = comPortManager.scan();
 
         if(portNames.length == 0) {
-            statusBarController.addMsg("No COM ports found on this computer.");
+            model.status.addMsg("No COM ports found on this computer.");
             return;
         }
 
-        statusBarController.addMsg(portNames.length + " COM port(s) found.");
+        model.status.addMsg(portNames.length + " COM port(s) found.");
         foundComPortsComboBox.getItems().addAll(portNames);
 
         // Select first one in list for convenience

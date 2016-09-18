@@ -258,7 +258,7 @@ public class RxTxController extends VBox {
             //txRxDataText.setText("");
             terminal.txRx.txRxData.set("");
             terminal.txRx.txData.set("");
-            statusBarController.addMsg("Terminal TX/RX text cleared.");
+            model.status.addMsg("Terminal TX/RX text cleared.");
 
         });
 
@@ -432,7 +432,7 @@ public class RxTxController extends VBox {
         data[0] = (byte)ke.getCharacter().charAt(0);
 
         if(comPort == null || comPort.isPortOpen() == false) {
-            statusBarController.addErr("Cannot send COM port data, port is not open.");
+            model.status.addErr("Cannot send COM port data, port is not open.");
             return;
         }
 

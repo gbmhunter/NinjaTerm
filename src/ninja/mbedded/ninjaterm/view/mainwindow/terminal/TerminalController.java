@@ -92,7 +92,7 @@ public class TerminalController extends VBox {
         this.statusBarController = statusBarController;
 
         // Set children
-        comSettings.setStatusBarController(statusBarController);
+        comSettings.setStatusBarController(model);
 
 
         comSettings.openCloseComPortButton.setOnAction((ActionEvent) -> {
@@ -119,7 +119,7 @@ public class TerminalController extends VBox {
 
         statsView.init(terminal.stats);
 
-        statusBarController.init(model.globalStats);
+        statusBarController.init(model);
 
     }
 
@@ -138,11 +138,11 @@ public class TerminalController extends VBox {
                 comPort.open();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
-                    statusBarController.addErr(comPort.getName() + " was busy and could not be opened.");
+                    model.status.addErr(comPort.getName() + " was busy and could not be opened.");
                     comPort = null;
                     return;
                 } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
-                    statusBarController.addErr(comPort.getName() + " no longer exists. Please rescan.");
+                    model.status.addErr(comPort.getName() + " no longer exists. Please rescan.");
                     comPort = null;
                     return;
                 } else {
@@ -184,7 +184,7 @@ public class TerminalController extends VBox {
             // Change "Open" button to "Close" button
             setOpenCloseButtonStyle(OpenCloseButtonStyles.CLOSE);
 
-            statusBarController.addMsg(comPort.getName() + " opened." +
+            model.status.addMsg(comPort.getName() + " opened." +
                     " Buad rate = " + comPort.getBaudRate() + "," +
                     " parity = " + comPort.getParity() + "," +
                     " num. stop bits = " + comPort.getNumStopBits() + ".");
@@ -196,7 +196,7 @@ public class TerminalController extends VBox {
                 comPort.close();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
-                    statusBarController.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
+                    model.status.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
 
                     // Since COM port does not exist anymore, set button back to "Open"
                     comSettings.openCloseComPortButton.setText("Open");
@@ -207,7 +207,7 @@ public class TerminalController extends VBox {
             }
             setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
-            statusBarController.addMsg(comPort.getName() + " closed.");
+            model.status.addMsg(comPort.getName() + " closed.");
         }
 
     }

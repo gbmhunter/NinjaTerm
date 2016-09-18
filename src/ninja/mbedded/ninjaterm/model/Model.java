@@ -4,6 +4,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableIntegerValue;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
+import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.List;
 public class Model {
 
     public List<Terminal> terminals = new ArrayList<>();
-
+    public Status status = new Status();
     public GlobalStats globalStats = new GlobalStats();
 
     public Model() {
