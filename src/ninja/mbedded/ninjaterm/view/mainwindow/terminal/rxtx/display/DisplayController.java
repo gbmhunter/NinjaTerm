@@ -196,6 +196,11 @@ public class DisplayController extends VBox {
 
                 return intValue;
             }
+
+            @Override
+            public String toString(Number value) {
+                return ((Integer)value).toString();
+            }
         });
 
     }
