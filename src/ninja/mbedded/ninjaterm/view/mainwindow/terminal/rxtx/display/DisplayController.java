@@ -1,9 +1,11 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.display;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.util.converter.NumberStringConverter;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
@@ -11,6 +13,9 @@ import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 
 import java.io.IOException;
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
 
 /**
  * Controller for the layout pop-up window.
@@ -48,6 +53,9 @@ public class DisplayController extends VBox {
 
     @FXML
     public TextField wrappingWidthTextField;
+
+    @FXML
+    public TextField bufferSizeTextField;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -127,29 +135,56 @@ public class DisplayController extends VBox {
         // Bind "wrapping enabled" checkbox to model
         terminal.txRx.display.wrappingEnabled.bind(wrappingCheckBox.selectedProperty());
 
-        // Attach listener to the "Wrapping Width" text field
-        wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+        // Perform a bi-directional bind, with custom string-to-number conversion which takes care
+        // of any errors.
+        Bindings.bindBidirectional(wrappingWidthTextField.textProperty(), terminal.txRx.display.wrappingWidth, new NumberStringConverter() {
+            @Override
+            public Number fromString(String value) {
+                System.out.println("Converting from string.");
 
-            // Convert wrapping width string into double, and then perform
-            // sanity checks
-            Double wrappingWidth;
-            try {
-                wrappingWidth = Double.parseDouble(newValue);
-            } catch (NumberFormatException e) {
-                System.out.println("ERROR: Wrapping width was not a valid number.");
-                return;
+                // Convert wrapping width string into double, and then perform
+                // sanity checks
+                Double wrappingWidth;
+                try {
+                    wrappingWidth = Double.parseDouble(value);
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR: Wrapping width was not a valid number.");
+                    return 0.0;
+                }
+
+                if (wrappingWidth <= 0.0) {
+                    System.out.println("ERROR: Wrapping width must be greater than 0.");
+                    return 0.0;
+                }
+
+                return wrappingWidth;
             }
+        });
 
-            if (wrappingWidth <= 0.0) {
-                System.out.println("ERROR: Wrapping width must be greater than 0.");
-                return;
+        // Perform a bi-directional bind, with custom string-to-number conversion which takes care
+        // of any errors.
+        Bindings.bindBidirectional(bufferSizeTextField.textProperty(), terminal.txRx.display.bufferSizeChars, new NumberStringConverter() {
+            @Override
+            public Number fromString(String value) {
+
+                // Convert wrapping width string into double, and then perform
+                // sanity checks
+                Integer intValue;
+                try {
+                    intValue = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    System.out.println("ERROR: Buffer size is not a valid integer.");
+                    return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
+                }
+
+                if (intValue <= 0.0) {
+                    System.out.println("ERROR: Buffer size must be greater than 0.");
+                    return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
+                }
+
+                return intValue;
             }
-
-            // Set value in model
-            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
-
         });
 
     }
-
 }

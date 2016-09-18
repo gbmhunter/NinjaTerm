@@ -255,7 +255,9 @@ public class RxTxController extends VBox {
 
         clearTextButton.setOnAction(event -> {
             // Clear all the text
-            txRxDataText.setText("");
+            //txRxDataText.setText("");
+            terminal.txRx.txRxData.set("");
+            terminal.txRx.txData.set("");
             statusBarController.addMsg("Terminal TX/RX text cleared.");
 
         });

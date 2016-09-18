@@ -35,6 +35,7 @@ which are displaying dynamic content */
 .border {
     -fx-border-color: lightgrey;
     -fx-border-radius: 5px;
+    -fx-padding: 10 10 10 10;
     /*-fx-border-insets: 5px;*/
 }
 

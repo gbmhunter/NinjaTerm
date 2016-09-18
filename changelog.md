@@ -13,3 +13,4 @@ vX.X.X
 - Added flashing TX/RX activity indicators, closes #80.
 - Added layout options for RX/TX tab, closes #81.
 - Changed the "UTF-8" decoding option to "ASCII", closes #83.
+- Added buffer limit for TX and RX data, closes #86.
