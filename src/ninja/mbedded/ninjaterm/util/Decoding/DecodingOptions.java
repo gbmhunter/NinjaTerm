@@ -10,7 +10,7 @@ package ninja.mbedded.ninjaterm.util.Decoding;
  */
 public enum DecodingOptions {
 
-    UTF8("UTF-8"),
+    ASCII("ASCII"),
     HEX("Hex"),
     ;
 

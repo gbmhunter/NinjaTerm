@@ -13,7 +13,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class Decoder {
 
-    public DecodingOptions decodingOption = DecodingOptions.UTF8;
+    public DecodingOptions decodingOption = DecodingOptions.ASCII;
 
     public Decoder() {
 
@@ -22,7 +22,7 @@ public class Decoder {
     public String parse(byte[] data) {
 
         String output;
-        if(decodingOption == DecodingOptions.UTF8) {
+        if(decodingOption == DecodingOptions.ASCII) {
             try {
                 output = new String(data, "UTF-8");
             } catch (UnsupportedEncodingException e) {

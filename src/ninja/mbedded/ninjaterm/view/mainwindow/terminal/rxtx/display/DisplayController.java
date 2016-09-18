@@ -4,7 +4,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.layout.Layout;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 
@@ -24,7 +26,7 @@ public class DisplayController extends VBox {
     //================================================================================================//
 
     @FXML
-    public ComboBox<Layout.LayoutOptions> layoutOptionsComboBox;
+    public ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
 
     @FXML
     public RadioButton sendTxCharsImmediatelyRadioButton;
@@ -72,24 +74,24 @@ public class DisplayController extends VBox {
 
     }
 
-    public void init(Layout layout, Decoder decoder) {
+    public void init(Model model, Terminal terminal, Decoder decoder) {
 
         // Populate decoding options combobox
-        layoutOptionsComboBox.getItems().setAll(Layout.LayoutOptions.values());
+        layoutOptionsComboBox.getItems().setAll(Display.LayoutOptions.values());
 
         // Add listener to combobox
         layoutOptionsComboBox.setOnAction(event -> {
 
             // Bind the decoder decoding option to what has been selected in the
             // combobox
-            layout.selectedLayoutOption.set(layoutOptionsComboBox.getSelectionModel().getSelectedItem());
+            terminal.txRx.display.selectedLayoutOption.set(layoutOptionsComboBox.getSelectionModel().getSelectedItem());
         });
 
         // Set default
-        layoutOptionsComboBox.getSelectionModel().select(layout.selectedLayoutOption.get());
+        layoutOptionsComboBox.getSelectionModel().select(terminal.txRx.display.selectedLayoutOption.get());
 
         //==============================================//
-        //============= SETUP RADIOBUTTONS =============//
+        //=========== SETUP TX RADIOBUTTONS ============//
         //==============================================//
 
         ToggleGroup toggleGroup = new ToggleGroup();
@@ -98,7 +100,11 @@ public class DisplayController extends VBox {
 
 
         // Bind the model boolean to the checkbox
-        layout.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
+        terminal.txRx.display.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
+
+        //==============================================//
+        //============== SETUP TX DECODING =============//
+        //==============================================//
 
         // Populate decoding options combobox
         decodingComboBox.getItems().setAll(DecodingOptions.values());
@@ -112,7 +118,37 @@ public class DisplayController extends VBox {
         });
 
         // Set default
-        decodingComboBox.getSelectionModel().select(DecodingOptions.UTF8);
+        decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
+
+        //==============================================//
+        //================ SETUP WRAPPING ==============//
+        //==============================================//
+
+        // Bind "wrapping enabled" checkbox to model
+        terminal.txRx.display.wrappingEnabled.bind(wrappingCheckBox.selectedProperty());
+
+        // Attach listener to the "Wrapping Width" text field
+        wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+
+            // Convert wrapping width string into double, and then perform
+            // sanity checks
+            Double wrappingWidth;
+            try {
+                wrappingWidth = Double.parseDouble(newValue);
+            } catch (NumberFormatException e) {
+                System.out.println("ERROR: Wrapping width was not a valid number.");
+                return;
+            }
+
+            if (wrappingWidth <= 0.0) {
+                System.out.println("ERROR: Wrapping width must be greater than 0.");
+                return;
+            }
+
+            // Set value in model
+            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
+
+        });
 
     }
 

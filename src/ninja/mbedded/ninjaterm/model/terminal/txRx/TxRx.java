@@ -1,14 +1,14 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.layout.Layout;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 
 /**
  * Created by gbmhu on 2016-09-16.
  */
 public class TxRx {
 
-    public Layout layout = new Layout();
+    public Display display = new Display();
 
 
     public SimpleStringProperty txData = new SimpleStringProperty("");
@@ -23,7 +23,7 @@ public class TxRx {
         txData.set(txData.get() + data);
 
         // Echo TX data into TX/RX pane
-        if(layout.localTxEcho.get()) {
+        if(display.localTxEcho.get()) {
             txRxData.set(txRxData.get() + data);
         }
 

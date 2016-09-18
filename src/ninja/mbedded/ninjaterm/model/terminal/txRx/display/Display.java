@@ -1,12 +1,13 @@
-package ninja.mbedded.ninjaterm.model.terminal.txRx.layout;
+package ninja.mbedded.ninjaterm.model.terminal.txRx.display;
 
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
  * Created by gbmhu on 2016-09-16.
  */
-public class Layout {
+public class Display {
 
     public enum LayoutOptions {
         COMBINED_TX_RX("Combined TX/RX"),
@@ -30,12 +31,14 @@ public class Layout {
         SEND_TX_CHARS_ON_ENTER
     }
 
-    public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty();
+    public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleObjectProperty<LayoutOptions> selectedLayoutOption = new SimpleObjectProperty<>();
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>();
 
-    public Layout() {
-        localTxEcho.set(false);
+    public SimpleBooleanProperty wrappingEnabled = new SimpleBooleanProperty(false);
+    public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(800.0);
+
+    public Display() {
         selectedLayoutOption.set(LayoutOptions.COMBINED_TX_RX);
         selTxCharSendingOption.set(TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
     }

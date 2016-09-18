@@ -264,24 +264,7 @@ public class RxTxController extends VBox {
         //============= LAYOUT BUTTON SETUP ============//
         //==============================================//
 
-        displayController.init(terminal.txRx.layout, decoder);
-
-        // Attach a listener to the "Wrapping" checkbox
-        displayController.wrappingCheckBox.selectedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                    updateTextWrapping();
-                });
-
-        // Attach listener to the "Wrapping Width" text field
-        displayController.wrappingWidthTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            updateTextWrapping();
-        });
-
-        // Set the default wrapping width and then enable wrapping. This should call the event handler
-        // which will update the UI correctly.
-        displayController.wrappingWidthTextField.setText("800");
-        displayController.wrappingCheckBox.setSelected(true);
-
+        displayController.init(model, terminal, decoder);
 
         // This creates the popover, but is not shown until
         // show() is called.
@@ -289,7 +272,7 @@ public class RxTxController extends VBox {
         displayPopover.setContentNode(displayController);
         displayPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         displayPopover.setCornerRadius(4);
-        displayPopover.setTitle("Layout");
+        displayPopover.setTitle("Display");
 
         displayButton.setOnAction(event -> {
 
@@ -303,10 +286,24 @@ public class RxTxController extends VBox {
         });
 
         //==============================================//
+        //== ATTACH LISTENERS TO WRAPPING PROPERTIES ===//
+        //==============================================//
+        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+            updateTextWrapping();
+        });
+
+        terminal.txRx.display.wrappingWidth.addListener((observable, oldValue, newValue) -> {
+            updateTextWrapping();
+        });
+
+        // Update to default wrapping values in model
+        updateTextWrapping();
+
+        //==============================================//
         //========== ATTACH LISTENER TO LAYOUT =========//
         //==============================================//
 
-        terminal.txRx.layout.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.display.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
             System.out.println("Selected layout option has been changed.");
             updateLayout();
         });
@@ -329,25 +326,12 @@ public class RxTxController extends VBox {
      */
     private void updateTextWrapping() {
 
-        if (displayController.wrappingCheckBox.isSelected()) {
+        if (terminal.txRx.display.wrappingEnabled.get()) {
             System.out.println("\"Wrapping\" checkbox checked.");
-
-            Double wrappingWidth;
-            try {
-                wrappingWidth = Double.parseDouble(displayController.wrappingWidthTextField.getText());
-            } catch (NumberFormatException e) {
-                System.out.println("ERROR: Wrapping width was not a valid number.");
-                return;
-            }
-
-            if (wrappingWidth <= 0.0) {
-                System.out.println("ERROR: Wrapping width must be greater than 0.");
-                return;
-            }
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
-            txRxTextFlow.setMaxWidth(wrappingWidth);
+            txRxTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
             System.out.println("\"Wrapping\" checkbox unchecked.");
@@ -396,7 +380,7 @@ public class RxTxController extends VBox {
      * in the model.
      */
     public void updateLayout() {
-        switch(terminal.txRx.layout.selectedLayoutOption.get()) {
+        switch(terminal.txRx.display.selectedLayoutOption.get()) {
             case COMBINED_TX_RX:
 
                 // Hide TX pane
