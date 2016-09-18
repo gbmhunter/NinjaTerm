@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -34,6 +35,9 @@ public class StatusBarController implements Initializable {
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
+    @FXML
+    public ScrollPane statusScrollPane;
 
     @FXML
     public TextFlow statusTextFlow;
@@ -64,7 +68,12 @@ public class StatusBarController implements Initializable {
 
         model.status.statusMsgs.addListener((ListChangeListener.Change<? extends Node> c) -> {
             statusTextFlow.getChildren().setAll(model.status.statusMsgs);
+
+            // Auto-scroll the status scroll-pane to the last received status message
+            statusScrollPane.setVvalue(statusTextFlow.getHeight());
         });
+
+
 
     }
 

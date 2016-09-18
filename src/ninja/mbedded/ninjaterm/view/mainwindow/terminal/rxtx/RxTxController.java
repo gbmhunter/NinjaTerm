@@ -431,7 +431,7 @@ public class RxTxController extends VBox {
         byte[] data = new byte[1];
         data[0] = (byte)ke.getCharacter().charAt(0);
 
-        if(comPort == null || comPort.isPortOpen() == false) {
+        if(comPort.isPortOpen() == false) {
             model.status.addErr("Cannot send COM port data, port is not open.");
             return;
         }

@@ -148,12 +148,12 @@ public class DisplayController extends VBox {
                 try {
                     wrappingWidth = Double.parseDouble(value);
                 } catch (NumberFormatException e) {
-                    System.out.println("ERROR: Wrapping width was not a valid number.");
+                    model.status.addErr("Wrapping width was not a valid number.");
                     return 0.0;
                 }
 
                 if (wrappingWidth <= 0.0) {
-                    System.out.println("ERROR: Wrapping width must be greater than 0.");
+                    model.status.addErr("Wrapping width must be greater than 0.");
                     return 0.0;
                 }
 
@@ -173,12 +173,12 @@ public class DisplayController extends VBox {
                 try {
                     intValue = Integer.parseInt(value);
                 } catch (NumberFormatException e) {
-                    System.out.println("ERROR: Buffer size is not a valid integer.");
+                    model.status.addErr("Buffer size is not a valid integer.");
                     return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
                 }
 
                 if (intValue <= 0.0) {
-                    System.out.println("ERROR: Buffer size must be greater than 0.");
+                    model.status.addErr("Buffer size must be greater than 0.");
                     return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
                 }
 

@@ -30,7 +30,7 @@
               HBox.hgrow="ALWAYS"
               styleClass="border">
             <!-- ScrollPane does not exceed it's parent dimensions -->
-            <ScrollPane>
+            <ScrollPane fx:id="statusScrollPane">
                 <TextFlow fx:id="statusTextFlow"></TextFlow>
             </ScrollPane>
         </VBox>

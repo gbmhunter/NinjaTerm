@@ -139,11 +139,11 @@ public class TerminalController extends VBox {
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
                     model.status.addErr(comPort.getName() + " was busy and could not be opened.");
-                    comPort = null;
+                    //comPort = null;
                     return;
                 } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
                     model.status.addErr(comPort.getName() + " no longer exists. Please rescan.");
-                    comPort = null;
+                    //comPort = null;
                     return;
                 } else {
                     throw new RuntimeException(e);
