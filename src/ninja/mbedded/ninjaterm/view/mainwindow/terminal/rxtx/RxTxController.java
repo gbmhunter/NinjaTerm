@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -18,9 +19,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
@@ -46,6 +45,9 @@ public class RxTxController extends VBox {
     //================================================================================================//
 
     @FXML
+    public VBox dataContainerVBox;
+
+    @FXML
     public ScrollPane rxDataScrollPane;
 
     @FXML
@@ -53,6 +55,9 @@ public class RxTxController extends VBox {
 
     @FXML
     public TextFlow txTextFlow;
+
+    @FXML
+    public Text txDataText;
 
     @FXML
     public Pane autoScrollButtonPane;
@@ -94,7 +99,7 @@ public class RxTxController extends VBox {
      */
     private Boolean autoScrollEnabled = true;
 
-    private Text terminalText = new Text();
+    private Text txRxDataText = new Text();
 
     private PopOver decodingPopOver;
 
@@ -176,8 +181,8 @@ public class RxTxController extends VBox {
 
         // Add default Text node to text flow. Received text
         // will be added to this node.
-        txRxTextFlow.getChildren().add(terminalText);
-        terminalText.setFill(Color.LIME);
+        txRxTextFlow.getChildren().add(txRxDataText);
+        txRxDataText.setFill(Color.LIME);
 
         //==============================================//
         //============== CREATE CARET ==================//
@@ -262,7 +267,7 @@ public class RxTxController extends VBox {
 
         clearTextButton.setOnAction(event -> {
             // Clear all the text
-            terminalText.setText("");
+            txRxDataText.setText("");
             statusBarController.addMsg("Terminal TX/RX text cleared.");
 
         });
@@ -356,8 +361,12 @@ public class RxTxController extends VBox {
         //======= BIND TERMINAL TEXT TO TXRX DATA ======//
         //==============================================//
 
-        terminalText.textProperty().bind(terminal.txRx.txRxText);
+        txRxDataText.textProperty().bind(terminal.txRx.txRxData);
+        txDataText.textProperty().bind(terminal.txRx.txData);
 
+        // Call this to update the layout of the TX/RX pane into its default
+        // state
+        updateLayout();
     }
 
     /**
@@ -424,7 +433,7 @@ public class RxTxController extends VBox {
         //txRxTextFlow.getChildren().add(text);
 
         // This was works better!
-        terminalText.setText(terminalText.getText() + text);
+        txRxDataText.setText(txRxDataText.getText() + text);
 
     }
 
@@ -437,8 +446,12 @@ public class RxTxController extends VBox {
             case COMBINED_TX_RX:
 
                 // Hide TX pane
-                txTextFlow.setMinHeight(0.0);
-                txTextFlow.setMaxHeight(0.0);
+
+                //txTextFlow.setMinHeight(0.0);
+                //txTextFlow.setMaxHeight(0.0);
+                if(dataContainerVBox.getChildren().contains(txTextFlow)){
+                    dataContainerVBox.getChildren().remove(txTextFlow);
+                }
 
                 // Add the caret in the shared pane
                 if(txRxTextFlow.getChildren().indexOf(caretText) == -1) {
@@ -449,8 +462,11 @@ public class RxTxController extends VBox {
             case SEPARATE_TX_RX:
 
                 // Show TX pane
-                txTextFlow.setMinHeight(100.0);
-                txTextFlow.setMaxHeight(100.0);
+                //txTextFlow.setMinHeight(100.0);
+                //txTextFlow.setMaxHeight(100.0);
+                if(!dataContainerVBox.getChildren().contains(txTextFlow)) {
+                    dataContainerVBox.getChildren().add(txTextFlow);
+                }
 
                 // Remove the caret in the shared pane
                 if(txRxTextFlow.getChildren().indexOf(caretText) >= 0) {
@@ -487,11 +503,13 @@ public class RxTxController extends VBox {
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + 1);
 
+        terminal.txRx.addTxData(ke.getCharacter());
+
         // Check if user wants TX chars to be echoed locally onto TX/RX display
-        if(terminal.txRx.layout.localTxEcho.get()) {
+        /*if(terminal.txRx.layout.localTxEcho.get()) {
             // Echo the sent character to the TX/RX display
             terminal.txRx.addRxData(ke.getCharacter());
-        }
+        }*/
     }
 
 }

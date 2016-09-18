@@ -28,7 +28,7 @@
     <HBox VBox.vgrow="ALWAYS" spacing="10">
 
         <!-- This VBox holds both the TX and RX panes -->
-        <VBox HBox.hgrow="ALWAYS" spacing="20">
+        <VBox fx:id="dataContainerVBox" HBox.hgrow="ALWAYS" spacing="20">
             <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
             <StackPane VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
 
@@ -67,6 +67,7 @@
                 <padding>
                     <Insets top="10" bottom="10" left="10" right="10"/>
                 </padding>
+                <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
             </TextFlow>
 
         </VBox>

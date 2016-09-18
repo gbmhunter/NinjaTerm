@@ -11,3 +11,4 @@ vX.X.X
 - Added local echo option for TX characters, closes #78.
 - Added statistics sub-tab, closes #79.
 - Added flashing TX/RX activity indicators, closes #80.
+- Added layout options for RX/TX tab, closes #81.
