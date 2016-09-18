@@ -2,15 +2,13 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
-import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -257,7 +255,7 @@ public class RxTxController extends VBox {
             // Clear all the text
             //txRxDataText.setText("");
             terminal.txRx.txRxData.set("");
-            terminal.txRx.txData.set("");
+            terminal.txRx.sentTxData.set("");
             model.status.addMsg("Terminal TX/RX text cleared.");
 
         });
@@ -315,7 +313,7 @@ public class RxTxController extends VBox {
         //==============================================//
 
         txRxDataText.textProperty().bind(terminal.txRx.txRxData);
-        txDataText.textProperty().bind(terminal.txRx.txData);
+        txDataText.textProperty().bind(terminal.txRx.sentTxData);
 
         // Call this to update the display of the TX/RX pane into its default
         // state
@@ -424,32 +422,66 @@ public class RxTxController extends VBox {
         }
     }
 
-    public void handleKeyTyped(KeyEvent ke) {
-
-        // Convert pressed key into a ASCII byte.
-        // Hopefully this is only one character!!!
-        byte[] data = new byte[1];
-        data[0] = (byte)ke.getCharacter().charAt(0);
+    public void handleKeyTyped(KeyEvent keyEvent) {
 
         if(comPort.isPortOpen() == false) {
-            model.status.addErr("Cannot send COM port data, port is not open.");
+            model.status.addErr("Cannot send data to COM port, port is not open.");
             return;
         }
 
-        // Send character to COM port
-        comPort.sendData(data);
+        // Convert pressed key into a ASCII byte.
+        // Hopefully this is only one character!!!
+        byte data = (byte)keyEvent.getCharacter().charAt(0);
 
-        // Update stats (both local and global)
-        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
-        model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + 1);
+        // Append the character to the end of the "to send" TX buffer
+        terminal.txRx.toSendTxData.add(data);
 
-        terminal.txRx.addTxData(ke.getCharacter());
+        // Check so see what TX mode we are in
+        switch(terminal.txRx.display.selTxCharSendingOption.get()) {
+            case SEND_TX_CHARS_IMMEDIATELY:
+                break;
+            case SEND_TX_CHARS_ON_ENTER:
+                // Check for enter key before sending data
+                if(!keyEvent.getCharacter().equals("\r"))
+                    return;
+                break;
+            default:
+                throw new RuntimeException("selTxCharSendingOption not recognised!");
+        }
+
+        // Send data to COM port, and update stats (both local and global)
+        byte[] dataAsByteArray = fromObservableListToByteArray(terminal.txRx.toSendTxData);
+        comPort.sendData(dataAsByteArray);
+        // Delete the "to send" TX buffer, since bytes have now been passed to COM object for
+        // sending
+        terminal.txRx.toSendTxData.clear();
+
+        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
+        model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
+
+        terminal.txRx.sentTxData.set(terminal.txRx.sentTxData.get() + data);
+
+        terminal.txRx.addSentTxData(dataAsByteArray);
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         /*if(terminal.txRx.display.localTxEcho.get()) {
             // Echo the sent character to the TX/RX display
             terminal.txRx.addRxData(ke.getCharacter());
         }*/
+    }
+
+
+
+    public byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
+
+        byte[] data = new byte[observableList.size()];
+        int i = 0;
+        for(Byte singleByte : observableList) {
+            data[i++] = singleByte;
+        }
+
+        return data;
+
     }
 
 }

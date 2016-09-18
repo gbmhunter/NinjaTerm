@@ -20,7 +20,7 @@
     </padding>
 
     <!-- TX/RX -->
-    <VBox spacing="5" styleClass="border">
+    <VBox spacing="15" styleClass="border">
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Layout Options:</Label>
             <ComboBox fx:id="layoutOptionsComboBox"></ComboBox>

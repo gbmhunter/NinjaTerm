@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
+import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
@@ -102,10 +103,30 @@ public class DisplayController extends VBox {
         //=========== SETUP TX RADIOBUTTONS ============//
         //==============================================//
 
-        ToggleGroup toggleGroup = new ToggleGroup();
-        sendTxCharsImmediatelyRadioButton.setToggleGroup(toggleGroup);
-        sendTxCharsOnEnterRadioButton.setToggleGroup(toggleGroup);
+        ToggleGroupValue<Display.TxCharSendingOptions> toggleGroup = new ToggleGroupValue();
+        toggleGroup.add(sendTxCharsImmediatelyRadioButton, Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
+        toggleGroup.add(sendTxCharsOnEnterRadioButton, Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
 
+        Bindings.bindBidirectional(toggleGroup.valueProperty(), terminal.txRx.display.selTxCharSendingOption);
+
+        /*toggleGroup.valueProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("ToggleGroup selection changed!");
+
+            if(newValue == sendTxCharsImmediatelyRadioButton) {
+                terminal.txRx.display.selTxCharSendingOption.set(Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
+            } else if(newValue == sendTxCharsOnEnterRadioButton) {
+                terminal.txRx.display.selTxCharSendingOption.set(Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
+            } else {
+                throw new RuntimeException("Radio button selection not recognised!");
+            }
+
+        });*/
+
+
+
+        //==============================================//
+        //============= SETUP LOCAL TX ECHO ============//
+        //==============================================//
 
         // Bind the model boolean to the checkbox
         terminal.txRx.display.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());

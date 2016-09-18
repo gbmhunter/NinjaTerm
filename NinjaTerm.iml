@@ -11,5 +11,6 @@
     <orderEntry type="library" name="org.scream3r:jssc:2.8.0" level="project" />
     <orderEntry type="library" name="junit:junit:4.12" level="project" />
     <orderEntry type="library" name="controlsfx-8.40.11" level="project" />
+    <orderEntry type="library" name="org.jfxtras:jfxtras-controls:8.0-r5" level="project" />
   </component>
 </module>

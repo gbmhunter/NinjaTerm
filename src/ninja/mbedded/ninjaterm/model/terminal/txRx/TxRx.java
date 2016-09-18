@@ -1,6 +1,9 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 
 /**
@@ -10,8 +13,8 @@ public class TxRx {
 
     public Display display = new Display();
 
-
-    public SimpleStringProperty txData = new SimpleStringProperty("");
+    public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
+    public SimpleStringProperty sentTxData = new SimpleStringProperty("");
 
     /**
      * Initialise with "" so that it does not display "null".
@@ -24,18 +27,24 @@ public class TxRx {
         });
     }
 
-    public void addTxData(String data) {
+    public void addSentTxData(byte[] data) {
 
-        txData.set(txData.get() + data);
+        // Create string from data
+        String dataAsString = "";
+        for(int i = 0; i < data.length; i++) {
+            dataAsString = dataAsString + (char)data[i];
+        }
 
-        if(txData.get().length() > display.bufferSizeChars.get()) {
+        sentTxData.set(sentTxData.get() + dataAsString);
+
+        if(sentTxData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            sentTxData.set(removeOldChars(sentTxData.get(), display.bufferSizeChars.get()));
         }
 
         // Echo TX data into TX/RX pane
         if(display.localTxEcho.get()) {
-            txRxData.set(txRxData.get() + data);
+            txRxData.set(txRxData.get() + dataAsString);
 
 
             if(txRxData.get().length() > display.bufferSizeChars.get()) {
@@ -62,9 +71,9 @@ public class TxRx {
 
     public void removeOldCharsFromBuffers() {
 
-        if(txData.get().length() > display.bufferSizeChars.get()) {
+        if(sentTxData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            sentTxData.set(removeOldChars(sentTxData.get(), display.bufferSizeChars.get()));
         }
 
         if(txRxData.get().length() > display.bufferSizeChars.get()) {
