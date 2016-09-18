@@ -3,6 +3,8 @@ package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.layout;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.layout.Layout;
 
@@ -23,6 +25,12 @@ public class LayoutView extends VBox {
 
     @FXML
     public ComboBox<Layout.LayoutOptions> layoutOptionsComboBox;
+
+    @FXML
+    public RadioButton sendTxCharsImmediatelyRadioButton;
+
+    @FXML
+    public RadioButton sendTxCharsOnEnterRadioButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -64,6 +72,17 @@ public class LayoutView extends VBox {
 
         // Set default
         layoutOptionsComboBox.getSelectionModel().select(layout.selectedLayoutOption.get());
+
+        //==============================================//
+        //============= SETUP RADIOBUTTONS =============//
+        //==============================================//
+
+        ToggleGroup toggleGroup = new ToggleGroup();
+        sendTxCharsImmediatelyRadioButton.setToggleGroup(toggleGroup);
+        sendTxCharsOnEnterRadioButton.setToggleGroup(toggleGroup);
+
+
+
     }
 
 }

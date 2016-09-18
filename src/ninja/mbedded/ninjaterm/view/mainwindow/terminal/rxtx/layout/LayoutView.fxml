@@ -17,6 +17,7 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.RadioButton?>
 <fx:root type="javafx.scene.layout.VBox"
          xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
          spacing="20"
@@ -32,6 +33,12 @@
         <Label>Layout Options:</Label>
         <ComboBox fx:id="layoutOptionsComboBox"></ComboBox>
     </HBox>
+
+    <VBox spacing="5">
+
+    <RadioButton fx:id="sendTxCharsImmediatelyRadioButton">Send TX chars immediately</RadioButton>
+    <RadioButton fx:id="sendTxCharsOnEnterRadioButton">Send TX chars on enter</RadioButton>
+    </VBox>
 
 </fx:root>
 

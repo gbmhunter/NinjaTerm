@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
@@ -16,8 +17,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.layout.LayoutView;
@@ -105,16 +110,20 @@ public class RxTxView extends VBox {
 
     private GlyphFont glyphFont;
 
+    private Model model;
+
     /**
      * Stores the model which drives this view.
      */
-    private TxRx txRx;
+    private Terminal terminal;
 
     /**
      * A Text object which holds a flashing caret. This is moved between the shared TX/RX pane and
      * the TX pane.
      */
     private Text caretText;
+
+    private ComPort comPort;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -140,9 +149,12 @@ public class RxTxView extends VBox {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(TxRx txRx, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
 
-        this.txRx = txRx;
+        this.model = model;
+        this.terminal = terminal;
+
+        this.comPort = comPort;
         this.glyphFont = glyphFont;
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
@@ -259,7 +271,7 @@ public class RxTxView extends VBox {
         //==============================================//
 
         LayoutView layoutView = new LayoutView();
-        layoutView.init(txRx.layout);
+        layoutView.init(terminal.txRx.layout);
 
         // This creates the popover, but is not shown until
         // show() is called.
@@ -334,10 +346,16 @@ public class RxTxView extends VBox {
         //========== ATTACH LISTENER TO LAYOUT =========//
         //==============================================//
 
-        txRx.layout.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.layout.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
             System.out.println("Selected layout option has been changed.");
             updateLayout();
         });
+
+        //==============================================//
+        //======= BIND TERMINAL TEXT TO TXRX DATA ======//
+        //==============================================//
+
+        terminalText.textProperty().bind(terminal.txRx.txRxText);
 
     }
 
@@ -414,7 +432,7 @@ public class RxTxView extends VBox {
      * in the model.
      */
     public void updateLayout() {
-        switch(txRx.layout.selectedLayoutOption.get()) {
+        switch(terminal.txRx.layout.selectedLayoutOption.get()) {
             case COMBINED_TX_RX:
 
                 // Hide TX pane
@@ -446,6 +464,32 @@ public class RxTxView extends VBox {
                 break;
             default:
                 throw new RuntimeException("selectedLayoutOption unrecognised!");
+        }
+    }
+
+    public void handleKeyTyped(KeyEvent ke) {
+
+        // Convert pressed key into a ASCII byte.
+        // Hopefully this is only one character!!!
+        byte[] data = new byte[1];
+        data[0] = (byte)ke.getCharacter().charAt(0);
+
+        if(comPort == null || comPort.isPortOpen() == false) {
+            statusBarController.addErr("Cannot send COM port data, port is not open.");
+            return;
+        }
+
+        // Send character to COM port
+        comPort.sendData(data);
+
+        // Update stats (both local and global)
+        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
+        model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + 1);
+
+        // Check if user wants TX chars to be echoed locally onto TX/RX display
+        if(terminal.txRx.layout.localTxEcho.get()) {
+            // Echo the sent character to the TX/RX display
+            //rxTxView.addTxRxText(ke.getCharacter());
         }
     }
 

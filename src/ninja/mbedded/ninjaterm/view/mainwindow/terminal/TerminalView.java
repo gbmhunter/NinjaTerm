@@ -67,7 +67,7 @@ public class TerminalView extends VBox {
     private GlyphFont glyphFont;
 
     private Terminal terminal;
-    private GlobalStats globalStats;
+    private Model model;
 
     public TerminalView() {
 
@@ -85,10 +85,11 @@ public class TerminalView extends VBox {
 
     }
 
-    public void init(Terminal terminal, GlobalStats globalStats, GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarController statusBarController) {
 
+        this.model = model;
         this.terminal = terminal;
-        this.globalStats = globalStats;
+
 
         this.glyphFont = glyphFont;
         this.statusBarController = statusBarController;
@@ -106,19 +107,11 @@ public class TerminalView extends VBox {
 
         // Create RX/TX view
         //rxTxView = new RxTxView();
-        rxTxView.Init(terminal.txRx, decoder, statusBarController, glyphFont);
+        rxTxView.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
         rxTxTab.setContent(rxTxView);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
-
-        rxTxView.setFocusTraversable(true);
-
-        rxTxView.onKeyPressedProperty().set(new EventHandler<KeyEvent>() {
-            @Override public void handle(KeyEvent event) {
-                System.out.println("keyPressedProperty.");
-            }
-        });
 
         rxTxView.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             System.out.println("KEY PRESSED!");
@@ -126,13 +119,14 @@ public class TerminalView extends VBox {
 
         comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
 
+
         //==============================================//
         //============= INIT STATS SUB-TAB =============//
         //==============================================//
 
         statsView.init(terminal.stats);
 
-        statusBarController.init(globalStats);
+        statusBarController.init(model.globalStats);
 
     }
 
@@ -182,11 +176,13 @@ public class TerminalView extends VBox {
 
                 Platform.runLater(() -> {
 
-                    rxTxView.addTxRxText(rxText);
+                    // Add the received data to the model
+                    //rxTxView.addTxRxText(rxText);
+                    terminal.txRx.addRxData(rxText);
 
                     // Update stats in app model
                     terminal.stats.numCharactersRx.set(terminal.stats.numCharactersRx.get() + rxText.length());
-                    globalStats.numCharactersRx.set(globalStats.numCharactersRx.get() + rxText.length());
+                    model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxText.length());
 
                 });
 
@@ -269,28 +265,6 @@ public class TerminalView extends VBox {
             }
             System.out.println("Key pressed is alphanumeric or enter.");*/
 
-        // Convert pressed key into a ASCII byte.
-        // Hopefully this is only one character!!!
-        byte[] data = new byte[1];
-        data[0] = (byte)ke.getCharacter().charAt(0);
-
-        if(comPort == null || comPort.isPortOpen() == false) {
-            statusBarController.addErr("Cannot send COM port data, port is not open.");
-            return;
-        }
-
-        // Send character to COM port
-        comPort.sendData(data);
-
-        // Update stats (both local and global)
-        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + 1);
-        globalStats.numCharactersTx.setValue(globalStats.numCharactersTx.getValue() + 1);
-
-        // Check if user wants TX chars to be echoed locally onto TX/RX display
-        if(rxTxView.formatting.localTxEchoCheckBox.isSelected()) {
-            // Echo the sent character to the TX/RX display
-            rxTxView.addTxRxText(ke.getCharacter());
-        }
     }
 
 }
