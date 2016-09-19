@@ -27,16 +27,13 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model();
 
-        FXMLLoader loader = new FXMLLoader(
-            getClass().getResource(
-                    "ninja/mbedded/ninjaterm/view/mainwindow/MainWindow.fxml"
-            )
-        );
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainwindow/MainWindow.fxml"));
 
-        Parent root = loader.load();
+        //Parent root = loader.load();
 
-        MainWindowController mainWindowController =
-                loader.getController();
+        /*MainWindowController mainWindowController =
+                loader.getController();*/
+        MainWindowController mainWindowController = new MainWindowController();
         mainWindowController.init(model, glyphFont);
 
         // Inject dependencies
@@ -45,7 +42,7 @@ public class Main extends Application {
 
         primaryStage.setTitle("NinjaTerm");
 
-        Scene scene = new Scene(root, 1000, 800);
+        Scene scene = new Scene(mainWindowController, 1000, 800);
         primaryStage.setScene(scene);
 
         /*scene.setOnKeyPressed(new EventHandler<KeyEvent>() {

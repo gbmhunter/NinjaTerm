@@ -54,9 +54,6 @@ public class DisplayController extends VBox {
     public CheckBox backspaceRemovesLastTypedCharCheckBox;
 
     @FXML
-    public Tooltip backspaceRemovesLastTypeCharTooltip;
-
-    @FXML
     public Label decodingLabel;
 
     @FXML

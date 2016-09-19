@@ -3,12 +3,14 @@ package ninja.mbedded.ninjaterm.view.mainwindow;
 import com.install4j.api.ApplicationRegistry;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -20,6 +22,7 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +35,7 @@ import java.util.ResourceBundle;
  * @last-modified 2016-09-14
  * @since 2016-07-08
  */
-public class MainWindowController implements Initializable {
+public class MainWindowController extends VBox {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -69,8 +72,18 @@ public class MainWindowController implements Initializable {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public MainWindowController() {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+                "MainWindow.fxml"));
+
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+
+        try {
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
     }
 
     public void init(Model model, GlyphFont glyphFont) {
