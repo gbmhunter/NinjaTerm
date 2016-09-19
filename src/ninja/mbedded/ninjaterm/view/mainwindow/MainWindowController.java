@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.view.mainwindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -40,6 +41,9 @@ public class MainWindowController implements Initializable {
 
     @FXML
     public MenuItem exitMenuItem;
+
+    @FXML
+    public MenuItem helpAboutMenuItem;
 
     @FXML
     public TabPane terminalTabPane;
@@ -90,6 +94,15 @@ public class MainWindowController implements Initializable {
         exitMenuItem.setOnAction(event -> {
             // Quit the application
             Platform.exit();
+        });
+
+        helpAboutMenuItem.setOnAction(event -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("About");
+            alert.setHeaderText(null);
+            alert.setContentText("NinjaTerm\r\rA free tool from www.mbedded.ninja.\r\rWritten by:\rGeoffrey Hunter");
+
+            alert.showAndWait();
         });
 
     }

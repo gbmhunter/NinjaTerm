@@ -14,6 +14,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
+import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
@@ -268,10 +269,7 @@ public class DisplayController extends VBox {
 
         ValidationSupport support = new ValidationSupport();
 
-        Validator<String> validator = new Validator<String>()
-        {
-            @Override
-            public ValidationResult apply(Control control, String value)
+        Validator<String> validator = (Control control, String value) ->
             {
                 boolean condition;
                 try {
@@ -283,7 +281,7 @@ public class DisplayController extends VBox {
 
                 return ValidationResult.fromMessageIf(control, "Not a valid integer", Severity.ERROR, condition );
             }
-        };
+        ;
 
         support.registerValidator(bufferSizeTextField, true, validator );
 

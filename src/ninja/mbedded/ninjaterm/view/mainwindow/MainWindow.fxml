@@ -21,6 +21,9 @@
             <MenuItem fx:id="newTerminalMenuItem" text="New Terminal"></MenuItem>
             <MenuItem fx:id="exitMenuItem" text="Exit"></MenuItem>
         </Menu>
+        <Menu text="Help">
+            <MenuItem fx:id="helpAboutMenuItem" text="About"></MenuItem>
+        </Menu>
     </MenuBar>
 
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">

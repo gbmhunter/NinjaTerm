@@ -22,7 +22,7 @@
     <!--style="-fx-background-color: red;" -->
 
     <padding>
-        <Insets top="40" bottom="40" left="40" right="40"/>
+        <Insets top="20" bottom="20" left="20" right="20"/>
     </padding>
 
     <HBox VBox.vgrow="ALWAYS" spacing="10">

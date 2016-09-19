@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.comport;
 
 import jssc.SerialPort;
+import jssc.SerialPortEvent;
 import jssc.SerialPortException;
 import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 import ninja.mbedded.ninjaterm.util.Decoding.BytesToString;
@@ -92,26 +93,8 @@ public class ComPort {
         }
 
         try {
-            serialPort.addEventListener((serialPortEvent) -> {
-                if (serialPortEvent.isRXCHAR()) {
-                    //System.out.println("Data received!");
-
-                    int numBytes = serialPortEvent.getEventValue();
-
-                    byte[] rxData;
-                    try {
-                        rxData = serialPort.readBytes(numBytes);
-                    } catch (SerialPortException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    //System.out.println("rxData = " + Arrays.toString(rxData));
-
-                    for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
-                        OnRxDataListener onRxDataListener = it.next();
-                        onRxDataListener.onRxData(rxData);
-                    }
-                }
+            serialPort.addEventListener(serialPortEvent -> {
+                onSerialPortEvent(serialPortEvent);
             });
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
@@ -240,6 +223,35 @@ public class ComPort {
 
     public void addOnRxDataListener(OnRxDataListener onRxDataListener) {
         onRxDataListeners.add(onRxDataListener);
+    }
+
+    /**
+     * This will be called by jSSC when any "serial port event" occurs.
+     * This maybe because RX data has been received, or the state of the signalling
+     * wires (e.g. CTS, RTS) has changed.
+     * @param serialPortEvent
+     */
+    public void onSerialPortEvent(SerialPortEvent serialPortEvent) {
+
+            if (serialPortEvent.isRXCHAR()) {
+                //System.out.println("Data received!");
+
+                int numBytes = serialPortEvent.getEventValue();
+
+                byte[] rxData;
+                try {
+                    rxData = serialPort.readBytes(numBytes);
+                } catch (SerialPortException e) {
+                    throw new RuntimeException(e);
+                }
+
+                //System.out.println("rxData = " + Arrays.toString(rxData));
+
+                for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
+                    OnRxDataListener onRxDataListener = it.next();
+                    onRxDataListener.onRxData(rxData);
+                }
+            }
     }
 
     public void close() throws ComPortException {

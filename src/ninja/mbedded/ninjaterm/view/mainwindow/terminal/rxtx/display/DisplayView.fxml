@@ -8,6 +8,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.control.textfield.CustomTextField?>
 <fx:root type="javafx.scene.layout.VBox"
          xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
          spacing="20"
