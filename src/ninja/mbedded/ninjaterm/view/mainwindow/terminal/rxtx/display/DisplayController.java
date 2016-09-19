@@ -13,6 +13,7 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 import java.io.IOException;
 import java.text.FieldPosition;
@@ -46,6 +47,9 @@ public class DisplayController extends VBox {
 
     @FXML
     public CheckBox backspaceRemovesLastTypedCharCheckBox;
+
+    @FXML
+    public Tooltip backspaceRemovesLastTypeCharTooltip;
 
     @FXML
     public Label decodingLabel;
@@ -182,6 +186,9 @@ public class DisplayController extends VBox {
                 terminal.txRx.display.selTxCharSendingOption,
                 terminal.txRx.display.selTxCharSendingOption.get(),
                 terminal.txRx.display.selTxCharSendingOption.get());
+
+        //TooltipUtil.hackStartTiming(backspaceRemovesLastTypeCharTooltip, 100.0);
+        TooltipUtil.addDefaultTooltip(backspaceRemovesLastTypedCharCheckBox, "Enabling this will allow you to use backspace to delete TX chars before they are sent (on applicable if 'Send TX chars on enter' is selected). Disabling this will instead send the backspace character to the COM port.");
 
         //==============================================//
         //================ SETUP WRAPPING ==============//

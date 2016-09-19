@@ -33,7 +33,8 @@
 
         <CheckBox fx:id="localTxEchoCheckBox">Local TX Echo</CheckBox>
 
-        <CheckBox fx:id="backspaceRemovesLastTypedCharCheckBox">Backspace removes last typed char</CheckBox>
+        <CheckBox fx:id="backspaceRemovesLastTypedCharCheckBox" text="Backspace removes last typed char">
+        </CheckBox>
 
         <HBox spacing="5" alignment="CENTER_LEFT">
             <Label>Buffer Size:</Label>
