@@ -36,7 +36,7 @@ public class Display {
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleBooleanProperty backspaceRemovesLastTypedChar = new SimpleBooleanProperty(true);
-    public SimpleObjectProperty<LayoutOptions> selectedLayoutOption = new SimpleObjectProperty<>(LayoutOptions.COMBINED_TX_RX);
+    public SimpleObjectProperty<LayoutOptions> selectedLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
     public SimpleIntegerProperty bufferSizeChars = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE_CHARS);
 
