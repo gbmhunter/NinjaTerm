@@ -17,6 +17,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
@@ -444,6 +445,19 @@ public class RxTxController extends VBox {
         // Convert pressed key into a ASCII byte.
         // Hopefully this is only one character!!!
         byte data = (byte)keyEvent.getCharacter().charAt(0);
+
+        // If to see if we are sending data on "enter", and the "backspace
+        // deletes last typed char" checkbox is ticked
+        if((terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
+                terminal.txRx.display.backspaceRemovesLastTypedChar.get()) {
+
+            if(keyEvent.getCharacter().equals("\b")) {
+                // We need to remove the last typed char from the "to send" TX buffer
+                terminal.txRx.removeLastCharInTxBuffer();
+                return;
+            }
+
+        }
 
         // Append the character to the end of the "to send" TX buffer
         terminal.txRx.addTxCharToSend(data);

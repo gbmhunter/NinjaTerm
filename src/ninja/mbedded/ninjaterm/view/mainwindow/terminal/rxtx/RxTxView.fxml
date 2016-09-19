@@ -69,6 +69,7 @@
                         <Insets top="10" bottom="10" left="10" right="10"/>
                     </padding>
                     <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
+                    <!--<TextArea>Testing</TextArea>-->
                 </TextFlow>
             </ScrollPane>
 

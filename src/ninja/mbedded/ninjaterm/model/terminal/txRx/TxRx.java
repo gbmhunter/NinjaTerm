@@ -43,6 +43,16 @@ public class TxRx {
 
     }
 
+    public void removeLastCharInTxBuffer() {
+
+        if(toSendTxData.size() > 0) {
+            // Remove the last char from both the "to send" TX buffer,
+            // and the TX display string
+            toSendTxData.remove(toSendTxData.size() - 1);
+            txData.set(txData.get().substring(0, txData.get().length() - 1));
+        }
+    }
+
     public void txDataSent() {
 
         // Create string from data

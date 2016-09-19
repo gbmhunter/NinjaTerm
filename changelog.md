@@ -17,3 +17,4 @@ vX.X.X
 - Added auto-scroll to status message pane, closes #87.
 - Wrapping width textfield is greyed out when wrapping is disabled, closes #88.
 - Added auto-scroll to TX pane, closes #89.
+- Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.

@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.display;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -42,6 +43,9 @@ public class DisplayController extends VBox {
 
     @FXML
     public CheckBox localTxEchoCheckBox;
+
+    @FXML
+    public CheckBox backspaceRemovesLastTypedCharCheckBox;
 
     @FXML
     public Label decodingLabel;
@@ -148,6 +152,36 @@ public class DisplayController extends VBox {
 
         // Set default
         decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
+
+        //==============================================//
+        //=============== BACKSPACE SETUP ==============//
+        //==============================================//
+
+        Bindings.bindBidirectional(
+                backspaceRemovesLastTypedCharCheckBox.selectedProperty(),
+                terminal.txRx.display.backspaceRemovesLastTypedChar);
+
+        // Enable this checkbox only if the selected TX sending option is
+        // on press on the "enter" key (this is the only way that this functionality makes sense)
+        ChangeListener<Display.TxCharSendingOptions> changeListener = (observable, oldValue, newValue) -> {
+            switch(newValue) {
+                case SEND_TX_CHARS_IMMEDIATELY:
+                    backspaceRemovesLastTypedCharCheckBox.setDisable(true);
+                    break;
+                case SEND_TX_CHARS_ON_ENTER:
+                    backspaceRemovesLastTypedCharCheckBox.setDisable(false);
+                    break;
+                default:
+                    throw new RuntimeException("TxCharSendingOptions option not recognised.");
+            }
+        };
+        terminal.txRx.display.selTxCharSendingOption.addListener(changeListener);
+
+        // Update disabled state to default
+        changeListener.changed(
+                terminal.txRx.display.selTxCharSendingOption,
+                terminal.txRx.display.selTxCharSendingOption.get(),
+                terminal.txRx.display.selTxCharSendingOption.get());
 
         //==============================================//
         //================ SETUP WRAPPING ==============//
