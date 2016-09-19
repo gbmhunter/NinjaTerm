@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainwindow;
 
+import com.install4j.api.ApplicationRegistry;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,6 +13,7 @@ import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -97,11 +99,17 @@ public class MainWindowController implements Initializable {
         });
 
         helpAboutMenuItem.setOnAction(event -> {
+
+            String versionNumber = AppInfo.getVersionNumber();
+
+            if(versionNumber == null) {
+                versionNumber = "?.?.?";
+            }
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("About");
             alert.setHeaderText(null);
-            alert.setContentText("NinjaTerm\r\rA free tool from www.mbedded.ninja.\r\rWritten by:\rGeoffrey Hunter");
-
+            alert.setContentText("NinjaTerm v" + versionNumber + "\r\rA free tool from www.mbedded.ninja.\r\rWritten by:\rGeoffrey Hunter");
             alert.showAndWait();
         });
 
