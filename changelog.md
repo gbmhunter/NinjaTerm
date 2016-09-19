@@ -16,3 +16,4 @@ vX.X.X
 - Added buffer limit for TX and RX data, closes #86.
 - Added auto-scroll to status message pane, closes #87.
 - Wrapping width textfield is greyed out when wrapping is disabled, closes #88.
+- Added auto-scroll to TX pane, closes #89.

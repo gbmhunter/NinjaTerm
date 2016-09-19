@@ -63,12 +63,14 @@
             </StackPane>
 
             <!-- TX pane -->
-            <TextFlow fx:id="txTextFlow" minHeight="100" styleClass="txRxText" style="-fx-background-color: black;">
-                <padding>
-                    <Insets top="10" bottom="10" left="10" right="10"/>
-                </padding>
-                <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
-            </TextFlow>
+            <ScrollPane fx:id="txTextScrollPane" minHeight="100" maxHeight="100" style="-fx-background-color: black;">
+                <TextFlow fx:id="txTextFlow" styleClass="txRxText">
+                    <padding>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </padding>
+                    <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
+                </TextFlow>
+            </ScrollPane>
 
         </VBox>
 

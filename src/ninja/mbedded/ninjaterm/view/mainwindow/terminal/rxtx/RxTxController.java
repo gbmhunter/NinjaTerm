@@ -50,6 +50,9 @@ public class RxTxController extends VBox {
     public TextFlow txRxTextFlow;
 
     @FXML
+    public ScrollPane txTextScrollPane;
+
+    @FXML
     public TextFlow txTextFlow;
 
     @FXML
@@ -255,7 +258,7 @@ public class RxTxController extends VBox {
             // Clear all the text
             //txRxDataText.setText("");
             terminal.txRx.txRxData.set("");
-            terminal.txRx.sentTxData.set("");
+            terminal.txRx.txData.set("");
             model.status.addMsg("Terminal TX/RX text cleared.");
 
         });
@@ -313,11 +316,20 @@ public class RxTxController extends VBox {
         //==============================================//
 
         txRxDataText.textProperty().bind(terminal.txRx.txRxData);
-        txDataText.textProperty().bind(terminal.txRx.sentTxData);
+        txDataText.textProperty().bind(terminal.txRx.txData);
 
         // Call this to update the display of the TX/RX pane into its default
         // state
         updateLayout();
+
+        //==============================================//
+        //============= SETUP TX AUTO-SCROLL ===========//
+        //==============================================//
+
+        txTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
+            txTextScrollPane.setVvalue(txTextFlow.getHeight());
+        });
+
     }
 
     /**
@@ -387,12 +399,12 @@ public class RxTxController extends VBox {
 
                 //txTextFlow.setMinHeight(0.0);
                 //txTextFlow.setMaxHeight(0.0);
-                if(dataContainerVBox.getChildren().contains(txTextFlow)){
-                    dataContainerVBox.getChildren().remove(txTextFlow);
+                if(dataContainerVBox.getChildren().contains(txTextScrollPane)){
+                    dataContainerVBox.getChildren().remove(txTextScrollPane);
                 }
 
                 // Add the caret in the shared pane
-                if(txRxTextFlow.getChildren().indexOf(caretText) == -1) {
+                if(!txRxTextFlow.getChildren().contains(caretText)) {
                     txRxTextFlow.getChildren().add(caretText);
                 }
 
@@ -402,17 +414,17 @@ public class RxTxController extends VBox {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if(!dataContainerVBox.getChildren().contains(txTextFlow)) {
-                    dataContainerVBox.getChildren().add(txTextFlow);
+                if(!dataContainerVBox.getChildren().contains(txTextScrollPane)) {
+                    dataContainerVBox.getChildren().add(txTextScrollPane);
                 }
 
                 // Remove the caret in the shared pane
-                if(txRxTextFlow.getChildren().indexOf(caretText) >= 0) {
+                if(txRxTextFlow.getChildren().contains(caretText)) {
                     txRxTextFlow.getChildren().remove(caretText);
                 }
 
                 // Add the caret to the TX pane
-                if(txTextFlow.getChildren().indexOf(caretText) == -1) {
+                if(!txTextFlow.getChildren().contains(caretText)) {
                     txTextFlow.getChildren().add(caretText);
                 }
 
@@ -434,7 +446,7 @@ public class RxTxController extends VBox {
         byte data = (byte)keyEvent.getCharacter().charAt(0);
 
         // Append the character to the end of the "to send" TX buffer
-        terminal.txRx.toSendTxData.add(data);
+        terminal.txRx.addTxCharToSend(data);
 
         // Check so see what TX mode we are in
         switch(terminal.txRx.display.selTxCharSendingOption.get()) {
@@ -452,16 +464,13 @@ public class RxTxController extends VBox {
         // Send data to COM port, and update stats (both local and global)
         byte[] dataAsByteArray = fromObservableListToByteArray(terminal.txRx.toSendTxData);
         comPort.sendData(dataAsByteArray);
-        // Delete the "to send" TX buffer, since bytes have now been passed to COM object for
-        // sending
-        terminal.txRx.toSendTxData.clear();
 
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        terminal.txRx.sentTxData.set(terminal.txRx.sentTxData.get() + data);
+        //terminal.txRx.txData.set(terminal.txRx.txData.get() + data);
 
-        terminal.txRx.addSentTxData(dataAsByteArray);
+        terminal.txRx.txDataSent();
 
         // Check if user wants TX chars to be echoed locally onto TX/RX display
         /*if(terminal.txRx.display.localTxEcho.get()) {
