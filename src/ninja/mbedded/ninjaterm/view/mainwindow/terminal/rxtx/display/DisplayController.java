@@ -14,6 +14,10 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
+import org.controlsfx.validation.Severity;
+import org.controlsfx.validation.ValidationResult;
+import org.controlsfx.validation.ValidationSupport;
+import org.controlsfx.validation.Validator;
 
 import java.io.IOException;
 import java.text.FieldPosition;
@@ -261,6 +265,27 @@ public class DisplayController extends VBox {
                 return ((Integer)value).toString();
             }
         });
+
+        ValidationSupport support = new ValidationSupport();
+
+        Validator<String> validator = new Validator<String>()
+        {
+            @Override
+            public ValidationResult apply(Control control, String value)
+            {
+                boolean condition;
+                try {
+                    Integer.parseInt(value);
+                    condition = false;
+                } catch(RuntimeException e) {
+                    condition = true;
+                }
+
+                return ValidationResult.fromMessageIf(control, "Not a valid integer", Severity.ERROR, condition );
+            }
+        };
+
+        support.registerValidator(bufferSizeTextField, true, validator );
 
         TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are deleted from memory.");
 
