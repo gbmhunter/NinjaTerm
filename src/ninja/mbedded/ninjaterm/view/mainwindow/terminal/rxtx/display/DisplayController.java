@@ -107,6 +107,8 @@ public class DisplayController extends VBox {
         // Set default
         layoutOptionsComboBox.getSelectionModel().select(terminal.txRx.display.selectedLayoutOption.get());
 
+        TooltipUtil.addDefaultTooltip(layoutOptionsComboBox, "Separate mode displays a separate pane for RX data (top), and TX data (bottom). Combined mode shows one pane for both RX and TX data (if local echo is enabled). Combined mode with local echo turned on behaves similarly to a terminal.");
+
         //==============================================//
         //=========== SETUP TX RADIOBUTTONS ============//
         //==============================================//
@@ -117,20 +119,8 @@ public class DisplayController extends VBox {
 
         Bindings.bindBidirectional(toggleGroup.valueProperty(), terminal.txRx.display.selTxCharSendingOption);
 
-        /*toggleGroup.valueProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("ToggleGroup selection changed!");
-
-            if(newValue == sendTxCharsImmediatelyRadioButton) {
-                terminal.txRx.display.selTxCharSendingOption.set(Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
-            } else if(newValue == sendTxCharsOnEnterRadioButton) {
-                terminal.txRx.display.selTxCharSendingOption.set(Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
-            } else {
-                throw new RuntimeException("Radio button selection not recognised!");
-            }
-
-        });*/
-
-
+        TooltipUtil.addDefaultTooltip(sendTxCharsImmediatelyRadioButton, "TX characters will be sent as soon as they are typed.");
+        TooltipUtil.addDefaultTooltip(sendTxCharsOnEnterRadioButton, "TX characters will only be sent when \"ENTER\" is pressed.");
 
         //==============================================//
         //============= SETUP LOCAL TX ECHO ============//
@@ -138,6 +128,8 @@ public class DisplayController extends VBox {
 
         // Bind the model boolean to the checkbox
         terminal.txRx.display.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
+
+        TooltipUtil.addDefaultTooltip(localTxEchoCheckBox, "If enabled, sent TX data will be copied (echoed) into the RX display.");
 
         //==============================================//
         //============== SETUP TX DECODING =============//
@@ -156,6 +148,8 @@ public class DisplayController extends VBox {
 
         // Set default
         decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
+
+        TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices.");
 
         //==============================================//
         //=============== BACKSPACE SETUP ==============//
@@ -187,7 +181,6 @@ public class DisplayController extends VBox {
                 terminal.txRx.display.selTxCharSendingOption.get(),
                 terminal.txRx.display.selTxCharSendingOption.get());
 
-        //TooltipUtil.hackStartTiming(backspaceRemovesLastTypeCharTooltip, 100.0);
         TooltipUtil.addDefaultTooltip(backspaceRemovesLastTypedCharCheckBox, "Enabling this will allow you to use backspace to delete TX chars before they are sent (on applicable if 'Send TX chars on enter' is selected). Disabling this will instead send the backspace character to the COM port.");
 
         //==============================================//
@@ -196,6 +189,8 @@ public class DisplayController extends VBox {
 
         // Bind "wrapping enabled" checkbox to model
         terminal.txRx.display.wrappingEnabled.bind(wrappingCheckBox.selectedProperty());
+
+        TooltipUtil.addDefaultTooltip(wrappingCheckBox, "Enable this to wrap at a certain pixel width (as defined below). If this is disabled, long lines of TX/RX text will cause horizontal scroll-bars to appear.");
 
         // Perform a bi-directional bind, with custom string-to-number conversion which takes care
         // of any errors.
@@ -231,6 +226,8 @@ public class DisplayController extends VBox {
         // Set default state
         wrappingWidthTextField.setDisable(!terminal.txRx.display.wrappingEnabled.get());
 
+        TooltipUtil.addDefaultTooltip(wrappingWidthTextField, "The width (in pixels) that you want TX/RX data to wrap at.");
+
         //==============================================//
         //============== BUFFER-SIZE SETUP =============//
         //==============================================//
@@ -264,6 +261,8 @@ public class DisplayController extends VBox {
                 return ((Integer)value).toString();
             }
         });
+
+        TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are deleted from memory.");
 
     }
 }
