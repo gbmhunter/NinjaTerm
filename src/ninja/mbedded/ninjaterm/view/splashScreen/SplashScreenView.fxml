@@ -1,0 +1,25 @@
+<!--
+* The main "shell" of the NinjaTerm app. This is the top-most UI node.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-17
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<fx:root type="javafx.scene.layout.VBox"
+         xmlns:fx="http://javafx.com/fxml" alignment="center"
+         prefHeight="600" prefWidth="600"
+         fillWidth="true" GridPane.vgrow="ALWAYS"
+         style="-fx-background-color: transparent;">
+    <!--style="-fx-background-color: red;" -->
+
+    <ImageView><image>
+        <Image url="@logo-v2-600x600.png" />
+    </image></ImageView>
+
+</fx:root>
