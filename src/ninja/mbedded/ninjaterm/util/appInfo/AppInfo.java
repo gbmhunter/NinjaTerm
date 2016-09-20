@@ -17,7 +17,7 @@ public class AppInfo {
         ApplicationRegistry.ApplicationInfo[] applicationInfo;
 
         try {
-            applicationInfo = ApplicationRegistry.getApplicationInfoById("7231-2225-0472-1196");
+            applicationInfo = ApplicationRegistry.getApplicationInfoById("3655-3380-6749-0061");
         } catch (UnsatisfiedLinkError e) {
             return null;
         }

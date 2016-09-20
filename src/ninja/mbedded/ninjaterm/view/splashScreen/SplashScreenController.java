@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.util.Duration;
+import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -171,13 +172,20 @@ public class SplashScreenController extends VBox {
         // Add text object as second-to-lat child of TextFlow (flashing caret is last child)
         loadingMsgsTextFlow.getChildren().add(loadingMsgsTextFlow.getChildren().size() - 1, loadingMsgText);
 
-        //
-        String nameAndVersionString = "NinjaTerm v0.1.0\r\rA free tool by www.mbedded.ninja\r\r";
+        // Get version
+        String versionNumber = AppInfo.getVersionNumber();
+        if(versionNumber == null) {
+            versionNumber = "?.?.?";
+        }
+
+        String nameAndVersionString = "NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
 
 
         // Show name of application and version
         Timeline nameAndVersionTimeline = new Timeline();
 
+        // This variable keeps track of the total time from the timeline is started to display
+        // the keyframe, as this is the format the keyframe wants
         double summedTimeInMs = 0.0;
 
         for(int i = 0; i < nameAndVersionString.length(); i++) {
