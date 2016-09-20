@@ -86,10 +86,11 @@ public class MainWindowController extends VBox {
         }
     }
 
-    public void init(Model model, GlyphFont glyphFont) {
+    public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
 
         this.model = model;
         this.glyphFont = glyphFont;
+        this.comPortManager = comPortManager;
 
         //==============================================//
         //=================== MENU SETUP ===============//
@@ -128,11 +129,6 @@ public class MainWindowController extends VBox {
 
     }
 
-
-    public void setComPortManager(ComPortManager comPortManager) {
-        this.comPortManager = comPortManager;
-    }
-
     /**
      * Adds a new terminal tab to the main window. Called when the "New terminal" menu button is clicked, as
      * well as once on startup.
@@ -167,9 +163,5 @@ public class MainWindowController extends VBox {
         terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
             terminalController.handleKeyTyped(ke);
         });
-
-
     }
-
-
 }

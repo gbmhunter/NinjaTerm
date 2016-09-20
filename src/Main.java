@@ -77,10 +77,8 @@ public class Main extends Application {
         /*MainWindowController mainWindowController =
                 loader.getController();*/
         MainWindowController mainWindowController = new MainWindowController();
-        mainWindowController.init(model, glyphFont);
-
-        // Inject dependencies
-        mainWindowController.setComPortManager(new ComPortManager());
+        mainWindowController.init(model, glyphFont, new ComPortManager());
+        
         mainWindowController.addNewTerminal();
 
         splashScreenStage.close();
