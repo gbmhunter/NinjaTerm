@@ -3,7 +3,11 @@ package ninja.mbedded.ninjaterm.util.appInfo;
 import com.install4j.api.ApplicationRegistry;
 
 /**
- * Created by gbmhu on 2016-09-19.
+ * Utility class to get application info (such as version number).
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-09-19
+ * @last-modified 2016-09-20
  */
 public class AppInfo {
 
@@ -25,6 +29,8 @@ public class AppInfo {
         try {
             applicationInfo = ApplicationRegistry.getApplicationInfoById(applicationId);
         } catch (UnsatisfiedLinkError e) {
+            // This can occur if the .dll cannot be found. This can occur in a development environment
+            // (i.e. running from within IntelliJ, but should not occur with a .exe built with install4j.
             return null;
         }
 

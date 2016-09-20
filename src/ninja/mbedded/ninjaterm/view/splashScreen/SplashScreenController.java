@@ -150,6 +150,8 @@ public class SplashScreenController extends VBox {
         loadingMsgs.add("Discovering this one weird trick, mind will be blown.");
         loadingMsgs.add("Finished wasting user's time.");
 
+        loadingMsgsTextFlow.setTextAlignment(TextAlignment.JUSTIFY);
+
         Text caretText = new Text("█");
         caretText.setFont(Font.font("monospace", FontWeight.BOLD, 20));
         caretText.setFill(Color.LIME);
@@ -198,7 +200,7 @@ public class SplashScreenController extends VBox {
                     loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
 
                     // Start the next sequence, where we display all of the bogus loading messages
-                    startLoadingMsgs();
+                    startBogusLoadingMsgs();
                 }));
             } else {
                 nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
@@ -211,24 +213,18 @@ public class SplashScreenController extends VBox {
 
     }
 
-    private void startLoadingMsgs() {
+    private void startBogusLoadingMsgs() {
         // Start loading messages
         timeline = new Timeline(new KeyFrame(
                 Duration.millis(75),
-                ae -> updateLoadingMsgs()));
+                ae -> updateBogusLoadingMsgs()));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
 
-    public void updateLoadingMsgs() {
+    public void updateBogusLoadingMsgs() {
 
         loadingMsgText.setText(loadingMsgText.getText() + loadingMsgs.get(loadingMsgIndex++) + " ");
-
-        // Style text
-        //loadingMsgText.setFill(Color.LIME);
-        //loadingMsgText.setFont(Font.font("monospace", FontWeight.BOLD, 20));
-
-        //loadingMsgsTextFlow.getChildren().add(loadingMsgText);
 
         if(loadingMsgIndex >= loadingMsgs.size()) {
             // We have reached the end of the loading messages!
