@@ -8,16 +8,22 @@ import com.install4j.api.ApplicationRegistry;
 public class AppInfo {
 
     /**
+     * This ID is assigned by the install4j GUI (on the Installer->Update Options page). This should not change
+     * for the life of the application.
+     */
+    public static final String applicationId = "3655-3380-6749-0061";
+
+    /**
      * Retrieves the version number of the app, as defined by install4j when the installer was created.
      * Returns null if a version number can't be found.
      * @return The version number, as a string. Returns null if a version number can't be found.
      */
     public static String getVersionNumber() {
-        // Get version number using install3j runtime API
+        // Get version number using install4j runtime API
         ApplicationRegistry.ApplicationInfo[] applicationInfo;
 
         try {
-            applicationInfo = ApplicationRegistry.getApplicationInfoById("3655-3380-6749-0061");
+            applicationInfo = ApplicationRegistry.getApplicationInfoById(applicationId);
         } catch (UnsatisfiedLinkError e) {
             return null;
         }
