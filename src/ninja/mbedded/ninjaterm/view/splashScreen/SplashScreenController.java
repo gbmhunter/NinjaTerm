@@ -51,7 +51,8 @@ public class SplashScreenController extends VBox {
      * string.
      */
     private final double[] charIntervalsMs = new double[] {
-            500,    // N
+            25,
+            1500,   // N
             125,    // i
             150,    // n
             200,    // j
@@ -150,22 +151,43 @@ public class SplashScreenController extends VBox {
         loadingMsgs.add("Discovering this one weird trick, mind will be blown.");
         loadingMsgs.add("Finished wasting user's time.");
 
+        // This makes the bogus text look more like it's in a proper terminal window
         loadingMsgsTextFlow.setTextAlignment(TextAlignment.JUSTIFY);
+
+        //==============================================//
+        //============ CREATE "^_" TEXT ================//
+        //==============================================//
+
+        Text terminalStartText = new Text(">");
+        terminalStartText.setFont(Font.font("monospace", FontWeight.BOLD, 20));
+        terminalStartText.setFill(Color.LIME);
+
+        loadingMsgsTextFlow.getChildren().add(terminalStartText);
+
+        //==============================================//
+        //========= CREATE FLASHING CARET ==============//
+        //==============================================//
 
         Text caretText = new Text("█");
         caretText.setFont(Font.font("monospace", FontWeight.BOLD, 20));
         caretText.setFill(Color.LIME);
 
         // Add an animation so the caret blinks
-        FadeTransition ft = new FadeTransition(Duration.millis(200), caretText);
-        ft.setFromValue(1.0);
-        ft.setToValue(0.1);
-        ft.setCycleCount(Timeline.INDEFINITE);
-        ft.setAutoReverse(true);
-        ft.play();
+        FadeTransition caretFt = new FadeTransition(Duration.millis(200), caretText);
+        caretFt.setFromValue(1.0);
+        caretFt.setToValue(0.1);
+        caretFt.setCycleCount(Timeline.INDEFINITE);
+        caretFt.setAutoReverse(true);
+        caretFt.play();
 
+        // Add caret to textflow object. It should always remain as the last child, to give the
+        // proper appearance
         loadingMsgsTextFlow.getChildren().add(caretText);
 
+
+    }
+
+    public void startNameVersionInfoMsg() {
         // Create Text object to hold application and version text
         loadingMsgText = new Text();
         loadingMsgText.setFill(Color.LIME);
@@ -176,11 +198,14 @@ public class SplashScreenController extends VBox {
 
         // Get version
         String versionNumber = AppInfo.getVersionNumber();
+
+        // The version can be null, but this should only occur in a development
+        // environment
         if(versionNumber == null) {
             versionNumber = "?.?.?";
         }
 
-        String nameAndVersionString = "NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
+        String nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
 
 
         // Show name of application and version
@@ -209,8 +234,9 @@ public class SplashScreenController extends VBox {
             }
         }
 
+        // This causes the intro text on the splash screen to be displayed
+        // (not the bogus text, this comes later)
         nameAndVersionTimeline.play();
-
     }
 
     private void startBogusLoadingMsgs() {

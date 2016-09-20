@@ -52,6 +52,7 @@ public class Main extends Application {
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
 
+        splashScreenController.startNameVersionInfoMsg();
         // Create delay before showing main window
         /*Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(3000),
