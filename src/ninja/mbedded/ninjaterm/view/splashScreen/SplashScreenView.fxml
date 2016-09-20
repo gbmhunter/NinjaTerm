@@ -5,12 +5,14 @@
 * @since           2016-07-08
 * @last-modified   2016-07-17
 -->
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import java.net.URL?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Rectangle?>
 <fx:root type="javafx.scene.layout.VBox"
          xmlns:fx="http://javafx.com/fxml" alignment="center"
          prefHeight="600" prefWidth="600"
@@ -18,8 +20,11 @@
          style="-fx-background-color: transparent;">
     <!--style="-fx-background-color: red;" -->
 
-    <ImageView><image>
-        <Image url="@logo-v2-600x600.png" />
-    </image></ImageView>
+    <StackPane alignment="CENTER">
+        <Rectangle width="800" height="600" arcWidth="20" arcHeight="20" style="-fx-background-color: black;"></Rectangle>
+
+
+        <TextFlow fx:id="loadingMsgsTextFlow" minWidth="700" maxWidth="700" minHeight="500" maxHeight="500"/>
+    </StackPane>
 
 </fx:root>

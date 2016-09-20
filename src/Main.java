@@ -41,15 +41,22 @@ public class Main extends Application {
 
         SplashScreenController splashScreenController = new SplashScreenController();
 
-        Scene splashScreenScene = new Scene(splashScreenController, 600, 600, Color.TRANSPARENT);
+        Scene splashScreenScene = new Scene(splashScreenController, 800, 600, Color.TRANSPARENT);
+        splashScreenController.isFinished.addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                loadMainWindow();
+            }
+        });
+
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
 
-        Timeline timeline = new Timeline(new KeyFrame(
+        // Create delay before showing main window
+        /*Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(3000),
                 ae -> loadMainWindow()));
-        timeline.play();
+        timeline.play();*/
 
 
     }
