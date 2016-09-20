@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="6.1.3" transformSequenceNumber="5">
-  <directoryPresets config="/out/artifacts/NinjaTerm_jar/NinjaTerm.jar" />
+  <directoryPresets config="C:/Users/gbmhu/repos/NinjaTerm/img/logo/v1" />
   <application name="NinjaTerm" distributionSourceDir="" applicationId="3655-3380-6749-0061" mediaDir="install/" mediaFilePattern="${compiler:sys.shortName}_v${compiler:sys.version}_${compiler:sys.platform}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="NinjaTerm" publisher="Geoffrey Hunter" publisherWeb="http://mbedded-ninja.github.io/NinjaTerm/" version="0.1.0" allPathsRelative="false" backupOnSave="false" autoSave="false" convertDotsToUnderscores="false" macSignature="????" macVolumeId="8b8be1286580b078" javaMinVersion="1.8" javaMaxVersion="" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
       <principalLanguage id="en" customLocalizationFile="" />
@@ -27,8 +27,8 @@
     <components />
   </files>
   <launchers>
-    <launcher name="NinjaCalc" id="22" customizedId="" external="false" excludeFromMenu="false" unixMode="755" unixAutoStart="true" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="" useJavaMinVersionOverride="false" javaMinVersionOverride="" useJavaMaxVersionOverride="false" javaMaxVersionOverride="">
-      <executable name="NinjaTerm" type="1" iconSet="false" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
+    <launcher name="NinjaTerm" id="22" customizedId="" external="false" excludeFromMenu="false" unixMode="755" unixAutoStart="true" menuName="" icnsFile="" customMacBundleIdentifier="false" macBundleIdentifier="" swtApp="false" fileset="" macBundleBinary="JavaApplicationStub" addMacEntitlements="false" macEntitlementsFile="" useCustomMacosExecutableName="false" customMacosExecutableName="" useJavaMinVersionOverride="false" javaMinVersionOverride="" useJavaMaxVersionOverride="false" javaMaxVersionOverride="">
+      <executable name="NinjaTerm" type="1" iconSet="true" iconFile="" executableDir="" redirectStderr="true" stderrFile="error.log" stderrMode="overwrite" redirectStdout="false" stdoutFile="output.log" stdoutMode="overwrite" failOnStderrOutput="true" executableMode="1" changeWorkingDirectory="true" workingDirectory="." singleInstance="false" serviceStartType="2" serviceDependencies="" serviceDescription="" jreLocation="" executionLevel="asInvoker" checkConsoleParameter="false" globalSingleInstance="false" singleInstanceActivate="true" dpiAware="false">
         <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" />
       </executable>
       <splashScreen show="false" width="512" height="512" bitmapFile="" windowsNative="false" textOverlay="false">
@@ -55,7 +55,12 @@
       <infoPlist mode="1" file="">
         <content />
       </infoPlist>
-      <iconImageFiles />
+      <iconImageFiles>
+        <file path="img/logo/v1/logo-v1-32x32.png" />
+        <file path="img/logo/v1/logo-v1-64x64.png" />
+        <file path="img/logo/v1/logo-v1-128x128.png" />
+        <file path="img/logo/v1/logo-v1-256x256.png" />
+      </iconImageFiles>
     </launcher>
   </launchers>
   <installerGui installerType="1" addOnAppId="" suggestPreviousLocations="true" autoUpdateDescriptorUrl="https://raw.githubusercontent.com/mbedded-ninja/NinjaTerm/master/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v${compiler:sys.version}/">
