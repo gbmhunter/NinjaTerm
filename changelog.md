@@ -1,3 +1,8 @@
+v0.4.1
+------
+
+- Fixed bug where splash-screen was disabled.
+
 v0.4.0
 ------
 
