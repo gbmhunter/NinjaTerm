@@ -5,10 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -24,6 +21,7 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Controller for the "terminal" which is part of the main window.
@@ -116,6 +114,16 @@ public class TerminalController extends Tab {
 
         comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
 
+        //==============================================//
+        //======== ATTACH LISTENER FOR TAB NAME ========//
+        //==============================================//
+
+        terminal.terminalName.addListener((observable, oldValue, newValue) -> {
+            setText(newValue);
+        });
+
+        // Set default
+        setText(terminal.terminalName.get());
 
         //==============================================//
         //============= INIT STATS SUB-TAB =============//
@@ -131,10 +139,11 @@ public class TerminalController extends Tab {
 
         // Create right-click context menu for tab
         ContextMenu contextMenu = new ContextMenu();
-        MenuItem menuItem = new MenuItem("Do Some Action");
+        MenuItem menuItem = new MenuItem("Rename");
         menuItem.setOnAction(new EventHandler<ActionEvent>(){
             @Override public void handle(ActionEvent e){
-                System.out.println("Testing!");
+                //System.out.println("Testing!");
+                showRenameTabDialogueBox();
             }
         });
         contextMenu.getItems().add(menuItem);
@@ -152,6 +161,26 @@ public class TerminalController extends Tab {
             handleKeyTyped(ke);
         });
 
+    }
+
+    /**
+     * Allows the user to rename the terminal tab. Function does not return until
+     * name has been set.
+     */
+    private void showRenameTabDialogueBox() {
+
+        TextInputDialog dialog = new TextInputDialog(terminal.terminalName.get());
+        dialog.setTitle("Rename Tab");
+        dialog.setHeaderText("Rename Tab");
+        dialog.setContentText("Please enter new name:");
+
+        // Get the response value.
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+            // Write the new terminal name to the model. This should then
+            // automatically update the terminal tab text.
+            terminal.terminalName.set(result.get());
+        }
     }
 
     /**
