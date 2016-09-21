@@ -70,6 +70,8 @@ public class FiltersView extends VBox {
         //======= ATTACH LISTENER TO FILTER TEXT =======//
         //==============================================//
 
+        // Bind the text in the filter text textfield to the string in the model
+        filterTextTextField.textProperty().bindBidirectional(terminal.txRx.filters.filterText);
 
     }
 }

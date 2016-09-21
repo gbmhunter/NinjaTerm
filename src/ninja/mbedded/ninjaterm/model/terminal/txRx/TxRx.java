@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 
 /**
  * Created by gbmhu on 2016-09-16.
@@ -11,6 +12,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 public class TxRx {
 
     public Display display = new Display();
+    public Filters filters = new Filters();
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
     public SimpleStringProperty txData = new SimpleStringProperty("");

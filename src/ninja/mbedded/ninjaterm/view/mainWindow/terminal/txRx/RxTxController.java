@@ -389,6 +389,14 @@ public class RxTxController extends VBox {
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
 
+        //==============================================//
+        //=== INSTALL HANDLER FOR FILTER TEXT CHANGE ===//
+        //==============================================//
+
+        terminal.txRx.filters.filterText.addListener((observable, oldValue, newValue) -> {
+            filterTextChanged(newValue);
+        });
+
     }
 
     /**
@@ -426,24 +434,6 @@ public class RxTxController extends VBox {
         popOver.show(button.getScene().getWindow());
         popOver.setX(clickX - popOver.getWidth());
         popOver.setY(clickY - popOver.getHeight() / 2);
-    }
-
-    /**
-     * Adds the given text to the RX terminal display.
-     *
-     * @param text The text you want to add.
-     */
-    public void addTxRxText(String text) {
-
-        // WARNING: This method didn't work well, as it added empty lines depending on whether the
-        // provided rxText had printable chars, or was just a carriage return or new line (or both)
-        //Text text = new Text(rxText);
-        //text.setFill(Color.LIME);
-        //txRxTextFlow.getChildren().add(text);
-
-        // This was works better!
-        txRxDataText.setText(txRxDataText.getText() + text);
-
     }
 
     private void updateDataDirectionText() {
@@ -559,7 +549,10 @@ public class RxTxController extends VBox {
         }*/
     }
 
+    private void filterTextChanged(String newFilterText) {
+        // We need to search through the entire RX text
 
+    }
 
     public byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
 

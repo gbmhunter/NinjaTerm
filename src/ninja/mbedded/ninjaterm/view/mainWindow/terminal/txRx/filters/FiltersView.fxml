@@ -25,7 +25,7 @@
 
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Filter Text:</Label>
-            <TextField fx:id="filterTextTextField" prefWidth="60"></TextField>
+            <TextField fx:id="filterTextTextField" prefWidth="100"></TextField>
         </HBox>
     </VBox>
 
