@@ -19,11 +19,18 @@ public class Main extends Application {
 
     private GlyphFont glyphFont;
 
+    private final boolean disableSplashScreen = true;
+
     private Stage splashScreenStage;
     private Stage mainStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+        if(disableSplashScreen) {
+            loadMainWindow();
+            return;
+        }
 
         this.splashScreenStage = primaryStage;
 
@@ -81,7 +88,10 @@ public class Main extends Application {
 
         mainWindowController.addNewTerminal();
 
-        splashScreenStage.close();
+        // If the splashscreen was skipped, splashScreenStage will be null
+        if(!disableSplashScreen)
+            splashScreenStage.close();
+
         mainStage = new Stage();
         mainStage.setTitle("NinjaTerm");
 

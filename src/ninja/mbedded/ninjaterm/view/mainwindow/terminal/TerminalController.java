@@ -1,8 +1,12 @@
 package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.KeyEvent;
@@ -28,7 +32,7 @@ import java.io.IOException;
  * @since           2016-08-23
  * @last-modified   2016-08-23
  */
-public class TerminalController extends VBox {
+public class TerminalController extends Tab {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -120,6 +124,33 @@ public class TerminalController extends VBox {
         statsView.init(terminal.stats);
 
         statusBarController.init(model);
+
+        //==============================================//
+        //============= SETUP CONTEXT MENU =============//
+        //==============================================//
+
+        // Create right-click context menu for tab
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem menuItem = new MenuItem("Do Some Action");
+        menuItem.setOnAction(new EventHandler<ActionEvent>(){
+            @Override public void handle(ActionEvent e){
+                System.out.println("Testing!");
+            }
+        });
+        contextMenu.getItems().add(menuItem);
+        setContextMenu(contextMenu);
+
+        //==============================================//
+        //========= INSTALL KEY-PRESS HANDLER ==========//
+        //==============================================//
+
+        // We have to attach the key-typed event handler here, as attaching it the just the TX/RX sub-tab of the terminal tab
+        // doesn't seem to work.
+        // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
+        // letters automatically (so we don't have to worry about them here)
+        getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+            handleKeyTyped(ke);
+        });
 
     }
 
