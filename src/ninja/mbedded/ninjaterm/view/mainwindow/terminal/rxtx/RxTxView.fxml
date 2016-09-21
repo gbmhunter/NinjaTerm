@@ -50,9 +50,9 @@
                 <!-- =========================================== -->
                 <!-- ========== DATA DIRECTION INDICATOR ======= -->
                 <!-- =========================================== -->
-                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="50" maxHeight="20" alignment="CENTER"
+                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
                            style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
-                    <Label alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
+                    <Label fx:id="dataDirectionRxLabel" alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
                 </StackPane>
 
 
@@ -93,7 +93,7 @@
                 <!-- =========================================== -->
                 <!-- ========== DATA DIRECTION INDICATOR ======= -->
                 <!-- =========================================== -->
-                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="50" maxHeight="20" alignment="CENTER"
+                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
                            style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
                     <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
                 </StackPane>

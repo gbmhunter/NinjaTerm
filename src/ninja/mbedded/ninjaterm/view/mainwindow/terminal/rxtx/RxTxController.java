@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
@@ -47,6 +48,12 @@ public class RxTxController extends VBox {
 
     @FXML
     public ScrollPane rxDataScrollPane;
+
+    @FXML
+    public Label dataDirectionRxLabel;
+
+    @FXML
+    public StackPane dataDirectionRxStackPane;
 
     @FXML
     public TextFlow txRxTextFlow;
@@ -335,6 +342,25 @@ public class RxTxController extends VBox {
             txTextScrollPane.setVvalue(txTextFlow.getHeight());
         });
 
+        //==============================================//
+        //========== SETUP RX DIRECTION TEXT ===========//
+        //==============================================//
+
+        terminal.txRx.display.localTxEcho.addListener((observable, oldValue, newValue) -> {
+            updateDataDirectionText();
+        });
+
+        // The following code was meant to resize the RX direction indicator region
+        // to always just fit the child text, but...
+        // I COULD NOT GET THIS TO WORK CORRECTLY!!!
+        /*dataDirectionRxLabel.widthProperty().addListener((observable, oldValue, newValue) -> {
+            double newWidth = newValue.doubleValue() + 100.0;
+
+            System.out.println("newWidth = " + newWidth);
+            dataDirectionRxStackPane.setMinWidth(newWidth);
+            dataDirectionRxStackPane.setMaxWidth(newWidth);
+        });*/
+
     }
 
     /**
@@ -390,6 +416,14 @@ public class RxTxController extends VBox {
         // This was works better!
         txRxDataText.setText(txRxDataText.getText() + text);
 
+    }
+
+    private void updateDataDirectionText() {
+        if(terminal.txRx.display.localTxEcho.get()) {
+            dataDirectionRxLabel.setText("RX + TX echo");
+        } else {
+            dataDirectionRxLabel.setText("RX");
+        }
     }
 
     /**
