@@ -88,6 +88,7 @@ public class Main extends Application {
 
         mainWindowController.addNewTerminal();
 
+        // If the splashscreen was skipped, splashScreenStage will be null
         if(!disableSplashScreen)
             splashScreenStage.close();
 

@@ -151,25 +151,7 @@ public class MainWindowController extends VBox {
 
         terminalController.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
-        // Create right-click context menu for tab
-        ContextMenu contextMenu = new ContextMenu();
-        MenuItem menuItem = new MenuItem("Do Some Action");
-        menuItem.setOnAction(new EventHandler<ActionEvent>(){
-            @Override public void handle(ActionEvent e){
-                System.out.println("Testing!");
-            }
-        });
-        contextMenu.getItems().add(menuItem);
-        terminalController.setContextMenu(contextMenu);
-
         terminalTabPane.getTabs().add(terminalController);
 
-        // We have to attach the key-typed event handler here, as attaching it the just the TX/RX sub-tab of the terminal tab
-        // doesn't seem to work.
-        // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
-        // letters automatically (so we don't have to worry about them here)
-        terminalController.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
-            terminalController.handleKeyTyped(ke);
-        });
     }
 }
