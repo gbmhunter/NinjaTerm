@@ -1,3 +1,8 @@
+v0.4.0
+------
+
+- Added ability to rename terminal tabs, closes #92.
+
 v0.3.0
 ------
 

@@ -138,6 +138,10 @@ public class MainWindowController extends VBox {
 
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal();
+        // Set the default terminal name in the model. The terminal tab will read this.
+        terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+
+        // Make sure the model has a record to this newly created terminal
         model.terminals.add(terminal);
 
 
@@ -149,7 +153,7 @@ public class MainWindowController extends VBox {
         // Peform a scan of the COM ports on start-up
         terminalController.comSettings.scanComPorts();
 
-        terminalController.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+        //terminalController.setText();
 
         terminalTabPane.getTabs().add(terminalController);
 

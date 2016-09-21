@@ -155,7 +155,7 @@ public class SplashScreenController extends VBox {
         loadingMsgsTextFlow.setTextAlignment(TextAlignment.JUSTIFY);
 
         //==============================================//
-        //============ CREATE "^_" TEXT ================//
+        //============= CREATE "^" TEXT ================//
         //==============================================//
 
         Text terminalStartText = new Text(">");
@@ -224,8 +224,12 @@ public class SplashScreenController extends VBox {
                 nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
                     loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
 
-                    // Start the next sequence, where we display all of the bogus loading messages
-                    startBogusLoadingMsgs();
+                    // Start the next sequence after a fixed delay, where we display all of the bogus loading messages
+                    timeline = new Timeline(new KeyFrame(
+                            Duration.millis(500),
+                            ae -> startBogusLoadingMsgs()));
+                    timeline.play();
+
                 }));
             } else {
                 nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
@@ -244,6 +248,8 @@ public class SplashScreenController extends VBox {
         timeline = new Timeline(new KeyFrame(
                 Duration.millis(75),
                 ae -> updateBogusLoadingMsgs()));
+
+        // timeline will be stopped when last bogus message has been printed.
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
