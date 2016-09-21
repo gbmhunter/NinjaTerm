@@ -78,7 +78,7 @@ public class Main extends Application {
                 loader.getController();*/
         MainWindowController mainWindowController = new MainWindowController();
         mainWindowController.init(model, glyphFont, new ComPortManager());
-        
+
         mainWindowController.addNewTerminal();
 
         splashScreenStage.close();
