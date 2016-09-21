@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.control.Label?>
 <?import ninja.mbedded.ninjaterm.view.led.Led?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       spacing="20"
       fillWidth="true"

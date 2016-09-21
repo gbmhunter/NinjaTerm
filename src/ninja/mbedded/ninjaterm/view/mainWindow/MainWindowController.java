@@ -1,31 +1,24 @@
-package ninja.mbedded.ninjaterm.view.mainwindow;
+package ninja.mbedded.ninjaterm.view.mainWindow;
 
-import com.install4j.api.ApplicationRegistry;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
-import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.TerminalController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 /**
  * Controller for the main window of NinjaTerm.

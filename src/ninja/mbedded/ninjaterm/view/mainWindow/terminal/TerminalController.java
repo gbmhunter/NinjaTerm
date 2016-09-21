@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.view.mainwindow.terminal;
+package ninja.mbedded.ninjaterm.view.mainWindow.terminal;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -7,16 +7,15 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController;
-import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsView;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 

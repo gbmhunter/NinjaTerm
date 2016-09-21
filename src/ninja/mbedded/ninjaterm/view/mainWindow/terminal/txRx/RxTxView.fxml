@@ -5,7 +5,7 @@
 * @since           2016-07-08
 * @last-modified   2016-08-25
 -->
-<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalController.rxtx.RxTxController-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalController.txRx.RxTxController-->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>

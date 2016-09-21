@@ -8,9 +8,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings?>
-<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController?>
-<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsView?>
 <fx:root type="javafx.scene.control.Tab"
          xmlns:fx="http://javafx.com/fxml">
     <VBox alignment="TOP_LEFT"
@@ -29,7 +29,7 @@
             </Tab>
 
             <!--<Tab text="RX/TX" closable="false">
-                <fx:include fx:id="rxTx" source="rxtx/rxtx.fxml" />
+                <fx:include fx:id="rxTx" source="txRx/txRx.fxml" />
             </Tab>-->
 
             <Tab fx:id="rxTxTab" text="RX/TX" closable="false">

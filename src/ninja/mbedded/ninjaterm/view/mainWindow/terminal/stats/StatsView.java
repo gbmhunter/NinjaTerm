@@ -1,10 +1,9 @@
-package ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats;
+package ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 
 import java.io.IOException;

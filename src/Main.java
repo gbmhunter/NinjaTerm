@@ -1,15 +1,10 @@
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.view.mainwindow.MainWindowController;
+import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenController;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -19,7 +14,7 @@ public class Main extends Application {
 
     private GlyphFont glyphFont;
 
-    private final boolean disableSplashScreen = false;
+    private final boolean disableSplashScreen = true;
 
     private Stage splashScreenStage;
     private Stage mainStage;
@@ -77,7 +72,7 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model();
 
-        //FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainwindow/MainWindow.fxml"));
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainWindow/MainWindow.fxml"));
 
         //Parent root = loader.load();
 

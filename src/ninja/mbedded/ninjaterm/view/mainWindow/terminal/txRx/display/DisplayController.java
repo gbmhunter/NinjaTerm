@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.display;
+package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
@@ -14,16 +14,12 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
-import org.controlsfx.control.textfield.CustomTextField;
 import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
 import java.io.IOException;
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParsePosition;
 
 /**
  * Controller for the layout pop-up window.

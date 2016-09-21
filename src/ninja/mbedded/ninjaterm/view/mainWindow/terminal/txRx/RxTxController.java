@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx;
+package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
@@ -22,8 +22,9 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
-import ninja.mbedded.ninjaterm.view.mainwindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.display.DisplayController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersView;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -131,6 +132,8 @@ public class RxTxController extends VBox {
     private ComPort comPort;
 
     private DisplayController displayController = new DisplayController();
+
+    private FiltersView filtersView = new FiltersView();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -297,6 +300,31 @@ public class RxTxController extends VBox {
                 showPopover(displayButton, displayPopover);
             } else {
                 new RuntimeException("displayPopover state not recognised.");
+            }
+        });
+
+        //==============================================//
+        //============ FILTERS BUTTON SETUP ============//
+        //==============================================//
+
+        filtersView.init(model, terminal);
+
+        // This creates the popover, but is not shown until
+        // show() is called.
+        PopOver filtersPopover = new PopOver();
+        filtersPopover.setContentNode(filtersView);
+        filtersPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        filtersPopover.setCornerRadius(4);
+        filtersPopover.setTitle("Filters");
+
+        filtersButton.setOnAction(event -> {
+
+            if (filtersPopover.isShowing()) {
+                filtersPopover.hide();
+            } else if (!filtersPopover.isShowing()) {
+                showPopover(filtersButton, filtersPopover);
+            } else {
+                new RuntimeException("filtersPopover.isShowing() state not recognised.");
             }
         });
 
