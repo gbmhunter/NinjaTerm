@@ -1,4 +1,4 @@
-vX.X.X
+v0.1.0
 ------
 
 - Automatic scan for COM ports performed on startup of app, closes #72.

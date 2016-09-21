@@ -104,7 +104,7 @@ function showStats(data) {
 $(function() {
 
     var user = "mbedded-ninja";
-    var repository = "NinjaCalc";
+    var repository = "NinjaTerm";
 
     var url = apiRoot + "repos/" + user + "/" + repository + "/releases";
     $.getJSON(url, showStats).fail(showStats);
