@@ -6,10 +6,12 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -48,7 +50,16 @@ public class RxTxController extends VBox {
     public ScrollPane rxDataScrollPane;
 
     @FXML
+    public Label dataDirectionRxLabel;
+
+    @FXML
+    public StackPane dataDirectionRxStackPane;
+
+    @FXML
     public TextFlow txRxTextFlow;
+
+    @FXML
+    public StackPane txDataStackPane;
 
     @FXML
     public ScrollPane txTextScrollPane;
@@ -331,6 +342,25 @@ public class RxTxController extends VBox {
             txTextScrollPane.setVvalue(txTextFlow.getHeight());
         });
 
+        //==============================================//
+        //========== SETUP RX DIRECTION TEXT ===========//
+        //==============================================//
+
+        terminal.txRx.display.localTxEcho.addListener((observable, oldValue, newValue) -> {
+            updateDataDirectionText();
+        });
+
+        // The following code was meant to resize the RX direction indicator region
+        // to always just fit the child text, but...
+        // I COULD NOT GET THIS TO WORK CORRECTLY!!!
+        /*dataDirectionRxLabel.widthProperty().addListener((observable, oldValue, newValue) -> {
+            double newWidth = newValue.doubleValue() + 100.0;
+
+            System.out.println("newWidth = " + newWidth);
+            dataDirectionRxStackPane.setMinWidth(newWidth);
+            dataDirectionRxStackPane.setMaxWidth(newWidth);
+        });*/
+
     }
 
     /**
@@ -388,6 +418,14 @@ public class RxTxController extends VBox {
 
     }
 
+    private void updateDataDirectionText() {
+        if(terminal.txRx.display.localTxEcho.get()) {
+            dataDirectionRxLabel.setText("RX + TX echo");
+        } else {
+            dataDirectionRxLabel.setText("RX");
+        }
+    }
+
     /**
      * Updates the layout of the TX/RX tab based on the layout option selected
      * in the model.
@@ -400,8 +438,8 @@ public class RxTxController extends VBox {
 
                 //txTextFlow.setMinHeight(0.0);
                 //txTextFlow.setMaxHeight(0.0);
-                if(dataContainerVBox.getChildren().contains(txTextScrollPane)){
-                    dataContainerVBox.getChildren().remove(txTextScrollPane);
+                if(dataContainerVBox.getChildren().contains(txDataStackPane)){
+                    dataContainerVBox.getChildren().remove(txDataStackPane);
                 }
 
                 // Add the caret in the shared pane
@@ -415,8 +453,8 @@ public class RxTxController extends VBox {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if(!dataContainerVBox.getChildren().contains(txTextScrollPane)) {
-                    dataContainerVBox.getChildren().add(txTextScrollPane);
+                if(!dataContainerVBox.getChildren().contains(txDataStackPane)) {
+                    dataContainerVBox.getChildren().add(txDataStackPane);
                 }
 
                 // Remove the caret in the shared pane

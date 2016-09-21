@@ -1,3 +1,8 @@
+v0.3.0
+------
+
+- Added indicators to label the RX and TX panes, closes #91.
+
 v0.2.0
 ------
 

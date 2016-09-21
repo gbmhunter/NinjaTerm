@@ -3,44 +3,43 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-23
-* @last-modified   2016-08-23
+* @last-modified   2016-09-21
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tab?>
-<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.comSettings.ComSettings?>
+<?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.rxtx.RxTxController?>
 <?import ninja.mbedded.ninjaterm.view.mainwindow.terminal.stats.StatsView?>
-<fx:root type="javafx.scene.layout.VBox" id="RxTxController"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-         spacing="20"
-         fillWidth="true"
-         stylesheets="@../../../resources/style.css">
-    <!--style="-fx-background-color: red;" -->
-    <padding>
-        <Insets top="10" bottom="10" left="10" right="10"/>
-    </padding>
+<fx:root type="javafx.scene.control.Tab"
+         xmlns:fx="http://javafx.com/fxml">
+    <VBox alignment="TOP_LEFT"
+          spacing="20"
+          fillWidth="true"
+          stylesheets="@../../../resources/style.css">
+        <!--style="-fx-background-color: red;" -->
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
 
-    <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
+        <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
-        <Tab text="COM Settings" closable="false">
-            <ComSettings fx:id="comSettings" />
-        </Tab>
+            <Tab text="COM Settings" closable="false">
+                <ComSettings fx:id="comSettings"/>
+            </Tab>
 
-        <!--<Tab text="RX/TX" closable="false">
-            <fx:include fx:id="rxTx" source="rxtx/rxtx.fxml" />
-        </Tab>-->
+            <!--<Tab text="RX/TX" closable="false">
+                <fx:include fx:id="rxTx" source="rxtx/rxtx.fxml" />
+            </Tab>-->
 
-        <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
-            <RxTxController fx:id="rxTxController"/>
-        </Tab>
-        <Tab text="Stats" closable="false">
-            <StatsView fx:id="statsView" />
-        </Tab>
-    </TabPane>
+            <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
+                <RxTxController fx:id="rxTxController"/>
+            </Tab>
+            <Tab text="Stats" closable="false">
+                <StatsView fx:id="statsView"/>
+            </Tab>
+        </TabPane>
+    </VBox>
 </fx:root>
 
 
