@@ -1,3 +1,8 @@
+v0.2.0
+------
+
+- Changes to auto-update functionality.
+
 v0.1.0
 ------
 
