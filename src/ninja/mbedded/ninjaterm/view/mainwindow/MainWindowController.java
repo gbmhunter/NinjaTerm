@@ -2,13 +2,12 @@ package ninja.mbedded.ninjaterm.view.mainwindow;
 
 import com.install4j.api.ApplicationRegistry;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -150,17 +149,26 @@ public class MainWindowController extends VBox {
         // Peform a scan of the COM ports on start-up
         terminalController.comSettings.scanComPorts();
 
-        Tab terminalTab = new Tab();
-        terminalTab.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
-        terminalTab.setContent(terminalController);
+        terminalController.setText("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
-        terminalTabPane.getTabs().add(terminalTab);
+        // Create right-click context menu for tab
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem menuItem = new MenuItem("Do Some Action");
+        menuItem.setOnAction(new EventHandler<ActionEvent>(){
+            @Override public void handle(ActionEvent e){
+                System.out.println("Testing!");
+            }
+        });
+        contextMenu.getItems().add(menuItem);
+        terminalController.setContextMenu(contextMenu);
+
+        terminalTabPane.getTabs().add(terminalController);
 
         // We have to attach the key-typed event handler here, as attaching it the just the TX/RX sub-tab of the terminal tab
         // doesn't seem to work.
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
-        terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+        terminalController.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
             terminalController.handleKeyTyped(ke);
         });
     }

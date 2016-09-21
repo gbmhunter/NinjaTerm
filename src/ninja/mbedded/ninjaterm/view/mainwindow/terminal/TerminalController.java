@@ -28,7 +28,7 @@ import java.io.IOException;
  * @since           2016-08-23
  * @last-modified   2016-08-23
  */
-public class TerminalController extends VBox {
+public class TerminalController extends Tab {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
