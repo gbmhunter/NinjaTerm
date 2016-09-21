@@ -10,6 +10,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -49,6 +50,9 @@ public class RxTxController extends VBox {
 
     @FXML
     public TextFlow txRxTextFlow;
+
+    @FXML
+    public StackPane txDataStackPane;
 
     @FXML
     public ScrollPane txTextScrollPane;
@@ -400,8 +404,8 @@ public class RxTxController extends VBox {
 
                 //txTextFlow.setMinHeight(0.0);
                 //txTextFlow.setMaxHeight(0.0);
-                if(dataContainerVBox.getChildren().contains(txTextScrollPane)){
-                    dataContainerVBox.getChildren().remove(txTextScrollPane);
+                if(dataContainerVBox.getChildren().contains(txDataStackPane)){
+                    dataContainerVBox.getChildren().remove(txDataStackPane);
                 }
 
                 // Add the caret in the shared pane
@@ -415,8 +419,8 @@ public class RxTxController extends VBox {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if(!dataContainerVBox.getChildren().contains(txTextScrollPane)) {
-                    dataContainerVBox.getChildren().add(txTextScrollPane);
+                if(!dataContainerVBox.getChildren().contains(txDataStackPane)) {
+                    dataContainerVBox.getChildren().add(txDataStackPane);
                 }
 
                 // Remove the caret in the shared pane

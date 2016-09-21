@@ -48,6 +48,15 @@
                 </ScrollPane>
 
                 <!-- =========================================== -->
+                <!-- ========== DATA DIRECTION INDICATOR ======= -->
+                <!-- =========================================== -->
+                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="50" maxHeight="20" alignment="CENTER"
+                           style="-fx-background-color: #545454; -fx-background-radius: 0 0 0 15;">
+                    <Label alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
+                </StackPane>
+
+
+                <!-- =========================================== -->
                 <!-- ============= AUTO-SCROLL BUTTON ========== -->
                 <!-- =========================================== -->
                 <!-- This pane (with auto-scroll image) gets placed in the bottom-right hand corner of the above scroll pane -->
@@ -62,16 +71,33 @@
                 </Pane>
             </StackPane>
 
-            <!-- TX pane -->
-            <ScrollPane fx:id="txTextScrollPane" minHeight="100" maxHeight="100" style="-fx-background-color: black;">
-                <TextFlow fx:id="txTextFlow" styleClass="txRxText">
-                    <padding>
-                        <Insets top="10" bottom="10" left="10" right="10"/>
-                    </padding>
-                    <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
-                    <!--<TextArea>Testing</TextArea>-->
-                </TextFlow>
-            </ScrollPane>
+            <!-- =========================================== -->
+            <!-- ================ TX DATA PANE ============= -->
+            <!-- =========================================== -->
+            <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
+            <StackPane fx:id="txDataStackPane" minHeight="100" maxHeight="100" style="-fx-background-color: black;">
+
+                <!-- =========================================== -->
+                <!-- ================== TX DATA ================ -->
+                <!-- =========================================== -->
+                <ScrollPane fx:id="txTextScrollPane" minHeight="100" maxHeight="100">
+                    <TextFlow fx:id="txTextFlow" styleClass="txRxText">
+                        <padding>
+                            <Insets top="10" bottom="10" left="10" right="10"/>
+                        </padding>
+                        <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
+                        <!--<TextArea>Testing</TextArea>-->
+                    </TextFlow>
+                </ScrollPane>
+
+                <!-- =========================================== -->
+                <!-- ========== DATA DIRECTION INDICATOR ======= -->
+                <!-- =========================================== -->
+                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="50" maxHeight="20" alignment="CENTER"
+                           style="-fx-background-color: #545454; -fx-background-radius: 0 0 0 15;">
+                    <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
+                </StackPane>
+            </StackPane>
 
         </VBox>
 
