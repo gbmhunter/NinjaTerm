@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Fixed incorrect link to GitHub on homepage, closes #94.
+
 v0.4.1
 ------
 
