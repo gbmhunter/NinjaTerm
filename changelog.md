@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Fixed incorrect link to GitHub on homepage, closes #94.
+- Fixed incorrect web page title on homepage, closes #93.
 
 v0.4.1
 ------
