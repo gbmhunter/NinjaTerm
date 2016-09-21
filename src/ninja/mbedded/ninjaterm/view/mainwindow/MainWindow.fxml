@@ -1,0 +1,37 @@
+<!--
+* The main "shell" of the NinjaTerm app. This is the top-most UI node.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-07-17
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+<fx:root type="javafx.scene.layout.VBox"
+      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="@../../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <MenuBar>
+        <Menu text="File">
+            <MenuItem fx:id="newTerminalMenuItem" text="New Terminal"></MenuItem>
+            <MenuItem fx:id="exitMenuItem" text="Exit"></MenuItem>
+        </Menu>
+        <Menu text="Help">
+            <MenuItem fx:id="helpAboutMenuItem" text="About"></MenuItem>
+        </Menu>
+    </MenuBar>
+
+    <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
+        <!--<Tab text="terminalController 1" closable="true">-->
+            <!--<fx:include fx:id="terminalController" source="terminalController.fxml"/>-->
+        <!--</Tab>-->
+    </TabPane>
+
+    <fx:include fx:id="statusBar" source="StatusBar/StatusBar.fxml"/>
+
+</fx:root>

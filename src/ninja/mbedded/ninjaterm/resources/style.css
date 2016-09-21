@@ -1,0 +1,139 @@
+/**
+* Styling of the NinjaTerm app.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-15
+* @last-modified   2016-08-23
+**/
+
+/* ============================================================================================= */
+/* ========================= JAVAFX STYLING BASICS (non application specific) ================== */
+/* ============================================================================================= */
+
+/* ScrollPane objects have an annoying grey border by default, lets get rid of this */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* This makes the background of the inner "viewport" of a scrollpane transparent,
+ which allows the background colour of the parent node to show through */
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
+}
+
+/* ============================================================================================= */
+/* ===================================== GENERAL NINJATERM STYLING ============================= */
+/* ============================================================================================= */
+
+/* The style class "ïnfo" is used for demarking UI labels
+which are displaying dynamic content */
+.info {
+    -fx-text-fill: grey;
+}
+
+/* "border" styleClass is added to various UI elements to give non-intrusive border */
+.border {
+    -fx-border-color: lightgrey;
+    -fx-border-radius: 5px;
+    -fx-padding: 10 10 10 10;
+    /*-fx-border-insets: 5px;*/
+}
+
+/* ============================================================================================= */
+/* ===================================== "MINIMAL" TABPANE STYLING ============================= */
+/* ============================================================================================= */
+
+.tab-pane .minimal {
+    /*-fx-border-color: red;*/
+
+    -fx-tab-min-width: 90px;
+}
+
+/* Get rid of the background colour of the tab header */
+.tab-pane .minimal .tab-header-area .tab-header-background {
+    -fx-opacity: 0;
+    -fx-effect: null;
+}
+
+.tab-pane .minimal .tab {
+    /*-fx-border-color: null;
+    -fx-effect: null;*/
+
+    /* Remove background colour from tabs. This removes the "tab-like appearance" of the
+     tabs */
+    -fx-background-color: null;
+}
+
+/* Tagets the Tab label text */
+.tab-pane .minimal .tab .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #0066ff;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+}
+
+.tab-pane .minimal .tab:hover .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #4d94ff;
+}
+
+/* ============================================================================================= */
+/* ====================================== COM SETTINGS TAB STYLING ============================= */
+/* ============================================================================================= */
+
+/* Makes the width of the COM port parameter comboboxes all equal. */
+.comSettings .comPortParameters .combo-box {
+    -fx-min-width: 100px;
+}
+
+/* ============================================================================================= */
+/* ===================================== TX/RX DATA TAB STYLING ================================ */
+/* ============================================================================================= */
+
+.txRxText {
+
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+
+    /*-fx-font-smoothing-type: lcd;*/
+    -fx-font-family: monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* This targets the Text nodes with the terminal TextFlow. These have to have the style class
+"text" added manually (style class is empty by default for a Text node) */
+.txRxText .text {
+        -fx-fill: green;
+}
+
+/* =========================================== */
+/* ========= SCROLL-TO-BOTTOM BUTTON ========= */
+/* =========================================== */
+
+.scrollToBottomButton {
+  -fx-background-color: transparent;
+  -fx-graphic: url("xyz.png");
+}
+
+.scrollToBottomButton:hover {
+  -fx-background-color: #dae7f3;
+  -fx-graphic: url("xyz.png");
+}
+
+/* =========================================== */
+/* ========= SUCCESS/FAILURE BUTTONS ========= */
+/* =========================================== */
+
+.success {
+    // Light green
+    //-fx-background-color: #A1D490;
+    -fx-base: #A1D490;
+    -fx-font-size: 15px;
+}
+
+.failure {
+    // Light red
+    -fx-base: #FFA1A1;
+    -fx-font-size: 15px;
+}

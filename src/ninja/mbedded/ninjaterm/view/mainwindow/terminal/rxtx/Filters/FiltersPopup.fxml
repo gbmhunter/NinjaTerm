@@ -1,0 +1,32 @@
+<!--
+* Inner content for the "terminalController" tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-30
+* @last-modified   2016-07-30
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainwindow.terminalController.rxtx.Filters.FiltersPopupController"
+      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+      spacing="20"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="@../../../../../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="40" bottom="40" left="40" right="40"/>
+    </padding>
+
+</VBox>
+
+
+
