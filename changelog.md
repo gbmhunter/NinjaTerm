@@ -5,6 +5,7 @@ vX.X.X
 - Fixed incorrect link to GitHub on homepage, closes #94.
 - Fixed incorrect web page title on homepage, closes #93.
 - TX and RX buffer sizes are now shown on stats sub-tab, closes #95.
+- Fixed bug where build configurations were not being included in repo, closes #85.
 
 v0.4.1
 ------
