@@ -25,10 +25,10 @@ import java.util.ResourceBundle;
  * Controller for the main window of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-09-14
  * @since 2016-07-08
+ * @last-modified 2016-09-22
  */
-public class MainWindowController implements Initializable {
+public class MainWindowViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -68,22 +68,7 @@ public class MainWindowController implements Initializable {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public MainWindowController() {
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "MainWindowView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public MainWindowViewController() {
 
     }
 

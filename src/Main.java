@@ -6,7 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowController;
+import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenController;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -33,7 +33,7 @@ public class Main extends Application {
 
         this.splashScreenStage = primaryStage;
 
-        //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowController.fxml"));
+        //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowViewController.fxml"));
 
         // Create splashscreen
         /*VBox root = new VBox();
@@ -84,12 +84,12 @@ public class Main extends Application {
             return;
         }
 
-        MainWindowController mainWindowController =
+        MainWindowViewController mainWindowViewController =
                 loader.getController();
-        //MainWindowController mainWindowController = new MainWindowController();
-        mainWindowController.init(model, glyphFont, new ComPortManager());
+        //MainWindowViewController mainWindowViewController = new MainWindowViewController();
+        mainWindowViewController.init(model, glyphFont, new ComPortManager());
 
-        mainWindowController.addNewTerminal();
+        mainWindowViewController.addNewTerminal();
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if(!disableSplashScreen)
@@ -98,7 +98,7 @@ public class Main extends Application {
         mainStage = new Stage();
         mainStage.setTitle("NinjaTerm");
 
-        Scene scene = new Scene(mainWindowController.mainVBox, 1000, 800);
+        Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
 
         /*scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -107,7 +107,7 @@ public class Main extends Application {
             }
         });*/
 
-        //mainWindowController.terminalControllers.get(0).rxTxController.showPopover();
+        //mainWindowViewController.terminalControllers.get(0).rxTxController.showPopover();
 
         mainStage.initStyle(StageStyle.DECORATED);
         //mainStage.centerOnScreen();

@@ -9,7 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.MainWindowController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController"
       fx:id="mainVBox"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
