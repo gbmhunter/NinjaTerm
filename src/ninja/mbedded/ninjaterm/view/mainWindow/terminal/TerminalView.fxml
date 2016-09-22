@@ -8,7 +8,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController?>
@@ -26,7 +26,8 @@
         <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
             <Tab text="COM Settings" closable="false">
-                <ComSettings fx:id="comSettings"/>
+                <!--<ComSettingsViewController fx:id="comSettingsViewController"/>-->
+                <fx:include fx:id="comSettingsView" source="comSettings/ComSettingsView.fxml" />
             </Tab>
 
             <!--<Tab text="RX/TX" closable="false">

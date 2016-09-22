@@ -8,8 +8,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root type="javafx.scene.layout.VBox"  id="ComSettings"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController"
+      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
@@ -28,23 +28,23 @@
             <padding>
                 <Insets top="10" bottom="10" left="10" right="10"/>
             </padding>
-            <Label      GridPane.rowIndex="0"   GridPane.columnIndex="0">COM Port:</Label>
-            <ComboBox   GridPane.rowIndex="0"   GridPane.columnIndex="1" fx:id="foundComPortsComboBox"></ComboBox>
-            <Label      GridPane.rowIndex="1"   GridPane.columnIndex="0">Baud Rate:</Label>
-            <ComboBox   GridPane.rowIndex="1"   GridPane.columnIndex="1" fx:id="baudRateComboBox"/>
-            <Label      GridPane.rowIndex="2"   GridPane.columnIndex="0">Num. Data Bits:</Label>
-            <ComboBox   GridPane.rowIndex="2"   GridPane.columnIndex="1" fx:id="numDataBitsComboBox"/>
-            <Label      GridPane.rowIndex="3"   GridPane.columnIndex="0">Parity:</Label>
-            <ComboBox   GridPane.rowIndex="3"   GridPane.columnIndex="1" fx:id="parityComboBox"/>
-            <Label      GridPane.rowIndex="4"   GridPane.columnIndex="0">Num. Stop Bits:</Label>
-            <ComboBox   GridPane.rowIndex="4"   GridPane.columnIndex="1" fx:id="numStopBitsComboBox"/>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">COM Port:</Label>
+            <ComboBox GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="foundComPortsComboBox"></ComboBox>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Baud Rate:</Label>
+            <ComboBox GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="baudRateComboBox"/>
+            <Label GridPane.rowIndex="2" GridPane.columnIndex="0">Num. Data Bits:</Label>
+            <ComboBox GridPane.rowIndex="2" GridPane.columnIndex="1" fx:id="numDataBitsComboBox"/>
+            <Label GridPane.rowIndex="3" GridPane.columnIndex="0">Parity:</Label>
+            <ComboBox GridPane.rowIndex="3" GridPane.columnIndex="1" fx:id="parityComboBox"/>
+            <Label GridPane.rowIndex="4" GridPane.columnIndex="0">Num. Stop Bits:</Label>
+            <ComboBox GridPane.rowIndex="4" GridPane.columnIndex="1" fx:id="numStopBitsComboBox"/>
 
         </GridPane>
     </HBox>
 
     <Button fx:id="openCloseComPortButton" disable="true" prefWidth="200" prefHeight="40">Open</Button>
 
-</fx:root>
+</VBox>
 
 
 

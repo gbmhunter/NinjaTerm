@@ -2,7 +2,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -17,7 +16,6 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,9 +151,9 @@ public class MainWindowController implements Initializable {
         terminalController.init(model, terminal, glyphFont, statusBarController);
         terminalControllers.add(terminalController);
 
-        terminalController.comSettings.setComPortManager(comPortManager);
+        terminalController.comSettingsViewController.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminalController.comSettings.scanComPorts();
+        terminalController.comSettingsViewController.scanComPorts();
 
         //terminalController.setText();
 

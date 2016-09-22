@@ -16,9 +16,9 @@ import java.io.IOException;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-09-18
+ * @last-modified   2016-09-22
  */
-public class ComSettings extends VBox {
+public class ComSettingsViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -53,21 +53,11 @@ public class ComSettings extends VBox {
 
     private ComPortManager comPortManager;
 
-    public ComSettings() {
+    public ComSettingsViewController() {
 
-        System.out.println("ComSettings constructor called.");
+    }
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "ComSettings.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+    public void init() {
 
         // Attach handler for "Scan" button press
         reScanButton.setOnAction((actionEvent) -> {
@@ -103,8 +93,6 @@ public class ComSettings extends VBox {
                 openCloseComPortButton.setDisable(false);
             }
         });
-
-
     }
 
     public void setStatusBarController(Model model) {

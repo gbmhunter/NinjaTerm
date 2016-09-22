@@ -10,7 +10,7 @@ import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
@@ -40,7 +40,7 @@ public class TerminalController extends Tab {
     public TabPane terminalTabPane;
 
     @FXML
-    public ComSettings comSettings;
+    public ComSettingsViewController comSettingsViewController;
 
     @FXML
     public RxTxController rxTxController;
@@ -97,10 +97,10 @@ public class TerminalController extends Tab {
         this.statusBarController = statusBarController;
 
         // Set children
-        comSettings.setStatusBarController(model);
+        comSettingsViewController.setStatusBarController(model);
 
 
-        comSettings.openCloseComPortButton.setOnAction((ActionEvent) -> {
+        comSettingsViewController.openCloseComPortButton.setOnAction((ActionEvent) -> {
             openCloseComPortButtonPressed();
         });
 
@@ -115,7 +115,7 @@ public class TerminalController extends Tab {
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
-        comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+        comSettingsViewController.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
 
         //==============================================//
         //======== ATTACH LISTENER FOR TAB NAME ========//
@@ -127,6 +127,12 @@ public class TerminalController extends Tab {
 
         // Set default
         setText(terminal.terminalName.get());
+
+        //==============================================//
+        //========= INIT COM SETTINGS SUB-TAB ==========//
+        //==============================================//
+
+        comSettingsViewController.init();
 
         //==============================================//
         //============= INIT STATS SUB-TAB =============//
@@ -199,9 +205,9 @@ public class TerminalController extends Tab {
 
         //System.out.println("Button pressed handler called.");
 
-        if (comSettings.openCloseComPortButton.getText().equals("Open")) {
+        if (comSettingsViewController.openCloseComPortButton.getText().equals("Open")) {
 
-            comPort.setName(comSettings.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+            comPort.setName(comSettingsViewController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             try {
                 comPort.open();
@@ -221,10 +227,10 @@ public class TerminalController extends Tab {
 
             // Set COM port parameters as specified by user on GUI
             comPort.setParams(
-                    comSettings.baudRateComboBox.getSelectionModel().getSelectedItem(),
-                    comSettings.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
-                    comSettings.parityComboBox.getSelectionModel().getSelectedItem(),
-                    comSettings.numStopBitsComboBox.getSelectionModel().getSelectedItem()
+                    comSettingsViewController.baudRateComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsViewController.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsViewController.parityComboBox.getSelectionModel().getSelectedItem(),
+                    comSettingsViewController.numStopBitsComboBox.getSelectionModel().getSelectedItem()
             );
 
             // Add a listener to run when RX data is received from the COM port
@@ -268,7 +274,7 @@ public class TerminalController extends Tab {
                     model.status.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
 
                     // Since COM port does not exist anymore, set button back to "Open"
-                    comSettings.openCloseComPortButton.setText("Open");
+                    comSettingsViewController.openCloseComPortButton.setText("Open");
                     return;
                 } else {
                     throw new RuntimeException(e);
@@ -292,16 +298,16 @@ public class TerminalController extends Tab {
 
     private void setOpenCloseButtonStyle(OpenCloseButtonStyles openCloseButtonStyle) {
         if(openCloseButtonStyle == OpenCloseButtonStyles.OPEN) {
-            comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
-            comSettings.openCloseComPortButton.setText("Open");
-            comSettings.openCloseComPortButton.getStyleClass().remove("failure");
-            comSettings.openCloseComPortButton.getStyleClass().add("success");
+            comSettingsViewController.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+            comSettingsViewController.openCloseComPortButton.setText("Open");
+            comSettingsViewController.openCloseComPortButton.getStyleClass().remove("failure");
+            comSettingsViewController.openCloseComPortButton.getStyleClass().add("success");
 
         } else if(openCloseButtonStyle == OpenCloseButtonStyles.CLOSE) {
-            comSettings.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
-            comSettings.openCloseComPortButton.setText("Close");
-            comSettings.openCloseComPortButton.getStyleClass().remove("success");
-            comSettings.openCloseComPortButton.getStyleClass().add("failure");
+            comSettingsViewController.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
+            comSettingsViewController.openCloseComPortButton.setText("Close");
+            comSettingsViewController.openCloseComPortButton.getStyleClass().remove("success");
+            comSettingsViewController.openCloseComPortButton.getStyleClass().add("failure");
         } else {
             throw new RuntimeException("openCloseButtonStyle not recognised.");
         }
