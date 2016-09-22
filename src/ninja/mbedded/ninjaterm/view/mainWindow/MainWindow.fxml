@@ -9,7 +9,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import java.net.URL?>
-<fx:root type="javafx.scene.layout.VBox"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.MainWindowController"
+      fx:id="mainVBox"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
@@ -34,4 +35,4 @@
 
     <fx:include fx:id="statusBar" source="StatusBar/StatusBarView.fxml"/>
 
-</fx:root>
+</VBox>

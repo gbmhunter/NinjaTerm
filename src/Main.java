@@ -1,4 +1,6 @@
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -9,6 +11,8 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
+
+import java.io.IOException;
 
 public class Main extends Application {
 
@@ -72,13 +76,17 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model();
 
-        //FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainWindow/MainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindow.fxml"));
 
-        //Parent root = loader.load();
+        try {
+            Parent root = loader.load();
+        } catch(IOException e) {
+            return;
+        }
 
-        /*MainWindowController mainWindowController =
-                loader.getController();*/
-        MainWindowController mainWindowController = new MainWindowController();
+        MainWindowController mainWindowController =
+                loader.getController();
+        //MainWindowController mainWindowController = new MainWindowController();
         mainWindowController.init(model, glyphFont, new ComPortManager());
 
         mainWindowController.addNewTerminal();
@@ -90,7 +98,7 @@ public class Main extends Application {
         mainStage = new Stage();
         mainStage.setTitle("NinjaTerm");
 
-        Scene scene = new Scene(mainWindowController, 1000, 800);
+        Scene scene = new Scene(mainWindowController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
 
         /*scene.setOnKeyPressed(new EventHandler<KeyEvent>() {

@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -17,8 +18,10 @@ import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Controller for the main window of NinjaTerm.
@@ -27,11 +30,14 @@ import java.util.List;
  * @last-modified 2016-09-14
  * @since 2016-07-08
  */
-public class MainWindowController extends VBox {
+public class MainWindowController implements Initializable {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
+    @FXML
+    public VBox mainVBox;
 
     @FXML
     public MenuItem newTerminalMenuItem;
@@ -65,7 +71,7 @@ public class MainWindowController extends VBox {
     //================================================================================================//
 
     public MainWindowController() {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "MainWindow.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -75,7 +81,12 @@ public class MainWindowController extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+
     }
 
     public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
