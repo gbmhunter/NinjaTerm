@@ -11,6 +11,7 @@
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsView?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingView?>
 <fx:root type="javafx.scene.control.Tab"
          xmlns:fx="http://javafx.com/fxml">
     <VBox alignment="TOP_LEFT"
@@ -35,6 +36,10 @@
             <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
                 <RxTxController fx:id="rxTxController"/>
             </Tab>
+
+            <!-- The logging tab -->
+            <LoggingView fx:id="loggingView"/>
+
             <Tab text="Stats" closable="false">
                 <StatsView fx:id="statsView"/>
             </Tab>

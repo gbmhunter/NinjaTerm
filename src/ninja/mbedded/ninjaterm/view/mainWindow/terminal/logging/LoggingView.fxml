@@ -1,0 +1,46 @@
+<!--
+* Inner content for the "Logging" sub-tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-09-22
+* @last-modified   2016-09-22
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<fx:root
+        type="javafx.scene.control.Tab"
+        xmlns:fx="http://javafx.com/fxml"
+        text="Logging"
+        closable="false">
+
+    <VBox alignment="TOP_LEFT"
+          spacing="20"
+          prefHeight="500" prefWidth="800"
+          fillWidth="true" GridPane.vgrow="ALWAYS"
+          stylesheets="@../../../../resources/style.css">
+        <!--style="-fx-background-color: red;" -->
+
+        <padding>
+            <Insets top="40" bottom="40" left="40" right="40"/>
+        </padding>
+
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label>Log file path:</Label>
+            <!-- This textfield needs to be quite wide to fit large paths -->
+            <TextField fx:id="logFilePathTextField" prefWidth="500"></TextField>
+            <Button fx:id="browseButton">Browse</Button>
+        </HBox>
+
+
+    </VBox>
+
+</fx:root>
+
+
+

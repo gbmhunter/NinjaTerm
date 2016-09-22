@@ -11,6 +11,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingView;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
@@ -46,6 +47,9 @@ public class TerminalController extends Tab {
 
     @FXML
     public Tab rxTxTab;
+
+    @FXML
+    private LoggingView loggingView;
 
     @FXML
     public StatsView statsView;
@@ -159,6 +163,12 @@ public class TerminalController extends Tab {
         getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
             handleKeyTyped(ke);
         });
+
+        //==============================================//
+        //============== INIT LOGGING TAB ==============//
+        //==============================================//
+
+        loggingView.init(model, terminal);
 
     }
 
@@ -298,12 +308,15 @@ public class TerminalController extends Tab {
     }
 
     /**
-     * Called by event handler registered in MainWindowController when a key is typed while
+     * Called by event handler registered in this classes constructor when a key is typed while
      * this terminal tab is selected.
+     *
+     * Only key-presses in the TX/RX tab are acted upon, all others are ignored.
+     *
      * @param ke
      */
     public void handleKeyTyped(KeyEvent ke) {
-        System.out.println("Key '" + ke.getCharacter() + "' pressed in terminal tab.");
+        //System.out.println("Key '" + ke.getCharacter() + "' pressed in terminal tab.");
 
         // We only want to send the characters to the serial port if the user pressed them
         // while the TX/RX tab was selected
