@@ -35,8 +35,11 @@ public class Display {
     /**
      * The default buffer size (in chars/bytes) for both TX and RX data.
      * Setting this too large may cause performance issues.
+     * When set to 50,000, on a Surface Pro 4 with i5, 8G RAM, the rendering of 50,000 characters
+     * 10 times a second (basic "Hello, world!" RX data) would cause the processor usage to jump up by 30%.
+     * No RX data filter was active at this time.
      */
-    public final int DEFAULT_BUFFER_SIZE_CHARS = 50000;
+    public final int DEFAULT_BUFFER_SIZE_CHARS = 20000;
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleBooleanProperty backspaceRemovesLastTypedChar = new SimpleBooleanProperty(true);
