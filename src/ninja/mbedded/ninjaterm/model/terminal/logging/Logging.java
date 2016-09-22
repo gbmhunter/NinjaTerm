@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -19,7 +21,7 @@ import java.util.Date;
 public class Logging {
 
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
-    private boolean isLogging = false;
+    public ReadOnlyBooleanWrapper isLogging = new ReadOnlyBooleanWrapper();
 
     private Model model;
     private Terminal terminal;
@@ -56,10 +58,6 @@ public class Logging {
         return defaultLogFilePath;
     }
 
-    public boolean isLogging() {
-        return isLogging;
-    }
-
     public void enableLogging() {
 
         // Open file whose file path is specified in the model
@@ -79,7 +77,7 @@ public class Logging {
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
 
-        isLogging = true;
+        isLogging.set(true);
     }
 
     private void saveNewDataToLogFile(String data) {
@@ -100,7 +98,7 @@ public class Logging {
     }
 
     public void disableLogging() {
-        isLogging = false;
+        isLogging.set(false);
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
         terminal.txRx.dataReceivedAsStringListeners.remove(dataReceivedAsStringListener);

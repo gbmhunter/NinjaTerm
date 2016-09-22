@@ -81,16 +81,16 @@ public class LoggingView extends Tab {
 
         startStopLoggingButton.setOnAction(event -> {
             // Toggle the isLogging boolean in the model
-            if(!terminal.logging.isLogging()) {
+            if(!terminal.logging.isLogging.get()) {
                 terminal.logging.enableLogging();
             } else {
                 terminal.logging.disableLogging();
             }
-            updateStartStopButtonStyle();
+            updateLoggingTabBasedOnIsLogging();
         });
 
         // Update the button style based on the default value for isLogging in the model.
-        updateStartStopButtonStyle();
+        updateLoggingTabBasedOnIsLogging();
 
     }
 
@@ -110,17 +110,26 @@ public class LoggingView extends Tab {
     }
 
 
-    private void updateStartStopButtonStyle() {
-        if(!terminal.logging.isLogging()) {
+    private void updateLoggingTabBasedOnIsLogging() {
+        if(!terminal.logging.isLogging.get()) {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
             startStopLoggingButton.setText("Start");
             startStopLoggingButton.getStyleClass().remove("failure");
             startStopLoggingButton.getStyleClass().add("success");
+
+            // Disable certain controls
+            logFilePathTextField.setDisable(false);
+            browseButton.setDisable(false);
+
         } else {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
             startStopLoggingButton.setText("Stop");
             startStopLoggingButton.getStyleClass().remove("success");
             startStopLoggingButton.getStyleClass().add("failure");
+
+            // Enable certain controls
+            logFilePathTextField.setDisable(true);
+            browseButton.setDisable(true);
         }
     }
 
