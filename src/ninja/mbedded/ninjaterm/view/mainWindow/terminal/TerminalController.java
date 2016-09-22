@@ -168,7 +168,7 @@ public class TerminalController extends Tab {
         //============== INIT LOGGING TAB ==============//
         //==============================================//
 
-        loggingView.init(model, terminal);
+        loggingView.init(model, terminal, glyphFont);
 
     }
 

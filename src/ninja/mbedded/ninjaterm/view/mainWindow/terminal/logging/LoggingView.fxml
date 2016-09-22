@@ -37,6 +37,8 @@
             <Button fx:id="browseButton">Browse</Button>
         </HBox>
 
+        <Button fx:id="startStopLoggingButton" prefWidth="200" prefHeight="40">Open</Button>
+
 
     </VBox>
 

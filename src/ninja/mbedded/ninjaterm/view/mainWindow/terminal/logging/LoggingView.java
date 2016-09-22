@@ -1,18 +1,15 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,12 +33,17 @@ public class LoggingView extends Tab {
     @FXML
     private Button browseButton;
 
+    @FXML
+    private Button startStopLoggingButton;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
     private Model model;
     private Terminal terminal;
+
+    private GlyphFont glyphFont;
 
     public LoggingView() {
 
@@ -59,10 +61,12 @@ public class LoggingView extends Tab {
 
     }
 
-    public void init(Model model, Terminal terminal) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
         this.model = model;
         this.terminal = terminal;
+
+        this.glyphFont = glyphFont;
 
         //==============================================//
         //============= LOG FILE PATH SETUP ============//
@@ -74,6 +78,15 @@ public class LoggingView extends Tab {
         browseButton.setOnAction(event -> {
             openFileChooser();
         });
+
+        startStopLoggingButton.setOnAction(event -> {
+            // Toggle the isLogging boolean in the model
+            terminal.logging.isLogging.set(!terminal.logging.isLogging.get());
+            updateStartStopButtonStyle();
+        });
+
+        // Update the button style based on the default value for isLogging in the model.
+        updateStartStopButtonStyle();
 
     }
 
@@ -90,6 +103,21 @@ public class LoggingView extends Tab {
         // If we reach here, a valid log file must of been chosen. Save to model.
         terminal.logging.logFilePath.set(selectedFile.getAbsolutePath());
 
+    }
+
+
+    private void updateStartStopButtonStyle() {
+        if(!terminal.logging.isLogging.get()) {
+            startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+            startStopLoggingButton.setText("Start");
+            startStopLoggingButton.getStyleClass().remove("failure");
+            startStopLoggingButton.getStyleClass().add("success");
+        } else {
+            startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
+            startStopLoggingButton.setText("Stop");
+            startStopLoggingButton.getStyleClass().remove("success");
+            startStopLoggingButton.getStyleClass().add("failure");
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.Date;
 public class Logging {
 
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
+    public SimpleBooleanProperty isLogging = new SimpleBooleanProperty(false);
 
     public Logging() {
 
