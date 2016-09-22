@@ -6,6 +6,7 @@ vX.X.X
 - Fixed incorrect web page title on homepage, closes #93.
 - TX and RX buffer sizes are now shown on stats sub-tab, closes #95.
 - Fixed bug where build configurations were not being included in repo, closes #85.
+- Added logging sub-tab and basic logging functionality, closes #96.
 
 v0.4.1
 ------

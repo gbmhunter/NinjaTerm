@@ -81,7 +81,11 @@ public class LoggingView extends Tab {
 
         startStopLoggingButton.setOnAction(event -> {
             // Toggle the isLogging boolean in the model
-            terminal.logging.isLogging.set(!terminal.logging.isLogging.get());
+            if(!terminal.logging.isLogging()) {
+                terminal.logging.enableLogging();
+            } else {
+                terminal.logging.disableLogging();
+            }
             updateStartStopButtonStyle();
         });
 
@@ -107,7 +111,7 @@ public class LoggingView extends Tab {
 
 
     private void updateStartStopButtonStyle() {
-        if(!terminal.logging.isLogging.get()) {
+        if(!terminal.logging.isLogging()) {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
             startStopLoggingButton.setText("Start");
             startStopLoggingButton.getStyleClass().remove("failure");

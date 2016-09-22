@@ -3,7 +3,7 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import ninja.mbedded.ninjaterm.interfaces.AppendedStringData;
+import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
@@ -87,7 +87,7 @@ public class TxRx {
         }
     }
 
-    //List<AppendedStringData> appendedStringDataListeners = new ArrayList<>();
+    public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
 
     public void addRxData(String data) {
         rxData.set(rxData.get() + data);
@@ -102,6 +102,11 @@ public class TxRx {
             filteredRxData.set(rxData.get());
         } else {
             filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
+        }
+
+        // Finally, call any listeners (the logging class of the model might be listening)
+        for(DataReceivedAsStringListener dataReceivedAsStringListener : dataReceivedAsStringListeners) {
+            dataReceivedAsStringListener.update(data);
         }
     }
 

@@ -130,7 +130,7 @@ public class MainWindowController extends VBox {
         System.out.println(getClass().getName() + ".addNewTerminal() called.");
 
         // Create a new Terminal object in the model
-        Terminal terminal = new Terminal();
+        Terminal terminal = new Terminal(model);
         // Set the default terminal name in the model. The terminal tab will read this.
         terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
