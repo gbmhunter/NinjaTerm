@@ -9,6 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
+<?import javafx.scene.text.Text?>
 <fx:root type="javafx.scene.layout.VBox"
          xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
          spacing="20"
@@ -21,11 +22,13 @@
     </padding>
 
     <!-- WRAPPING -->
-    <VBox spacing="5" styleClass="border">
+    <VBox spacing="10" styleClass="border">
+
+        <Text wrappingWidth="250">The RX pane will only show lines of data which contain a match to the regex provided below.</Text>
 
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Filter Text:</Label>
-            <TextField fx:id="filterTextTextField" prefWidth="100"></TextField>
+            <TextField fx:id="filterTextTextField" prefWidth="250"></TextField>
         </HBox>
     </VBox>
 
