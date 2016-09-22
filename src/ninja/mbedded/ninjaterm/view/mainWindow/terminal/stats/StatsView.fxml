@@ -1,14 +1,14 @@
 <!--
-* Inner content for the "StatsView" sub-tab of NinjaTerm
+* Inner content for the "StatsViewController" sub-tab of NinjaTerm
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-16
-* @last-modified   2016-09-16
+* @last-modified   2016-09-22
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<fx:root type="javafx.scene.layout.VBox"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController"
          xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
          spacing="20"
          prefHeight="500" prefWidth="800"
@@ -42,7 +42,7 @@
         </GridPane>
     </VBox>
 
-</fx:root>
+</VBox>
 
 
 

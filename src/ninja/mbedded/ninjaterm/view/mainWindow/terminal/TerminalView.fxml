@@ -10,8 +10,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsView?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingView?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController?>
 <fx:root type="javafx.scene.control.Tab"
          xmlns:fx="http://javafx.com/fxml">
     <VBox alignment="TOP_LEFT"
@@ -38,10 +38,12 @@
             </Tab>
 
             <!-- The logging tab -->
-            <LoggingView fx:id="loggingView"/>
+            <!--<LoggingViewController fx:id="loggingView"/>-->
+            <fx:include fx:id="loggingView" source="logging/LoggingView.fxml"/>
 
             <Tab text="Stats" closable="false">
-                <StatsView fx:id="statsView"/>
+                <!--<StatsViewController fx:id="statsViewController"/>-->
+                <fx:include fx:id="statsView" source="stats/StatsView.fxml" />
             </Tab>
         </TabPane>
     </VBox>

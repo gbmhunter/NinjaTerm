@@ -11,12 +11,12 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettings;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingView;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsView;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
@@ -49,10 +49,10 @@ public class TerminalController extends Tab {
     public Tab rxTxTab;
 
     @FXML
-    private LoggingView loggingView;
+    private LoggingViewController loggingViewController;
 
     @FXML
-    public StatsView statsView;
+    private StatsViewController statsViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -132,7 +132,7 @@ public class TerminalController extends Tab {
         //============= INIT STATS SUB-TAB =============//
         //==============================================//
 
-        statsView.init(terminal);
+        statsViewController.init(terminal);
 
         statusBarController.init(model);
 
@@ -168,7 +168,7 @@ public class TerminalController extends Tab {
         //============== INIT LOGGING TAB ==============//
         //==============================================//
 
-        loggingView.init(model, terminal, glyphFont);
+        loggingViewController.init(model, terminal, glyphFont);
 
     }
 

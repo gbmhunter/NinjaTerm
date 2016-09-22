@@ -76,7 +76,7 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model();
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindow.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
 
         try {
             Parent root = loader.load();

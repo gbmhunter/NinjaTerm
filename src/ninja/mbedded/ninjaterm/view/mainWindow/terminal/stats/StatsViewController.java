@@ -1,27 +1,19 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
-import javafx.util.converter.NumberStringConverter;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
-
-import java.io.IOException;
 
 /**
  * Controller for the "StatsView" sub-tab which is part of a terminal tab.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-09-16
  * @last-modified 2016-09-22
+ * @since 2016-09-16
  */
-public class StatsView extends VBox {
+public class StatsViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -45,9 +37,9 @@ public class StatsView extends VBox {
 
     private Terminal terminal;
 
-    public StatsView() {
+    public StatsViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "StatsView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -57,7 +49,7 @@ public class StatsView extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
 
     }
 
@@ -89,7 +81,7 @@ public class StatsView extends VBox {
 
         //======================= TX ===================//
         ChangeListener<String> bufferSizesTxChangeListener = (observable, oldValue, newValue) -> {
-                bufferSizesTxLabel.setText(Integer.toString(terminal.txRx.txData.get().length()));
+            bufferSizesTxLabel.setText(Integer.toString(terminal.txRx.txData.get().length()));
         };
         terminal.txRx.txData.addListener(bufferSizesTxChangeListener);
         // Set default (giving bogus data as it is not used)

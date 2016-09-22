@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
@@ -13,6 +14,8 @@ import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 /**
  * Controller for the "StatsView" sub-tab which is part of a terminal tab.
@@ -21,7 +24,7 @@ import java.io.IOException;
  * @since 2016-09-16
  * @last-modified 2016-09-22
  */
-public class LoggingView extends Tab {
+public class LoggingViewController implements Initializable {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -45,9 +48,9 @@ public class LoggingView extends Tab {
 
     private GlyphFont glyphFont;
 
-    public LoggingView() {
+    public LoggingViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "LoggingView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -57,7 +60,12 @@ public class LoggingView extends Tab {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
+
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
 
     }
 

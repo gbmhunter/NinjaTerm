@@ -13,8 +13,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
-<fx:root
-        type="javafx.scene.control.Tab"
+<Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController"
         xmlns:fx="http://javafx.com/fxml"
         text="Logging"
         closable="false">
@@ -42,7 +41,7 @@
 
     </VBox>
 
-</fx:root>
+</Tab>
 
 
 

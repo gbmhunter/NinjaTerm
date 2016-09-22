@@ -72,7 +72,7 @@ public class MainWindowController implements Initializable {
 
     public MainWindowController() {
         /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "MainWindow.fxml"));
+                "MainWindowView.fxml"));
 
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
