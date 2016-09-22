@@ -1,0 +1,48 @@
+<!--
+* Inner content for the "StatsViewController" sub-tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-09-16
+* @last-modified   2016-09-22
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController"
+         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+         spacing="20"
+         prefHeight="500" prefWidth="800"
+         fillWidth="true" GridPane.vgrow="ALWAYS"
+         stylesheets="@../../../../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="40" bottom="40" left="40" right="40"/>
+    </padding>
+
+    <VBox spacing="10" fillWidth="false" styleClass="border">
+        <Label>Total Character Count:</Label>
+        <GridPane vgap="5" hgap="10">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
+
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
+        </GridPane>
+    </VBox>
+
+    <VBox spacing="10" fillWidth="false" styleClass="border">
+        <Label>Buffer Sizes:</Label>
+        <GridPane vgap="5" hgap="10">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bufferSizesTxLabel"></Label>
+
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bufferSizesRxLabel"></Label>
+        </GridPane>
+    </VBox>
+
+</VBox>
+
+
+
