@@ -1,3 +1,8 @@
+v0.5.1
+------
+
+- Fixed bug where NinjaTerm would lock up on splash screen.
+
 v0.5.0
 ------
 
