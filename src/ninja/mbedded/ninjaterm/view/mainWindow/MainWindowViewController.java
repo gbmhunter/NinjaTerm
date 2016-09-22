@@ -2,7 +2,8 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -11,15 +12,14 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 /**
  * Controller for the main window of NinjaTerm.
@@ -58,7 +58,7 @@ public class MainWindowViewController {
 
     private ComPortManager comPortManager;
 
-    public List<TerminalController> terminalControllers = new ArrayList<>();
+    public List<TerminalViewController> terminalViewControllers = new ArrayList<>();
 
     private GlyphFont glyphFont;
 
@@ -132,17 +132,30 @@ public class MainWindowViewController {
         model.terminals.add(terminal);
 
 
-        TerminalController terminalController = new TerminalController();
-        terminalController.init(model, terminal, glyphFont, statusBarController);
-        terminalControllers.add(terminalController);
 
-        terminalController.comSettingsViewController.setComPortManager(comPortManager);
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("terminal/TerminalView.fxml"));
+
+        Tab terminalTab;
+        try {
+            terminalTab = (Tab)loader.load();
+        } catch(IOException e) {
+            return;
+        }
+
+        TerminalViewController terminalViewController = loader.getController();
+
+
+        //TerminalViewController terminalViewController = new TerminalViewController();
+        terminalViewController.init(model, terminal, glyphFont, statusBarController);
+        terminalViewControllers.add(terminalViewController);
+
+        terminalViewController.comSettingsViewController.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminalController.comSettingsViewController.scanComPorts();
+        terminalViewController.comSettingsViewController.scanComPorts();
 
-        //terminalController.setText();
+        //terminalViewController.setText();
 
-        terminalTabPane.getTabs().add(terminalController);
+        terminalTabPane.getTabs().add(terminalTab);
 
     }
 }

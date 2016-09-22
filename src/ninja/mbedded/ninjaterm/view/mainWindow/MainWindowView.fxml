@@ -28,8 +28,8 @@
     </MenuBar>
 
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
-        <!--<Tab text="terminalController 1" closable="true">-->
-            <!--<fx:include fx:id="terminalController" source="terminalController.fxml"/>-->
+        <!--<Tab text="terminalViewController 1" closable="true">-->
+            <!--<fx:include fx:id="terminalViewController" source="terminalViewController.fxml"/>-->
         <!--</Tab>-->
     </TabPane>
 

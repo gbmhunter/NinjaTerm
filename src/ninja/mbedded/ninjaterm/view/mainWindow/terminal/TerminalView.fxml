@@ -8,12 +8,10 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController?>
 <?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController?>
-<fx:root type="javafx.scene.control.Tab"
-         xmlns:fx="http://javafx.com/fxml">
+<Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController"
+     fx:id="terminalTab"
+     xmlns:fx="http://javafx.com/fxml">
     <VBox alignment="TOP_LEFT"
           spacing="20"
           fillWidth="true"
@@ -27,7 +25,7 @@
 
             <Tab text="COM Settings" closable="false">
                 <!--<ComSettingsViewController fx:id="comSettingsViewController"/>-->
-                <fx:include fx:id="comSettingsView" source="comSettings/ComSettingsView.fxml" />
+                <fx:include fx:id="comSettingsView" source="comSettings/ComSettingsView.fxml"/>
             </Tab>
 
             <!--<Tab text="RX/TX" closable="false">
@@ -44,11 +42,11 @@
 
             <Tab text="Stats" closable="false">
                 <!--<StatsViewController fx:id="statsViewController"/>-->
-                <fx:include fx:id="statsView" source="stats/StatsView.fxml" />
+                <fx:include fx:id="statsView" source="stats/StatsView.fxml"/>
             </Tab>
         </TabPane>
     </VBox>
-</fx:root>
+</Tab>
 
 
 

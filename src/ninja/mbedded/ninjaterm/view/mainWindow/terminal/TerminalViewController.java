@@ -28,13 +28,16 @@ import java.util.Optional;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-08-23
- * @last-modified   2016-08-23
+ * @last-modified   2016-09-22
  */
-public class TerminalController extends Tab {
+public class TerminalViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
+    @FXML
+    private Tab terminalTab;
 
     @FXML
     public TabPane terminalTabPane;
@@ -71,9 +74,9 @@ public class TerminalController extends Tab {
     private Terminal terminal;
     private Model model;
 
-    public TerminalController() {
+    public TerminalViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "TerminalView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -83,7 +86,7 @@ public class TerminalController extends Tab {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
 
     }
 
@@ -122,11 +125,11 @@ public class TerminalController extends Tab {
         //==============================================//
 
         terminal.terminalName.addListener((observable, oldValue, newValue) -> {
-            setText(newValue);
+            terminalTab.setText(newValue);
         });
 
         // Set default
-        setText(terminal.terminalName.get());
+        terminalTab.setText(terminal.terminalName.get());
 
         //==============================================//
         //========= INIT COM SETTINGS SUB-TAB ==========//
@@ -156,7 +159,7 @@ public class TerminalController extends Tab {
             }
         });
         contextMenu.getItems().add(menuItem);
-        setContextMenu(contextMenu);
+        terminalTab.setContextMenu(contextMenu);
 
         //==============================================//
         //========= INSTALL KEY-PRESS HANDLER ==========//
@@ -166,7 +169,7 @@ public class TerminalController extends Tab {
         // doesn't seem to work.
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
-        getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+        terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
             handleKeyTyped(ke);
         });
 
