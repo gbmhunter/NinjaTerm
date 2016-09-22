@@ -1,8 +1,11 @@
 package ninja.mbedded.ninjaterm.model.terminal;
 
 import javafx.beans.property.SimpleStringProperty;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
 import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
+import sun.rmi.runtime.Log;
 
 /**
  * Created by gbmhu on 2016-09-16.
@@ -15,7 +18,14 @@ public class Terminal {
      */
     public SimpleStringProperty terminalName = new SimpleStringProperty("");
 
-    public TxRx txRx = new TxRx();
-    public Stats stats = new Stats();
+    public TxRx txRx;
+    public Logging logging;
+    public Stats stats;
+
+    public Terminal(Model model) {
+        txRx = new TxRx();
+        logging = new Logging(model, this);
+        stats = new Stats();
+    }
 
 }

@@ -1,8 +1,13 @@
 vX.X.X
 ------
 
+- Added filter field in TX/RX sub-tab, closes #84.
 - Fixed incorrect link to GitHub on homepage, closes #94.
 - Fixed incorrect web page title on homepage, closes #93.
+- TX and RX buffer sizes are now shown on stats sub-tab, closes #95.
+- Fixed bug where build configurations were not being included in repo, closes #85.
+- Added logging sub-tab and basic logging functionality, closes #96.
+- Greyed out textfield and browse button on logging tab when logging is active, closes #97.
 
 v0.4.1
 ------

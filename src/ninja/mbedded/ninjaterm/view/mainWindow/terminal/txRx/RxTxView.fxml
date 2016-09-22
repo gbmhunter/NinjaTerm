@@ -1,0 +1,119 @@
+<!--
+* Inner content for the "terminalViewController" tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-08-25
+-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.RxTxController-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<fx:root type="javafx.scene.layout.VBox" id="RxTxController"
+         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+         spacing="20"
+         prefHeight="500" prefWidth="800"
+         fillWidth="true" GridPane.vgrow="ALWAYS"
+         stylesheets="@../../../../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="20" bottom="20" left="20" right="20"/>
+    </padding>
+
+    <HBox VBox.vgrow="ALWAYS" spacing="10">
+
+        <!-- This VBox holds both the TX and RX panes -->
+        <VBox fx:id="dataContainerVBox" HBox.hgrow="ALWAYS" spacing="20">
+            <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
+            <StackPane VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
+
+                <!-- =========================================== -->
+                <!-- ================== TERMINAL =============== -->
+                <!-- =========================================== -->
+                <ScrollPane fx:id="rxDataScrollPane">
+                    <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
+                    <!-- This TextFlow holds the many RX Text objects -->
+                    <TextFlow fx:id="txRxTextFlow" styleClass="txRxText"
+                              style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
+                        <padding>
+                            <Insets top="10" bottom="10" left="10" right="10"/>
+                        </padding>
+                        <Text styleClass="text">TX/RX text wil go here.</Text>
+                    </TextFlow>
+                </ScrollPane>
+
+                <!-- =========================================== -->
+                <!-- ========== DATA DIRECTION INDICATOR ======= -->
+                <!-- =========================================== -->
+                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
+                           style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
+                    <Label fx:id="dataDirectionRxLabel" alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
+                </StackPane>
+
+
+                <!-- =========================================== -->
+                <!-- ============= AUTO-SCROLL BUTTON ========== -->
+                <!-- =========================================== -->
+                <!-- This pane (with auto-scroll image) gets placed in the bottom-right hand corner of the above scroll pane -->
+                <Pane fx:id="autoScrollButtonPane" StackPane.alignment="BOTTOM_RIGHT" translateX="-20" translateY="-20"
+                      maxWidth="100" maxHeight="100">
+                    <ImageView fx:id="scrollToBottomImageView" fitWidth="100" fitHeight="100"
+                               styleClass="scrollToBottomButton">
+                        <image>
+                            <Image url="@../../../../resources/down-arrow.png"/>
+                        </image>
+                    </ImageView>
+                </Pane>
+            </StackPane>
+
+            <!-- =========================================== -->
+            <!-- ================ TX DATA PANE ============= -->
+            <!-- =========================================== -->
+            <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
+            <StackPane fx:id="txDataStackPane" minHeight="100" maxHeight="100" style="-fx-background-color: black;">
+
+                <!-- =========================================== -->
+                <!-- ================== TX DATA ================ -->
+                <!-- =========================================== -->
+                <ScrollPane fx:id="txTextScrollPane" minHeight="100" maxHeight="100">
+                    <TextFlow fx:id="txTextFlow" styleClass="txRxText">
+                        <padding>
+                            <Insets top="10" bottom="10" left="10" right="10"/>
+                        </padding>
+                        <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
+                        <!--<TextArea>Testing</TextArea>-->
+                    </TextFlow>
+                </ScrollPane>
+
+                <!-- =========================================== -->
+                <!-- ========== DATA DIRECTION INDICATOR ======= -->
+                <!-- =========================================== -->
+                <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
+                           style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
+                    <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
+                </StackPane>
+            </StackPane>
+
+        </VBox>
+
+        <!-- =========================================== -->
+        <!-- =========== RIGHT-HAND SIDE PANE ========== -->
+        <!-- =========================================== -->
+        <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
+            <Button fx:id="clearTextButton" minWidth="100">Clear Text</Button>
+            <Button fx:id="displayButton" minWidth="100">Display</Button>
+            <Button fx:id="filtersButton" minWidth="100">Filters</Button>
+        </VBox>
+
+    </HBox>
+
+
+</fx:root>
+
+
+
