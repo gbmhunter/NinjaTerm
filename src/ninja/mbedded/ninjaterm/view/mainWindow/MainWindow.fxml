@@ -32,6 +32,6 @@
         <!--</Tab>-->
     </TabPane>
 
-    <fx:include fx:id="statusBar" source="StatusBar/StatusBar.fxml"/>
+    <fx:include fx:id="statusBar" source="StatusBar/StatusBarView.fxml"/>
 
 </fx:root>
