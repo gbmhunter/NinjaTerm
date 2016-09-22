@@ -2,6 +2,8 @@ vX.X.X
 ------
 
 - Added filter field in TX/RX sub-tab, closes #84.
+- Fixed incorrect link to GitHub on homepage, closes #94.
+- Fixed incorrect web page title on homepage, closes #93.
 
 v0.4.1
 ------
