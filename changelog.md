@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Added filter field in TX/RX sub-tab, closes #84.
+
 v0.4.1
 ------
 

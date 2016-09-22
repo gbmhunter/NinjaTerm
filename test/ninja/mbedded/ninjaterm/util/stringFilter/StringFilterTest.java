@@ -21,11 +21,38 @@ public class StringFilterTest {
 
     @Test
     public void basicTest() throws Exception {
-
         String filterResult = StringFilter.filterByLine("A\rB\rC\r", "B");
-
         assertEquals("B\r", filterResult);
+    }
 
+    @Test
+    public void emptyLineInMiddleTest() throws  Exception {
+        String filterResult = StringFilter.filterByLine("A\rB\r\rC\r", "B");
+        assertEquals("B\r", filterResult);
+    }
+
+    @Test
+    public void emptyLinesAtStartAndEndTest() throws  Exception {
+        String filterResult = StringFilter.filterByLine("\r\rA\rB\r\rC\r\r", "B");
+        assertEquals("B\r", filterResult);
+    }
+
+    @Test
+    public void additionalCharsTest() throws  Exception {
+        String filterResult = StringFilter.filterByLine("\r\rA\rABC\r\rC\r\r", "B");
+        assertEquals("ABC\r", filterResult);
+    }
+
+    @Test
+    public void matchWordTest() throws  Exception {
+        String filterResult = StringFilter.filterByLine("\r\rA\rmy name is bob\r\rC\r\r", "name");
+        assertEquals("my name is bob\r", filterResult);
+    }
+
+    @Test
+    public void noMatchTest() throws  Exception {
+        String filterResult = StringFilter.filterByLine("A\rB\rC\r", "D");
+        assertEquals("", filterResult);
     }
 
 }

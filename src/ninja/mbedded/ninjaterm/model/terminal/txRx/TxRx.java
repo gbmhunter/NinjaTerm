@@ -3,8 +3,13 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import ninja.mbedded.ninjaterm.interfaces.AppendedStringData;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
+import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by gbmhu on 2016-09-16.
@@ -20,7 +25,12 @@ public class TxRx {
     /**
      * Initialise with "" so that it does not display "null".
      */
-    public SimpleStringProperty txRxData = new SimpleStringProperty("");
+    public SimpleStringProperty rxData = new SimpleStringProperty("");
+
+    /**
+     * RX data which has been filtered according to the filter text.
+     */
+    public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
 
     public TxRx() {
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
@@ -68,21 +78,30 @@ public class TxRx {
 
         // Echo TX data into TX/RX pane
         if(display.localTxEcho.get()) {
-            txRxData.set(txRxData.get() + dataAsString);
+            rxData.set(rxData.get() + dataAsString);
 
-            if(txRxData.get().length() > display.bufferSizeChars.get()) {
+            if(rxData.get().length() > display.bufferSizeChars.get()) {
                 // Remove old characters from buffer
-                txRxData.set(removeOldChars(txRxData.get(), display.bufferSizeChars.get()));
+                rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
             }
         }
     }
 
-    public void addRxData(String data) {
-        txRxData.set(txRxData.get() + data);
+    //List<AppendedStringData> appendedStringDataListeners = new ArrayList<>();
 
-        if(txRxData.get().length() > display.bufferSizeChars.get()) {
+    public void addRxData(String data) {
+        rxData.set(rxData.get() + data);
+
+        // Truncate if necessary
+        if(rxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
-            txRxData.set(removeOldChars(txRxData.get(), display.bufferSizeChars.get()));
+            rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
+        }
+
+        if(filters.filterText.get().equals("")) {
+            filteredRxData.set(rxData.get());
+        } else {
+            filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
         }
     }
 
@@ -97,9 +116,9 @@ public class TxRx {
             txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if(txRxData.get().length() > display.bufferSizeChars.get()) {
+        if(rxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
-            txRxData.set(removeOldChars(txRxData.get(), display.bufferSizeChars.get()));
+            rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
     }
 

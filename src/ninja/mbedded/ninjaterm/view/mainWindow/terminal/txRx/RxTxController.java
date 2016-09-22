@@ -108,7 +108,7 @@ public class RxTxController extends VBox {
      */
     private Boolean autoScrollEnabled = true;
 
-    private Text txRxDataText = new Text();
+    private Text rxDataText = new Text();
 
     private Decoder decoder;
 
@@ -185,8 +185,8 @@ public class RxTxController extends VBox {
 
         // Add default Text node to text flow. Received text
         // will be added to this node.
-        txRxTextFlow.getChildren().add(txRxDataText);
-        txRxDataText.setFill(Color.LIME);
+        txRxTextFlow.getChildren().add(rxDataText);
+        rxDataText.setFill(Color.LIME);
 
         //==============================================//
         //============== CREATE CARET ==================//
@@ -271,8 +271,8 @@ public class RxTxController extends VBox {
 
         clearTextButton.setOnAction(event -> {
             // Clear all the text
-            //txRxDataText.setText("");
-            terminal.txRx.txRxData.set("");
+            //rxDataText.setText("");
+            terminal.txRx.rxData.set("");
             terminal.txRx.txData.set("");
             model.status.addMsg("Terminal TX/RX text cleared.");
 
@@ -355,7 +355,7 @@ public class RxTxController extends VBox {
         //======= BIND TERMINAL TEXT TO TXRX DATA ======//
         //==============================================//
 
-        txRxDataText.textProperty().bind(terminal.txRx.txRxData);
+        rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
         txDataText.textProperty().bind(terminal.txRx.txData);
 
         // Call this to update the display of the TX/RX pane into its default
