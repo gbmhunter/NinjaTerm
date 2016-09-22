@@ -10,25 +10,37 @@
 <?import javafx.scene.layout.*?>
 <fx:root type="javafx.scene.layout.VBox"
          xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-      spacing="20"
-      prefHeight="500" prefWidth="800"
-      fillWidth="true" GridPane.vgrow="ALWAYS"
-      stylesheets="@../../../../resources/style.css">
+         spacing="20"
+         prefHeight="500" prefWidth="800"
+         fillWidth="true" GridPane.vgrow="ALWAYS"
+         stylesheets="@../../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
         <Insets top="40" bottom="40" left="40" right="40"/>
     </padding>
 
-    <Label>Character Count:</Label>
+    <VBox spacing="10" fillWidth="false" styleClass="border">
+        <Label>Total Character Count:</Label>
+        <GridPane vgap="5" hgap="10">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
 
-    <GridPane vgap="10" hgap="10">
-        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX:</Label>
-        <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
+        </GridPane>
+    </VBox>
 
-        <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX:</Label>
-        <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
-    </GridPane>
+    <VBox spacing="10" fillWidth="false" styleClass="border">
+        <Label>Buffer Sizes:</Label>
+        <GridPane vgap="5" hgap="10">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bufferSizesTxLabel"></Label>
+
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bufferSizesRxLabel"></Label>
+        </GridPane>
+    </VBox>
 
 </fx:root>
 

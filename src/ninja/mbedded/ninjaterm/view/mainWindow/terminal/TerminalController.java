@@ -128,7 +128,7 @@ public class TerminalController extends Tab {
         //============= INIT STATS SUB-TAB =============//
         //==============================================//
 
-        statsView.init(terminal.stats);
+        statsView.init(terminal);
 
         statusBarController.init(model);
 

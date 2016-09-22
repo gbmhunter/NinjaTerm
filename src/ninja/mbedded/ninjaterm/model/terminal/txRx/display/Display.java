@@ -32,7 +32,11 @@ public class Display {
         SEND_TX_CHARS_ON_ENTER
     }
 
-    public final int DEFAULT_BUFFER_SIZE_CHARS = 10000;
+    /**
+     * The default buffer size (in chars/bytes) for both TX and RX data.
+     * Setting this too large may cause performance issues.
+     */
+    public final int DEFAULT_BUFFER_SIZE_CHARS = 50000;
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleBooleanProperty backspaceRemovesLastTypedChar = new SimpleBooleanProperty(true);
