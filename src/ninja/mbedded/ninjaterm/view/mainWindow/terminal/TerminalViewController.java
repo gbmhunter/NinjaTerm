@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -13,14 +12,13 @@ import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -46,7 +44,7 @@ public class TerminalViewController {
     public ComSettingsViewController comSettingsViewController;
 
     @FXML
-    public RxTxController rxTxController;
+    public TxRxViewController txRxViewController;
 
     @FXML
     public Tab rxTxTab;
@@ -111,9 +109,9 @@ public class TerminalViewController {
         terminalTabPane.getSelectionModel().select(0);
 
         // Create RX/TX view
-        //rxTxController = new RxTxController();
-        rxTxController.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
-        rxTxTab.setContent(rxTxController);
+        //txRxViewController = new TxRxViewController();
+        txRxViewController.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
+        //rxTxTab.setContent(txRxViewController);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -248,7 +246,7 @@ public class TerminalViewController {
                 Platform.runLater(() -> {
 
                     // Add the received data to the model
-                    //rxTxController.addTxRxText(rxText);
+                    //txRxViewController.addTxRxText(rxText);
                     terminal.txRx.addRxData(rxText);
 
                     // Update stats in app model
@@ -336,7 +334,7 @@ public class TerminalViewController {
 
         // Now that we have made sure the RX/TX sub-tab was open when the key was pressed,
         // call the appropriate function in the RX/TX controller.
-        rxTxController.handleKeyTyped(ke);
+        txRxViewController.handleKeyTyped(ke);
 
     }
 

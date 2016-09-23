@@ -107,7 +107,7 @@ public class Main extends Application {
             }
         });*/
 
-        //mainWindowViewController.terminalViewControllers.get(0).rxTxController.showPopover();
+        //mainWindowViewController.terminalViewControllers.get(0).txRxViewController.showPopover();
 
         mainStage.initStyle(StageStyle.DECORATED);
         //mainStage.centerOnScreen();

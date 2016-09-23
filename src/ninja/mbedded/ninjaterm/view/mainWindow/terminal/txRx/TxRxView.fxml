@@ -3,9 +3,9 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-08-25
+* @last-modified   2016-09-23
 -->
-<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.RxTxController-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
@@ -13,12 +13,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<fx:root type="javafx.scene.layout.VBox" id="RxTxController"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-         spacing="20"
-         prefHeight="500" prefWidth="800"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="@../../../../resources/style.css">
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
+      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+      spacing="20"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="@../../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -50,7 +50,8 @@
                 <!-- =========================================== -->
                 <!-- ========== DATA DIRECTION INDICATOR ======= -->
                 <!-- =========================================== -->
-                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
+                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100"
+                           maxHeight="20" alignment="CENTER"
                            style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
                     <Label fx:id="dataDirectionRxLabel" alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
                 </StackPane>
@@ -111,9 +112,7 @@
         </VBox>
 
     </HBox>
-
-
-</fx:root>
+</VBox>
 
 
 

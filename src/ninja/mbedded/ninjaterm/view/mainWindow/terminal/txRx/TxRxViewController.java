@@ -36,9 +36,9 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-09-15
+ * @last-modified 2016-09-23
  */
-public class RxTxController extends VBox {
+public class TxRxViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -140,10 +140,10 @@ public class RxTxController extends VBox {
     //================================================================================================//
 
 
-    public RxTxController() {
+    public TxRxViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "RxTxView.fxml"));
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+                "TxRxView.fxml"));
 
         fxmlLoader.setRoot(this);
         fxmlLoader.setController(this);
@@ -152,7 +152,7 @@ public class RxTxController extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
     }
 
     /**

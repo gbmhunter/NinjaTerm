@@ -8,7 +8,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController?>
+<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController?>
 <Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController"
      fx:id="terminalTab"
      xmlns:fx="http://javafx.com/fxml">
@@ -33,7 +33,7 @@
             </Tab>-->
 
             <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
-                <RxTxController fx:id="rxTxController"/>
+                <fx:include fx:id="txRxView" source="txRx/TxRxView.fxml"/>
             </Tab>
 
             <!-- The logging tab -->
