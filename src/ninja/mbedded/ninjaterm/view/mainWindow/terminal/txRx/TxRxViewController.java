@@ -22,7 +22,7 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
 import org.controlsfx.control.PopOver;
@@ -112,7 +112,7 @@ public class TxRxViewController {
 
     private Decoder decoder;
 
-    private StatusBarController statusBarController;
+    private StatusBarViewController statusBarViewController;
 
     private GlyphFont glyphFont;
 
@@ -159,7 +159,7 @@ public class TxRxViewController {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarViewController statusBarViewController, GlyphFont glyphFont) {
 
         // Save model
         this.model = model;
@@ -173,7 +173,7 @@ public class TxRxViewController {
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
-        this.statusBarController = statusBarController;
+        this.statusBarViewController = statusBarViewController;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)

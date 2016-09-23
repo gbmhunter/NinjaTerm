@@ -13,7 +13,7 @@ import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsV
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -64,7 +64,7 @@ public class TerminalViewController {
      */
     public ComPort comPort = new ComPort();
 
-    private StatusBarController statusBarController;
+    private StatusBarViewController statusBarViewController;
     private Decoder decoder = new Decoder();
 
     private GlyphFont glyphFont;
@@ -88,14 +88,14 @@ public class TerminalViewController {
 
     }
 
-    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarViewController statusBarViewController) {
 
         this.model = model;
         this.terminal = terminal;
 
 
         this.glyphFont = glyphFont;
-        this.statusBarController = statusBarController;
+        this.statusBarViewController = statusBarViewController;
 
         // Set children
         comSettingsViewController.setStatusBarController(model);
@@ -110,7 +110,7 @@ public class TerminalViewController {
 
         // Create RX/TX view
         //txRxViewController = new TxRxViewController();
-        txRxViewController.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
+        txRxViewController.Init(model, terminal, comPort, decoder, statusBarViewController, glyphFont);
         //rxTxTab.setContent(txRxViewController);
 
         // Set default style for OpenClose button
@@ -141,7 +141,7 @@ public class TerminalViewController {
 
         statsViewController.init(terminal);
 
-        statusBarController.init(model);
+        statusBarViewController.init(model);
 
         //==============================================//
         //============= SETUP CONTEXT MENU =============//
