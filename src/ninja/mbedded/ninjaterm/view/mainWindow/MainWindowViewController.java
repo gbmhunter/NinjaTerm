@@ -71,6 +71,13 @@ public class MainWindowViewController {
 
     }
 
+    /**
+     * Initialises everything that cannot be done in the constructor (due to JavaFX creating the
+     * object automatically).
+     * @param model
+     * @param glyphFont
+     * @param comPortManager
+     */
     public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
 
         this.model = model;
@@ -101,6 +108,8 @@ public class MainWindowViewController {
 
             String versionNumber = AppInfo.getVersionNumber();
 
+            // Sometimes the version number will be null, but this should only occur when running from IntelliJ
+            // in a development environment (install4j will add the appropriate .dll when a .exe is built)
             if(versionNumber == null) {
                 versionNumber = "?.?.?";
             }

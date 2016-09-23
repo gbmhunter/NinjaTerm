@@ -27,24 +27,14 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
 
         if(disableSplashScreen) {
+            // Skip this function, and go straight to loading the main window.
             loadMainWindow();
             return;
         }
 
         this.splashScreenStage = primaryStage;
 
-        //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowViewController.fxml"));
-
-        // Create splashscreen
-        /*VBox root = new VBox();
-        Button btn = new Button("Say 'Hello World'");
-        root.getChildren().add(btn);
-
-        // Java 8: requires setting the layout pane background style to transparent
-        // https://javafx-jira.kenai.com/browse/RT-38938
-        // "Modena uses a non-transparent background by default"
-        root.setStyle("-fx-background-color: transparent;");*/
-
+        // Load splashscreen FXML file and get controller
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
         try {
             Parent root = loader.load();
@@ -103,14 +93,6 @@ public class Main extends Application {
 
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
-
-        /*scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                System.out.println("Key pressed.");
-            }
-        });*/
-
-        //mainWindowViewController.terminalViewControllers.get(0).txRxViewController.showPopover();
 
         mainStage.initStyle(StageStyle.DECORATED);
         //mainStage.centerOnScreen();

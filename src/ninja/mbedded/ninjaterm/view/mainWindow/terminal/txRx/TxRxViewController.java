@@ -119,7 +119,7 @@ public class TxRxViewController {
     private Model model;
 
     /**
-     * Stores the model which drives this view.
+     * Stores the terminal model which drives this view (this is also stored in model, but it is in an array).
      */
     private Terminal terminal;
 
@@ -141,18 +141,6 @@ public class TxRxViewController {
 
 
     public TxRxViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "TxRxView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
     }
 
     /**
