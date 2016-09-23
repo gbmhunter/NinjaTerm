@@ -73,19 +73,6 @@ public class TerminalViewController {
     private Model model;
 
     public TerminalViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "TerminalView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
     }
 
     public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarViewController statusBarViewController) {

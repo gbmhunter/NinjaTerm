@@ -12,7 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by gbmhu on 2016-09-16.
+ * Model handling the TX/RX data of a terminal. This is displayed as a sub-tab of a terminal
+ * tab in the GUI.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-16
+ * @last-modified   2016-09-23
  */
 public class TxRx {
 

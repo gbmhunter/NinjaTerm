@@ -8,7 +8,11 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import sun.rmi.runtime.Log;
 
 /**
- * Created by gbmhu on 2016-09-16.
+ * Model for a single "terminal" instance (which is displayed on a tab in the GUI).
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-16
+ * @last-modified   2016-09-23
  */
 public class Terminal {
 

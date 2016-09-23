@@ -16,7 +16,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by gbmhu on 2016-09-22.
+ * Model containing data and logic for the logging of TX/RX data from a COM port.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-22
+ * @last-modified   2016-09-23
  */
 public class Logging {
 
