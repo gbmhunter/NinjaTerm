@@ -47,7 +47,7 @@ public class TerminalViewController {
     public TxRxViewController txRxViewController;
 
     @FXML
-    public Tab rxTxTab;
+    public Tab txRxView;
 
     @FXML
     private LoggingViewController loggingViewController;
@@ -111,7 +111,7 @@ public class TerminalViewController {
         // Create RX/TX view
         //txRxViewController = new TxRxViewController();
         txRxViewController.Init(model, terminal, comPort, decoder, statusBarViewController, glyphFont);
-        //rxTxTab.setContent(txRxViewController);
+        //txRxView.setContent(txRxViewController);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -327,7 +327,7 @@ public class TerminalViewController {
 
         // We only want to send the characters to the serial port if the user pressed them
         // while the TX/RX tab was selected
-        if (terminalTabPane.getSelectionModel().getSelectedItem() != rxTxTab) {
+        if (terminalTabPane.getSelectionModel().getSelectedItem() != txRxView) {
             return;
         }
         System.out.println("TX/RX sub-tab selected.");

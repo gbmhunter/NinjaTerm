@@ -1,14 +1,14 @@
 <!--
-* Inner content for the status bar at the bottom of the main NinjaTerm window.
+* The tab and inner content for each terminal shown in the main NinjaTerm window.
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-23
-* @last-modified   2016-09-21
+* @last-modified   2016-09-23
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.VBox?>
-<?import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController?>
 <Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController"
      fx:id="terminalTab"
      xmlns:fx="http://javafx.com/fxml">
@@ -21,22 +21,22 @@
             <Insets top="10" bottom="10" left="10" right="10"/>
         </padding>
 
+        <!-- This TabPane appears as a sub-tab pane of the terminal tab. It is styled so
+         that it appears differently to the terminal TabPane (you can't really see this
+          TabPane). -->
         <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS" styleClass="minimal">
 
+            <!-- COM settings tab. This is where the user open and closes a COM port. -->
             <fx:include fx:id="comSettingsView" source="comSettings/ComSettingsView.fxml"/>
 
-            <Tab fx:id="rxTxTab" text="RX/TX" closable="false">
-                <fx:include fx:id="txRxView" source="txRx/TxRxView.fxml"/>
-            </Tab>
+            <!-- TX/RX data tab. This is where TX and RX data to/from the COM port is displayed. -->
+            <fx:include fx:id="txRxView" source="txRx/TxRxView.fxml"/>
 
             <!-- The logging tab -->
-            <!--<LoggingViewController fx:id="loggingView"/>-->
             <fx:include fx:id="loggingView" source="logging/LoggingView.fxml"/>
 
-            <Tab text="Stats" closable="false">
-                <!--<StatsViewController fx:id="statsViewController"/>-->
-                <fx:include fx:id="statsView" source="stats/StatsView.fxml"/>
-            </Tab>
+            <!-- Stats tab -->
+            <fx:include fx:id="statsView" source="stats/StatsView.fxml"/>
         </TabPane>
     </VBox>
 </Tab>

@@ -13,8 +13,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
-      xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+<Tab
+        fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:id="rxTxTab" text="RX/TX" closable="false">
+<VBox  alignment="TOP_LEFT"
       spacing="20"
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
@@ -113,6 +116,7 @@
 
     </HBox>
 </VBox>
+    </Tab>
 
 
 
