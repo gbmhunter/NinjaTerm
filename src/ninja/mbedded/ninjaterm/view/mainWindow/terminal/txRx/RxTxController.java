@@ -8,6 +8,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
@@ -23,7 +24,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersView;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -131,7 +133,7 @@ public class RxTxController extends VBox {
 
     private ComPort comPort;
 
-    private DisplayController displayController = new DisplayController();
+    private DisplayViewController displayViewController;
 
     private FiltersView filtersView = new FiltersView();
 
@@ -279,15 +281,26 @@ public class RxTxController extends VBox {
         });
 
         //==============================================//
-        //============= LAYOUT BUTTON SETUP ============//
+        //======= DISPLAY BUTTON/POP-OVER SETUP ========//
         //==============================================//
 
-        displayController.init(model, terminal, decoder);
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
+
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+
+        displayViewController = loader.getController();
+
+        displayViewController.init(model, terminal, decoder);
 
         // This creates the popover, but is not shown until
         // show() is called.
         PopOver displayPopover = new PopOver();
-        displayPopover.setContentNode(displayController);
+        displayPopover.setContentNode(displayViewController.displayViewVBox);
         displayPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         displayPopover.setCornerRadius(4);
         displayPopover.setTitle("Display");

@@ -3,13 +3,14 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-24
-* @last-modified   2016-08-24
+* @last-modified   2016-09-23
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.controlsfx.control.textfield.CustomTextField?>
-<fx:root type="javafx.scene.layout.VBox"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController"
+      fx:id="displayViewVBox"
          xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
          spacing="20"
          fillWidth="true" GridPane.vgrow="ALWAYS"
@@ -62,7 +63,7 @@
         </HBox>
     </VBox>
 
-</fx:root>
+</VBox>
 
 
 

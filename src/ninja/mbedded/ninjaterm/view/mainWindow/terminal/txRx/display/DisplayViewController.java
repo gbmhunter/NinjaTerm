@@ -22,17 +22,20 @@ import org.controlsfx.validation.Validator;
 import java.io.IOException;
 
 /**
- * Controller for the layout pop-up window.
+ * Controller for the "display" settings pop-up window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-09-16
+ * @last-modified 2016-09-23
  */
-public class DisplayController extends VBox {
+public class DisplayViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
+    @FXML
+    public VBox displayViewVBox;
 
     @FXML
     public ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
@@ -73,9 +76,9 @@ public class DisplayController extends VBox {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public DisplayController() {
+    public DisplayViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "DisplayView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -85,7 +88,7 @@ public class DisplayController extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
 
     }
 
