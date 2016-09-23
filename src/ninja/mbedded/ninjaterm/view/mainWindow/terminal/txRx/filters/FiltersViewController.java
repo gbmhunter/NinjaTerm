@@ -26,9 +26,9 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-21
- * @last-modified 2016-09-21
+ * @last-modified 2016-09-23
  */
-public class FiltersView extends VBox {
+public class FiltersViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -48,9 +48,9 @@ public class FiltersView extends VBox {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public FiltersView() {
+    public FiltersViewController() {
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "FiltersView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -60,7 +60,7 @@ public class FiltersView extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
 
     }
 

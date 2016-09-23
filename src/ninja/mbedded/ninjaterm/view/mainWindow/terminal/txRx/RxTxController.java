@@ -8,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tab;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
@@ -24,9 +23,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersView;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -135,7 +133,7 @@ public class RxTxController extends VBox {
 
     private DisplayViewController displayViewController;
 
-    private FiltersView filtersView = new FiltersView();
+    private FiltersViewController filtersViewController;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -286,13 +284,11 @@ public class RxTxController extends VBox {
 
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
-
         try {
             loader.load();
         } catch(IOException e) {
             return;
         }
-
         displayViewController = loader.getController();
 
         displayViewController.init(model, terminal, decoder);
@@ -320,12 +316,20 @@ public class RxTxController extends VBox {
         //============ FILTERS BUTTON SETUP ============//
         //==============================================//
 
-        filtersView.init(model, terminal);
+        loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        filtersViewController = loader.getController();
+
+        filtersViewController.init(model, terminal);
 
         // This creates the popover, but is not shown until
         // show() is called.
         PopOver filtersPopover = new PopOver();
-        filtersPopover.setContentNode(filtersView);
+        filtersPopover.setContentNode(loader.getRoot());
         filtersPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
         filtersPopover.setCornerRadius(4);
         filtersPopover.setTitle("Filters");
