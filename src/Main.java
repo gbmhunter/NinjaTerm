@@ -8,7 +8,7 @@ import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
-import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenController;
+import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
@@ -18,7 +18,7 @@ public class Main extends Application {
 
     private GlyphFont glyphFont;
 
-    private final boolean disableSplashScreen = true;
+    private final boolean disableSplashScreen = false;
 
     private Stage splashScreenStage;
     private Stage mainStage;
@@ -45,10 +45,18 @@ public class Main extends Application {
         // "Modena uses a non-transparent background by default"
         root.setStyle("-fx-background-color: transparent;");*/
 
-        SplashScreenController splashScreenController = new SplashScreenController();
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        try {
+            Parent root = loader.load();
+        } catch(IOException e) {
+            return;
+        }
 
-        Scene splashScreenScene = new Scene(splashScreenController, 800, 600, Color.TRANSPARENT);
-        splashScreenController.isFinished.addListener((observable, oldValue, newValue) -> {
+        SplashScreenViewController splashScreenViewController = loader.getController();
+        splashScreenViewController.init();
+
+        Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
+        splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
             if(newValue) {
                 loadMainWindow();
             }
@@ -58,14 +66,12 @@ public class Main extends Application {
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
 
-        splashScreenController.startNameVersionInfoMsg();
+        splashScreenViewController.startNameVersionInfoMsg();
         // Create delay before showing main window
         /*Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(3000),
                 ae -> loadMainWindow()));
         timeline.play();*/
-
-
     }
 
     public void loadMainWindow() {
@@ -77,16 +83,13 @@ public class Main extends Application {
         Model model = new Model();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
-
         try {
             Parent root = loader.load();
         } catch(IOException e) {
             return;
         }
+        MainWindowViewController mainWindowViewController = loader.getController();
 
-        MainWindowViewController mainWindowViewController =
-                loader.getController();
-        //MainWindowViewController mainWindowViewController = new MainWindowViewController();
         mainWindowViewController.init(model, glyphFont, new ComPortManager());
 
         mainWindowViewController.addNewTerminal();
@@ -120,6 +123,6 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
-        //LauncherImpl.launchApplication(Main.class, SplashScreenController.class, args);
+        //LauncherImpl.launchApplication(Main.class, SplashScreenViewController.class, args);
     }
 }

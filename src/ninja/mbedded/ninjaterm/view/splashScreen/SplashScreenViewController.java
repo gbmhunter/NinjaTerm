@@ -6,21 +6,18 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by gbmhu on 2016-09-20.
  */
-public class SplashScreenController extends VBox {
+public class SplashScreenViewController {
 
 
     //================================================================================================//
@@ -29,7 +26,6 @@ public class SplashScreenController extends VBox {
 
     @FXML
     public TextFlow loadingMsgsTextFlow;
-
 
 
     List<String> loadingMsgs = new ArrayList<>();
@@ -46,11 +42,11 @@ public class SplashScreenController extends VBox {
      * This array is used to give the typing of characters onto the splash screen a "human-like"
      * feel. Each entry corresponds to the time (in milliseconds) before the mapped character
      * in the nameAndVerisonString is displayed.
-     *
+     * <p>
      * Make sure this array has the same number of entries as the number of characters in the
      * string.
      */
-    private final double[] charIntervalsMs = new double[] {
+    private final double[] charIntervalsMs = new double[]{
             25,
             1500,   // N
             125,    // i
@@ -106,8 +102,8 @@ public class SplashScreenController extends VBox {
             75,     // \r
     };
 
-    public SplashScreenController() {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
+    public SplashScreenViewController() {
+        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
                 "SplashScreenView.fxml"));
 
         fxmlLoader.setRoot(this);
@@ -117,8 +113,14 @@ public class SplashScreenController extends VBox {
             fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
-        }
+        }*/
 
+
+
+
+    }
+
+    public void init() {
         // Add loading messages to the list
         loadingMsgs.add("Using all processing power to render splash screen.");
         loadingMsgs.add("Looking for operating system.");
@@ -183,8 +185,6 @@ public class SplashScreenController extends VBox {
         // Add caret to textflow object. It should always remain as the last child, to give the
         // proper appearance
         loadingMsgsTextFlow.getChildren().add(caretText);
-
-
     }
 
     public void startNameVersionInfoMsg() {
@@ -201,7 +201,7 @@ public class SplashScreenController extends VBox {
 
         // The version can be null, but this should only occur in a development
         // environment
-        if(versionNumber == null) {
+        if (versionNumber == null) {
             versionNumber = "?.?.?";
         }
 
@@ -215,12 +215,12 @@ public class SplashScreenController extends VBox {
         // the keyframe, as this is the format the keyframe wants
         double summedTimeInMs = 0.0;
 
-        for(int i = 0; i < nameAndVersionString.length(); i++) {
+        for (int i = 0; i < nameAndVersionString.length(); i++) {
             final int test = i;
 
             summedTimeInMs += charIntervalsMs[i];
 
-            if(i == nameAndVersionString.length() - 1) {
+            if (i == nameAndVersionString.length() - 1) {
                 nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
                     loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
 
@@ -258,7 +258,7 @@ public class SplashScreenController extends VBox {
 
         loadingMsgText.setText(loadingMsgText.getText() + loadingMsgs.get(loadingMsgIndex++) + " ");
 
-        if(loadingMsgIndex >= loadingMsgs.size()) {
+        if (loadingMsgIndex >= loadingMsgs.size()) {
             // We have reached the end of the loading messages!
             timeline.stop();
 
