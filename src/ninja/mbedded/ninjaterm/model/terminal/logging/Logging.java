@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.model.terminal.logging;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -20,12 +21,33 @@ import java.util.Date;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-22
- * @last-modified   2016-09-23
+ * @last-modified   2016-09-25
  */
 public class Logging {
 
+    //================================================================================================//
+    //============================================== ENUMS ===========================================//
+    //================================================================================================//
+
+    /**
+     * The different ways logging files can be handled when opened for logging.
+     */
+    public enum FileBehaviour {
+        APPEND,
+        OVERWRITE
+    }
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
     public ReadOnlyBooleanWrapper isLogging = new ReadOnlyBooleanWrapper();
+
+    /**
+     * Stores the way the file will be handled when opened for logging.
+     */
+    public SimpleObjectProperty<FileBehaviour> fileBehaviour = new SimpleObjectProperty<>(FileBehaviour.APPEND);
 
     private Model model;
     private Terminal terminal;
@@ -34,6 +56,10 @@ public class Logging {
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public Logging(Model model, Terminal terminal) {
 
