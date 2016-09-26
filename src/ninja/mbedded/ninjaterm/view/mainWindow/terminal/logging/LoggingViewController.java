@@ -142,6 +142,8 @@ public class LoggingViewController {
             // Disable certain controls
             logFilePathTextField.setDisable(false);
             browseButton.setDisable(false);
+            appendFileBehaviourRadioButton.setDisable(false);
+            overwriteFileBehaviourRadioButton.setDisable(false);
 
         } else {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
@@ -152,6 +154,8 @@ public class LoggingViewController {
             // Enable certain controls
             logFilePathTextField.setDisable(true);
             browseButton.setDisable(true);
+            appendFileBehaviourRadioButton.setDisable(true);
+            overwriteFileBehaviourRadioButton.setDisable(true);
         }
     }
 

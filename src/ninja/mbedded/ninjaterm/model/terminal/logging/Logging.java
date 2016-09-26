@@ -90,9 +90,23 @@ public class Logging {
 
     public void enableLogging() {
 
+        // Don't do anything if logging is already enabled
+        if(isLogging.get())
+            return;
+
+        boolean isAppend;
+        if(fileBehaviour.get() == FileBehaviour.APPEND) {
+            isAppend = true;
+        } else if(fileBehaviour.get() == FileBehaviour.OVERWRITE) {
+            isAppend = false;
+        } else {
+            throw new RuntimeException("fileBehaviour not recognised!");
+        }
+
         // Open file whose file path is specified in the model
         try {
-            fileWriter = new FileWriter(logFilePath.get(), true); //true tells to append data.
+            // The second parameter determines whether we overwrite or append
+            fileWriter = new FileWriter(logFilePath.get(), isAppend);
             bufferedWriter = new BufferedWriter(fileWriter);
         } catch (IOException e) {
             model.status.addErr("Could not open log file for writing. Reported error: " + e.getMessage());
@@ -110,6 +124,10 @@ public class Logging {
         isLogging.set(true);
     }
 
+    /**
+     * Appends the given data to the end of the log file.
+     * @param data  The data to append to the log file.
+     */
     private void saveNewDataToLogFile(String data) {
 
         //System.out.println("Logging to file. data = " + data);
@@ -120,14 +138,22 @@ public class Logging {
             // occurs, it may be wiser to put this on a timer, e.g. once per second.
             bufferedWriter.flush();
         } catch (IOException e) {
-            model.status.addErr("Could not write to log file. Reported error: " + e.getMessage());
+            model.status.addErr("Could not write to log file. Reported error: " + e.getMessage() + ". Disabling logging.");
 
             // Something has gone wrong, disable logging
             disableLogging();
         }
     }
 
+    /**
+     * Disables logging.
+     */
     public void disableLogging() {
+
+        // Don't do anything if logging is already disabled.
+        if(!isLogging.get())
+            return;
+
         isLogging.set(false);
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
