@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-09-23
+* @last-modified   2016-09-26
 -->
 <!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
@@ -110,9 +110,11 @@
         <!-- =========================================== -->
         <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton" minWidth="100">Clear Text</Button>
+            <!-- SPACER -->
             <VBox minHeight="20"></VBox>
             <Button fx:id="displayButton" minWidth="100">Display</Button>
             <Button fx:id="formattingButton" minWidth="100">Formatting</Button>
+            <Button fx:id="coloriserButton" minWidth="100">Colouriser</Button>
             <Button fx:id="filtersButton" minWidth="100">Filters</Button>
         </VBox>
 

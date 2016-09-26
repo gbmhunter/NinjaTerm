@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -23,6 +24,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController;
@@ -30,6 +32,7 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 
 /**
@@ -83,16 +86,19 @@ public class TxRxViewController {
     //==============================================//
 
     @FXML
-    public Button clearTextButton;
+    private Button clearTextButton;
 
     @FXML
-    public Button displayButton;
+    private Button displayButton;
 
     @FXML
     private Button formattingButton;
 
     @FXML
-    public Button filtersButton;
+    private Button coloriserButton;
+
+    @FXML
+    private Button filtersButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -141,6 +147,7 @@ public class TxRxViewController {
 
     private DisplayViewController displayViewController;
     private FormattingViewController formattingViewController;
+    private ColouriserViewController colouriserViewController;
     private FiltersViewController filtersViewController;
 
     //================================================================================================//
@@ -290,24 +297,7 @@ public class TxRxViewController {
 
         displayViewController.init(model, terminal, decoder);
 
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver displayPopover = new PopOver();
-        displayPopover.setContentNode(displayViewController.displayViewVBox);
-        displayPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        displayPopover.setCornerRadius(4);
-        displayPopover.setTitle("Display");
-
-        displayButton.setOnAction(event -> {
-
-            if (displayPopover.isShowing()) {
-                displayPopover.hide();
-            } else if (!displayPopover.isShowing()) {
-                showPopover(displayButton, displayPopover);
-            } else {
-                new RuntimeException("displayPopover state not recognised.");
-            }
-        });
+        setupPopover(loader.getRoot(), "Display", displayButton);
 
         //==============================================//
         //===== FORMATTING BUTTON/POP-OVER SETUP =======//
@@ -324,24 +314,23 @@ public class TxRxViewController {
 
         formattingViewController.init(model, terminal);
 
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver formattingPopover = new PopOver();
-        formattingPopover.setContentNode(loader.getRoot());
-        formattingPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        formattingPopover.setCornerRadius(4);
-        formattingPopover.setTitle("Formatting");
+        setupPopover(loader.getRoot(), "Formatting", formattingButton);
 
-        formattingButton.setOnAction(event -> {
+        //==============================================//
+        //========== COLOURISER BUTTON SETUP ===========//
+        //==============================================//
 
-            if (formattingPopover.isShowing()) {
-                formattingPopover.hide();
-            } else if (!formattingPopover.isShowing()) {
-                showPopover(displayButton, formattingPopover);
-            } else {
-                new RuntimeException("formattingPopover state not recognised.");
-            }
-        });
+        loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        colouriserViewController = loader.getController();
+
+        colouriserViewController.init(model, terminal);
+
+        setupPopover(loader.getRoot(), "Colouriser", coloriserButton);
 
         //==============================================//
         //============ FILTERS BUTTON SETUP ============//
@@ -357,24 +346,7 @@ public class TxRxViewController {
 
         filtersViewController.init(model, terminal);
 
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver filtersPopover = new PopOver();
-        filtersPopover.setContentNode(loader.getRoot());
-        filtersPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        filtersPopover.setCornerRadius(4);
-        filtersPopover.setTitle("Filters");
-
-        filtersButton.setOnAction(event -> {
-
-            if (filtersPopover.isShowing()) {
-                filtersPopover.hide();
-            } else if (!filtersPopover.isShowing()) {
-                showPopover(filtersButton, filtersPopover);
-            } else {
-                new RuntimeException("filtersPopover.isShowing() state not recognised.");
-            }
-        });
+        setupPopover(loader.getRoot(), "Filters", filtersButton);
 
         //==============================================//
         //== ATTACH LISTENERS TO WRAPPING PROPERTIES ===//
@@ -445,6 +417,35 @@ public class TxRxViewController {
             filterTextChanged(newValue);
         });
 
+    }
+
+    /**
+     * Helper method to attach a pop-over to a button (so it appears/disappears when you
+     * click the button).
+     * @param content
+     * @param popOverTitle
+     * @param buttonToAttachTo
+     */
+    private void setupPopover(Node content, String popOverTitle, Button buttonToAttachTo) {
+
+        // This creates the popover, but is not shown until
+        // show() is called.
+        PopOver popover = new PopOver();
+        popover.setContentNode(content);
+        popover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        popover.setCornerRadius(4);
+        popover.setTitle(popOverTitle);
+
+        buttonToAttachTo.setOnAction(event -> {
+
+            if (popover.isShowing()) {
+                popover.hide();
+            } else if (!popover.isShowing()) {
+                showPopover(buttonToAttachTo, popover);
+            } else {
+                new RuntimeException("isShowing() state not recognised.");
+            }
+        });
     }
 
     /**
