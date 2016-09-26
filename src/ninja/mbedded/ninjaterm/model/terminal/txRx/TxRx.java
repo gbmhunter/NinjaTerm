@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
 
 import java.util.ArrayList;
@@ -21,7 +22,12 @@ import java.util.List;
  */
 public class TxRx {
 
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
     public Display display = new Display();
+    public Formatting formatting = new Formatting();
     public Filters filters = new Filters();
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
@@ -36,6 +42,12 @@ public class TxRx {
      * RX data which has been filtered according to the filter text.
      */
     public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
+
+    public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public TxRx() {
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
@@ -92,7 +104,7 @@ public class TxRx {
         }
     }
 
-    public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
+
 
     public void addRxData(String data) {
         rxData.set(rxData.get() + data);
@@ -115,6 +127,13 @@ public class TxRx {
         }
     }
 
+    /**
+     * Trims a string to the provided number of characters. Removes characters from the start of the string
+     * (the "old" chars).
+     * @param data
+     * @param desiredLength
+     * @return  The trimmed string.
+     */
     public String removeOldChars(String data, int desiredLength) {
         return data.substring(data.length() - desiredLength, data.length());
     }

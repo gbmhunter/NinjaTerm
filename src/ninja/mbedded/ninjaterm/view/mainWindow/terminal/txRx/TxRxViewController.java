@@ -25,6 +25,7 @@ import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -77,11 +78,18 @@ public class TxRxViewController {
     @FXML
     public ImageView scrollToBottomImageView;
 
+    //==============================================//
+    //=========== RIGHT-HAND SIDE PANE =============//
+    //==============================================//
+
     @FXML
     public Button clearTextButton;
 
     @FXML
     public Button displayButton;
+
+    @FXML
+    private Button formattingButton;
 
     @FXML
     public Button filtersButton;
@@ -132,7 +140,7 @@ public class TxRxViewController {
     private ComPort comPort;
 
     private DisplayViewController displayViewController;
-
+    private FormattingViewController formattingViewController;
     private FiltersViewController filtersViewController;
 
     //================================================================================================//
@@ -297,6 +305,40 @@ public class TxRxViewController {
                 showPopover(displayButton, displayPopover);
             } else {
                 new RuntimeException("displayPopover state not recognised.");
+            }
+        });
+
+        //==============================================//
+        //===== FORMATTING BUTTON/POP-OVER SETUP =======//
+        //==============================================//
+
+
+        loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        formattingViewController = loader.getController();
+
+        formattingViewController.init(model, terminal);
+
+        // This creates the popover, but is not shown until
+        // show() is called.
+        PopOver formattingPopover = new PopOver();
+        formattingPopover.setContentNode(loader.getRoot());
+        formattingPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        formattingPopover.setCornerRadius(4);
+        formattingPopover.setTitle("Formatting");
+
+        formattingButton.setOnAction(event -> {
+
+            if (formattingPopover.isShowing()) {
+                formattingPopover.hide();
+            } else if (!formattingPopover.isShowing()) {
+                showPopover(displayButton, formattingPopover);
+            } else {
+                new RuntimeException("formattingPopover state not recognised.");
             }
         });
 
@@ -543,15 +585,7 @@ public class TxRxViewController {
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        //terminal.txRx.txData.set(terminal.txRx.txData.get() + data);
-
         terminal.txRx.txDataSent();
-
-        // Check if user wants TX chars to be echoed locally onto TX/RX display
-        /*if(terminal.txRx.display.localTxEcho.get()) {
-            // Echo the sent character to the TX/RX display
-            terminal.txRx.addRxData(ke.getCharacter());
-        }*/
     }
 
     private void filterTextChanged(String newFilterText) {
