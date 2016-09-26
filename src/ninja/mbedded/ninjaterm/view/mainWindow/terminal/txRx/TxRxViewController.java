@@ -166,6 +166,7 @@ public class TxRxViewController {
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
         displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
+        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
