@@ -9,6 +9,7 @@ vX.X.X
 - Added logging sub-tab and basic logging functionality, closes #96.
 - Greyed out textfield and browse button on logging tab when logging is active, closes #97.
 - Added ability to select between "overwrite" and "append" logging methods, closes #99.
+- Added option for user to choose termination character(s), closes #82.
 
 v0.4.1
 ------

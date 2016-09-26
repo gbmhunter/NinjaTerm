@@ -12,6 +12,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,23 +73,45 @@ public class TxRx {
         }
 
         // If to see if we are sending data on "enter", and the "backspace
-        // deletes last typed char" checkbox is ticked
-        if((terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
-                terminal.txRx.display.backspaceRemovesLastTypedChar.get()) {
+        // deletes last typed char" checkbox is ticked, if so, remove last char rather than
+        // treating this character as something to send.
+        if((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
+                display.backspaceRemovesLastTypedChar.get()) {
 
             if((char)asciiCodeForKey == '\b') {
                 // We need to remove the last typed char from the "to send" TX buffer
-                terminal.txRx.removeLastCharInTxBuffer();
+                removeLastCharInTxBuffer();
                 return;
             }
-
         }
 
-        // Append the character to the end of the "to send" TX buffer
-        terminal.txRx.addTxCharToSend(asciiCodeForKey);
+        // Look for enter. If enter was pressed, we need to insert the right chars as
+        // set by the user in the ("enter key behaviour" radio buttons).
+        if((char)asciiCodeForKey == '\r') {
+            System.out.println("Enter key was pressed.");
+
+            switch(formatting.selEnterKeyBehaviour.get()) {
+                case CARRIAGE_RETURN:
+                    addTxCharToSend((byte)'\r');
+                    break;
+                case NEW_LINE:
+                    addTxCharToSend((byte)'\n');
+                    break;
+                case CARRIAGE_RETURN_AND_NEW_LINE:
+                    addTxCharToSend((byte)'\r');
+                    addTxCharToSend((byte)'\n');
+                    break;
+                default:
+                    throw new RuntimeException("selEnterKeyBehaviour was not recognised.");
+            }
+        } else {
+            // Key pressed was NOT enter,
+            // so append the character to the end of the "to send" TX buffer
+            addTxCharToSend(asciiCodeForKey);
+        }
 
         // Check so see what TX mode we are in
-        switch(terminal.txRx.display.selTxCharSendingOption.get()) {
+        switch(display.selTxCharSendingOption.get()) {
             case SEND_TX_CHARS_IMMEDIATELY:
                 break;
             case SEND_TX_CHARS_ON_ENTER:
@@ -101,13 +124,13 @@ public class TxRx {
         }
 
         // Send data to COM port, and update stats (both local and global)
-        byte[] dataAsByteArray = fromObservableListToByteArray(terminal.txRx.toSendTxData);
+        byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
 
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        terminal.txRx.txDataSent();
+        txDataSent();
     }
 
     private byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
@@ -121,7 +144,16 @@ public class TxRx {
         return data;
     }
 
+    /**
+     * Add a TX char to send to COM port. This DOES NOT send the data but rather only adds it to a buffer.
+     * @param data
+     */
     public void addTxCharToSend(byte data) {
+
+        //String dataAsString = new String(new byte[]{ data }, StandardCharsets.US_ASCII);
+        System.out.printf(getClass().getName() + ".addTxCharToSend() called with data = 0x%02X\r\n", data);
+        //System.out.println(getClass().getName() + ".addTxCharToSend() called with data = " + dataAsString);
+
         // Create string from data
         /*String dataAsString = "";
         for(int i = 0; i < data.length; i++) {
