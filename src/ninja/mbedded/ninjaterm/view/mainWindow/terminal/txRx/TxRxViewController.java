@@ -137,7 +137,7 @@ public class TxRxViewController {
      */
     private Text caretText;
 
-    private ComPort comPort;
+    //private ComPort comPort;
 
     private DisplayViewController displayViewController;
     private FormattingViewController formattingViewController;
@@ -155,13 +155,13 @@ public class TxRxViewController {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarViewController statusBarViewController, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, Decoder decoder, StatusBarViewController statusBarViewController, GlyphFont glyphFont) {
 
         // Save model
         this.model = model;
         this.terminal = terminal;
 
-        this.comPort = comPort;
+        //this.comPort = comPort;
         this.glyphFont = glyphFont;
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
@@ -540,7 +540,7 @@ public class TxRxViewController {
 
     public void handleKeyTyped(KeyEvent keyEvent) {
 
-        if(comPort.isPortOpen() == false) {
+        /*if(comPort.isPortOpen() == false) {
             model.status.addErr("Cannot send data to COM port, port is not open.");
             return;
         }
@@ -585,23 +585,13 @@ public class TxRxViewController {
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        terminal.txRx.txDataSent();
+        terminal.txRx.txDataSent();*/
+
+        terminal.txRx.handleKeyPressed((byte)keyEvent.getCharacter().charAt(0));
     }
 
     private void filterTextChanged(String newFilterText) {
         // We need to search through the entire RX text
-
-    }
-
-    public byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
-
-        byte[] data = new byte[observableList.size()];
-        int i = 0;
-        for(Byte singleByte : observableList) {
-            data[i++] = singleByte;
-        }
-
-        return data;
 
     }
 

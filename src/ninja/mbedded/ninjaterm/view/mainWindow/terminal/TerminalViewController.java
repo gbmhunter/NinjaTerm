@@ -59,10 +59,8 @@ public class TerminalViewController {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    /**
-     * The COM port instance attached to this terminal.
-     */
-    public ComPort comPort = new ComPort();
+
+    //public ComPort comPort = new ComPort();
 
     private StatusBarViewController statusBarViewController;
     private Decoder decoder = new Decoder();
@@ -97,7 +95,7 @@ public class TerminalViewController {
 
         // Create RX/TX view
         //txRxViewController = new TxRxViewController();
-        txRxViewController.Init(model, terminal, comPort, decoder, statusBarViewController, glyphFont);
+        txRxViewController.Init(model, terminal, decoder, statusBarViewController, glyphFont);
         //txRxView.setContent(txRxViewController);
 
         // Set default style for OpenClose button
@@ -195,17 +193,17 @@ public class TerminalViewController {
 
         if (comSettingsViewController.openCloseComPortButton.getText().equals("Open")) {
 
-            comPort.setName(comSettingsViewController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+            terminal.comPort.setName(comSettingsViewController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             try {
-                comPort.open();
+                terminal.comPort.open();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
-                    model.status.addErr(comPort.getName() + " was busy and could not be opened.");
+                    model.status.addErr(terminal.comPort.getName() + " was busy and could not be opened.");
                     //comPort = null;
                     return;
                 } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
-                    model.status.addErr(comPort.getName() + " no longer exists. Please rescan.");
+                    model.status.addErr(terminal.comPort.getName() + " no longer exists. Please rescan.");
                     //comPort = null;
                     return;
                 } else {
@@ -214,7 +212,7 @@ public class TerminalViewController {
             }
 
             // Set COM port parameters as specified by user on GUI
-            comPort.setParams(
+            terminal.comPort.setParams(
                     comSettingsViewController.baudRateComboBox.getSelectionModel().getSelectedItem(),
                     comSettingsViewController.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
                     comSettingsViewController.parityComboBox.getSelectionModel().getSelectedItem(),
@@ -222,7 +220,7 @@ public class TerminalViewController {
             );
 
             // Add a listener to run when RX data is received from the COM port
-            comPort.addOnRxDataListener(rxData -> {
+            terminal.comPort.addOnRxDataListener(rxData -> {
 
                 //System.out.println("rxData = " + Arrays.toString(rxData));
                 String rxText;
@@ -247,16 +245,16 @@ public class TerminalViewController {
             // Change "Open" button to "Close" button
             setOpenCloseButtonStyle(OpenCloseButtonStyles.CLOSE);
 
-            model.status.addMsg(comPort.getName() + " opened." +
-                    " Buad rate = " + comPort.getBaudRate() + "," +
-                    " parity = " + comPort.getParity() + "," +
-                    " num. stop bits = " + comPort.getNumStopBits() + ".");
+            model.status.addMsg(terminal.comPort.getName() + " opened." +
+                    " Buad rate = " + terminal.comPort.getBaudRate() + "," +
+                    " parity = " + terminal.comPort.getParity() + "," +
+                    " num. stop bits = " + terminal.comPort.getNumStopBits() + ".");
 
         } else {
             // Must be closing COM port
 
             try {
-                comPort.close();
+                terminal.comPort.close();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
                     model.status.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
@@ -270,7 +268,7 @@ public class TerminalViewController {
             }
             setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
-            model.status.addMsg(comPort.getName() + " closed.");
+            model.status.addMsg(terminal.comPort.getName() + " closed.");
         }
 
     }

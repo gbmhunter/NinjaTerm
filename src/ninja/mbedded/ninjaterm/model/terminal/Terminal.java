@@ -5,6 +5,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
 import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
+import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import sun.rmi.runtime.Log;
 
 /**
@@ -26,8 +27,13 @@ public class Terminal {
     public Logging logging;
     public Stats stats;
 
+    /**
+     * The COM port instance attached to this terminal.
+     */
+    public ComPort comPort = new ComPort();
+
     public Terminal(Model model) {
-        txRx = new TxRx();
+        txRx = new TxRx(model, this);
         logging = new Logging(model, this);
         stats = new Stats();
     }
