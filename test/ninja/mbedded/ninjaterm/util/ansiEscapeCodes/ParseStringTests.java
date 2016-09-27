@@ -2,18 +2,13 @@ package ninja.mbedded.ninjaterm.util.ansiEscapeCodes;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
+import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -26,6 +21,9 @@ import static org.junit.Assert.assertEquals;
  */
 public class ParseStringTests {
 
+    /**
+     * Including this variable in class allows JavaFX objects to be created in tests.
+     */
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
@@ -141,27 +139,4 @@ public class ParseStringTests {
         assertEquals("red", ((Text)observableList.get(1)).getText());
         assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
     }
-
-    @Test
-    public void test() throws Exception {
-
-        Pattern p = Pattern.compile("AAAAAB");
-        Matcher m = p.matcher("BB");
-
-        while(m.matches()) {
-            continue;
-        }
-
-
-        Scanner s = new Scanner("aaaaabbaaaab");
-        /*String nextMatch = s.findWithinHorizon("bb", 0);
-        while(nextMatch != null) {
-            nextMatch = s.findWithinHorizon("bb", 0);
-        }*/
-
-
-
-
-    }
-
 }

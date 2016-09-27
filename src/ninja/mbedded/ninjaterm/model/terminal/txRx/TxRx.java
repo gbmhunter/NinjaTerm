@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -12,10 +13,9 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.Processor;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
+import ninja.mbedded.ninjaterm.util.textInListUtils.TextInListUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +60,8 @@ public class TxRx {
      * object on the UI.
      */
     public ObservableList<Node> rxDataAsList = FXCollections.observableArrayList();
+
+    int numOfCharsInRxNodes = 0;
 
     private Processor processor = new Processor();
 
@@ -230,8 +232,16 @@ public class TxRx {
             rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
 
-        // This method will update the rxDataAsList variable
-        processor.parseString(rxDataAsList, data);
+        // This method will update the rxDataAsList variable, adding the data to the end of the last node
+        // or creating new nodes where applicable
+        numOfCharsInRxNodes += processor.parseString(rxDataAsList, data);
+
+        // Trim the RX nodes if necessary
+        if(numOfCharsInRxNodes > display.bufferSizeChars.get()) {
+            int numOfCharsToRemove = numOfCharsInRxNodes - display.bufferSizeChars.get();
+            TextInListUtils.trimTextNodesFromStart(rxDataAsList, numOfCharsToRemove);
+            numOfCharsInRxNodes -= numOfCharsToRemove;
+        }
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
         if(filters.filterText.get().equals("")) {
@@ -245,6 +255,8 @@ public class TxRx {
             dataReceivedAsStringListener.update(data);
         }
     }
+
+
 
     /**
      * Trims a string to the provided number of characters. Removes characters from the start of the string
@@ -268,6 +280,8 @@ public class TxRx {
             // Remove old characters from buffer
             rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
+
+
     }
 
     public void clearTxAndRxData() {

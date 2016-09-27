@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.ansiEscapeCodes;
+package ninja.mbedded.ninjaterm;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -18,7 +18,7 @@ import org.junit.runners.model.Statement;
  *
  * <pre>
  * {@literal @}Rule
- * public ninja.mbedded.ninjaterm.util.ansiEscapeCodes.JavaFXThreadingRule jfxRule = new ninja.mbedded.ninjaterm.util.ansiEscapeCodes.JavaFXThreadingRule();
+ * public ninja.mbedded.ninjaterm.JavaFXThreadingRule jfxRule = new ninja.mbedded.ninjaterm.JavaFXThreadingRule();
  * </pre>
  *
  * @author Andy Till

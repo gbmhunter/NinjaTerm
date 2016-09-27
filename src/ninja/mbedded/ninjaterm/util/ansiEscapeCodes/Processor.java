@@ -13,7 +13,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by gbmhu on 2016-09-26.
+ * Utility class that decodes ANSI escape sequences.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-26
+ * @last-modified   2016-09-26
  */
 public class Processor {
 
@@ -22,6 +26,10 @@ public class Processor {
 
     private Pattern p;
 
+    /**
+     * Partial matches and the end of provided input strings to <code>parseString()</code> are
+     * stored in this variable for the next time <code>parseString() is called.</code>
+     */
     private String withheldTextWithPartialMatch = "";
 
     public Processor() {
@@ -47,11 +55,20 @@ public class Processor {
         p = Pattern.compile("\u001B\\[[;\\d]*m");
     }
 
-    public void parseString(ObservableList<Node> textNodes, String inputString) {
+    /**
+     *
+     * @param textNodes
+     * @param inputString
+     * @return  The number of characters added to the list of Text nodes. This does not count the characters
+     * which form part of an escape sequence, as these are not added to the nodes text property, but are rather used to set the
+     * colour properties of the node.
+     */
+    public int parseString(ObservableList<Node> textNodes, String inputString) {
 
+
+        int numCharsAddedToNodes = 0;
 
         // Prepend withheld text onto the end of the input string
-
         String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
         withheldTextWithPartialMatch = "";
 
@@ -68,6 +85,7 @@ public class Processor {
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
             lastTextNode.setText(lastTextNode.getText() + preText);
+            numCharsAddedToNodes += preText.length();
 
             // Now extract the code
             String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
@@ -101,16 +119,6 @@ public class Processor {
         }
 
 
-        /*if (m.hitEnd()) {
-            System.out.println("Got partial match.");
-            int startOfPartialMatch = findWherePartialMatchStarts(inputString.substring(currPositionInString), m);
-            System.out.println("startOfPartialMatch = " + Integer.toString(startOfPartialMatch));
-
-            // Update the char index we want to stop at (all chars after that will be saved for the next
-            // time this method is called)
-            charIndexToStopAt = startOfPartialMatch;
-        }*/
-
         int firstCharAfterLastFullMatch = currPositionInString;
 
         // Look for index of partial match
@@ -131,10 +139,14 @@ public class Processor {
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(lastTextNode.getText() + withheldCharsAndInputString.substring(firstCharAfterLastFullMatch));
+            String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
+            lastTextNode.setText(lastTextNode.getText() + charsToAppend);
+            numCharsAddedToNodes += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(lastTextNode.getText() + withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch));
+            String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
+            lastTextNode.setText(lastTextNode.getText() + charsToAppend);
+            numCharsAddedToNodes += charsToAppend.length();
         }
 
         // Finally, save the partial match for the next run
@@ -142,6 +154,8 @@ public class Processor {
             withheldTextWithPartialMatch = withheldCharsAndInputString.substring(startIndexOfPartialMatch);
             //System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
         }
+
+        return numCharsAddedToNodes;
 
     }
 
