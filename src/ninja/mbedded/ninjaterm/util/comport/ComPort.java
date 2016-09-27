@@ -61,7 +61,7 @@ public class ComPort {
         return numStopBits;
     }
 
-    private List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
+    public List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -219,10 +219,6 @@ public class ComPort {
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void addOnRxDataListener(OnRxDataListener onRxDataListener) {
-        onRxDataListeners.add(onRxDataListener);
     }
 
     /**

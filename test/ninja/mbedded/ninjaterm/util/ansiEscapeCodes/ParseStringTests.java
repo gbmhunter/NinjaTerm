@@ -139,4 +139,119 @@ public class ParseStringTests {
         assertEquals("red", ((Text)observableList.get(1)).getText());
         assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
     }
+
+    @Test
+    public void unsupportedEscapeSequenceTest() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        processor.parseString(observableList, "abc\u001B[20mdef");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abcdef", ((Text)observableList.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+    }
+
+    @Test
+    public void unsupportedEscapeSequence2Test() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        // Use a bogus first and second number
+        processor.parseString(observableList, "abc\u001B[20;5mdef");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abcdef", ((Text)observableList.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+    }
+
+    @Test
+    public void truncatedEscapeSequenceTest() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        // Provide escape sequence which has been truncated. Since it is not a valid escape
+        // sequence, it should be displayed in the output
+        processor.parseString(observableList, "abc\u001B[20def");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc\u001B[20def", ((Text)observableList.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+    }
+
+    @Test
+    public void truncatedEscapeSequenceTest2() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        // Provide escape sequence which has been truncated. Since it is not a valid escape
+        // sequence, it should be displayed in the output
+        processor.parseString(observableList, "abc\u001B[def");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc\u001B[def", ((Text)observableList.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+    }
+
+    @Test
+    public void truncatedEscapeSequenceTest3() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        processor.parseString(observableList, "abc\u001B[");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc", ((Text)observableList.get(0)).getText());
+
+        processor.parseString(observableList, "def");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc\u001B[def", ((Text)observableList.get(0)).getText());
+    }
+
+    @Test
+    public void truncatedEscapeSequenceTest4() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        processor.parseString(observableList, "abc\u001B[");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc", ((Text)observableList.get(0)).getText());
+
+        processor.parseString(observableList, "12;\u001B[def");
+
+        assertEquals(1, observableList.size());
+        assertEquals("abc\u001B[12;\u001B[def", ((Text)observableList.get(0)).getText());
+    }
 }

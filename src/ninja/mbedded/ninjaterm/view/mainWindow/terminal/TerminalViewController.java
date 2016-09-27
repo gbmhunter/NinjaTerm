@@ -6,6 +6,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
@@ -69,6 +70,8 @@ public class TerminalViewController {
 
     private Terminal terminal;
     private Model model;
+
+    private OnRxDataListener onRxDataListener;
 
     public TerminalViewController() {
     }
@@ -220,7 +223,7 @@ public class TerminalViewController {
             );
 
             // Add a listener to run when RX data is received from the COM port
-            terminal.comPort.addOnRxDataListener(rxData -> {
+            onRxDataListener = (rxData -> {
 
                 //System.out.println("rxData = " + Arrays.toString(rxData));
                 String rxText;
@@ -241,6 +244,7 @@ public class TerminalViewController {
                 });
 
             });
+            terminal.comPort.onRxDataListeners.add(onRxDataListener);
 
             // Change "Open" button to "Close" button
             setOpenCloseButtonStyle(OpenCloseButtonStyles.CLOSE);
@@ -252,6 +256,7 @@ public class TerminalViewController {
 
         } else {
             // Must be closing COM port
+            terminal.comPort.onRxDataListeners.remove(onRxDataListener);
 
             try {
                 terminal.comPort.close();

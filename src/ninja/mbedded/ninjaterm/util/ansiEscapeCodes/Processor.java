@@ -65,6 +65,12 @@ public class Processor {
      */
     public int parseString(ObservableList<Node> textNodes, String inputString) {
 
+        System.out.println("parseString() called with inputString = " + inputString);
+
+        // Make sure there is at least one node in the list
+        if(textNodes.size() == 0) {
+            textNodes.add(new Text());
+        }
 
         int numCharsAddedToNodes = 0;
 
@@ -83,8 +89,7 @@ public class Processor {
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
-            Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(lastTextNode.getText() + preText);
+            addTextToLastNode(textNodes, preText);
             numCharsAddedToNodes += preText.length();
 
             // Now extract the code
@@ -103,11 +108,21 @@ public class Processor {
             } else if(numbers.length == 2 && numbers[1].equals("1")) {
                 correctMapToUse = codeToBoldColourMap;
             } else {
-                throw new RuntimeException("Numbers not recognised!");
+                // ANSI escape sequence is not supported. Remove it from input and continue
+                //throw new RuntimeException("Numbers not recognised!");
+                currPositionInString = m.end();
+                continue;
             }
 
             // Get the colour associated with this code
             Color color = correctMapToUse.get(numbers[0]);
+
+            if(color == null) {
+                // The number in the escape sequence was not recognised. Update the current position in input string
+                // to skip over this escape sequence, and continue to next iteration of loop.
+                currPositionInString = m.end();
+                continue;
+            }
 
             // Create new Text object with this new color, and add to the text nodes
             Text newText = new Text();
@@ -118,12 +133,11 @@ public class Processor {
 
         }
 
-
         int firstCharAfterLastFullMatch = currPositionInString;
 
         // Look for index of partial match
         int startIndexOfPartialMatch = -1;
-        while(startIndexOfPartialMatch == -1 && currPositionInString <= withheldCharsAndInputString.length() - 1) {
+        while((startIndexOfPartialMatch == -1) && (currPositionInString <= (withheldCharsAndInputString.length() - 1))) {
 
             m = p.matcher(withheldCharsAndInputString.substring(currPositionInString));
             m.matches();
@@ -138,14 +152,13 @@ public class Processor {
         // There might be remaining input after the last ANSI escpe code has been processed.
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
-            Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
-            lastTextNode.setText(lastTextNode.getText() + charsToAppend);
+            addTextToLastNode(textNodes, charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
-            Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
+
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
-            lastTextNode.setText(lastTextNode.getText() + charsToAppend);
+            addTextToLastNode(textNodes, charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         }
 
@@ -156,6 +169,19 @@ public class Processor {
         }
 
         return numCharsAddedToNodes;
+    }
+
+    private void addTextToLastNode(ObservableList<Node> observableList, String text) {
+
+        // debug
+        for(byte singleChar : text.getBytes()) {
+            if(singleChar == 0x1B) {
+                continue;
+            }
+        }
+
+        Text lastTextNode = (Text) observableList.get(observableList.size() - 1);
+        lastTextNode.setText(lastTextNode.getText() + text);
 
     }
 
