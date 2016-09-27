@@ -26,11 +26,23 @@ public class Processor {
 
     public Processor() {
         // Populate the map with data
+        codeToNormalColourMap.put("30", Color.rgb(0, 0, 0));
         codeToNormalColourMap.put("31", Color.rgb(170, 0, 0));
         codeToNormalColourMap.put("32", Color.rgb(0, 170, 0));
+        codeToNormalColourMap.put("33", Color.rgb(170, 85, 0));
+        codeToNormalColourMap.put("34", Color.rgb(0, 0, 170));
+        codeToNormalColourMap.put("35", Color.rgb(170, 0, 170));
+        codeToNormalColourMap.put("36", Color.rgb(0, 170, 170));
+        codeToNormalColourMap.put("37", Color.rgb(170, 170, 170));
 
+        codeToBoldColourMap.put("30", Color.rgb(85, 85, 85));
         codeToBoldColourMap.put("31", Color.rgb(255, 85, 85));
         codeToBoldColourMap.put("32", Color.rgb(85, 255, 85));
+        codeToBoldColourMap.put("33", Color.rgb(255, 255, 85));
+        codeToBoldColourMap.put("34", Color.rgb(85, 85, 225));
+        codeToBoldColourMap.put("35", Color.rgb(255, 85, 255));
+        codeToBoldColourMap.put("36", Color.rgb(85, 255, 255));
+        codeToBoldColourMap.put("37", Color.rgb(255, 255, 255));
 
         p = Pattern.compile("\u001B\\[[;\\d]*m");
     }
@@ -50,7 +62,7 @@ public class Processor {
 
         //m.reset();
         while (m.find(currPositionInString)) {
-            System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
+            //System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
@@ -59,7 +71,7 @@ public class Processor {
 
             // Now extract the code
             String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
-            System.out.println("ANSI esc seq = " + toHex(ansiEscapeCode));
+            //System.out.println("ANSI esc seq = " + toHex(ansiEscapeCode));
 
             // Save the remaining text to process
             //remainingInput = inputString.substring(m.end(), inputString.length());
@@ -128,7 +140,7 @@ public class Processor {
         // Finally, save the partial match for the next run
         if(startIndexOfPartialMatch != -1) {
             withheldTextWithPartialMatch = withheldCharsAndInputString.substring(startIndexOfPartialMatch);
-            System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
+            //System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
         }
 
     }
@@ -154,11 +166,11 @@ public class Processor {
         // Trim of the (ESC) and [ chars from the start, and the m from the end
         String trimmedString = ansiEscapeCode.substring(2, ansiEscapeCode.length() - 1);
 
-        System.out.println("trimmedString = " + trimmedString);
+        //System.out.println("trimmedString = " + trimmedString);
 
         String[] numbers = trimmedString.split(";");
 
-        System.out.println("numbers = " + toString(numbers));
+        //System.out.println("numbers = " + toString(numbers));
 
         return numbers;
     }
