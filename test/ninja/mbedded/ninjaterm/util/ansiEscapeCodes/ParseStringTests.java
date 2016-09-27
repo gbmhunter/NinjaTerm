@@ -116,6 +116,33 @@ public class ParseStringTests {
     }
 
     @Test
+    public void partialSeqTest2() throws Exception {
+        Processor processor = new Processor();
+
+        ObservableList<Node> observableList = FXCollections.observableArrayList();
+
+        Text text = new Text();
+        text.setFill(Color.rgb(0, 0, 0));
+        observableList.add(text);
+
+        processor.parseString(observableList, "default\u001B");
+
+        assertEquals("default", ((Text)observableList.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+
+        processor.parseString(observableList, "[");
+
+        assertEquals("default", ((Text)observableList.get(0)).getText());
+        assertEquals(1, observableList.size());
+
+        processor.parseString(observableList, "31mred");
+
+        assertEquals(2, observableList.size());
+        assertEquals("red", ((Text)observableList.get(1)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
+    }
+
+    @Test
     public void test() throws Exception {
 
         Pattern p = Pattern.compile("AAAAAB");

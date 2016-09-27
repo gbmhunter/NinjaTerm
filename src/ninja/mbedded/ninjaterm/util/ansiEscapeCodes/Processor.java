@@ -41,6 +41,7 @@ public class Processor {
         // Prepend withheld text onto the end of the input string
 
         String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
+        withheldTextWithPartialMatch = "";
 
         Matcher m = p.matcher(withheldCharsAndInputString);
 
@@ -54,7 +55,7 @@ public class Processor {
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(preText);
+            lastTextNode.setText(lastTextNode.getText() + preText);
 
             // Now extract the code
             String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
@@ -118,10 +119,10 @@ public class Processor {
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(withheldCharsAndInputString.substring(firstCharAfterLastFullMatch));
+            lastTextNode.setText(lastTextNode.getText() + withheldCharsAndInputString.substring(firstCharAfterLastFullMatch));
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch));
+            lastTextNode.setText(lastTextNode.getText() + withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch));
         }
 
         // Finally, save the partial match for the next run
