@@ -1,16 +1,14 @@
 <!--
-* Inner content for the formatting pop-up of NinjaTerm
+* Inner content for the Colouriser pop-up of NinjaTerm
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-09-26
+* @last-modified   2016-09-27
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.RadioButton?>
 <VBox
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController"
         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
@@ -24,12 +22,7 @@
     </padding>
 
     <!-- WHAT TO SEND WHEN ENTER IS PRESSED -->
-    <VBox spacing="5" styleClass="border">
-        <Label>On ENTER, send:</Label>
-        <RadioButton fx:id="carriageReturnCheckBox">Carriage Return (\r)</RadioButton>
-        <RadioButton fx:id="newLineCheckBox">New Line (\n)</RadioButton>
-        <RadioButton fx:id="carriageReturnAndNewLineCheckBox">Carriage Return + New Line (\r\n)</RadioButton>
-    </VBox>
+    <CheckBox fx:id="parseAnsiEscapeSequences">Parse ANSI Escape Sequences</CheckBox>
 </VBox>
 
 

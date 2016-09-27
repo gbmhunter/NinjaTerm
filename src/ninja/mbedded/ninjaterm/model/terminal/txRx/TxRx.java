@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
@@ -35,6 +36,7 @@ public class TxRx {
 
     public Display display = new Display();
     public Formatting formatting = new Formatting();
+    public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();

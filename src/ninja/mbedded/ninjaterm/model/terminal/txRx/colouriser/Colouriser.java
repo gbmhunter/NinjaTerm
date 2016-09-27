@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 
 /**
@@ -10,6 +11,8 @@ import javafx.beans.property.SimpleStringProperty;
  * @last-modified   2016-09-26
  */
 public class Colouriser {
+
+    public SimpleBooleanProperty ansiEscapeSequencesEnabled = new SimpleBooleanProperty(true);
 
     public void processString(String data) {
 
