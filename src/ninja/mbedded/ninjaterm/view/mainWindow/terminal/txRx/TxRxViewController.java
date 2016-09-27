@@ -2,7 +2,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -20,9 +19,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -32,7 +29,6 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 
 /**
@@ -61,7 +57,7 @@ public class TxRxViewController {
     public StackPane dataDirectionRxStackPane;
 
     @FXML
-    public TextFlow txRxTextFlow;
+    public TextFlow rxDataTextFlow;
 
     @FXML
     public StackPane txDataStackPane;
@@ -181,7 +177,7 @@ public class TxRxViewController {
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
-        txRxTextFlow.getChildren().clear();
+        rxDataTextFlow.getChildren().clear();
 
         // Hide the auto-scroll image-button, this will be made visible
         // when the user manually scrolls
@@ -189,7 +185,7 @@ public class TxRxViewController {
 
         // Add default Text node to text flow. Received text
         // will be added to this node.
-        txRxTextFlow.getChildren().add(rxDataText);
+        rxDataTextFlow.getChildren().add(rxDataText);
         rxDataText.setFill(Color.LIME);
 
         //==============================================//
@@ -209,7 +205,7 @@ public class TxRxViewController {
         ft.play();
 
         // Finally, add the blinking caret as the last child in the TextFlow
-        txRxTextFlow.getChildren().add(caretText);
+        rxDataTextFlow.getChildren().add(caretText);
 
         // Set default opacity for scroll-to-bottom image
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
@@ -220,11 +216,11 @@ public class TxRxViewController {
 
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
-        txRxTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
+        rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
             //System.out.println("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
-                rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
+                rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
             }
 
         });
@@ -264,8 +260,8 @@ public class TxRxViewController {
                     autoScrollButtonPane.setVisible(false);
 
                     // Manually perform one auto-scroll, since the next automatic one won't happen until
-                    // the height of txRxTextFlow changes.
-                    rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
+                    // the height of rxDataTextFlow changes.
+                    rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
                 }
         );
 
@@ -276,8 +272,9 @@ public class TxRxViewController {
         clearTextButton.setOnAction(event -> {
             // Clear all the text
             //rxDataText.setText("");
-            terminal.txRx.rxData.set("");
-            terminal.txRx.txData.set("");
+            //terminal.txRx.rxData.set("");
+            //terminal.txRx.txData.set("");
+            terminal.txRx.clearTxAndRxData();
             model.status.addMsg("Terminal TX/RX text cleared.");
 
         });
@@ -375,7 +372,14 @@ public class TxRxViewController {
         //======= BIND TERMINAL TEXT TO TXRX DATA ======//
         //==============================================//
 
-        rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
+        //rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
+
+        // Setting the models ObservableList of nodes to point to the
+        // children of the RX data TextFlow will allow the textflow
+        // to get updated automatically when the model modifies this
+        // ObservableList
+        terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
+
         txDataText.textProperty().bind(terminal.txRx.txData);
 
         // Call this to update the display of the TX/RX pane into its default
@@ -459,11 +463,11 @@ public class TxRxViewController {
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
-            txRxTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
+            rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
             System.out.println("\"Wrapping\" checkbox unchecked.");
-            txRxTextFlow.setMaxWidth(Double.MAX_VALUE);
+            rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
 
@@ -510,8 +514,8 @@ public class TxRxViewController {
                 }
 
                 // Add the caret in the shared pane
-                if(!txRxTextFlow.getChildren().contains(caretText)) {
-                    txRxTextFlow.getChildren().add(caretText);
+                if(!rxDataTextFlow.getChildren().contains(caretText)) {
+                    rxDataTextFlow.getChildren().add(caretText);
                 }
 
                 break;
@@ -525,8 +529,8 @@ public class TxRxViewController {
                 }
 
                 // Remove the caret in the shared pane
-                if(txRxTextFlow.getChildren().contains(caretText)) {
-                    txRxTextFlow.getChildren().remove(caretText);
+                if(rxDataTextFlow.getChildren().contains(caretText)) {
+                    rxDataTextFlow.getChildren().remove(caretText);
                 }
 
                 // Add the caret to the TX pane

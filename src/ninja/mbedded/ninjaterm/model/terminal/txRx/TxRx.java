@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -10,6 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.Processor;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
 
@@ -51,6 +53,15 @@ public class TxRx {
      * RX data which has been filtered according to the filter text.
      */
     public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
+
+    /**
+     * Because we need to support rich text, we need to use a list of "Nodes" to
+     * store the RX data. This list of nodes is directly supported by a TextFlow
+     * object on the UI.
+     */
+    public ObservableList<Node> rxDataAsList = FXCollections.observableArrayList();
+
+    private Processor processor = new Processor();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
 
@@ -205,7 +216,11 @@ public class TxRx {
     }
 
 
-
+    /**
+     * Adds RX data to the RX pane (both the raw RX data and the filtered RX data, which is the
+     * data which gets displayed to the user in the RX pane).
+     * @param data
+     */
     public void addRxData(String data) {
         rxData.set(rxData.get() + data);
 
@@ -215,6 +230,10 @@ public class TxRx {
             rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
 
+        // This method will update the rxDataAsList variable
+        processor.parseString(rxDataAsList, data);
+
+        // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
         if(filters.filterText.get().equals("")) {
             filteredRxData.set(rxData.get());
         } else {
@@ -249,6 +268,10 @@ public class TxRx {
             // Remove old characters from buffer
             rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
+    }
+
+    public void clearTxAndRxData() {
+        rxDataAsList.clear();
     }
 
 }

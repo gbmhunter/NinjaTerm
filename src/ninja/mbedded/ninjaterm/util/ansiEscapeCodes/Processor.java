@@ -20,6 +20,10 @@ public class Processor {
     Map<String, Color> codeToNormalColourMap = new HashMap<>();
     Map<String, Color> codeToBoldColourMap = new HashMap<>();
 
+    private Pattern p;
+
+    private String withheldTextWithPartialMatch = "";
+
     public Processor() {
         // Populate the map with data
         codeToNormalColourMap.put("31", Color.rgb(170, 0, 0));
@@ -27,37 +31,33 @@ public class Processor {
 
         codeToBoldColourMap.put("31", Color.rgb(255, 85, 85));
         codeToBoldColourMap.put("32", Color.rgb(85, 255, 85));
+
+        p = Pattern.compile("\u001B\\[[;\\d]*m");
     }
 
     public void parseString(ObservableList<Node> textNodes, String inputString) {
 
 
-        Pattern p = Pattern.compile("\u001B\\[[;\\d]*m");
-        //Pattern p = Pattern.compile("testing");
-        Matcher m = p.matcher(inputString);
+        // Prepend withheld text onto the end of the input string
 
+        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
 
-        if (!m.find()) {
-            // No match was found, add all text to existing text node
-            Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(inputString);
-            return;
-        }
+        Matcher m = p.matcher(withheldCharsAndInputString);
 
         //String remainingInput = "";
         int currPositionInString = 0;
 
-        m.reset();
-        while (m.find()) {
+        //m.reset();
+        while (m.find(currPositionInString)) {
             System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
 
             // Everything up to the first matched character can be added to the last existing text node
-            String preText = inputString.substring(currPositionInString, m.start());
+            String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
             lastTextNode.setText(preText);
 
             // Now extract the code
-            String ansiEscapeCode = inputString.substring(m.start(), m.end());
+            String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
             System.out.println("ANSI esc seq = " + toHex(ansiEscapeCode));
 
             // Save the remaining text to process
@@ -87,20 +87,47 @@ public class Processor {
 
         }
 
+
+        /*if (m.hitEnd()) {
+            System.out.println("Got partial match.");
+            int startOfPartialMatch = findWherePartialMatchStarts(inputString.substring(currPositionInString), m);
+            System.out.println("startOfPartialMatch = " + Integer.toString(startOfPartialMatch));
+
+            // Update the char index we want to stop at (all chars after that will be saved for the next
+            // time this method is called)
+            charIndexToStopAt = startOfPartialMatch;
+        }*/
+
+        int firstCharAfterLastFullMatch = currPositionInString;
+
+        // Look for index of partial match
+        int startIndexOfPartialMatch = -1;
+        while(startIndexOfPartialMatch == -1 && currPositionInString <= withheldCharsAndInputString.length() - 1) {
+
+            m = p.matcher(withheldCharsAndInputString.substring(currPositionInString));
+            m.matches();
+            if(m.hitEnd()) {
+                startIndexOfPartialMatch = currPositionInString;
+            }
+
+            // Remove first character from input and try again
+           currPositionInString++;
+        }
+
         // There might be remaining input after the last ANSI escpe code has been processed.
         // This can all be put in the last text node, which should be by now set up correctly.
-        if (currPositionInString != (inputString.length() - 1)) {
+        if (startIndexOfPartialMatch == -1) {
             Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
-            lastTextNode.setText(inputString.substring(currPositionInString, inputString.length()));
+            lastTextNode.setText(withheldCharsAndInputString.substring(firstCharAfterLastFullMatch));
+        } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
+            Text lastTextNode = (Text) textNodes.get(textNodes.size() - 1);
+            lastTextNode.setText(withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch));
         }
 
-
-        if (m.matches()) {
-            System.out.println("Got full match.");
-        }
-
-        if (m.hitEnd()) {
-            System.out.println("Got partial match.");
+        // Finally, save the partial match for the next run
+        if(startIndexOfPartialMatch != -1) {
+            withheldTextWithPartialMatch = withheldCharsAndInputString.substring(startIndexOfPartialMatch);
+            System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
         }
 
     }
@@ -133,6 +160,19 @@ public class Processor {
         System.out.println("numbers = " + toString(numbers));
 
         return numbers;
+    }
+
+    private int findWherePartialMatchStarts(String input, Matcher matcher) {
+
+        // Remove one character at a time, and find out when hitEnd() returns false
+        int startCharIndex = 0;
+        while(matcher.hitEnd()) {
+            matcher.find(startCharIndex);
+            startCharIndex++;
+        }
+
+        //System.out.println("Found partial match starting at " + Integer.toString(startCharIndex - 1));
+        return startCharIndex - 1;
     }
 
 }

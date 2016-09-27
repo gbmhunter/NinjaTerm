@@ -1,8 +1,8 @@
 /**
- * Basic code that outputs "Hello, World!" ten times a second.
+ * Basic code that tests the colour capabilities of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-07-10
+ * @since 2016-09-27
  * @last-modified 2016-09-27
  */
 
@@ -12,10 +12,11 @@ void setup() {
   Serial.begin(9600);
 }
 
-// the loop routine runs over and over again forever:
 void loop() {
-  Serial.println("Hello, world!");
-  delay(100);        // delay in between reads for stability
+  Serial.println("\x1B[31mred");
+  delay(1000);
+  Serial.println("\x1B[32mgreen");
+  delay(1000);
 }
 
 

@@ -41,7 +41,7 @@
                 <ScrollPane fx:id="rxDataScrollPane">
                     <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
                     <!-- This TextFlow holds the many RX Text objects -->
-                    <TextFlow fx:id="txRxTextFlow" styleClass="txRxText"
+                    <TextFlow fx:id="rxDataTextFlow" styleClass="txRxText"
                               style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
                         <padding>
                             <Insets top="10" bottom="10" left="10" right="10"/>
