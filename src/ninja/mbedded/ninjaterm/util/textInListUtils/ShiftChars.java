@@ -3,10 +3,20 @@ package ninja.mbedded.ninjaterm.util.textInListUtils;
 import javafx.scene.text.Text;
 
 /**
- * Created by gbmhu on 2016-09-28.
+ * Class contains a static method for shifting a provided number of characters from one input
+ * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
+ * object.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-28
+ * @last-modified   2016-09-28
  */
 public class ShiftChars {
 
+    /**
+     * The states that the method <code>shiftChars</code> can be in as it does it's internal
+     * processing. This state is not persistent from call to call.
+     */
     private enum ShiftCharsState {
         EXTRACTING_FROM_APPEND_TEXT,
         EXTRACTING_FROM_NODES,
