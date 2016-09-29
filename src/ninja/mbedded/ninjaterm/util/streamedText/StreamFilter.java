@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
 import java.util.regex.Matcher;
@@ -28,8 +29,14 @@ public class StreamFilter {
             StreamedText outputStreamedText,
             String filterText) {
 
-        if(inputStreamedText.appendText.equals("") && (inputStreamedText.textNodes.size() == 0))
+        System.out.println(getClass().getSimpleName() + ".streamFilter() called with:");
+        System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
+        System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
+
+        if(inputStreamedText.appendText.equals("") && (inputStreamedText.textNodes.size() == 0)) {
+            System.out.println("No filtering to perform. Returning...");
             return;
+        }
 
         // Append all input streamed text onto the end of the held streamed text
         StreamedText.shiftChars(inputStreamedText, heldStreamedText, inputStreamedText.numChars());
@@ -37,10 +44,10 @@ public class StreamFilter {
         // heldTextForLastNode + all text in heldNodes should equal a line of text being held intil
         // a pattern match occurs
         String serializedHeldText = heldStreamedText.serialize();
-        System.out.println("Held text serialised. serializedHeldText = " + serializedHeldText);
+        System.out.println("Held text serialised. serializedHeldText = " + Debugging.convertNonPrintable(serializedHeldText));
 
         // Search for new line characters
-        String lines[] = serializedHeldText.split("(?<=[\\r])");
+        String lines[] = serializedHeldText.split("(?<=[\\n])");
 
         // This keeps track of where we are relative to the start of the
         // heldLineOfText variable
@@ -62,7 +69,7 @@ public class StreamFilter {
 
             if (matcher.find()) {
                 // Match in line found!
-                System.out.println("Match in line found. Line = " + line);
+                System.out.println("Match in line found. Line = " + Debugging.convertNonPrintable(line));
 
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
@@ -73,7 +80,7 @@ public class StreamFilter {
                 // so that next time this function is called, any other text which is also on this line
                 // will be released without question
 
-                if(line == lines[lines.length - 1] && !line.matches(".*\\r")) {
+                if(line == lines[lines.length - 1] && !line.matches(".*\\r\\n")) {
                     releaseTextOnCurrLine = true;
                 }
 
@@ -81,9 +88,13 @@ public class StreamFilter {
             } else {
                 // No match found on this line. If this line is completed, then we know there can never be a match,
                 // and it can be deleted from the heldStreamedText
-                System.out.println("No match found. Line = " + line);
+                System.out.println("No match found on line = " + Debugging.convertNonPrintable(line));
 
-                heldStreamedText.removeChars(line.length());
+                if(line.matches(".*\\r\\n")) {
+                    System.out.println("Deleting line.");
+                    heldStreamedText.removeChars(line.length());
+                }
+
             }
         }
 

@@ -193,4 +193,62 @@ public class StreamFilterTests {
         assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
     }
 
+    @Test
+    public void bigTest() throws Exception {
+
+        Text text = new Text();
+        text.setText("re");
+        text.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text);
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "d");
+
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+        inputStreamedText.appendText = "d\r\n";
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "d");
+
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("red\r\n", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+
+        // Clear the output for the next call
+        outputStreamedText.appendText = "";
+        outputStreamedText.textNodes.clear();
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "d");
+
+        // Nothing should of changed
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+
+        text = new Text();
+        text.setText("green\r\n");
+        text.setFill(Color.GREEN);
+        inputStreamedText.textNodes.add(text);
+
+        text = new Text();
+        text.setText("red\r\n");
+        text.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text);
+
+        text = new Text();
+        text.setText("green\r\n");
+        text.setFill(Color.GREEN);
+        inputStreamedText.textNodes.add(text);
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "d");
+
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("red\r\n", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+
+
+    }
+
 }

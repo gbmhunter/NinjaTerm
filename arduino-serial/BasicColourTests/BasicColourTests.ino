@@ -14,11 +14,11 @@ void setup() {
 
 void loop() {
 
-#define DISPLAY_PERIOD (1000)
+#define DISPLAY_PERIOD (5000)
 
-  Serial.println("\x1B[31mnormal red");
+  Serial.println("\x1B[31mred");
   delay(DISPLAY_PERIOD);
-  Serial.println("\x1B[32mnormal green");
+  Serial.println("\x1B[32mgreen");
   delay(DISPLAY_PERIOD);
 
 }

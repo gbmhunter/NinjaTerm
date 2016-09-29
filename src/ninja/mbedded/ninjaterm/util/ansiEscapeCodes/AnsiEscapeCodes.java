@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import sun.nio.cs.US_ASCII;
 
@@ -66,7 +67,7 @@ public class AnsiEscapeCodes {
      */
     public int parse(String inputString, StreamedText outputStreamedText) {
 
-        System.out.println("parse() called with inputString = " + inputString);
+        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
         // Make sure there is at least one node in the list
         /*if(outputStreamedText.size() == 0) {
@@ -96,7 +97,7 @@ public class AnsiEscapeCodes {
 
             // Now extract the code
             String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
-            //System.out.println("ANSI esc seq = " + toHex(ansiEscapeCode));
+            //System.out.println("ANSI esc seq = " + toHexString(ansiEscapeCode));
 
             // Save the remaining text to process
             //remainingInput = inputString.substring(m.end(), inputString.length());
@@ -187,18 +188,6 @@ public class AnsiEscapeCodes {
         Text lastTextNode = (Text) observableList.get(observableList.size() - 1);
         lastTextNode.setText(lastTextNode.getText() + text);
 
-    }
-
-    public String toHex(String arg) {
-        return String.format("%x", new BigInteger(1, arg.getBytes(US_ASCII.defaultCharset())));
-    }
-
-    public String toString(String[] stringA) {
-        String output = "{ ";
-        for (String string : stringA) {
-            output = output + string + ", ";
-        }
-        return output;
     }
 
     private String[] extractNumbersAsArray(String ansiEscapeCode) {
