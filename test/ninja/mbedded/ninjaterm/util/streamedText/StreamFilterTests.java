@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import org.junit.Before;
@@ -174,6 +175,22 @@ public class StreamFilterTests {
         assertEquals("c\r", ((Text)outputStreamedText.textNodes.get(0)).getText());
 
 
+    }
+
+    @Test
+    public void colourTest() throws Exception {
+
+        Text text = new Text();
+        text.setText("abc\r");
+        text.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text);
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("abc\r", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
     }
 
 }

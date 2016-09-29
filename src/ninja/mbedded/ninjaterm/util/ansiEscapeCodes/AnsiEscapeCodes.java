@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import sun.nio.cs.US_ASCII;
 
 import java.math.BigInteger;
@@ -27,8 +28,8 @@ public class AnsiEscapeCodes {
     private Pattern p;
 
     /**
-     * Partial matches and the end of provided input strings to <code>parseString()</code> are
-     * stored in this variable for the next time <code>parseString() is called.</code>
+     * Partial matches and the end of provided input strings to <code>parse()</code> are
+     * stored in this variable for the next time <code>parse() is called.</code>
      */
     private String withheldTextWithPartialMatch = "";
 
@@ -57,20 +58,20 @@ public class AnsiEscapeCodes {
 
     /**
      *
-     * @param textNodes
+     * @param outputStreamedText
      * @param inputString
      * @return  The number of characters added to the list of Text nodes. This does not count the characters
      * which form part of an escape sequence, as these are not added to the nodes text property, but are rather used to set the
      * colour properties of the node.
      */
-    public int parseString(ObservableList<Node> textNodes, String inputString) {
+    public int parse(String inputString, StreamedText outputStreamedText) {
 
-        System.out.println("parseString() called with inputString = " + inputString);
+        System.out.println("parse() called with inputString = " + inputString);
 
         // Make sure there is at least one node in the list
-        if(textNodes.size() == 0) {
-            textNodes.add(new Text());
-        }
+        /*if(outputStreamedText.size() == 0) {
+            outputStreamedText.add(new Text());
+        }*/
 
         int numCharsAddedToNodes = 0;
 
@@ -89,7 +90,8 @@ public class AnsiEscapeCodes {
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
-            addTextToLastNode(textNodes, preText);
+            outputStreamedText.addTextToStream(preText);
+
             numCharsAddedToNodes += preText.length();
 
             // Now extract the code
@@ -127,7 +129,7 @@ public class AnsiEscapeCodes {
             // Create new Text object with this new color, and add to the text nodes
             Text newText = new Text();
             newText.setFill(color);
-            textNodes.add(newText);
+            outputStreamedText.textNodes.add(newText);
 
             currPositionInString = m.end();
 
@@ -153,12 +155,14 @@ public class AnsiEscapeCodes {
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
-            addTextToLastNode(textNodes, charsToAppend);
+            //addTextToLastNode(outputStreamedText, charsToAppend);
+            outputStreamedText.addTextToStream(charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
-            addTextToLastNode(textNodes, charsToAppend);
+            //addTextToLastNode(outputStreamedText, charsToAppend);
+            outputStreamedText.addTextToStream(charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         }
 

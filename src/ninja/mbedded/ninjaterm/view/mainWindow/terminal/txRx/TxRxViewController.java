@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -20,6 +21,7 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -378,7 +380,10 @@ public class TxRxViewController {
         // children of the RX data TextFlow will allow the textflow
         // to get updated automatically when the model modifies this
         // ObservableList
-        terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
+        //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
+        terminal.txRx.newStreamedTextListeners.add(streamedText -> {
+            newStreamedTextListener(streamedText);
+        });
 
         txDataText.textProperty().bind(terminal.txRx.txData);
 
@@ -421,6 +426,15 @@ public class TxRxViewController {
             filterTextChanged(newValue);
         });
 
+    }
+
+    private void newStreamedTextListener(StreamedText streamedText) {
+        ObservableList<Node> observableList = rxDataTextFlow.getChildren();
+        Text lastTextNode = (Text)rxDataTextFlow.getChildren().get(rxDataTextFlow.getChildren().size() - 1);
+
+        lastTextNode.setText(lastTextNode.getText() + streamedText.appendText);
+
+        rxDataTextFlow.getChildren().addAll(streamedText.textNodes);
     }
 
     /**

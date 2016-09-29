@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
+import ninja.mbedded.ninjaterm.interfaces.NewStreamedTextListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
@@ -12,7 +13,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.AnsiEscapeCodes;
-import ninja.mbedded.ninjaterm.util.textInListUtils.TextInListUtils;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamFilter;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +65,10 @@ public class TxRx {
 
     private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
+    private StreamFilter streamFilter = new StreamFilter();
+
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
+    public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -232,22 +237,33 @@ public class TxRx {
 
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
-        numOfCharsInRxNodes += ansiEscapeCodes.parseString(rxDataAsList, data);
+        StreamedText ansiParserOutput = new StreamedText();
+        numOfCharsInRxNodes += ansiEscapeCodes.parse(data, ansiParserOutput);
 
-        // Trim the RX nodes if necessary
-        if(numOfCharsInRxNodes > display.bufferSizeChars.get()) {
-            int numOfCharsToRemove = numOfCharsInRxNodes - display.bufferSizeChars.get();
-            TextInListUtils.trimTextNodesFromStart(rxDataAsList, numOfCharsToRemove);
-            numOfCharsInRxNodes -= numOfCharsToRemove;
-        }
+        StreamedText filterOutput = new StreamedText();
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
         if(filters.filterText.get().equals("")) {
             //filteredRxData.set(rxData.get());
+            filterOutput = ansiParserOutput;
         } else {
             //filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
-
+            streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
         }
+
+        // Notify that there is new UI data to display
+        for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            newStreamedTextListener.run(filterOutput);
+        }
+
+        // Trim the RX nodes if necessary
+        /*if(numOfCharsInRxNodes > display.bufferSizeChars.get()) {
+            int numOfCharsToRemove = numOfCharsInRxNodes - display.bufferSizeChars.get();
+            TextInListUtils.trimTextNodesFromStart(rxDataAsList, numOfCharsToRemove);
+            numOfCharsInRxNodes -= numOfCharsToRemove;
+        }*/
+
+
 
         // Finally, call any listeners (the logging class of the model might be listening)
         for(DataReceivedAsStringListener dataReceivedAsStringListener : dataReceivedAsStringListeners) {

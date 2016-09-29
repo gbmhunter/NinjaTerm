@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,231 +28,160 @@ public class ParseStringTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
+    private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
+
+    private StreamedText streamedText;
+
     @Before
     public void setUp() throws Exception {
-
+        ansiEscapeCodes = new AnsiEscapeCodes();
+        streamedText = new StreamedText();
     }
 
     @Test
     public void oneSeqTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("default\u001B[31mred", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("default", streamedText.appendText);
 
-        ansiEscapeCodes.parseString(observableList, "default\u001B[31mred");
-
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
-
-        assertEquals("red", ((Text)observableList.get(1)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
+        assertEquals(1, streamedText.textNodes.size());
+        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
     }
 
     @Test
     public void twoSeqTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("default\u001B[31mred\u001B[32mgreen", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("default", streamedText.appendText);
 
-        ansiEscapeCodes.parseString(observableList, "default\u001B[31mred\u001B[32mgreen");
+        assertEquals(2, streamedText.textNodes.size());
 
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
 
-        assertEquals("red", ((Text)observableList.get(1)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
-
-        assertEquals("green", ((Text)observableList.get(2)).getText());
-        assertEquals(Color.rgb(0, 170, 0), ((Text)observableList.get(2)).getFill());
+        assertEquals("green", ((Text)streamedText.textNodes.get(1)).getText());
+        assertEquals(Color.rgb(0, 170, 0), ((Text)streamedText.textNodes.get(1)).getFill());
     }
 
     @Test
     public void boldRedColourTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("default\u001B[31;1mred", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("default", streamedText.appendText);
 
-        ansiEscapeCodes.parseString(observableList, "default\u001B[31;1mred");
+        assertEquals(1, streamedText.textNodes.size());
 
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
-
-        assertEquals("red", ((Text)observableList.get(1)).getText());
-        assertEquals(Color.rgb(255, 85, 85), ((Text)observableList.get(1)).getFill());
+        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
+        assertEquals(Color.rgb(255, 85, 85), ((Text)streamedText.textNodes.get(0)).getFill());
     }
 
     @Test
     public void partialSeqTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("default\u001B", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("default", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parseString(observableList, "default\u001B");
+        ansiEscapeCodes.parse("[31mred", streamedText);
 
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
-
-        ansiEscapeCodes.parseString(observableList, "[31mred");
-
-        assertEquals("red", ((Text)observableList.get(1)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
+        assertEquals("default", streamedText.appendText);
+        assertEquals(1, streamedText.textNodes.size());
+        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
     }
 
     @Test
     public void partialSeqTest2() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("default\u001B", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("default", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parseString(observableList, "default\u001B");
+        ansiEscapeCodes.parse("[", streamedText);
 
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("default", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parseString(observableList, "[");
+        ansiEscapeCodes.parse("31mred", streamedText);
 
-        assertEquals("default", ((Text)observableList.get(0)).getText());
-        assertEquals(1, observableList.size());
-
-        ansiEscapeCodes.parseString(observableList, "31mred");
-
-        assertEquals(2, observableList.size());
-        assertEquals("red", ((Text)observableList.get(1)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)observableList.get(1)).getFill());
+        assertEquals("default", streamedText.appendText);
+        assertEquals(1, streamedText.textNodes.size());
+        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
     }
 
     @Test
     public void unsupportedEscapeSequenceTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("abc\u001B[20mdef", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
-
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[20mdef");
-
-        assertEquals(1, observableList.size());
-        assertEquals("abcdef", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("abcdef", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 
     @Test
     public void unsupportedEscapeSequence2Test() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
-
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
-
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
 
         // Use a bogus first and second number
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[20;5mdef");
+        ansiEscapeCodes.parse("abc\u001B[20;5mdef", streamedText);
 
-        assertEquals(1, observableList.size());
-        assertEquals("abcdef", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("abcdef", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
-
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
-
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[20def");
+        ansiEscapeCodes.parse("abc\u001B[20def", streamedText);
 
-        assertEquals(1, observableList.size());
-        assertEquals("abc\u001B[20def", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("abc\u001B[20def", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest2() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
-
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
-
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[def");
+        ansiEscapeCodes.parse("abc\u001B[def", streamedText);
 
-        assertEquals(1, observableList.size());
-        assertEquals("abc\u001B[def", ((Text)observableList.get(0)).getText());
-        assertEquals(Color.rgb(0, 0, 0), ((Text)observableList.get(0)).getFill());
+        assertEquals("abc\u001B[def", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest3() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("abc\u001B[", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("abc", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[");
+        ansiEscapeCodes.parse("def", streamedText);
 
-        assertEquals(1, observableList.size());
-        assertEquals("abc", ((Text)observableList.get(0)).getText());
-
-        ansiEscapeCodes.parseString(observableList, "def");
-
-        assertEquals(1, observableList.size());
-        assertEquals("abc\u001B[def", ((Text)observableList.get(0)).getText());
+        assertEquals("abc\u001B[def", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest4() throws Exception {
-        AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
-        ObservableList<Node> observableList = FXCollections.observableArrayList();
+        ansiEscapeCodes.parse("abc\u001B[", streamedText);
 
-        Text text = new Text();
-        text.setFill(Color.rgb(0, 0, 0));
-        observableList.add(text);
+        assertEquals("abc", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parseString(observableList, "abc\u001B[");
+        ansiEscapeCodes.parse("12;\u001B[def", streamedText);
 
-        assertEquals(1, observableList.size());
-        assertEquals("abc", ((Text)observableList.get(0)).getText());
-
-        ansiEscapeCodes.parseString(observableList, "12;\u001B[def");
-
-        assertEquals(1, observableList.size());
-        assertEquals("abc\u001B[12;\u001B[def", ((Text)observableList.get(0)).getText());
+        assertEquals("abc\u001B[12;\u001B[def", streamedText.appendText);
+        assertEquals(0, streamedText.textNodes.size());
     }
 }

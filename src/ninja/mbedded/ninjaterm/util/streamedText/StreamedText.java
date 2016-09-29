@@ -10,9 +10,9 @@ import javafx.scene.text.Text;
  * code parser. This <code>{@link StreamedText}</code> object is then fed into the filter engine,
  * whose output is another <code>{@link StreamedText}</code> object.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-28
- * @last-modified   2016-09-29
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-09-29
+ * @since 2016-09-28
  */
 public class StreamedText {
 
@@ -39,7 +39,7 @@ public class StreamedText {
         // object that is then thrown away
 
         // Firstly, remove chars from appendText
-        if(numChars <= appendText.length()) {
+        if (numChars <= appendText.length()) {
             // appendText has enough chars to completely satisfy this remove operation
             appendText = appendText.substring(numChars, appendText.length());
             return;
@@ -50,11 +50,11 @@ public class StreamedText {
         }
 
         // Loop will be broken when return; is called
-        while(true) {
+        while (true) {
 
-            Text currTextNode = (Text)textNodes.get(0);
+            Text currTextNode = (Text) textNodes.get(0);
 
-            if(numChars <= currTextNode.getText().length()) {
+            if (numChars <= currTextNode.getText().length()) {
                 // Text node has enough chars to completely satisfy this remove operation
                 currTextNode.setText(currTextNode.getText().substring(numChars, currTextNode.getText().length()));
                 return;
@@ -71,7 +71,7 @@ public class StreamedText {
      * The method extracts the specified number of chars from the input and places them in the output.
      * It extract chars from the "to append" String first, and then starts removing chars from the first of the
      * Text nodes contained within the list.
-     *
+     * <p>
      * It also shifts any chars from still existing input nodes into the "to append" String
      * as appropriate.
      *
@@ -81,26 +81,33 @@ public class StreamedText {
      */
     public static void shiftChars(StreamedText inputStreamedText, StreamedText outputStreamedText, int numChars) {
 
+        if (numChars < 0)
+            throw new IllegalArgumentException("numChars cannot be negative.");
+
+        if (numChars == 0)
+            return;
+
         ShiftCharsState shiftCharsState = ShiftCharsState.EXTRACTING_FROM_APPEND_TEXT;
 
-        while(true) {
+        while (true) {
 
-            switch(shiftCharsState) {
+            switch (shiftCharsState) {
                 case EXTRACTING_FROM_APPEND_TEXT:
 
                     // There might not be any text to append, but rather the text
                     // starts in a fresh node
-                    if(inputStreamedText.appendText.length() == 0) {
+                    if (inputStreamedText.appendText.length() == 0) {
                         shiftCharsState = ShiftCharsState.EXTRACTING_FROM_NODES;
                         break;
                     }
 
                     // There are chars to extract
-                    if(inputStreamedText.appendText.length() >= numChars) {
+                    if (inputStreamedText.appendText.length() >= numChars) {
 
 
                         //outputStreamedText.appendText = inputStreamedText.appendText.substring(0, numChars);
-                        outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars), AddMethod.APPEND);
+                        //outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars), AddMethod.APPEND);
+                        outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars));
 
                         inputStreamedText.appendText =
                                 inputStreamedText.appendText.substring(
@@ -114,7 +121,8 @@ public class StreamedText {
                         // to extract more from nodes
 
                         //outputStreamedText.appendText = inputStreamedText.appendText;
-                        outputStreamedText.addTextToStream(inputStreamedText.appendText, AddMethod.APPEND);
+                        //outputStreamedText.addTextToStream(inputStreamedText.appendText, AddMethod.APPEND);
+                        outputStreamedText.addTextToStream(inputStreamedText.appendText);
                         numChars -= inputStreamedText.appendText.length();
                         inputStreamedText.appendText = "";
 
@@ -126,17 +134,21 @@ public class StreamedText {
 
                     // We can always work on node 0 since next time around the loop with old node 0
                     // would have been deleted
-                    if(inputStreamedText.textNodes.size() == 0) {
+                    if (inputStreamedText.textNodes.size() == 0) {
                         int x = 2;
                     }
-                    Text textNode = (Text)inputStreamedText.textNodes.get(0);
+                    Text textNode = (Text) inputStreamedText.textNodes.get(0);
 
-                    if(textNode.getText().length() >= numChars) {
+                    if (textNode.getText().length() >= numChars) {
                         // There is enough chars in this node to complete the shift
 
-                        outputStreamedText.addTextToStream(textNode.getText().substring(0, numChars), AddMethod.NEW_NODE);
-                        //outputStreamedText.textNodes.add(new Text(textNode.getText().substring(0, numChars)));
-                        if(textNode.getText().equals("")) {
+                        Text text = new Text();
+                        text.setFill(textNode.getFill());
+                        outputStreamedText.textNodes.add(text);
+                        //outputStreamedText.addTextToStream(textNode.getText().substring(0, numChars), AddMethod.NEW_NODE);
+                        outputStreamedText.addTextToStream(textNode.getText().substring(0, numChars));
+
+                        if (textNode.getText().equals("")) {
                             inputStreamedText.textNodes.remove(textNode);
                         } else {
                             // Although we have finished shifting chars into the output, the lingering chars in the
@@ -149,8 +161,11 @@ public class StreamedText {
                         break;
                     } else {
                         // Node isn't big enough, extract all characters, delete node and move onto the next
-                        //outputStreamedText.textNodes.add(new Text(textNode.getText()));
-                        outputStreamedText.addTextToStream(textNode.getText(), AddMethod.NEW_NODE);
+                        Text text = new Text();
+                        text.setFill(textNode.getFill());
+                        outputStreamedText.textNodes.add(text);
+                        //outputStreamedText.addTextToStream(textNode.getText(), AddMethod.NEW_NODE);
+                        outputStreamedText.addTextToStream(textNode.getText());
 
                         inputStreamedText.textNodes.remove(textNode);
                         numChars -= textNode.getText().length();
@@ -164,39 +179,19 @@ public class StreamedText {
     }
 
     /**
-     * Used as an input to the <code>addTextToStream()</code> method.
-     */
-    private enum AddMethod {
-        APPEND,
-        NEW_NODE
-    }
-
-    /**
      * Adds the provided text to the stream, using the given <code>addMethod</code>.
      *
      * @param text
-     * @param addMethod     <code>APPEND</code> will add the text to either the <code>appendText</code> or
-     *                      last node, <code>NEW_NODE</code> will create a new Text node and insert the text
-     *                      into that.
      */
-    private void addTextToStream(String text, AddMethod addMethod) {
+    public void addTextToStream(String text) {
 
-        switch (addMethod) {
-            case APPEND:
-
-                if(textNodes.size() == 0) {
-                    appendText += text;
-                    return;
-                } else {
-                    Text textNode = (Text)textNodes.get(textNodes.size() - 1);
-                    textNode.setText(textNode.getText() + text);
-                    return;
-                }
-
-            case NEW_NODE:
-                textNodes.add(new Text(text));
-                return;
-
+        if (textNodes.size() == 0) {
+            appendText += text;
+            return;
+        } else {
+            Text textNode = (Text) textNodes.get(textNodes.size() - 1);
+            textNode.setText(textNode.getText() + text);
+            return;
         }
     }
 
@@ -205,8 +200,8 @@ public class StreamedText {
         String output = "";
 
         output = output + appendText;
-        for(Node node: textNodes) {
-            output = output + ((Text)node).getText();
+        for (Node node : textNodes) {
+            output = output + ((Text) node).getText();
         }
 
         return output;
@@ -214,13 +209,14 @@ public class StreamedText {
 
     /**
      * Calculates the total number of characters stored in this streamed text.
+     *
      * @return
      */
     public int numChars() {
         int numChars = 0;
         numChars += appendText.length();
-        for(Node node: textNodes) {
-            numChars += ((Text)node).getText().length();
+        for (Node node : textNodes) {
+            numChars += ((Text) node).getText().length();
         }
         return numChars;
     }
