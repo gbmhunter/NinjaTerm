@@ -84,9 +84,6 @@ public class StreamedText {
         if (numChars < 0)
             throw new IllegalArgumentException("numChars cannot be negative.");
 
-        if (numChars == 0)
-            return;
-
         ShiftCharsState shiftCharsState = ShiftCharsState.EXTRACTING_FROM_APPEND_TEXT;
 
         while (true) {
@@ -97,13 +94,13 @@ public class StreamedText {
                     // There might not be any text to append, but rather the text
                     // starts in a fresh node
                     if (inputStreamedText.appendText.length() == 0) {
+                        moveAnyEmptyNodes(inputStreamedText, outputStreamedText);
                         shiftCharsState = ShiftCharsState.EXTRACTING_FROM_NODES;
                         break;
                     }
 
                     // There are chars to extract
                     if (inputStreamedText.appendText.length() >= numChars) {
-
 
                         //outputStreamedText.appendText = inputStreamedText.appendText.substring(0, numChars);
                         //outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars), AddMethod.APPEND);
@@ -113,6 +110,7 @@ public class StreamedText {
                                 inputStreamedText.appendText.substring(
                                         numChars, inputStreamedText.appendText.length());
 
+                        moveAnyEmptyNodes(inputStreamedText, outputStreamedText);
                         shiftCharsState = ShiftCharsState.FINISHED;
                         break;
 
@@ -126,6 +124,7 @@ public class StreamedText {
                         numChars -= inputStreamedText.appendText.length();
                         inputStreamedText.appendText = "";
 
+                        moveAnyEmptyNodes(inputStreamedText, outputStreamedText);
                         shiftCharsState = ShiftCharsState.EXTRACTING_FROM_NODES;
                         break;
                     }
@@ -134,6 +133,9 @@ public class StreamedText {
 
                     // We can always work on node 0 since next time around the loop with old node 0
                     // would have been deleted
+                    if(numChars == 0)
+                        return;
+
                     if (inputStreamedText.textNodes.size() == 0) {
                         int x = 2;
                     }
@@ -157,6 +159,7 @@ public class StreamedText {
                             inputStreamedText.textNodes.remove(textNode);
                         }
 
+                        moveAnyEmptyNodes(inputStreamedText, outputStreamedText);
                         shiftCharsState = ShiftCharsState.FINISHED;
                         break;
                     } else {
@@ -168,6 +171,7 @@ public class StreamedText {
                         outputStreamedText.addTextToStream(textNode.getText());
 
                         inputStreamedText.textNodes.remove(textNode);
+                        moveAnyEmptyNodes(inputStreamedText, outputStreamedText);
                         numChars -= textNode.getText().length();
                         break;
                     }
@@ -175,6 +179,28 @@ public class StreamedText {
                 case FINISHED:
                     return;
             }
+        }
+    }
+
+    public static void moveAnyEmptyNodes(StreamedText inputStreamedText, StreamedText outputStreamedText) {
+
+        if(!inputStreamedText.appendText.equals(""))
+            return;
+
+        while(true) {
+
+            // We have no more text nodes to process, return
+            if(inputStreamedText.textNodes.size() == 0)
+                return;
+
+            Text textNode = (Text)inputStreamedText.textNodes.get(0);
+            if(textNode.getText().equals("")) {
+                // We have found an empty text node, let's move it from input to output
+                outputStreamedText.textNodes.add(inputStreamedText.textNodes.get(0));
+                inputStreamedText.textNodes.remove(0);
+            } else
+                // We have found a non-empty node, exit
+                return;
         }
     }
 

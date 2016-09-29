@@ -28,6 +28,9 @@ public class StreamFilter {
             StreamedText outputStreamedText,
             String filterText) {
 
+        if(inputStreamedText.appendText.equals("") && (inputStreamedText.textNodes.size() == 0))
+            return;
+
         // Append all input streamed text onto the end of the held streamed text
         StreamedText.shiftChars(inputStreamedText, heldStreamedText, inputStreamedText.numChars());
 

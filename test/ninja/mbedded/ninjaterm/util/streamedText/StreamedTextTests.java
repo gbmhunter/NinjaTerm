@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
@@ -131,6 +132,60 @@ public class StreamedTextTests {
         assertEquals(2, inputStreamedText.textNodes.size());
         assertEquals("4", ((Text)inputStreamedText.textNodes.get(0)).getText());
         assertEquals("567", ((Text)inputStreamedText.textNodes.get(1)).getText());
+    }
+
+    @Test
+    public void shiftColourTest() throws Exception {
+
+        Text text = new Text();
+        text.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text);
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 0);
+
+        assertEquals("", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+    }
+
+    @Test
+    public void shiftColour2Test() throws Exception {
+
+        inputStreamedText.appendText = "abc";
+
+        Text text = new Text();
+        text.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text);
+
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 3);
+
+        assertEquals("abc", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+    }
+
+    @Test
+    public void shiftColour3Test() throws Exception {
+
+        inputStreamedText.appendText = "abc";
+
+        Text text1 = new Text();
+        text1.setFill(Color.RED);
+        inputStreamedText.textNodes.add(text1);
+
+        Text text2 = new Text();
+        text2.setFill(Color.GREEN);
+        inputStreamedText.textNodes.add(text2);
+
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 3);
+
+        assertEquals("abc", outputStreamedText.appendText);
+        assertEquals(2, outputStreamedText.textNodes.size());
+        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+        assertEquals("", ((Text)outputStreamedText.textNodes.get(1)).getText());
+        assertEquals(Color.GREEN, ((Text)outputStreamedText.textNodes.get(1)).getFill());
     }
 
 }
