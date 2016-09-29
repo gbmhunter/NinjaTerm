@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
+import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
@@ -57,10 +58,15 @@ public class StreamFilter {
             // Check to see if we can release all text on this line without even bothering
             // to check for a match. This will occur if a match has already occurred on this line.
             if(releaseTextOnCurrLine) {
+                System.out.println("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
                 StreamedText.shiftChars(heldStreamedText, outputStreamedText, line.length());
-                releaseTextOnCurrLine = false;
+
+                if(line.matches(".*\\r\\n")) {
+                    releaseTextOnCurrLine = false;
+                }
 
                 // Jump to next iteration of for loop
+                System.out.println("Going to next iteration of loop.");
                 continue;
             }
 
@@ -70,6 +76,7 @@ public class StreamFilter {
             if (matcher.find()) {
                 // Match in line found!
                 System.out.println("Match in line found. Line = " + Debugging.convertNonPrintable(line));
+
 
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
@@ -96,7 +103,11 @@ public class StreamFilter {
                 }
 
             }
-        }
+        } // for (String line : lines)
+
+        System.out.println(getClass().getSimpleName() + ".streamFilter() finished. Variables are now:");
+        System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
+        System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
     }
 }
