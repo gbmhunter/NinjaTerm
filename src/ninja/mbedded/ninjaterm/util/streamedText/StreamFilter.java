@@ -34,8 +34,6 @@ public class StreamFilter {
         String serializedHeldText = heldStreamedText.serialize();
         System.out.println("Held text serialised. serializedHeldText = " + serializedHeldText);
 
-        System.out.println("Concatenated line of text = " + serializedHeldText);
-
         // Search for new line characters
         String lines[] = serializedHeldText.split("(?<=[\\r])");
 
@@ -51,7 +49,7 @@ public class StreamFilter {
                 System.out.println("Match in line found. Line = " + line);
 
                 // We can release all text/nodes up to the end of this line
-                int numCharsToRelease = matcher.end();
+                int numCharsToRelease = line.length();
                 System.out.println("numCharsToRelease = " + numCharsToRelease);
                 StreamedText.shiftChars(heldStreamedText, outputStreamedText, numCharsToRelease);
 
@@ -61,7 +59,7 @@ public class StreamFilter {
                 // and it can be deleted from the heldStreamedText
                 System.out.println("No match found. Line = " + line);
 
-                heldStreamedText.removeChars(matcher.end());
+                heldStreamedText.removeChars(line.length());
             }
         }
 

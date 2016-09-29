@@ -23,11 +23,14 @@ public class StreamFilterTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
+    private StreamFilter streamFilter;
+
     private StreamedText inputStreamedText;
     private StreamedText outputStreamedText;
 
     @Before
     public void setUp() throws Exception {
+        streamFilter = new StreamFilter();
         inputStreamedText = new StreamedText();
         outputStreamedText = new StreamedText();
     }
@@ -35,23 +38,13 @@ public class StreamFilterTests {
     @Test
     public void basicTest() throws Exception {
 
-        outputStreamedText.appendText = "12";
-        outputStreamedText.textNodes.add(new Text("34"));
+        inputStreamedText.appendText = "abc\rdef\r";
 
-        inputStreamedText.appendText = "567";
-        inputStreamedText.textNodes.add(new Text("89"));
-
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 4);
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
 
         // Check output
-        assertEquals("12", outputStreamedText.appendText);
-        assertEquals(2, outputStreamedText.textNodes.size());
-        assertEquals("34567", ((Text)outputStreamedText.textNodes.get(0)).getText());
-        assertEquals("8", ((Text)outputStreamedText.textNodes.get(1)).getText());
-
-        // Check input, should be 1 char left over
-        assertEquals("9", inputStreamedText.appendText);
-        assertEquals(0, inputStreamedText.textNodes.size());
+        assertEquals("abc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
     }
 
 
