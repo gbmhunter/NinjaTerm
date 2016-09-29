@@ -13,9 +13,9 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-09-27
+ * @last-modified   2016-09-29
  */
-public class ShiftCharsTests {
+public class StreamedTextTests {
 
     /**
      * Including this variable in class allows JavaFX objects to be created in tests.
@@ -36,7 +36,7 @@ public class ShiftCharsTests {
     public void extractAppendTextTest() throws Exception {
 
         inputStreamedText.appendText = "1234";
-        ShiftChars.shiftChars(inputStreamedText, outputStreamedText, 2);
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 2);
 
         assertEquals("12", outputStreamedText.appendText);
         assertEquals(0, inputStreamedText.textNodes.size());
@@ -48,7 +48,7 @@ public class ShiftCharsTests {
         inputStreamedText.appendText = "1234";
         inputStreamedText.textNodes.add(new Text("5678"));
 
-        ShiftChars.shiftChars(inputStreamedText, outputStreamedText, 6);
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 6);
 
         // Check output
         assertEquals("1234", outputStreamedText.appendText);
@@ -66,7 +66,7 @@ public class ShiftCharsTests {
         inputStreamedText.textNodes.add(new Text("456"));
         inputStreamedText.textNodes.add(new Text("789"));
 
-        ShiftChars.shiftChars(inputStreamedText, outputStreamedText, 6);
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 6);
 
         // Check output
         assertEquals("123", outputStreamedText.appendText);
@@ -87,7 +87,7 @@ public class ShiftCharsTests {
         inputStreamedText.appendText = "567";
         inputStreamedText.textNodes.add(new Text("89"));
 
-        ShiftChars.shiftChars(inputStreamedText, outputStreamedText, 4);
+        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 4);
 
         // Check output
         assertEquals("12", outputStreamedText.appendText);
@@ -98,6 +98,38 @@ public class ShiftCharsTests {
         // Check input, should be 1 char left over
         assertEquals("9", inputStreamedText.appendText);
         assertEquals(0, inputStreamedText.textNodes.size());
+    }
+
+    @Test
+    public void removeFromAppendTextTest() throws Exception {
+
+        inputStreamedText.appendText = "12345";
+        inputStreamedText.textNodes.add(new Text("6"));
+        inputStreamedText.textNodes.add(new Text("789"));
+
+        inputStreamedText.removeChars(3);
+
+        // Check input, should be 1 char left over
+        assertEquals("45", inputStreamedText.appendText);
+        assertEquals(2, inputStreamedText.textNodes.size());
+        assertEquals("6", ((Text)inputStreamedText.textNodes.get(0)).getText());
+        assertEquals("789", ((Text)inputStreamedText.textNodes.get(1)).getText());
+    }
+
+    @Test
+    public void removeFromAppendAndNodesTest() throws Exception {
+
+        inputStreamedText.appendText = "12";
+        inputStreamedText.textNodes.add(new Text("34"));
+        inputStreamedText.textNodes.add(new Text("567"));
+
+        inputStreamedText.removeChars(3);
+
+        // Check input, should be 1 char left over
+        assertEquals("", inputStreamedText.appendText);
+        assertEquals(2, inputStreamedText.textNodes.size());
+        assertEquals("4", ((Text)inputStreamedText.textNodes.get(0)).getText());
+        assertEquals("567", ((Text)inputStreamedText.textNodes.get(1)).getText());
     }
 
 }

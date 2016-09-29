@@ -10,52 +10,37 @@ import java.util.regex.Pattern;
 
 /**
  * Created by gbmhu on 2016-09-28.
+ *
+ * Class contains a static method for shifting a provided number of characters from one input
+ * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
+ * object.
  */
 public class StreamFilter {
 
-    /**
-     * Held text that once released, will be appended to the last released text node.
-     */
-    private String heldTextForLastNode = "";
-
-    /**
-     * Help text nodes that will be released once a match occurs.
-     */
-    private ObservableList<Node> heldNodes = FXCollections.observableArrayList();
+    private StreamedText heldStreamedText = new StreamedText();
 
     /**
      * This method provides a filtering function based on an incoming stream of data.
      *
-     *
-     *
-     * @param textToAppendedToLastNode  New un-filtered text to be appended to the last existing text node.
-     * @param newTextNodes              New un-filtered text nodes to be added to the end of the existing ones.
      * @param filterText                Text to filter by.
      */
     public void streamFilter(
-            String textToAppendedToLastNode,
-            ObservableList<Node> newTextNodes,
+            StreamedText inputStreamedText,
+            StreamedText outputStreamedText,
             String filterText) {
 
-        // Update the internal "hold" variables
-        Text lastTextNode = (Text)heldNodes.get(heldNodes.size() - 1);
-        lastTextNode.setText(lastTextNode.getText() + textToAppendedToLastNode);
-        heldNodes.addAll(newTextNodes);
-
-        System.out.println("Internal hold variables updated. heldTextForLastNode = " + heldTextForLastNode);
-
+        // Append all input streamed text onto the end of the held streamed text
+        StreamedText.shiftChars(inputStreamedText, heldStreamedText, inputStreamedText.numChars());
 
         // heldTextForLastNode + all text in heldNodes should equal a line of text being held intil
         // a pattern match occurs
-        String heldLineOfText = heldTextForLastNode;
-        for(Node node : heldNodes){
-            heldLineOfText += ((Text)node).getText();
-        }
+        String serializedHeldText = heldStreamedText.serialize();
+        System.out.println("Held text serialised. serializedHeldText = " + serializedHeldText);
 
-        System.out.println("Concatenated line of text = " + heldLineOfText);
+        System.out.println("Concatenated line of text = " + serializedHeldText);
 
         // Search for new line characters
-        String lines[] = heldLineOfText.split("(?<=[\\r])");
+        String lines[] = serializedHeldText.split("(?<=[\\r])");
 
         // This keeps track of where we are relative to the start of the
         // heldLineOfText variable
@@ -72,10 +57,18 @@ public class StreamFilter {
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = currCharIndex + matcher.end();
                 System.out.println("numCharsToRelease = " + numCharsToRelease);
+                StreamedText.shiftChars(heldStreamedText, outputStreamedText, numCharsToRelease);
+
 
             } else {
-                // No match found
+                // No match found on this line. If this line is completed, then we know there can never be a match,
+                // and it can be deleted from the heldStreamedText
                 System.out.println("No match found. Line = " + line);
+
+                if(line != lines[lines.length - 1]) {
+                    // This is not the last line of text, so we can remove it
+
+                }
             }
 
             // Increase the current character index by the length of this line
@@ -83,6 +76,4 @@ public class StreamFilter {
         }
 
     }
-
-
 }
