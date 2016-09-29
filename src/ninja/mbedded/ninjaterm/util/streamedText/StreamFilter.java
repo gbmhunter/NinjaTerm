@@ -16,6 +16,8 @@ public class StreamFilter {
 
     private StreamedText heldStreamedText = new StreamedText();
 
+    private boolean releaseTextOnCurrLine = false;
+
     /**
      * This method provides a filtering function based on an incoming stream of data.
      *
@@ -41,6 +43,17 @@ public class StreamFilter {
         // heldLineOfText variable
 
         for (String line : lines) {
+
+            // Check to see if we can release all text on this line without even bothering
+            // to check for a match. This will occur if a match has already occurred on this line.
+            if(releaseTextOnCurrLine) {
+                StreamedText.shiftChars(heldStreamedText, outputStreamedText, line.length());
+                releaseTextOnCurrLine = false;
+
+                // Jump to next iteration of for loop
+                continue;
+            }
+
             Pattern pattern = Pattern.compile(filterText);
             Matcher matcher = pattern.matcher(line);
 
@@ -52,6 +65,14 @@ public class StreamFilter {
                 int numCharsToRelease = line.length();
                 System.out.println("numCharsToRelease = " + numCharsToRelease);
                 StreamedText.shiftChars(heldStreamedText, outputStreamedText, numCharsToRelease);
+
+                // Check to see if this is the last line. If so, set the releaseTextOnCurrLine to true
+                // so that next time this function is called, any other text which is also on this line
+                // will be released without question
+
+                if(line == lines[lines.length - 1] && !line.matches(".*\\r")) {
+                    releaseTextOnCurrLine = true;
+                }
 
 
             } else {

@@ -47,5 +47,133 @@ public class StreamFilterTests {
         assertEquals(0, outputStreamedText.textNodes.size());
     }
 
+    @Test
+    public void multipleLinesTest() throws Exception {
+
+        inputStreamedText.appendText = "abc\rabc\rdef\r";
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        // Check output
+        assertEquals("abc\rabc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+    }
+
+    @Test
+    public void MatchedLinesBetweenNonMatchTest() throws Exception {
+
+        inputStreamedText.appendText = "abc\rdef\rabc\r";
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        // Check output
+        assertEquals("abc\rabc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+    }
+
+    @Test
+    public void streamTest() throws Exception {
+
+        inputStreamedText.appendText = "ab";
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        // Check output
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+        inputStreamedText.appendText = "c\r";
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        // Check output
+        assertEquals("abc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+    }
+
+    @Test
+    public void streamWithNonMatchLineInMiddleTest() throws Exception {
+
+        inputStreamedText.appendText = "ab";
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+        inputStreamedText.appendText = "c\rde";
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("abc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+        inputStreamedText.appendText = "f\ra";
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("abc\ra", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+
+        inputStreamedText.appendText = "bc\r";
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("abc\rabc\r", outputStreamedText.appendText);
+        assertEquals(0, outputStreamedText.textNodes.size());
+    }
+
+    @Test
+    public void nodesTest() throws Exception {
+
+        inputStreamedText.appendText = "ab";
+        inputStreamedText.textNodes.add(new Text("c\r"));
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("c\r", ((Text)outputStreamedText.textNodes.get(0)).getText());
+    }
+
+    @Test
+    public void complexNodesTest() throws Exception {
+
+        inputStreamedText.appendText = "ab";
+        inputStreamedText.textNodes.add(new Text("c"));
+        inputStreamedText.textNodes.add(new Text("def\r"));
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(2, outputStreamedText.textNodes.size());
+        assertEquals("c", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        assertEquals("def\r", ((Text)outputStreamedText.textNodes.get(1)).getText());
+    }
+
+    @Test
+    public void complexNodes2Test() throws Exception {
+
+        inputStreamedText.appendText = "ab";
+        inputStreamedText.textNodes.add(new Text("c\r"));
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("", inputStreamedText.appendText);
+        assertEquals(0, inputStreamedText.textNodes.size());
+
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("c\r", ((Text)outputStreamedText.textNodes.get(0)).getText());
+
+        inputStreamedText.textNodes.add(new Text("def\r"));
+
+        streamFilter.streamFilter(inputStreamedText, outputStreamedText, "a");
+
+        assertEquals("", inputStreamedText.appendText);
+        assertEquals(0, inputStreamedText.textNodes.size());
+
+        assertEquals("ab", outputStreamedText.appendText);
+        assertEquals(1, outputStreamedText.textNodes.size());
+        assertEquals("c\r", ((Text)outputStreamedText.textNodes.get(0)).getText());
+
+
+    }
 
 }
