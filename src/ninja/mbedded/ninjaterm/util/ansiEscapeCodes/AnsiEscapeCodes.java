@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * @since           2016-09-26
  * @last-modified   2016-09-26
  */
-public class Processor {
+public class AnsiEscapeCodes {
 
     Map<String, Color> codeToNormalColourMap = new HashMap<>();
     Map<String, Color> codeToBoldColourMap = new HashMap<>();
@@ -32,7 +32,7 @@ public class Processor {
      */
     private String withheldTextWithPartialMatch = "";
 
-    public Processor() {
+    public AnsiEscapeCodes() {
         // Populate the map with data
         codeToNormalColourMap.put("30", Color.rgb(0, 0, 0));
         codeToNormalColourMap.put("31", Color.rgb(170, 0, 0));

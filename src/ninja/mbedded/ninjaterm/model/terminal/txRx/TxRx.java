@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -12,8 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
-import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.Processor;
-import ninja.mbedded.ninjaterm.util.stringFilter.StringFilter;
+import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.AnsiEscapeCodes;
 import ninja.mbedded.ninjaterm.util.textInListUtils.TextInListUtils;
 
 import java.util.ArrayList;
@@ -52,7 +50,7 @@ public class TxRx {
     /**
      * RX data which has been filtered according to the filter text.
      */
-    public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
+    //public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
 
     /**
      * Because we need to support rich text, we need to use a list of "Nodes" to
@@ -63,7 +61,7 @@ public class TxRx {
 
     int numOfCharsInRxNodes = 0;
 
-    private Processor processor = new Processor();
+    private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
 
@@ -234,7 +232,7 @@ public class TxRx {
 
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
-        numOfCharsInRxNodes += processor.parseString(rxDataAsList, data);
+        numOfCharsInRxNodes += ansiEscapeCodes.parseString(rxDataAsList, data);
 
         // Trim the RX nodes if necessary
         if(numOfCharsInRxNodes > display.bufferSizeChars.get()) {
@@ -245,9 +243,10 @@ public class TxRx {
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
         if(filters.filterText.get().equals("")) {
-            filteredRxData.set(rxData.get());
+            //filteredRxData.set(rxData.get());
         } else {
-            filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
+            //filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
+
         }
 
         // Finally, call any listeners (the logging class of the model might be listening)
