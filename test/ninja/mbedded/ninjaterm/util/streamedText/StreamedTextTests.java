@@ -1,7 +1,8 @@
-package ninja.mbedded.ninjaterm.util.textInListUtils;
+package ninja.mbedded.ninjaterm.util.streamedText;
 
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

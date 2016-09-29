@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.textInListUtils;
+package ninja.mbedded.ninjaterm.util.streamedText;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

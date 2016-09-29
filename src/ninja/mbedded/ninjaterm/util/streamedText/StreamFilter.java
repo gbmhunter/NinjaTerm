@@ -1,16 +1,13 @@
-package ninja.mbedded.ninjaterm.util.textInListUtils;
+package ninja.mbedded.ninjaterm.util.streamedText;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import javafx.scene.text.Text;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by gbmhu on 2016-09-28.
- *
+ * <p>
  * Class contains a static method for shifting a provided number of characters from one input
  * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
  * object.
@@ -22,7 +19,7 @@ public class StreamFilter {
     /**
      * This method provides a filtering function based on an incoming stream of data.
      *
-     * @param filterText                Text to filter by.
+     * @param filterText Text to filter by.
      */
     public void streamFilter(
             StreamedText inputStreamedText,
@@ -44,18 +41,17 @@ public class StreamFilter {
 
         // This keeps track of where we are relative to the start of the
         // heldLineOfText variable
-        int currCharIndex = 0;
 
-        for(String line : lines) {
+        for (String line : lines) {
             Pattern pattern = Pattern.compile(filterText);
             Matcher matcher = pattern.matcher(line);
 
-            if(matcher.find()) {
+            if (matcher.find()) {
                 // Match in line found!
                 System.out.println("Match in line found. Line = " + line);
 
                 // We can release all text/nodes up to the end of this line
-                int numCharsToRelease = currCharIndex + matcher.end();
+                int numCharsToRelease = matcher.end();
                 System.out.println("numCharsToRelease = " + numCharsToRelease);
                 StreamedText.shiftChars(heldStreamedText, outputStreamedText, numCharsToRelease);
 
@@ -65,14 +61,8 @@ public class StreamFilter {
                 // and it can be deleted from the heldStreamedText
                 System.out.println("No match found. Line = " + line);
 
-                if(line != lines[lines.length - 1]) {
-                    // This is not the last line of text, so we can remove it
-
-                }
+                heldStreamedText.removeChars(matcher.end());
             }
-
-            // Increase the current character index by the length of this line
-            currCharIndex += line.length();
         }
 
     }
