@@ -61,7 +61,7 @@ public class StreamFilter {
                 System.out.println("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
                 StreamedText.shiftChars(heldStreamedText, outputStreamedText, line.length());
 
-                if(line.matches(".*\\r\\n")) {
+                if(hasNewLineChar(line)) {
                     releaseTextOnCurrLine = false;
                 }
 
@@ -87,7 +87,7 @@ public class StreamFilter {
                 // so that next time this function is called, any other text which is also on this line
                 // will be released without question
 
-                if(line == lines[lines.length - 1] && !line.matches(".*\\r\\n")) {
+                if(line == lines[lines.length - 1] && !hasNewLineChar(line)) {
                     releaseTextOnCurrLine = true;
                 }
 
@@ -97,7 +97,7 @@ public class StreamFilter {
                 // and it can be deleted from the heldStreamedText
                 System.out.println("No match found on line = " + Debugging.convertNonPrintable(line));
 
-                if(line.matches(".*\\r\\n")) {
+                if(hasNewLineChar(line)) {
                     System.out.println("Deleting line.");
                     heldStreamedText.removeChars(line.length());
                 }
@@ -110,4 +110,15 @@ public class StreamFilter {
         System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
     }
+
+    public static boolean hasNewLineChar(String line) {
+        Pattern pattern = Pattern.compile("\n");
+        Matcher matcher = pattern.matcher(line);
+
+        if(matcher.find())
+            return true;
+        else
+            return false;
+    }
+
 }
