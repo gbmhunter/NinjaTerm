@@ -30,10 +30,6 @@ public class StreamedText {
         FINISHED,
     }
 
-    public void shiftCharsTo(StreamedText inputStreamedText, int numChars) {
-        StreamedText.shiftChars(inputStreamedText, this, numChars);
-    }
-
     public void removeChars(int numChars) {
 
         // We can perform a removal by "shifting" the chars to a dummy StreamedText
@@ -71,6 +67,10 @@ public class StreamedText {
                 textNodes.remove(0);
             }
         }
+    }
+
+    public void shiftCharsTo(StreamedText inputStreamedText, int numChars) {
+        StreamedText.shiftChars(inputStreamedText, this, numChars);
     }
 
     /**
@@ -204,6 +204,130 @@ public class StreamedText {
                 // We have found an empty text node, let's move it from input to output
                 outputStreamedText.textNodes.add(inputStreamedText.textNodes.get(0));
                 inputStreamedText.textNodes.remove(0);
+            } else
+                // We have found a non-empty node, exit
+                return;
+        }
+    }
+
+    public void copyCharsTo(StreamedText inputStreamedText, int numChars) {
+        StreamedText.copyChars(inputStreamedText, this, numChars);
+    }
+
+    /**
+     * The method copies the specified number of chars from the input into the output.
+     * It copies chars from the "to append" String first, and then starts copying chars from the first of the
+     * Text nodes contained within the list.
+     * <p>
+     * It also copies any chars from still existing input nodes into the "to append" String
+     * as appropriate.
+     *
+     * @param inputStreamedText
+     * @param numChars
+     * @return
+     */
+    public static void copyChars(StreamedText inputStreamedText, StreamedText outputStreamedText, int numChars) {
+
+        if (numChars < 0)
+            throw new IllegalArgumentException("numChars cannot be negative.");
+
+        ShiftCharsState shiftCharsState = ShiftCharsState.EXTRACTING_FROM_APPEND_TEXT;
+
+        int currNodeIndex = 0;
+
+        while (true) {
+
+            switch (shiftCharsState) {
+                case EXTRACTING_FROM_APPEND_TEXT:
+
+                    // There might not be any text to append, but rather the text
+                    // starts in a fresh node
+                    if (inputStreamedText.appendText.length() == 0) {
+                        copyAnyEmptyNodes(inputStreamedText, outputStreamedText);
+                        shiftCharsState = ShiftCharsState.EXTRACTING_FROM_NODES;
+                        break;
+                    }
+
+                    // There are chars to extract
+                    if (inputStreamedText.appendText.length() >= numChars) {
+
+                        //outputStreamedText.appendText = inputStreamedText.appendText.substring(0, numChars);
+                        //outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars), AddMethod.APPEND);
+                        outputStreamedText.addTextToStream(inputStreamedText.appendText.substring(0, numChars));
+
+                        copyAnyEmptyNodes(inputStreamedText, outputStreamedText);
+                        shiftCharsState = ShiftCharsState.FINISHED;
+                        break;
+
+                    } else {
+                        // Need to extract more chars than what the append String has, so extract all, and continue in loop
+                        // to extract more from nodes
+                        outputStreamedText.addTextToStream(inputStreamedText.appendText);
+                        numChars -= inputStreamedText.appendText.length();
+
+                        copyAnyEmptyNodes(inputStreamedText, outputStreamedText);
+                        shiftCharsState = ShiftCharsState.EXTRACTING_FROM_NODES;
+                        break;
+                    }
+
+                case EXTRACTING_FROM_NODES:
+
+                    // We can always work on node 0 since next time around the loop with old node 0
+                    // would have been deleted
+                    if(numChars == 0)
+                        return;
+
+                    Text textNode = (Text) inputStreamedText.textNodes.get(currNodeIndex);
+
+                    if (textNode.getText().length() >= numChars) {
+                        // There is enough chars in this node to complete the shift
+
+                        Text text = new Text();
+                        text.setFill(textNode.getFill());
+                        outputStreamedText.textNodes.add(text);
+                        outputStreamedText.addTextToStream(textNode.getText().substring(0, numChars));
+
+                        copyAnyEmptyNodes(inputStreamedText, outputStreamedText);
+                        shiftCharsState = ShiftCharsState.FINISHED;
+                        break;
+                    } else {
+                        // Node isn't big enough, extract all characters, delete node and move onto the next
+                        Text text = new Text();
+                        text.setFill(textNode.getFill());
+                        outputStreamedText.textNodes.add(text);
+                        //outputStreamedText.addTextToStream(textNode.getText(), AddMethod.NEW_NODE);
+                        outputStreamedText.addTextToStream(textNode.getText());
+
+                        copyAnyEmptyNodes(inputStreamedText, outputStreamedText);
+                        numChars -= textNode.getText().length();
+                        currNodeIndex++;
+                        break;
+                    }
+
+                case FINISHED:
+                    return;
+            }
+        }
+    }
+
+    public static void copyAnyEmptyNodes(StreamedText inputStreamedText, StreamedText outputStreamedText) {
+
+        if(!inputStreamedText.appendText.equals(""))
+            return;
+
+        int currNodeIndex = 0;
+
+        while(true) {
+
+            // We have no more text nodes to process, return
+            if(currNodeIndex > inputStreamedText.textNodes.size() - 1)
+                return;
+
+            Text textNode = (Text)inputStreamedText.textNodes.get(currNodeIndex);
+            if(textNode.getText().equals("")) {
+                // We have found an empty text node, let's move it from input to output
+                outputStreamedText.textNodes.add(inputStreamedText.textNodes.get(currNodeIndex));
+                currNodeIndex++;
             } else
                 // We have found a non-empty node, exit
                 return;

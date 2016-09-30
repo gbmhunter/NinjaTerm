@@ -6,16 +6,17 @@
 * @last-modified   2016-09-23
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.control.textfield.CustomTextField?>
 <?import javafx.scene.text.Text?>
 <VBox
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController"
-         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
-         spacing="20"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+        xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
+        spacing="20"
+        fillWidth="true" GridPane.vgrow="ALWAYS"
+        stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -25,11 +26,21 @@
     <!-- WRAPPING -->
     <VBox spacing="10" styleClass="border">
 
-        <Text wrappingWidth="250">The RX pane will only show lines of data which contain a match to the regex provided below.</Text>
+        <Text wrappingWidth="250">The RX pane will only show lines of data which contain a match to the regex provided
+            below.
+        </Text>
 
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Filter Text:</Label>
             <TextField fx:id="filterTextTextField" prefWidth="250"></TextField>
+        </HBox>
+
+        <HBox>
+            <VBox spacing="5" styleClass="border">
+                <RadioButton fx:id="applyToNewRxDataOnlyCheckBox">Apply to new RX data only</RadioButton>
+                <RadioButton fx:id="applyToBothBufferedAndNewRxDataCheckBox">Apply to both buffered and new RX data
+                </RadioButton>
+            </VBox>
         </HBox>
     </VBox>
 </VBox>

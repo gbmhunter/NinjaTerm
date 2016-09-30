@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-09-23
+ * @last-modified   2016-09-30
  */
 public class TxRx {
 
@@ -50,11 +50,6 @@ public class TxRx {
     public SimpleStringProperty rxData = new SimpleStringProperty("");
 
     /**
-     * RX data which has been filtered according to the filter text.
-     */
-    //public SimpleStringProperty filteredRxData = new SimpleStringProperty("");
-
-    /**
      * Because we need to support rich text, we need to use a list of "Nodes" to
      * store the RX data. This list of nodes is directly supported by a TextFlow
      * object on the UI.
@@ -65,10 +60,20 @@ public class TxRx {
 
     private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
 
+    /**
+     * This is a buffer for the output of the ANSI parser. This is for when the filter text
+     * is changed, and the user wishes to re-run the filter over data stored in the buffer.
+     */
+    private StreamedText totalAnsiParserOutput = new StreamedText();
+
+    /**
+     * Used to provide filtering functionality to the RX data.
+     */
     private StreamFilter streamFilter = new StreamFilter();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
+    public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -81,6 +86,12 @@ public class TxRx {
 
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
             removeOldCharsFromBuffers();
+        });
+
+        filters.filterApplyType.addListener((observable, oldValue, newValue) -> {
+            if(newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
+                updateBufferedRxDataWithNewFilterPattern();
+            }
         });
     }
 
@@ -235,10 +246,23 @@ public class TxRx {
             rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
         }
 
+        //==============================================//
+        //============== ANSI ESCAPE CODES =============//
+        //==============================================//
+
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
         StreamedText ansiParserOutput = new StreamedText();
         numOfCharsInRxNodes += ansiEscapeCodes.parse(data, ansiParserOutput);
+
+        // Append the output of the ANSI parser to the "total" ANSI parser output buffer
+        // This will be used if the user changes the filter pattern and wishes to re-run
+        // it on buffered data
+        totalAnsiParserOutput.copyCharsTo(ansiParserOutput, ansiParserOutput.numChars());
+
+        //==============================================//
+        //================== FILTERING =================//
+        //==============================================//
 
         StreamedText filterOutput = new StreamedText();
 
@@ -263,15 +287,11 @@ public class TxRx {
             numOfCharsInRxNodes -= numOfCharsToRemove;
         }*/
 
-
-
         // Finally, call any listeners (the logging class of the model might be listening)
         for(DataReceivedAsStringListener dataReceivedAsStringListener : dataReceivedAsStringListeners) {
             dataReceivedAsStringListener.update(data);
         }
     }
-
-
 
     /**
      * Trims a string to the provided number of characters. Removes characters from the start of the string
@@ -300,7 +320,21 @@ public class TxRx {
     }
 
     public void clearTxAndRxData() {
-        rxDataAsList.clear();
+        //rxDataAsList.clear();
+        // Emit RX data cleared event
+        for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+            rxDataClearedListener.go();
+        }
+    }
+
+    /**
+     * Call this method to update the buffered RX data based on a new filter pattern.
+     */
+    private void updateBufferedRxDataWithNewFilterPattern() {
+        // Emit RX data cleared event
+        for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+            rxDataClearedListener.go();
+        }
     }
 
 }

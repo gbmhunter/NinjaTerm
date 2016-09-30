@@ -272,13 +272,15 @@ public class TxRxViewController {
         //==============================================//
 
         clearTextButton.setOnAction(event -> {
-            // Clear all the text
-            //rxDataText.setText("");
-            //terminal.txRx.rxData.set("");
-            //terminal.txRx.txData.set("");
             terminal.txRx.clearTxAndRxData();
             model.status.addMsg("Terminal TX/RX text cleared.");
+        });
 
+        terminal.txRx.rxDataClearedListeners.add(() -> {
+            // Clear children from the RX text flow, this should empty
+            // all data from the RX pane
+            rxDataTextFlow.getChildren().clear();
+            rxDataTextFlow.getChildren().add(new Text());
         });
 
         //==============================================//

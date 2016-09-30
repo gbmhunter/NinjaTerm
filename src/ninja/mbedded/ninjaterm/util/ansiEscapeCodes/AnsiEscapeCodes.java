@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
- * @last-modified   2016-09-26
+ * @last-modified   2016-09-30
  */
 public class AnsiEscapeCodes {
 
@@ -54,13 +54,19 @@ public class AnsiEscapeCodes {
         codeToBoldColourMap.put("36", Color.rgb(85, 255, 255));
         codeToBoldColourMap.put("37", Color.rgb(255, 255, 255));
 
+        // This pattern matches an ANSI escape code. It matches an arbitrary number of
+        // numbers after the "[ESC][", separated by a ";" and then prefixed by a "m".
         p = Pattern.compile("\u001B\\[[;\\d]*m");
     }
 
     /**
      *
-     * @param outputStreamedText
-     * @param inputString
+     * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedText object.
+     *
+     * @param inputString           The input string which can contain display text and ANSI escape codes.
+     * @param outputStreamedText    Contains streamed text that has been release from this parser. The internal appendText
+     *                              variable will contain text which can be added to the previous node (i.e. no colour change),
+     *                              and new nodes with text of different colours.
      * @return  The number of characters added to the list of Text nodes. This does not count the characters
      * which form part of an escape sequence, as these are not added to the nodes text property, but are rather used to set the
      * colour properties of the node.
@@ -176,7 +182,7 @@ public class AnsiEscapeCodes {
         return numCharsAddedToNodes;
     }
 
-    private void addTextToLastNode(ObservableList<Node> observableList, String text) {
+    /*private void addTextToLastNode(ObservableList<Node> observableList, String text) {
 
         // debug
         for(byte singleChar : text.getBytes()) {
@@ -187,8 +193,7 @@ public class AnsiEscapeCodes {
 
         Text lastTextNode = (Text) observableList.get(observableList.size() - 1);
         lastTextNode.setText(lastTextNode.getText() + text);
-
-    }
+    }*/
 
     private String[] extractNumbersAsArray(String ansiEscapeCode) {
 
@@ -208,7 +213,7 @@ public class AnsiEscapeCodes {
         return numbers;
     }
 
-    private int findWherePartialMatchStarts(String input, Matcher matcher) {
+    /*private int findWherePartialMatchStarts(String input, Matcher matcher) {
 
         // Remove one character at a time, and find out when hitEnd() returns false
         int startCharIndex = 0;
@@ -219,6 +224,6 @@ public class AnsiEscapeCodes {
 
         //System.out.println("Found partial match starting at " + Integer.toString(startCharIndex - 1));
         return startCharIndex - 1;
-    }
+    }*/
 
 }

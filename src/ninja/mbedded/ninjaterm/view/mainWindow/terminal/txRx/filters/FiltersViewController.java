@@ -11,6 +11,7 @@ import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
@@ -37,31 +38,24 @@ public class FiltersViewController {
     @FXML
     private TextField filterTextTextField;
 
+    @FXML
+    private RadioButton applyToNewRxDataOnlyCheckBox;
+
+    @FXML
+    private RadioButton applyToBothBufferedAndNewRxDataCheckBox;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    Model model;
-    Terminal terminal;
+    private Model model;
+    private Terminal terminal;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
     public FiltersViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "FiltersView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
     }
 
     public void init(Model model, Terminal terminal) {
@@ -72,6 +66,16 @@ public class FiltersViewController {
 
         // Bind the text in the filter text textfield to the string in the model
         filterTextTextField.textProperty().bindBidirectional(terminal.txRx.filters.filterText);
+
+        //==============================================//
+        //=============== RADIOBUTTON SETUP ============//
+        //==============================================//
+
+        ToggleGroupValue<Filters.FilterApplyTypes> filterApplyTypesTGV = new ToggleGroupValue<>();
+        filterApplyTypesTGV.add(applyToNewRxDataOnlyCheckBox, Filters.FilterApplyTypes.APPLY_TO_NEW_RX_DATA_ONLY);
+        filterApplyTypesTGV.add(applyToBothBufferedAndNewRxDataCheckBox, Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA);
+
+        Bindings.bindBidirectional(filterApplyTypesTGV.valueProperty(), terminal.txRx.filters.filterApplyType);
 
     }
 }
