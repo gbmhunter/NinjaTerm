@@ -272,4 +272,37 @@ public class TxRxTests {
         assertEquals(Color.rgb(0, 170, 0), ((Text)textNodes.get(2)).getFill());
     }
 
+    @Test
+    public void partialTest() throws Exception {
+        runOneIteration("12\u001B[31");
+        assertEquals(1, textNodes.size());
+        assertEquals("", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.BLACK, ((Text)textNodes.get(0)).getFill());
+
+        runOneIteration("mabc\r");
+        assertEquals(2, textNodes.size());
+        assertEquals("12", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.rgb(0, 0, 0), ((Text)textNodes.get(0)).getFill());
+        assertEquals("abc\r", ((Text)textNodes.get(1)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)textNodes.get(1)).getFill());
+
+        runOneIteration("\ndef");
+        assertEquals(2, textNodes.size());
+        assertEquals("abc\r\n", ((Text)textNodes.get(1)).getText());
+        assertEquals(Color.rgb(170, 0, 0), ((Text)textNodes.get(1)).getFill());
+    }
+
+    @Test
+    public void emptyNewLineTest() throws Exception {
+        runOneIteration("\n\na\n");
+        assertEquals(1, textNodes.size());
+        assertEquals("a\n", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.BLACK, ((Text)textNodes.get(0)).getFill());
+
+        runOneIteration("\n\n");
+        assertEquals(1, textNodes.size());
+        assertEquals("a\n", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.BLACK, ((Text)textNodes.get(0)).getFill());
+    }
+
 }

@@ -63,6 +63,8 @@ public class TxRx {
 
     private AnsiECParserV2 ansiECParser = new AnsiECParserV2();
 
+    private StreamedTextV2 ansiParserOutput = new StreamedTextV2();
+
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
      * is changed, and the user wishes to re-run the filter over data stored in the buffer.
@@ -73,6 +75,8 @@ public class TxRx {
      * Used to provide filtering functionality to the RX data.
      */
     private StreamFilterV2 streamFilter = new StreamFilterV2();
+
+    private StreamedTextV2 filterOutput = new StreamedTextV2();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
@@ -255,7 +259,6 @@ public class TxRx {
 
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
-        StreamedTextV2 ansiParserOutput = new StreamedTextV2();
         numOfCharsInRxNodes += ansiECParser.parse(data, ansiParserOutput);
 
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
@@ -267,20 +270,12 @@ public class TxRx {
         //================== FILTERING =================//
         //==============================================//
 
-        StreamedTextV2 filterOutput = new StreamedTextV2();
-
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        if(filters.filterText.get().equals("")) {
-            //filteredRxData.set(rxData.get());
-            filterOutput = ansiParserOutput;
-        } else {
-            //filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
-            streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
-        }
+        streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
 
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(ansiParserOutput);
+            newStreamedTextListener.run(filterOutput);
         }
 
         // Trim the RX nodes if necessary

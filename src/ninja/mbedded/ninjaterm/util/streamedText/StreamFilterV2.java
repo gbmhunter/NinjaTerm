@@ -32,6 +32,14 @@ public class StreamFilterV2 {
         System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
         System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
+        if(filterText.equals("")) {
+            System.out.println("Filter text empty. Not performing any filtering.");
+
+            // Shift all input to output
+            outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+            return;
+        }
+
         if(inputStreamedText.getText().equals("")) {
             System.out.println("No filtering to perform. Returning...");
             return;

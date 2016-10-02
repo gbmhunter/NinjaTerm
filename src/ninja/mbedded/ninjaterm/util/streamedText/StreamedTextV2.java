@@ -103,11 +103,14 @@ public class StreamedTextV2 {
             inputStreamedText.setColorToBeInsertedOnNextChar(null);
         }
 
+        checkAllColoursAreInOrder();
+
     }
 
     public void removeChars(int numChars) {
         StreamedTextV2 dummyStreamedText = new StreamedTextV2();
         dummyStreamedText.shiftCharsIn(this, numChars);
+        checkAllColoursAreInOrder();
     }
 
     /**
@@ -156,6 +159,8 @@ public class StreamedTextV2 {
             addColour(text.length() - textToAppend.length(), colorToBeInsertedOnNextChar);
             colorToBeInsertedOnNextChar = null;
         }
+
+        checkAllColoursAreInOrder();
     }
 
     public void addColour(int position, Color color) {
@@ -174,6 +179,8 @@ public class StreamedTextV2 {
         } else {
             textColours.add(new TextColourV2(position, color));
         }
+
+        checkAllColoursAreInOrder();
     }
 
     @Override
@@ -227,5 +234,19 @@ public class StreamedTextV2 {
         // Clear all text and the TextColor list
         text = "";
         textColours.clear();
+
+        checkAllColoursAreInOrder();
     }
+
+    private void checkAllColoursAreInOrder() {
+
+        int charIndex = -1;
+        for(TextColourV2 textColour : textColours) {
+            if(textColour.position <= charIndex)
+                throw new RuntimeException("Colours were not in order!");
+
+            charIndex = textColour.position;
+        }
+    }
+
 }
