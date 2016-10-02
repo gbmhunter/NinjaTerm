@@ -75,7 +75,6 @@ public class StreamFilterV2 {
                 // Match in line found!
                 System.out.println("Match in line found. Line = " + Debugging.convertNonPrintable(line));
 
-
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
                 System.out.println("numCharsToRelease = " + numCharsToRelease);
@@ -88,8 +87,6 @@ public class StreamFilterV2 {
                 if(line == lines[lines.length - 1] && !hasNewLineChar(line)) {
                     releaseTextOnCurrLine = true;
                 }
-
-
             } else {
                 // No match found on this line. If this line is completed, then we know there can never be a match,
                 // and it can be deleted from the heldStreamedText
