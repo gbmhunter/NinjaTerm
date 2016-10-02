@@ -13,8 +13,10 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
+import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParserV2;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedTextV2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +60,7 @@ public class TxRx {
 
     int numOfCharsInRxNodes = 0;
 
-    private AnsiECParser ansiECParser = new AnsiECParser();
+    private AnsiECParserV2 ansiECParser = new AnsiECParserV2();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
@@ -252,32 +254,32 @@ public class TxRx {
 
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
-        StreamedText ansiParserOutput = new StreamedText();
+        StreamedTextV2 ansiParserOutput = new StreamedTextV2();
         numOfCharsInRxNodes += ansiECParser.parse(data, ansiParserOutput);
 
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run
         // it on buffered data
-        totalAnsiParserOutput.copyCharsTo(ansiParserOutput, ansiParserOutput.numChars());
+        //totalAnsiParserOutput.copyCharsTo(ansiParserOutput, ansiParserOutput.numChars());
 
         //==============================================//
         //================== FILTERING =================//
         //==============================================//
 
-        StreamedText filterOutput = new StreamedText();
+        StreamedTextV2 filterOutput = new StreamedTextV2();
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        if(filters.filterText.get().equals("")) {
+        /*if(filters.filterText.get().equals("")) {
             //filteredRxData.set(rxData.get());
             filterOutput = ansiParserOutput;
         } else {
             //filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
             streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
-        }
+        }*/
 
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
+            newStreamedTextListener.run(ansiParserOutput);
         }
 
         // Trim the RX nodes if necessary

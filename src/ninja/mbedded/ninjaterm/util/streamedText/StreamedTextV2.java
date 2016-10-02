@@ -173,9 +173,56 @@ public class StreamedTextV2 {
         }
     }
 
-
     @Override
     public String toString() {
         return text;
+    }
+
+    public void shiftToTextNodes(ObservableList<Node> existingTextNodes) {
+
+        Text lastTextNode = (Text)existingTextNodes.get(existingTextNodes.size() - 1);
+
+        // Copy all text before first TextColour entry into last node
+
+        int indexOfLastCharPlusOne;
+        if(getTextColours().size() == 0) {
+            indexOfLastCharPlusOne = getText().length();
+        } else {
+            indexOfLastCharPlusOne = getTextColours().get(0).position;
+        }
+
+        lastTextNode.setText(lastTextNode.getText() + getText().substring(0, indexOfLastCharPlusOne));
+
+        // Create new text nodes and copy all text
+        // This loop won't run if there is no elements in the TextColors array
+        for(int x = 0; x < getTextColours().size(); x++) {
+            Text newText = new Text();
+
+            int indexOfFirstCharInNode = getTextColours().get(x).position;
+
+            int indexOfLastCharInNode;
+            if(x >= getTextColours().size() - 1) {
+                indexOfLastCharInNode = getText().length();
+            } else {
+                indexOfLastCharInNode = getTextColours().get(x).position;
+            }
+
+            newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNode));
+            newText.setFill(getTextColours().get(x).color);
+
+            existingTextNodes.add(newText);
+        }
+
+        if(colorToBeInsertedOnNextChar != null) {
+            // Add new node with no text
+            Text text = new Text();
+            text.setFill(colorToBeInsertedOnNextChar);
+            existingTextNodes.add(text);
+            colorToBeInsertedOnNextChar = null;
+        }
+
+        // Clear all text and the TextColor list
+        text = "";
+        textColours.clear();
     }
 }
