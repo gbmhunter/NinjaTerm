@@ -338,6 +338,10 @@ public class TxRx {
 
     private void filterTextChanged(String filterText) {
         if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
+
+            // Firstly, clear RX data on UI
+            clearTxAndRxData();
+
             // We need to run the entire ANSI parser output back through the filter
             streamingFilter.parse(totalAnsiParserOutput, filterOutput, filters.filterText.get());
 
