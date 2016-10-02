@@ -12,7 +12,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
-import ninja.mbedded.ninjaterm.util.ansiEscapeCodes.AnsiEscapeCodes;
+import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
@@ -58,7 +58,7 @@ public class TxRx {
 
     int numOfCharsInRxNodes = 0;
 
-    private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
+    private AnsiECParser ansiECParser = new AnsiECParser();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
@@ -253,7 +253,7 @@ public class TxRx {
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
         StreamedText ansiParserOutput = new StreamedText();
-        numOfCharsInRxNodes += ansiEscapeCodes.parse(data, ansiParserOutput);
+        numOfCharsInRxNodes += ansiECParser.parse(data, ansiParserOutput);
 
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run

@@ -1,8 +1,5 @@
-package ninja.mbedded.ninjaterm.util.ansiEscapeCodes;
+package ninja.mbedded.ninjaterm.util.ansiECParser;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
@@ -14,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the AnsiEscapeCodes class.
+ * Unit tests for the AnsiECParser class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
@@ -28,20 +25,20 @@ public class ParseStringTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
-    private AnsiEscapeCodes ansiEscapeCodes = new AnsiEscapeCodes();
+    private AnsiECParser ansiECParser = new AnsiECParser();
 
     private StreamedText streamedText;
 
     @Before
     public void setUp() throws Exception {
-        ansiEscapeCodes = new AnsiEscapeCodes();
+        ansiECParser = new AnsiECParser();
         streamedText = new StreamedText();
     }
 
     @Test
     public void oneSeqTest() throws Exception {
 
-        ansiEscapeCodes.parse("default\u001B[31mred", streamedText);
+        ansiECParser.parse("default\u001B[31mred", streamedText);
 
         assertEquals("default", streamedText.appendText);
 
@@ -53,7 +50,7 @@ public class ParseStringTests {
     @Test
     public void twoSeqTest() throws Exception {
 
-        ansiEscapeCodes.parse("default\u001B[31mred\u001B[32mgreen", streamedText);
+        ansiECParser.parse("default\u001B[31mred\u001B[32mgreen", streamedText);
 
         assertEquals("default", streamedText.appendText);
 
@@ -69,7 +66,7 @@ public class ParseStringTests {
     @Test
     public void boldRedColourTest() throws Exception {
 
-        ansiEscapeCodes.parse("default\u001B[31;1mred", streamedText);
+        ansiECParser.parse("default\u001B[31;1mred", streamedText);
 
         assertEquals("default", streamedText.appendText);
 
@@ -82,12 +79,12 @@ public class ParseStringTests {
     @Test
     public void partialSeqTest() throws Exception {
 
-        ansiEscapeCodes.parse("default\u001B", streamedText);
+        ansiECParser.parse("default\u001B", streamedText);
 
         assertEquals("default", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parse("[31mred", streamedText);
+        ansiECParser.parse("[31mred", streamedText);
 
         assertEquals("default", streamedText.appendText);
         assertEquals(1, streamedText.textNodes.size());
@@ -98,17 +95,17 @@ public class ParseStringTests {
     @Test
     public void partialSeqTest2() throws Exception {
 
-        ansiEscapeCodes.parse("default\u001B", streamedText);
+        ansiECParser.parse("default\u001B", streamedText);
 
         assertEquals("default", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parse("[", streamedText);
+        ansiECParser.parse("[", streamedText);
 
         assertEquals("default", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parse("31mred", streamedText);
+        ansiECParser.parse("31mred", streamedText);
 
         assertEquals("default", streamedText.appendText);
         assertEquals(1, streamedText.textNodes.size());
@@ -119,7 +116,7 @@ public class ParseStringTests {
     @Test
     public void unsupportedEscapeSequenceTest() throws Exception {
 
-        ansiEscapeCodes.parse("abc\u001B[20mdef", streamedText);
+        ansiECParser.parse("abc\u001B[20mdef", streamedText);
 
         assertEquals("abcdef", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
@@ -129,7 +126,7 @@ public class ParseStringTests {
     public void unsupportedEscapeSequence2Test() throws Exception {
 
         // Use a bogus first and second number
-        ansiEscapeCodes.parse("abc\u001B[20;5mdef", streamedText);
+        ansiECParser.parse("abc\u001B[20;5mdef", streamedText);
 
         assertEquals("abcdef", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
@@ -140,7 +137,7 @@ public class ParseStringTests {
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiEscapeCodes.parse("abc\u001B[20def", streamedText);
+        ansiECParser.parse("abc\u001B[20def", streamedText);
 
         assertEquals("abc\u001B[20def", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
@@ -151,7 +148,7 @@ public class ParseStringTests {
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiEscapeCodes.parse("abc\u001B[def", streamedText);
+        ansiECParser.parse("abc\u001B[def", streamedText);
 
         assertEquals("abc\u001B[def", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
@@ -160,12 +157,12 @@ public class ParseStringTests {
     @Test
     public void truncatedEscapeSequenceTest3() throws Exception {
 
-        ansiEscapeCodes.parse("abc\u001B[", streamedText);
+        ansiECParser.parse("abc\u001B[", streamedText);
 
         assertEquals("abc", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parse("def", streamedText);
+        ansiECParser.parse("def", streamedText);
 
         assertEquals("abc\u001B[def", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
@@ -174,12 +171,12 @@ public class ParseStringTests {
     @Test
     public void truncatedEscapeSequenceTest4() throws Exception {
 
-        ansiEscapeCodes.parse("abc\u001B[", streamedText);
+        ansiECParser.parse("abc\u001B[", streamedText);
 
         assertEquals("abc", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());
 
-        ansiEscapeCodes.parse("12;\u001B[def", streamedText);
+        ansiECParser.parse("12;\u001B[def", streamedText);
 
         assertEquals("abc\u001B[12;\u001B[def", streamedText.appendText);
         assertEquals(0, streamedText.textNodes.size());

@@ -1,14 +1,10 @@
-package ninja.mbedded.ninjaterm.util.ansiEscapeCodes;
+package ninja.mbedded.ninjaterm.util.ansiECParser;
 
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
-import sun.nio.cs.US_ASCII;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -21,7 +17,7 @@ import java.util.regex.Pattern;
  * @since           2016-09-26
  * @last-modified   2016-09-30
  */
-public class AnsiEscapeCodes {
+public class AnsiECParser {
 
     Map<String, Color> codeToNormalColourMap = new HashMap<>();
     Map<String, Color> codeToBoldColourMap = new HashMap<>();
@@ -34,7 +30,7 @@ public class AnsiEscapeCodes {
      */
     private String withheldTextWithPartialMatch = "";
 
-    public AnsiEscapeCodes() {
+    public AnsiECParser() {
         // Populate the map with data
         codeToNormalColourMap.put("30", Color.rgb(0, 0, 0));
         codeToNormalColourMap.put("31", Color.rgb(170, 0, 0));
