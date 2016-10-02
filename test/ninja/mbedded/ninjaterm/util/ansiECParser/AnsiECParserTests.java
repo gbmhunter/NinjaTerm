@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.util.ansiECParser;
 
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
@@ -15,9 +14,9 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
- * @last-modified   2016-09-26
+ * @last-modified   2016-10-02
  */
-public class ParseStringTests {
+public class AnsiECParserTests {
 
     /**
      * Including this variable in class allows JavaFX objects to be created in tests.
@@ -40,11 +39,12 @@ public class ParseStringTests {
 
         ansiECParser.parse("default\u001B[31mred", streamedText);
 
-        assertEquals("default", streamedText.appendText);
+        assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.textNodes.size());
-        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
+        assertEquals(1, streamedText.getTextColours().size());
+
+        assertEquals(7, streamedText.getTextColours().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
     }
 
     @Test
@@ -52,15 +52,15 @@ public class ParseStringTests {
 
         ansiECParser.parse("default\u001B[31mred\u001B[32mgreen", streamedText);
 
-        assertEquals("default", streamedText.appendText);
+        assertEquals("defaultredgreen", streamedText.getText());
 
-        assertEquals(2, streamedText.textNodes.size());
+        assertEquals(2, streamedText.getTextColours().size());
 
-        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
+        assertEquals(7, streamedText.getTextColours().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
 
-        assertEquals("green", ((Text)streamedText.textNodes.get(1)).getText());
-        assertEquals(Color.rgb(0, 170, 0), ((Text)streamedText.textNodes.get(1)).getFill());
+        assertEquals(10, streamedText.getTextColours().get(1).position);
+        assertEquals(Color.rgb(0, 170, 0), streamedText.getTextColours().get(1).color);
     }
 
     @Test
@@ -68,12 +68,12 @@ public class ParseStringTests {
 
         ansiECParser.parse("default\u001B[31;1mred", streamedText);
 
-        assertEquals("default", streamedText.appendText);
+        assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.textNodes.size());
+        assertEquals(1, streamedText.getTextColours().size());
 
-        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
-        assertEquals(Color.rgb(255, 85, 85), ((Text)streamedText.textNodes.get(0)).getFill());
+        assertEquals(7, streamedText.getTextColours().get(0).position);
+        assertEquals(Color.rgb(255, 85, 85), streamedText.getTextColours().get(0).color);
     }
 
     @Test
@@ -81,15 +81,17 @@ public class ParseStringTests {
 
         ansiECParser.parse("default\u001B", streamedText);
 
-        assertEquals("default", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("default", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
 
         ansiECParser.parse("[31mred", streamedText);
 
-        assertEquals("default", streamedText.appendText);
-        assertEquals(1, streamedText.textNodes.size());
-        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
+        assertEquals("defaultred", streamedText.getText());
+
+        assertEquals(1, streamedText.getTextColours().size());
+
+        assertEquals(7, streamedText.getTextColours().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
     }
 
     @Test
@@ -97,20 +99,21 @@ public class ParseStringTests {
 
         ansiECParser.parse("default\u001B", streamedText);
 
-        assertEquals("default", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("default", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
 
         ansiECParser.parse("[", streamedText);
 
-        assertEquals("default", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("default", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
 
         ansiECParser.parse("31mred", streamedText);
 
-        assertEquals("default", streamedText.appendText);
-        assertEquals(1, streamedText.textNodes.size());
-        assertEquals("red", ((Text)streamedText.textNodes.get(0)).getText());
-        assertEquals(Color.rgb(170, 0, 0), ((Text)streamedText.textNodes.get(0)).getFill());
+        assertEquals("defaultred", streamedText.getText());
+
+        assertEquals(1, streamedText.getTextColours().size());
+        assertEquals(7, streamedText.getTextColours().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
     }
 
     @Test
@@ -118,8 +121,8 @@ public class ParseStringTests {
 
         ansiECParser.parse("abc\u001B[20mdef", streamedText);
 
-        assertEquals("abcdef", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abcdef", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 
     @Test
@@ -128,8 +131,8 @@ public class ParseStringTests {
         // Use a bogus first and second number
         ansiECParser.parse("abc\u001B[20;5mdef", streamedText);
 
-        assertEquals("abcdef", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abcdef", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 
     @Test
@@ -139,8 +142,8 @@ public class ParseStringTests {
         // sequence, it should be displayed in the output
         ansiECParser.parse("abc\u001B[20def", streamedText);
 
-        assertEquals("abc\u001B[20def", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc\u001B[20def", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 
     @Test
@@ -150,8 +153,8 @@ public class ParseStringTests {
         // sequence, it should be displayed in the output
         ansiECParser.parse("abc\u001B[def", streamedText);
 
-        assertEquals("abc\u001B[def", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc\u001B[def", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 
     @Test
@@ -159,13 +162,13 @@ public class ParseStringTests {
 
         ansiECParser.parse("abc\u001B[", streamedText);
 
-        assertEquals("abc", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
 
         ansiECParser.parse("def", streamedText);
 
-        assertEquals("abc\u001B[def", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc\u001B[def", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 
     @Test
@@ -173,12 +176,12 @@ public class ParseStringTests {
 
         ansiECParser.parse("abc\u001B[", streamedText);
 
-        assertEquals("abc", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
 
         ansiECParser.parse("12;\u001B[def", streamedText);
 
-        assertEquals("abc\u001B[12;\u001B[def", streamedText.appendText);
-        assertEquals(0, streamedText.textNodes.size());
+        assertEquals("abc\u001B[12;\u001B[def", streamedText.getText());
+        assertEquals(0, streamedText.getTextColours().size());
     }
 }

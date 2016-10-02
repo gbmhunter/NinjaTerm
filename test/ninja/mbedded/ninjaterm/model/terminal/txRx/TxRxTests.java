@@ -6,14 +6,12 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
-import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParserV2;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamFilterV2;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedTextV2;
+import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
+import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -32,21 +30,21 @@ public class TxRxTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
-    private AnsiECParserV2 ansiECParser;
-    private StreamedTextV2 ansiECParserOutput;
+    private AnsiECParser ansiECParser;
+    private StreamedText ansiECParserOutput;
 
-    private StreamFilterV2 streamFilter;
-    private StreamedTextV2 streamFilterOutput;
+    private StreamingFilter streamingFilter;
+    private StreamedText streamFilterOutput;
 
     private ObservableList<Node> textNodes;
 
     @Before
     public void setUp() throws Exception {
-        ansiECParser = new AnsiECParserV2();
-        ansiECParserOutput = new StreamedTextV2();
+        ansiECParser = new AnsiECParser();
+        ansiECParserOutput = new StreamedText();
 
-        streamFilter = new StreamFilterV2();
-        streamFilterOutput = new StreamedTextV2();
+        streamingFilter = new StreamingFilter();
+        streamFilterOutput = new StreamedText();
 
         textNodes = FXCollections.observableArrayList();
         Text text = new Text();
@@ -56,7 +54,7 @@ public class TxRxTests {
 
     private void runOneIteration(String inputData) {
         ansiECParser.parse(inputData, ansiECParserOutput);
-        streamFilter.streamFilter(ansiECParserOutput, streamFilterOutput, "a");
+        streamingFilter.parse(ansiECParserOutput, streamFilterOutput, "a");
         streamFilterOutput.shiftToTextNodes(textNodes);
     }
 

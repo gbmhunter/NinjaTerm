@@ -13,11 +13,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
-import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParserV2;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamFilter;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamFilterV2;
+import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedTextV2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,22 +58,22 @@ public class TxRx {
 
     int numOfCharsInRxNodes = 0;
 
-    private AnsiECParserV2 ansiECParser = new AnsiECParserV2();
+    private AnsiECParser ansiECParser = new AnsiECParser();
 
-    private StreamedTextV2 ansiParserOutput = new StreamedTextV2();
+    private StreamedText ansiParserOutput = new StreamedText();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
      * is changed, and the user wishes to re-run the filter over data stored in the buffer.
      */
-    private StreamedTextV2 totalAnsiParserOutput = new StreamedTextV2();
+    private StreamedText totalAnsiParserOutput = new StreamedText();
 
     /**
      * Used to provide filtering functionality to the RX data.
      */
-    private StreamFilterV2 streamFilter = new StreamFilterV2();
+    private StreamingFilter streamingFilter = new StreamingFilter();
 
-    private StreamedTextV2 filterOutput = new StreamedTextV2();
+    private StreamedText filterOutput = new StreamedText();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
@@ -271,7 +268,7 @@ public class TxRx {
         //==============================================//
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
+        streamingFilter.parse(ansiParserOutput, filterOutput, filters.filterText.get());
 
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {

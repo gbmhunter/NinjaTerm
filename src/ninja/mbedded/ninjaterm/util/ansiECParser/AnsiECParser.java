@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.util.ansiECParser;
 
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
@@ -71,11 +70,6 @@ public class AnsiECParser {
 
         System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
-        // Make sure there is at least one node in the list
-        /*if(outputStreamedText.size() == 0) {
-            outputStreamedText.add(new Text());
-        }*/
-
         int numCharsAddedToNodes = 0;
 
         // Prepend withheld text onto the end of the input string
@@ -93,7 +87,7 @@ public class AnsiECParser {
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
-            outputStreamedText.addTextToStream(preText);
+            outputStreamedText.append(preText);
 
             numCharsAddedToNodes += preText.length();
 
@@ -130,9 +124,7 @@ public class AnsiECParser {
             }
 
             // Create new Text object with this new color, and add to the text nodes
-            Text newText = new Text();
-            newText.setFill(color);
-            outputStreamedText.textNodes.add(newText);
+            outputStreamedText.setColorToBeInsertedOnNextChar(color);
 
             currPositionInString = m.end();
 
@@ -159,13 +151,13 @@ public class AnsiECParser {
         if (startIndexOfPartialMatch == -1) {
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
             //addTextToLastNode(outputStreamedText, charsToAppend);
-            outputStreamedText.addTextToStream(charsToAppend);
+            outputStreamedText.append(charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
             //addTextToLastNode(outputStreamedText, charsToAppend);
-            outputStreamedText.addTextToStream(charsToAppend);
+            outputStreamedText.append(charsToAppend);
             numCharsAddedToNodes += charsToAppend.length();
         }
 
@@ -177,19 +169,6 @@ public class AnsiECParser {
 
         return numCharsAddedToNodes;
     }
-
-    /*private void addTextToLastNode(ObservableList<Node> observableList, String text) {
-
-        // debug
-        for(byte singleChar : text.getBytes()) {
-            if(singleChar == 0x1B) {
-                continue;
-            }
-        }
-
-        Text lastTextNode = (Text) observableList.get(observableList.size() - 1);
-        lastTextNode.setText(lastTextNode.getText() + text);
-    }*/
 
     private String[] extractNumbersAsArray(String ansiEscapeCode) {
 

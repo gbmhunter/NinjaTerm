@@ -22,8 +22,6 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedTextV2;
-import ninja.mbedded.ninjaterm.util.streamedText.TextColourV2;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -431,7 +429,7 @@ public class TxRxViewController {
         });
     }
 
-    private void newStreamedTextListener(StreamedTextV2 streamedText) {
+    private void newStreamedTextListener(StreamedText streamedText) {
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
         streamedText.shiftToTextNodes(observableList);
     }

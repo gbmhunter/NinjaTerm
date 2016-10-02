@@ -1,6 +1,7 @@
-package ninja.mbedded.ninjaterm.util.streamedText;
+package ninja.mbedded.ninjaterm.util.streamingFilter;
 
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,9 +13,7 @@ import java.util.regex.Pattern;
  * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
  * object.
  */
-public class StreamFilterV2 {
-
-    //private StreamedText heldStreamedText = new StreamedText();
+public class StreamingFilter {
 
     private boolean releaseTextOnCurrLine = false;
 
@@ -23,12 +22,12 @@ public class StreamFilterV2 {
      *
      * @param filterText Text to filter by.
      */
-    public void streamFilter(
-            StreamedTextV2 inputStreamedText,
-            StreamedTextV2 outputStreamedText,
+    public void parse(
+            StreamedText inputStreamedText,
+            StreamedText outputStreamedText,
             String filterText) {
 
-        System.out.println(getClass().getSimpleName() + ".streamFilter() called with:");
+        System.out.println(getClass().getSimpleName() + ".parse() called with:");
         System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
         System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
@@ -45,19 +44,8 @@ public class StreamFilterV2 {
             return;
         }
 
-        // Append all input streamed text onto the end of the held streamed text
-        //StreamedText.shiftChars(inputStreamedText, heldStreamedText, inputStreamedText.numChars());
-
-        // heldTextForLastNode + all text in heldNodes should equal a line of text being held intil
-        // a pattern match occurs
-        //String serializedHeldText = heldStreamedText.serialize();
-        //System.out.println("Held text serialised. serializedHeldText = " + Debugging.convertNonPrintable(serializedHeldText));
-
         // Search for new line characters
         String lines[] = inputStreamedText.getText().split("(?<=[\\n])");
-
-        // This keeps track of where we are relative to the start of the
-        // heldLineOfText variable
 
         for (String line : lines) {
 
@@ -108,7 +96,7 @@ public class StreamFilterV2 {
             }
         } // for (String line : lines)
 
-        System.out.println(getClass().getSimpleName() + ".streamFilter() finished. Variables are now:");
+        System.out.println(getClass().getSimpleName() + ".parse() finished. Variables are now:");
         System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
         System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 

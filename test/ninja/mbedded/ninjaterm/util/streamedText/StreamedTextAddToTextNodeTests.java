@@ -27,12 +27,12 @@ public class StreamedTextAddToTextNodeTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
-    private StreamedTextV2 streamedText;
+    private StreamedText streamedText;
     private ObservableList<Node> textNodes;
 
     @Before
     public void setUp() throws Exception {
-        streamedText = new StreamedTextV2();
+        streamedText = new StreamedText();
         textNodes = FXCollections.observableArrayList();
 
         Text text = new Text();

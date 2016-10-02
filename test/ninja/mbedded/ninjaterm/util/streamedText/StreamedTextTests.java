@@ -1,9 +1,7 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,7 +13,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-09-29
+ * @last-modified   2016-10-02
  */
 public class StreamedTextTests {
 
@@ -37,155 +35,173 @@ public class StreamedTextTests {
     @Test
     public void extractAppendTextTest() throws Exception {
 
-        inputStreamedText.appendText = "1234";
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 2);
+        inputStreamedText.append("1234");
 
-        assertEquals("12", outputStreamedText.appendText);
-        assertEquals(0, inputStreamedText.textNodes.size());
+        outputStreamedText.shiftCharsIn(inputStreamedText, 2);
+
+        assertEquals("34", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
+        assertEquals("12", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getTextColours().size());
     }
 
     @Test
     public void extractAppendAndNodeTextTest() throws Exception {
 
-        inputStreamedText.appendText = "1234";
-        inputStreamedText.textNodes.add(new Text("5678"));
+        inputStreamedText.append("12345678");
+        inputStreamedText.addColour(4, Color.RED);
 
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 6);
-
-        // Check output
-        assertEquals("1234", outputStreamedText.appendText);
-        assertEquals("56", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        outputStreamedText.shiftCharsIn(inputStreamedText, 6);
 
         // Check input
-        assertEquals("78", inputStreamedText.appendText);
-        assertEquals(0, inputStreamedText.textNodes.size());
+        assertEquals("78", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
+        // Check output
+        assertEquals("123456", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getTextColours().size());
+        assertEquals(4, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+
     }
 
     @Test
-    public void extractExactAmountTest() throws Exception {
+    public void extractJustBeforeColorTest() throws Exception {
 
-        inputStreamedText.appendText = "123";
-        inputStreamedText.textNodes.add(new Text("456"));
-        inputStreamedText.textNodes.add(new Text("789"));
+        inputStreamedText.append("123456789");
+        inputStreamedText.addColour(6, Color.RED);
 
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 6);
-
-        // Check output
-        assertEquals("123", outputStreamedText.appendText);
-        assertEquals("456", ((Text)outputStreamedText.textNodes.get(0)).getText());
+        outputStreamedText.shiftCharsIn(inputStreamedText, 6);
 
         // Check input
-        assertEquals("", inputStreamedText.appendText);
-        assertEquals(1, inputStreamedText.textNodes.size());
-        assertEquals("789", ((Text)inputStreamedText.textNodes.get(0)).getText());
+        assertEquals("789", inputStreamedText.getText());
+        assertEquals(1, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, inputStreamedText.getTextColours().get(0).color);
+
+        // Check output
+        assertEquals("123456", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getTextColours().size());
+    }
+
+    @Test
+    public void extractJustAfterColorTest() throws Exception {
+
+        inputStreamedText.append("123456789");
+        inputStreamedText.addColour(6, Color.RED);
+
+        outputStreamedText.shiftCharsIn(inputStreamedText, 7);
+
+        // Check input
+        assertEquals("89", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
+        // Check output
+        assertEquals("1234567", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getTextColours().size());
+        assertEquals(6, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
     }
 
     @Test
     public void outputAlreadyPopulatedTest() throws Exception {
 
-        outputStreamedText.appendText = "12";
-        outputStreamedText.textNodes.add(new Text("34"));
+        inputStreamedText.append("56789");
+        inputStreamedText.addColour(3, Color.RED);
 
-        inputStreamedText.appendText = "567";
-        inputStreamedText.textNodes.add(new Text("89"));
+        outputStreamedText.append("1234");
+        outputStreamedText.addColour(2, Color.GREEN);
 
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 4);
-
-        // Check output
-        assertEquals("12", outputStreamedText.appendText);
-        assertEquals(2, outputStreamedText.textNodes.size());
-        assertEquals("34567", ((Text)outputStreamedText.textNodes.get(0)).getText());
-        assertEquals("8", ((Text)outputStreamedText.textNodes.get(1)).getText());
+        outputStreamedText.shiftCharsIn(inputStreamedText, 4);
 
         // Check input, should be 1 char left over
-        assertEquals("9", inputStreamedText.appendText);
-        assertEquals(0, inputStreamedText.textNodes.size());
+        assertEquals("9", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
+        // Check output
+        assertEquals("12345678", outputStreamedText.getText());
+        assertEquals(2, outputStreamedText.getTextColours().size());
+
+        assertEquals(2, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.GREEN, outputStreamedText.getTextColours().get(0).color);
+
+        assertEquals(7, outputStreamedText.getTextColours().get(1).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(1).color);
     }
 
     @Test
     public void removeFromAppendTextTest() throws Exception {
 
-        inputStreamedText.appendText = "12345";
-        inputStreamedText.textNodes.add(new Text("6"));
-        inputStreamedText.textNodes.add(new Text("789"));
+        inputStreamedText.append("123456789");
+        inputStreamedText.addColour(5, Color.RED);
+        inputStreamedText.addColour(6, Color.GREEN);
 
         inputStreamedText.removeChars(3);
 
-        // Check input, should be 1 char left over
-        assertEquals("45", inputStreamedText.appendText);
-        assertEquals(2, inputStreamedText.textNodes.size());
-        assertEquals("6", ((Text)inputStreamedText.textNodes.get(0)).getText());
-        assertEquals("789", ((Text)inputStreamedText.textNodes.get(1)).getText());
+        assertEquals("456789", inputStreamedText.getText());
+        assertEquals(2, inputStreamedText.getTextColours().size());
+
+        assertEquals(2, inputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, inputStreamedText.getTextColours().get(0).color);
+
+        assertEquals(3, inputStreamedText.getTextColours().get(1).position);
+        assertEquals(Color.GREEN, inputStreamedText.getTextColours().get(1).color);
     }
 
     @Test
     public void removeFromAppendAndNodesTest() throws Exception {
 
-        inputStreamedText.appendText = "12";
-        inputStreamedText.textNodes.add(new Text("34"));
-        inputStreamedText.textNodes.add(new Text("567"));
+        inputStreamedText.append("1234567");
+        inputStreamedText.addColour(2, Color.RED);
+        inputStreamedText.addColour(4, Color.GREEN);
 
         inputStreamedText.removeChars(3);
 
-        // Check input, should be 1 char left over
-        assertEquals("", inputStreamedText.appendText);
-        assertEquals(2, inputStreamedText.textNodes.size());
-        assertEquals("4", ((Text)inputStreamedText.textNodes.get(0)).getText());
-        assertEquals("567", ((Text)inputStreamedText.textNodes.get(1)).getText());
+        assertEquals("4567", inputStreamedText.getText());
+        assertEquals(1, inputStreamedText.getTextColours().size());
+
+        assertEquals(1, inputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.GREEN, inputStreamedText.getTextColours().get(0).color);
     }
 
     @Test
-    public void shiftColourTest() throws Exception {
+    public void colorNoTextTest() throws Exception {
+        inputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
 
-        Text text = new Text();
-        text.setFill(Color.RED);
-        inputStreamedText.textNodes.add(text);
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 0);
+        outputStreamedText.shiftCharsIn(inputStreamedText, 0);
 
-        assertEquals("", outputStreamedText.appendText);
-        assertEquals(1, outputStreamedText.textNodes.size());
-        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
-        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(null, inputStreamedText.getColorToBeInsertedOnNextChar());
+
+        assertEquals("", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(Color.RED, outputStreamedText.getColorToBeInsertedOnNextChar());
     }
 
     @Test
-    public void shiftColour2Test() throws Exception {
+    public void colorToAddOnNextCharInOutputTest() throws Exception {
+        inputStreamedText.append("123");
+        outputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
 
-        inputStreamedText.appendText = "abc";
+        outputStreamedText.shiftCharsIn(inputStreamedText, 3);
 
-        Text text = new Text();
-        text.setFill(Color.RED);
-        inputStreamedText.textNodes.add(text);
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(null, inputStreamedText.getColorToBeInsertedOnNextChar());
 
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 3);
+        assertEquals("123", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getTextColours().size());
 
-        assertEquals("abc", outputStreamedText.appendText);
-        assertEquals(1, outputStreamedText.textNodes.size());
-        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
-        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
-    }
+        assertEquals(0, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
-    @Test
-    public void shiftColour3Test() throws Exception {
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
 
-        inputStreamedText.appendText = "abc";
-
-        Text text1 = new Text();
-        text1.setFill(Color.RED);
-        inputStreamedText.textNodes.add(text1);
-
-        Text text2 = new Text();
-        text2.setFill(Color.GREEN);
-        inputStreamedText.textNodes.add(text2);
-
-        StreamedText.shiftChars(inputStreamedText, outputStreamedText, 3);
-
-        assertEquals("abc", outputStreamedText.appendText);
-        assertEquals(2, outputStreamedText.textNodes.size());
-        assertEquals("", ((Text)outputStreamedText.textNodes.get(0)).getText());
-        assertEquals(Color.RED, ((Text)outputStreamedText.textNodes.get(0)).getFill());
-        assertEquals("", ((Text)outputStreamedText.textNodes.get(1)).getText());
-        assertEquals(Color.GREEN, ((Text)outputStreamedText.textNodes.get(1)).getFill());
     }
 
 }
