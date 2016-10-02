@@ -14,4 +14,8 @@ public class TextColour {
         this.position = position;
         this.color = color;
     }
+
+    public TextColour(TextColour textColour) {
+        this(textColour.position, textColour.color);
+    }
 }

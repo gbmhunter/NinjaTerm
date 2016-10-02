@@ -112,6 +112,11 @@ public class StreamedText {
         checkAllColoursAreInOrder();
     }
 
+    private enum CopyOrShift {
+        COPY,
+        SHIFT,
+    }
+
     /**
      * The method copies the specified number of chars from the input into the output.
      * It copies chars from the "to append" String first, and then starts copying chars from the first of the
@@ -120,21 +125,86 @@ public class StreamedText {
      * It also copies any chars from still existing input nodes into the "to append" String
      * as appropriate.
      *
-     * @param inputStreamedText
      * @param numChars
      * @return
      */
-    public static void copyChars(StreamedText inputStreamedText, StreamedText outputStreamedText, int numChars) {
+    private void copyOrShiftCharsFrom(StreamedText inputStreamedText, int numChars, CopyOrShift copyOrShift) {
 
-        if (numChars < 0)
-            throw new IllegalArgumentException("numChars cannot be negative.");
+        if(numChars > inputStreamedText.getText().length())
+            throw new IllegalArgumentException("numChars is greater than the number of characters in inputStreamedText.");
 
+        for (ListIterator<TextColour> iter = inputStreamedText.textColours.listIterator(); iter.hasNext(); ) {
+            TextColour oldTextColour = iter.next();
+            TextColour newTextColor;
 
+            if(copyOrShift == CopyOrShift.COPY) {
+                // Copy text color object
+                newTextColor = new TextColour(oldTextColour);
+            } else if(copyOrShift == CopyOrShift.SHIFT) {
+                // We can just modify the existing object, since we are shifting
+                newTextColor = oldTextColour;
+            } else {
+                throw new RuntimeException("copyOrShift not recognised.");
+            }
+
+            // Check if we have reached TextColour objects which index characters beyond the range
+            // we are shifting, and if so, break out of this loop
+            if(oldTextColour.position < numChars) {
+
+                // We need to offset set the position by the length of the existing text
+                newTextColor.position = oldTextColour.position + text.length();
+                // Now add this TextColour object to this objects list, and remove from the input
+                textColours.add(newTextColor);
+
+                if(copyOrShift == CopyOrShift.SHIFT) {
+                    iter.remove();
+                }
+
+            } else {
+                // We are beyond the range that is being shifted, so adjust the position, but
+                // don't shift the object to this list (keep in input)
+                if(copyOrShift == CopyOrShift.SHIFT) {
+                    newTextColor.position -= numChars;
+                }
+            }
+        }
+
+        text = text + inputStreamedText.text.substring(0, numChars);
+
+        if(copyOrShift == CopyOrShift.SHIFT) {
+            inputStreamedText.text = inputStreamedText.text.substring(numChars, inputStreamedText.text.length());
+        }
+
+        // Apply the colour to be inserted on next char, if at least one char was placed in the output
+        if((numChars > 0) && (this.colorToBeInsertedOnNextChar != null)) {
+
+            // Check if a color is already assigned to this character. If so, do not
+            // overwrite
+            if((this.textColours.size() == 0) || (this.textColours.get(0).position != 0)) {
+                // Insert new TextColour object at start of list
+                this.textColours.add(0, new TextColour(0, this.colorToBeInsertedOnNextChar));
+            }
+
+            // We have applied the color to a character, remove the placeholder
+            this.colorToBeInsertedOnNextChar = null;
+        }
+
+        // Transfer the "color to be inserted on next char", if one exists in input
+        // This could overwrite an existing "color to be inserted on next char" in the output, if
+        // no chars were shifted
+        if(inputStreamedText.getColorToBeInsertedOnNextChar() != null) {
+            this.setColorToBeInsertedOnNextChar(inputStreamedText.getColorToBeInsertedOnNextChar());
+
+            if(copyOrShift == CopyOrShift.SHIFT) {
+                inputStreamedText.setColorToBeInsertedOnNextChar(null);
+            }
+        }
+
+        checkAllColoursAreInOrder();
     }
 
-    public static void copyAnyEmptyNodes(StreamedText inputStreamedText, StreamedText outputStreamedText) {
-
-
+    public void copyCharsFrom(StreamedText inputStreamedText, int numChars) {
+        copyOrShiftCharsFrom(inputStreamedText, numChars, CopyOrShift.COPY);
     }
 
     /**

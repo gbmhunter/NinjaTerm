@@ -261,7 +261,7 @@ public class TxRx {
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run
         // it on buffered data
-        //totalAnsiParserOutput.copyCharsTo(ansiParserOutput, ansiParserOutput.numChars());
+        totalAnsiParserOutput.copyCharsFrom(ansiParserOutput, ansiParserOutput.getText().length());
 
         //==============================================//
         //================== FILTERING =================//
