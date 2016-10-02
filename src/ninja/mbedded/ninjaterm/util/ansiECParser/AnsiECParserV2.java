@@ -124,7 +124,7 @@ public class AnsiECParserV2 {
             }
 
             // Create new Text object with this new color, and add to the text nodes
-            outputStreamedText.addColour(outputStreamedText.getText().length(), color);
+            outputStreamedText.setColorToBeInsertedOnNextChar(color);
 
             currPositionInString = m.end();
 

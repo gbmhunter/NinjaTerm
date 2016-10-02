@@ -83,7 +83,7 @@ public class StreamedTextV2 {
 
             // Check if a color is already assigned to this character. If so, do not
             // overwrite
-            if(this.textColours.get(0).position != 0) {
+            if((this.textColours.size() == 0) || (this.textColours.get(0).position != 0)) {
                 // Insert new TextColour object at start of list
                 this.textColours.add(0, new TextColourV2(0, this.colorToBeInsertedOnNextChar));
             }
@@ -96,7 +96,7 @@ public class StreamedTextV2 {
         // This could overwrite an existing "color to be inserted on next char" in the output, if
         // no chars were shifted
         if(inputStreamedText.getColorToBeInsertedOnNextChar() != null) {
-            this.addColour(this.getText().length(), inputStreamedText.getColorToBeInsertedOnNextChar());
+            this.setColorToBeInsertedOnNextChar(inputStreamedText.getColorToBeInsertedOnNextChar());
             inputStreamedText.setColorToBeInsertedOnNextChar(null);
         }
 
@@ -140,22 +140,37 @@ public class StreamedTextV2 {
     public void append(String textToAppend) {
         System.out.println("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
 
+        // Passing in an empty string is not invalid, but we don't have to do anything,
+        // so just return.
+        if(textToAppend.equals(""))
+            return;
+
         text = text + textToAppend;
 
+        // Apply the "color to be inserted on next char" if there is one to apply.
+        // This will never be applied if no chars are inserted because of the return above
+        if(colorToBeInsertedOnNextChar != null) {
+            addColour(text.length() - textToAppend.length(), colorToBeInsertedOnNextChar);
+            colorToBeInsertedOnNextChar = null;
+        }
     }
 
     public void addColour(int position, Color color) {
 
-        if(position < 0 || position > text.length())
-            throw new RuntimeException("position was either too small or too large.");
+        if(position < 0 || position > text.length() - 1)
+            throw new IllegalArgumentException("position was either too small or too large.");
 
-        // Check if colour needs to be added
-        if(position == text.length()) {
-            colorToBeInsertedOnNextChar = color;
+        // Make sure all the TextColor objects in the list remain in order
+        if(textColours.size() != 0 && textColours.get(textColours.size() - 1).position > position)
+            throw new IllegalArgumentException("position was not greater than all existing positions.");
+
+        // Check if we are overwriting the last TextColor object (if they apply to the same text position),
+        // or we are needed to create a new TextColor object
+        if(textColours.size() != 0 && textColours.get(textColours.size() - 1).position == position) {
+            textColours.get(textColours.size() - 1).color = color;
         } else {
             textColours.add(new TextColourV2(position, color));
         }
-
     }
 
 

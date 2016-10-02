@@ -168,7 +168,7 @@ public class StreamedTextV2Tests {
 
     @Test
     public void colorNoTextTest() throws Exception {
-        inputStreamedText.addColour(0, Color.RED);
+        inputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
         assertEquals("", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getTextColours().size());
         assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
@@ -182,6 +182,26 @@ public class StreamedTextV2Tests {
         assertEquals("", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
         assertEquals(Color.RED, outputStreamedText.getColorToBeInsertedOnNextChar());
+    }
+
+    @Test
+    public void colorToAddOnNextCharInOutputTest() throws Exception {
+        inputStreamedText.append("123");
+        outputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+
+        outputStreamedText.shiftCharsIn(inputStreamedText, 3);
+
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(null, inputStreamedText.getColorToBeInsertedOnNextChar());
+
+        assertEquals("123", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getTextColours().size());
+
+        assertEquals(0, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
 
     }
 
