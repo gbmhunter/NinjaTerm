@@ -27,7 +27,7 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-21
- * @last-modified 2016-09-23
+ * @last-modified 2016-10-02
  */
 public class FiltersViewController {
 
@@ -65,7 +65,7 @@ public class FiltersViewController {
         //==============================================//
 
         // Bind the text in the filter text textfield to the string in the model
-        filterTextTextField.textProperty().bindBidirectional(terminal.txRx.filters.filterText);
+        Bindings.bindBidirectional(filterTextTextField.textProperty(), terminal.txRx.filters.filterText);
 
         //==============================================//
         //=============== RADIOBUTTON SETUP ============//

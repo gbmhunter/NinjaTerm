@@ -3,12 +3,16 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx.filters;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * Model containing data and logic for the filtering of TX/RX data.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-09-30
+ * @last-modified   2016-10-02
  */
 public class Filters {
 

@@ -225,7 +225,7 @@ public class TerminalViewController {
             // Add a listener to run when RX data is received from the COM port
             onRxDataListener = (rxData -> {
 
-                //System.out.println("rxData = " + Arrays.toString(rxData));
+                //System.out.println("rawRxData = " + Arrays.toString(rawRxData));
                 String rxText;
                 rxText = decoder.parse(rxData);
 

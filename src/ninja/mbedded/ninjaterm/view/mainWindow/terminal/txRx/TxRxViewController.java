@@ -419,14 +419,6 @@ public class TxRxViewController {
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
-
-        //==============================================//
-        //=== INSTALL HANDLER FOR FILTER TEXT CHANGE ===//
-        //==============================================//
-
-        terminal.txRx.filters.filterText.addListener((observable, oldValue, newValue) -> {
-            filterTextChanged(newValue);
-        });
     }
 
     private void newStreamedTextListener(StreamedText streamedText) {
@@ -606,10 +598,4 @@ public class TxRxViewController {
 
         terminal.txRx.handleKeyPressed((byte)keyEvent.getCharacter().charAt(0));
     }
-
-    private void filterTextChanged(String newFilterText) {
-        // We need to search through the entire RX text
-
-    }
-
 }

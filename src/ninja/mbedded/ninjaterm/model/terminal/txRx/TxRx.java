@@ -47,7 +47,7 @@ public class TxRx {
     /**
      * Initialise with "" so that it does not display "null".
      */
-    public SimpleStringProperty rxData = new SimpleStringProperty("");
+    public SimpleStringProperty rawRxData = new SimpleStringProperty("");
 
     /**
      * Because we need to support rich text, we need to use a list of "Nodes" to
@@ -96,6 +96,10 @@ public class TxRx {
             if(newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
                 updateBufferedRxDataWithNewFilterPattern();
             }
+        });
+
+        filters.filterText.addListener((observable, oldValue, newValue) -> {
+            filterTextChanged(newValue);
         });
     }
 
@@ -226,11 +230,11 @@ public class TxRx {
 
         // Echo TX data into TX/RX pane
         if(display.localTxEcho.get()) {
-            rxData.set(rxData.get() + dataAsString);
+            rawRxData.set(rawRxData.get() + dataAsString);
 
-            if(rxData.get().length() > display.bufferSizeChars.get()) {
+            if(rawRxData.get().length() > display.bufferSizeChars.get()) {
                 // Remove old characters from buffer
-                rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
+                rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
             }
         }
     }
@@ -242,12 +246,12 @@ public class TxRx {
      * @param data
      */
     public void addRxData(String data) {
-        rxData.set(rxData.get() + data);
+        rawRxData.set(rawRxData.get() + data);
 
         // Truncate if necessary
-        if(rxData.get().length() > display.bufferSizeChars.get()) {
+        if(rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
-            rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
+            rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
         }
 
         //==============================================//
@@ -306,9 +310,9 @@ public class TxRx {
             txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if(rxData.get().length() > display.bufferSizeChars.get()) {
+        if(rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
-            rxData.set(removeOldChars(rxData.get(), display.bufferSizeChars.get()));
+            rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
         }
 
 
@@ -329,6 +333,19 @@ public class TxRx {
         // Emit RX data cleared event
         for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.go();
+        }
+    }
+
+    private void filterTextChanged(String filterText) {
+        if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
+            // We need to run the entire ANSI parser output back through the filter
+            streamingFilter.parse(totalAnsiParserOutput, filterOutput, filters.filterText.get());
+
+            // Notify that there is new UI data to display
+            for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+                newStreamedTextListener.run(filterOutput);
+            }
+
         }
     }
 
