@@ -56,6 +56,9 @@ public class StreamedTextV2 {
      */
     public void shiftCharsIn(StreamedTextV2 inputStreamedText, int numChars) {
 
+        if(numChars > inputStreamedText.getText().length())
+            throw new IllegalArgumentException("numChars is greater than the number of characters in inputStreamedText.");
+
         for (ListIterator<TextColourV2> iter = inputStreamedText.textColours.listIterator(); iter.hasNext(); ) {
             TextColourV2 textColourV2 = iter.next();
 

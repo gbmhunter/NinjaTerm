@@ -97,7 +97,7 @@ public class StreamFilterV2 {
 
                 if(hasNewLineChar(line)) {
                     System.out.println("Deleting line.");
-                    outputStreamedText.removeChars(line.length());
+                    inputStreamedText.removeChars(line.length());
                 }
 
             }

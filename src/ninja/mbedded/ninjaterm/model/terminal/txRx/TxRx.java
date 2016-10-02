@@ -15,6 +15,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParserV2;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamFilter;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamFilterV2;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedTextV2;
 
@@ -66,12 +67,12 @@ public class TxRx {
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
      * is changed, and the user wishes to re-run the filter over data stored in the buffer.
      */
-    private StreamedText totalAnsiParserOutput = new StreamedText();
+    private StreamedTextV2 totalAnsiParserOutput = new StreamedTextV2();
 
     /**
      * Used to provide filtering functionality to the RX data.
      */
-    private StreamFilter streamFilter = new StreamFilter();
+    private StreamFilterV2 streamFilter = new StreamFilterV2();
 
     public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
@@ -269,13 +270,13 @@ public class TxRx {
         StreamedTextV2 filterOutput = new StreamedTextV2();
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        /*if(filters.filterText.get().equals("")) {
+        if(filters.filterText.get().equals("")) {
             //filteredRxData.set(rxData.get());
             filterOutput = ansiParserOutput;
         } else {
             //filteredRxData.set(StringFilter.filterByLine(rxData.get(), filters.filterText.get()));
             streamFilter.streamFilter(ansiParserOutput, filterOutput, filters.filterText.get());
-        }*/
+        }
 
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
