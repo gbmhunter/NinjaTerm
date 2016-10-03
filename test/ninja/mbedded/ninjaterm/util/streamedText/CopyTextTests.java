@@ -174,4 +174,48 @@ public class CopyTextTests {
         assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
 
     }
+
+    @Test
+    public void copyJustColorTest() throws Exception {
+
+        inputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 0);
+
+        assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
+        assertEquals(Color.RED, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+        inputStreamedText.clear();
+        inputStreamedText.append("abc");
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 3);
+
+        assertEquals("abc", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getTextColours().size());
+        assertEquals(0, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+    }
+
+    @Test
+    public void copyWithPreexistingDataTest() throws Exception {
+
+        inputStreamedText.append("5678");
+
+        outputStreamedText.append("1234");
+        outputStreamedText.addColour(1, Color.RED);
+        outputStreamedText.setColorToBeInsertedOnNextChar(Color.GREEN);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, inputStreamedText.getText().length());
+
+        assertEquals("12345678", outputStreamedText.getText());
+        assertEquals(2, outputStreamedText.getTextColours().size());
+        assertEquals(1, outputStreamedText.getTextColours().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(4, outputStreamedText.getTextColours().get(1).position);
+        assertEquals(Color.GREEN, outputStreamedText.getTextColours().get(1).color);
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+    }
 }

@@ -54,6 +54,7 @@ public class StreamedText {
     }
 
     public void setColorToBeInsertedOnNextChar(Color color) {
+        System.out.println(getClass().getSimpleName() + "setColorToBeInsertedOnNextChar() called with color = " + color);
         this.colorToBeInsertedOnNextChar = color;
     }
 
@@ -155,6 +156,16 @@ public class StreamedText {
         if(numChars > inputStreamedText.getText().length())
             throw new IllegalArgumentException("numChars is greater than the number of characters in inputStreamedText.");
 
+        // Apply the colour to be inserted on next char, if at least one char is
+        // going to be placed into this StreamedText object
+        if((numChars > 0) && (this.colorToBeInsertedOnNextChar != null)) {
+
+            this.textColours.add(new TextColour(this.text.length(), this.colorToBeInsertedOnNextChar));
+
+            // We have applied the color to a character, remove the placeholder
+            this.colorToBeInsertedOnNextChar = null;
+        }
+
         for (ListIterator<TextColour> iter = inputStreamedText.textColours.listIterator(); iter.hasNext(); ) {
             TextColour oldTextColour = iter.next();
             TextColour newTextColor;
@@ -197,19 +208,7 @@ public class StreamedText {
             inputStreamedText.text = inputStreamedText.text.substring(numChars, inputStreamedText.text.length());
         }
 
-        // Apply the colour to be inserted on next char, if at least one char was placed in the output
-        if((numChars > 0) && (this.colorToBeInsertedOnNextChar != null)) {
 
-            // Check if a color is already assigned to this character. If so, do not
-            // overwrite
-            if((this.textColours.size() == 0) || (this.textColours.get(0).position != 0)) {
-                // Insert new TextColour object at start of list
-                this.textColours.add(0, new TextColour(0, this.colorToBeInsertedOnNextChar));
-            }
-
-            // We have applied the color to a character, remove the placeholder
-            this.colorToBeInsertedOnNextChar = null;
-        }
 
         // Transfer the "color to be inserted on next char", if one exists in input
         // This could overwrite an existing "color to be inserted on next char" in the output, if
@@ -235,7 +234,7 @@ public class StreamedText {
      * @param textToAppend
      */
     public void append(String textToAppend) {
-        System.out.println("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
+//        System.out.println("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
 
         // Passing in an empty string is not invalid, but we don't have to do anything,
         // so just return.
@@ -276,7 +275,18 @@ public class StreamedText {
 
     @Override
     public String toString() {
-        return text;
+        String output = " { ";
+
+        output += "text: \"" + text + "\", ";
+        int i = 0;
+        for(TextColour textColour : textColours) {
+            output += " textColor[" + i + "]: ," + textColour.toString();
+            i++;
+        }
+
+        output += "colorToBeInsertedOnNextChar: " + colorToBeInsertedOnNextChar;
+        output += " }";
+        return output;
     }
 
     public void shiftToTextNodes(ObservableList<Node> existingTextNodes) {
@@ -342,6 +352,37 @@ public class StreamedText {
 
             charIndex = textColour.position;
         }
+    }
+
+    public boolean checkAllNewLinesHaveColors() {
+
+        // Check all characters but the last one (since there can't
+        // be any char after this new line to have a color attached to it)
+        for(int x = 0; x < text.length() - 1; x++) {
+
+            if (text.charAt(x) != '\n') {
+                continue;
+            }
+
+            // Look for entry in color array
+            if (!isColorAt(x + 1)) {
+                System.out.println("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
+                return false;
+            }
+        }
+
+        // If we make it here, all new lines must of had colors
+        return true;
+    }
+
+    public boolean isColorAt(int charIndex) {
+        for(TextColour textColour : textColours) {
+            if(textColour.position == charIndex)
+                return true;
+        }
+
+        // If we make it here, no color at the specified index was found!
+        return false;
     }
 
 }

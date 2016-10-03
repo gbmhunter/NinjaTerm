@@ -74,7 +74,9 @@ public class TextInListUtilsTests {
         observableList.add(new Text("5678"));
 
         TextNodeInList.trimTextNodesFromStart(observableList, 8);
-        assertEquals(0, observableList.size());
+
+        // Note that by design, one empty TextNode is left
+        assertEquals(1, observableList.size());
     }
 
 }

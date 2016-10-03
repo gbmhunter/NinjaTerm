@@ -65,7 +65,11 @@ public class AnsiECParser {
      */
     public void parse(String inputString, StreamedText outputStreamedText) {
 
-        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
+//        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
+
+//        if(inputString.charAt(inputString.length() - 1) == 'm') {
+//            int bogus = 0;
+//        }
 
         //int numCharsAdded = 0;
 
@@ -80,7 +84,7 @@ public class AnsiECParser {
 
         //m.reset();
         while (m.find(currPositionInString)) {
-            //System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
+//            System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
@@ -114,11 +118,14 @@ public class AnsiECParser {
             Color color = correctMapToUse.get(numbers[0]);
 
             if(color == null) {
+                System.out.println("Escape sequence was not supported!");
                 // The number in the escape sequence was not recognised. Update the current position in input string
                 // to skip over this escape sequence, and continue to next iteration of loop.
                 currPositionInString = m.end();
                 continue;
             }
+
+//            System.out.println("Valid escape seqeunce found.");
 
             // Create new Text object with this new color, and add to the text nodes
             outputStreamedText.setColorToBeInsertedOnNextChar(color);
@@ -146,13 +153,16 @@ public class AnsiECParser {
         // There might be remaining input after the last ANSI escpe code has been processed.
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
+
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
+//            System.out.println("No partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
             //addTextToLastNode(outputStreamedText, charsToAppend);
             outputStreamedText.append(charsToAppend);
             //numCharsAdded += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
+//            System.out.println("Partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
             //addTextToLastNode(outputStreamedText, charsToAppend);
             outputStreamedText.append(charsToAppend);
             //numCharsAdded += charsToAppend.length();
@@ -161,10 +171,9 @@ public class AnsiECParser {
         // Finally, save the partial match for the next run
         if(startIndexOfPartialMatch != -1) {
             withheldTextWithPartialMatch = withheldCharsAndInputString.substring(startIndexOfPartialMatch);
-            //System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
+//            System.out.println("Withholding text. withheldTextWithPartialMatch = " + Debugging.convertNonPrintable(withheldTextWithPartialMatch));
         }
 
-        //return numCharsAdded;
     }
 
     private String[] extractNumbersAsArray(String ansiEscapeCode) {
@@ -184,18 +193,5 @@ public class AnsiECParser {
 
         return numbers;
     }
-
-    /*private int findWherePartialMatchStarts(String input, Matcher matcher) {
-
-        // Remove one character at a time, and find out when hitEnd() returns false
-        int startCharIndex = 0;
-        while(matcher.hitEnd()) {
-            matcher.find(startCharIndex);
-            startCharIndex++;
-        }
-
-        //System.out.println("Found partial match starting at " + Integer.toString(startCharIndex - 1));
-        return startCharIndex - 1;
-    }*/
 
 }

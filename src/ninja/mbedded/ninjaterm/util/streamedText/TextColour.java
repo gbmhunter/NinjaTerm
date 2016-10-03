@@ -18,4 +18,12 @@ public class TextColour {
     public TextColour(TextColour textColour) {
         this(textColour.position, textColour.color);
     }
+
+    @Override
+    public String toString() {
+        String output = "";
+
+        output = "{ position: " + position + ", color = " + color + " }";
+        return output;
+    }
 }

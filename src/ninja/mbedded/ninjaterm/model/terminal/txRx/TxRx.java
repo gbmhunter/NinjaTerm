@@ -13,6 +13,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
@@ -246,6 +247,8 @@ public class TxRx {
      * @param data
      */
     public void addRxData(String data) {
+//        System.out.println(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");
+
         rawRxData.set(rawRxData.get() + data);
 
         // Truncate if necessary
@@ -263,6 +266,8 @@ public class TxRx {
         StreamedText tempAnsiParserOutput = new StreamedText();
         ansiECParser.parse(data, tempAnsiParserOutput);
 
+//        System.out.println("tempAnsiParserOutput = " + tempAnsiParserOutput);
+
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run
         // it on buffered data.
@@ -270,6 +275,12 @@ public class TxRx {
         // there may still be characters in there from last time this method was called, and
         // we don't want to add them twice
         totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+
+//        System.out.println("totalAnsiParserOutput = " + totalAnsiParserOutput);
+//
+//        if(!totalAnsiParserOutput.checkAllNewLinesHaveColors()) {
+//            int bogus = 0;
+//        }
 
         // Now add all the new ANSI parser output to any that was not used up by the
         // streaming filter from last time
@@ -288,6 +299,7 @@ public class TxRx {
 
         // Trim total ANSI parser output
         if(totalAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
+//            System.out.println("Trimming totalAnsiParserOutput...");
             int numOfCharsToRemove = totalAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
             totalAnsiParserOutput.removeChars(numOfCharsToRemove);
         }
@@ -307,6 +319,8 @@ public class TxRx {
         for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
             rawDataReceivedListener.update(data);
         }
+
+        System.out.println(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
     /**
