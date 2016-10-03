@@ -18,7 +18,7 @@ public class Main extends Application {
 
     private GlyphFont glyphFont;
 
-    private final boolean disableSplashScreen = true;
+    private final boolean disableSplashScreen = false;
 
     private Stage splashScreenStage;
     private Stage mainStage;

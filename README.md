@@ -7,8 +7,8 @@ NinjaTerm
 
 - Author: gbmhunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2016-09-22
-- Version: v0.5.1
+- Last Modified: 2016-10-03
+- Version: v0.6.0
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -19,26 +19,11 @@ NinjaTerm
 - Documentation Format: Doxygen
 - License: GPLv3
 
-Motivation
-==========
-
-The embedded-engineering world (i.e. anything with a circuit board and a microcontroller) needs serial port applications. They are instrumental when it comes to debugging, data transfer, configuring and logging embedded systems.
-
-The simple serial port programs that already exist do not have any powerful features. The really powerful serial port programs that already exist have some nice features but have a "busy" UI and are 1990's looking. There is also some particular features that no serial port programs has which would make debugging that little less painful.  
-
-Features
-========
-
-- Cross-platform application.
-- ANSI escape sequence support.
-- Smart support when viewing terminal data for both "fixed-position" and "auto-scroll".
-- Data logging (to file), with selective logging, smart file name generation and time stamping options.
-- Arduino compatible.
 
 Installation
 ============
 
-
+See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).
 
 Developing
 ==========
@@ -86,3 +71,5 @@ See changelog.md.
 
 Contributors
 ============
+
+See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).
