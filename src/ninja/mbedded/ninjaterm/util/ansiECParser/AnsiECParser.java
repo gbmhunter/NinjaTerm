@@ -62,15 +62,15 @@ public class AnsiECParser {
      * @param outputStreamedText    Contains streamed text that has been release from this parser. The internal appendText
      *                              variable will contain text which can be added to the previous node (i.e. no colour change),
      *                              and new nodes with text of different colours.
-     * @return  The number of characters added to the list of Text nodes. This does not count the characters
-     * which form part of an escape sequence, as these are not added to the nodes text property, but are rather used to set the
-     * colour properties of the node.
+     * @return  The number of characters added outputStreamedText. This does not count the characters
+     * which form part of an escape sequence, as these are not added text property, but are used to create
+     * ColorText entries.
      */
     public int parse(String inputString, StreamedText outputStreamedText) {
 
         System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
-        int numCharsAddedToNodes = 0;
+        int numCharsAdded = 0;
 
         // Prepend withheld text onto the end of the input string
         String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
@@ -89,7 +89,7 @@ public class AnsiECParser {
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
             outputStreamedText.append(preText);
 
-            numCharsAddedToNodes += preText.length();
+            numCharsAdded += preText.length();
 
             // Now extract the code
             String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
@@ -152,13 +152,13 @@ public class AnsiECParser {
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
             //addTextToLastNode(outputStreamedText, charsToAppend);
             outputStreamedText.append(charsToAppend);
-            numCharsAddedToNodes += charsToAppend.length();
+            numCharsAdded += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
             //addTextToLastNode(outputStreamedText, charsToAppend);
             outputStreamedText.append(charsToAppend);
-            numCharsAddedToNodes += charsToAppend.length();
+            numCharsAdded += charsToAppend.length();
         }
 
         // Finally, save the partial match for the next run
@@ -167,7 +167,7 @@ public class AnsiECParser {
             //System.out.println("withheldTextWithPartialMatch = " + withheldTextWithPartialMatch);
         }
 
-        return numCharsAddedToNodes;
+        return numCharsAdded;
     }
 
     private String[] extractNumbersAsArray(String ansiEscapeCode) {

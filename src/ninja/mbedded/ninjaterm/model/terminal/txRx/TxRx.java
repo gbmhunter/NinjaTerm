@@ -260,12 +260,18 @@ public class TxRx {
 
         // This method will update the rxDataAsList variable, adding the data to the end of the last node
         // or creating new nodes where applicable
-        numOfCharsInRxNodes += ansiECParser.parse(data, ansiParserOutput);
+        StreamedText tempAnsiParserOutput = new StreamedText();
+        numOfCharsInRxNodes += ansiECParser.parse(data, tempAnsiParserOutput);
 
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run
-        // it on buffered data
-        totalAnsiParserOutput.copyCharsFrom(ansiParserOutput, ansiParserOutput.getText().length());
+        // it on buffered data.
+        // NOTE: We only want to append NEW data added to the ANSI parser output, since
+        // there may still be characters in there from last time this method was called, and
+        // we don't want to add them twice
+        totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+
+        ansiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
 
         //==============================================//
         //================== FILTERING =================//
