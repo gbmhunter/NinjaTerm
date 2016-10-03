@@ -1,4 +1,4 @@
-v6.0.0
+v0.6.0
 ------
 
 - Added ability to select between "overwrite" and "append" logging methods, closes #99.
