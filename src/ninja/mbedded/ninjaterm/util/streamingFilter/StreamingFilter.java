@@ -7,31 +7,46 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by gbmhu on 2016-09-28.
  * <p>
  * Class contains a static method for shifting a provided number of characters from one input
  * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
- * object.
+ * object.</p>
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-09-28
+ * @last-modified 2016-10-03
  */
 public class StreamingFilter {
 
     private boolean releaseTextOnCurrLine = false;
 
+    private String filterPattern = "";
+
+    Pattern regexPattern;
+
+    public void setFilterPatten(String filterPattern) {
+
+        this.filterPattern = filterPattern;
+        regexPattern = Pattern.compile(filterPattern);
+
+        // Reset filter engine
+        releaseTextOnCurrLine = false;
+
+    }
+
     /**
      * This method provides a filtering function based on an incoming stream of data.
      *
-     * @param filterText Text to filter by.
      */
     public void parse(
             StreamedText inputStreamedText,
-            StreamedText outputStreamedText,
-            String filterText) {
+            StreamedText outputStreamedText) {
 
         System.out.println(getClass().getSimpleName() + ".parse() called with:");
         System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
         System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
-        if(filterText.equals("")) {
+        if(filterPattern.equals("")) {
             System.out.println("Filter text empty. Not performing any filtering.");
 
             // Shift all input to output
@@ -64,8 +79,8 @@ public class StreamingFilter {
                 continue;
             }
 
-            Pattern pattern = Pattern.compile(filterText);
-            Matcher matcher = pattern.matcher(line);
+
+            Matcher matcher = regexPattern.matcher(line);
 
             if (matcher.find()) {
                 // Match in line found!

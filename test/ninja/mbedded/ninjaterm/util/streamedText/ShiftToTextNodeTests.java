@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
  * @since           2016-10-02
  * @last-modified   2016-10-02
  */
-public class StreamedTextAddToTextNodeTests {
+public class ShiftToTextNodeTests {
 
     /**
      * Including this variable in class allows JavaFX objects to be created in tests.
@@ -71,6 +71,28 @@ public class StreamedTextAddToTextNodeTests {
 
     @Test
     public void addColorToNextNodeTest() throws Exception {
+
+        streamedText.append("123456");
+        streamedText.addColour(2, Color.GREEN);
+        streamedText.addColour(3, Color.RED);
+        streamedText.addColour(5, Color.BLUE);
+
+        streamedText.shiftToTextNodes(textNodes);
+
+        assertEquals(4, textNodes.size());
+
+        assertEquals("12", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+        assertEquals("3", ((Text)textNodes.get(1)).getText());
+        assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+        assertEquals("45", ((Text)textNodes.get(2)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(2)).getFill());
+        assertEquals("6", ((Text)textNodes.get(3)).getText());
+        assertEquals(Color.BLUE, ((Text)textNodes.get(3)).getFill());
+    }
+
+    @Test
+    public void colourToBeInsertedOnNextCharTest() throws Exception {
 
         streamedText.setColorToBeInsertedOnNextChar(Color.GREEN);
 

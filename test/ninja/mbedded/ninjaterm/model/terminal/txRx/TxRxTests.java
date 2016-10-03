@@ -44,6 +44,8 @@ public class TxRxTests {
         ansiECParserOutput = new StreamedText();
 
         streamingFilter = new StreamingFilter();
+        streamingFilter.setFilterPatten("a");
+
         streamFilterOutput = new StreamedText();
 
         textNodes = FXCollections.observableArrayList();
@@ -54,7 +56,7 @@ public class TxRxTests {
 
     private void runOneIteration(String inputData) {
         ansiECParser.parse(inputData, ansiECParserOutput);
-        streamingFilter.parse(ansiECParserOutput, streamFilterOutput, "a");
+        streamingFilter.parse(ansiECParserOutput, streamFilterOutput);
         streamFilterOutput.shiftToTextNodes(textNodes);
     }
 

@@ -25,6 +25,21 @@ public class StreamedText {
     private List<TextColour> textColours = new ArrayList<>();
     private Color colorToBeInsertedOnNextChar = null;
 
+    /**
+     * Default constructor.
+     */
+    public StreamedText() {
+
+    }
+
+    /**
+     * Copy constructor. Uses the <code>copyCharsFrom()</code> to do the actual copying.
+     * @param streamedText
+     */
+    public StreamedText(StreamedText streamedText) {
+        this.copyCharsFrom(streamedText, streamedText.getText().length());
+    }
+
 
     public String getText() {
         return text;
@@ -279,14 +294,14 @@ public class StreamedText {
 
             int indexOfFirstCharInNode = getTextColours().get(x).position;
 
-            int indexOfLastCharInNode;
+            int indexOfLastCharInNodePlusOne;
             if(x >= getTextColours().size() - 1) {
-                indexOfLastCharInNode = getText().length();
+                indexOfLastCharInNodePlusOne = getText().length();
             } else {
-                indexOfLastCharInNode = getTextColours().get(x).position;
+                indexOfLastCharInNodePlusOne = getTextColours().get(x + 1).position;
             }
 
-            newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNode));
+            newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
             newText.setFill(getTextColours().get(x).color);
 
             existingTextNodes.add(newText);

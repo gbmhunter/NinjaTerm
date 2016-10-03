@@ -272,7 +272,7 @@ public class TxRx {
         //==============================================//
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamingFilter.parse(ansiParserOutput, filterOutput, filters.filterText.get());
+        streamingFilter.parse(ansiParserOutput, filterOutput);
 
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
@@ -337,13 +337,19 @@ public class TxRx {
     }
 
     private void filterTextChanged(String filterText) {
+
+        streamingFilter.setFilterPatten(filterText);
+
         if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
             clearTxAndRxData();
 
             // We need to run the entire ANSI parser output back through the filter
-            streamingFilter.parse(totalAnsiParserOutput, filterOutput, filters.filterText.get());
+            // Make a temp. StreamedText object that can be consumed (we want to preserve
+            // totalAnsiParserOutput).
+            StreamedText toBeConsumed = new StreamedText(totalAnsiParserOutput);
+            streamingFilter.parse(toBeConsumed, filterOutput);
 
             // Notify that there is new UI data to display
             for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {

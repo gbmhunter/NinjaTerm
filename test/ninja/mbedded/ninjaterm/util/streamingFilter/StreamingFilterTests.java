@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamingFilter;
 
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
@@ -33,6 +32,8 @@ public class StreamingFilterTests {
     @Before
     public void setUp() throws Exception {
         streamingFilter = new StreamingFilter();
+        streamingFilter.setFilterPatten("a");
+
         inputStreamedText = new StreamedText();
         outputStreamedText = new StreamedText();
     }
@@ -42,7 +43,7 @@ public class StreamingFilterTests {
 
         inputStreamedText.append("abc\r\ndef\r\n");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Check output
         assertEquals("abc\r\n", outputStreamedText.getText());
@@ -54,7 +55,7 @@ public class StreamingFilterTests {
 
         inputStreamedText.append("abc\r\nabc\r\ndef\r\n");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Check output
         assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
@@ -66,7 +67,7 @@ public class StreamingFilterTests {
 
         inputStreamedText.append("abc\r\ndef\r\nabc\r\n");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Check output
         assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
@@ -78,14 +79,14 @@ public class StreamingFilterTests {
 
         inputStreamedText.append("ab");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Check output
         assertEquals("ab", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
         inputStreamedText.append("c\r\n");
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Check output
         assertEquals("abc\r\n", outputStreamedText.getText());
@@ -97,25 +98,25 @@ public class StreamingFilterTests {
 
         inputStreamedText.append("ab");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("ab", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
         inputStreamedText.append("c\r\nde");
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\n", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
         inputStreamedText.append("f\r\na");
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\na", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
         inputStreamedText.append("bc\r\n");
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
@@ -127,7 +128,7 @@ public class StreamingFilterTests {
         inputStreamedText.append("abc\r\n");
         inputStreamedText.addColour(2, Color.RED);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\n", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
@@ -142,7 +143,7 @@ public class StreamingFilterTests {
         inputStreamedText.addColour(2, Color.RED);
         inputStreamedText.addColour(3, Color.GREEN);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abcdef\r\n", outputStreamedText.getText());
         assertEquals(2, outputStreamedText.getTextColours().size());
@@ -161,7 +162,7 @@ public class StreamingFilterTests {
         inputStreamedText.append("abc\r\n");
         inputStreamedText.addColour(2, Color.RED);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\n", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
@@ -171,7 +172,7 @@ public class StreamingFilterTests {
         inputStreamedText.append("def\r\n");
         inputStreamedText.addColour(0, Color.GREEN);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "a");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("abc\r\n", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
@@ -182,24 +183,26 @@ public class StreamingFilterTests {
     @Test
     public void bigTest() throws Exception {
 
+        streamingFilter.setFilterPatten("d");
+
         inputStreamedText.append("re");
         inputStreamedText.addColour(0, Color.RED);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "d");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
         inputStreamedText.append("d\r\n");
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "d");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("red\r\n", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(0, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "d");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Nothing should of changed
         assertEquals("red\r\n", outputStreamedText.getText());
@@ -216,7 +219,7 @@ public class StreamingFilterTests {
         inputStreamedText.append("green\r\n");
         inputStreamedText.addColour(inputStreamedText.getText().length() - 7, Color.GREEN);
 
-        streamingFilter.parse(inputStreamedText, outputStreamedText, "d");
+        streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("red\r\nred\r\n", outputStreamedText.getText());
         assertEquals(2, outputStreamedText.getTextColours().size());
