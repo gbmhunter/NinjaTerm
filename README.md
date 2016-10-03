@@ -7,8 +7,8 @@ NinjaTerm
 
 - Author: gbmhunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2016-09-21
-- Version: v0.4.1
+- Last Modified: 2016-10-03
+- Version: v0.6.0
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -19,26 +19,11 @@ NinjaTerm
 - Documentation Format: Doxygen
 - License: GPLv3
 
-Motivation
-==========
-
-The embedded-engineering world (i.e. anything with a circuit board and a microcontroller) needs serial port applications. They are instrumental when it comes to debugging, data transfer, configuring and logging embedded systems.
-
-The simple serial port programs that already exist do not have any powerful features. The really powerful serial port programs that already exist have some nice features but have a "busy" UI and are 1990's looking. There is also some particular features that no serial port programs has which would make debugging that little less painful.  
-
-Features
-========
-
-- Cross-platform application.
-- ANSI escape sequence support.
-- Smart support when viewing terminal data for both "fixed-position" and "auto-scroll".
-- Data logging (to file), with selective logging, smart file name generation and time stamping options.
-- Arduino compatible.
 
 Installation
 ============
 
-
+See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).
 
 Developing
 ==========
@@ -52,6 +37,27 @@ Developing
 7. Commit and submit a pull-request when your feature is complete.
 
 [Scene Builder](http://gluonhq.com/labs/scene-builder/) can be great tool to install alongside IntelliJ for faster development of the JavaFX UI.
+
+Releasing New Version
+=====================
+
+NOTE: The order of the following tasks is important!
+
+1. Make sure that you are on the "release" branch, and that desired updates have been merged from the feature branches.
+1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
+2. Update README.md with the new version number and "last changed" date.
+3. Build the .jar artifact by clicking Build->Build Artifacts in IntelliJ. MAKE SURE than the SPLASHSCREEN is enabled!
+4. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
+5. Click "Save Project" and then "Build Project".
+6. Once the installers have been created, overwrite the "updates.xml" in the repo root directory with the one from the install/ directory.
+7. Commit these changes on the "release" branch (you should already be on this branch).
+8. Switch to the "master" branch and merge the "release" branch into it. Make sure to create a new commit (click the "Create new commit even if fast forward possible" checkbox if using the SourceTree GUI).
+9. Add a tag to this new commit on the master branch, tagging it with the version number (e.g. "v0.4.0").
+10. Go to the GitHub repo's main page and click "Releases".
+11. Click "Draft a new release". Create a new release, using "0.4.0" as both the tag and the title. Populate the description box with the same info that was added to changelog.md.
+12. Upload the installers that install4j has created in the "install/" directory.
+13. Click "Create new release", and it is all done!
+ 
 
 File Structure 
 ==============
@@ -86,3 +92,5 @@ See changelog.md.
 
 Contributors
 ============
+
+See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).

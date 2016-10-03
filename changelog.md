@@ -1,4 +1,19 @@
-vX.X.X
+v0.6.0
+------
+
+- Added ability to select between "overwrite" and "append" logging methods, closes #99.
+- Added option for user to choose termination character(s), closes #82.
+- Added support for ANSI escape sequences (in particular, the colour codes), closes #100.
+- Fixed bug where buffer limit was not being obeyed for the RX data when stored in ObservableList of Nodes, closes #101.
+- Fixed bug where app crashes if com's is stopped and restarted with ASCII escape sequences due to unsupported escape sequences not being handled, closes #102.
+- Improved filtering logic so it works alongside ANSI escape codes, closes #103.
+
+v0.5.1
+------
+
+- Fixed bug where NinjaTerm would lock up on splash screen.
+
+v0.5.0
 ------
 
 - Added filter field in TX/RX sub-tab, closes #84.
@@ -8,12 +23,6 @@ vX.X.X
 - Fixed bug where build configurations were not being included in repo, closes #85.
 - Added logging sub-tab and basic logging functionality, closes #96.
 - Greyed out textfield and browse button on logging tab when logging is active, closes #97.
-- Added ability to select between "overwrite" and "append" logging methods, closes #99.
-- Added option for user to choose termination character(s), closes #82.
-- Added support for ANSI escape sequences (in particular, the colour codes), closes #100.
-- Fixed bug where buffer limit was not being obeyed for the RX data when stored in ObservableList of Nodes, closes #101.
-- Fixed bug where app crashes if com's is stopped and restarted with ASCII escape sequences due to unsupported escape sequences not being handled, closes #102.
-- Improved filtering logic so it works alongside ANSI escape codes, closes #103.
 
 v0.4.1
 ------
