@@ -12,7 +12,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 /**
- * Created by gbmhu on 2016-09-18.
+ * Model containing data and logic for NinjaTerm status messages.
+ *
+ * These are displayed at the bottom of the application in the status bar.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-18
+ * @last-modified   2016-09-23
  */
 public class Status {
 

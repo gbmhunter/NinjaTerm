@@ -89,9 +89,9 @@ public class StatsViewController {
 
         //======================= RX ===================//
         ChangeListener<String> bufferSizesRxChangeListener = (observable, oldValue, newValue) -> {
-            bufferSizesRxLabel.setText(Integer.toString(terminal.txRx.rxData.get().length()));
+            bufferSizesRxLabel.setText(Integer.toString(terminal.txRx.rawRxData.get().length()));
         };
-        terminal.txRx.rxData.addListener(bufferSizesRxChangeListener);
+        terminal.txRx.rawRxData.addListener(bufferSizesRxChangeListener);
         // Set default (giving bogus data as it is not used)
         bufferSizesRxChangeListener.changed(new SimpleStringProperty(), "", "");
 

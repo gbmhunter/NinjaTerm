@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en-us" xmlns:fb="http://ogp.me/ns/fb#">
-  <head>
+<html lang="en-us">
+<head>
     <meta charset="UTF-8">
     <title>NinjaTerm</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,54 +11,80 @@
     <!--<meta property="og:image" content="http://mbedded-ninja.github.io/NinjaCalc/img/logo-facebook-open-graph-xml-v2-1200x630.png" />-->
     <meta property="og:description" content="A serial port terminal that's got your back." />
   </head>
-  <body>
+  <body onload="updateVersionNumber('v6.0.0')">
     <section class="page-header">
       <div style="display: flex; justify-content: center;">
             <img src="img/logo-v2-600x600.png" style="width: 250px; height: 250px; margin-right: 50px;"/>
             <div>
                   <h1 class="project-name">NinjaTerm</h1>
                   <h2 class="project-tagline">A serial port terminal that's got your back.</h2>
-                  <a href="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.5.1/NinjaTerm_v0.5.1_windows.exe" class="btn">v0.5.1 (Win)</a>
-                  <a href="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.5.1/NinjaTerm_v0.5.1_macos.dmg" class="btn">v0.5.1 (OS X)</a>
+                  <a id="windows-link" href="https://github.com/mbedded-ninja/NinjaTerm/releases/download/vX.X.X/NinjaTerm_vX.X.X_windows.exe" class="btn">vX.X.X (Win)</a>
+                  <a id="mac-link" href="https://github.com/mbedded-ninja/NinjaTerm/releases/download/vX.X.X/NinjaTerm_vX.X.X_macos.dmg" class="btn">vX.X.X (OS X)</a>
                   <a href="https://github.com/mbedded-ninja/NinjaTerm" class="btn">View on GitHub</a>
                   <p>NinjaTerm has been downloaded <span id="total-download-count"></span> times.</p>
             </div>   
       </div>
       <!--<a href="#" class="btn">Download .tar.gz</a>-->
     </section>
-    
 
-    <section class="main-content">
-      
+<section class="main-content">
 
-      <h1>Features</h1>
+    <h1>Features</h1>
 
-      <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
-      
-      <p>Please <a href="https://github.com/mbedded-ninja/NinjaTerm/issues/">create an issue in the GitHub repository</a> if you want to log a bug, make a feature request, ask a question, e.t.c.</p>
+    <h2>ANSI Escape Sequence Support</h2>
+
+    <p>NinjaTerm supports ANSI escape sequences for changing the terminal text colour. Use this to colour debug text from each module in your microcontroller's firmware a different colour, and/or colour all warning/error messages red!</p>
+
+    <img src="img/ansi-escape-sequences-in-ninjaterm.gif" style="width: 800px; display: block; margin: auto;"/>
+
+    <h2>Smart Filtering</h2>
+
+    <p>Hard to focus on just one issue when there is a deluge of debug messages coming from the microcontroller? Use intelligent filtering which hides lines that don't match your search. Use it to focus on debug messages from particular firmware modules, or to just show error messages!</p>
+
+    <img src="img/ninjtaterm-filtering-with-micro-debug-info.gif" style="width: 800px; display: block; margin: auto;"/>
+
+    <h2>Multiple Port Support</h2>
+
+    <p>Each instance of NinjaTerm is not limited to just one COM port. Open up multiple tabs, and have multiple terminals/COM ports open at the same time!</p>
+
+    <h2>Flexible Layout Options</h2>
+
+    <p>Not all uses terminal software work well with the same layout. Sometimes you want a "bash shell" style terminal window, sometimes you want separate panes for TX and RX data. NinjaTerm supports both, interchangeable at the tick of a checkbox!</p>
+
+    <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
+
+    <p>Please <a href="https://github.com/mbedded-ninja/NinjaTerm/issues/">create an issue in the GitHub repository</a>
+        if you want to log a bug, make a feature request, ask a question, e.t.c.</p>
 
 
-      <h1>Contributors</h1>
+    <h1>Contributors</h1>
 
-      <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
+    <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
 
-      <p>Thanks to the additional testing done by William Hunter.</p>
+    <p>Thanks to the additional testing done by William Hunter.</p>
 
-      <p>GIFs for this home page created with the amazing open-source <a href="https://screentogif.codeplex.com/">"Screen To Gif" program</a>.
+    <p>GIFs for this home page created with the amazing open-source <a href="https://screentogif.codeplex.com/">"Screen
+        To Gif" program</a>.
 
-      <p>The team at <a href="https://www.ej-technologies.com/">ej-technologies</a> have graciously donated me an open-source licensed version of <a href="http://www.ej-technologies.com/products/install4j/overview.html"><img src="https://www.ej-technologies.com/images/product_banners/install4j_small.png" />, the multi-platform installer builder</a> for Java applications.</p>
+    <p>The team at <a href="https://www.ej-technologies.com/">ej-technologies</a> have graciously donated me an
+        open-source licensed version of <a href="http://www.ej-technologies.com/products/install4j/overview.html"><img
+                src="https://www.ej-technologies.com/images/product_banners/install4j_small.png"/>, the multi-platform
+            installer builder</a> for Java applications.</p>
 
-      <footer class="site-footer">
-        <span class="site-footer-owner">NinjaTerm is developed and maintained by <a href="https://github.com/mbedded-ninja">mbedded.ninja</a>.</span>
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+    <footer class="site-footer">
+        <span class="site-footer-owner">NinjaTerm is developed and maintained by <a
+                href="https://github.com/mbedded-ninja">mbedded.ninja</a>.</span>
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a
+                href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a
+                href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+    </footer>
 
-    </section>
+</section>
 
-  </body>
+</body>
 
-  <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
-  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-  <!-- The following script provides the total number of downloads -->
-  <script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
+<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<!-- The following script provides the total number of downloads -->
+<script type="text/javascript" src="js/main.js"></script>
 </html>

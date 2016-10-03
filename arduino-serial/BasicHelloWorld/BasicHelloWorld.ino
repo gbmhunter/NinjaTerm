@@ -1,8 +1,9 @@
-/*
-  DigitalReadSerial
- Reads a digital input on pin 2, prints the result to the serial monitor
-
- This example code is in the public domain.
+/**
+ * Basic code that outputs "Hello, World!" ten times a second.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-07-10
+ * @last-modified 2016-09-27
  */
 
 // the setup routine runs once when you press reset:

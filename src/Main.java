@@ -8,7 +8,7 @@ import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
-import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenController;
+import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
 
@@ -27,28 +27,26 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
 
         if(disableSplashScreen) {
+            // Skip this function, and go straight to loading the main window.
             loadMainWindow();
             return;
         }
 
         this.splashScreenStage = primaryStage;
 
-        //Parent root = FXMLLoader.load(getClass().getResource("ninja.mbedded.ninjaterm.view/MainWindowViewController.fxml"));
+        // Load splashscreen FXML file and get controller
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        try {
+            Parent root = loader.load();
+        } catch(IOException e) {
+            return;
+        }
 
-        // Create splashscreen
-        /*VBox root = new VBox();
-        Button btn = new Button("Say 'Hello World'");
-        root.getChildren().add(btn);
+        SplashScreenViewController splashScreenViewController = loader.getController();
+        splashScreenViewController.init();
 
-        // Java 8: requires setting the layout pane background style to transparent
-        // https://javafx-jira.kenai.com/browse/RT-38938
-        // "Modena uses a non-transparent background by default"
-        root.setStyle("-fx-background-color: transparent;");*/
-
-        SplashScreenController splashScreenController = new SplashScreenController();
-
-        Scene splashScreenScene = new Scene(splashScreenController, 800, 600, Color.TRANSPARENT);
-        splashScreenController.isFinished.addListener((observable, oldValue, newValue) -> {
+        Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
+        splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
             if(newValue) {
                 loadMainWindow();
             }
@@ -58,14 +56,12 @@ public class Main extends Application {
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
 
-        splashScreenController.startNameVersionInfoMsg();
+        splashScreenViewController.startNameVersionInfoMsg();
         // Create delay before showing main window
         /*Timeline timeline = new Timeline(new KeyFrame(
                 Duration.millis(3000),
                 ae -> loadMainWindow()));
         timeline.play();*/
-
-
     }
 
     public void loadMainWindow() {
@@ -77,16 +73,13 @@ public class Main extends Application {
         Model model = new Model();
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
-
         try {
             Parent root = loader.load();
         } catch(IOException e) {
             return;
         }
+        MainWindowViewController mainWindowViewController = loader.getController();
 
-        MainWindowViewController mainWindowViewController =
-                loader.getController();
-        //MainWindowViewController mainWindowViewController = new MainWindowViewController();
         mainWindowViewController.init(model, glyphFont, new ComPortManager());
 
         mainWindowViewController.addNewTerminal();
@@ -101,14 +94,6 @@ public class Main extends Application {
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
 
-        /*scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent ke) {
-                System.out.println("Key pressed.");
-            }
-        });*/
-
-        //mainWindowViewController.terminalViewControllers.get(0).rxTxController.showPopover();
-
         mainStage.initStyle(StageStyle.DECORATED);
         //mainStage.centerOnScreen();
         mainStage.show();
@@ -120,6 +105,6 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
-        //LauncherImpl.launchApplication(Main.class, SplashScreenController.class, args);
+        //LauncherImpl.launchApplication(Main.class, SplashScreenViewController.class, args);
     }
 }

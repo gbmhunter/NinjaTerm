@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -19,12 +20,14 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersView;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -36,9 +39,9 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-09-15
+ * @last-modified 2016-09-23
  */
-public class RxTxController extends VBox {
+public class TxRxViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -57,7 +60,7 @@ public class RxTxController extends VBox {
     public StackPane dataDirectionRxStackPane;
 
     @FXML
-    public TextFlow txRxTextFlow;
+    public TextFlow rxDataTextFlow;
 
     @FXML
     public StackPane txDataStackPane;
@@ -77,14 +80,24 @@ public class RxTxController extends VBox {
     @FXML
     public ImageView scrollToBottomImageView;
 
-    @FXML
-    public Button clearTextButton;
+    //==============================================//
+    //=========== RIGHT-HAND SIDE PANE =============//
+    //==============================================//
 
     @FXML
-    public Button displayButton;
+    private Button clearTextButton;
 
     @FXML
-    public Button filtersButton;
+    private Button displayButton;
+
+    @FXML
+    private Button formattingButton;
+
+    @FXML
+    private Button coloriserButton;
+
+    @FXML
+    private Button filtersButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -112,14 +125,14 @@ public class RxTxController extends VBox {
 
     private Decoder decoder;
 
-    private StatusBarController statusBarController;
+    private StatusBarViewController statusBarViewController;
 
     private GlyphFont glyphFont;
 
     private Model model;
 
     /**
-     * Stores the model which drives this view.
+     * Stores the terminal model which drives this view (this is also stored in model, but it is in an array).
      */
     private Terminal terminal;
 
@@ -129,55 +142,50 @@ public class RxTxController extends VBox {
      */
     private Text caretText;
 
-    private ComPort comPort;
+    private DisplayViewController displayViewController;
+    private FormattingViewController formattingViewController;
+    private ColouriserViewController colouriserViewController;
+    private FiltersViewController filtersViewController;
 
-    private DisplayController displayController = new DisplayController();
-
-    private FiltersView filtersView = new FiltersView();
+    /**
+     * This is used to remember how many chars are in the RX text nodes, incase we need to trim the nodes
+     * due to the buffer size. This is calculated incrementaly rather than recalculated from all off the nodes
+     * (which would be processor intensive)
+     */
+    private int numCharsInRxTextNodes = 0;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
 
-    public RxTxController() {
-
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "RxTxView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+    public TxRxViewController() {
     }
 
     /**
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Model model, Terminal terminal, ComPort comPort, Decoder decoder, StatusBarController statusBarController, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, Decoder decoder, StatusBarViewController statusBarViewController, GlyphFont glyphFont) {
 
         // Save model
         this.model = model;
         this.terminal = terminal;
 
-        this.comPort = comPort;
+        //this.comPort = comPort;
         this.glyphFont = glyphFont;
 
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
         displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
+        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
-        this.statusBarController = statusBarController;
+        this.statusBarViewController = statusBarViewController;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
-        txRxTextFlow.getChildren().clear();
+        rxDataTextFlow.getChildren().clear();
 
         // Hide the auto-scroll image-button, this will be made visible
         // when the user manually scrolls
@@ -185,7 +193,7 @@ public class RxTxController extends VBox {
 
         // Add default Text node to text flow. Received text
         // will be added to this node.
-        txRxTextFlow.getChildren().add(rxDataText);
+        rxDataTextFlow.getChildren().add(rxDataText);
         rxDataText.setFill(Color.LIME);
 
         //==============================================//
@@ -205,7 +213,7 @@ public class RxTxController extends VBox {
         ft.play();
 
         // Finally, add the blinking caret as the last child in the TextFlow
-        txRxTextFlow.getChildren().add(caretText);
+        rxDataTextFlow.getChildren().add(caretText);
 
         // Set default opacity for scroll-to-bottom image
         scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
@@ -216,11 +224,11 @@ public class RxTxController extends VBox {
 
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
-        txRxTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
+        rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
             //System.out.println("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
-                rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
+                rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
             }
 
         });
@@ -260,8 +268,8 @@ public class RxTxController extends VBox {
                     autoScrollButtonPane.setVisible(false);
 
                     // Manually perform one auto-scroll, since the next automatic one won't happen until
-                    // the height of txRxTextFlow changes.
-                    rxDataScrollPane.setVvalue(txRxTextFlow.getHeight());
+                    // the height of rxDataTextFlow changes.
+                    rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
                 }
         );
 
@@ -270,63 +278,85 @@ public class RxTxController extends VBox {
         //==============================================//
 
         clearTextButton.setOnAction(event -> {
-            // Clear all the text
-            //rxDataText.setText("");
-            terminal.txRx.rxData.set("");
-            terminal.txRx.txData.set("");
+            terminal.txRx.clearTxAndRxData();
             model.status.addMsg("Terminal TX/RX text cleared.");
+        });
 
+        terminal.txRx.rxDataClearedListeners.add(() -> {
+            // Clear children from the RX text flow, this should empty
+            // all data from the RX pane
+            rxDataTextFlow.getChildren().clear();
+            rxDataTextFlow.getChildren().add(new Text());
+
+            // Reset the variable which counts the number of RX chars
+            numCharsInRxTextNodes = 0;
         });
 
         //==============================================//
-        //============= LAYOUT BUTTON SETUP ============//
+        //======= DISPLAY BUTTON/POP-OVER SETUP ========//
         //==============================================//
 
-        displayController.init(model, terminal, decoder);
 
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver displayPopover = new PopOver();
-        displayPopover.setContentNode(displayController);
-        displayPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        displayPopover.setCornerRadius(4);
-        displayPopover.setTitle("Display");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        displayViewController = loader.getController();
 
-        displayButton.setOnAction(event -> {
+        displayViewController.init(model, terminal, decoder);
 
-            if (displayPopover.isShowing()) {
-                displayPopover.hide();
-            } else if (!displayPopover.isShowing()) {
-                showPopover(displayButton, displayPopover);
-            } else {
-                new RuntimeException("displayPopover state not recognised.");
-            }
-        });
+        setupPopover(loader.getRoot(), "Display", displayButton);
+
+        //==============================================//
+        //===== FORMATTING BUTTON/POP-OVER SETUP =======//
+        //==============================================//
+
+
+        loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        formattingViewController = loader.getController();
+
+        formattingViewController.init(model, terminal);
+
+        setupPopover(loader.getRoot(), "Formatting", formattingButton);
+
+        //==============================================//
+        //========== COLOURISER BUTTON SETUP ===========//
+        //==============================================//
+
+        loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        colouriserViewController = loader.getController();
+
+        colouriserViewController.init(model, terminal);
+
+        setupPopover(loader.getRoot(), "Colouriser", coloriserButton);
 
         //==============================================//
         //============ FILTERS BUTTON SETUP ============//
         //==============================================//
 
-        filtersView.init(model, terminal);
+        loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
+        try {
+            loader.load();
+        } catch(IOException e) {
+            return;
+        }
+        filtersViewController = loader.getController();
 
-        // This creates the popover, but is not shown until
-        // show() is called.
-        PopOver filtersPopover = new PopOver();
-        filtersPopover.setContentNode(filtersView);
-        filtersPopover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
-        filtersPopover.setCornerRadius(4);
-        filtersPopover.setTitle("Filters");
+        filtersViewController.init(model, terminal);
 
-        filtersButton.setOnAction(event -> {
-
-            if (filtersPopover.isShowing()) {
-                filtersPopover.hide();
-            } else if (!filtersPopover.isShowing()) {
-                showPopover(filtersButton, filtersPopover);
-            } else {
-                new RuntimeException("filtersPopover.isShowing() state not recognised.");
-            }
-        });
+        setupPopover(loader.getRoot(), "Filters", filtersButton);
 
         //==============================================//
         //== ATTACH LISTENERS TO WRAPPING PROPERTIES ===//
@@ -355,7 +385,17 @@ public class RxTxController extends VBox {
         //======= BIND TERMINAL TEXT TO TXRX DATA ======//
         //==============================================//
 
-        rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
+        //rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
+
+        // Setting the models ObservableList of nodes to point to the
+        // children of the RX data TextFlow will allow the textflow
+        // to get updated automatically when the model modifies this
+        // ObservableList
+        //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
+        terminal.txRx.newStreamedTextListeners.add(streamedText -> {
+            newStreamedTextListener(streamedText);
+        });
+
         txDataText.textProperty().bind(terminal.txRx.txData);
 
         // Call this to update the display of the TX/RX pane into its default
@@ -388,15 +428,52 @@ public class RxTxController extends VBox {
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
+    }
 
-        //==============================================//
-        //=== INSTALL HANDLER FOR FILTER TEXT CHANGE ===//
-        //==============================================//
+    private void newStreamedTextListener(StreamedText streamedText) {
+        ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
-        terminal.txRx.filters.filterText.addListener((observable, oldValue, newValue) -> {
-            filterTextChanged(newValue);
+        numCharsInRxTextNodes += streamedText.getText().length();
+        streamedText.shiftToTextNodes(observableList);
+
+        // Trim RX UI if necessary
+        // (the ANSI parser output data is trimmed separately in the model)
+        if(numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
+            int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
+            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
+
+            // Now we have removed chars, update the count
+            numCharsInRxTextNodes -= numCharsToRemove;
+        }
+    }
+
+    /**
+     * Helper method to attach a pop-over to a button (so it appears/disappears when you
+     * click the button).
+     * @param content
+     * @param popOverTitle
+     * @param buttonToAttachTo
+     */
+    private void setupPopover(Node content, String popOverTitle, Button buttonToAttachTo) {
+
+        // This creates the popover, but is not shown until
+        // show() is called.
+        PopOver popover = new PopOver();
+        popover.setContentNode(content);
+        popover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        popover.setCornerRadius(4);
+        popover.setTitle(popOverTitle);
+
+        buttonToAttachTo.setOnAction(event -> {
+
+            if (popover.isShowing()) {
+                popover.hide();
+            } else if (!popover.isShowing()) {
+                showPopover(buttonToAttachTo, popover);
+            } else {
+                new RuntimeException("isShowing() state not recognised.");
+            }
         });
-
     }
 
     /**
@@ -410,11 +487,11 @@ public class RxTxController extends VBox {
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
-            txRxTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
+            rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
             System.out.println("\"Wrapping\" checkbox unchecked.");
-            txRxTextFlow.setMaxWidth(Double.MAX_VALUE);
+            rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
 
@@ -461,8 +538,8 @@ public class RxTxController extends VBox {
                 }
 
                 // Add the caret in the shared pane
-                if(!txRxTextFlow.getChildren().contains(caretText)) {
-                    txRxTextFlow.getChildren().add(caretText);
+                if(!rxDataTextFlow.getChildren().contains(caretText)) {
+                    rxDataTextFlow.getChildren().add(caretText);
                 }
 
                 break;
@@ -476,8 +553,8 @@ public class RxTxController extends VBox {
                 }
 
                 // Remove the caret in the shared pane
-                if(txRxTextFlow.getChildren().contains(caretText)) {
-                    txRxTextFlow.getChildren().remove(caretText);
+                if(rxDataTextFlow.getChildren().contains(caretText)) {
+                    rxDataTextFlow.getChildren().remove(caretText);
                 }
 
                 // Add the caret to the TX pane
@@ -493,7 +570,7 @@ public class RxTxController extends VBox {
 
     public void handleKeyTyped(KeyEvent keyEvent) {
 
-        if(comPort.isPortOpen() == false) {
+        /*if(comPort.isPortOpen() == false) {
             model.status.addErr("Cannot send data to COM port, port is not open.");
             return;
         }
@@ -538,32 +615,8 @@ public class RxTxController extends VBox {
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        //terminal.txRx.txData.set(terminal.txRx.txData.get() + data);
+        terminal.txRx.txDataSent();*/
 
-        terminal.txRx.txDataSent();
-
-        // Check if user wants TX chars to be echoed locally onto TX/RX display
-        /*if(terminal.txRx.display.localTxEcho.get()) {
-            // Echo the sent character to the TX/RX display
-            terminal.txRx.addRxData(ke.getCharacter());
-        }*/
+        terminal.txRx.handleKeyPressed((byte)keyEvent.getCharacter().charAt(0));
     }
-
-    private void filterTextChanged(String newFilterText) {
-        // We need to search through the entire RX text
-
-    }
-
-    public byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
-
-        byte[] data = new byte[observableList.size()];
-        int i = 0;
-        for(Byte singleByte : observableList) {
-            data[i++] = singleByte;
-        }
-
-        return data;
-
-    }
-
 }

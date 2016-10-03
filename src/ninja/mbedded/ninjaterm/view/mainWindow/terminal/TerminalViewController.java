@@ -4,23 +4,22 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.RxTxController;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -46,10 +45,10 @@ public class TerminalViewController {
     public ComSettingsViewController comSettingsViewController;
 
     @FXML
-    public RxTxController rxTxController;
+    public TxRxViewController txRxViewController;
 
     @FXML
-    public Tab rxTxTab;
+    public Tab txRxView;
 
     @FXML
     private LoggingViewController loggingViewController;
@@ -61,12 +60,10 @@ public class TerminalViewController {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    /**
-     * The COM port instance attached to this terminal.
-     */
-    public ComPort comPort = new ComPort();
 
-    private StatusBarController statusBarController;
+    //public ComPort comPort = new ComPort();
+
+    private StatusBarViewController statusBarViewController;
     private Decoder decoder = new Decoder();
 
     private GlyphFont glyphFont;
@@ -74,30 +71,19 @@ public class TerminalViewController {
     private Terminal terminal;
     private Model model;
 
+    private OnRxDataListener onRxDataListener;
+
     public TerminalViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "TerminalView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
     }
 
-    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarController statusBarController) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarViewController statusBarViewController) {
 
         this.model = model;
         this.terminal = terminal;
 
 
         this.glyphFont = glyphFont;
-        this.statusBarController = statusBarController;
+        this.statusBarViewController = statusBarViewController;
 
         // Set children
         comSettingsViewController.setStatusBarController(model);
@@ -111,9 +97,9 @@ public class TerminalViewController {
         terminalTabPane.getSelectionModel().select(0);
 
         // Create RX/TX view
-        //rxTxController = new RxTxController();
-        rxTxController.Init(model, terminal, comPort, decoder, statusBarController, glyphFont);
-        rxTxTab.setContent(rxTxController);
+        //txRxViewController = new TxRxViewController();
+        txRxViewController.Init(model, terminal, decoder, statusBarViewController, glyphFont);
+        //txRxView.setContent(txRxViewController);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -143,7 +129,7 @@ public class TerminalViewController {
 
         statsViewController.init(terminal);
 
-        statusBarController.init(model);
+        statusBarViewController.init(model);
 
         //==============================================//
         //============= SETUP CONTEXT MENU =============//
@@ -210,17 +196,17 @@ public class TerminalViewController {
 
         if (comSettingsViewController.openCloseComPortButton.getText().equals("Open")) {
 
-            comPort.setName(comSettingsViewController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
+            terminal.comPort.setName(comSettingsViewController.foundComPortsComboBox.getSelectionModel().getSelectedItem());
 
             try {
-                comPort.open();
+                terminal.comPort.open();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
-                    model.status.addErr(comPort.getName() + " was busy and could not be opened.");
+                    model.status.addErr(terminal.comPort.getName() + " was busy and could not be opened.");
                     //comPort = null;
                     return;
                 } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
-                    model.status.addErr(comPort.getName() + " no longer exists. Please rescan.");
+                    model.status.addErr(terminal.comPort.getName() + " no longer exists. Please rescan.");
                     //comPort = null;
                     return;
                 } else {
@@ -229,7 +215,7 @@ public class TerminalViewController {
             }
 
             // Set COM port parameters as specified by user on GUI
-            comPort.setParams(
+            terminal.comPort.setParams(
                     comSettingsViewController.baudRateComboBox.getSelectionModel().getSelectedItem(),
                     comSettingsViewController.numDataBitsComboBox.getSelectionModel().getSelectedItem(),
                     comSettingsViewController.parityComboBox.getSelectionModel().getSelectedItem(),
@@ -237,9 +223,9 @@ public class TerminalViewController {
             );
 
             // Add a listener to run when RX data is received from the COM port
-            comPort.addOnRxDataListener(rxData -> {
+            onRxDataListener = (rxData -> {
 
-                //System.out.println("rxData = " + Arrays.toString(rxData));
+                //System.out.println("rawRxData = " + Arrays.toString(rawRxData));
                 String rxText;
                 rxText = decoder.parse(rxData);
 
@@ -248,7 +234,7 @@ public class TerminalViewController {
                 Platform.runLater(() -> {
 
                     // Add the received data to the model
-                    //rxTxController.addTxRxText(rxText);
+                    //txRxViewController.addTxRxText(rxText);
                     terminal.txRx.addRxData(rxText);
 
                     // Update stats in app model
@@ -258,20 +244,22 @@ public class TerminalViewController {
                 });
 
             });
+            terminal.comPort.onRxDataListeners.add(onRxDataListener);
 
             // Change "Open" button to "Close" button
             setOpenCloseButtonStyle(OpenCloseButtonStyles.CLOSE);
 
-            model.status.addMsg(comPort.getName() + " opened." +
-                    " Buad rate = " + comPort.getBaudRate() + "," +
-                    " parity = " + comPort.getParity() + "," +
-                    " num. stop bits = " + comPort.getNumStopBits() + ".");
+            model.status.addMsg(terminal.comPort.getName() + " opened." +
+                    " Buad rate = " + terminal.comPort.getBaudRate() + "," +
+                    " parity = " + terminal.comPort.getParity() + "," +
+                    " num. stop bits = " + terminal.comPort.getNumStopBits() + ".");
 
         } else {
             // Must be closing COM port
+            terminal.comPort.onRxDataListeners.remove(onRxDataListener);
 
             try {
-                comPort.close();
+                terminal.comPort.close();
             } catch (ComPortException e) {
                 if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
                     model.status.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
@@ -285,7 +273,7 @@ public class TerminalViewController {
             }
             setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
 
-            model.status.addMsg(comPort.getName() + " closed.");
+            model.status.addMsg(terminal.comPort.getName() + " closed.");
         }
 
     }
@@ -329,14 +317,14 @@ public class TerminalViewController {
 
         // We only want to send the characters to the serial port if the user pressed them
         // while the TX/RX tab was selected
-        if (terminalTabPane.getSelectionModel().getSelectedItem() != rxTxTab) {
+        if (terminalTabPane.getSelectionModel().getSelectedItem() != txRxView) {
             return;
         }
         System.out.println("TX/RX sub-tab selected.");
 
         // Now that we have made sure the RX/TX sub-tab was open when the key was pressed,
         // call the appropriate function in the RX/TX controller.
-        rxTxController.handleKeyTyped(ke);
+        txRxViewController.handleKeyTyped(ke);
 
     }
 

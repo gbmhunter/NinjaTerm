@@ -3,7 +3,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -11,7 +10,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarController;
+import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
@@ -50,7 +49,7 @@ public class MainWindowViewController {
     public TabPane terminalTabPane;
 
     @FXML
-    public StatusBarController statusBarController;
+    public StatusBarViewController statusBarViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -72,6 +71,13 @@ public class MainWindowViewController {
 
     }
 
+    /**
+     * Initialises everything that cannot be done in the constructor (due to JavaFX creating the
+     * object automatically).
+     * @param model
+     * @param glyphFont
+     * @param comPortManager
+     */
     public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
 
         this.model = model;
@@ -102,6 +108,8 @@ public class MainWindowViewController {
 
             String versionNumber = AppInfo.getVersionNumber();
 
+            // Sometimes the version number will be null, but this should only occur when running from IntelliJ
+            // in a development environment (install4j will add the appropriate .dll when a .exe is built)
             if(versionNumber == null) {
                 versionNumber = "?.?.?";
             }
@@ -146,7 +154,7 @@ public class MainWindowViewController {
 
 
         //TerminalViewController terminalViewController = new TerminalViewController();
-        terminalViewController.init(model, terminal, glyphFont, statusBarController);
+        terminalViewController.init(model, terminal, glyphFont, statusBarViewController);
         terminalViewControllers.add(terminalViewController);
 
         terminalViewController.comSettingsViewController.setComPortManager(comPortManager);

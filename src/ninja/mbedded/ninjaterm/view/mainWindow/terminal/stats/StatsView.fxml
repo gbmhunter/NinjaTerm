@@ -1,15 +1,18 @@
 <!--
-* Inner content for the "StatsViewController" sub-tab of NinjaTerm
+* Tab and inner content for the stats sub-tab (present in each terminal tab).
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-16
-* @last-modified   2016-09-22
+* @last-modified   2016-09-23
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
+<Tab
+        fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController"
+        xmlns:fx="http://javafx.com/fxml"
+        text="Stats" closable="false">
+<VBox  alignment="TOP_LEFT"
          spacing="20"
          prefHeight="500" prefWidth="800"
          fillWidth="true" GridPane.vgrow="ALWAYS"
@@ -43,6 +46,7 @@
     </VBox>
 
 </VBox>
+</Tab>
 
 
 

@@ -1,3 +1,13 @@
+v6.0.0
+------
+
+- Added ability to select between "overwrite" and "append" logging methods, closes #99.
+- Added option for user to choose termination character(s), closes #82.
+- Added support for ANSI escape sequences (in particular, the colour codes), closes #100.
+- Fixed bug where buffer limit was not being obeyed for the RX data when stored in ObservableList of Nodes, closes #101.
+- Fixed bug where app crashes if com's is stopped and restarted with ASCII escape sequences due to unsupported escape sequences not being handled, closes #102.
+- Improved filtering logic so it works alongside ANSI escape codes, closes #103.
+
 v0.5.1
 ------
 

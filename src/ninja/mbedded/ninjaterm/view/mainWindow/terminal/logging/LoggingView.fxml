@@ -6,22 +6,20 @@
 * @last-modified   2016-09-22
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+<?import jfxtras.scene.control.ToggleGroupValue?>
 <Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController"
-        xmlns:fx="http://javafx.com/fxml"
-        text="Logging"
-        closable="false">
+     xmlns:fx="http://javafx.com/fxml"
+     text="Logging"
+     closable="false">
 
     <VBox alignment="TOP_LEFT"
           spacing="20"
           prefHeight="500" prefWidth="800"
-          fillWidth="true" GridPane.vgrow="ALWAYS"
+          GridPane.vgrow="ALWAYS"
           stylesheets="@../../../../resources/style.css">
         <!--style="-fx-background-color: red;" -->
 
@@ -35,6 +33,13 @@
             <TextField fx:id="logFilePathTextField" prefWidth="500"></TextField>
             <Button fx:id="browseButton">Browse</Button>
         </HBox>
+
+
+        <VBox spacing="5" fillWidth="false" maxWidth="200" styleClass="border">
+            <Label>File Behaviour:</Label>
+            <RadioButton fx:id="appendFileBehaviourRadioButton">Append</RadioButton>
+            <RadioButton fx:id="overwriteFileBehaviourRadioButton">Overwrite</RadioButton>
+        </VBox>
 
         <Button fx:id="startStopLoggingButton" prefWidth="200" prefHeight="40">Open</Button>
 
