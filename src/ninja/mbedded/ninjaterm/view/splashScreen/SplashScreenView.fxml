@@ -3,28 +3,26 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-07-17
+* @last-modified   2016-09-23
 -->
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.text.Text?>
 <?import javafx.scene.shape.Rectangle?>
-<fx:root type="javafx.scene.layout.VBox"
-         xmlns:fx="http://javafx.com/fxml" alignment="center"
-         prefHeight="600" prefWidth="600"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         style="-fx-background-color: transparent;">
+<?import javafx.scene.text.TextFlow?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController"
+      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      prefHeight="600" prefWidth="600"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      style="-fx-background-color: transparent;">
     <!--style="-fx-background-color: red;" -->
 
     <StackPane alignment="CENTER">
-        <Rectangle width="800" height="600" arcWidth="20" arcHeight="20" style="-fx-background-color: black;"></Rectangle>
+        <Rectangle width="800" height="600" arcWidth="20" arcHeight="20"
+                   style="-fx-background-color: black;"></Rectangle>
 
 
         <TextFlow fx:id="loadingMsgsTextFlow" minWidth="700" maxWidth="700" minHeight="500" maxHeight="500"/>
     </StackPane>
 
-</fx:root>
+</VBox>

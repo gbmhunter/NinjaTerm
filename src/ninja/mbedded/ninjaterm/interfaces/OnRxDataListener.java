@@ -1,7 +1,12 @@
 package ninja.mbedded.ninjaterm.interfaces;
 
+
 /**
- * Created by gbmhu on 2016-07-16.
+ * Listeners for when RX data is received.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-07-17
+ * @last-modified   2016-09-25
  */
 public interface OnRxDataListener {
 

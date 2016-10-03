@@ -6,21 +6,19 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Created by gbmhu on 2016-09-20.
+ * Controller for the splash screen.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-09-23
+ * @since 2016-09-20
  */
-public class SplashScreenController extends VBox {
+public class SplashScreenViewController {
 
 
     //================================================================================================//
@@ -30,9 +28,9 @@ public class SplashScreenController extends VBox {
     @FXML
     public TextFlow loadingMsgsTextFlow;
 
-
-
-    List<String> loadingMsgs = new ArrayList<>();
+    //================================================================================================//
+    //======================================== CLASS VARIABLES =======================================//
+    //================================================================================================//
 
     private int loadingMsgIndex = 0;
 
@@ -40,18 +38,58 @@ public class SplashScreenController extends VBox {
 
     private Timeline timeline;
 
+    /**
+     * Used to indicate when the splash screen has finished.
+     */
     public SimpleBooleanProperty isFinished = new SimpleBooleanProperty(false);
+
+    /**
+     * The bogus "loading" messages displayed on the splash screen after the app name, version and basic
+     * info is displayed.
+     */
+    private final String[] bogusMessages = {
+            "Using all processing power to render splash screen.",
+            "Looking for operating system.",
+            "Releasing the Kraken.",
+            "Scanning for ports, found many ships.",
+            "Turning volume up to 11.",
+            "Bricking fake FTDI chips.",
+            "Downloading more RAM.",
+            "Unpacking christmas presents.",
+            "Forgot which one was CTS and which was RTS.",
+            "The answer is 42.",
+            "Incorrect voltage levels are serial killers.",
+            "All your base are belong to us.",
+            "Uploading user data to NSA.",
+            "Setting IE9 as default browser.",
+            "Booting SkyNet.",
+            "Crypto-locking personal files.",
+            "Remember, DB-9 is actually DE-9.",
+            "Installing bitcoin miner.",
+            "Correcting speling.",
+            "Setting heisenbugs to unknown states.",
+            "Uninstalling RealTerm, Terminal by Br@y, PuTTy and Termite.",
+            "Wondering if you've remembered the baud rate.",
+            "Finding nearby hot singles.",
+            "Putting down Windows XP seach dog.",
+            "Persecuting minorities.",
+            "Patching Java security flaws.",
+            "Voting for Donald Trump.",
+            "Loading clippy animation.",
+            "Discovering this one weird trick, mind will be blown.",
+            "Finished wasting user's time."
+    };
 
     /**
      * This array is used to give the typing of characters onto the splash screen a "human-like"
      * feel. Each entry corresponds to the time (in milliseconds) before the mapped character
      * in the nameAndVerisonString is displayed.
-     *
+     * <p>
      * Make sure this array has the same number of entries as the number of characters in the
      * string.
      */
-    private final double[] charIntervalsMs = new double[] {
-            25,
+    private final double[] charIntervalsMs = new double[]{
+            25,     //
             1500,   // N
             125,    // i
             150,    // n
@@ -65,11 +103,11 @@ public class SplashScreenController extends VBox {
             300,    // v
             100,    // X
             150,    // .
-            75,    // X
+            75,     // X
             150,    // .
             125,    // X
-            50,    // \r
-            50,    // \r
+            50,     // \r
+            50,     // \r
             300,    // A
             125,    //
             150,    // f
@@ -104,52 +142,17 @@ public class SplashScreenController extends VBox {
             100,    // a
             75,     // \r
             75,     // \r
+            // <---- START OF BOGUS MESSAGES HERE
     };
 
-    public SplashScreenController() {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "SplashScreenView.fxml"));
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
+    public SplashScreenViewController() {
+    }
 
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
-
-        // Add loading messages to the list
-        loadingMsgs.add("Using all processing power to render splash screen.");
-        loadingMsgs.add("Looking for operating system.");
-        loadingMsgs.add("Releasing the Kraken.");
-        loadingMsgs.add("Scanning for ports, found many ships.");
-        loadingMsgs.add("Turning volume up to 11.");
-        loadingMsgs.add("Bricking fake FTDI chips.");
-        loadingMsgs.add("Downloading more RAM.");
-        loadingMsgs.add("Unpacking christmas presents.");
-        loadingMsgs.add("Forgot which one was CTS and which was RTS.");
-        loadingMsgs.add("The answer is 42.");
-        loadingMsgs.add("Incorrect voltage levels are serial killers.");
-        loadingMsgs.add("All your base are belong to us.");
-        loadingMsgs.add("Uploading user data to NSA.");
-        loadingMsgs.add("Setting IE9 as default browser.");
-        loadingMsgs.add("Booting SkyNet.");
-        loadingMsgs.add("Crypto-locking personal files.");
-        loadingMsgs.add("Remember, DB-9 is actually DE-9.");
-        loadingMsgs.add("Installing bitcoin miner.");
-        loadingMsgs.add("Correcting speling.");
-        loadingMsgs.add("Setting heisenbugs to unknown states.");
-        loadingMsgs.add("Uninstalling RealTerm, Terminal by Br@y, PuTTy and Termite.");
-        loadingMsgs.add("Wondering if you've remembered the baud rate.");
-        loadingMsgs.add("Finding nearby hot singles.");
-        loadingMsgs.add("Putting down Windows XP seach dog.");
-        loadingMsgs.add("Persecuting minorities.");
-        loadingMsgs.add("Patching Java security flaws.");
-        loadingMsgs.add("Voting for Donald Trump.");
-        loadingMsgs.add("Loading clippy animation.");
-        loadingMsgs.add("Discovering this one weird trick, mind will be blown.");
-        loadingMsgs.add("Finished wasting user's time.");
+    public void init() {
 
         // This makes the bogus text look more like it's in a proper terminal window
         loadingMsgsTextFlow.setTextAlignment(TextAlignment.JUSTIFY);
@@ -183,10 +186,12 @@ public class SplashScreenController extends VBox {
         // Add caret to textflow object. It should always remain as the last child, to give the
         // proper appearance
         loadingMsgsTextFlow.getChildren().add(caretText);
-
-
     }
 
+    /**
+     * Initialises and starts the animation of the app name, version and info on
+     * the splash screen.
+     */
     public void startNameVersionInfoMsg() {
         // Create Text object to hold application and version text
         loadingMsgText = new Text();
@@ -201,7 +206,7 @@ public class SplashScreenController extends VBox {
 
         // The version can be null, but this should only occur in a development
         // environment
-        if(versionNumber == null) {
+        if (versionNumber == null) {
             versionNumber = "?.?.?";
         }
 
@@ -215,12 +220,12 @@ public class SplashScreenController extends VBox {
         // the keyframe, as this is the format the keyframe wants
         double summedTimeInMs = 0.0;
 
-        for(int i = 0; i < nameAndVersionString.length(); i++) {
+        for (int i = 0; i < nameAndVersionString.length(); i++) {
             final int test = i;
 
             summedTimeInMs += charIntervalsMs[i];
 
-            if(i == nameAndVersionString.length() - 1) {
+            if (i == nameAndVersionString.length() - 1) {
                 nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
                     loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
 
@@ -243,6 +248,9 @@ public class SplashScreenController extends VBox {
         nameAndVersionTimeline.play();
     }
 
+    /**
+     * Initialises and starts the animation of the bogus messages on the splash screen.
+     */
     private void startBogusLoadingMsgs() {
         // Start loading messages
         timeline = new Timeline(new KeyFrame(
@@ -254,11 +262,15 @@ public class SplashScreenController extends VBox {
         timeline.play();
     }
 
+    /**
+     * Called by lambda expression defined in startBogusLoadingMsgs(), once every keyframe, and
+     * adds a new bogus message to the splash screen.
+     */
     public void updateBogusLoadingMsgs() {
 
-        loadingMsgText.setText(loadingMsgText.getText() + loadingMsgs.get(loadingMsgIndex++) + " ");
+        loadingMsgText.setText(loadingMsgText.getText() + bogusMessages[loadingMsgIndex++] + " ");
 
-        if(loadingMsgIndex >= loadingMsgs.size()) {
+        if (loadingMsgIndex >= bogusMessages.length) {
             // We have reached the end of the loading messages!
             timeline.stop();
 
@@ -266,7 +278,5 @@ public class SplashScreenController extends VBox {
             // to listen for this change and load up the main window now.
             isFinished.set(true);
         }
-
     }
-
 }

@@ -1,12 +1,11 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
+import ninja.mbedded.ninjaterm.interfaces.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,20 +15,49 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by gbmhu on 2016-09-22.
+ * Model containing data and logic for the logging of TX/RX data from a COM port.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-22
+ * @last-modified   2016-09-25
  */
 public class Logging {
+
+    //================================================================================================//
+    //============================================== ENUMS ===========================================//
+    //================================================================================================//
+
+    /**
+     * The different ways logging files can be handled when opened for logging.
+     */
+    public enum FileBehaviour {
+        APPEND,
+        OVERWRITE
+    }
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
     public ReadOnlyBooleanWrapper isLogging = new ReadOnlyBooleanWrapper();
 
+    /**
+     * Stores the way the file will be handled when opened for logging.
+     */
+    public SimpleObjectProperty<FileBehaviour> fileBehaviour = new SimpleObjectProperty<>(FileBehaviour.APPEND);
+
     private Model model;
     private Terminal terminal;
 
-    private DataReceivedAsStringListener dataReceivedAsStringListener;
+    private RawDataReceivedListener rawDataReceivedListener;
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public Logging(Model model, Terminal terminal) {
 
@@ -39,7 +67,7 @@ public class Logging {
         // Set the default log file path
         logFilePath.set(buildDefaultLogFilePath());
 
-        dataReceivedAsStringListener = data -> {
+        rawDataReceivedListener = data -> {
             saveNewDataToLogFile(data);
         };
 
@@ -60,9 +88,23 @@ public class Logging {
 
     public void enableLogging() {
 
+        // Don't do anything if logging is already enabled
+        if(isLogging.get())
+            return;
+
+        boolean isAppend;
+        if(fileBehaviour.get() == FileBehaviour.APPEND) {
+            isAppend = true;
+        } else if(fileBehaviour.get() == FileBehaviour.OVERWRITE) {
+            isAppend = false;
+        } else {
+            throw new RuntimeException("fileBehaviour not recognised!");
+        }
+
         // Open file whose file path is specified in the model
         try {
-            fileWriter = new FileWriter(logFilePath.get(), true); //true tells to append data.
+            // The second parameter determines whether we overwrite or append
+            fileWriter = new FileWriter(logFilePath.get(), isAppend);
             bufferedWriter = new BufferedWriter(fileWriter);
         } catch (IOException e) {
             model.status.addErr("Could not open log file for writing. Reported error: " + e.getMessage());
@@ -73,13 +115,17 @@ public class Logging {
 
         // Add listener. This will cause saveNewDataToLogFile() to be called when there is new
         // RX data
-        terminal.txRx.dataReceivedAsStringListeners.add(dataReceivedAsStringListener);
+        terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
 
         isLogging.set(true);
     }
 
+    /**
+     * Appends the given data to the end of the log file.
+     * @param data  The data to append to the log file.
+     */
     private void saveNewDataToLogFile(String data) {
 
         //System.out.println("Logging to file. data = " + data);
@@ -90,18 +136,26 @@ public class Logging {
             // occurs, it may be wiser to put this on a timer, e.g. once per second.
             bufferedWriter.flush();
         } catch (IOException e) {
-            model.status.addErr("Could not write to log file. Reported error: " + e.getMessage());
+            model.status.addErr("Could not write to log file. Reported error: " + e.getMessage() + ". Disabling logging.");
 
             // Something has gone wrong, disable logging
             disableLogging();
         }
     }
 
+    /**
+     * Disables logging.
+     */
     public void disableLogging() {
+
+        // Don't do anything if logging is already disabled.
+        if(!isLogging.get())
+            return;
+
         isLogging.set(false);
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
-        terminal.txRx.dataReceivedAsStringListeners.remove(dataReceivedAsStringListener);
+        terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
 
         // Now close the file
         try {

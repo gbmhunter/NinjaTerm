@@ -17,9 +17,9 @@ import java.util.ResourceBundle;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-07-17
+ * @last-modified   2016-09-23
  */
-public class StatusBarController implements Initializable {
+public class StatusBarViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -39,11 +39,6 @@ public class StatusBarController implements Initializable {
 
     public Model model;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
-
     public void init(Model model) {
         this.model = model;
 
@@ -61,11 +56,5 @@ public class StatusBarController implements Initializable {
             // Auto-scroll the status scroll-pane to the last received status message
             statusScrollPane.setVvalue(statusTextFlow.getHeight());
         });
-
-
-
     }
-
-
-
 }

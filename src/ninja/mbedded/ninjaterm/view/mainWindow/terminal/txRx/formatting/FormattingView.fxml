@@ -1,0 +1,36 @@
+<!--
+* Inner content for the formatting pop-up of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-09-26
+* @last-modified   2016-09-26
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.RadioButton?>
+<VBox
+        fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController"
+        xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
+        spacing="20"
+        fillWidth="true" GridPane.vgrow="ALWAYS"
+        stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <!-- WHAT TO SEND WHEN ENTER IS PRESSED -->
+    <VBox spacing="5" styleClass="border">
+        <Label>On ENTER, send:</Label>
+        <RadioButton fx:id="carriageReturnCheckBox">Carriage Return (\r)</RadioButton>
+        <RadioButton fx:id="newLineCheckBox">New Line (\n)</RadioButton>
+        <RadioButton fx:id="carriageReturnAndNewLineCheckBox">Carriage Return + New Line (\r\n)</RadioButton>
+    </VBox>
+</VBox>
+
+
+

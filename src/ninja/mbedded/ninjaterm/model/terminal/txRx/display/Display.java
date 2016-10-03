@@ -6,7 +6,11 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
 /**
- * Created by gbmhu on 2016-09-16.
+ * Model containing data and logic for the display components of the TX/RX data.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-16
+ * @last-modified   2016-09-23
  */
 public class Display {
 

@@ -1,14 +1,18 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
+import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
@@ -18,13 +22,19 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Controller for the "StatsView" sub-tab which is part of a terminal tab.
+ * Controller for the "Logging" sub-tab which is part of a terminal tab.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-09-22
+ * @last-modified 2016-09-25
  */
-public class LoggingViewController implements Initializable {
+public class LoggingViewController {
+
+    //================================================================================================//
+    //============================================== ENUMS ===========================================//
+    //================================================================================================//
+
+
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -35,6 +45,12 @@ public class LoggingViewController implements Initializable {
 
     @FXML
     private Button browseButton;
+
+    @FXML
+    private RadioButton appendFileBehaviourRadioButton;
+
+    @FXML
+    private RadioButton overwriteFileBehaviourRadioButton;
 
     @FXML
     private Button startStopLoggingButton;
@@ -48,26 +64,15 @@ public class LoggingViewController implements Initializable {
 
     private GlyphFont glyphFont;
 
+    private ToggleGroupValue<Logging.FileBehaviour> fileBehvaiourToggleGroupValue = new ToggleGroupValue<>();
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
     public LoggingViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "LoggingView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-
-    }
 
     public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
@@ -100,6 +105,15 @@ public class LoggingViewController implements Initializable {
         // Update the button style based on the default value for isLogging in the model.
         updateLoggingTabBasedOnIsLogging();
 
+        //==============================================//
+        //============= FILE BEHAVIOUR SETUP ===========//
+        //==============================================//
+
+        fileBehvaiourToggleGroupValue.add(appendFileBehaviourRadioButton, Logging.FileBehaviour.APPEND);
+        fileBehvaiourToggleGroupValue.add(overwriteFileBehaviourRadioButton, Logging.FileBehaviour.OVERWRITE);
+
+        Bindings.bindBidirectional(fileBehvaiourToggleGroupValue.valueProperty(), terminal.logging.fileBehaviour);
+
     }
 
     private void openFileChooser() {
@@ -128,6 +142,8 @@ public class LoggingViewController implements Initializable {
             // Disable certain controls
             logFilePathTextField.setDisable(false);
             browseButton.setDisable(false);
+            appendFileBehaviourRadioButton.setDisable(false);
+            overwriteFileBehaviourRadioButton.setDisable(false);
 
         } else {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
@@ -138,6 +154,8 @@ public class LoggingViewController implements Initializable {
             // Enable certain controls
             logFilePathTextField.setDisable(true);
             browseButton.setDisable(true);
+            appendFileBehaviourRadioButton.setDisable(true);
+            overwriteFileBehaviourRadioButton.setDisable(true);
         }
     }
 

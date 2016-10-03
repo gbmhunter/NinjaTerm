@@ -3,12 +3,11 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-07-17
+* @last-modified   2016-09-23
 -->
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import java.net.URL?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController"
       fx:id="mainVBox"
       xmlns:fx="http://javafx.com/fxml" alignment="center"
@@ -29,10 +28,10 @@
 
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
         <!--<Tab text="terminalViewController 1" closable="true">-->
-            <!--<fx:include fx:id="terminalViewController" source="terminalViewController.fxml"/>-->
+        <!--<fx:include fx:id="terminalViewController" source="terminalViewController.fxml"/>-->
         <!--</Tab>-->
     </TabPane>
 
-    <fx:include fx:id="statusBar" source="StatusBar/StatusBarView.fxml"/>
+    <fx:include fx:id="statusBarView" source="StatusBar/StatusBarView.fxml"/>
 
 </VBox>

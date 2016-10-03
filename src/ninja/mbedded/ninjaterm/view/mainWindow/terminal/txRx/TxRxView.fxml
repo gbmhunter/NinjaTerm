@@ -3,9 +3,9 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-08-25
+* @last-modified   2016-09-26
 -->
-<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.RxTxController-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
@@ -13,12 +13,15 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
-<fx:root type="javafx.scene.layout.VBox" id="RxTxController"
-         xmlns:fx="http://javafx.com/fxml" alignment="TOP_LEFT"
-         spacing="20"
-         prefHeight="500" prefWidth="800"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="@../../../../resources/style.css">
+<Tab
+        fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:id="rxTxTab" text="RX/TX" closable="false">
+<VBox  alignment="TOP_LEFT"
+      spacing="20"
+      prefHeight="500" prefWidth="800"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="@../../../../resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -38,7 +41,7 @@
                 <ScrollPane fx:id="rxDataScrollPane">
                     <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
                     <!-- This TextFlow holds the many RX Text objects -->
-                    <TextFlow fx:id="txRxTextFlow" styleClass="txRxText"
+                    <TextFlow fx:id="rxDataTextFlow" styleClass="txRxText"
                               style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;">
                         <padding>
                             <Insets top="10" bottom="10" left="10" right="10"/>
@@ -50,7 +53,8 @@
                 <!-- =========================================== -->
                 <!-- ========== DATA DIRECTION INDICATOR ======= -->
                 <!-- =========================================== -->
-                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
+                <StackPane fx:id="dataDirectionRxStackPane" StackPane.alignment="TOP_RIGHT" maxWidth="100"
+                           maxHeight="20" alignment="CENTER"
                            style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
                     <Label fx:id="dataDirectionRxLabel" alignment="CENTER" style="-fx-text-fill: white;">RX</Label>
                 </StackPane>
@@ -106,14 +110,17 @@
         <!-- =========================================== -->
         <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
             <Button fx:id="clearTextButton" minWidth="100">Clear Text</Button>
+            <!-- SPACER -->
+            <VBox minHeight="20"></VBox>
             <Button fx:id="displayButton" minWidth="100">Display</Button>
+            <Button fx:id="formattingButton" minWidth="100">Formatting</Button>
+            <Button fx:id="coloriserButton" minWidth="100">Colouriser</Button>
             <Button fx:id="filtersButton" minWidth="100">Filters</Button>
         </VBox>
 
     </HBox>
-
-
-</fx:root>
+</VBox>
+    </Tab>
 
 
 
