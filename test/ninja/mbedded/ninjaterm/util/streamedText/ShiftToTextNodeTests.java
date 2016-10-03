@@ -13,7 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>TextInListUtils</code> class.
+ * Unit tests for the <code>shiftToTextNodes()</code> method of the <code>{@link StreamedText}</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-02

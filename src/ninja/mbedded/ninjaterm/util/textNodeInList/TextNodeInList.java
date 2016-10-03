@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.textInListUtils;
+package ninja.mbedded.ninjaterm.util.textNodeInList;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
@@ -10,9 +10,9 @@ import javafx.scene.text.Text;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-09-27
+ * @last-modified   2016-10-03
  */
-public class TextInListUtils {
+public class TextNodeInList {
 
     /**
      * Removes the specified number of characters from the text nodes provided inside the observable list.
@@ -35,7 +35,7 @@ public class TextInListUtils {
             Text currTextNode = (Text)observableList.get(0);
 
             int numCharsInCurrTextNode = currTextNode.getText().length();
-            if(numCharsInCurrTextNode > numRemainingCharsToRemove) {
+            if(numCharsInCurrTextNode >= numRemainingCharsToRemove) {
                 // Current text node has more chars than we need to remove, so take a substring of the
                 // text. This will be the only iteration of this loop
                 currTextNode.setText(currTextNode.getText().substring(numRemainingCharsToRemove));
@@ -48,10 +48,6 @@ public class TextInListUtils {
                 // Entirely remove this node from the list
                 observableList.remove(currTextNode);
             }
-
         }
     }
-
-
-
 }

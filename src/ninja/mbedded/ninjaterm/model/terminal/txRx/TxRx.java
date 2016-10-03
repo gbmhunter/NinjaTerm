@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
-import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
+import ninja.mbedded.ninjaterm.interfaces.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.interfaces.NewStreamedTextListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -56,7 +56,7 @@ public class TxRx {
      */
     public ObservableList<Node> rxDataAsList = FXCollections.observableArrayList();
 
-    int numOfCharsInRxNodes = 0;
+    int numOfRxCharsInAnsiOutput = 0;
 
     private AnsiECParser ansiECParser = new AnsiECParser();
 
@@ -75,7 +75,7 @@ public class TxRx {
 
     private StreamedText filterOutput = new StreamedText();
 
-    public List<DataReceivedAsStringListener> dataReceivedAsStringListeners = new ArrayList<>();
+    public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
@@ -258,10 +258,10 @@ public class TxRx {
         //============== ANSI ESCAPE CODES =============//
         //==============================================//
 
-        // This method will update the rxDataAsList variable, adding the data to the end of the last node
-        // or creating new nodes where applicable
+        // This temp variable is used to store just the new ANSI parser output data, which
+        // is then stored in totalAnsiParserOutput before being shifted into just ansiParserOutput
         StreamedText tempAnsiParserOutput = new StreamedText();
-        numOfCharsInRxNodes += ansiECParser.parse(data, tempAnsiParserOutput);
+        ansiECParser.parse(data, tempAnsiParserOutput);
 
         // Append the output of the ANSI parser to the "total" ANSI parser output buffer
         // This will be used if the user changes the filter pattern and wishes to re-run
@@ -271,6 +271,8 @@ public class TxRx {
         // we don't want to add them twice
         totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
 
+        // Now add all the new ANSI parser output to any that was not used up by the
+        // streaming filter from last time
         ansiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
 
         //==============================================//
@@ -280,21 +282,30 @@ public class TxRx {
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
         streamingFilter.parse(ansiParserOutput, filterOutput);
 
+        //==============================================//
+        //=================== TRIMMING =================//
+        //==============================================//
+
+        // Trim total ANSI parser output
+        if(totalAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
+            int numOfCharsToRemove = totalAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
+            totalAnsiParserOutput.removeChars(numOfCharsToRemove);
+        }
+
+        // NOTE: UI buffer is trimmed in view controller
+
+        //==============================================//
+        //============== LISTENER NOTIFICATION =========//
+        //==============================================//
+
         // Notify that there is new UI data to display
         for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
             newStreamedTextListener.run(filterOutput);
         }
 
-        // Trim the RX nodes if necessary
-        /*if(numOfCharsInRxNodes > display.bufferSizeChars.get()) {
-            int numOfCharsToRemove = numOfCharsInRxNodes - display.bufferSizeChars.get();
-            TextInListUtils.trimTextNodesFromStart(rxDataAsList, numOfCharsToRemove);
-            numOfCharsInRxNodes -= numOfCharsToRemove;
-        }*/
-
         // Finally, call any listeners (the logging class of the model might be listening)
-        for(DataReceivedAsStringListener dataReceivedAsStringListener : dataReceivedAsStringListeners) {
-            dataReceivedAsStringListener.update(data);
+        for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
+            rawDataReceivedListener.update(data);
         }
     }
 
@@ -351,10 +362,18 @@ public class TxRx {
             // Firstly, clear RX data on UI
             clearTxAndRxData();
 
+            // Clear all filter output
+            filterOutput.clear();
+
             // We need to run the entire ANSI parser output back through the filter
             // Make a temp. StreamedText object that can be consumed (we want to preserve
             // totalAnsiParserOutput).
             StreamedText toBeConsumed = new StreamedText(totalAnsiParserOutput);
+
+            // The normal ansiParserOutput should now be changed to point
+            // to this toBeConsumed object
+            ansiParserOutput = toBeConsumed;
+
             streamingFilter.parse(toBeConsumed, filterOutput);
 
             // Notify that there is new UI data to display

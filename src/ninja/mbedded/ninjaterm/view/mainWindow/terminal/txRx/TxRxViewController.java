@@ -22,6 +22,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -141,12 +142,17 @@ public class TxRxViewController {
      */
     private Text caretText;
 
-    //private ComPort comPort;
-
     private DisplayViewController displayViewController;
     private FormattingViewController formattingViewController;
     private ColouriserViewController colouriserViewController;
     private FiltersViewController filtersViewController;
+
+    /**
+     * This is used to remember how many chars are in the RX text nodes, incase we need to trim the nodes
+     * due to the buffer size. This is calculated incrementaly rather than recalculated from all off the nodes
+     * (which would be processor intensive)
+     */
+    private int numCharsInRxTextNodes = 0;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -281,6 +287,9 @@ public class TxRxViewController {
             // all data from the RX pane
             rxDataTextFlow.getChildren().clear();
             rxDataTextFlow.getChildren().add(new Text());
+
+            // Reset the variable which counts the number of RX chars
+            numCharsInRxTextNodes = 0;
         });
 
         //==============================================//
@@ -423,7 +432,19 @@ public class TxRxViewController {
 
     private void newStreamedTextListener(StreamedText streamedText) {
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
+
+        numCharsInRxTextNodes += streamedText.getText().length();
         streamedText.shiftToTextNodes(observableList);
+
+        // Trim RX UI if necessary
+        // (the ANSI parser output data is trimmed separately in the model)
+        if(numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
+            int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
+            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
+
+            // Now we have removed chars, update the count
+            numCharsInRxTextNodes -= numCharsToRemove;
+        }
     }
 
     /**

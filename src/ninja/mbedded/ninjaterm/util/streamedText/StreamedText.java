@@ -121,6 +121,13 @@ public class StreamedText {
 
     }
 
+    public void clear() {
+        // "Reset" this object
+        this.text = "";
+        this.getTextColours().clear();
+        this.colorToBeInsertedOnNextChar = null;
+    }
+
     public void removeChars(int numChars) {
         StreamedText dummyStreamedText = new StreamedText();
         dummyStreamedText.shiftCharsIn(this, numChars);
@@ -273,6 +280,10 @@ public class StreamedText {
     }
 
     public void shiftToTextNodes(ObservableList<Node> existingTextNodes) {
+
+        if(existingTextNodes.size() == 0) {
+            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
+        }
 
         Text lastTextNode = (Text)existingTextNodes.get(existingTextNodes.size() - 1);
 

@@ -1,13 +1,11 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.interfaces.DataReceivedAsStringListener;
+import ninja.mbedded.ninjaterm.interfaces.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -52,7 +50,7 @@ public class Logging {
     private Model model;
     private Terminal terminal;
 
-    private DataReceivedAsStringListener dataReceivedAsStringListener;
+    private RawDataReceivedListener rawDataReceivedListener;
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
@@ -69,7 +67,7 @@ public class Logging {
         // Set the default log file path
         logFilePath.set(buildDefaultLogFilePath());
 
-        dataReceivedAsStringListener = data -> {
+        rawDataReceivedListener = data -> {
             saveNewDataToLogFile(data);
         };
 
@@ -117,7 +115,7 @@ public class Logging {
 
         // Add listener. This will cause saveNewDataToLogFile() to be called when there is new
         // RX data
-        terminal.txRx.dataReceivedAsStringListeners.add(dataReceivedAsStringListener);
+        terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
 
@@ -157,7 +155,7 @@ public class Logging {
         isLogging.set(false);
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
-        terminal.txRx.dataReceivedAsStringListeners.remove(dataReceivedAsStringListener);
+        terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
 
         // Now close the file
         try {
