@@ -38,6 +38,27 @@ Developing
 
 [Scene Builder](http://gluonhq.com/labs/scene-builder/) can be great tool to install alongside IntelliJ for faster development of the JavaFX UI.
 
+Releasing New Version
+=====================
+
+NOTE: The order of the following tasks is important!
+
+1. Make sure that you are on the "release" branch, and that desired updates have been merged from the feature branches.
+1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
+2. Update README.md with the new version number and "last changed" date.
+3. Build the .jar artifact by clicking Build->Build Artifacts in IntelliJ. MAKE SURE than the SPLASHSCREEN is enabled!
+4. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
+5. Click "Save Project" and then "Build Project".
+6. Once the installers have been created, overwrite the "updates.xml" in the repo root directory with the one from the install/ directory.
+7. Commit these changes on the "release" branch (you should already be on this branch).
+8. Switch to the "master" branch and merge the "release" branch into it. Make sure to create a new commit (click the "Create new commit even if fast forward possible" checkbox if using the SourceTree GUI).
+9. Add a tag to this new commit on the master branch, tagging it with the version number (e.g. "v0.4.0").
+10. Go to the GitHub repo's main page and click "Releases".
+11. Click "Draft a new release". Create a new release, using "0.4.0" as both the tag and the title. Populate the description box with the same info that was added to changelog.md.
+12. Upload the installers that install4j has created in the "install/" directory.
+13. Click "Create new release", and it is all done!
+ 
+
 File Structure 
 ==============
 
