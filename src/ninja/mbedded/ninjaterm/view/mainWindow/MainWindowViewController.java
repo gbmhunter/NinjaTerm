@@ -122,6 +122,16 @@ public class MainWindowViewController {
         });
 
         //==============================================//
+        //================ TERMINAL SETUP ==============//
+        //==============================================//
+
+        // Install handler for when the model emits a terminal
+        // closed event
+        model.closedTerminalListeners.add(terminal -> {
+            handleCloseTerminal(terminal);
+        });
+
+        //==============================================//
         //================== STATUS BAR ================//
         //==============================================//
 
@@ -152,6 +162,7 @@ public class MainWindowViewController {
             return;
         }
 
+        // Extract controller from this view and perform setup on it
         TerminalViewController terminalViewController = loader.getController();
         terminalViewController.init(model, terminal, glyphFont);
 
@@ -162,7 +173,30 @@ public class MainWindowViewController {
         // Peform a scan of the COM ports on start-up
         terminalViewController.comSettingsViewController.scanComPorts();
 
+        // Add the Tab view to the TabPane
         terminalTabPane.getTabs().add(terminalTab);
+    }
+
+    /**
+     * Handler for a CloseTerminal event sent from the model.
+     * @param terminal
+     */
+    public void handleCloseTerminal(Terminal terminal) {
+
+        // Find the terminal controller associated with this terminal
+        for(TerminalViewController terminalViewController : terminalViewControllers) {
+            if(terminalViewController.getTerminal() == terminal) {
+                // We have found the correct terminal to close
+                // Remove both the Tab from the TabPane and the TerminalController
+                // from the list
+                terminalTabPane.getTabs().remove(terminalViewController.getTerminalTab());
+                terminalViewControllers.remove(terminalViewController);
+                return;
+            }
+        }
+
+        // If we get here, we didn't find the terminal!
+        throw new RuntimeException("Terminal close request received, but could not find the requested terminal to close.");
 
     }
 }

@@ -2,7 +2,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
@@ -10,13 +9,11 @@ import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
-import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
@@ -25,9 +22,9 @@ import java.util.Optional;
 /**
  * Controller for the "terminal" which is part of the main window.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-08-23
- * @last-modified   2016-09-22
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-10-04
+ * @since 2016-08-23
  */
 public class TerminalViewController {
 
@@ -128,14 +125,20 @@ public class TerminalViewController {
 
         // Create right-click context menu for tab
         ContextMenu contextMenu = new ContextMenu();
+
         MenuItem menuItem = new MenuItem("Rename");
-        menuItem.setOnAction(new EventHandler<ActionEvent>(){
-            @Override public void handle(ActionEvent e){
-                //System.out.println("Testing!");
-                showRenameTabDialogueBox();
-            }
+        menuItem.setOnAction((ActionEvent e) -> {
+            showRenameTabDialogueBox();
         });
         contextMenu.getItems().add(menuItem);
+
+        menuItem = new MenuItem("Close");
+        menuItem.setOnAction((ActionEvent e) -> {
+            model.closeTerminal(terminal);
+        });
+        contextMenu.getItems().add(menuItem);
+
+
         terminalTab.setContextMenu(contextMenu);
 
         //==============================================//
@@ -158,6 +161,14 @@ public class TerminalViewController {
 
     }
 
+    public Terminal getTerminal() {
+        return terminal;
+    }
+
+    public Tab getTerminalTab() {
+        return terminalTab;
+    }
+
     /**
      * Allows the user to rename the terminal tab. Function does not return until
      * name has been set.
@@ -171,7 +182,7 @@ public class TerminalViewController {
 
         // Get the response value.
         Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()){
+        if (result.isPresent()) {
             // Write the new terminal name to the model. This should then
             // automatically update the terminal tab text.
             //terminal.terminalName.set(result.get());
@@ -193,11 +204,11 @@ public class TerminalViewController {
             try {
                 terminal.comPort.open();
             } catch (ComPortException e) {
-                if(e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
+                if (e.type == ComPortException.ExceptionType.COM_PORT_BUSY) {
                     model.status.addErr(terminal.comPort.getName() + " was busy and could not be opened.");
                     //comPort = null;
                     return;
-                } else if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
+                } else if (e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
                     model.status.addErr(terminal.comPort.getName() + " no longer exists. Please rescan.");
                     //comPort = null;
                     return;
@@ -257,7 +268,7 @@ public class TerminalViewController {
             try {
                 terminal.comPort.close();
             } catch (ComPortException e) {
-                if(e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
+                if (e.type == ComPortException.ExceptionType.COM_PORT_DOES_NOT_EXIST) {
                     model.status.addErr("Attempted to close non-existant COM port. Was USB cable unplugged?");
 
                     // Since COM port does not exist anymore, set button back to "Open"
@@ -284,13 +295,13 @@ public class TerminalViewController {
     }
 
     private void setOpenCloseButtonStyle(OpenCloseButtonStyles openCloseButtonStyle) {
-        if(openCloseButtonStyle == OpenCloseButtonStyles.OPEN) {
+        if (openCloseButtonStyle == OpenCloseButtonStyles.OPEN) {
             comSettingsViewController.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
             comSettingsViewController.openCloseComPortButton.setText("Open");
             comSettingsViewController.openCloseComPortButton.getStyleClass().remove("failure");
             comSettingsViewController.openCloseComPortButton.getStyleClass().add("success");
 
-        } else if(openCloseButtonStyle == OpenCloseButtonStyles.CLOSE) {
+        } else if (openCloseButtonStyle == OpenCloseButtonStyles.CLOSE) {
             comSettingsViewController.openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
             comSettingsViewController.openCloseComPortButton.setText("Close");
             comSettingsViewController.openCloseComPortButton.getStyleClass().remove("success");
@@ -303,7 +314,7 @@ public class TerminalViewController {
     /**
      * Called by event handler registered in this classes constructor when a key is typed while
      * this terminal tab is selected.
-     *
+     * <p>
      * Only key-presses in the TX/RX tab are acted upon, all others are ignored.
      *
      * @param ke
