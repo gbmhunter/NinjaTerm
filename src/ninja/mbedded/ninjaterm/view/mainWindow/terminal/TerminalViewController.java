@@ -183,7 +183,8 @@ public class TerminalViewController {
         if (result.isPresent()){
             // Write the new terminal name to the model. This should then
             // automatically update the terminal tab text.
-            terminal.terminalName.set(result.get());
+            //terminal.terminalName.set(result.get());
+            terminal.manuallyRenameTerminalTab(result.get());
         }
     }
 
@@ -253,6 +254,10 @@ public class TerminalViewController {
                     " Buad rate = " + terminal.comPort.getBaudRate() + "," +
                     " parity = " + terminal.comPort.getParity() + "," +
                     " num. stop bits = " + terminal.comPort.getNumStopBits() + ".");
+
+            // All non-UI code relating to opening COM port should eventually be moved into
+            // this function!!!
+            terminal.openComPort();
 
         } else {
             // Must be closing COM port

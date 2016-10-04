@@ -134,12 +134,10 @@ public class MainWindowViewController {
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal(model);
         // Set the default terminal name in the model. The terminal tab will read this.
-        terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
+        //terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
         // Make sure the model has a record to this newly created terminal
         model.terminals.add(terminal);
-
-
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("terminal/TerminalView.fxml"));
 
@@ -151,17 +149,14 @@ public class MainWindowViewController {
         }
 
         TerminalViewController terminalViewController = loader.getController();
-
-
-        //TerminalViewController terminalViewController = new TerminalViewController();
         terminalViewController.init(model, terminal, glyphFont, statusBarViewController);
+
+        // Save a reference to this TerminalView controller
         terminalViewControllers.add(terminalViewController);
 
         terminalViewController.comSettingsViewController.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
         terminalViewController.comSettingsViewController.scanComPorts();
-
-        //terminalViewController.setText();
 
         terminalTabPane.getTabs().add(terminalTab);
 
