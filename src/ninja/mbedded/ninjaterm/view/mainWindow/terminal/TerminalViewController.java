@@ -60,10 +60,6 @@ public class TerminalViewController {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-
-    //public ComPort comPort = new ComPort();
-
-    private StatusBarViewController statusBarViewController;
     private Decoder decoder = new Decoder();
 
     private GlyphFont glyphFont;
@@ -76,14 +72,14 @@ public class TerminalViewController {
     public TerminalViewController() {
     }
 
-    public void init(Model model, Terminal terminal, GlyphFont glyphFont, StatusBarViewController statusBarViewController) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
         this.model = model;
         this.terminal = terminal;
 
 
         this.glyphFont = glyphFont;
-        this.statusBarViewController = statusBarViewController;
+        //this.statusBarViewController = statusBarViewController;
 
         // Set children
         comSettingsViewController.setStatusBarController(model);
@@ -96,10 +92,7 @@ public class TerminalViewController {
         // Select first tab by default
         terminalTabPane.getSelectionModel().select(0);
 
-        // Create RX/TX view
-        //txRxViewController = new TxRxViewController();
-        txRxViewController.Init(model, terminal, decoder, statusBarViewController, glyphFont);
-        //txRxView.setContent(txRxViewController);
+        txRxViewController.Init(model, terminal, decoder, glyphFont);
 
         // Set default style for OpenClose button
         setOpenCloseButtonStyle(OpenCloseButtonStyles.OPEN);
@@ -128,8 +121,6 @@ public class TerminalViewController {
         //==============================================//
 
         statsViewController.init(terminal);
-
-        statusBarViewController.init(model);
 
         //==============================================//
         //============= SETUP CONTEXT MENU =============//

@@ -125,8 +125,6 @@ public class TxRxViewController {
 
     private Decoder decoder;
 
-    private StatusBarViewController statusBarViewController;
-
     private GlyphFont glyphFont;
 
     private Model model;
@@ -166,7 +164,7 @@ public class TxRxViewController {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Model model, Terminal terminal, Decoder decoder, StatusBarViewController statusBarViewController, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, Decoder decoder, GlyphFont glyphFont) {
 
         // Save model
         this.model = model;
@@ -181,7 +179,6 @@ public class TxRxViewController {
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         this.decoder = decoder;
-        this.statusBarViewController = statusBarViewController;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)

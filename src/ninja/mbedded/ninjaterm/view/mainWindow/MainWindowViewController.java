@@ -49,7 +49,7 @@ public class MainWindowViewController {
     public TabPane terminalTabPane;
 
     @FXML
-    public StatusBarViewController statusBarViewController;
+    private StatusBarViewController statusBarViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -121,6 +121,12 @@ public class MainWindowViewController {
             alert.showAndWait();
         });
 
+        //==============================================//
+        //================== STATUS BAR ================//
+        //==============================================//
+
+        statusBarViewController.init(model);
+
     }
 
     /**
@@ -133,8 +139,6 @@ public class MainWindowViewController {
 
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal(model);
-        // Set the default terminal name in the model. The terminal tab will read this.
-        //terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
         // Make sure the model has a record to this newly created terminal
         model.terminals.add(terminal);
@@ -149,7 +153,7 @@ public class MainWindowViewController {
         }
 
         TerminalViewController terminalViewController = loader.getController();
-        terminalViewController.init(model, terminal, glyphFont, statusBarViewController);
+        terminalViewController.init(model, terminal, glyphFont);
 
         // Save a reference to this TerminalView controller
         terminalViewControllers.add(terminalViewController);
