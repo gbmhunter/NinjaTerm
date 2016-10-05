@@ -15,8 +15,8 @@ import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
  * Controller for the splash screen.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-09-23
  * @since 2016-09-20
+ * @last-modified 2016-10-04
  */
 public class SplashScreenViewController {
 
@@ -80,6 +80,8 @@ public class SplashScreenViewController {
             "Finished wasting user's time."
     };
 
+    private final double intervalBetweenEachBogusMsgMs = 100;
+
     /**
      * This array is used to give the typing of characters onto the splash screen a "human-like"
      * feel. Each entry corresponds to the time (in milliseconds) before the mapped character
@@ -91,55 +93,55 @@ public class SplashScreenViewController {
     private final double[] charIntervalsMs = new double[]{
             25,     //
             1500,   // N
-            125,    // i
-            150,    // n
-            200,    // j
-            150,    // a
+            75,    // i
+            50,    // n
+            150,    // j
+            100,    // a
             75,     // T
             100,    // e
-            250,    // r
-            100,    // m
-            50,     //
+            50,    // r
+            75,    // m
+            25,     //
             300,    // v
-            100,    // X
+            75,    // X
             150,    // .
             75,     // X
-            150,    // .
+            50,    // .
             125,    // X
             50,     // \r
-            50,     // \r
+            25,     // \r
             300,    // A
-            125,    //
-            150,    // f
+            100,    //
+            100,    // f
             50,     // r
-            75,     // e
+            20,     // e
             25,     // e
-            50,     //
+            10,     //
             100,    // t
-            125,    // o
-            75,     // o
-            100,    // l
+            75,    // o
+            20,     // o
+            60,    // l
             50,     //
-            200,    // b
-            100,    // y
+            100,    // b
+            20,    // y
             50,     //
             250,    // w
-            100,    // w
-            75,     // w
+            50,    // w
+            20,     // w
             50,     // .
             150,    // m
-            125,    // b
-            150,    // e
-            125,    // d
+            100,    // b
+            90,    // e
+            100,    // d
             25,     // d
-            100,    // e
-            125,    // d
+            70,    // e
+            90,    // d
             50,     // .
-            200,    // n
-            175,    // i
-            100,    // n
+            140,    // n
+            75,    // i
+            60,    // n
             50,     // j
-            100,    // a
+            70,    // a
             75,     // \r
             75,     // \r
             // <---- START OF BOGUS MESSAGES HERE
@@ -254,7 +256,7 @@ public class SplashScreenViewController {
     private void startBogusLoadingMsgs() {
         // Start loading messages
         timeline = new Timeline(new KeyFrame(
-                Duration.millis(75),
+                Duration.millis(intervalBetweenEachBogusMsgMs),
                 ae -> updateBogusLoadingMsgs()));
 
         // timeline will be stopped when last bogus message has been printed.
