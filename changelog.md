@@ -1,4 +1,4 @@
-vX.X.X
+v0.6.1
 ------
 
 - Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.
