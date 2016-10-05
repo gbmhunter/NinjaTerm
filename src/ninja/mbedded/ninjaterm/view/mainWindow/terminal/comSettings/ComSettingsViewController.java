@@ -15,7 +15,7 @@ import org.controlsfx.glyphfont.GlyphFont;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-09-22
+ * @last-modified   2016-10-05
  */
 public class ComSettingsViewController {
 
@@ -55,7 +55,6 @@ public class ComSettingsViewController {
     private GlyphFont glyphFont;
 
     public ComSettingsViewController() {
-
     }
 
     public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
