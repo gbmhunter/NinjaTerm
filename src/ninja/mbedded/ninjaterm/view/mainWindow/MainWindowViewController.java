@@ -49,7 +49,7 @@ public class MainWindowViewController {
     public TabPane terminalTabPane;
 
     @FXML
-    public StatusBarViewController statusBarViewController;
+    private StatusBarViewController statusBarViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -121,6 +121,22 @@ public class MainWindowViewController {
             alert.showAndWait();
         });
 
+        //==============================================//
+        //================ TERMINAL SETUP ==============//
+        //==============================================//
+
+        // Install handler for when the model emits a terminal
+        // closed event
+        model.closedTerminalListeners.add(terminal -> {
+            handleCloseTerminal(terminal);
+        });
+
+        //==============================================//
+        //================== STATUS BAR ================//
+        //==============================================//
+
+        statusBarViewController.init(model);
+
     }
 
     /**
@@ -133,13 +149,9 @@ public class MainWindowViewController {
 
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal(model);
-        // Set the default terminal name in the model. The terminal tab will read this.
-        terminal.terminalName.set("Terminal " + Integer.toString(terminalTabPane.getTabs().size() + 1));
 
         // Make sure the model has a record to this newly created terminal
         model.terminals.add(terminal);
-
-
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("terminal/TerminalView.fxml"));
 
@@ -150,20 +162,41 @@ public class MainWindowViewController {
             return;
         }
 
+        // Extract controller from this view and perform setup on it
         TerminalViewController terminalViewController = loader.getController();
+        terminalViewController.init(model, terminal, glyphFont);
 
-
-        //TerminalViewController terminalViewController = new TerminalViewController();
-        terminalViewController.init(model, terminal, glyphFont, statusBarViewController);
+        // Save a reference to this TerminalView controller
         terminalViewControllers.add(terminalViewController);
 
         terminalViewController.comSettingsViewController.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
         terminalViewController.comSettingsViewController.scanComPorts();
 
-        //terminalViewController.setText();
-
+        // Add the Tab view to the TabPane
         terminalTabPane.getTabs().add(terminalTab);
+    }
+
+    /**
+     * Handler for a CloseTerminal event sent from the model.
+     * @param terminal
+     */
+    public void handleCloseTerminal(Terminal terminal) {
+
+        // Find the terminal controller associated with this terminal
+        for(TerminalViewController terminalViewController : terminalViewControllers) {
+            if(terminalViewController.getTerminal() == terminal) {
+                // We have found the correct terminal to close
+                // Remove both the Tab from the TabPane and the TerminalController
+                // from the list
+                terminalTabPane.getTabs().remove(terminalViewController.getTerminalTab());
+                terminalViewControllers.remove(terminalViewController);
+                return;
+            }
+        }
+
+        // If we get here, we didn't find the terminal!
+        throw new RuntimeException("Terminal close request received, but could not find the requested terminal to close.");
 
     }
 }

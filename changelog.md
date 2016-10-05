@@ -1,3 +1,11 @@
+v0.6.1
+------
+
+- Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.
+- Removed the unneeded "StatusBarController" variable from being passed into view controller constructors, closes #107.
+- Added "Close" option to tab header context menu, closes #105.
+- Refactored serial port open/close code and made sure disconnection cases are handled correctly, closes #108.
+
 v0.6.0
 ------
 
