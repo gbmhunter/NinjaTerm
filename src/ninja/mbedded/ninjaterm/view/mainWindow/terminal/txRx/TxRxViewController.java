@@ -39,7 +39,7 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-09-23
+ * @last-modified 2016-10-05
  */
 public class TxRxViewController {
 
@@ -123,8 +123,6 @@ public class TxRxViewController {
 
     private Text rxDataText = new Text();
 
-    private Decoder decoder;
-
     private GlyphFont glyphFont;
 
     private Model model;
@@ -164,7 +162,7 @@ public class TxRxViewController {
      * Initialisation method because we are not allowed to have input parameters in the constructor.
      * @param glyphFont
      */
-    public void Init(Model model, Terminal terminal, Decoder decoder, GlyphFont glyphFont) {
+    public void Init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
         // Save model
         this.model = model;
@@ -177,8 +175,6 @@ public class TxRxViewController {
         displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
         formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
         filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
-
-        this.decoder = decoder;
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
@@ -302,7 +298,7 @@ public class TxRxViewController {
         }
         displayViewController = loader.getController();
 
-        displayViewController.init(model, terminal, decoder);
+        displayViewController.init(model, terminal);
 
         setupPopover(loader.getRoot(), "Display", displayButton);
 

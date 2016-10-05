@@ -77,22 +77,9 @@ public class DisplayViewController {
     //================================================================================================//
 
     public DisplayViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "DisplayView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
     }
 
-    public void init(Model model, Terminal terminal, Decoder decoder) {
+    public void init(Model model, Terminal terminal) {
 
         // Populate decoding options combobox
         layoutOptionsComboBox.getItems().setAll(Display.LayoutOptions.values());
@@ -144,7 +131,7 @@ public class DisplayViewController {
 
             // Bind the decoder decoding option to what has been selected in the
             // combobox
-            decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
+            terminal.decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
         });
 
         // Set default

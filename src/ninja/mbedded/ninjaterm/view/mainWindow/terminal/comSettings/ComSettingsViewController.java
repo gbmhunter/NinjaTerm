@@ -1,15 +1,14 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comport.*;
-
-import java.io.IOException;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
 
 /**
  * Controller for the "COM Settings tab" which is part of the main window.
@@ -53,11 +52,16 @@ public class ComSettingsViewController {
 
     private ComPortManager comPortManager;
 
+    private GlyphFont glyphFont;
+
     public ComSettingsViewController() {
 
     }
 
-    public void init() {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
+
+        this.model = model;
+        this.glyphFont = glyphFont;
 
         // Attach handler for "Scan" button press
         reScanButton.setOnAction((actionEvent) -> {
@@ -65,20 +69,26 @@ public class ComSettingsViewController {
         });
 
         //==============================================//
-        //=============== POPULATE COMBOBOXES ==========//
+        //=========== POPULATE/BIND COMBOBOXES =========//
         //==============================================//
+
+        terminal.comPortSettings.selComPortName.bind(foundComPortsComboBox.getSelectionModel().selectedItemProperty());
 
         baudRateComboBox.getItems().setAll(BaudRates.values());
         baudRateComboBox.getSelectionModel().select(BaudRates.BAUD_9600);
+        terminal.comPortSettings.selBaudRate.bind(baudRateComboBox.getSelectionModel().selectedItemProperty());
 
         numDataBitsComboBox.getItems().setAll(NumDataBits.values());
         numDataBitsComboBox.getSelectionModel().select(NumDataBits.EIGHT);
+        terminal.comPortSettings.selNumDataBits.bind(numDataBitsComboBox.getSelectionModel().selectedItemProperty());
 
         parityComboBox.getItems().setAll(Parities.values());
         parityComboBox.getSelectionModel().select(Parities.NONE);
+        terminal.comPortSettings.selParity.bind(parityComboBox.getSelectionModel().selectedItemProperty());
 
         numStopBitsComboBox.getItems().setAll(NumStopBits.values());
         numStopBitsComboBox.getSelectionModel().select(NumStopBits.ONE);
+        terminal.comPortSettings.selNumStopBits.bind(numStopBitsComboBox.getSelectionModel().selectedItemProperty());
 
         // Attach handler for when selected COM port changes. This is responsible for
         // enabling/disabling the "Open" button as appropriate
@@ -93,11 +103,52 @@ public class ComSettingsViewController {
                 openCloseComPortButton.setDisable(false);
             }
         });
+
+        //==============================================//
+        //=== ATTACH LISTENERS TO COM PORT OPEN/CLOSE ==//
+        //==============================================//
+
+        terminal.isComPortOpen.addListener((observable, oldValue, newValue) -> {
+            if(!newValue)
+                setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
+            else
+                setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.CLOSE);
+        });
+
+        // Set default style for OpenClose button
+        setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
     }
 
-    public void setStatusBarController(Model model) {
-        this.model = model;
+    /**
+     * Enumerates the available styles for the open-close COM port button.
+     * Used by setOpenCloseButtonStyle().
+     */
+    private enum OpenCloseButtonStyles {
+        OPEN,
+        CLOSE
     }
+
+    private void setOpenCloseComPortButtonStyle(
+            OpenCloseButtonStyles openCloseComPortButtonStyle) {
+        if (openCloseComPortButtonStyle == OpenCloseButtonStyles.OPEN) {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+            openCloseComPortButton.setText("Open");
+            openCloseComPortButton.getStyleClass().remove("failure");
+            openCloseComPortButton.getStyleClass().add("success");
+
+        } else if (openCloseComPortButtonStyle == OpenCloseButtonStyles.CLOSE) {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
+            openCloseComPortButton.setText("Close");
+            openCloseComPortButton.getStyleClass().remove("success");
+            openCloseComPortButton.getStyleClass().add("failure");
+        } else {
+            throw new RuntimeException("openCloseButtonStyle not recognised.");
+        }
+    }
+
+//    public void setStatusBarController(Model model) {
+//        this.model = model;
+//    }
 
     private void scanButtonPressed() {
         System.out.println("Scan button pressed.");
@@ -129,8 +180,5 @@ public class ComSettingsViewController {
     public void setComPortManager(ComPortManager comPortManager) {
         this.comPortManager = comPortManager;
     }
-
-
-
 
 }
