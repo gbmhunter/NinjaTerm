@@ -27,9 +27,8 @@
     </MenuBar>
 
     <TabPane fx:id="terminalTabPane" VBox.vgrow="ALWAYS">
-        <!--<Tab text="terminalViewController 1" closable="true">-->
-        <!--<fx:include fx:id="terminalViewController" source="terminalViewController.fxml"/>-->
-        <!--</Tab>-->
+        <!-- This is a static tab which serves as a "new tab" button -->
+        <Tab fx:id="newTerminalTab" text="+" closable="false" />
     </TabPane>
 
     <fx:include fx:id="statusBarView" source="StatusBar/StatusBarView.fxml"/>

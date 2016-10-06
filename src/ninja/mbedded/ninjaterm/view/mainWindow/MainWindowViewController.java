@@ -49,6 +49,9 @@ public class MainWindowViewController {
     public TabPane terminalTabPane;
 
     @FXML
+    private Tab newTerminalTab;
+
+    @FXML
     private StatusBarViewController statusBarViewController;
 
     //================================================================================================//
@@ -131,6 +134,17 @@ public class MainWindowViewController {
             handleCloseTerminal(terminal);
         });
 
+        // This makes the "+" sign more visible
+        newTerminalTab.setStyle("-fx-font-weight: bold;");
+
+        // Install click handler for the "new terminal" tab
+        terminalTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue == newTerminalTab) {
+//                System.out.println("\"New terminal\" tab clicked.");
+                addNewTerminal();
+            }
+        });
+
         //==============================================//
         //================== STATUS BAR ================//
         //==============================================//
@@ -174,7 +188,12 @@ public class MainWindowViewController {
         terminalViewController.comSettingsViewController.scanComPorts();
 
         // Add the Tab view to the TabPane
-        terminalTabPane.getTabs().add(terminalTab);
+        // NOTE: The last tab is the static "new tab" button, so always insert a new tab
+        // before this one
+        terminalTabPane.getTabs().add(terminalTabPane.getTabs().size() - 1, terminalTab);
+
+        // Select this newly created terminal tab
+        terminalTabPane.getSelectionModel().select(terminalTab);
     }
 
     /**
