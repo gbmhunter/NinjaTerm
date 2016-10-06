@@ -176,6 +176,11 @@ public class MainWindowViewController {
             return;
         }
 
+        terminalTab.setOnCloseRequest(event -> {
+            System.out.println("terminalTab.setOnCloseRequest() called.");
+            model.closeTerminal(terminal);
+        });
+
         // Extract controller from this view and perform setup on it
         TerminalViewController terminalViewController = loader.getController();
         terminalViewController.init(model, terminal, glyphFont);
@@ -194,6 +199,8 @@ public class MainWindowViewController {
 
         // Select this newly created terminal tab
         terminalTabPane.getSelectionModel().select(terminalTab);
+
+
     }
 
     /**

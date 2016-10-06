@@ -30,7 +30,20 @@ public class Model {
 
     }
 
+    /**
+     * Call this to close a terminal.
+     *
+     * This should be called from the UI when the user clicks the "X" button in the tab header,
+     * or when the user clicks close the tab's right-click context menu.
+     *
+     * @param terminalToClose
+     */
     public void closeTerminal(Terminal terminalToClose) {
+
+        // We want to close the COM port connected to this terminal,
+        // if it is open
+        if(terminalToClose.isComPortOpen.get())
+            terminalToClose.closeComPort();
 
         // Emit an event for the UI
         for(CloseTerminalListener closeTerminalListener : closedTerminalListeners) {

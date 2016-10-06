@@ -6,6 +6,7 @@ vX.X.X
 - Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.
 - Fixed bug where "Local TX echo" does not work, closes #112.
 - Added a "New Tab" button/tab to the end of row of tab headers, closes #104.
+- Fixed bug where COM port was not closed if terminal tab was closed, closes #113.
 
 v0.6.1
 ------
