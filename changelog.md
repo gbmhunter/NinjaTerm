@@ -1,6 +1,11 @@
 vX.X.X
 ------
 
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
+
+v0.6.1
+------
+
 - Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.
 - Removed the unneeded "StatusBarController" variable from being passed into view controller constructors, closes #107.
 - Added "Close" option to tab header context menu, closes #105.

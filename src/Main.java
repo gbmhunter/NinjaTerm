@@ -18,13 +18,18 @@ public class Main extends Application {
 
     private GlyphFont glyphFont;
 
-    private final boolean disableSplashScreen = false;
+    private boolean disableSplashScreen = false;
 
     private Stage splashScreenStage;
     private Stage mainStage;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+        for(String arg : getParameters().getRaw()) {
+            if(arg.equals("no-splash"))
+                disableSplashScreen = true;
+        }
 
         if(disableSplashScreen) {
             // Skip this function, and go straight to loading the main window.
@@ -103,8 +108,11 @@ public class Main extends Application {
     }
 
 
+    /**
+     * Entry point for application. This calls <code>launch(args)</code> which starts the JavaFX UI.
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
-        //LauncherImpl.launchApplication(Main.class, SplashScreenViewController.class, args);
     }
 }
