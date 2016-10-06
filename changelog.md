@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
+
 v0.6.1
 ------
 
