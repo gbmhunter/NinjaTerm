@@ -1,3 +1,14 @@
+v0.6.2
+------
+
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
+- Instruction step to update version number on website added to readme, closes #111.
+- Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.
+- Fixed bug where "Local TX echo" does not work, closes #112.
+- Added a "New Tab" button/tab to the end of row of tab headers, closes #104.
+- Fixed bug where COM port was not closed if terminal tab was closed, closes #113.
+- Fixed bug where COM port and it's thread were not closed if COM port was open when the application exits, closes #114.
+
 v0.6.1
 ------
 

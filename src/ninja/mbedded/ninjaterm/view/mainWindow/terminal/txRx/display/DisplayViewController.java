@@ -3,7 +3,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.NumberStringConverter;
@@ -11,15 +10,12 @@ import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
-
-import java.io.IOException;
 
 /**
  * Controller for the "display" settings pop-up window.
@@ -89,11 +85,11 @@ public class DisplayViewController {
 
             // Bind the decoder decoding option to what has been selected in the
             // combobox
-            terminal.txRx.display.selectedLayoutOption.set(layoutOptionsComboBox.getSelectionModel().getSelectedItem());
+            terminal.txRx.display.selLayoutOption.set(layoutOptionsComboBox.getSelectionModel().getSelectedItem());
         });
 
         // Set default
-        layoutOptionsComboBox.getSelectionModel().select(terminal.txRx.display.selectedLayoutOption.get());
+        layoutOptionsComboBox.getSelectionModel().select(terminal.txRx.display.selLayoutOption.get());
 
         TooltipUtil.addDefaultTooltip(layoutOptionsComboBox, "Separate mode displays a separate pane for RX data (top), and TX data (bottom). Combined mode shows one pane for both RX and TX data (if local echo is enabled). Combined mode with local echo turned on behaves similarly to a terminal.");
 

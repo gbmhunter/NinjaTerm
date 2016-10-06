@@ -157,7 +157,7 @@ public class ComSettingsViewController {
 
     public void scanComPorts() {
 
-        System.out.println(this.getClass().getName() + ".scanComPorts() called.");
+//        System.out.println(this.getClass().getName() + ".scanComPorts() called.");
 
         // Clear any existing COM ports that are in the combobox from a previous scan
         foundComPortsComboBox.getItems().clear();
@@ -169,7 +169,7 @@ public class ComSettingsViewController {
             return;
         }
 
-        model.status.addMsg(portNames.length + " COM port(s) found.");
+        model.status.addMsg("Searched for COM ports. " + portNames.length + " COM port(s) found.");
         foundComPortsComboBox.getItems().addAll(portNames);
 
         // Select first one in list for convenience
