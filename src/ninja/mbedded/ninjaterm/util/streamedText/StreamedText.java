@@ -242,15 +242,30 @@ public class StreamedText {
         return output;
     }
 
-    public void shiftToTextNodes(ObservableList<Node> existingTextNodes) {
+    /**
+     * Shifts all the text in this streamed text object into the provided list of text nodes, leaving
+     * this streamed text object empty.
+     * @param existingTextNodes
+     * @param nodeIndexToStartShift      The index in the observable list at which you want the streaming text to
+     *                              start being shifted to.
+     */
+    public void shiftToTextNodes(ObservableList<Node> existingTextNodes, int nodeIndexToStartShift) {
+
+        //==============================================//
+        //============= INPUT ARG CEHCKS ===============//
+        //==============================================//
 
         if(existingTextNodes.size() == 0) {
             throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
         }
 
-        Text lastTextNode = (Text)existingTextNodes.get(existingTextNodes.size() - 1);
+        if(nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
+            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
+        }
 
-        // Copy all text before first TextColour entry into last node
+        Text lastTextNode = (Text)existingTextNodes.get(nodeIndexToStartShift - 1);
+
+        // Copy all text before first TextColour entry into the first text node
 
         int indexOfLastCharPlusOne;
         if(getTextColours().size() == 0) {
@@ -263,6 +278,7 @@ public class StreamedText {
 
         // Create new text nodes and copy all text
         // This loop won't run if there is no elements in the TextColors array
+        int currIndexToInsertNodeAt = nodeIndexToStartShift;
         for(int x = 0; x < getTextColours().size(); x++) {
             Text newText = new Text();
 
@@ -278,14 +294,16 @@ public class StreamedText {
             newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
             newText.setFill(getTextColours().get(x).color);
 
-            existingTextNodes.add(newText);
+            existingTextNodes.add(currIndexToInsertNodeAt, newText);
+
+            currIndexToInsertNodeAt++;
         }
 
         if(colorToBeInsertedOnNextChar != null) {
             // Add new node with no text
             Text text = new Text();
             text.setFill(colorToBeInsertedOnNextChar);
-            existingTextNodes.add(text);
+            existingTextNodes.add(currIndexToInsertNodeAt, text);
             colorToBeInsertedOnNextChar = null;
         }
 

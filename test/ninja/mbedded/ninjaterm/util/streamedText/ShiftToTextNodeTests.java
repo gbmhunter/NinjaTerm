@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-02
- * @last-modified   2016-10-02
+ * @last-modified   2016-10-06
  */
 public class ShiftToTextNodeTests {
 
@@ -45,7 +45,7 @@ public class ShiftToTextNodeTests {
 
         streamedText.append("1234");
 
-        streamedText.shiftToTextNodes(textNodes);
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(1, textNodes.size());
         assertEquals("1234", ((Text)textNodes.get(0)).getText());
@@ -58,7 +58,7 @@ public class ShiftToTextNodeTests {
         streamedText.append("1234");
         streamedText.addColour(2, Color.GREEN);
 
-        streamedText.shiftToTextNodes(textNodes);
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(2, textNodes.size());
 
@@ -77,7 +77,7 @@ public class ShiftToTextNodeTests {
         streamedText.addColour(3, Color.RED);
         streamedText.addColour(5, Color.BLUE);
 
-        streamedText.shiftToTextNodes(textNodes);
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(4, textNodes.size());
 
@@ -96,7 +96,7 @@ public class ShiftToTextNodeTests {
 
         streamedText.setColorToBeInsertedOnNextChar(Color.GREEN);
 
-        streamedText.shiftToTextNodes(textNodes);
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(null, streamedText.getColorToBeInsertedOnNextChar());
 

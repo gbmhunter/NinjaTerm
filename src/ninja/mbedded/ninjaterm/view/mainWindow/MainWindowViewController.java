@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-08
- * @last-modified 2016-09-22
+ * @last-modified 2016-10-06
  */
 public class MainWindowViewController {
 
@@ -47,6 +47,9 @@ public class MainWindowViewController {
 
     @FXML
     public TabPane terminalTabPane;
+
+    @FXML
+    private Tab newTerminalTab;
 
     @FXML
     private StatusBarViewController statusBarViewController;
@@ -131,6 +134,17 @@ public class MainWindowViewController {
             handleCloseTerminal(terminal);
         });
 
+        // This makes the "+" sign more visible
+        newTerminalTab.setStyle("-fx-font-weight: bold;");
+
+        // Install click handler for the "new terminal" tab
+        terminalTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue == newTerminalTab) {
+//                System.out.println("\"New terminal\" tab clicked.");
+                addNewTerminal();
+            }
+        });
+
         //==============================================//
         //================== STATUS BAR ================//
         //==============================================//
@@ -162,6 +176,11 @@ public class MainWindowViewController {
             return;
         }
 
+        terminalTab.setOnCloseRequest(event -> {
+            System.out.println("terminalTab.setOnCloseRequest() called.");
+            model.closeTerminal(terminal);
+        });
+
         // Extract controller from this view and perform setup on it
         TerminalViewController terminalViewController = loader.getController();
         terminalViewController.init(model, terminal, glyphFont);
@@ -174,7 +193,14 @@ public class MainWindowViewController {
         terminalViewController.comSettingsViewController.scanComPorts();
 
         // Add the Tab view to the TabPane
-        terminalTabPane.getTabs().add(terminalTab);
+        // NOTE: The last tab is the static "new tab" button, so always insert a new tab
+        // before this one
+        terminalTabPane.getTabs().add(terminalTabPane.getTabs().size() - 1, terminalTab);
+
+        // Select this newly created terminal tab
+        terminalTabPane.getSelectionModel().select(terminalTab);
+
+
     }
 
     /**
