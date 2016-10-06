@@ -62,11 +62,6 @@ public class Main extends Application {
         primaryStage.show();
 
         splashScreenViewController.startNameVersionInfoMsg();
-        // Create delay before showing main window
-        /*Timeline timeline = new Timeline(new KeyFrame(
-                Duration.millis(3000),
-                ae -> loadMainWindow()));
-        timeline.play();*/
     }
 
     public void loadMainWindow() {
@@ -105,6 +100,11 @@ public class Main extends Application {
 
         // Make sure the main stage has focus (is in front of all other windows)
         mainStage.toFront();
+
+        // Call event handler in model for app closing
+        mainStage.setOnCloseRequest(event -> {
+            model.handleAppClosing();
+        });
     }
 
 

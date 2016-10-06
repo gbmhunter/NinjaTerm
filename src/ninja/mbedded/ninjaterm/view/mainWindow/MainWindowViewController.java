@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-08
- * @last-modified 2016-09-22
+ * @last-modified 2016-10-06
  */
 public class MainWindowViewController {
 

@@ -55,4 +55,18 @@ public class Model {
         terminals.remove(terminalToClose);
     }
 
+    /**
+     * This needs to be called when the application is closing. This method
+     * makes sure all the COM ports attached to terminal tabs are closed.
+     */
+    public void handleAppClosing() {
+        // We need to close all COM ports
+        for(Terminal terminal : terminals) {
+            // We want to close the COM port connected to this terminal,
+            // if it is open
+            if(terminal.isComPortOpen.get())
+                terminal.closeComPort();
+        }
+    }
+
 }
