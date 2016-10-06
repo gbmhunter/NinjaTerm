@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.6.1/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.1_macos.dmg" newVersion="0.6.1" newMediaFileId="36" fileSize="6189191" bundledJre="" archive="false">
-    <comment language="en">v0.6.1&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.6.2/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.2_macos.dmg" newVersion="0.6.2" newMediaFileId="36" fileSize="6189191" bundledJre="" archive="false">
+    <comment language="en">v0.6.2&#xD;
+------&#xD;
+&#xD;
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.&#xD;
+- Instruction step to update version number on website added to readme, closes #111.&#xD;
+- Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.&#xD;
+- Fixed bug where "Local TX echo" does not work, closes #112.&#xD;
+- Added a "New Tab" button/tab to the end of row of tab headers, closes #104.&#xD;
+- Fixed bug where COM port was not closed if terminal tab was closed, closes #113.&#xD;
+- Fixed bug where COM port and it's thread were not closed if COM port was open when the application exits, closes #114.&#xD;
+&#xD;
+v0.6.1&#xD;
 ------&#xD;
 &#xD;
 - Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.&#xD;
@@ -76,8 +87,19 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.1_windows.exe" newVersion="0.6.1" newMediaFileId="23" fileSize="6659072" bundledJre="" archive="false">
-    <comment language="en">v0.6.1&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.2_windows.exe" newVersion="0.6.2" newMediaFileId="23" fileSize="6660608" bundledJre="" archive="false">
+    <comment language="en">v0.6.2&#xD;
+------&#xD;
+&#xD;
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.&#xD;
+- Instruction step to update version number on website added to readme, closes #111.&#xD;
+- Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.&#xD;
+- Fixed bug where "Local TX echo" does not work, closes #112.&#xD;
+- Added a "New Tab" button/tab to the end of row of tab headers, closes #104.&#xD;
+- Fixed bug where COM port was not closed if terminal tab was closed, closes #113.&#xD;
+- Fixed bug where COM port and it's thread were not closed if COM port was open when the application exits, closes #114.&#xD;
+&#xD;
+v0.6.1&#xD;
 ------&#xD;
 &#xD;
 - Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.&#xD;
