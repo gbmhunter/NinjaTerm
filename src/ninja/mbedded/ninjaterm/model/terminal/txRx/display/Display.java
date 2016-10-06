@@ -11,12 +11,12 @@ import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-09-23
+ * @last-modified   2016-10-06
  */
 public class Display {
 
     public enum LayoutOptions {
-        COMBINED_TX_RX("Combined TX/RX"),
+        SINGLE_PANE("Single Pane"),
         SEPARATE_TX_RX("Separate TX/RX"),
         ;
 
@@ -48,7 +48,12 @@ public class Display {
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleBooleanProperty backspaceRemovesLastTypedChar = new SimpleBooleanProperty(true);
-    public SimpleObjectProperty<LayoutOptions> selectedLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
+
+    /**
+     * The selected layout option for the TX and RX data. This is changed by the user.
+     */
+    public SimpleObjectProperty<LayoutOptions> selLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
+
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
     public SimpleIntegerProperty bufferSizeChars = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE_CHARS);
 

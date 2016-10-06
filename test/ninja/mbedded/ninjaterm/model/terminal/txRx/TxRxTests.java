@@ -57,7 +57,7 @@ public class TxRxTests {
     private void runOneIteration(String inputData) {
         ansiECParser.parse(inputData, ansiECParserOutput);
         streamingFilter.parse(ansiECParserOutput, streamFilterOutput);
-        streamFilterOutput.shiftToTextNodes(textNodes);
+        streamFilterOutput.shiftToTextNodes(textNodes, textNodes.size());
     }
 
     @Test

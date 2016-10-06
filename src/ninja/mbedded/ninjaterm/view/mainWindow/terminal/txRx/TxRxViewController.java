@@ -20,10 +20,8 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
@@ -369,7 +367,7 @@ public class TxRxViewController {
         //========== ATTACH LISTENER TO LAYOUT =========//
         //==============================================//
 
-        terminal.txRx.display.selectedLayoutOption.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.display.selLayoutOption.addListener((observable, oldValue, newValue) -> {
             System.out.println("Selected layout option has been changed.");
             updateLayout();
         });
@@ -427,7 +425,19 @@ public class TxRxViewController {
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
         numCharsInRxTextNodes += streamedText.getText().length();
-        streamedText.shiftToTextNodes(observableList);
+
+        // Move all text/colour info provided in this streamed text object into the
+        // Text nodes that make up the RX data view
+        switch (terminal.txRx.display.selLayoutOption.get()) {
+            case SINGLE_PANE:
+                streamedText.shiftToTextNodes(observableList, observableList.size() - 1);
+                break;
+            case SEPARATE_TX_RX:
+                streamedText.shiftToTextNodes(observableList, observableList.size());
+                break;
+            default:
+                throw new RuntimeException("selLayoutOption not recognised.");
+        }
 
         // Trim RX UI if necessary
         // (the ANSI parser output data is trimmed separately in the model)
@@ -519,8 +529,8 @@ public class TxRxViewController {
      * in the model.
      */
     public void updateLayout() {
-        switch(terminal.txRx.display.selectedLayoutOption.get()) {
-            case COMBINED_TX_RX:
+        switch(terminal.txRx.display.selLayoutOption.get()) {
+            case SINGLE_PANE:
 
                 // Hide TX pane
 
@@ -557,7 +567,7 @@ public class TxRxViewController {
 
                 break;
             default:
-                throw new RuntimeException("selectedLayoutOption unrecognised!");
+                throw new RuntimeException("selLayoutOption unrecognised!");
         }
     }
 

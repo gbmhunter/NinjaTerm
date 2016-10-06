@@ -310,14 +310,15 @@ public class TxRx {
         //============== LISTENER NOTIFICATION =========//
         //==============================================//
 
-        // Notify that there is new UI data to display
-        for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
-        }
-
-        // Finally, call any listeners (the logging class of the model might be listening)
+        // Call any listeners that want the raw data (the logging class of the model might be listening)
         for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
             rawDataReceivedListener.update(data);
+        }
+
+        // Notify that there is new UI data to display (this is NOT the same
+        // as the raw data)
+        for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            newStreamedTextListener.run(filterOutput);
         }
 
         System.out.println(getClass().getSimpleName() + ".addRxData() finished.");
@@ -367,6 +368,11 @@ public class TxRx {
         }
     }
 
+    /**
+     * This needs to be called when the filter text is changed so that everything is updated
+     * accordingly.
+     * @param filterText
+     */
     private void filterTextChanged(String filterText) {
 
         streamingFilter.setFilterPatten(filterText);
