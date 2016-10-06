@@ -421,6 +421,11 @@ public class TxRxViewController {
         });*/
     }
 
+    /**
+     * This listener updates the UI with "streamed" RX data. The model is responsible
+     * for calling the listener after RX data has been received and processed.
+     * @param streamedText
+     */
     private void newStreamedTextListener(StreamedText streamedText) {
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
@@ -572,53 +577,6 @@ public class TxRxViewController {
     }
 
     public void handleKeyTyped(KeyEvent keyEvent) {
-
-        /*if(comPort.isPortOpen() == false) {
-            model.status.addErr("Cannot send data to COM port, port is not open.");
-            return;
-        }
-
-        // Convert pressed key into a ASCII byte.
-        // Hopefully this is only one character!!!
-        byte data = (byte)keyEvent.getCharacter().charAt(0);
-
-        // If to see if we are sending data on "enter", and the "backspace
-        // deletes last typed char" checkbox is ticked
-        if((terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
-                terminal.txRx.display.backspaceRemovesLastTypedChar.get()) {
-
-            if(keyEvent.getCharacter().equals("\b")) {
-                // We need to remove the last typed char from the "to send" TX buffer
-                terminal.txRx.removeLastCharInTxBuffer();
-                return;
-            }
-
-        }
-
-        // Append the character to the end of the "to send" TX buffer
-        terminal.txRx.addTxCharToSend(data);
-
-        // Check so see what TX mode we are in
-        switch(terminal.txRx.display.selTxCharSendingOption.get()) {
-            case SEND_TX_CHARS_IMMEDIATELY:
-                break;
-            case SEND_TX_CHARS_ON_ENTER:
-                // Check for enter key before sending data
-                if(!keyEvent.getCharacter().equals("\r"))
-                    return;
-                break;
-            default:
-                throw new RuntimeException("selTxCharSendingOption not recognised!");
-        }
-
-        // Send data to COM port, and update stats (both local and global)
-        byte[] dataAsByteArray = fromObservableListToByteArray(terminal.txRx.toSendTxData);
-        comPort.sendData(dataAsByteArray);
-
-        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
-        model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
-
-        terminal.txRx.txDataSent();*/
 
         terminal.txRx.handleKeyPressed((byte)keyEvent.getCharacter().charAt(0));
     }

@@ -13,7 +13,6 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
-import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 
@@ -151,24 +150,43 @@ public class TxRx {
         // Check so see what TX mode we are in
         switch(display.selTxCharSendingOption.get()) {
             case SEND_TX_CHARS_IMMEDIATELY:
+                sendBufferedTxDataToSerialPort();
                 break;
             case SEND_TX_CHARS_ON_ENTER:
                 // Check for enter key before sending data
-                if(!((char)asciiCodeForKey == '\r'))
-                    return;
+                if(((char)asciiCodeForKey == '\r'))
+                    sendBufferedTxDataToSerialPort();
                 break;
             default:
                 throw new RuntimeException("selTxCharSendingOption not recognised!");
         }
+    }
 
+    private void sendBufferedTxDataToSerialPort() {
         // Send data to COM port, and update stats (both local and global)
         byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
 
+        // Update stats
         terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
-        txDataSent();
+        // Create string from data
+        String dataAsString = "";
+        for(int i = 0; i < toSendTxData.size(); i++) {
+            dataAsString = dataAsString + (char)toSendTxData.get(i).byteValue();
+        }
+
+        // Clean "to send" TX data
+        toSendTxData.clear();
+
+        // Echo TX data into TX/RX pane if user has instructed to do so
+        if(display.localTxEcho.get()) {
+
+            // Call the RX data function (this function doesn't know the difference between actual RX data
+            // and echoed TX data)
+            addRxData(dataAsString);
+        }
     }
 
     private byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
@@ -218,32 +236,12 @@ public class TxRx {
         }
     }
 
-    public void txDataSent() {
-
-        // Create string from data
-        String dataAsString = "";
-        for(int i = 0; i < toSendTxData.size(); i++) {
-            dataAsString = dataAsString + (char)toSendTxData.get(i).byteValue();
-        }
-
-        // Clean "to send" TX data
-        toSendTxData.clear();
-
-        // Echo TX data into TX/RX pane
-        if(display.localTxEcho.get()) {
-            rawRxData.set(rawRxData.get() + dataAsString);
-
-            if(rawRxData.get().length() > display.bufferSizeChars.get()) {
-                // Remove old characters from buffer
-                rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
-            }
-        }
-    }
-
-
     /**
      * Adds RX data to the RX pane (both the raw RX data and the filtered RX data, which is the
      * data which gets displayed to the user in the RX pane).
+     *
+     * This also gets called with TX data if the "TX local echo" option is selected.
+     *
      * @param data
      */
     public void addRxData(String data) {
@@ -346,8 +344,6 @@ public class TxRx {
             // Remove old characters from buffer
             rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
         }
-
-
     }
 
     public void clearTxAndRxData() {
@@ -400,7 +396,6 @@ public class TxRx {
             for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
                 newStreamedTextListener.run(filterOutput);
             }
-
         }
     }
 
