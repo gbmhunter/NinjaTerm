@@ -46,6 +46,7 @@ NOTE: The order of the following tasks is important!
 1. Make sure that you are on the "release" branch, and that desired updates have been merged from the feature branches.
 1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
 2. Update README.md with the new version number and "last changed" date.
+3. Update the version number in `docs/index.html`. This is contained on the line `<body onload="updateVersionNumber('v0.4.0')">`. 
 3. Build the .jar artifact by clicking Build->Build Artifacts in IntelliJ. MAKE SURE than the SPLASHSCREEN is enabled!
 4. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
 5. Click "Save Project" and then "Build Project".

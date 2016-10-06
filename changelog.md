@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
+- Instruction step to update version number on website added to readme, closes #111.
 
 v0.6.1
 ------
