@@ -3,26 +3,25 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.RadioButton;
-import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 
 /**
  * Controller for the Colouriser pop-up window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-26
- * @last-modified 2016-09-27
+ * @last-modified 2016-10-07
  */
 public class ColouriserViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
     @FXML
-    private CheckBox parseAnsiEscapeSequences;
+    private CheckBox parseAnsiEscapeSequencesCheckBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -47,7 +46,16 @@ public class ColouriserViewController {
         //============ ANSI ESCAPE SEQ SETUP ===========//
         //==============================================//
 
-        Bindings.bindBidirectional(parseAnsiEscapeSequences.selectedProperty(), terminal.txRx.colouriser.ansiEscapeSequencesEnabled);
+        Bindings.bindBidirectional(parseAnsiEscapeSequencesCheckBox.selectedProperty(), terminal.txRx.colouriser.ansiEscapeSequencesEnabled);
+
+        // We only want this checkbox control enabled when the decoding mode is set to ASCII
+        terminal.decoder.decodingOption.addListener((observable, oldValue, newValue) -> {
+            if(newValue == DecodingOptions.ASCII) {
+                parseAnsiEscapeSequencesCheckBox.setDisable(false);
+            } else {
+                parseAnsiEscapeSequencesCheckBox.setDisable(true);
+            }
+        });
 
     }
 }

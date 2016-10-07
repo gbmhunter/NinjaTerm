@@ -22,7 +22,7 @@
     </padding>
 
     <!-- WHAT TO SEND WHEN ENTER IS PRESSED -->
-    <CheckBox fx:id="parseAnsiEscapeSequences">Parse ANSI Escape Sequences</CheckBox>
+    <CheckBox fx:id="parseAnsiEscapeSequencesCheckBox">Parse ANSI Escape Sequences</CheckBox>
 </VBox>
 
 

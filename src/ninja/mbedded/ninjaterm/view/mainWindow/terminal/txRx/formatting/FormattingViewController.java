@@ -65,18 +65,20 @@ public class FormattingViewController {
         // Populate decoding options combobox
         decodingComboBox.getItems().setAll(DecodingOptions.values());
 
+        terminal.decoder.decodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
+
         // Add listener to combobox
-        decodingComboBox.setOnAction(event -> {
+        /*decodingComboBox.setOnAction(event -> {
 
             // Bind the decoder decoding option to what has been selected in the
             // combobox
             terminal.decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
-        });
+        });*/
 
         // Set default
         decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
 
-        TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices.");
+        TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices. The colouriser (ANSI escape codes) are only available when the decoding is \"ASCII\".");
 
         //==============================================//
         //========= ENTER KEY BEHAVIOUR SETUP ==========//
