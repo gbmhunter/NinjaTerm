@@ -37,10 +37,10 @@
                         <Insets top="10" bottom="10" left="10" right="10"/>
                     </padding>
                     <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
-                    <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" radius="10" color="red" maxFlashRateMs="150"/>
+                    <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" radius="10" color="#3d2bc6" maxFlashRateMs="150"/>
 
                     <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
-                    <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="blueviolet" maxFlashRateMs="150"/>
+                    <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="#166b35" radius="10" maxFlashRateMs="150"/>
 
                 </GridPane>
 
