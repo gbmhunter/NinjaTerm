@@ -6,12 +6,11 @@
 * @last-modified   2016-10-07
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.TextFlow?>
 <?import ninja.mbedded.ninjaterm.view.led.Led?>
-<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController"
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       fillWidth="true"
       stylesheets="@../../../resources/style.css">
@@ -53,9 +52,37 @@
         <padding>
             <Insets top="2" bottom="2" left="2" right="2"/>
         </padding>
-        <Label>TX (bytes/sec): </Label>
+
+        <!-- ========================================= -->
+        <!-- =============== BYTE COUNT ============== -->
+        <!-- ========================================= -->
+        <Label style="-fx-font-weight: bold;">Byte Count</Label>
+        <VBox minWidth="10"/>
+
+        <Label>TX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalByteCountTx" minWidth="80">0.0</Label>
+
+        <Label>RX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalByteCountRx" minWidth="80">0.0</Label>
+
+        <VBox minWidth="10"/>
+        <Label>|</Label>
+        <VBox minWidth="10"/>
+
+        <!-- ========================================= -->
+        <!-- =============== DATA RATE =============== -->
+        <!-- ========================================= -->
+        <Label style="-fx-font-weight: bold;">Data Rate (bytes/sec)</Label>
+        <VBox minWidth="10"/>
+
+        <Label>TX:</Label>
+        <VBox minWidth="5"/>
         <Label fx:id="totalBytesPerSecTx" minWidth="50">0.0</Label>
-        <Label>RX (bytes/sec): </Label>
+
+        <Label>RX:</Label>
+        <VBox minWidth="5"/>
         <Label fx:id="totalBytesPerSecRx" minWidth="50">0.0</Label>
     </HBox>
 

@@ -10,7 +10,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;

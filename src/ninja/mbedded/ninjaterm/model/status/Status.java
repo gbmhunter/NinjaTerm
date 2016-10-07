@@ -4,7 +4,9 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -12,6 +14,8 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.DataSentTxListener;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,12 +38,48 @@ public class Status {
 
     public ObservableList<Node> statusMsgs = FXCollections.observableList(new ArrayList<Node>());
 
+    public SimpleIntegerProperty totalByteCountTx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalByteCountRx = new SimpleIntegerProperty(0);
+
     public SimpleDoubleProperty totalBytesPerSecTx = new SimpleDoubleProperty();
     public SimpleDoubleProperty totalBytesPerSecRx = new SimpleDoubleProperty();
 
     public Status(Model model) {
 
         this.model = model;
+
+        //==============================================//
+        //=========== TOTAL BYTE COUNT SETUP ===========//
+        //==============================================//
+
+        DataSentTxListener dataSentTxListener = txData -> {
+            totalByteCountTx.set(totalByteCountTx.get() + txData.length());
+        };
+
+        RawDataReceivedListener rawDataReceivedListener = data -> {
+            totalByteCountRx.set(totalByteCountRx.get() + data.length());
+        };
+
+        // Add listener to the list of terminals. Whenever a terminal object is added or removed,
+        // update the listeners that increments the total byte counts appropriately.
+        model.terminals.addListener((ListChangeListener.Change<? extends Terminal> change) -> {
+            while (change.next()) {
+
+                if(change.wasReplaced() || change.wasPermutated()) {
+                    throw new RuntimeException("The type of modification on the model.terminals observable list was not supported.");
+                }
+
+                for(Terminal terminal : change.getAddedSubList()) {
+                    terminal.txRx.dataSentTxListeners.add(dataSentTxListener);
+                    terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+                }
+
+                for(Terminal terminal : change.getRemoved()) {
+                    terminal.txRx.dataSentTxListeners.remove(dataSentTxListener);
+                    terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+                }
+            }
+        });
 
         // Setup timer to trigger calculation of bits/second at a fixed rate
         Timeline timeline = new Timeline(new KeyFrame(

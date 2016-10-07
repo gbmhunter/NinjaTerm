@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.model;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -20,7 +22,7 @@ import java.util.List;
  */
 public class Model {
 
-    public List<Terminal> terminals = new ArrayList<>();
+    public ObservableList<Terminal> terminals = FXCollections.observableArrayList();
     public Status status;
     public GlobalStats globalStats = new GlobalStats();
 

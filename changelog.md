@@ -8,6 +8,7 @@ vX.X.X
 - Added bits/second metrics to the "Stats" sub-tab, closes #120.
 - Added bottom bar to the status pane which displays the total TX/RX bytes per second rates, closes #122.
 - Moved interface files from "interfaces/" and into the package/folder that they have most relevance with, closes #121.
+- Added total TX/RX byte counts to the bottom status bar, closes #123.
 
 v0.6.2
 ------
