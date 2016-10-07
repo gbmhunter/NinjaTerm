@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-09-27
+* @last-modified   2016-10-07
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.CheckBox?>
@@ -21,8 +21,8 @@
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <!-- WHAT TO SEND WHEN ENTER IS PRESSED -->
-    <CheckBox fx:id="parseAnsiEscapeSequencesCheckBox">Parse ANSI Escape Sequences</CheckBox>
+    <!-- ANSI ESCAPE CODES -->
+    <CheckBox fx:id="parseAnsiEscapeCodesCheckBox">Parse ANSI Escape Codes</CheckBox>
 </VBox>
 
 

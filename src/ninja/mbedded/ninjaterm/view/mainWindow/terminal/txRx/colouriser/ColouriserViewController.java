@@ -6,6 +6,7 @@ import javafx.scene.control.CheckBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 /**
  * Controller for the Colouriser pop-up window.
@@ -21,7 +22,7 @@ public class ColouriserViewController {
     //================================================================================================//
 
     @FXML
-    private CheckBox parseAnsiEscapeSequencesCheckBox;
+    private CheckBox parseAnsiEscapeCodesCheckBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -46,16 +47,18 @@ public class ColouriserViewController {
         //============ ANSI ESCAPE SEQ SETUP ===========//
         //==============================================//
 
-        Bindings.bindBidirectional(parseAnsiEscapeSequencesCheckBox.selectedProperty(), terminal.txRx.colouriser.ansiEscapeSequencesEnabled);
+        Bindings.bindBidirectional(parseAnsiEscapeCodesCheckBox.selectedProperty(), terminal.txRx.colouriser.ansiEscapeCodesEnabled);
 
         // We only want this checkbox control enabled when the decoding mode is set to ASCII
         terminal.decoder.decodingOption.addListener((observable, oldValue, newValue) -> {
             if(newValue == DecodingOptions.ASCII) {
-                parseAnsiEscapeSequencesCheckBox.setDisable(false);
+                parseAnsiEscapeCodesCheckBox.setDisable(false);
             } else {
-                parseAnsiEscapeSequencesCheckBox.setDisable(true);
+                parseAnsiEscapeCodesCheckBox.setDisable(true);
             }
         });
+
+        TooltipUtil.addDefaultTooltip(parseAnsiEscapeCodesCheckBox, "If this is checked, ANSI escape codes in the RX data will be parsed. Text colour based ANSI escape codes will colour text as appropriate. All other ANSI escape codes will be removed from the data stream but ignored. ANSI escape codes can only be enabled if the decoding mode in the Formatting popover is set to \"ASCII\".");
 
     }
 }

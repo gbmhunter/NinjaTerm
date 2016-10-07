@@ -54,9 +54,9 @@ public class TxRx {
      * store the RX data. This list of nodes is directly supported by a TextFlow
      * object on the UI.
      */
-    public ObservableList<Node> rxDataAsList = FXCollections.observableArrayList();
-
-    int numOfRxCharsInAnsiOutput = 0;
+//    public ObservableList<Node> rxDataAsList = FXCollections.observableArrayList();
+//
+//    int numOfRxCharsInAnsiOutput = 0;
 
     private AnsiECParser ansiECParser = new AnsiECParser();
 
@@ -101,6 +101,8 @@ public class TxRx {
         filters.filterText.addListener((observable, oldValue, newValue) -> {
             filterTextChanged(newValue);
         });
+
+        colouriser.init(model, terminal);
     }
 
     public void handleKeyPressed(byte asciiCodeForKey) {
