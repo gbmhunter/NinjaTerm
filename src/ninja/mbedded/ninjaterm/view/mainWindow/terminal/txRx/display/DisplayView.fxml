@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-24
-* @last-modified   2016-09-23
+* @last-modified   2016-10-07
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -41,14 +41,6 @@
         <HBox spacing="5" alignment="CENTER_LEFT">
             <Label>Buffer Size:</Label>
             <TextField fx:id="bufferSizeTextField"></TextField>
-        </HBox>
-    </VBox>
-
-    <!-- DECODING -->
-    <VBox spacing="5" styleClass="border">
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label fx:id="decodingLabel">Decoding:</Label>
-            <ComboBox fx:id="decodingComboBox"></ComboBox>
         </HBox>
     </VBox>
 

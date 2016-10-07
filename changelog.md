@@ -1,6 +1,11 @@
 vX.X.X
 ------
 
+- Moved decoding options to formatting popover, closes #116.
+
+v0.6.2
+------
+
 - Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
 - Instruction step to update version number on website added to readme, closes #111.
 - Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.
