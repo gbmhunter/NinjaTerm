@@ -4,6 +4,7 @@ vX.X.X
 - Moved decoding options to formatting popover, closes #116.
 - Added icon to colouriser button, closes #115.
 - "Parse ANSI escape sequences" checkbox is now only enabled when decoding mode is ASCII, closes #117.
+- Fixed bug where ANSI escape codes were not disabled when it's checkbox is deselected, closes #119.
 
 v0.6.2
 ------

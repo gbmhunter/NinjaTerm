@@ -261,30 +261,34 @@ public class TxRx {
         //============== ANSI ESCAPE CODES =============//
         //==============================================//
 
-        // This temp variable is used to store just the new ANSI parser output data, which
-        // is then stored in totalAnsiParserOutput before being shifted into just ansiParserOutput
-        StreamedText tempAnsiParserOutput = new StreamedText();
-        ansiECParser.parse(data, tempAnsiParserOutput);
+        if(colouriser.ansiEscapeCodesEnabled.get()) {
+            // This temp variable is used to store just the new ANSI parser output data, which
+            // is then stored in totalAnsiParserOutput before being shifted into just ansiParserOutput
+            StreamedText tempAnsiParserOutput = new StreamedText();
+            ansiECParser.parse(data, tempAnsiParserOutput);
 
-//        System.out.println("tempAnsiParserOutput = " + tempAnsiParserOutput);
+            //        System.out.println("tempAnsiParserOutput = " + tempAnsiParserOutput);
 
-        // Append the output of the ANSI parser to the "total" ANSI parser output buffer
-        // This will be used if the user changes the filter pattern and wishes to re-run
-        // it on buffered data.
-        // NOTE: We only want to append NEW data added to the ANSI parser output, since
-        // there may still be characters in there from last time this method was called, and
-        // we don't want to add them twice
-        totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            // Append the output of the ANSI parser to the "total" ANSI parser output buffer
+            // This will be used if the user changes the filter pattern and wishes to re-run
+            // it on buffered data.
+            // NOTE: We only want to append NEW data added to the ANSI parser output, since
+            // there may still be characters in there from last time this method was called, and
+            // we don't want to add them twice
+            totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
 
-//        System.out.println("totalAnsiParserOutput = " + totalAnsiParserOutput);
-//
-//        if(!totalAnsiParserOutput.checkAllNewLinesHaveColors()) {
-//            int bogus = 0;
-//        }
+            //        System.out.println("totalAnsiParserOutput = " + totalAnsiParserOutput);
 
-        // Now add all the new ANSI parser output to any that was not used up by the
-        // streaming filter from last time
-        ansiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            // Now add all the new ANSI parser output to any that was not used up by the
+            // streaming filter from last time
+            ansiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+        } else { // if(colouriser.ansiEscapeCodesEnabled.get())
+
+            // The user does not want us to parse ANSI escape codes, so append the input RX data directly
+            // into the ANSI parser output object
+            ansiParserOutput.append(data);
+
+        } // if(colouriser.ansiEscapeCodesEnabled.get())
 
         //==============================================//
         //================== FILTERING =================//
