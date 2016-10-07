@@ -16,18 +16,18 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-04
+ * @last-modified 2016-10-07
  */
 public class Model {
 
     public List<Terminal> terminals = new ArrayList<>();
-    public Status status = new Status();
+    public Status status;
     public GlobalStats globalStats = new GlobalStats();
 
     public List<CloseTerminalListener> closedTerminalListeners = new ArrayList<>();
 
     public Model() {
-
+         status = new Status(this);
     }
 
     /**

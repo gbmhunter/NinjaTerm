@@ -96,7 +96,7 @@ public class StatsViewController {
         ChangeListener<Number> bytesPerSecondTxChangeListener = (observable, oldValue, newValue) -> {
             bytesPerSecondTxLabel.setText(Double.toString(newValue.doubleValue()));
         };
-        terminal.stats.bitsPerSecondTx.addListener(bytesPerSecondTxChangeListener);
+        terminal.stats.bytesPerSecondTx.addListener(bytesPerSecondTxChangeListener);
 
         // Set default (giving bogus data as it is not used)
         bytesPerSecondTxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
@@ -105,7 +105,7 @@ public class StatsViewController {
         ChangeListener<Number> bytesPerSecondRxChangeListener = (observable, oldValue, newValue) -> {
             bytesPerSecondRxLabel.setText(Double.toString(newValue.doubleValue()));
         };
-        terminal.stats.bitsPerSecondRx.addListener(bytesPerSecondRxChangeListener);
+        terminal.stats.bytesPerSecondRx.addListener(bytesPerSecondRxChangeListener);
 
         // Set default (giving bogus data as it is not used)
         bytesPerSecondRxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
