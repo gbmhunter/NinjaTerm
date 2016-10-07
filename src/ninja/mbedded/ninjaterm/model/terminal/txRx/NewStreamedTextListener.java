@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.interfaces;
+package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 

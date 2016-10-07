@@ -3,7 +3,7 @@ package ninja.mbedded.ninjaterm.model.terminal.logging;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.interfaces.RawDataReceivedListener;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 

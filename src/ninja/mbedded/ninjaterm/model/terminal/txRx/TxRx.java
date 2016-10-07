@@ -1,12 +1,8 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import ninja.mbedded.ninjaterm.interfaces.RawDataReceivedListener;
-import ninja.mbedded.ninjaterm.interfaces.NewStreamedTextListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
@@ -323,7 +319,7 @@ public class TxRx {
 
         // Call any listeners that want the raw data (the logging class of the model might be listening)
         for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
-            rawDataReceivedListener.update(data);
+            rawDataReceivedListener.run(data);
         }
 
         // Notify that there is new UI data to display (this is NOT the same
@@ -363,7 +359,7 @@ public class TxRx {
         //rxDataAsList.clear();
         // Emit RX data cleared event
         for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
-            rxDataClearedListener.go();
+            rxDataClearedListener.run();
         }
     }
 
@@ -373,7 +369,7 @@ public class TxRx {
     private void updateBufferedRxDataWithNewFilterPattern() {
         // Emit RX data cleared event
         for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
-            rxDataClearedListener.go();
+            rxDataClearedListener.run();
         }
     }
 

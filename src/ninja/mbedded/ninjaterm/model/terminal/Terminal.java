@@ -2,9 +2,8 @@ package ninja.mbedded.ninjaterm.model.terminal;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
+import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.comPortSettings.ComPortSettings;
 import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
@@ -13,8 +12,6 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
-import sun.rmi.runtime.Log;
 
 /**
  * Model for a single "terminal" instance (which is displayed on a tab in the GUI).
