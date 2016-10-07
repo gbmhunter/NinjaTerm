@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Moved decoding options to formatting popover, closes #116.
+- Added icon to colouriser button, closes #115.
 
 v0.6.2
 ------

@@ -33,11 +33,12 @@ import org.controlsfx.glyphfont.GlyphFont;
 import java.io.IOException;
 
 /**
- * Controller for the "terminal" tab which is part of the main window.
+ * Controller for a "terminal" tab. The user can create many terminal tabs, each which
+ * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-10-05
+ * @last-modified 2016-10-07
  */
 public class TxRxViewController {
 
@@ -169,10 +170,6 @@ public class TxRxViewController {
         //this.comPort = comPort;
         this.glyphFont = glyphFont;
 
-        clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
-        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
-        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
-        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
@@ -265,8 +262,10 @@ public class TxRxViewController {
         );
 
         //==============================================//
-        //====== CLEAR TEXT BUTTON EVENT HANDLERS ======//
+        //========== CLEAR TEXT BUTTON SETUP ===========//
         //==============================================//
+
+        clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
 
         clearTextButton.setOnAction(event -> {
             terminal.txRx.clearTxAndRxData();
@@ -287,6 +286,7 @@ public class TxRxViewController {
         //======= DISPLAY BUTTON/POP-OVER SETUP ========//
         //==============================================//
 
+        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
         try {
@@ -304,6 +304,7 @@ public class TxRxViewController {
         //===== FORMATTING BUTTON/POP-OVER SETUP =======//
         //==============================================//
 
+        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
 
         loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
         try {
@@ -321,6 +322,8 @@ public class TxRxViewController {
         //========== COLOURISER BUTTON SETUP ===========//
         //==============================================//
 
+        coloriserButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PAINT_BRUSH));
+
         loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
         try {
             loader.load();
@@ -336,6 +339,8 @@ public class TxRxViewController {
         //==============================================//
         //============ FILTERS BUTTON SETUP ============//
         //==============================================//
+
+        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
         try {
