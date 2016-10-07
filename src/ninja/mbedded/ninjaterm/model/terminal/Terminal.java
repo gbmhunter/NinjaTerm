@@ -64,7 +64,7 @@ public class Terminal {
         comPortSettings = new ComPortSettings(model, this);
         txRx = new TxRx(model, this);
         logging = new Logging(model, this);
-        stats = new Stats();
+        stats = new Stats(this);
 
         onRxDataListener = rxData -> {
             handleOnRxData(rxData);
@@ -77,7 +77,6 @@ public class Terminal {
      * to here.
      */
     public void openComPort() {
-
 
         comPort.setName(comPortSettings.selComPortName.get());
 

@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -75,6 +76,7 @@ public class TxRx {
 
     private StreamedText filterOutput = new StreamedText();
 
+    public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
     public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
     public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
@@ -188,6 +190,11 @@ public class TxRx {
             // Call the RX data function (this function doesn't know the difference between actual RX data
             // and echoed TX data)
             addRxData(dataAsString);
+        }
+
+        // Finally, update listeners
+        for(DataSentTxListener dataSentTxListener : dataSentTxListeners) {
+            dataSentTxListener.run(dataAsString);
         }
     }
 
