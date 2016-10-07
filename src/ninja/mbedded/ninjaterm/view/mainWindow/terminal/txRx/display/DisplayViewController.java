@@ -22,7 +22,7 @@ import org.controlsfx.validation.Validator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-09-23
+ * @last-modified 2016-10-07
  */
 public class DisplayViewController {
 
@@ -47,12 +47,6 @@ public class DisplayViewController {
 
     @FXML
     public CheckBox backspaceRemovesLastTypedCharCheckBox;
-
-    @FXML
-    public Label decodingLabel;
-
-    @FXML
-    public ComboBox<DecodingOptions> decodingComboBox;
 
     @FXML
     public CheckBox wrappingCheckBox;
@@ -114,26 +108,6 @@ public class DisplayViewController {
         terminal.txRx.display.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
 
         TooltipUtil.addDefaultTooltip(localTxEchoCheckBox, "If enabled, sent TX data will be copied (echoed) into the RX display.");
-
-        //==============================================//
-        //============== SETUP TX DECODING =============//
-        //==============================================//
-
-        // Populate decoding options combobox
-        decodingComboBox.getItems().setAll(DecodingOptions.values());
-
-        // Add listener to combobox
-        decodingComboBox.setOnAction(event -> {
-
-            // Bind the decoder decoding option to what has been selected in the
-            // combobox
-            terminal.decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
-        });
-
-        // Set default
-        decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
-
-        TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices.");
 
         //==============================================//
         //=============== BACKSPACE SETUP ==============//

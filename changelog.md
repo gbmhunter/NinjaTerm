@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Moved decoding options to formatting popover, closes #116.
+
 v0.6.2
 ------
 
