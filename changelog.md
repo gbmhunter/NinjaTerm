@@ -12,6 +12,7 @@ vX.X.X
 - Added maximum flash rate functionality to the LED indicators, closes #118.
 - Added ability for logging engine to "swallow" ANSI escape codes, closes #125.
 - Added better debug logging facilities, closes #129.
+- Added ability to log debug data to file via "debug" flag, closes #130.
 
 v0.6.2
 ------

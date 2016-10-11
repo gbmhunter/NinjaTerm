@@ -20,6 +20,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -151,7 +152,7 @@ public class TxRxViewController {
      */
     private int numCharsInRxTextNodes = 0;
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//

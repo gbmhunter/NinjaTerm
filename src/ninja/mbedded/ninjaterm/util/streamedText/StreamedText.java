@@ -5,6 +5,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class StreamedText {
     private List<TextColour> textColours = new ArrayList<>();
     private Color colorToBeInsertedOnNextChar = null;
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//

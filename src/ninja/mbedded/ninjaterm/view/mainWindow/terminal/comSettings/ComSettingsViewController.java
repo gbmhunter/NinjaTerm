@@ -7,6 +7,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comport.*;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class ComSettingsViewController {
 
     private GlyphFont glyphFont;
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//

@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.streamingFilter;
 
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class StreamingFilter {
 
     Pattern regexPattern;
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     public void setFilterPatten(String filterPattern) {
 

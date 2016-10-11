@@ -13,6 +13,7 @@ import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +64,7 @@ public class Terminal {
 
     public Decoder decoder = new Decoder();
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//

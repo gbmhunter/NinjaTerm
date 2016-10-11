@@ -10,6 +10,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -68,7 +69,7 @@ public class MainWindowViewController {
 
     private Model model;
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -163,7 +164,7 @@ public class MainWindowViewController {
      */
     public void addNewTerminal() {
 
-        logger.debug(getClass().getName() + ".addNewTerminal() called.");
+        logger.debug(".addNewTerminal() called.");
 
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal(model);

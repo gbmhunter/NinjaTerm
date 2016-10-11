@@ -11,6 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public class TxRx {
     public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
-    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
