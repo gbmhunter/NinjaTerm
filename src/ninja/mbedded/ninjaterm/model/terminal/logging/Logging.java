@@ -1,11 +1,13 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,17 +42,21 @@ public class Logging {
     //================================================================================================//
 
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
+
+    public SimpleBooleanProperty swallowAnsiEscapeCodes = new SimpleBooleanProperty(false);
+
     public ReadOnlyBooleanWrapper isLogging = new ReadOnlyBooleanWrapper();
 
     /**
      * Stores the way the file will be handled when opened for logging.
      */
-    public SimpleObjectProperty<FileBehaviour> fileBehaviour = new SimpleObjectProperty<>(FileBehaviour.APPEND);
+    public SimpleObjectProperty<FileBehaviour> selFileBehaviour = new SimpleObjectProperty<>(FileBehaviour.APPEND);
 
     private Model model;
     private Terminal terminal;
 
     private RawDataReceivedListener rawDataReceivedListener;
+    private StreamedTextListener ansiParserOutputListener;
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
@@ -69,6 +75,11 @@ public class Logging {
 
         rawDataReceivedListener = data -> {
             saveNewDataToLogFile(data);
+        };
+
+        ansiParserOutputListener = streamedText -> {
+            String ansiParserOutputText = streamedText.getText();
+            saveNewDataToLogFile(ansiParserOutputText);
         };
 
     }
@@ -93,12 +104,12 @@ public class Logging {
             return;
 
         boolean isAppend;
-        if(fileBehaviour.get() == FileBehaviour.APPEND) {
+        if(selFileBehaviour.get() == FileBehaviour.APPEND) {
             isAppend = true;
-        } else if(fileBehaviour.get() == FileBehaviour.OVERWRITE) {
+        } else if(selFileBehaviour.get() == FileBehaviour.OVERWRITE) {
             isAppend = false;
         } else {
-            throw new RuntimeException("fileBehaviour not recognised!");
+            throw new RuntimeException("selFileBehaviour not recognised!");
         }
 
         // Open file whose file path is specified in the model
@@ -115,7 +126,12 @@ public class Logging {
 
         // Add listener. This will cause saveNewDataToLogFile() to be called when there is new
         // RX data
-        terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+        if(swallowAnsiEscapeCodes.get()) {
+            terminal.txRx.ansiParserOutputListeners.add(ansiParserOutputListener);
+        } else {
+            // Listen to the raw RX data coming from the COM port
+            terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+        }
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
 
@@ -155,7 +171,11 @@ public class Logging {
         isLogging.set(false);
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
-        terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+        if(swallowAnsiEscapeCodes.get()) {
+            terminal.txRx.ansiParserOutputListeners.remove(ansiParserOutputListener);
+        } else {
+            terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+        }
 
         // Now close the file
         try {

@@ -11,8 +11,8 @@ import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-29
- * @last-modified   2016-10-06
+ * @last-modified   2016-10-11
  */
-public interface NewStreamedTextListener {
+public interface StreamedTextListener {
     void run(StreamedText streamedText);
 }

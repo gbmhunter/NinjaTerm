@@ -11,6 +11,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import jfxtras.scene.control.ToggleGroupValue?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.text.Text?>
 <Tab fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController"
      xmlns:fx="http://javafx.com/fxml"
      text="Logging"
@@ -41,9 +43,18 @@
             <RadioButton fx:id="overwriteFileBehaviourRadioButton">Overwrite</RadioButton>
         </VBox>
 
+        <CheckBox fx:id="swallowAnsiEscapeCodes">Swallow ANSI escape codes</CheckBox>
+
         <Button fx:id="startStopLoggingButton" prefWidth="200" prefHeight="40">Open</Button>
 
-
+        <HBox styleClass="info, border">
+        <TextFlow>
+            <Text style="-fx-font-weight: bold;" text="${'NOTE:\r\n'}" />
+            <Text styleClass="info">
+            Logged data will be decoded into text in the exact same manner as is displayed on the TX/RX sub-tab, but without the ANSI escape code colouring (because we are logging to a plain text file). ANSI escape codes can either be left in the logged text or swallowed.
+            </Text>
+        </TextFlow>
+        </HBox>
     </VBox>
 
 </Tab>

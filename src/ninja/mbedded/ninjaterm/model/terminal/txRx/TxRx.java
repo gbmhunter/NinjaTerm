@@ -57,7 +57,7 @@ public class TxRx {
 
     private AnsiECParser ansiECParser = new AnsiECParser();
 
-    private StreamedText ansiParserOutput = new StreamedText();
+    private StreamedText bufferBetweenAnsiParserAndFilter = new StreamedText();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
@@ -74,7 +74,13 @@ public class TxRx {
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
     public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
-    public List<NewStreamedTextListener> newStreamedTextListeners = new ArrayList<>();
+
+    /**
+     * This event is emitted every time the ANSI parser is run. The output of the ANSI
+     * parser is passed along with the event.
+     */
+    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
+    public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     //================================================================================================//
@@ -264,10 +270,14 @@ public class TxRx {
         //============== ANSI ESCAPE CODES =============//
         //==============================================//
 
-        if(colouriser.ansiEscapeCodesEnabled.get()) {
+        StreamedText tempAnsiParserOutput = new StreamedText();
+
+        // Run the ANSI parser if we want colourised text displayed OR the user wants ANSI codes
+        // swallowed when logging
+        if(colouriser.ansiEscapeCodesEnabled.get() || terminal.logging.swallowAnsiEscapeCodes.get()) {
             // This temp variable is used to store just the new ANSI parser output data, which
-            // is then stored in totalAnsiParserOutput before being shifted into just ansiParserOutput
-            StreamedText tempAnsiParserOutput = new StreamedText();
+            // is then stored in totalAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
+
             ansiECParser.parse(data, tempAnsiParserOutput);
 
             //        System.out.println("tempAnsiParserOutput = " + tempAnsiParserOutput);
@@ -282,14 +292,25 @@ public class TxRx {
 
             //        System.out.println("totalAnsiParserOutput = " + totalAnsiParserOutput);
 
+            // Fire ansiParserOutput event
+            for (StreamedTextListener streamedTextListener : ansiParserOutputListeners) {
+                // Create a new copy of the streamed text so that the listeners can't modify
+                // the contents by mistake
+                StreamedText streamedText = new StreamedText(tempAnsiParserOutput);
+                streamedTextListener.run(streamedText);
+            }
+        }
+
+        if(colouriser.ansiEscapeCodesEnabled.get()) {
+
             // Now add all the new ANSI parser output to any that was not used up by the
             // streaming filter from last time
-            ansiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            bufferBetweenAnsiParserAndFilter.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
         } else { // if(colouriser.ansiEscapeCodesEnabled.get())
 
             // The user does not want us to parse ANSI escape codes, so append the input RX data directly
             // into the ANSI parser output object
-            ansiParserOutput.append(data);
+            bufferBetweenAnsiParserAndFilter.append(data);
 
         } // if(colouriser.ansiEscapeCodesEnabled.get())
 
@@ -298,7 +319,7 @@ public class TxRx {
         //==============================================//
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamingFilter.parse(ansiParserOutput, filterOutput);
+        streamingFilter.parse(bufferBetweenAnsiParserAndFilter, filterOutput);
 
         //==============================================//
         //=================== TRIMMING =================//
@@ -324,7 +345,7 @@ public class TxRx {
 
         // Notify that there is new UI data to display (this is NOT the same
         // as the raw data)
-        for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+        for(StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
             newStreamedTextListener.run(filterOutput);
         }
 
@@ -395,14 +416,14 @@ public class TxRx {
             // totalAnsiParserOutput).
             StreamedText toBeConsumed = new StreamedText(totalAnsiParserOutput);
 
-            // The normal ansiParserOutput should now be changed to point
+            // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
             // to this toBeConsumed object
-            ansiParserOutput = toBeConsumed;
+            bufferBetweenAnsiParserAndFilter = toBeConsumed;
 
             streamingFilter.parse(toBeConsumed, filterOutput);
 
             // Notify that there is new UI data to display
-            for(NewStreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            for(StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
                 newStreamedTextListener.run(filterOutput);
             }
         }

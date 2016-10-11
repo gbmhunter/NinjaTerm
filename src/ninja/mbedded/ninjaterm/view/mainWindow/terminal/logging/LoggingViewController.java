@@ -2,11 +2,9 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging;
 
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.Tab;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import jfxtras.scene.control.ToggleGroupValue;
@@ -17,9 +15,6 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 /**
  * Controller for the "Logging" sub-tab which is part of a terminal tab.
@@ -51,6 +46,9 @@ public class LoggingViewController {
 
     @FXML
     private RadioButton overwriteFileBehaviourRadioButton;
+
+    @FXML
+    private CheckBox swallowAnsiEscapeCodes;
 
     @FXML
     private Button startStopLoggingButton;
@@ -112,7 +110,13 @@ public class LoggingViewController {
         fileBehvaiourToggleGroupValue.add(appendFileBehaviourRadioButton, Logging.FileBehaviour.APPEND);
         fileBehvaiourToggleGroupValue.add(overwriteFileBehaviourRadioButton, Logging.FileBehaviour.OVERWRITE);
 
-        Bindings.bindBidirectional(fileBehvaiourToggleGroupValue.valueProperty(), terminal.logging.fileBehaviour);
+        Bindings.bindBidirectional(fileBehvaiourToggleGroupValue.valueProperty(), terminal.logging.selFileBehaviour);
+
+        //==============================================//
+        //======= SWALLOW ANSI ESCAPE CODES SETUP ======//
+        //==============================================//
+
+        Bindings.bindBidirectional(swallowAnsiEscapeCodes.selectedProperty(), terminal.logging.swallowAnsiEscapeCodes);
 
     }
 
@@ -131,7 +135,9 @@ public class LoggingViewController {
 
     }
 
-
+    /**
+     *
+     */
     private void updateLoggingTabBasedOnIsLogging() {
         if(!terminal.logging.isLogging.get()) {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
@@ -144,6 +150,7 @@ public class LoggingViewController {
             browseButton.setDisable(false);
             appendFileBehaviourRadioButton.setDisable(false);
             overwriteFileBehaviourRadioButton.setDisable(false);
+            swallowAnsiEscapeCodes.setDisable(false);
 
         } else {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
@@ -156,6 +163,7 @@ public class LoggingViewController {
             browseButton.setDisable(true);
             appendFileBehaviourRadioButton.setDisable(true);
             overwriteFileBehaviourRadioButton.setDisable(true);
+            swallowAnsiEscapeCodes.setDisable(true);
         }
     }
 
