@@ -12,15 +12,24 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * Model for a single "terminal" instance (which is displayed on a tab in the GUI).
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-05
+ * @last-modified   2016-10-11
  */
 public class Terminal {
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     /**
      * The terminal name. This is displayed in the terminal tab header. It is re-nameable by
@@ -53,6 +62,12 @@ public class Terminal {
     private OnRxDataListener onRxDataListener;
 
     public Decoder decoder = new Decoder();
+
+    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public Terminal(Model model) {
 
@@ -119,7 +134,8 @@ public class Terminal {
     }
 
     private void handleOnRxData(byte[] rxData) {
-        //System.out.println("rawRxData = " + Arrays.toString(rawRxData));
+        logger.debug("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
+
         String rxText;
         rxText = decoder.parse(rxData);
 

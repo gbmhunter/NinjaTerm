@@ -5,6 +5,8 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,13 +19,19 @@ import java.util.ListIterator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-28
- * @last-modified 2016-10-02
+ * @last-modified 2016-10-11
  */
 public class StreamedText {
 
     private String text = "";
     private List<TextColour> textColours = new ArrayList<>();
     private Color colorToBeInsertedOnNextChar = null;
+
+    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     /**
      * Default constructor.
@@ -54,7 +62,7 @@ public class StreamedText {
     }
 
     public void setColorToBeInsertedOnNextChar(Color color) {
-        System.out.println(getClass().getSimpleName() + "setColorToBeInsertedOnNextChar() called with color = " + color);
+        logger.debug("setColorToBeInsertedOnNextChar() called with color = " + color);
         this.colorToBeInsertedOnNextChar = color;
     }
 
@@ -187,7 +195,7 @@ public class StreamedText {
      * @param textToAppend
      */
     public void append(String textToAppend) {
-//        System.out.println("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
+        logger.debug("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
 
         // Passing in an empty string is not invalid, but we don't have to do anything,
         // so just return.
@@ -337,7 +345,7 @@ public class StreamedText {
 
             // Look for entry in color array
             if (!isColorAt(x + 1)) {
-                System.out.println("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
+                logger.debug("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
                 return false;
             }
         }

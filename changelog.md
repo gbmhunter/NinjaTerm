@@ -11,6 +11,7 @@ vX.X.X
 - Added total TX/RX byte counts to the bottom status bar, closes #123.
 - Added maximum flash rate functionality to the LED indicators, closes #118.
 - Added ability for logging engine to "swallow" ANSI escape codes, closes #125.
+- Added better debug logging facilities, closes #129.
 
 v0.6.2
 ------

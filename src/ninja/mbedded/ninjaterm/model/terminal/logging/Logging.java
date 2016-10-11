@@ -8,6 +8,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -61,11 +63,15 @@ public class Logging {
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
 
+    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
     public Logging(Model model, Terminal terminal) {
+
+        logger.debug("Constructor called.");
 
         this.model = model;
         this.terminal = terminal;
@@ -81,6 +87,7 @@ public class Logging {
             String ansiParserOutputText = streamedText.getText();
             saveNewDataToLogFile(ansiParserOutputText);
         };
+
 
     }
 

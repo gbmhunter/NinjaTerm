@@ -29,6 +29,8 @@ import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.Formatti
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -38,7 +40,7 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-10-07
+ * @last-modified 2016-10-11
  */
 public class TxRxViewController {
 
@@ -149,6 +151,8 @@ public class TxRxViewController {
      */
     private int numCharsInRxTextNodes = 0;
 
+    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -213,7 +217,7 @@ public class TxRxViewController {
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
         rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
-            //System.out.println("heightProperty changed to " + newValue);
+            //logger.debug("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
                 rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
@@ -246,7 +250,7 @@ public class TxRxViewController {
         );
 
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
-                    //System.out.println("Mouse click detected! " + mouseEvent.getSource());
+                    //logger.debug("Mouse click detected! " + mouseEvent.getSource());
 
                     // Enable auto-scroll
                     autoScrollEnabled = true;
@@ -268,6 +272,7 @@ public class TxRxViewController {
         clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
 
         clearTextButton.setOnAction(event -> {
+            logger.debug("clearTextButton clicked.");
             terminal.txRx.clearTxAndRxData();
             model.status.addMsg("Terminal TX/RX text cleared.");
         });
@@ -373,7 +378,7 @@ public class TxRxViewController {
         //==============================================//
 
         terminal.txRx.display.selLayoutOption.addListener((observable, oldValue, newValue) -> {
-            System.out.println("Selected layout option has been changed.");
+            logger.debug("Selected layout option has been changed.");
             updateLayout();
         });
 
@@ -420,7 +425,7 @@ public class TxRxViewController {
         /*dataDirectionRxLabel.widthProperty().addListener((observable, oldValue, newValue) -> {
             double newWidth = newValue.doubleValue() + 100.0;
 
-            System.out.println("newWidth = " + newWidth);
+            logger.debug("newWidth = " + newWidth);
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
@@ -432,6 +437,9 @@ public class TxRxViewController {
      * @param streamedText
      */
     private void newStreamedTextListener(StreamedText streamedText) {
+
+        logger.debug("newStreamedTextListener() called with streamedText = " + streamedText);
+
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
         numCharsInRxTextNodes += streamedText.getText().length();
@@ -496,14 +504,14 @@ public class TxRxViewController {
     private void updateTextWrapping() {
 
         if (terminal.txRx.display.wrappingEnabled.get()) {
-            System.out.println("\"Wrapping\" checkbox checked.");
+            logger.debug("\"Wrapping\" checkbox checked.");
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
             rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
-            System.out.println("\"Wrapping\" checkbox unchecked.");
+            logger.debug("\"Wrapping\" checkbox unchecked.");
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
@@ -511,7 +519,7 @@ public class TxRxViewController {
 
     public void showPopover(Button button, PopOver popOver) {
 
-        System.out.println(getClass().getName() + ".showPopover() called.");
+        logger.debug(getClass().getName() + ".showPopover() called.");
 
         //==============================================//
         //=============== DECODING POPOVER =============//
