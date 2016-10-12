@@ -13,6 +13,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
@@ -27,12 +28,18 @@ public class Main extends Application {
     private Stage splashScreenStage;
     private Stage mainStage;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     @Override
     public void start(Stage primaryStage) throws Exception{
+
+        logger.debug("start() called.");
 
         //==============================================//
         //======== COMMAND-LINE ARGUMENT PARSING =======//
         //==============================================//
+
+        logger.debug("Parsing command-line parameters...");
         for(String arg : getParameters().getRaw()) {
             if(arg.equals("no-splash"))
                 disableSplashScreen = true;

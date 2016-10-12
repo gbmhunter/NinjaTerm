@@ -154,7 +154,7 @@ public class MainWindowViewController {
         //================== STATUS BAR ================//
         //==============================================//
 
-        statusBarViewController.init(model);
+        statusBarViewController.init(model, glyphFont);
 
     }
 

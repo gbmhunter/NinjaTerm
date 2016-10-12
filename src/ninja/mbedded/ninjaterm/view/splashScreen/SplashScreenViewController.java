@@ -237,38 +237,6 @@ public class SplashScreenViewController {
         nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
 
         createNextKeyFrame();
-
-
-        // This variable keeps track of the total time from the timeline is started to display
-        // the keyframe, as this is the format the keyframe wants
-        /*double summedTimeInMs = 0.0;
-
-        for (int i = 0; i < nameAndVersionString.length(); i++) {
-            final int test = i;
-
-            summedTimeInMs += charIntervalsMs[i];
-
-            if (i == nameAndVersionString.length() - 1) {
-                nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
-                    loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
-
-                    // Start the next sequence after a fixed delay, where we display all of the bogus loading messages
-                    timeline = new Timeline(new KeyFrame(
-                            Duration.millis(500),
-                            ae -> startBogusLoadingMsgs()));
-                    timeline.play();
-
-                }));
-            } else {
-                nameAndVersionTimeline.getKeyFrames().add(new KeyFrame(Duration.millis(summedTimeInMs), event -> {
-                    loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(test));
-                }));
-            }
-        }
-
-        // This causes the intro text on the splash screen to be displayed
-        // (not the bogus text, this comes later)
-        nameAndVersionTimeline.play();*/
     }
 
     private void createNextKeyFrame() {
@@ -300,23 +268,7 @@ public class SplashScreenViewController {
             }));
             timeline.play();
         }
-
-
     }
-
-    /**
-     * Initialises and starts the animation of the bogus messages on the splash screen.
-     */
-    /*private void startBogusLoadingMsgs() {
-        // Start loading messages
-        timeline = new Timeline(new KeyFrame(
-                Duration.millis(intervalBetweenEachBogusMsgMs),
-                ae -> updateBogusLoadingMsgs()));
-
-        // timeline will be stopped when last bogus message has been printed.
-        //timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
-    }*/
 
     /**
      * Called by lambda expression defined in startBogusLoadingMsgs(), once every keyframe, and

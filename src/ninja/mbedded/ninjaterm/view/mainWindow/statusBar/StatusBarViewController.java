@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.text.TextFlow;
@@ -13,6 +14,8 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.view.led.Led;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
 
 import java.util.List;
 
@@ -30,37 +33,66 @@ public class StatusBarViewController {
     //================================================================================================//
 
     @FXML
-    public ScrollPane statusScrollPane;
+    private ScrollPane statusScrollPane;
 
     @FXML
-    public TextFlow statusTextFlow;
+    private TextFlow statusTextFlow;
 
     @FXML
-    public Led activityTxLed;
+    private Button openCloseComPortButton;
 
     @FXML
-    public Led activityRxLed;
+    private Led activityTxLed;
+
+    @FXML
+    private Led activityRxLed;
 
     //==============================================//
     //================ BOTTOM BAR ==================//
     //==============================================//
 
     @FXML
-    public Label totalByteCountTx;
+    private Label totalByteCountTx;
 
     @FXML
-    public Label totalByteCountRx;
+    private Label totalByteCountRx;
 
     @FXML
-    public Label totalBytesPerSecTx;
+    private Label totalBytesPerSecTx;
 
     @FXML
-    public Label totalBytesPerSecRx;
+    private Label totalBytesPerSecRx;
 
-    public Model model;
+    private Model model;
 
-    public void init(Model model) {
+    public void init(Model model, GlyphFont glyphFont) {
         this.model = model;
+
+        //==============================================//
+        //============= STATUS MESSAGES SETUP ==========//
+        //==============================================//
+
+        model.status.statusMsgs.addListener((ListChangeListener.Change<? extends Node> c) -> {
+            statusTextFlow.getChildren().setAll(model.status.statusMsgs);
+
+            // Auto-scroll the status scroll-pane to the last received status message
+            statusScrollPane.setVvalue(statusTextFlow.getHeight());
+        });
+
+        //==============================================//
+        //====== OPEN/CLOSE COM PORT BUTTON SETUP ======//
+        //==============================================//
+
+        openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+        openCloseComPortButton.setText("Open");
+
+        openCloseComPortButton.setOnAction(event -> {
+            model.openOrCloseCurrentComPort();
+        });
+
+        //==============================================//
+        //================= LED SETUP ==================//
+        //==============================================//
 
         model.globalStats.numCharactersTx.addListener((observable, oldValue, newValue) -> {
             activityTxLed.flash();
@@ -68,13 +100,6 @@ public class StatusBarViewController {
 
         model.globalStats.numCharactersRx.addListener((observable, oldValue, newValue) -> {
             activityRxLed.flash();
-        });
-
-        model.status.statusMsgs.addListener((ListChangeListener.Change<? extends Node> c) -> {
-            statusTextFlow.getChildren().setAll(model.status.statusMsgs);
-
-            // Auto-scroll the status scroll-pane to the last received status message
-            statusScrollPane.setVvalue(statusTextFlow.getHeight());
         });
 
         //==============================================//

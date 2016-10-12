@@ -5,6 +5,8 @@ import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,18 +20,20 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-07
+ * @last-modified 2016-10-12
  */
 public class Model {
 
     public ObservableList<Terminal> terminals = FXCollections.observableArrayList();
-    public Status status;
+    public Status status = new Status(this);
     public GlobalStats globalStats = new GlobalStats();
 
     public List<CloseTerminalListener> closedTerminalListeners = new ArrayList<>();
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     public Model() {
-         status = new Status(this);
+         //status = new Status(this);
     }
 
     /**
@@ -69,6 +73,15 @@ public class Model {
             if(terminal.isComPortOpen.get())
                 terminal.closeComPort();
         }
+    }
+
+    /**
+     * This is designed to be called by the Open/Close COM port button when it is
+     * clicked.
+     */
+    public void openOrCloseCurrentComPort() {
+        logger.debug("openOrCloseCurrentComPort() called.");
+
     }
 
 }
