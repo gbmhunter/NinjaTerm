@@ -3,14 +3,11 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-09-26
+* @last-modified   2016-10-07
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController"
         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
@@ -22,6 +19,14 @@
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
+
+    <!-- DECODING -->
+    <VBox spacing="5" styleClass="border">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label>Decoding:</Label>
+            <ComboBox fx:id="decodingComboBox"></ComboBox>
+        </HBox>
+    </VBox>
 
     <!-- WHAT TO SEND WHEN ENTER IS PRESSED -->
     <VBox spacing="5" styleClass="border">

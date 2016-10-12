@@ -3,7 +3,6 @@ package ninja.mbedded.ninjaterm.util.comport;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortException;
-import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
 import ninja.mbedded.ninjaterm.util.Decoding.BytesToString;
 
 import java.util.ArrayList;
@@ -245,7 +244,7 @@ public class ComPort {
 
                 for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
                     OnRxDataListener onRxDataListener = it.next();
-                    onRxDataListener.onRxData(rxData);
+                    onRxDataListener.run(rxData);
                 }
             }
     }

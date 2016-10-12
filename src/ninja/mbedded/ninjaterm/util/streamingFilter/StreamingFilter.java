@@ -1,7 +1,10 @@
 package ninja.mbedded.ninjaterm.util.streamingFilter;
 
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +27,8 @@ public class StreamingFilter {
 
     Pattern regexPattern;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     public void setFilterPatten(String filterPattern) {
 
         this.filterPattern = filterPattern;
@@ -42,12 +47,12 @@ public class StreamingFilter {
             StreamedText inputStreamedText,
             StreamedText outputStreamedText) {
 
-        System.out.println(getClass().getSimpleName() + ".parse() called with:");
-        System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
-        System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
+        logger.debug(getClass().getSimpleName() + ".parse() called with:");
+        logger.debug("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
+        logger.debug("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
         if(filterPattern.equals("")) {
-            System.out.println("Filter text empty. Not performing any filtering.");
+            logger.debug("Filter text empty. Not performing any filtering.");
 
             // Shift all input to output
             outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
@@ -55,7 +60,7 @@ public class StreamingFilter {
         }
 
         if(inputStreamedText.getText().equals("")) {
-            System.out.println("No filtering to perform. Returning...");
+            logger.debug("No filtering to perform. Returning...");
             return;
         }
 
@@ -67,7 +72,7 @@ public class StreamingFilter {
             // Check to see if we can release all text on this line without even bothering
             // to check for a match. This will occur if a match has already occurred on this line.
             if(releaseTextOnCurrLine) {
-                System.out.println("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
+                logger.debug("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
                 outputStreamedText.shiftCharsIn(inputStreamedText, line.length());
 
                 if(hasNewLineChar(line)) {
@@ -75,7 +80,7 @@ public class StreamingFilter {
                 }
 
                 // Jump to next iteration of for loop
-                System.out.println("Going to next iteration of loop.");
+                logger.debug("Going to next iteration of loop.");
                 continue;
             }
 
@@ -84,11 +89,11 @@ public class StreamingFilter {
 
             if (matcher.find()) {
                 // Match in line found!
-                System.out.println("Match in line found. Line = " + Debugging.convertNonPrintable(line));
+                logger.debug("Match in line found. Line = " + Debugging.convertNonPrintable(line));
 
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
-                System.out.println("numCharsToRelease = " + numCharsToRelease);
+                logger.debug("numCharsToRelease = " + numCharsToRelease);
                 outputStreamedText.shiftCharsIn(inputStreamedText, numCharsToRelease);
 
                 // Check to see if this is the last line. If so, set the releaseTextOnCurrLine to true
@@ -101,22 +106,27 @@ public class StreamingFilter {
             } else {
                 // No match found on this line. If this line is completed, then we know there can never be a match,
                 // and it can be deleted from the heldStreamedText
-                System.out.println("No match found on line = " + Debugging.convertNonPrintable(line));
+                logger.debug("No match found on line = " + Debugging.convertNonPrintable(line));
 
                 if(hasNewLineChar(line)) {
-                    System.out.println("Deleting line.");
+                    logger.debug("Deleting line.");
                     inputStreamedText.removeChars(line.length());
                 }
 
             }
         } // for (String line : lines)
 
-        System.out.println(getClass().getSimpleName() + ".parse() finished. Variables are now:");
-        System.out.println("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
-        System.out.println("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
+        logger.debug(getClass().getSimpleName() + ".parse() finished. Variables are now:");
+        logger.debug("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
+        logger.debug("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
 
     }
 
+    /**
+     * This method can be used to determine if a string contains a new line character.
+     * @param line
+     * @return
+     */
     public static boolean hasNewLineChar(String line) {
         Pattern pattern = Pattern.compile("\n");
         Matcher matcher = pattern.matcher(line);

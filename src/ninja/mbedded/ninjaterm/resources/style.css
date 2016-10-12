@@ -10,6 +10,17 @@
 /* ========================= JAVAFX STYLING BASICS (non application specific) ================== */
 /* ============================================================================================= */
 
+/* ENABLE THIS IF YOU WANT TO SET A CUSTOM, DEFAULT FONT */
+/*
+@font-face {
+    font-family: 'Open Sans';
+    src: url('fonts/OpenSans-Regular.ttf');
+}
+.root {
+    -fx-font-family: "Open Sans";
+}
+*/
+
 /* ScrollPane objects have an annoying grey border by default, lets get rid of this */
 .scroll-pane {
     -fx-background-color: transparent;
@@ -136,4 +147,13 @@ which are displaying dynamic content */
     // Light red
     -fx-base: #FFA1A1;
     -fx-font-size: 15px;
+}
+
+/* =========================================== */
+/* ================ INFO BLOCKS ============== */
+/* =========================================== */
+
+.info {
+    -fx-font-size: 14px;
+    -fx-fill: #555555;
 }

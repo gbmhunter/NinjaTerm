@@ -31,6 +31,6 @@
         <Tab fx:id="newTerminalTab" text="+" closable="false" />
     </TabPane>
 
-    <fx:include fx:id="statusBarView" source="StatusBar/StatusBarView.fxml"/>
+    <fx:include fx:id="statusBarView" source="statusBar/StatusBarView.fxml"/>
 
 </VBox>

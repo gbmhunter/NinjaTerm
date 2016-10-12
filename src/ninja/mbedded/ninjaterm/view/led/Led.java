@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.led;
 
+import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.fxml.FXML;
@@ -38,6 +39,8 @@ public class Led extends StackPane {
 
     private double radius;
 
+    private double maxFlashRateMs;
+
     private FadeTransition fade;
 
     //================================================================================================//
@@ -70,6 +73,21 @@ public class Led extends StackPane {
         return radius;
     }
 
+    /**
+     * Get the maximum rate at which the LED can flash.
+     * @return
+     */
+    public double getMaxFlashRateMs() {
+        return maxFlashRateMs;
+    }
+
+    /**
+     * Set the maximum rate at which the LED can flash.
+     * @param value
+     */
+    public void setMaxFlashRateMs(double value) {
+        maxFlashRateMs = value;
+    }
 
     public Led() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
@@ -87,6 +105,7 @@ public class Led extends StackPane {
         //==============================================//
         //========== PERSISTANT CIRCLE INIT ============//
         //==============================================//
+
         persistentCircle.setFill(Color.TRANSPARENT);
         persistentCircle.setStroke(Color.RED);
         persistentCircle.setStrokeWidth(2);
@@ -105,19 +124,16 @@ public class Led extends StackPane {
         //fade.setAutoReverse(true);
         fade.setCycleCount(1);
 
-
-
-
-
-    }
-
-    public void init() {
-
     }
 
     public void flash() {
-        fade.stop();
-        fade.play();
+
+        // Only start a flash sequence if the LED flash animation is currently in the stopped state,
+        // OR, it has been running long enough that the animation duration already exceeds the max. flash rate
+        if(fade.getStatus() == Animation.Status.STOPPED || fade.getCurrentTime().toSeconds() > maxFlashRateMs/1000.0) {
+            fade.stop();
+            fade.play();
+        }
     }
 
 }

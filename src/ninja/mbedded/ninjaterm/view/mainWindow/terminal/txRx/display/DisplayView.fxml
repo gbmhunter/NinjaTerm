@@ -3,18 +3,16 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-24
-* @last-modified   2016-09-23
+* @last-modified   2016-10-07
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.control.textfield.CustomTextField?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController"
-      fx:id="displayViewVBox"
-         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
-         spacing="20"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+      xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
+      spacing="20"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -41,14 +39,6 @@
         <HBox spacing="5" alignment="CENTER_LEFT">
             <Label>Buffer Size:</Label>
             <TextField fx:id="bufferSizeTextField"></TextField>
-        </HBox>
-    </VBox>
-
-    <!-- DECODING -->
-    <VBox spacing="5" styleClass="border">
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label fx:id="decodingLabel">Decoding:</Label>
-            <ComboBox fx:id="decodingComboBox"></ComboBox>
         </HBox>
     </VBox>
 

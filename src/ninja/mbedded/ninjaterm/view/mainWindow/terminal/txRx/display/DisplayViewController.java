@@ -22,7 +22,7 @@ import org.controlsfx.validation.Validator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-09-23
+ * @last-modified 2016-10-07
  */
 public class DisplayViewController {
 
@@ -31,37 +31,28 @@ public class DisplayViewController {
     //================================================================================================//
 
     @FXML
-    public VBox displayViewVBox;
+    private ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
 
     @FXML
-    public ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
+    private RadioButton sendTxCharsImmediatelyRadioButton;
 
     @FXML
-    public RadioButton sendTxCharsImmediatelyRadioButton;
+    private RadioButton sendTxCharsOnEnterRadioButton;
 
     @FXML
-    public RadioButton sendTxCharsOnEnterRadioButton;
+    private CheckBox localTxEchoCheckBox;
 
     @FXML
-    public CheckBox localTxEchoCheckBox;
+    private CheckBox backspaceRemovesLastTypedCharCheckBox;
 
     @FXML
-    public CheckBox backspaceRemovesLastTypedCharCheckBox;
+    private CheckBox wrappingCheckBox;
 
     @FXML
-    public Label decodingLabel;
+    private TextField wrappingWidthTextField;
 
     @FXML
-    public ComboBox<DecodingOptions> decodingComboBox;
-
-    @FXML
-    public CheckBox wrappingCheckBox;
-
-    @FXML
-    public TextField wrappingWidthTextField;
-
-    @FXML
-    public TextField bufferSizeTextField;
+    private TextField bufferSizeTextField;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -114,26 +105,6 @@ public class DisplayViewController {
         terminal.txRx.display.localTxEcho.bind(localTxEchoCheckBox.selectedProperty());
 
         TooltipUtil.addDefaultTooltip(localTxEchoCheckBox, "If enabled, sent TX data will be copied (echoed) into the RX display.");
-
-        //==============================================//
-        //============== SETUP TX DECODING =============//
-        //==============================================//
-
-        // Populate decoding options combobox
-        decodingComboBox.getItems().setAll(DecodingOptions.values());
-
-        // Add listener to combobox
-        decodingComboBox.setOnAction(event -> {
-
-            // Bind the decoder decoding option to what has been selected in the
-            // combobox
-            terminal.decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
-        });
-
-        // Set default
-        decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
-
-        TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices.");
 
         //==============================================//
         //=============== BACKSPACE SETUP ==============//

@@ -1,3 +1,19 @@
+v0.6.3
+------
+
+- Moved decoding options to formatting popover, closes #116.
+- Added icon to colouriser button, closes #115.
+- "Parse ANSI escape sequences" checkbox is now only enabled when decoding mode is ASCII, closes #117.
+- Fixed bug where ANSI escape codes were not disabled when it's checkbox is deselected, closes #119.
+- Added bits/second metrics to the "Stats" sub-tab, closes #120.
+- Added bottom bar to the status pane which displays the total TX/RX bytes per second rates, closes #122.
+- Moved interface files from "interfaces/" and into the package/folder that they have most relevance with, closes #121.
+- Added total TX/RX byte counts to the bottom status bar, closes #123.
+- Added maximum flash rate functionality to the LED indicators, closes #118.
+- Added ability for logging engine to "swallow" ANSI escape codes, closes #125.
+- Added better debug logging facilities, closes #129.
+- Added ability to log debug data to file via "debug" flag, closes #130.
+
 v0.6.2
 ------
 

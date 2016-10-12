@@ -45,6 +45,17 @@
         </GridPane>
     </VBox>
 
+    <VBox spacing="10" fillWidth="false" styleClass="border">
+        <Label>Bytes/second (note this is not the same as the baud rate):</Label>
+        <GridPane vgap="5" hgap="10">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (bytes/second):</Label>
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bytesPerSecondTxLabel"></Label>
+
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (bytes/second):</Label>
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bytesPerSecondRxLabel"></Label>
+        </GridPane>
+    </VBox>
+
 </VBox>
 </Tab>
 

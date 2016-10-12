@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats;
 
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
@@ -10,8 +11,8 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
  * Controller for the "StatsView" sub-tab which is part of a terminal tab.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-09-22
  * @since 2016-09-16
+ * @last-modified 2016-10-07
  */
 public class StatsViewController {
 
@@ -31,27 +32,19 @@ public class StatsViewController {
     @FXML
     private Label bufferSizesRxLabel;
 
+    @FXML
+    private Label bytesPerSecondTxLabel;
+
+    @FXML
+    private Label bytesPerSecondRxLabel;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
     private Terminal terminal;
 
-    public StatsViewController() {
-
-        /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(
-                "StatsView.fxml"));
-
-        fxmlLoader.setRoot(this);
-        fxmlLoader.setController(this);
-
-        try {
-            fxmlLoader.load();
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }*/
-
-    }
+    public StatsViewController() { }
 
     public void init(Terminal terminal) {
 
@@ -94,6 +87,28 @@ public class StatsViewController {
         terminal.txRx.rawRxData.addListener(bufferSizesRxChangeListener);
         // Set default (giving bogus data as it is not used)
         bufferSizesRxChangeListener.changed(new SimpleStringProperty(), "", "");
+
+        //==============================================//
+        //============= BYTES/SECOND SETUP =============//
+        //==============================================//
+
+        //======================= TX ===================//
+        ChangeListener<Number> bytesPerSecondTxChangeListener = (observable, oldValue, newValue) -> {
+            bytesPerSecondTxLabel.setText(Double.toString(newValue.doubleValue()));
+        };
+        terminal.stats.bytesPerSecondTx.addListener(bytesPerSecondTxChangeListener);
+
+        // Set default (giving bogus data as it is not used)
+        bytesPerSecondTxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
+
+        //======================= RX ===================//
+        ChangeListener<Number> bytesPerSecondRxChangeListener = (observable, oldValue, newValue) -> {
+            bytesPerSecondRxLabel.setText(Double.toString(newValue.doubleValue()));
+        };
+        terminal.stats.bytesPerSecondRx.addListener(bytesPerSecondRxChangeListener);
+
+        // Set default (giving bogus data as it is not used)
+        bytesPerSecondRxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
 
     }
 

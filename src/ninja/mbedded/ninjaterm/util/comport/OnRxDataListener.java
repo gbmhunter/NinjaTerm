@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.interfaces;
+package ninja.mbedded.ninjaterm.util.comport;
 
 
 /**
@@ -6,10 +6,10 @@ package ninja.mbedded.ninjaterm.interfaces;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-17
- * @last-modified   2016-09-25
+ * @last-modified   2016-10-07
  */
 public interface OnRxDataListener {
 
-    void onRxData(byte[] rxData);
+    void run(byte[] rxData);
 
 }

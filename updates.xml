@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.6.2/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.2_macos.dmg" newVersion="0.6.2" newMediaFileId="36" fileSize="6189191" bundledJre="" archive="false">
-    <comment language="en">v0.6.2&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.6.3/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.3_macos.dmg" newVersion="0.6.3" newMediaFileId="36" fileSize="6918279" bundledJre="" archive="false">
+    <comment language="en">v0.6.3&#xD;
+------&#xD;
+&#xD;
+- Moved decoding options to formatting popover, closes #116.&#xD;
+- Added icon to colouriser button, closes #115.&#xD;
+- "Parse ANSI escape sequences" checkbox is now only enabled when decoding mode is ASCII, closes #117.&#xD;
+- Fixed bug where ANSI escape codes were not disabled when it's checkbox is deselected, closes #119.&#xD;
+- Added bits/second metrics to the "Stats" sub-tab, closes #120.&#xD;
+- Added bottom bar to the status pane which displays the total TX/RX bytes per second rates, closes #122.&#xD;
+- Moved interface files from "interfaces/" and into the package/folder that they have most relevance with, closes #121.&#xD;
+- Added total TX/RX byte counts to the bottom status bar, closes #123.&#xD;
+- Added maximum flash rate functionality to the LED indicators, closes #118.&#xD;
+- Added ability for logging engine to "swallow" ANSI escape codes, closes #125.&#xD;
+- Added better debug logging facilities, closes #129.&#xD;
+- Added ability to log debug data to file via "debug" flag, closes #130.&#xD;
+&#xD;
+v0.6.2&#xD;
 ------&#xD;
 &#xD;
 - Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.&#xD;
@@ -87,8 +103,24 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.2_windows.exe" newVersion="0.6.2" newMediaFileId="23" fileSize="6660608" bundledJre="" archive="false">
-    <comment language="en">v0.6.2&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.3_windows.exe" newVersion="0.6.3" newMediaFileId="23" fileSize="7389696" bundledJre="" archive="false">
+    <comment language="en">v0.6.3&#xD;
+------&#xD;
+&#xD;
+- Moved decoding options to formatting popover, closes #116.&#xD;
+- Added icon to colouriser button, closes #115.&#xD;
+- "Parse ANSI escape sequences" checkbox is now only enabled when decoding mode is ASCII, closes #117.&#xD;
+- Fixed bug where ANSI escape codes were not disabled when it's checkbox is deselected, closes #119.&#xD;
+- Added bits/second metrics to the "Stats" sub-tab, closes #120.&#xD;
+- Added bottom bar to the status pane which displays the total TX/RX bytes per second rates, closes #122.&#xD;
+- Moved interface files from "interfaces/" and into the package/folder that they have most relevance with, closes #121.&#xD;
+- Added total TX/RX byte counts to the bottom status bar, closes #123.&#xD;
+- Added maximum flash rate functionality to the LED indicators, closes #118.&#xD;
+- Added ability for logging engine to "swallow" ANSI escape codes, closes #125.&#xD;
+- Added better debug logging facilities, closes #129.&#xD;
+- Added ability to log debug data to file via "debug" flag, closes #130.&#xD;
+&#xD;
+v0.6.2&#xD;
 ------&#xD;
 &#xD;
 - Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.&#xD;
