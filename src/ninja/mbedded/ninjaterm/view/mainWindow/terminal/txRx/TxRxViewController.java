@@ -281,8 +281,10 @@ public class TxRxViewController {
         terminal.txRx.rxDataClearedListeners.add(() -> {
             // Clear children from the RX text flow, this should empty
             // all data from the RX pane
-            rxDataTextFlow.getChildren().clear();
-            rxDataTextFlow.getChildren().add(new Text());
+            rxDataTextFlow.getChildren().remove(0, rxDataTextFlow.getChildren().size() - 1);
+            //rxDataTextFlow.getChildren().add(new Text());
+            Text lastRemainingTextNode = (Text)rxDataTextFlow.getChildren().get(0);
+            lastRemainingTextNode.setText("");
 
             // Reset the variable which counts the number of RX chars
             numCharsInRxTextNodes = 0;
@@ -461,11 +463,13 @@ public class TxRxViewController {
         // Trim RX UI if necessary
         // (the ANSI parser output data is trimmed separately in the model)
         if(numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
+            logger.debug("Trimming data in RX pane. numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
             int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
 
             // Now we have removed chars, update the count
             numCharsInRxTextNodes -= numCharsToRemove;
+            logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
         }
     }
 
