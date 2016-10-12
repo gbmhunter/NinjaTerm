@@ -2,9 +2,8 @@ package ninja.mbedded.ninjaterm.model.terminal;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import ninja.mbedded.ninjaterm.interfaces.OnRxDataListener;
+import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.comPortSettings.ComPortSettings;
 import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
@@ -13,17 +12,25 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
-import sun.rmi.runtime.Log;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * Model for a single "terminal" instance (which is displayed on a tab in the GUI).
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-05
+ * @last-modified   2016-10-11
  */
 public class Terminal {
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     /**
      * The terminal name. This is displayed in the terminal tab header. It is re-nameable by
@@ -57,6 +64,12 @@ public class Terminal {
 
     public Decoder decoder = new Decoder();
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
     public Terminal(Model model) {
 
         this.model = model;
@@ -64,7 +77,7 @@ public class Terminal {
         comPortSettings = new ComPortSettings(model, this);
         txRx = new TxRx(model, this);
         logging = new Logging(model, this);
-        stats = new Stats();
+        stats = new Stats(this);
 
         onRxDataListener = rxData -> {
             handleOnRxData(rxData);
@@ -77,7 +90,6 @@ public class Terminal {
      * to here.
      */
     public void openComPort() {
-
 
         comPort.setName(comPortSettings.selComPortName.get());
 
@@ -123,7 +135,8 @@ public class Terminal {
     }
 
     private void handleOnRxData(byte[] rxData) {
-        //System.out.println("rawRxData = " + Arrays.toString(rawRxData));
+        logger.debug("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
+
         String rxText;
         rxText = decoder.parse(rxData);
 

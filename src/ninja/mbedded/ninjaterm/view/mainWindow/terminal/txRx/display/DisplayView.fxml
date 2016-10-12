@@ -8,13 +8,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.control.textfield.CustomTextField?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController"
-      fx:id="displayViewVBox"
-         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
-         spacing="20"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+      xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
+      spacing="20"
+      fillWidth="true" GridPane.vgrow="ALWAYS"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
     <!--style="-fx-background-color: red;" -->
 
     <padding>

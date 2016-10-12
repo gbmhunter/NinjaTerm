@@ -1,0 +1,92 @@
+<!--
+* Inner content for the status bar at the bottom of the main NinjaTerm window.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-10-07
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.TextFlow?>
+<?import ninja.mbedded.ninjaterm.view.led.Led?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController"
+      xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
+      fillWidth="true"
+      stylesheets="@../../../resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+    <VBox spacing="20">
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
+
+        <HBox spacing="10">
+            <VBox minHeight="100"
+                  maxHeight="100"
+                  HBox.hgrow="ALWAYS"
+                  styleClass="border">
+                <!-- ScrollPane does not exceed it's parent dimensions -->
+                <ScrollPane fx:id="statusScrollPane">
+                    <TextFlow fx:id="statusTextFlow"></TextFlow>
+                </ScrollPane>
+            </VBox>
+            <VBox minWidth="100" maxWidth="100"
+                  styleClass="border">
+                <GridPane vgap="5" hgap="5" alignment="CENTER">
+                    <padding>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </padding>
+                    <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
+                    <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" radius="10" color="#3d2bc6" maxFlashRateMs="150"/>
+
+                    <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
+                    <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="#166b35" radius="10" maxFlashRateMs="150"/>
+
+                </GridPane>
+
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <HBox minHeight="20" style="-fx-background-color: #CCCCCC;">
+        <padding>
+            <Insets top="2" bottom="2" left="2" right="2"/>
+        </padding>
+
+        <!-- ========================================= -->
+        <!-- =============== BYTE COUNT ============== -->
+        <!-- ========================================= -->
+        <Label style="-fx-font-weight: bold;">Byte Count</Label>
+        <VBox minWidth="10"/>
+
+        <Label>TX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalByteCountTx" minWidth="80">0.0</Label>
+
+        <Label>RX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalByteCountRx" minWidth="80">0.0</Label>
+
+        <VBox minWidth="10"/>
+        <Label>|</Label>
+        <VBox minWidth="10"/>
+
+        <!-- ========================================= -->
+        <!-- =============== DATA RATE =============== -->
+        <!-- ========================================= -->
+        <Label style="-fx-font-weight: bold;">Data Rate (bytes/sec)</Label>
+        <VBox minWidth="10"/>
+
+        <Label>TX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalBytesPerSecTx" minWidth="50">0.0</Label>
+
+        <Label>RX:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="totalBytesPerSecRx" minWidth="50">0.0</Label>
+    </HBox>
+
+</VBox>
+
+
+

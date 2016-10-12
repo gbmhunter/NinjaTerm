@@ -20,6 +20,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -29,15 +30,18 @@ import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.Formatti
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 /**
- * Controller for the "terminal" tab which is part of the main window.
+ * Controller for a "terminal" tab. The user can create many terminal tabs, each which
+ * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-10-05
+ * @last-modified 2016-10-11
  */
 public class TxRxViewController {
 
@@ -148,6 +152,8 @@ public class TxRxViewController {
      */
     private int numCharsInRxTextNodes = 0;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -169,10 +175,6 @@ public class TxRxViewController {
         //this.comPort = comPort;
         this.glyphFont = glyphFont;
 
-        clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
-        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
-        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
-        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         // Remove all dummy children (which are added just for design purposes
         // in scene builder)
@@ -216,7 +218,7 @@ public class TxRxViewController {
         // This adds a listener which will implement the "auto-scroll" functionality
         // when it is enabled with @link{autoScrollEnabled}.
         rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
-            //System.out.println("heightProperty changed to " + newValue);
+            //logger.debug("heightProperty changed to " + newValue);
 
             if (autoScrollEnabled) {
                 rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
@@ -249,7 +251,7 @@ public class TxRxViewController {
         );
 
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
-                    //System.out.println("Mouse click detected! " + mouseEvent.getSource());
+                    //logger.debug("Mouse click detected! " + mouseEvent.getSource());
 
                     // Enable auto-scroll
                     autoScrollEnabled = true;
@@ -265,10 +267,13 @@ public class TxRxViewController {
         );
 
         //==============================================//
-        //====== CLEAR TEXT BUTTON EVENT HANDLERS ======//
+        //========== CLEAR TEXT BUTTON SETUP ===========//
         //==============================================//
 
+        clearTextButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ERASER));
+
         clearTextButton.setOnAction(event -> {
+            logger.debug("clearTextButton clicked.");
             terminal.txRx.clearTxAndRxData();
             model.status.addMsg("Terminal TX/RX text cleared.");
         });
@@ -287,6 +292,7 @@ public class TxRxViewController {
         //======= DISPLAY BUTTON/POP-OVER SETUP ========//
         //==============================================//
 
+        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
         try {
@@ -304,6 +310,7 @@ public class TxRxViewController {
         //===== FORMATTING BUTTON/POP-OVER SETUP =======//
         //==============================================//
 
+        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
 
         loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
         try {
@@ -321,6 +328,8 @@ public class TxRxViewController {
         //========== COLOURISER BUTTON SETUP ===========//
         //==============================================//
 
+        coloriserButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PAINT_BRUSH));
+
         loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
         try {
             loader.load();
@@ -336,6 +345,8 @@ public class TxRxViewController {
         //==============================================//
         //============ FILTERS BUTTON SETUP ============//
         //==============================================//
+
+        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
         loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
         try {
@@ -368,7 +379,7 @@ public class TxRxViewController {
         //==============================================//
 
         terminal.txRx.display.selLayoutOption.addListener((observable, oldValue, newValue) -> {
-            System.out.println("Selected layout option has been changed.");
+            logger.debug("Selected layout option has been changed.");
             updateLayout();
         });
 
@@ -415,7 +426,7 @@ public class TxRxViewController {
         /*dataDirectionRxLabel.widthProperty().addListener((observable, oldValue, newValue) -> {
             double newWidth = newValue.doubleValue() + 100.0;
 
-            System.out.println("newWidth = " + newWidth);
+            logger.debug("newWidth = " + newWidth);
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
@@ -427,6 +438,9 @@ public class TxRxViewController {
      * @param streamedText
      */
     private void newStreamedTextListener(StreamedText streamedText) {
+
+        logger.debug("newStreamedTextListener() called with streamedText = " + streamedText);
+
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
         numCharsInRxTextNodes += streamedText.getText().length();
@@ -491,14 +505,14 @@ public class TxRxViewController {
     private void updateTextWrapping() {
 
         if (terminal.txRx.display.wrappingEnabled.get()) {
-            System.out.println("\"Wrapping\" checkbox checked.");
+            logger.debug("\"Wrapping\" checkbox checked.");
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
             rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
-            System.out.println("\"Wrapping\" checkbox unchecked.");
+            logger.debug("\"Wrapping\" checkbox unchecked.");
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
@@ -506,7 +520,7 @@ public class TxRxViewController {
 
     public void showPopover(Button button, PopOver popOver) {
 
-        System.out.println(getClass().getName() + ".showPopover() called.");
+        logger.debug(getClass().getName() + ".showPopover() called.");
 
         //==============================================//
         //=============== DECODING POPOVER =============//

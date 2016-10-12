@@ -10,11 +10,14 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
-import ninja.mbedded.ninjaterm.view.mainWindow.StatusBar.StatusBarViewController;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +68,8 @@ public class MainWindowViewController {
     private GlyphFont glyphFont;
 
     private Model model;
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -140,7 +145,7 @@ public class MainWindowViewController {
         // Install click handler for the "new terminal" tab
         terminalTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue == newTerminalTab) {
-//                System.out.println("\"New terminal\" tab clicked.");
+//                logger.debug("\"New terminal\" tab clicked.");
                 addNewTerminal();
             }
         });
@@ -159,7 +164,7 @@ public class MainWindowViewController {
      */
     public void addNewTerminal() {
 
-        System.out.println(getClass().getName() + ".addNewTerminal() called.");
+        logger.debug(".addNewTerminal() called.");
 
         // Create a new Terminal object in the model
         Terminal terminal = new Terminal(model);
@@ -177,7 +182,7 @@ public class MainWindowViewController {
         }
 
         terminalTab.setOnCloseRequest(event -> {
-            System.out.println("terminalTab.setOnCloseRequest() called.");
+            logger.debug("terminalTab.setOnCloseRequest() called.");
             model.closeTerminal(terminal);
         });
 

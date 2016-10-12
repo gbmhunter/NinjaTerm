@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
@@ -20,6 +21,8 @@ public class Main extends Application {
 
     private boolean disableSplashScreen = false;
 
+    public boolean isDebugEnabled = false;
+
     private Stage splashScreenStage;
     private Stage mainStage;
 
@@ -29,6 +32,10 @@ public class Main extends Application {
         for(String arg : getParameters().getRaw()) {
             if(arg.equals("no-splash"))
                 disableSplashScreen = true;
+
+            if(arg.equals("debug"))
+                LoggerUtils.addDebug();
+
         }
 
         if(disableSplashScreen) {

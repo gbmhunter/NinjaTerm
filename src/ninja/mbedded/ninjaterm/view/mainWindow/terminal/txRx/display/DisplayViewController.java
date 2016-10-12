@@ -31,31 +31,28 @@ public class DisplayViewController {
     //================================================================================================//
 
     @FXML
-    public VBox displayViewVBox;
+    private ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
 
     @FXML
-    public ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
+    private RadioButton sendTxCharsImmediatelyRadioButton;
 
     @FXML
-    public RadioButton sendTxCharsImmediatelyRadioButton;
+    private RadioButton sendTxCharsOnEnterRadioButton;
 
     @FXML
-    public RadioButton sendTxCharsOnEnterRadioButton;
+    private CheckBox localTxEchoCheckBox;
 
     @FXML
-    public CheckBox localTxEchoCheckBox;
+    private CheckBox backspaceRemovesLastTypedCharCheckBox;
 
     @FXML
-    public CheckBox backspaceRemovesLastTypedCharCheckBox;
+    private CheckBox wrappingCheckBox;
 
     @FXML
-    public CheckBox wrappingCheckBox;
+    private TextField wrappingWidthTextField;
 
     @FXML
-    public TextField wrappingWidthTextField;
-
-    @FXML
-    public TextField bufferSizeTextField;
+    private TextField bufferSizeTextField;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//

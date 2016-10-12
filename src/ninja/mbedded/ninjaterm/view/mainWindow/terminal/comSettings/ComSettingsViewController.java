@@ -7,8 +7,11 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comport.*;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Controller for the "COM Settings tab" which is part of the main window.
@@ -54,6 +57,12 @@ public class ComSettingsViewController {
 
     private GlyphFont glyphFont;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
     public ComSettingsViewController() {
     }
 
@@ -92,7 +101,7 @@ public class ComSettingsViewController {
         // Attach handler for when selected COM port changes. This is responsible for
         // enabling/disabling the "Open" button as appropriate
         foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("ComboBox selected item changed.");
+            logger.debug("ComboBox selected item changed.");
 
             // newValue will be null if a scan was done and no COM ports
             // were found
@@ -150,14 +159,14 @@ public class ComSettingsViewController {
 //    }
 
     private void scanButtonPressed() {
-        System.out.println("Scan button pressed.");
+        logger.debug("Scan button pressed.");
 
         scanComPorts();
     }
 
     public void scanComPorts() {
 
-//        System.out.println(this.getClass().getName() + ".scanComPorts() called.");
+//        logger.debug(this.getClass().getName() + ".scanComPorts() called.");
 
         // Clear any existing COM ports that are in the combobox from a previous scan
         foundComPortsComboBox.getItems().clear();
