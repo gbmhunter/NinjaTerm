@@ -1,3 +1,8 @@
+v0.6.4
+------
+
+- When the "Clear Text" button is pressed, the RX text now retains the previous formatting colour, closes #131.
+
 v0.6.3
 ------
 
