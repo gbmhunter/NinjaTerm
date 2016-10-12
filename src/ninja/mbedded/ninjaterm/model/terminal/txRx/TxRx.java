@@ -107,6 +107,7 @@ public class TxRx {
     }
 
     public void handleKeyPressed(byte asciiCodeForKey) {
+        logger.debug("handleKeyPressed() called.");
         if(terminal.comPort.isPortOpen() == false) {
             model.status.addErr("Cannot send data to COM port, port is not open.");
             return;
@@ -336,12 +337,14 @@ public class TxRx {
         //==============================================//
 
         // Call any listeners that want the raw data (the logging class of the model might be listening)
+        logger.debug("Calling raw data listeners with data = \"" + Debugging.convertNonPrintable(data) + "\".");
         for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
             rawDataReceivedListener.run(data);
         }
 
         // Notify that there is new UI data to display (this is NOT the same
         // as the raw data)
+        logger.debug("Calling streamed text listeners...");
         for(StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
             newStreamedTextListener.run(filterOutput);
         }
