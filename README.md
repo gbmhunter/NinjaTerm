@@ -81,9 +81,14 @@ Then there are the following sub-directories:
 | view         | Contains the .fxml files which describe sections of the UI. For each .fxml file there is a controller in `controllers/`.    |
 
 
-Code Dependencies
-=================
+Debugging
+=========
 
+Debug output from NinjaTerm can be enabled by providing the `debug` command-line argument when starting the program. This can be done by opening up a command-line window/shell in the same directory as the .jar file (on Windows this is located in a directory similar to `C:\Program Files (x86)\NinjaTerm`. Then start NinjaTerm with the following command:
+
+`java -jar NinjaTerm.jar debug`
+
+This will instruct NinjaTerm to output debug information to your default user directory (on Windows this is `C:\Users\<your user name>\`. The file name should be in the format `NinjaTerm-<DATE>-DEBUG.log`.
 
 
 Changelog
