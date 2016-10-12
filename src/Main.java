@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -29,13 +30,15 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
 
+        //==============================================//
+        //======== COMMAND-LINE ARGUMENT PARSING =======//
+        //==============================================//
         for(String arg : getParameters().getRaw()) {
             if(arg.equals("no-splash"))
                 disableSplashScreen = true;
 
             if(arg.equals("debug"))
-                LoggerUtils.addDebug();
-
+                LoggerUtils.startDebuggingToFile();
         }
 
         if(disableSplashScreen) {
@@ -67,6 +70,13 @@ public class Main extends Application {
         primaryStage.initStyle(StageStyle.TRANSPARENT);
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
+
+        splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            //event.getCharacter();
+            if(event.getCode().isWhitespaceKey()) {
+                splashScreenViewController.speedUpSplashScreen();
+            }
+        });
 
         splashScreenViewController.startNameVersionInfoMsg();
     }

@@ -5,7 +5,10 @@ import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.util.Duration;
@@ -16,7 +19,7 @@ import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-20
- * @last-modified 2016-10-04
+ * @last-modified 2016-10-11
  */
 public class SplashScreenViewController {
 
@@ -24,6 +27,9 @@ public class SplashScreenViewController {
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
     //================================================================================================//
+
+    @FXML
+    private VBox splashScreenVBox;
 
     @FXML
     public TextFlow loadingMsgsTextFlow;
@@ -42,6 +48,11 @@ public class SplashScreenViewController {
      * Used to indicate when the splash screen has finished.
      */
     public SimpleBooleanProperty isFinished = new SimpleBooleanProperty(false);
+
+    /**
+     * Show name of application and version
+     */
+    Timeline nameAndVersionTimeline = new Timeline();
 
     /**
      * The bogus "loading" messages displayed on the splash screen after the app name, version and basic
@@ -80,7 +91,7 @@ public class SplashScreenViewController {
             "Finished wasting user's time."
     };
 
-    private final double intervalBetweenEachBogusMsgMs = 100;
+    private double intervalBetweenEachBogusMsgMs = 100;
 
     /**
      * This array is used to give the typing of characters onto the splash screen a "human-like"
@@ -90,7 +101,7 @@ public class SplashScreenViewController {
      * Make sure this array has the same number of entries as the number of characters in the
      * string.
      */
-    private final double[] charIntervalsMs = new double[]{
+    private double[] charIntervalsMs = new double[]{
             25,     //
             1500,   // N
             75,    // i
@@ -188,6 +199,13 @@ public class SplashScreenViewController {
         // Add caret to textflow object. It should always remain as the last child, to give the
         // proper appearance
         loadingMsgsTextFlow.getChildren().add(caretText);
+
+        splashScreenVBox.setFocusTraversable(true);
+        splashScreenVBox.requestFocus();
+        splashScreenVBox.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            event.getCharacter();
+        });
+
     }
 
     /**
@@ -213,10 +231,7 @@ public class SplashScreenViewController {
         }
 
         String nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
-
-
-        // Show name of application and version
-        Timeline nameAndVersionTimeline = new Timeline();
+        
 
         // This variable keeps track of the total time from the timeline is started to display
         // the keyframe, as this is the format the keyframe wants
@@ -280,5 +295,14 @@ public class SplashScreenViewController {
             // to listen for this change and load up the main window now.
             isFinished.set(true);
         }
+    }
+
+    /**
+     * Call this to drastically speedup the splash screen. The idea is to do this if the user presses
+     * a designated key, such as the space bar.
+     */
+    public void speedUpSplashScreen() {
+
+        intervalBetweenEachBogusMsgMs = 5.0;
     }
 }

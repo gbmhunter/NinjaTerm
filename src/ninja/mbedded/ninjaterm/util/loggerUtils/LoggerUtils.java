@@ -41,10 +41,20 @@ public class LoggerUtils {
         //fileAppender.start();
     }
 
-    public static void addDebug() {
+    /**
+     * Starts appending log data to a file on the file system.
+     */
+    public static void startDebuggingToFile() {
         fileAppender.start();
     }
 
+    /**
+     * Creates a logger which already has a file appender attached to it.
+     * The file appender is not started until <code>startDebuggingToFile()</code>
+     * is called.
+     * @param string
+     * @return
+     */
     public static Logger createLoggerFor(String string) {
 
         Logger logger = (Logger) LoggerFactory.getLogger(string);
