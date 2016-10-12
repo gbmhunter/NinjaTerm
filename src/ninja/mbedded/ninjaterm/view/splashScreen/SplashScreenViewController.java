@@ -54,6 +54,10 @@ public class SplashScreenViewController {
      */
     Timeline nameAndVersionTimeline = new Timeline();
 
+    private int charIndex = 0;
+
+    private String nameAndVersionString;
+
     /**
      * The bogus "loading" messages displayed on the splash screen after the app name, version and basic
      * info is displayed.
@@ -230,12 +234,14 @@ public class SplashScreenViewController {
             versionNumber = "?.?.?";
         }
 
-        String nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
-        
+        nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
+
+        createNextKeyFrame();
+
 
         // This variable keeps track of the total time from the timeline is started to display
         // the keyframe, as this is the format the keyframe wants
-        double summedTimeInMs = 0.0;
+        /*double summedTimeInMs = 0.0;
 
         for (int i = 0; i < nameAndVersionString.length(); i++) {
             final int test = i;
@@ -262,28 +268,66 @@ public class SplashScreenViewController {
 
         // This causes the intro text on the splash screen to be displayed
         // (not the bogus text, this comes later)
-        nameAndVersionTimeline.play();
+        nameAndVersionTimeline.play();*/
+    }
+
+    private void createNextKeyFrame() {
+
+        if (charIndex == nameAndVersionString.length() - 1) {
+            timeline = new Timeline(new KeyFrame(Duration.millis(charIntervalsMs[charIndex]), event -> {
+                loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(charIndex));
+
+                // Start the next sequence after a fixed delay, where we display all of the bogus loading messages
+                timeline = new Timeline(new KeyFrame(
+                        Duration.millis(500),
+                        ae -> updateBogusLoadingMsgs()));
+
+                timeline.play();
+
+            }));
+            timeline.play();
+        } else {
+
+            // Create first keyframe
+            timeline = new Timeline(new KeyFrame(Duration.millis(charIntervalsMs[charIndex]), event -> {
+
+                // Update screen
+                loadingMsgText.setText(loadingMsgText.getText() + nameAndVersionString.charAt(charIndex));
+                charIndex++;
+                // RECURSIVE!!!
+                createNextKeyFrame();
+
+            }));
+            timeline.play();
+        }
+
+
     }
 
     /**
      * Initialises and starts the animation of the bogus messages on the splash screen.
      */
-    private void startBogusLoadingMsgs() {
+    /*private void startBogusLoadingMsgs() {
         // Start loading messages
         timeline = new Timeline(new KeyFrame(
                 Duration.millis(intervalBetweenEachBogusMsgMs),
                 ae -> updateBogusLoadingMsgs()));
 
         // timeline will be stopped when last bogus message has been printed.
-        timeline.setCycleCount(Animation.INDEFINITE);
+        //timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
-    }
+    }*/
 
     /**
      * Called by lambda expression defined in startBogusLoadingMsgs(), once every keyframe, and
      * adds a new bogus message to the splash screen.
      */
     public void updateBogusLoadingMsgs() {
+
+        timeline = new Timeline(new KeyFrame(
+                Duration.millis(intervalBetweenEachBogusMsgMs),
+                event -> updateBogusLoadingMsgs()));
+        timeline.play();
 
         loadingMsgText.setText(loadingMsgText.getText() + bogusMessages[loadingMsgIndex++] + " ");
 
@@ -302,6 +346,10 @@ public class SplashScreenViewController {
      * a designated key, such as the space bar.
      */
     public void speedUpSplashScreen() {
+
+        for(int i = 0; i < charIntervalsMs.length; i++) {
+            charIntervalsMs[i] = 5.0;
+        }
 
         intervalBetweenEachBogusMsgMs = 5.0;
     }
