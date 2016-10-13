@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -14,10 +15,9 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +26,9 @@ import java.util.List;
  * Model handling the TX/RX data of a terminal. This is displayed as a sub-tab of a terminal
  * tab in the GUI.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-16
- * @last-modified   2016-10-11
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-10-11
+ * @since 2016-09-16
  */
 public class TxRx {
 
@@ -69,6 +69,9 @@ public class TxRx {
      */
     private StreamingFilter streamingFilter = new StreamingFilter();
 
+    /**
+     * Buffer to hold the streamed text which is output from the filter.
+     */
     private StreamedText filterOutput = new StreamedText();
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
@@ -82,9 +85,7 @@ public class TxRx {
     public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
-
-    private SimpleBooleanProperty isRxFrozenInternal = new SimpleBooleanProperty();
-    public ReadOnlyBooleanProperty isRxFrozen = isRxFrozenInternal;
+    public ReadOnlyBooleanProperty isRxFrozen = new ReadOnlyBooleanWrapper();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -102,7 +103,7 @@ public class TxRx {
         });
 
         filters.filterApplyType.addListener((observable, oldValue, newValue) -> {
-            if(newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
+            if (newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
                 updateBufferedRxDataWithNewFilterPattern();
             }
         });
@@ -118,7 +119,7 @@ public class TxRx {
 
     public void handleKeyPressed(byte asciiCodeForKey) {
         logger.debug("handleKeyPressed() called.");
-        if(terminal.comPort.isPortOpen() == false) {
+        if (terminal.comPort.isPortOpen() == false) {
             model.status.addErr("Cannot send data to COM port, port is not open.");
             return;
         }
@@ -126,10 +127,10 @@ public class TxRx {
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
         // treating this character as something to send.
-        if((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
+        if ((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
                 display.backspaceRemovesLastTypedChar.get()) {
 
-            if((char)asciiCodeForKey == '\b') {
+            if ((char) asciiCodeForKey == '\b') {
                 // We need to remove the last typed char from the "to send" TX buffer
                 removeLastCharInTxBuffer();
                 return;
@@ -138,19 +139,19 @@ public class TxRx {
 
         // Look for enter. If enter was pressed, we need to insert the right chars as
         // set by the user in the ("enter key behaviour" radio buttons).
-        if((char)asciiCodeForKey == '\r') {
+        if ((char) asciiCodeForKey == '\r') {
             logger.debug("Enter key was pressed.");
 
-            switch(formatting.selEnterKeyBehaviour.get()) {
+            switch (formatting.selEnterKeyBehaviour.get()) {
                 case CARRIAGE_RETURN:
-                    addTxCharToSend((byte)'\r');
+                    addTxCharToSend((byte) '\r');
                     break;
                 case NEW_LINE:
-                    addTxCharToSend((byte)'\n');
+                    addTxCharToSend((byte) '\n');
                     break;
                 case CARRIAGE_RETURN_AND_NEW_LINE:
-                    addTxCharToSend((byte)'\r');
-                    addTxCharToSend((byte)'\n');
+                    addTxCharToSend((byte) '\r');
+                    addTxCharToSend((byte) '\n');
                     break;
                 default:
                     throw new RuntimeException("selEnterKeyBehaviour was not recognised.");
@@ -162,13 +163,13 @@ public class TxRx {
         }
 
         // Check so see what TX mode we are in
-        switch(display.selTxCharSendingOption.get()) {
+        switch (display.selTxCharSendingOption.get()) {
             case SEND_TX_CHARS_IMMEDIATELY:
                 sendBufferedTxDataToSerialPort();
                 break;
             case SEND_TX_CHARS_ON_ENTER:
                 // Check for enter key before sending data
-                if(((char)asciiCodeForKey == '\r'))
+                if (((char) asciiCodeForKey == '\r'))
                     sendBufferedTxDataToSerialPort();
                 break;
             default:
@@ -187,15 +188,15 @@ public class TxRx {
 
         // Create string from data
         String dataAsString = "";
-        for(int i = 0; i < toSendTxData.size(); i++) {
-            dataAsString = dataAsString + (char)toSendTxData.get(i).byteValue();
+        for (int i = 0; i < toSendTxData.size(); i++) {
+            dataAsString = dataAsString + (char) toSendTxData.get(i).byteValue();
         }
 
         // Clean "to send" TX data
         toSendTxData.clear();
 
         // Echo TX data into TX/RX pane if user has instructed to do so
-        if(display.localTxEcho.get()) {
+        if (display.localTxEcho.get()) {
 
             // Call the RX data function (this function doesn't know the difference between actual RX data
             // and echoed TX data)
@@ -203,7 +204,7 @@ public class TxRx {
         }
 
         // Finally, update listeners
-        for(DataSentTxListener dataSentTxListener : dataSentTxListeners) {
+        for (DataSentTxListener dataSentTxListener : dataSentTxListeners) {
             dataSentTxListener.run(dataAsString);
         }
     }
@@ -212,7 +213,7 @@ public class TxRx {
 
         byte[] data = new byte[observableList.size()];
         int i = 0;
-        for(Byte singleByte : observableList) {
+        for (Byte singleByte : observableList) {
             data[i++] = singleByte;
         }
 
@@ -221,6 +222,7 @@ public class TxRx {
 
     /**
      * Add a TX char to send to COM port. This DOES NOT send the data but rather only adds it to a buffer.
+     *
      * @param data
      */
     public void addTxCharToSend(byte data) {
@@ -233,10 +235,10 @@ public class TxRx {
             dataAsString = dataAsString + (char)data[i];
         }*/
 
-        txData.set(txData.get() + (char)data);
+        txData.set(txData.get() + (char) data);
         toSendTxData.add(data);
 
-        if(txData.get().length() > display.bufferSizeChars.get()) {
+        if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
             txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
@@ -245,7 +247,7 @@ public class TxRx {
 
     public void removeLastCharInTxBuffer() {
 
-        if(toSendTxData.size() > 0) {
+        if (toSendTxData.size() > 0) {
             // Remove the last char from both the "to send" TX buffer,
             // and the TX display string
             toSendTxData.remove(toSendTxData.size() - 1);
@@ -256,7 +258,7 @@ public class TxRx {
     /**
      * Adds RX data to the RX pane (both the raw RX data and the filtered RX data, which is the
      * data which gets displayed to the user in the RX pane).
-     *
+     * <p>
      * This also gets called with TX data if the "TX local echo" option is selected.
      *
      * @param data
@@ -267,7 +269,7 @@ public class TxRx {
         rawRxData.set(rawRxData.get() + data);
 
         // Truncate if necessary
-        if(rawRxData.get().length() > display.bufferSizeChars.get()) {
+        if (rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
             rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
         }
@@ -280,7 +282,7 @@ public class TxRx {
 
         // Run the ANSI parser if we want colourised text displayed OR the user wants ANSI codes
         // swallowed when logging
-        if(colouriser.ansiEscapeCodesEnabled.get() || terminal.logging.swallowAnsiEscapeCodes.get()) {
+        if (colouriser.ansiEscapeCodesEnabled.get() || terminal.logging.swallowAnsiEscapeCodes.get()) {
             // This temp variable is used to store just the new ANSI parser output data, which
             // is then stored in totalAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
 
@@ -307,7 +309,7 @@ public class TxRx {
             }
         }
 
-        if(colouriser.ansiEscapeCodesEnabled.get()) {
+        if (colouriser.ansiEscapeCodesEnabled.get()) {
 
             // Now add all the new ANSI parser output to any that was not used up by the
             // streaming filter from last time
@@ -334,7 +336,7 @@ public class TxRx {
         //==============================================//
 
         // Trim total ANSI parser output
-        if(totalAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
+        if (totalAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
             logger.debug("Trimming totalAnsiParserOutput...");
             int numOfCharsToRemove = totalAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
             totalAnsiParserOutput.removeChars(numOfCharsToRemove);
@@ -348,26 +350,39 @@ public class TxRx {
 
         // Call any listeners that want the raw data (the logging class of the model might be listening)
         logger.debug("Calling raw data listeners with data = \"" + Debugging.convertNonPrintable(data) + "\".");
-        for(RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
+        for (RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
             rawDataReceivedListener.run(data);
         }
 
-        // Notify that there is new UI data to display (this is NOT the same
-        // as the raw data)
-        logger.debug("Calling streamed text listeners...");
-        for(StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
-        }
+        // Call any streamed text listeners (but only if RX data is not frozen)
+        callStreamedTextListenersIfAppropriate();
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
+    }
+
+    private void callStreamedTextListenersIfAppropriate() {
+
+        logger.debug("callStreamedTextListenersIfAppropriate() called.");
+
+        // Notify that there is new UI data to display (this is NOT the same
+        // as the raw data), IF the RX data is not frozen
+        if (!isRxFrozen.get()) {
+            logger.debug("Calling streamed text listeners...");
+            for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+                newStreamedTextListener.run(filterOutput);
+            }
+        } else {
+            logger.debug("Not calling streamed text listeners, RX data is frozen.");
+        }
     }
 
     /**
      * Trims a string to the provided number of characters. Removes characters from the start of the string
      * (the "old" chars).
+     *
      * @param data
      * @param desiredLength
-     * @return  The trimmed string.
+     * @return The trimmed string.
      */
     public String removeOldChars(String data, int desiredLength) {
         return data.substring(data.length() - desiredLength, data.length());
@@ -375,12 +390,12 @@ public class TxRx {
 
     public void removeOldCharsFromBuffers() {
 
-        if(txData.get().length() > display.bufferSizeChars.get()) {
+        if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
             txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if(rawRxData.get().length() > display.bufferSizeChars.get()) {
+        if (rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
             rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
         }
@@ -393,7 +408,7 @@ public class TxRx {
         logger.debug("clearTxAndRxData() called.");
 
         // Emit RX data cleared event
-        for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
     }
@@ -403,7 +418,7 @@ public class TxRx {
      */
     private void updateBufferedRxDataWithNewFilterPattern() {
         // Emit RX data cleared event
-        for(RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
     }
@@ -411,6 +426,7 @@ public class TxRx {
     /**
      * This needs to be called when the filter text is changed so that everything is updated
      * accordingly.
+     *
      * @param filterText
      */
     private void filterTextChanged(String filterText) {
@@ -419,7 +435,7 @@ public class TxRx {
 
         streamingFilter.setFilterPatten(filterText);
 
-        if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
+        if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
             clearTxAndRxData();
@@ -439,20 +455,29 @@ public class TxRx {
             streamingFilter.parse(toBeConsumed, filterOutput);
 
             // Notify that there is new UI data to display
-            for(StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
                 newStreamedTextListener.run(filterOutput);
-            }
+            }*/
+            // Call any streamed text listeners (but only if RX data is not frozen)
+            callStreamedTextListenersIfAppropriate();
+
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
 
     public void freezeRx() {
-
-        isRxFrozenInternal.set(true);
-
+        //isRxFrozenInternal.set(true);
+        ((SimpleBooleanProperty) isRxFrozen).set(true);
+        model.status.addMsg("RX data frozen.");
     }
 
     public void unFreezeRx() {
-        isRxFrozenInternal.set(false);
+        //isRxFrozenInternal.set(false);
+        ((SimpleBooleanProperty) isRxFrozen).set(false);
+        model.status.addMsg("RX data un-frozen.");
+
+        // Call this to release any streamed text which has been building up since the
+        // RX data was frozen
+        callStreamedTextListenersIfAppropriate();
     }
 
 }
