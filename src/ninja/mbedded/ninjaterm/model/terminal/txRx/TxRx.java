@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -34,9 +36,11 @@ public class TxRx {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
+    // ANCESTOR MODELS
     private Model model;
     private Terminal terminal;
 
+    // CHILD MODELS
     public Display display = new Display();
     public Formatting formatting = new Formatting();
     public Colouriser colouriser = new Colouriser();
@@ -78,6 +82,10 @@ public class TxRx {
     public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
+
+    private SimpleBooleanProperty isRxFrozenInternal = new SimpleBooleanProperty();
+    public ReadOnlyBooleanProperty isRxFrozen = isRxFrozenInternal;
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -104,6 +112,8 @@ public class TxRx {
         });
 
         colouriser.init(model, terminal);
+
+
     }
 
     public void handleKeyPressed(byte asciiCodeForKey) {
@@ -433,6 +443,16 @@ public class TxRx {
                 newStreamedTextListener.run(filterOutput);
             }
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
+    }
+
+    public void freezeRx() {
+
+        isRxFrozenInternal.set(true);
+
+    }
+
+    public void unFreezeRx() {
+        isRxFrozenInternal.set(false);
     }
 
 }

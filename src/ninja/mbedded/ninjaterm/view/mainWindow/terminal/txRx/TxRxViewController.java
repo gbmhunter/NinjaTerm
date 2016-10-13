@@ -10,7 +10,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -31,7 +33,6 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -40,8 +41,8 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-07-16
  * @last-modified 2016-10-11
+ * @since 2016-07-16
  */
 public class TxRxViewController {
 
@@ -100,6 +101,9 @@ public class TxRxViewController {
 
     @FXML
     private Button filtersButton;
+
+    @FXML
+    private Button freezeRxButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -164,6 +168,7 @@ public class TxRxViewController {
 
     /**
      * Initialisation method because we are not allowed to have input parameters in the constructor.
+     *
      * @param glyphFont
      */
     public void Init(Model model, Terminal terminal, GlyphFont glyphFont) {
@@ -283,7 +288,7 @@ public class TxRxViewController {
             // all data from the RX pane
             rxDataTextFlow.getChildren().remove(0, rxDataTextFlow.getChildren().size() - 1);
             //rxDataTextFlow.getChildren().add(new Text());
-            Text lastRemainingTextNode = (Text)rxDataTextFlow.getChildren().get(0);
+            Text lastRemainingTextNode = (Text) rxDataTextFlow.getChildren().get(0);
             lastRemainingTextNode.setText("");
 
             // Reset the variable which counts the number of RX chars
@@ -299,7 +304,7 @@ public class TxRxViewController {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
         try {
             loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return;
         }
         displayViewController = loader.getController();
@@ -317,7 +322,7 @@ public class TxRxViewController {
         loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
         try {
             loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return;
         }
         formattingViewController = loader.getController();
@@ -335,7 +340,7 @@ public class TxRxViewController {
         loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
         try {
             loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return;
         }
         colouriserViewController = loader.getController();
@@ -353,7 +358,7 @@ public class TxRxViewController {
         loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
         try {
             loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return;
         }
         filtersViewController = loader.getController();
@@ -361,6 +366,25 @@ public class TxRxViewController {
         filtersViewController.init(model, terminal);
 
         setupPopover(loader.getRoot(), "Filters", filtersButton);
+
+        //==============================================//
+        //=========== FREEZE RX BUTTON SETUP ===========//
+        //==============================================//
+
+        freezeRxButton.setOnAction(event -> {
+            if(!terminal.txRx.isRxFrozen.get()) {
+                terminal.txRx.freezeRx();
+            } else {
+                terminal.txRx.unFreezeRx();
+            }
+        });
+
+        terminal.txRx.isRxFrozen.addListener((observable, oldValue, newValue) -> {
+            refreshFreezeRxButton();
+        });
+
+        // Set to default, should update button appropriately
+        refreshFreezeRxButton();
 
         //==============================================//
         //== ATTACH LISTENERS TO WRAPPING PROPERTIES ===//
@@ -434,9 +458,21 @@ public class TxRxViewController {
         });*/
     }
 
+    private void refreshFreezeRxButton() {
+        if (!terminal.txRx.isRxFrozen.get()) {
+            freezeRxButton.setText("Freeze RX");
+            freezeRxButton.setGraphic(glyphFont.create(FontAwesome.Glyph.LOCK));
+        } else {
+            freezeRxButton.setText("Un-freeze RX");
+            freezeRxButton.setGraphic(glyphFont.create(FontAwesome.Glyph.UNLOCK));
+        }
+
+    }
+
     /**
      * This listener updates the UI with "streamed" RX data. The model is responsible
      * for calling the listener after RX data has been received and processed.
+     *
      * @param streamedText
      */
     private void newStreamedTextListener(StreamedText streamedText) {
@@ -462,7 +498,7 @@ public class TxRxViewController {
 
         // Trim RX UI if necessary
         // (the ANSI parser output data is trimmed separately in the model)
-        if(numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
+        if (numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
             logger.debug("Trimming data in RX pane. numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
             int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
@@ -476,6 +512,7 @@ public class TxRxViewController {
     /**
      * Helper method to attach a pop-over to a button (so it appears/disappears when you
      * click the button).
+     *
      * @param content
      * @param popOverTitle
      * @param buttonToAttachTo
@@ -540,7 +577,7 @@ public class TxRxViewController {
     }
 
     private void updateDataDirectionText() {
-        if(terminal.txRx.display.localTxEcho.get()) {
+        if (terminal.txRx.display.localTxEcho.get()) {
             dataDirectionRxLabel.setText("RX + TX echo");
         } else {
             dataDirectionRxLabel.setText("RX");
@@ -552,19 +589,19 @@ public class TxRxViewController {
      * in the model.
      */
     public void updateLayout() {
-        switch(terminal.txRx.display.selLayoutOption.get()) {
+        switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
 
                 // Hide TX pane
 
                 //txTextFlow.setMinHeight(0.0);
                 //txTextFlow.setMaxHeight(0.0);
-                if(dataContainerVBox.getChildren().contains(txDataStackPane)){
+                if (dataContainerVBox.getChildren().contains(txDataStackPane)) {
                     dataContainerVBox.getChildren().remove(txDataStackPane);
                 }
 
                 // Add the caret in the shared pane
-                if(!rxDataTextFlow.getChildren().contains(caretText)) {
+                if (!rxDataTextFlow.getChildren().contains(caretText)) {
                     rxDataTextFlow.getChildren().add(caretText);
                 }
 
@@ -574,17 +611,17 @@ public class TxRxViewController {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if(!dataContainerVBox.getChildren().contains(txDataStackPane)) {
+                if (!dataContainerVBox.getChildren().contains(txDataStackPane)) {
                     dataContainerVBox.getChildren().add(txDataStackPane);
                 }
 
                 // Remove the caret in the shared pane
-                if(rxDataTextFlow.getChildren().contains(caretText)) {
+                if (rxDataTextFlow.getChildren().contains(caretText)) {
                     rxDataTextFlow.getChildren().remove(caretText);
                 }
 
                 // Add the caret to the TX pane
-                if(!txTextFlow.getChildren().contains(caretText)) {
+                if (!txTextFlow.getChildren().contains(caretText)) {
                     txTextFlow.getChildren().add(caretText);
                 }
 
@@ -596,6 +633,6 @@ public class TxRxViewController {
 
     public void handleKeyTyped(KeyEvent keyEvent) {
 
-        terminal.txRx.handleKeyPressed((byte)keyEvent.getCharacter().charAt(0));
+        terminal.txRx.handleKeyPressed((byte) keyEvent.getCharacter().charAt(0));
     }
 }
