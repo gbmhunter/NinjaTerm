@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Added shortcut key to speed up splash screen (spacebar), closes #127.
+- Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.
 
 v0.6.4
 ------

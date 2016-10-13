@@ -106,7 +106,8 @@ public class Main extends Application {
 
         mainWindowViewController.init(model, glyphFont, new ComPortManager());
 
-        mainWindowViewController.addNewTerminal();
+        //mainWindowViewController.addNewTerminal();
+
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if(!disableSplashScreen)
@@ -129,6 +130,8 @@ public class Main extends Application {
         mainStage.setOnCloseRequest(event -> {
             model.handleAppClosing();
         });
+
+        model.createTerminal();
     }
 
 

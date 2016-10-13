@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-08
- * @last-modified 2016-10-06
+ * @last-modified 2016-10-13
  */
 public class MainWindowViewController {
 
@@ -100,8 +100,9 @@ public class MainWindowViewController {
         glyph.setColor(Color.BLACK);
         newTerminalMenuItem.setGraphic(glyph);
         newTerminalMenuItem.setOnAction(event -> {
-            System.out.println("newTerminalMenuItem clicked.");
-            addNewTerminal();
+            logger.debug("newTerminalMenuItem clicked.");
+            //addNewTerminal();
+            model.createTerminal();
         });
 
         glyph = glyphFont.create(FontAwesome.Glyph.SIGN_OUT);
@@ -133,6 +134,11 @@ public class MainWindowViewController {
         //================ TERMINAL SETUP ==============//
         //==============================================//
 
+        // Install listener for when a new terminal object is created
+        model.terminalCreatedListeners.add(terminal -> {
+            handleTerminalCreated(terminal);
+        });
+
         // Install handler for when the model emits a terminal
         // closed event
         model.closedTerminalListeners.add(terminal -> {
@@ -144,10 +150,24 @@ public class MainWindowViewController {
 
         // Install click handler for the "new terminal" tab
         terminalTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+
+            // Firstly, check if newly selected tab is the "new terminal tab" (the "+" sign)
             if(newValue == newTerminalTab) {
-//                logger.debug("\"New terminal\" tab clicked.");
-                addNewTerminal();
+                logger.debug("\"New terminal\" tab clicked.");
+                model.createTerminal();
+                return;
             }
+
+            // Selected tab must of been an existing terminal, tell the model about it
+            for(TerminalViewController terminalViewController : terminalViewControllers) {
+                if(terminalViewController.getTerminalTab() == newValue) {
+                    model.newTerminalSelected(terminalViewController.getTerminal());
+                    return;
+                }
+            }
+
+            throw new RuntimeException("Selected tab was not recognised!");
+
         });
 
         //==============================================//
@@ -159,18 +179,11 @@ public class MainWindowViewController {
     }
 
     /**
-     * Adds a new terminal tab to the main window. Called when the "New terminal" menu button is clicked, as
-     * well as once on startup.
+     * Adds a new terminal tab view to the main window view. Called by a terminalCreatedListener.
      */
-    public void addNewTerminal() {
+    public void handleTerminalCreated(Terminal terminal) {
 
-        logger.debug(".addNewTerminal() called.");
-
-        // Create a new Terminal object in the model
-        Terminal terminal = new Terminal(model);
-
-        // Make sure the model has a record to this newly created terminal
-        model.terminals.add(terminal);
+        logger.debug("handleTerminalCreated() called.");
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("terminal/TerminalView.fxml"));
 

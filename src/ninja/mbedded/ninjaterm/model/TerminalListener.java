@@ -9,8 +9,8 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-04
- * @last-modified 2016-10-04
+ * @last-modified 2016-10-13
  */
-public interface CloseTerminalListener {
+public interface TerminalListener {
     void run(Terminal terminal);
 }

@@ -14,6 +14,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.view.led.Led;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
@@ -63,10 +64,16 @@ public class StatusBarViewController {
     @FXML
     private Label totalBytesPerSecRx;
 
+
     private Model model;
+    private GlyphFont glyphFont;
+
+    private ChangeListener<? super Boolean> openCloseChangeListener;
+
 
     public void init(Model model, GlyphFont glyphFont) {
         this.model = model;
+        this.glyphFont = glyphFont;
 
         //==============================================//
         //============= STATUS MESSAGES SETUP ==========//
@@ -88,6 +95,24 @@ public class StatusBarViewController {
 
         openCloseComPortButton.setOnAction(event -> {
             model.openOrCloseCurrentComPort();
+        });
+
+        // Create a listener which refreshes the open/close COM port button
+        openCloseChangeListener = (observable, oldValue, newValue) -> {
+            refreshOpenCloseButton();
+        };
+
+        model.selTerminal.addListener((observable, oldValue, newValue) -> {
+
+            if(oldValue != null) {
+                oldValue.isComPortOpen.removeListener(openCloseChangeListener);
+            }
+
+            newValue.isComPortOpen.addListener(openCloseChangeListener);
+
+            // Refresh the style of the open/close COM port button when the selected
+            // terminal changes (i.e. when the user selects a different terminal tab)
+            refreshOpenCloseButton();
         });
 
         //==============================================//
@@ -147,4 +172,23 @@ public class StatusBarViewController {
         // Set default (giving bogus data as it is not used)
         totalBytesPerSecRxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
     }
+
+    /**
+     * This updates the styling of the Open/Close COM port button based on whether the currently
+     * selected terminal in the model has a open or closed COM port.
+     */
+    private void refreshOpenCloseButton() {
+        if (!model.selTerminal.get().isComPortOpen.get()) {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+            openCloseComPortButton.setText("Open");
+            openCloseComPortButton.getStyleClass().remove("failure");
+            openCloseComPortButton.getStyleClass().add("success");
+        } else {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
+            openCloseComPortButton.setText("Close");
+            openCloseComPortButton.getStyleClass().remove("success");
+            openCloseComPortButton.getStyleClass().add("failure");
+        }
+    }
+
 }
