@@ -56,13 +56,23 @@ public class TxRx {
 
     private AnsiECParser ansiECParser = new AnsiECParser();
 
+    /**
+     * This variable contains the backlog of data which is frozen. When the user
+     * unfreezes the data again, all of this will be released to <code>totalUnfrozenAnsiParserOutput</code>
+     * and to <code>bufferBetweenAnsiParserAndFilter</code>.
+     */
+    private StreamedText frozenAnsiParserOutput = new StreamedText();
+
     private StreamedText bufferBetweenAnsiParserAndFilter = new StreamedText();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
      * is changed, and the user wishes to re-run the filter over data stored in the buffer.
+     *
+     * This only contains data which has been unfrozen. All frozen data will remain in
+     * <code>frozenAnsiParserOutput</code> until data is unfrozen again
      */
-    private StreamedText totalAnsiParserOutput = new StreamedText();
+    private StreamedText totalUnfrozenAnsiParserOutput = new StreamedText();
 
     /**
      * Used to provide filtering functionality to the RX data.
@@ -278,17 +288,24 @@ public class TxRx {
         //============== ANSI ESCAPE CODES =============//
         //==============================================//
 
+        // This temporary streamed text object is just to hold NEW output
+        // from the ANSI parser, before being combined with the existing data
         StreamedText tempAnsiParserOutput = new StreamedText();
 
         // Run the ANSI parser if we want colourised text displayed OR the user wants ANSI codes
         // swallowed when logging
         if (colouriser.ansiEscapeCodesEnabled.get() || terminal.logging.swallowAnsiEscapeCodes.get()) {
             // This temp variable is used to store just the new ANSI parser output data, which
-            // is then stored in totalAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
+            // is then stored in totalUnfrozenAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
 
             ansiECParser.parse(data, tempAnsiParserOutput);
 
             logger.debug("tempAnsiParserOutput = " + Debugging.convertNonPrintable(tempAnsiParserOutput.toString()));
+
+            frozenAnsiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            if(isRxFrozen.get()) {
+                return;
+            }
 
             // Append the output of the ANSI parser to the "total" ANSI parser output buffer
             // This will be used if the user changes the filter pattern and wishes to re-run
@@ -296,31 +313,32 @@ public class TxRx {
             // NOTE: We only want to append NEW data added to the ANSI parser output, since
             // there may still be characters in there from last time this method was called, and
             // we don't want to add them twice
-            totalAnsiParserOutput.copyCharsFrom(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            totalUnfrozenAnsiParserOutput.copyCharsFrom(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
 
-//            logger.debug("totalAnsiParserOutput = " + totalAnsiParserOutput);
+//            logger.debug("totalUnfrozenAnsiParserOutput = " + totalUnfrozenAnsiParserOutput);
 
             // Fire ansiParserOutput event
             for (StreamedTextListener streamedTextListener : ansiParserOutputListeners) {
                 // Create a new copy of the streamed text so that the listeners can't modify
                 // the contents by mistake
-                StreamedText streamedText = new StreamedText(tempAnsiParserOutput);
+                StreamedText streamedText = new StreamedText(frozenAnsiParserOutput);
                 streamedTextListener.run(streamedText);
             }
         }
 
         if (colouriser.ansiEscapeCodesEnabled.get()) {
-
             // Now add all the new ANSI parser output to any that was not used up by the
             // streaming filter from last time
-            bufferBetweenAnsiParserAndFilter.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
+            bufferBetweenAnsiParserAndFilter.shiftCharsIn(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
         } else { // if(colouriser.ansiEscapeCodesEnabled.get())
 
             // The user does not want us to parse ANSI escape codes, so append the input RX data directly
             // into the ANSI parser output object
-            bufferBetweenAnsiParserAndFilter.append(data);
+            bufferBetweenAnsiParserAndFilter.append(frozenAnsiParserOutput.getText());
 
         } // if(colouriser.ansiEscapeCodesEnabled.get())
+
+        frozenAnsiParserOutput.clear();
 
         logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndFilter = " + bufferBetweenAnsiParserAndFilter);
 
@@ -336,10 +354,10 @@ public class TxRx {
         //==============================================//
 
         // Trim total ANSI parser output
-        if (totalAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
-            logger.debug("Trimming totalAnsiParserOutput...");
-            int numOfCharsToRemove = totalAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
-            totalAnsiParserOutput.removeChars(numOfCharsToRemove);
+        if (totalUnfrozenAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
+            logger.debug("Trimming totalUnfrozenAnsiParserOutput...");
+            int numOfCharsToRemove = totalUnfrozenAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
+            totalUnfrozenAnsiParserOutput.removeChars(numOfCharsToRemove);
         }
 
         // NOTE: UI buffer is trimmed in view controller
@@ -354,26 +372,12 @@ public class TxRx {
             rawDataReceivedListener.run(data);
         }
 
-        // Call any streamed text listeners (but only if RX data is not frozen)
-        callStreamedTextListenersIfAppropriate();
+        // Call any streamed text listeners
+        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            newStreamedTextListener.run(filterOutput);
+        }
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
-    }
-
-    private void callStreamedTextListenersIfAppropriate() {
-
-        logger.debug("callStreamedTextListenersIfAppropriate() called.");
-
-        // Notify that there is new UI data to display (this is NOT the same
-        // as the raw data), IF the RX data is not frozen
-        if (!isRxFrozen.get()) {
-            logger.debug("Calling streamed text listeners...");
-            for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(filterOutput);
-            }
-        } else {
-            logger.debug("Not calling streamed text listeners, RX data is frozen.");
-        }
     }
 
     /**
@@ -445,8 +449,8 @@ public class TxRx {
 
             // We need to run the entire ANSI parser output back through the filter
             // Make a temp. StreamedText object that can be consumed (we want to preserve
-            // totalAnsiParserOutput).
-            StreamedText toBeConsumed = new StreamedText(totalAnsiParserOutput);
+            // totalUnfrozenAnsiParserOutput).
+            StreamedText toBeConsumed = new StreamedText(totalUnfrozenAnsiParserOutput);
 
             // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
             // to this toBeConsumed object
@@ -459,7 +463,9 @@ public class TxRx {
                 newStreamedTextListener.run(filterOutput);
             }*/
             // Call any streamed text listeners (but only if RX data is not frozen)
-            callStreamedTextListenersIfAppropriate();
+            for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+                newStreamedTextListener.run(filterOutput);
+            }
 
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
@@ -477,7 +483,7 @@ public class TxRx {
 
         // Call this to release any streamed text which has been building up since the
         // RX data was frozen
-        callStreamedTextListenersIfAppropriate();
+        addRxData("");
     }
 
 }

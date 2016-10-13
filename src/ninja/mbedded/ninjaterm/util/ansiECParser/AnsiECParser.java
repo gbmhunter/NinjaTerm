@@ -59,9 +59,7 @@ public class AnsiECParser {
      * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedText object.
      *
      * @param inputString           The input string which can contain display text and ANSI escape codes.
-     * @param outputStreamedText    Contains streamed text that has been release from this parser. The internal appendText
-     *                              variable will contain text which can be added to the previous node (i.e. no colour change),
-     *                              and new nodes with text of different colours.
+     * @param outputStreamedText    Contains streamed text that has been release from this parser.
      */
     public void parse(String inputString, StreamedText outputStreamedText) {
 

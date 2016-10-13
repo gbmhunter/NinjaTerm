@@ -4,6 +4,7 @@ vX.X.X
 - Added shortcut key to speed up splash screen (spacebar), closes #127.
 - Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.
 - Added a "Freeze RX" option to the TX/RX sub-tab, closes #132.
+- Fixed bug where freeze RX data functionality did not work correctly with filtering, closes #136.
 
 v0.6.4
 ------
