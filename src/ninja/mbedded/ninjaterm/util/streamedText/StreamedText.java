@@ -20,13 +20,24 @@ import java.util.ListIterator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-28
- * @last-modified 2016-10-11
+ * @last-modified 2016-10-14
  */
 public class StreamedText {
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     private String text = "";
     private List<TextColour> textColours = new ArrayList<>();
     private Color colorToBeInsertedOnNextChar = null;
+
+    /**
+     * Holds the locations in <code>text</code> at which new lines are detected. This is populated by
+     * a <code>NewLineParser</code> object. New lines are to be inserted AFTER the character pointed
+     * to by each newLineIndex.
+     */
+    private List<Integer> newLineIndicies = new ArrayList<>();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -355,6 +366,11 @@ public class StreamedText {
         return true;
     }
 
+    /**
+     * Checks if there is a colour change at the specified character index.
+     * @param charIndex
+     * @return
+     */
     public boolean isColorAt(int charIndex) {
         for(TextColour textColour : textColours) {
             if(textColour.position == charIndex)
@@ -363,6 +379,14 @@ public class StreamedText {
 
         // If we make it here, no color at the specified index was found!
         return false;
+    }
+
+    public void addNewLineMarkerAt(int charIndex) {
+        newLineIndicies.add(charIndex);
+    }
+
+    public List<Integer> getNewLineIndicies() {
+        return newLineIndicies;
     }
 
 }
