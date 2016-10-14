@@ -1,5 +1,6 @@
-package ninja.mbedded.ninjaterm.util.asciiControlCharDisplayer;
+package ninja.mbedded.ninjaterm.util.asciiControlCharParser;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 
@@ -22,6 +23,8 @@ public class AsciiControlCharDisplayer {
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
+
+    public SimpleBooleanProperty replaceWithVisibleSymbols = new SimpleBooleanProperty(false);
 
     private Map<String, String> controlCharToVisibleChar = new HashMap<>();
 
@@ -61,16 +64,20 @@ public class AsciiControlCharDisplayer {
             logger.debug("match end = " + matcher.end());
 
             // Look for character in map
-            String replacementChar = controlCharToVisibleChar.get(matcher.group(0));
+            String replacementChar = "";
 
-            // If no replacement character was found for this control code, ignore it and continue onto next iteration of
-            // loop
-            if(replacementChar == null) {
-                logger.debug("No replacement char found for this control code. Ignoring...");
-                continue;
+            if(replaceWithVisibleSymbols.get()) {
+                replacementChar = controlCharToVisibleChar.get(matcher.group(0));
+
+                // If no replacement character was found for this control code, ignore it and continue onto next iteration of
+                // loop
+                if(replacementChar == "") {
+                    logger.debug("No replacement char found for this control code.");
+                } else {
+                    logger.debug("Replacement char = " + replacementChar);
+                }
             }
 
-            logger.debug("Replacement char = " + replacementChar);
 
             String beforeChars = input.substring(currIndex, matcher.start());
             //String afterChars = input.substring(matcher.end(), input.length());
@@ -89,8 +96,6 @@ public class AsciiControlCharDisplayer {
         // text across (if any)
         output = output + input.substring(currIndex, input.length());
 
-
         return output;
     }
-
 }

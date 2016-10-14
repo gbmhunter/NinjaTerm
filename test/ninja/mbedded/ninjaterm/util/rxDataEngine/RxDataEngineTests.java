@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.util.rxDataEngine;
 
-import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +59,19 @@ public class RxDataEngineTests {
     public void filterTest() throws Exception {
         rxDataEngine.setFilterPattern("4");
         rxDataEngine.parse("123\n456\n789");
+        assertEquals("456\n", output.getText());
+        assertEquals(0, output.getTextColours().size());
+    }
+
+    @Test
+    public void resetFilterTest() throws Exception {
+        rxDataEngine.setFilterPattern("1");
+        rxDataEngine.parse("123\n456\n789");
+        assertEquals("123\n", output.getText());
+        assertEquals(0, output.getTextColours().size());
+
+        rxDataEngine.setFilterPattern("4");
+        rxDataEngine.rerunFilterOnExistingData();
         assertEquals("456\n", output.getText());
         assertEquals(0, output.getTextColours().size());
     }

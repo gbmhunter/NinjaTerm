@@ -1,10 +1,6 @@
-package ninja.mbedded.ninjaterm.util.asciiControlCharDisplayer;
+package ninja.mbedded.ninjaterm.util.asciiControlCharParser;
 
-import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -16,13 +12,14 @@ import static org.junit.Assert.assertEquals;
  * @since           2016-10-13
  * @last-modified   2016-10-13
  */
-public class AsciiControlCharDisplayerTests {
+public class ReplacementTests {
 
     private AsciiControlCharDisplayer asciiControlCharDisplayer;
 
     @Before
     public void setUp() throws Exception {
         asciiControlCharDisplayer = new AsciiControlCharDisplayer();
+        asciiControlCharDisplayer.replaceWithVisibleSymbols.set(true);
     }
 
     @Test

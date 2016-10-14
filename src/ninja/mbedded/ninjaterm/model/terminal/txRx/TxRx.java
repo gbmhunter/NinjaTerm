@@ -1,7 +1,5 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -12,12 +10,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
-import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
-import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxDataEngine.RxDataEngine;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
-import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -301,7 +295,7 @@ public class TxRx {
 
             // Firstly, clear RX data on UI
             clearTxAndRxData();
-            rxDataEngine.rerunFilter();
+            rxDataEngine.rerunFilterOnExistingData();
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
 

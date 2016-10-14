@@ -184,7 +184,7 @@ public class RxDataEngine {
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
-    public void rerunFilter() {
+    public void rerunFilterOnExistingData() {
         // Clear all filter output
         filterOutput.clear();
 
@@ -205,7 +205,9 @@ public class RxDataEngine {
             }*/
         // Call any streamed text listeners (but only if RX data is not frozen)
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
+            // Make a copy so that the listeners can't modify the filterOutput variable
+            StreamedText copyOfFilterOutput = new StreamedText(filterOutput);
+            newStreamedTextListener.run(copyOfFilterOutput);
         }
 
         // Since the filter output is the last parser in the chain,
