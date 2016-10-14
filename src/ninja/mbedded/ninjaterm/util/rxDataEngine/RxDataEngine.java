@@ -30,7 +30,7 @@ public class RxDataEngine {
      */
     public SimpleStringProperty rawRxData = new SimpleStringProperty("");
 
-    public AnsiECParser ansiECParser = new AnsiECParser();
+    private AnsiECParser ansiECParser = new AnsiECParser();
 
     /**
      * This variable contains the backlog of data which is frozen. When the user
@@ -214,7 +214,15 @@ public class RxDataEngine {
     }
 
     /**
-     * Exposes the streamingFilter.setFilterPattern() method.
+     * Enables/disables the ANSI escape code parser.
+     * @param trueFalse
+     */
+    public void setAnsiECEnabled(boolean trueFalse) {
+        ansiECParser.isEnabled.set(trueFalse);
+    }
+
+    /**
+     * Sets the filter pattern to be used by the streaming filter.
      * @param filterPattern
      */
     public void setFilterPattern(String filterPattern) {

@@ -50,7 +50,7 @@ public class RxDataEngineTests {
 
     @Test
     public void asciiEscapeCodesOffTest() throws Exception {
-        rxDataEngine.ansiECParser.isEnabled.set(false);
+        rxDataEngine.setAnsiECEnabled(false);
         rxDataEngine.parse("123\u001B[30m456");
         assertEquals("123\u001B[30m456", output.getText());
         assertEquals(0, output.getTextColours().size());
