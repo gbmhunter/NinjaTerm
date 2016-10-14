@@ -81,6 +81,26 @@ public class RxDataEngine {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
+    /**
+     *
+     *  <p>
+     *     1. Receive RX data as pure string
+     *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters. This takes
+     *              in a string put outs a StreamedText object. It populates the textColours array with objects that
+     *              what colour and where colour changes occur.
+     *     3. Pass through new line detecter. This does not modify the textual data, but populates the
+     *              newLineIndicies array with entries and where new lines are to be inserted. This may
+     *              hold back data if a partial new line is detected.
+     *     3. Pass through ASCII control code parser. This finds all ASCII control codes, and either converts
+     *              them to their visible unicode symbol equivalent, or removes them.
+     *     4. Pass through filter. Filter only releases lines of text which match the provided pattern. Filter
+     *              may hold back text which contains a partial match.
+     *     5. The resulting StreamedText object is outputted to any listeners (the RX pane on the GUI should be
+     *              listening to this).
+     * </p>
+     *
+     * @param data
+     */
     public void parse(String data) {
         logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");
 
