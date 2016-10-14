@@ -270,6 +270,13 @@ public class TxRx {
      * data which gets displayed to the user in the RX pane).
      * <p>
      * This also gets called with TX data if the "TX local echo" option is selected.
+     * <p>
+     *     1. Receive RX data as string
+     *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters.
+     *     3. Pass through ASCII control code parser. This finds all ASCII control codes, and either converts
+     *          them to their visible unicode symbol equivalent, or removes them. It also inserts records into
+ *              ascii
+     * </p>
      *
      * @param data
      */
