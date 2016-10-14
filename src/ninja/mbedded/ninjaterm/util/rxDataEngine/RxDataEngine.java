@@ -21,6 +21,10 @@ import java.util.List;
  */
 public class RxDataEngine {
 
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
     /**
      * Initialise with "" so that it does not display "null".
      */
@@ -69,32 +73,13 @@ public class RxDataEngine {
 
     public int bufferSize = 20000;
 
-    public void rerunFilter() {
-        // Clear all filter output
-        filterOutput.clear();
 
-        // We need to run the entire ANSI parser output back through the filter
-        // Make a temp. StreamedText object that can be consumed (we want to preserve
-        // totalUnfrozenAnsiParserOutput).
-        StreamedText toBeConsumed = new StreamedText(totalUnfrozenAnsiParserOutput);
-
-        // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
-        // to this toBeConsumed object
-        bufferBetweenAnsiParserAndFilter = toBeConsumed;
-
-        streamingFilter.parse(toBeConsumed, filterOutput);
-
-        // Notify that there is new UI data to display
-            /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(filterOutput);
-            }*/
-        // Call any streamed text listeners (but only if RX data is not frozen)
-        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
-        }
-    }
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public void parse(String data) {
         logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");
@@ -190,6 +175,31 @@ public class RxDataEngine {
         }
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
+    }
+
+    public void rerunFilter() {
+        // Clear all filter output
+        filterOutput.clear();
+
+        // We need to run the entire ANSI parser output back through the filter
+        // Make a temp. StreamedText object that can be consumed (we want to preserve
+        // totalUnfrozenAnsiParserOutput).
+        StreamedText toBeConsumed = new StreamedText(totalUnfrozenAnsiParserOutput);
+
+        // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
+        // to this toBeConsumed object
+        bufferBetweenAnsiParserAndFilter = toBeConsumed;
+
+        streamingFilter.parse(toBeConsumed, filterOutput);
+
+        // Notify that there is new UI data to display
+            /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+                newStreamedTextListener.run(filterOutput);
+            }*/
+        // Call any streamed text listeners (but only if RX data is not frozen)
+        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+            newStreamedTextListener.run(filterOutput);
+        }
     }
 
 }

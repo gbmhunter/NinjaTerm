@@ -13,15 +13,9 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-02
+ * @last-modified   2016-10-14
  */
 public class CopyTextTests {
-
-    /**
-     * Including this variable in class allows JavaFX objects to be created in tests.
-     */
-    @Rule
-    public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
     private StreamedText inputStreamedText;
     private StreamedText outputStreamedText;
