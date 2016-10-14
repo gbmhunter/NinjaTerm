@@ -295,7 +295,7 @@ public class TxRx {
 
         logger.debug("filterTextChanged() called.");
 
-        rxDataEngine.streamingFilter.setFilterPatten(filterText);
+        rxDataEngine.setFilterPattern(filterText);
 
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 

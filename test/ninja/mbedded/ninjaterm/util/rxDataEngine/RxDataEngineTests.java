@@ -42,8 +42,25 @@ public class RxDataEngineTests {
     }
 
     @Test
-    public void bigTest() throws Exception {
-        rxDataEngine.parse("a\u001B");
-        assertEquals("a", output.getText());
+    public void asciiEscapeCodesOnTest() throws Exception {
+        rxDataEngine.parse("123\u001B[30m456");
+        assertEquals("123456", output.getText());
+        assertEquals(1, output.getTextColours().size());
+    }
+
+    @Test
+    public void asciiEscapeCodesOffTest() throws Exception {
+        rxDataEngine.ansiECParser.isEnabled.set(false);
+        rxDataEngine.parse("123\u001B[30m456");
+        assertEquals("123\u001B[30m456", output.getText());
+        assertEquals(0, output.getTextColours().size());
+    }
+
+    @Test
+    public void filterTest() throws Exception {
+        rxDataEngine.setFilterPattern("4");
+        rxDataEngine.parse("123\n456\n789");
+        assertEquals("456\n", output.getText());
+        assertEquals(0, output.getTextColours().size());
     }
 }

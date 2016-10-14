@@ -53,7 +53,7 @@ public class RxDataEngine {
     /**
      * Used to provide filtering functionality to the RX data.
      */
-    public StreamingFilter streamingFilter = new StreamingFilter();
+    private StreamingFilter streamingFilter = new StreamingFilter();
 
     /**
      * Buffer to hold the streamed text which is output from the filter.
@@ -211,6 +211,14 @@ public class RxDataEngine {
         // Since the filter output is the last parser in the chain,
         // it's data does not need to persist between calls
         filterOutput.clear();
+    }
+
+    /**
+     * Exposes the streamingFilter.setFilterPattern() method.
+     * @param filterPattern
+     */
+    public void setFilterPattern(String filterPattern) {
+        streamingFilter.setFilterPattern(filterPattern);
     }
 
 }

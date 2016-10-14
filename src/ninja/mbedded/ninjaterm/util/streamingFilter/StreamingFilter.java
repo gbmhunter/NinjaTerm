@@ -29,7 +29,7 @@ public class StreamingFilter {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    public void setFilterPatten(String filterPattern) {
+    public void setFilterPattern(String filterPattern) {
 
         this.filterPattern = filterPattern;
         regexPattern = Pattern.compile(filterPattern);

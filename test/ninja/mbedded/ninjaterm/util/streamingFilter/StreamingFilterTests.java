@@ -32,7 +32,7 @@ public class StreamingFilterTests {
     @Before
     public void setUp() throws Exception {
         streamingFilter = new StreamingFilter();
-        streamingFilter.setFilterPatten("a");
+        streamingFilter.setFilterPattern("a");
 
         inputStreamedText = new StreamedText();
         outputStreamedText = new StreamedText();
@@ -183,7 +183,7 @@ public class StreamingFilterTests {
     @Test
     public void bigTest() throws Exception {
 
-        streamingFilter.setFilterPatten("d");
+        streamingFilter.setFilterPattern("d");
 
         inputStreamedText.append("re");
         inputStreamedText.addColour(0, Color.RED);
