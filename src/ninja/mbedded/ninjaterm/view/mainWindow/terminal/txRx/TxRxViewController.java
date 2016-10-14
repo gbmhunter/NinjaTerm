@@ -372,14 +372,14 @@ public class TxRxViewController {
         //==============================================//
 
         freezeRxButton.setOnAction(event -> {
-            if(!terminal.txRx.isRxFrozen.get()) {
+            if(!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
                 terminal.txRx.freezeRx();
             } else {
                 terminal.txRx.unFreezeRx();
             }
         });
 
-        terminal.txRx.isRxFrozen.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.rxDataEngine.isRxFrozen.addListener((observable, oldValue, newValue) -> {
             refreshFreezeRxButton();
         });
 
@@ -420,7 +420,7 @@ public class TxRxViewController {
         // to get updated automatically when the model modifies this
         // ObservableList
         //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
-        terminal.txRx.newStreamedTextListeners.add(streamedText -> {
+        terminal.txRx.rxDataEngine.newStreamedTextListeners.add(streamedText -> {
             newStreamedTextListener(streamedText);
         });
 
@@ -459,7 +459,7 @@ public class TxRxViewController {
     }
 
     private void refreshFreezeRxButton() {
-        if (!terminal.txRx.isRxFrozen.get()) {
+        if (!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
             freezeRxButton.setText("Freeze RX");
             freezeRxButton.setGraphic(glyphFont.create(FontAwesome.Glyph.LOCK));
         } else {

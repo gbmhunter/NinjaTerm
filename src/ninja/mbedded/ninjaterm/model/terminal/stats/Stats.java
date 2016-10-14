@@ -35,7 +35,7 @@ public class Stats {
             bytesSinceLastCalcTx += txData.length();
         });
 
-        terminal.txRx.rawDataReceivedListeners.add(data -> {
+        terminal.txRx.rxDataEngine.rawDataReceivedListeners.add(data -> {
             bytesSinceLastCalcRx += data.length();
         });
 

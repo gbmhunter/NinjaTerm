@@ -15,8 +15,10 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
+import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -49,53 +51,13 @@ public class TxRx {
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
     public SimpleStringProperty txData = new SimpleStringProperty("");
 
-    /**
-     * Initialise with "" so that it does not display "null".
-     */
-    public SimpleStringProperty rawRxData = new SimpleStringProperty("");
 
-    private AnsiECParser ansiECParser = new AnsiECParser();
-
-    /**
-     * This variable contains the backlog of data which is frozen. When the user
-     * unfreezes the data again, all of this will be released to <code>totalUnfrozenAnsiParserOutput</code>
-     * and to <code>bufferBetweenAnsiParserAndFilter</code>.
-     */
-    private StreamedText frozenAnsiParserOutput = new StreamedText();
-
-    private StreamedText bufferBetweenAnsiParserAndFilter = new StreamedText();
-
-    /**
-     * This is a buffer for the output of the ANSI parser. This is for when the filter text
-     * is changed, and the user wishes to re-run the filter over data stored in the buffer.
-     *
-     * This only contains data which has been unfrozen. All frozen data will remain in
-     * <code>frozenAnsiParserOutput</code> until data is unfrozen again
-     */
-    private StreamedText totalUnfrozenAnsiParserOutput = new StreamedText();
-
-    /**
-     * Used to provide filtering functionality to the RX data.
-     */
-    private StreamingFilter streamingFilter = new StreamingFilter();
-
-    /**
-     * Buffer to hold the streamed text which is output from the filter.
-     */
-    private StreamedText filterOutput = new StreamedText();
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
-    public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
 
-    /**
-     * This event is emitted every time the ANSI parser is run. The output of the ANSI
-     * parser is passed along with the event.
-     */
-    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
-    public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
-    public ReadOnlyBooleanProperty isRxFrozen = new ReadOnlyBooleanWrapper();
+    public RxDataEngine rxDataEngine = new RxDataEngine();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -250,7 +212,7 @@ public class TxRx {
 
         if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
     }
@@ -281,135 +243,24 @@ public class TxRx {
      * @param data
      */
     public void addRxData(String data) {
-        logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");
 
-        rawRxData.set(rawRxData.get() + data);
+        rxDataEngine.parse(data);
 
-        // Truncate if necessary
-        if (rawRxData.get().length() > display.bufferSizeChars.get()) {
-            // Remove old characters from buffer
-            rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
-        }
-
-        //==============================================//
-        //============== ANSI ESCAPE CODES =============//
-        //==============================================//
-
-        // This temporary streamed text object is just to hold NEW output
-        // from the ANSI parser, before being combined with the existing data
-        StreamedText tempAnsiParserOutput = new StreamedText();
-
-        // Run the ANSI parser if we want colourised text displayed OR the user wants ANSI codes
-        // swallowed when logging
-        if (colouriser.ansiEscapeCodesEnabled.get() || terminal.logging.swallowAnsiEscapeCodes.get()) {
-            // This temp variable is used to store just the new ANSI parser output data, which
-            // is then stored in totalUnfrozenAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
-
-            ansiECParser.parse(data, tempAnsiParserOutput);
-
-            logger.debug("tempAnsiParserOutput = " + Debugging.convertNonPrintable(tempAnsiParserOutput.toString()));
-
-            frozenAnsiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
-            if(isRxFrozen.get()) {
-                return;
-            }
-
-            // Append the output of the ANSI parser to the "total" ANSI parser output buffer
-            // This will be used if the user changes the filter pattern and wishes to re-run
-            // it on buffered data.
-            // NOTE: We only want to append NEW data added to the ANSI parser output, since
-            // there may still be characters in there from last time this method was called, and
-            // we don't want to add them twice
-            totalUnfrozenAnsiParserOutput.copyCharsFrom(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
-
-//            logger.debug("totalUnfrozenAnsiParserOutput = " + totalUnfrozenAnsiParserOutput);
-
-            // Fire ansiParserOutput event
-            for (StreamedTextListener streamedTextListener : ansiParserOutputListeners) {
-                // Create a new copy of the streamed text so that the listeners can't modify
-                // the contents by mistake
-                StreamedText streamedText = new StreamedText(frozenAnsiParserOutput);
-                streamedTextListener.run(streamedText);
-            }
-        }
-
-        if (colouriser.ansiEscapeCodesEnabled.get()) {
-            // Now add all the new ANSI parser output to any that was not used up by the
-            // streaming filter from last time
-            bufferBetweenAnsiParserAndFilter.shiftCharsIn(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
-        } else { // if(colouriser.ansiEscapeCodesEnabled.get())
-
-            // The user does not want us to parse ANSI escape codes, so append the input RX data directly
-            // into the ANSI parser output object
-            bufferBetweenAnsiParserAndFilter.append(frozenAnsiParserOutput.getText());
-
-        } // if(colouriser.ansiEscapeCodesEnabled.get())
-
-        frozenAnsiParserOutput.clear();
-
-        logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndFilter = " + bufferBetweenAnsiParserAndFilter);
-
-        //==============================================//
-        //================== FILTERING =================//
-        //==============================================//
-
-        // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamingFilter.parse(bufferBetweenAnsiParserAndFilter, filterOutput);
-
-        //==============================================//
-        //=================== TRIMMING =================//
-        //==============================================//
-
-        // Trim total ANSI parser output
-        if (totalUnfrozenAnsiParserOutput.getText().length() > display.bufferSizeChars.get()) {
-            logger.debug("Trimming totalUnfrozenAnsiParserOutput...");
-            int numOfCharsToRemove = totalUnfrozenAnsiParserOutput.getText().length() - display.bufferSizeChars.get();
-            totalUnfrozenAnsiParserOutput.removeChars(numOfCharsToRemove);
-        }
-
-        // NOTE: UI buffer is trimmed in view controller
-
-        //==============================================//
-        //============== LISTENER NOTIFICATION =========//
-        //==============================================//
-
-        // Call any listeners that want the raw data (the logging class of the model might be listening)
-        logger.debug("Calling raw data listeners with data = \"" + Debugging.convertNonPrintable(data) + "\".");
-        for (RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
-            rawDataReceivedListener.run(data);
-        }
-
-        // Call any streamed text listeners
-        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
-        }
-
-        logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
-    /**
-     * Trims a string to the provided number of characters. Removes characters from the start of the string
-     * (the "old" chars).
-     *
-     * @param data
-     * @param desiredLength
-     * @return The trimmed string.
-     */
-    public String removeOldChars(String data, int desiredLength) {
-        return data.substring(data.length() - desiredLength, data.length());
-    }
+
 
     public void removeOldCharsFromBuffers() {
 
         if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if (rawRxData.get().length() > display.bufferSizeChars.get()) {
+        /*if (rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
             rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
-        }
+        }*/
     }
 
     /**
@@ -444,48 +295,25 @@ public class TxRx {
 
         logger.debug("filterTextChanged() called.");
 
-        streamingFilter.setFilterPatten(filterText);
+        rxDataEngine.streamingFilter.setFilterPatten(filterText);
 
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
             clearTxAndRxData();
-
-            // Clear all filter output
-            filterOutput.clear();
-
-            // We need to run the entire ANSI parser output back through the filter
-            // Make a temp. StreamedText object that can be consumed (we want to preserve
-            // totalUnfrozenAnsiParserOutput).
-            StreamedText toBeConsumed = new StreamedText(totalUnfrozenAnsiParserOutput);
-
-            // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
-            // to this toBeConsumed object
-            bufferBetweenAnsiParserAndFilter = toBeConsumed;
-
-            streamingFilter.parse(toBeConsumed, filterOutput);
-
-            // Notify that there is new UI data to display
-            /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(filterOutput);
-            }*/
-            // Call any streamed text listeners (but only if RX data is not frozen)
-            for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(filterOutput);
-            }
-
+            rxDataEngine.rerunFilter();
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
 
     public void freezeRx() {
         //isRxFrozenInternal.set(true);
-        ((SimpleBooleanProperty) isRxFrozen).set(true);
+        ((SimpleBooleanProperty) rxDataEngine.isRxFrozen).set(true);
         model.status.addMsg("RX data frozen.");
     }
 
     public void unFreezeRx() {
         //isRxFrozenInternal.set(false);
-        ((SimpleBooleanProperty) isRxFrozen).set(false);
+        ((SimpleBooleanProperty) rxDataEngine.isRxFrozen).set(false);
         model.status.addMsg("RX data un-frozen.");
 
         // Call this to release any streamed text which has been building up since the

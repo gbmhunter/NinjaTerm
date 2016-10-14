@@ -71,12 +71,12 @@ public class Status {
 
                 for(Terminal terminal : change.getAddedSubList()) {
                     terminal.txRx.dataSentTxListeners.add(dataSentTxListener);
-                    terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+                    terminal.txRx.rxDataEngine.rawDataReceivedListeners.add(rawDataReceivedListener);
                 }
 
                 for(Terminal terminal : change.getRemoved()) {
                     terminal.txRx.dataSentTxListeners.remove(dataSentTxListener);
-                    terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+                    terminal.txRx.rxDataEngine.rawDataReceivedListeners.remove(rawDataReceivedListener);
                 }
             }
         });

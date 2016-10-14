@@ -135,10 +135,10 @@ public class Logging {
         // Add listener. This will cause saveNewDataToLogFile() to be called when there is new
         // RX data
         if(swallowAnsiEscapeCodes.get()) {
-            terminal.txRx.ansiParserOutputListeners.add(ansiParserOutputListener);
+            terminal.txRx.rxDataEngine.ansiParserOutputListeners.add(ansiParserOutputListener);
         } else {
             // Listen to the raw RX data coming from the COM port
-            terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+            terminal.txRx.rxDataEngine.rawDataReceivedListeners.add(rawDataReceivedListener);
         }
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
@@ -180,9 +180,9 @@ public class Logging {
 
         // Remove the listener. This will stop calls to saveNewDataToLogFile()
         if(swallowAnsiEscapeCodes.get()) {
-            terminal.txRx.ansiParserOutputListeners.remove(ansiParserOutputListener);
+            terminal.txRx.rxDataEngine.ansiParserOutputListeners.remove(ansiParserOutputListener);
         } else {
-            terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+            terminal.txRx.rxDataEngine.rawDataReceivedListeners.remove(rawDataReceivedListener);
         }
 
         // Now close the file
