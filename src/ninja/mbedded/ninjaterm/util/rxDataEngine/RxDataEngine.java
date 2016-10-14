@@ -170,9 +170,16 @@ public class RxDataEngine {
         }
 
         // Call any streamed text listeners
+        // This is the output designed for the UI element to listen to to display text!
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            newStreamedTextListener.run(filterOutput);
+            // Make a copy so that the listeners can't modify the filterOutput variable
+            StreamedText copyOfFilterOutput = new StreamedText(filterOutput);
+            newStreamedTextListener.run(copyOfFilterOutput);
         }
+
+        // Since the filter output is the last parser in the chain,
+        // it's data does not need to persist between calls
+        filterOutput.clear();
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
@@ -200,6 +207,10 @@ public class RxDataEngine {
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
             newStreamedTextListener.run(filterOutput);
         }
+
+        // Since the filter output is the last parser in the chain,
+        // it's data does not need to persist between calls
+        filterOutput.clear();
     }
 
 }

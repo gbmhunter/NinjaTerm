@@ -257,10 +257,10 @@ public class TxRx {
             txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        /*if (rawRxData.get().length() > display.bufferSizeChars.get()) {
+        if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
-            rawRxData.set(removeOldChars(rawRxData.get(), display.bufferSizeChars.get()));
-        }*/
+            rxDataEngine.rawRxData.set(StringUtils.removeOldChars(rxDataEngine.rawRxData.get(), display.bufferSizeChars.get()));
+        }
     }
 
     /**

@@ -30,10 +30,20 @@ public class RxDataEngineTests {
     }
 
     @Test
-    public void copyTest() throws Exception {
-
+    public void oneCharTest() throws Exception {
         rxDataEngine.parse("a");
+        assertEquals("a", output.getText());
+    }
 
+    @Test
+    public void startOfEscapeSeqTest() throws Exception {
+        rxDataEngine.parse("a\u001B");
+        assertEquals("a", output.getText());
+    }
+
+    @Test
+    public void bigTest() throws Exception {
+        rxDataEngine.parse("a\u001B");
         assertEquals("a", output.getText());
     }
 }
