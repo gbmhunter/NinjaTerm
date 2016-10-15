@@ -47,7 +47,7 @@ public class NewLineParser {
 
         while(matcher.find()) {
             logger.debug("Match found. match = \"" + matcher.group(0) + "\"." +
-                    " Start index = " + matcher.start() ", end index = " + matcher.end());
+                    " Start index = " + matcher.start() + ", end index = " + matcher.end());
 
             // NEW LINE FOUND!
 
@@ -65,7 +65,7 @@ public class NewLineParser {
         // ALL NEW LINES FOUND!
 
         // Shift reamining characters from input to output
-        output.shiftCharsIn(input, input.getText().length());
+        output.shiftCharsInUntilPartialMatch(input, newLinePattern);
 
 
     }
