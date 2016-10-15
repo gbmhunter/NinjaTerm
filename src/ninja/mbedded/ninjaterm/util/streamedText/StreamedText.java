@@ -7,7 +7,6 @@ import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +107,7 @@ public class StreamedText {
         checkAllColoursAreInOrder();
     }
 
-    private enum CopyOrShift {
+    public enum CopyOrShift {
         COPY,
         SHIFT,
     }
@@ -197,6 +196,39 @@ public class StreamedText {
         }
 
         checkAllColoursAreInOrder();
+    }
+
+    /**
+     * This method expects the chars to be removed after this method is finished (otherwise
+     * the input and output StreamedText objects will be left in an invalid state).
+     * @param input
+     * @param numChars
+     * @param copyOrShift
+     */
+    private void copyOrShiftNewLineMarkers(StreamedText input, int numChars, CopyOrShift copyOrShift) {
+
+        // Copy/shift markers within range
+        for(int x = 0; x < getNewLineMarkers().size(); x++) {
+
+            if (getNewLineMarkers().get(x) < numChars) {
+
+
+                // Make a copy of this marker in the output
+                addNewLineMarkerAt(getText().length() + getNewLineMarkers().get(x));
+
+                if (copyOrShift == CopyOrShift.SHIFT) {
+                    // Remove the marker from the input
+                    input.getNewLineMarkers().remove(x);
+                }
+
+            } else {
+                // We have copied/shifted all markers within range,
+                // we just need to adjust the marker values for the remaining
+                // markers in the input
+
+                getNewLineMarkers().set(x, getNewLineMarkers().get(x) - numChars);
+            }
+        }
     }
 
     public void copyCharsFrom(StreamedText inputStreamedText, int numChars) {
@@ -387,7 +419,7 @@ public class StreamedText {
         newLineIndicies.add(charIndex);
     }
 
-    public List<Integer> getNewLineIndicies() {
+    public List<Integer> getNewLineMarkers() {
         return newLineIndicies;
     }
 

@@ -38,12 +38,12 @@ public class MultiCharTests {
 
         assertEquals("", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getTextColours().size());
-        assertEquals(0, inputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
-        assertEquals(1, outputStreamedText.getNewLineIndicies().size());
-        assertEquals(5, outputStreamedText.getNewLineIndicies().get(0).intValue());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(5, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -55,11 +55,11 @@ public class MultiCharTests {
 
         assertEquals("EO", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getTextColours().size());
-        assertEquals(0, inputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
-        assertEquals(0, outputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, outputStreamedText.getNewLineMarkers().size());
 
         inputStreamedText.append("L456");
 
@@ -67,12 +67,12 @@ public class MultiCharTests {
 
         assertEquals("", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getTextColours().size());
-        assertEquals(0, inputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
-        assertEquals(1, outputStreamedText.getNewLineIndicies().size());
-        assertEquals(5, outputStreamedText.getNewLineIndicies().get(0).intValue());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(5, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -85,7 +85,7 @@ public class MultiCharTests {
 
         assertEquals("EO", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getTextColours().size());
-        assertEquals(0, inputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123", outputStreamedText.getText());
 
@@ -93,7 +93,7 @@ public class MultiCharTests {
         assertEquals(2, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
-        assertEquals(0, outputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, outputStreamedText.getNewLineMarkers().size());
 
         inputStreamedText.append("L456");
         inputStreamedText.addColour(inputStreamedText.getText().length() - 4, Color.GREEN);
@@ -103,7 +103,7 @@ public class MultiCharTests {
         assertEquals("", inputStreamedText.getText());
 
         assertEquals(0, inputStreamedText.getTextColours().size());
-        assertEquals(0, inputStreamedText.getNewLineIndicies().size());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
 
@@ -114,7 +114,7 @@ public class MultiCharTests {
         assertEquals(5, outputStreamedText.getTextColours().get(1).position);
         assertEquals(Color.GREEN, outputStreamedText.getTextColours().get(1).color);
 
-        assertEquals(1, outputStreamedText.getNewLineIndicies().size());
-        assertEquals(5, outputStreamedText.getNewLineIndicies().get(0).intValue());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(5, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 }

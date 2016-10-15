@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  * @since           2016-09-27
  * @last-modified   2016-10-02
  */
-public class ShiftCharsInTests {
+public class ShiftWithColoursTests {
 
     /**
      * Including this variable in class allows JavaFX objects to be created in tests.
@@ -47,7 +47,7 @@ public class ShiftCharsInTests {
     }
 
     @Test
-    public void extractAppendAndNodeTextTest() throws Exception {
+    public void shiftWithColoursTest() throws Exception {
 
         inputStreamedText.append("12345678");
         inputStreamedText.addColour(4, Color.RED);
