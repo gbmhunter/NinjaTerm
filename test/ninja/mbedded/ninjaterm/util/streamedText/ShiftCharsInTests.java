@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  * @since           2016-09-27
  * @last-modified   2016-10-02
  */
-public class StreamedTextTests {
+public class ShiftCharsInTests {
 
     /**
      * Including this variable in class allows JavaFX objects to be created in tests.
