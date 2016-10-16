@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.util.asciiControlCharParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  * @last-modified 2016-10-13
  * @since 2016-10-13
  */
-public class AsciiControlCharDisplayer {
+public class AsciiControlCharParser {
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -39,7 +40,7 @@ public class AsciiControlCharDisplayer {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public AsciiControlCharDisplayer() {
+    public AsciiControlCharParser() {
 
         // Build the hashmap from the simple two-dimensional array
         for(String[] controlCharToVisibleCharMapping : controlCharToVisibleCharA) {
@@ -48,14 +49,14 @@ public class AsciiControlCharDisplayer {
 
     }
 
-    public String parse(String input) {
+    public void parse(StreamedText input, StreamedText releasedText) {
 
         Pattern pattern = Pattern.compile("\\p{Cntrl}");
 
         // Now create matcher object.
-        Matcher matcher = pattern.matcher(input);
+        Matcher matcher = pattern.matcher(input.getText());
 
-        String output = "";
+        //String output = "";
         int currIndex = 0;
 
         while(matcher.find()) {
@@ -78,24 +79,32 @@ public class AsciiControlCharDisplayer {
                 }
             }
 
+            // Shift all characters before this match
+            releasedText.shiftCharsIn(input, matcher.start() - currIndex);
 
-            String beforeChars = input.substring(currIndex, matcher.start());
-            //String afterChars = input.substring(matcher.end(), input.length());
+            // Safely delete this char from the input
+            // (it should now be the first character)
+            input.removeChar(0);
 
             currIndex = matcher.end();
 
-            output = output + beforeChars + replacementChar;
+            if(replacementChar != null) {
+                releasedText.append(replacementChar);
+            }
+
+            //output = output + beforeChars + replacementChar;
 
             //input = matcher.replaceFirst(replacementChar);
 
-            logger.debug("output = " + output);
+            //logger.debug("output = " + output);
 
         }
 
         // No more matches have been found, but we still need to copy the last piece of
         // text across (if any)
-        output = output + input.substring(currIndex, input.length());
+        //output = output + input.substring(currIndex, input.length());
+        releasedText.shiftCharsIn(input, input.getText().length());
 
-        return output;
+        //return output;
     }
 }

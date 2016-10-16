@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
+import ninja.mbedded.ninjaterm.util.asciiControlCharParser.AsciiControlCharParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.newLineParser.NewLineParser;
@@ -56,9 +57,12 @@ public class RxDataEngine {
     private StreamingFilter streamingFilter = new StreamingFilter();
 
     /**
-     * Buffer to hold the streamed text which is output from the filter.
+     * Buffer to hold the streamed text which is output from the filter and
+     * consumed by the <code>asciiControlCharParser</code>.
      */
-    public StreamedText filterOutput = new StreamedText();
+    public StreamedText bufferBetweenFilterAndControlCharParser = new StreamedText();
+
+    private AsciiControlCharParser asciiControlCharParser = new AsciiControlCharParser();
 
     /**
      * This is a buffer for the output of the ANSI parser. This is for when the filter text
@@ -179,7 +183,19 @@ public class RxDataEngine {
         //==============================================//
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamingFilter.parse(bufferBetweenNewLineParserAndFiltering, filterOutput);
+        releasedText.clear();
+        streamingFilter.parse(bufferBetweenNewLineParserAndFiltering, releasedText);
+
+        // Add the released text to buffer
+        bufferBetweenFilterAndControlCharParser.shiftCharsIn(releasedText, releasedText.getText().length());
+
+        //==============================================//
+        //=========== ASCII CONTROL CHAR PARSING =======//
+        //==============================================//
+
+        releasedText.clear();
+        asciiControlCharParser.parse(bufferBetweenFilterAndControlCharParser, releasedText);
+
 
         //==============================================//
         //=================== TRIMMING =================//
@@ -207,21 +223,17 @@ public class RxDataEngine {
         // Call any streamed text listeners
         // This is the output designed for the UI element to listen to to display text!
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            // Make a copy so that the listeners can't modify the filterOutput variable
-            StreamedText copyOfFilterOutput = new StreamedText(filterOutput);
+            // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
+            StreamedText copyOfFilterOutput = new StreamedText(releasedText);
             newStreamedTextListener.run(copyOfFilterOutput);
         }
-
-        // Since the filter output is the last parser in the chain,
-        // it's data does not need to persist between calls
-        filterOutput.clear();
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
     public void rerunFilterOnExistingData() {
         // Clear all filter output
-        filterOutput.clear();
+        bufferBetweenFilterAndControlCharParser.clear();
 
         // We need to run the entire ANSI parser output back through the filter
         // Make a temp. StreamedText object that can be consumed (we want to preserve
@@ -232,22 +244,22 @@ public class RxDataEngine {
         // to this toBeConsumed object
         bufferBetweenNewLineParserAndFiltering = toBeConsumed;
 
-        streamingFilter.parse(toBeConsumed, filterOutput);
+        streamingFilter.parse(toBeConsumed, bufferBetweenFilterAndControlCharParser);
 
         // Notify that there is new UI data to display
             /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(filterOutput);
+                newStreamedTextListener.run(bufferBetweenFilterAndControlCharParser);
             }*/
         // Call any streamed text listeners (but only if RX data is not frozen)
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-            // Make a copy so that the listeners can't modify the filterOutput variable
-            StreamedText copyOfFilterOutput = new StreamedText(filterOutput);
+            // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
+            StreamedText copyOfFilterOutput = new StreamedText(bufferBetweenFilterAndControlCharParser);
             newStreamedTextListener.run(copyOfFilterOutput);
         }
 
         // Since the filter output is the last parser in the chain,
         // it's data does not need to persist between calls
-        filterOutput.clear();
+        bufferBetweenFilterAndControlCharParser.clear();
     }
 
     /**

@@ -508,4 +508,25 @@ public class StreamedText {
         return lines;
     }
 
+    public void removeChar(int charIndex) {
+
+        if(charIndex >= getText().length()) {
+            throw new IllegalArgumentException("charIndex pointed outside of length of text.");
+        }
+
+        // Remove the character from the text
+        String oldText = text;
+
+        text = oldText.substring(0, charIndex) + oldText.substring(charIndex + 1, oldText.length());
+
+        // Shift all new line markers from the deleted char onwards
+        for (ListIterator<Integer> iter = newLineMarkers.listIterator(); iter.hasNext(); ) {
+            Integer element = iter.next();
+
+            if(element != 0 && element >= charIndex) {
+                iter.set(element - 1);
+            }
+        }
+
+    }
 }
