@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
