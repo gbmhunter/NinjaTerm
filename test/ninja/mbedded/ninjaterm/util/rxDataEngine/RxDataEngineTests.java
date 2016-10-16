@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxDataEngine;
 
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,5 +75,46 @@ public class RxDataEngineTests {
         rxDataEngine.rerunFilterOnExistingData();
         assertEquals("456\n", output.getText());
         assertEquals(0, output.getTextColours().size());
+    }
+
+    @Test
+    public void basicColoursAndNewLineTest() throws Exception {
+        rxDataEngine.setFilterPattern("");
+        rxDataEngine.parse("123\u001B[30m4\r\n56");
+
+        assertEquals("1234\r\n56", output.getText());
+
+        assertEquals(1, output.getTextColours().size());
+        assertEquals(3, output.getTextColours().get(0).position);
+        assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
+
+        assertEquals(1, output.getNewLineMarkers().size());
+        assertEquals(5, output.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void basicColoursNewLineFilterTest() throws Exception {
+        rxDataEngine.setNewLinePattern("EOL");
+        rxDataEngine.setFilterPattern("56");
+        rxDataEngine.parse("123EOL\u001B[30m45");
+
+        // Check there is nothing in the output
+        assertEquals("", output.getText());
+        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getNewLineMarkers().size());
+
+        // After receiving this data, we should now have some output
+        rxDataEngine.parse("6EOL789");
+
+        assertEquals("456EOL", output.getText());
+
+        assertEquals(1, output.getTextColours().size());
+        assertEquals(0, output.getTextColours().get(0).position);
+        assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
+
+        assertEquals(1, output.getNewLineMarkers().size());
+        assertEquals(5, output.getNewLineMarkers().get(0).intValue());
+
+
     }
 }

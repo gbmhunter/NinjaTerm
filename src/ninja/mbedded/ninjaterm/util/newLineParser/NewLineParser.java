@@ -8,7 +8,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by gbmhu on 2016-10-14.
+ * Detects where to add new line markers in the input streamed text, and releases
+ * text to the output when processing is finished.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-10-15
+ * @last-modified 2016-10-16
  */
 public class NewLineParser {
 
@@ -16,7 +21,7 @@ public class NewLineParser {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    String newLineString;
+    //String newLineString;
     Pattern newLinePattern;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -26,7 +31,11 @@ public class NewLineParser {
     //================================================================================================//
 
     public NewLineParser(String newLineString) {
-        this.newLineString = newLineString;
+        //this.newLineString = newLineString;
+        newLinePattern = Pattern.compile(newLineString);
+    }
+
+    public void setNewLinePattern(String newLineString) {
         newLinePattern = Pattern.compile(newLineString);
     }
 
@@ -64,7 +73,7 @@ public class NewLineParser {
 
         // ALL NEW LINES FOUND!
 
-        // Shift reamining characters from input to output
+        // Shift remaining characters from input to output
         output.shiftCharsInUntilPartialMatch(input, newLinePattern);
 
 

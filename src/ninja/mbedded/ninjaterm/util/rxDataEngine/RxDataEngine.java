@@ -8,6 +8,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.newLineParser.NewLineParser;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import ninja.mbedded.ninjaterm.util.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
@@ -17,7 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by gbmhu on 2016-10-14.
+ * The entire RX data processing engine, encapsulated in a single class.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-10-14
+ * @last-modified 2016-10-14
  */
 public class RxDataEngine {
 
@@ -35,20 +40,15 @@ public class RxDataEngine {
     /**
      * This variable contains the backlog of data which is frozen. When the user
      * unfreezes the data again, all of this will be released to <code>totalUnfrozenAnsiParserOutput</code>
-     * and to <code>bufferBetweenAnsiParserAndFilter</code>.
+     * and to <code>bufferBetweenAnsiParserAndNewLineParser</code>.
      */
     private StreamedText frozenAnsiParserOutput = new StreamedText();
 
-    private StreamedText bufferBetweenAnsiParserAndFilter = new StreamedText();
+    private StreamedText bufferBetweenAnsiParserAndNewLineParser = new StreamedText();
 
-    /**
-     * This is a buffer for the output of the ANSI parser. This is for when the filter text
-     * is changed, and the user wishes to re-run the filter over data stored in the buffer.
-     *
-     * This only contains data which has been unfrozen. All frozen data will remain in
-     * <code>frozenAnsiParserOutput</code> until data is unfrozen again
-     */
-    public StreamedText totalUnfrozenAnsiParserOutput = new StreamedText();
+    private NewLineParser newLineParser = new NewLineParser("\n");
+
+    private StreamedText bufferBetweenNewLineParserAndFiltering = new StreamedText();
 
     /**
      * Used to provide filtering functionality to the RX data.
@@ -59,6 +59,17 @@ public class RxDataEngine {
      * Buffer to hold the streamed text which is output from the filter.
      */
     public StreamedText filterOutput = new StreamedText();
+
+    /**
+     * This is a buffer for the output of the ANSI parser. This is for when the filter text
+     * is changed, and the user wishes to re-run the filter over data stored in the buffer.
+     *
+     * This only contains data which has been unfrozen. All frozen data will remain in
+     * <code>frozenAnsiParserOutput</code> until data is unfrozen again
+     */
+    public StreamedText totalUnfrozenAnsiParserOutput = new StreamedText();
+
+
 
     public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
 
@@ -89,7 +100,7 @@ public class RxDataEngine {
      *              in a string put outs a StreamedText object. It populates the textColours array with objects that
      *              what colour and where colour changes occur.
      *     3. Pass through new line detecter. This does not modify the textual data, but populates the
-     *              newLineIndicies array with entries and where new lines are to be inserted. This may
+     *              <code>newLineMarkers</code> array with entries and where new lines are to be inserted. This may
      *              hold back data if a partial new line is detected.
      *     3. Pass through ASCII control code parser. This finds all ASCII control codes, and either converts
      *              them to their visible unicode symbol equivalent, or removes them.
@@ -122,11 +133,12 @@ public class RxDataEngine {
         StreamedText tempAnsiParserOutput = new StreamedText();
 
         // This temp variable is used to store just the new ANSI parser output data, which
-        // is then stored in totalUnfrozenAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndFilter
+        // is then stored in totalUnfrozenAnsiParserOutput before being shifted into just bufferBetweenAnsiParserAndNewLineParser
 
         ansiECParser.parse(data, tempAnsiParserOutput);
 
         logger.debug("tempAnsiParserOutput = " + Debugging.convertNonPrintable(tempAnsiParserOutput.toString()));
+
 
         frozenAnsiParserOutput.shiftCharsIn(tempAnsiParserOutput, tempAnsiParserOutput.getText().length());
         if(isRxFrozen.get()) {
@@ -153,18 +165,24 @@ public class RxDataEngine {
 
         // Now add all the new ANSI parser output to any that was not used up by the
         // streaming filter from last time
-        bufferBetweenAnsiParserAndFilter.shiftCharsIn(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
+        bufferBetweenAnsiParserAndNewLineParser.shiftCharsIn(frozenAnsiParserOutput, frozenAnsiParserOutput.getText().length());
 
         frozenAnsiParserOutput.clear();
 
-        logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndFilter = " + bufferBetweenAnsiParserAndFilter);
+        logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndNewLineParser = " + bufferBetweenAnsiParserAndNewLineParser);
+
+        //==============================================//
+        //============== NEW LINE DETECTION ============//
+        //==============================================//
+
+        newLineParser.parse(bufferBetweenAnsiParserAndNewLineParser, bufferBetweenNewLineParserAndFiltering);
 
         //==============================================//
         //================== FILTERING =================//
         //==============================================//
 
         // NOTE: filteredRxData is the actual text which gets displayed in the RX pane
-        streamingFilter.parse(bufferBetweenAnsiParserAndFilter, filterOutput);
+        streamingFilter.parse(bufferBetweenNewLineParserAndFiltering, filterOutput);
 
         //==============================================//
         //=================== TRIMMING =================//
@@ -213,9 +231,9 @@ public class RxDataEngine {
         // totalUnfrozenAnsiParserOutput).
         StreamedText toBeConsumed = new StreamedText(totalUnfrozenAnsiParserOutput);
 
-        // The normal bufferBetweenAnsiParserAndFilter should now be changed to point
+        // The normal bufferBetweenAnsiParserAndNewLineParser should now be changed to point
         // to this toBeConsumed object
-        bufferBetweenAnsiParserAndFilter = toBeConsumed;
+        bufferBetweenAnsiParserAndNewLineParser = toBeConsumed;
 
         streamingFilter.parse(toBeConsumed, filterOutput);
 
@@ -241,6 +259,10 @@ public class RxDataEngine {
      */
     public void setAnsiECEnabled(boolean trueFalse) {
         ansiECParser.isEnabled.set(trueFalse);
+    }
+
+    public void setNewLinePattern(String newLineString) {
+        newLineParser.setNewLinePattern(newLineString);
     }
 
     /**
