@@ -58,7 +58,9 @@ public class RxDataEngineTests {
 
     @Test
     public void filterTest() throws Exception {
+        rxDataEngine.setNewLinePattern("\n");
         rxDataEngine.setFilterPattern("4");
+
         rxDataEngine.parse("123\n456\n789");
         assertEquals("456\n", output.getText());
         assertEquals(0, output.getTextColours().size());
@@ -66,8 +68,11 @@ public class RxDataEngineTests {
 
     @Test
     public void resetFilterTest() throws Exception {
+        rxDataEngine.setNewLinePattern("\n");
         rxDataEngine.setFilterPattern("1");
+
         rxDataEngine.parse("123\n456\n789");
+
         assertEquals("123\n", output.getText());
         assertEquals(0, output.getTextColours().size());
 
@@ -79,6 +84,7 @@ public class RxDataEngineTests {
 
     @Test
     public void basicColoursAndNewLineTest() throws Exception {
+        rxDataEngine.setNewLinePattern("\r\n");
         rxDataEngine.setFilterPattern("");
         rxDataEngine.parse("123\u001B[30m4\r\n56");
 
@@ -89,7 +95,7 @@ public class RxDataEngineTests {
         assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(5, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, output.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -113,8 +119,6 @@ public class RxDataEngineTests {
         assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(5, output.getNewLineMarkers().get(0).intValue());
-
-
+        assertEquals(6, output.getNewLineMarkers().get(0).intValue());
     }
 }

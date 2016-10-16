@@ -314,15 +314,15 @@ public class StreamingFilterTests {
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
         inputStreamedText.append("greenEOL");
-        inputStreamedText.addColour(inputStreamedText.getText().length() - 7, Color.GREEN);
+        inputStreamedText.addColour(inputStreamedText.getText().length() - 8, Color.GREEN);
         inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         inputStreamedText.append("redEOL");
-        inputStreamedText.addColour(inputStreamedText.getText().length() - 5, Color.RED);
+        inputStreamedText.addColour(inputStreamedText.getText().length() - 6, Color.RED);
         inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         inputStreamedText.append("greenEOL");
-        inputStreamedText.addColour(inputStreamedText.getText().length() - 7, Color.GREEN);
+        inputStreamedText.addColour(inputStreamedText.getText().length() - 8, Color.GREEN);
         inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);

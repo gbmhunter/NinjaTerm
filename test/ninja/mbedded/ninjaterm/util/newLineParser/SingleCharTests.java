@@ -58,7 +58,7 @@ public class SingleCharTests {
         assertEquals("123\n456", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -75,8 +75,8 @@ public class SingleCharTests {
         assertEquals("123\n456\n789", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
         assertEquals(2, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
-        assertEquals(7, outputStreamedText.getNewLineMarkers().get(1).intValue());
+        assertEquals(4, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(8, outputStreamedText.getNewLineMarkers().get(1).intValue());
     }
 
     @Test
@@ -93,7 +93,7 @@ public class SingleCharTests {
         assertEquals("\n", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(0, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -110,8 +110,8 @@ public class SingleCharTests {
         assertEquals("\n\n", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
         assertEquals(2, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(0, outputStreamedText.getNewLineMarkers().get(0).intValue());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().get(1).intValue());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().get(1).intValue());
     }
 
 }

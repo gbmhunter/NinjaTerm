@@ -99,9 +99,11 @@ public class StreamedText {
 
     public void clear() {
         // "Reset" this object
-        this.text = "";
-        this.getTextColours().clear();
-        this.colorToBeInsertedOnNextChar = null;
+        text = "";
+        getTextColours().clear();
+        colorToBeInsertedOnNextChar = null;
+
+        getNewLineMarkers().clear();
     }
 
     public void removeChars(int numChars) {
