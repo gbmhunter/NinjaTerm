@@ -35,7 +35,7 @@ public class ShiftWithNewLinesTests {
     public void shiftWithNewLineTest() throws Exception {
 
         inputStreamedText.append("123456");
-        inputStreamedText.addNewLineMarkerAt(2);
+        inputStreamedText.addNewLineMarkerAt(3);
 
         outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
 
@@ -46,6 +46,42 @@ public class ShiftWithNewLinesTests {
         // Check output
         assertEquals("123456", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(2, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void shiftWithNewLineAtEndTest() throws Exception {
+
+        inputStreamedText.append("123");
+        inputStreamedText.addNewLineMarkerAt(3);
+
+        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+
+        // Check input
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+
+        // Check output
+        assertEquals("123", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void shiftJustANewLineTest() throws Exception {
+
+        inputStreamedText.append("");
+        inputStreamedText.addNewLineMarkerAt(0);
+
+        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+
+        // Check input
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+
+        // Check output
+        assertEquals("", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(0, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 }

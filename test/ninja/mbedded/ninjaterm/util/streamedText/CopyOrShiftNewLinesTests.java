@@ -63,18 +63,18 @@ public class CopyOrShiftNewLinesTests {
     public void twoMarkerShiftTest() throws Exception {
 
         inputStreamedText.append("123456");
-        inputStreamedText.addNewLineMarkerAt(2);
-        inputStreamedText.addNewLineMarkerAt(4);
+        inputStreamedText.addNewLineMarkerAt(3);
+        inputStreamedText.addNewLineMarkerAt(6);
 
         method.invoke(outputStreamedText, inputStreamedText, 3, StreamedText.CopyOrShift.SHIFT);
 
         // Check input
         assertEquals(1, inputStreamedText.getNewLineMarkers().size());
-        assertEquals(1, inputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, inputStreamedText.getNewLineMarkers().get(0).intValue());
 
         // Check output
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(2, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test

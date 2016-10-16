@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -216,7 +217,7 @@ public class StreamedText {
         for (ListIterator<Integer> iter = input.getNewLineMarkers().listIterator(); iter.hasNext(); ) {
             Integer element = iter.next();
 
-            if (element < numChars) {
+            if (element <= numChars) {
 
 
                 // Make a copy of this marker in the output
@@ -431,6 +432,13 @@ public class StreamedText {
     }
 
     public void addNewLineMarkerAt(int charIndex) {
+
+        // We can't check this, because some of the other methods in this class add the markers
+        // before adding the text
+//        if(charIndex > getText().length()) {
+//            throw new RuntimeException("charIndex must be between 0 and the num. of chars (inclusive at both ends).");
+//        }
+
         newLineMarkers.add(charIndex);
     }
 
@@ -489,13 +497,8 @@ public class StreamedText {
             if(i == numOfLines - 1) {
                 lines[i] = getText().substring(startIndex, getText().length());
             } else {
-
-                if(startIndex == getText().length()) {
-                    lines[i] = "";
-                } else {
-                    lines[i] = getText().substring(startIndex, getNewLineMarkers().get(i) + 1);
-                    startIndex = getNewLineMarkers().get(i) + 1;
-                }
+                lines[i] = getText().substring(startIndex, getNewLineMarkers().get(i));
+                startIndex = getNewLineMarkers().get(i);
             }
 
         }

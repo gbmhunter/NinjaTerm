@@ -35,7 +35,7 @@ public class SplitTextAtNewLinesTests {
     public void twoLineTest() throws Exception {
 
         streamedText.append("123456");
-        streamedText.addNewLineMarkerAt(2);
+        streamedText.addNewLineMarkerAt(3);
 
         String[] lines = streamedText.splitTextAtNewLines();
 
@@ -48,8 +48,8 @@ public class SplitTextAtNewLinesTests {
     public void threeLineTest() throws Exception {
 
         streamedText.append("123456789");
-        streamedText.addNewLineMarkerAt(2);
-        streamedText.addNewLineMarkerAt(5);
+        streamedText.addNewLineMarkerAt(3);
+        streamedText.addNewLineMarkerAt(6);
 
         String[] lines = streamedText.splitTextAtNewLines();
 
@@ -63,8 +63,8 @@ public class SplitTextAtNewLinesTests {
     public void twoLineMarkersOnSameCharTest() throws Exception {
 
         streamedText.append("123456");
-        streamedText.addNewLineMarkerAt(2);
-        streamedText.addNewLineMarkerAt(2);
+        streamedText.addNewLineMarkerAt(3);
+        streamedText.addNewLineMarkerAt(3);
 
         String[] lines = streamedText.splitTextAtNewLines();
 
@@ -85,6 +85,23 @@ public class SplitTextAtNewLinesTests {
         assertEquals(2, lines.length);
         assertEquals("", lines[0]);
         assertEquals("", lines[1]);
+    }
+
+
+
+    @Test
+    public void newLineAtEndTest() throws Exception {
+
+        streamedText.append("abcEOLdefEOL");
+        streamedText.addNewLineMarkerAt(6);
+        streamedText.addNewLineMarkerAt(12);
+
+        String[] lines = streamedText.splitTextAtNewLines();
+
+        assertEquals(3, lines.length);
+        assertEquals("abcEOL", lines[0]);
+        assertEquals("defEOL", lines[1]);
+        assertEquals("", lines[2]);
     }
 
 }
