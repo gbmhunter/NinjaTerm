@@ -22,6 +22,7 @@ public class Debugging {
     }
 
     public static String convertNonPrintable(String input) {
+
         return input.replaceAll("\\p{Cntrl}", "?");
     }
 

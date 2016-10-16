@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.util.loggerUtils;
 
+import ch.qos.logback.core.ConsoleAppender;
+import javafx.application.Platform;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
@@ -15,40 +17,75 @@ import java.util.Date;
 
 public class LoggerUtils {
 
+    private static ConsoleAppender consoleAppender;
     private static FileAppender<ILoggingEvent> fileAppender;
 
     static {
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        PatternLayoutEncoder ple = new PatternLayoutEncoder();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-        ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
-        ple.setContext(lc);
-        ple.start();
+        //==============================================//
+        //============ PATTERN LAYOUT SETUP ============//
+        //==============================================//
+        PatternLayoutEncoder patternLayoutEncoder = new PatternLayoutEncoder();
+
+        patternLayoutEncoder.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
+        patternLayoutEncoder.setContext(loggerContext);
+        patternLayoutEncoder.start();
+
+        //==============================================//
+        //================ APPENDER SETUP ==============//
+        //==============================================//
+
+        // CONSOLE APPENDER
+        consoleAppender = new ConsoleAppender<>();
+        //consoleAppender = new CountingConsoleAppender();
+        consoleAppender.setContext(loggerContext);
+        consoleAppender.setEncoder(patternLayoutEncoder);
+        consoleAppender.setName("stdout");
+        consoleAppender.setTarget("System.out");
+        consoleAppender.start();
+
+        /*Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        rootLogger.addAppender(consoleAppender);
+        rootLogger.setLevel(Level.WARN);*/
+
+        // FILE APPENDER
         fileAppender = new FileAppender<ILoggingEvent>();
-
         String userHomeDir = System.getProperty("user.home");
-
         // Build up a string of the current date/time (incl. milli-seconds)
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         Date date = new Date();
         String dateString = sdf.format(date);
-
         String defaultDebugLogFilePath = userHomeDir + File.separator + "NinjaTerm-" + dateString + "-DEBUG.log";
-
         fileAppender.setFile(defaultDebugLogFilePath);
-        fileAppender.setEncoder(ple);
-        fileAppender.setContext(lc);
+        fileAppender.setEncoder(patternLayoutEncoder);
+        fileAppender.setContext(loggerContext);
+        // Note the fileAppender is not started until startDebuggingToFile() is called.
         //fileAppender.start();
+
     }
 
-    public static void addDebug() {
+    /**
+     * Starts appending log data to a file on the file system.
+     */
+    public static void startDebuggingToFile() {
         fileAppender.start();
     }
 
+    /**
+     * Creates a logger which already has a file appender attached to it.
+     * The file appender is not started until <code>startDebuggingToFile()</code>
+     * is called.
+     * @param string
+     * @return
+     */
     public static Logger createLoggerFor(String string) {
 
         Logger logger = (Logger) LoggerFactory.getLogger(string);
-        logger.addAppender(fileAppender);
+
+        logger.addAppender(consoleAppender);
+        //logger.addAppender(fileAppender);
+
         logger.setLevel(Level.DEBUG);
         logger.setAdditive(false); /* set to true if root should log too */
 

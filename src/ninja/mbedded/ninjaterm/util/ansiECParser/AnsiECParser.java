@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.ansiECParser;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
@@ -14,7 +15,7 @@ import java.util.regex.Pattern;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
- * @last-modified   2016-09-30
+ * @last-modified   2016-10-14
  */
 public class AnsiECParser {
 
@@ -28,6 +29,8 @@ public class AnsiECParser {
      * stored in this variable for the next time <code>parse() is called.</code>
      */
     private String withheldTextWithPartialMatch = "";
+
+    public SimpleBooleanProperty isEnabled = new SimpleBooleanProperty(true);
 
     public AnsiECParser() {
         // Populate the map with data
@@ -59,9 +62,7 @@ public class AnsiECParser {
      * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedText object.
      *
      * @param inputString           The input string which can contain display text and ANSI escape codes.
-     * @param outputStreamedText    Contains streamed text that has been release from this parser. The internal appendText
-     *                              variable will contain text which can be added to the previous node (i.e. no colour change),
-     *                              and new nodes with text of different colours.
+     * @param outputStreamedText    Contains streamed text that has been release from this parser.
      */
     public void parse(String inputString, StreamedText outputStreamedText) {
 
@@ -76,6 +77,14 @@ public class AnsiECParser {
         // Prepend withheld text onto the end of the input string
         String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
         withheldTextWithPartialMatch = "";
+
+        if(!isEnabled.get()) {
+            // ASCII escape codes are disabled, so just return all the input plus any withheld text
+            outputStreamedText.append(withheldCharsAndInputString);
+            return;
+        }
+
+        // IF WE REACH HERE ASCII ESCAPE CODE PARSING IS ENABLED
 
         Matcher m = p.matcher(withheldCharsAndInputString);
 

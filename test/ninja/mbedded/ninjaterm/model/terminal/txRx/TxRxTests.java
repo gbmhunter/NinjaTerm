@@ -44,7 +44,7 @@ public class TxRxTests {
         ansiECParserOutput = new StreamedText();
 
         streamingFilter = new StreamingFilter();
-        streamingFilter.setFilterPatten("a");
+        streamingFilter.setFilterPattern("a");
 
         streamFilterOutput = new StreamedText();
 

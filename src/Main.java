@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -12,6 +13,7 @@ import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
@@ -26,16 +28,24 @@ public class Main extends Application {
     private Stage splashScreenStage;
     private Stage mainStage;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     @Override
     public void start(Stage primaryStage) throws Exception{
 
+        logger.debug("start() called.");
+
+        //==============================================//
+        //======== COMMAND-LINE ARGUMENT PARSING =======//
+        //==============================================//
+
+        logger.debug("Parsing command-line parameters...");
         for(String arg : getParameters().getRaw()) {
             if(arg.equals("no-splash"))
                 disableSplashScreen = true;
 
             if(arg.equals("debug"))
-                LoggerUtils.addDebug();
-
+                LoggerUtils.startDebuggingToFile();
         }
 
         if(disableSplashScreen) {
@@ -68,6 +78,13 @@ public class Main extends Application {
         primaryStage.setScene(splashScreenScene);
         primaryStage.show();
 
+        splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            //event.getCharacter();
+            if(event.getCode().isWhitespaceKey()) {
+                splashScreenViewController.speedUpSplashScreen();
+            }
+        });
+
         splashScreenViewController.startNameVersionInfoMsg();
     }
 
@@ -89,7 +106,8 @@ public class Main extends Application {
 
         mainWindowViewController.init(model, glyphFont, new ComPortManager());
 
-        mainWindowViewController.addNewTerminal();
+        //mainWindowViewController.addNewTerminal();
+
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if(!disableSplashScreen)
@@ -112,6 +130,8 @@ public class Main extends Application {
         mainStage.setOnCloseRequest(event -> {
             model.handleAppClosing();
         });
+
+        model.createTerminal();
     }
 
 

@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-09-23
+* @last-modified   2016-10-12
 -->
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.StackPane?>
@@ -11,7 +11,9 @@
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.text.TextFlow?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController"
-      xmlns:fx="http://javafx.com/fxml" alignment="center"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:id="splashScreenVBox"
+      alignment="center"
       prefHeight="600" prefWidth="600"
       fillWidth="true" GridPane.vgrow="ALWAYS"
       style="-fx-background-color: transparent;">

@@ -116,6 +116,7 @@
             <Button fx:id="formattingButton" minWidth="100">Formatting</Button>
             <Button fx:id="coloriserButton" minWidth="100">Colouriser</Button>
             <Button fx:id="filtersButton" minWidth="100">Filters</Button>
+            <Button fx:id="freezeRxButton" minWidth="100" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
         </VBox>
 
     </HBox>

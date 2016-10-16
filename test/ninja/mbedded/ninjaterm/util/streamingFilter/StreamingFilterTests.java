@@ -32,7 +32,7 @@ public class StreamingFilterTests {
     @Before
     public void setUp() throws Exception {
         streamingFilter = new StreamingFilter();
-        streamingFilter.setFilterPatten("a");
+        streamingFilter.setFilterPattern("a");
 
         inputStreamedText = new StreamedText();
         outputStreamedText = new StreamedText();
@@ -41,37 +41,69 @@ public class StreamingFilterTests {
     @Test
     public void basicTest() throws Exception {
 
-        inputStreamedText.append("abc\r\ndef\r\n");
+        inputStreamedText.append("abcEOLdefEOL");
+        inputStreamedText.addNewLineMarkerAt(6);
+        inputStreamedText.addNewLineMarkerAt(12);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
+        // Check input. Since "defEOL" counts as a valid line, but has no match,
+        // it should be removed from the input
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
         // Check output
-        assertEquals("abc\r\n", outputStreamedText.getText());
+        assertEquals("abcEOL", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+
     }
 
     @Test
     public void multipleLinesTest() throws Exception {
 
-        inputStreamedText.append("abc\r\nabc\r\ndef\r\n");
+        inputStreamedText.append("abcEOLabcEOLdefEOL");
+        inputStreamedText.addNewLineMarkerAt(6);
+        inputStreamedText.addNewLineMarkerAt(12);
+        inputStreamedText.addNewLineMarkerAt(18);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
+        // Check input. Since "defEOL" counts as a valid line, but has no match,
+        // it should be removed from the input
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
         // Check output
-        assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
+        assertEquals("abcEOLabcEOL", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(12, outputStreamedText.getNewLineMarkers().get(1).intValue());
     }
 
     @Test
     public void MatchedLinesBetweenNonMatchTest() throws Exception {
 
-        inputStreamedText.append("abc\r\ndef\r\nabc\r\n");
+        inputStreamedText.append("abcEOLdefEOLabcEOL");
+        inputStreamedText.addNewLineMarkerAt(6);
+        inputStreamedText.addNewLineMarkerAt(12);
+        inputStreamedText.addNewLineMarkerAt(18);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
+        // Check input. Since "defEOL" counts as a valid line, but has no match,
+        // it should be removed from the input
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getTextColours().size());
+
         // Check output
-        assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
+        assertEquals("abcEOLabcEOL", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(12, outputStreamedText.getNewLineMarkers().get(1).intValue());
     }
 
     @Test
@@ -81,71 +113,125 @@ public class StreamingFilterTests {
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        // Check output
+        assertEquals("", inputStreamedText.getText());
         assertEquals("ab", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
 
-        inputStreamedText.append("c\r\n");
+        inputStreamedText.append("cEOL");
+        inputStreamedText.addNewLineMarkerAt(4);
+
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+
         // Check output
-        assertEquals("abc\r\n", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals("abcEOL", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void streamWithNonMatchLineInMiddleTest() throws Exception {
 
+        //==============================================//
+        //==================== PASS 1 ==================//
+        //==============================================//
+
         inputStreamedText.append("ab");
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
+        // Check input
+        assertEquals("", inputStreamedText.getText());
+
+        // Check output
         assertEquals("ab", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
 
-        inputStreamedText.append("c\r\nde");
+        //==============================================//
+        //==================== PASS 2 ==================//
+        //==============================================//
+
+        inputStreamedText.append("cEOLde");
+        inputStreamedText.addNewLineMarkerAt(4);
+
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\n", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        // Check input
+        assertEquals(inputStreamedText.getText(), "de");
 
-        inputStreamedText.append("f\r\na");
+        // Check output
+        assertEquals("abcEOL", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+
+        //==============================================//
+        //==================== PASS 3 ==================//
+        //==============================================//
+
+        inputStreamedText.append("fEOLa");
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length() - 1);
+
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\na", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        // Check input
+        assertEquals(inputStreamedText.getText(), "");
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
-        inputStreamedText.append("bc\r\n");
+        // Check output
+        assertEquals("abcEOLa", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+
+        //==============================================//
+        //==================== PASS 4 ==================//
+        //==============================================//
+
+        inputStreamedText.append("bcEOL");
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
+
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\nabc\r\n", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        // Check input
+        assertEquals(inputStreamedText.getText(), "");
+        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+
+        // Check output
+        assertEquals("abcEOLabcEOL", outputStreamedText.getText());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(12, outputStreamedText.getNewLineMarkers().get(1).intValue());
+
     }
 
     @Test
-    public void nodesTest() throws Exception {
+    public void coloursAndNewLinesTest() throws Exception {
 
-        inputStreamedText.append("abc\r\n");
+        inputStreamedText.append("abcEOL");
         inputStreamedText.addColour(2, Color.RED);
+        inputStreamedText.addNewLineMarkerAt(6);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\n", outputStreamedText.getText());
+        // Check output
+        assertEquals("abcEOL", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(2, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void complexNodesTest() throws Exception {
 
-        inputStreamedText.append("abcdef\r\n");
+        inputStreamedText.append("abcdefEOL");
         inputStreamedText.addColour(2, Color.RED);
         inputStreamedText.addColour(3, Color.GREEN);
+        inputStreamedText.addNewLineMarkerAt(9);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abcdef\r\n", outputStreamedText.getText());
+        assertEquals("abcdefEOL", outputStreamedText.getText());
         assertEquals(2, outputStreamedText.getTextColours().size());
 
         assertEquals(2, outputStreamedText.getTextColours().get(0).position);
@@ -153,37 +239,53 @@ public class StreamingFilterTests {
 
         assertEquals(3, outputStreamedText.getTextColours().get(1).position);
         assertEquals(Color.GREEN, outputStreamedText.getTextColours().get(1).color);
+
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(9, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void complexNodes2Test() throws Exception {
 
+        //==============================================//
+        //==================== PASS 1 ==================//
+        //==============================================//
 
-        inputStreamedText.append("abc\r\n");
+        inputStreamedText.append("abcEOL");
         inputStreamedText.addColour(2, Color.RED);
+        inputStreamedText.addNewLineMarkerAt(6);
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\n", outputStreamedText.getText());
+        assertEquals("abcEOL", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(2, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
 
-        inputStreamedText.append("def\r\n");
+        //==============================================//
+        //==================== PASS 2 ==================//
+        //==============================================//
+
+        inputStreamedText.append("defEOL");
         inputStreamedText.addColour(0, Color.GREEN);
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("abc\r\n", outputStreamedText.getText());
+        assertEquals("abcEOL", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(2, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void bigTest() throws Exception {
 
-        streamingFilter.setFilterPatten("d");
+        streamingFilter.setFilterPattern("d");
 
         inputStreamedText.append("re");
         inputStreamedText.addColour(0, Color.RED);
@@ -193,11 +295,12 @@ public class StreamingFilterTests {
         assertEquals("", outputStreamedText.getText());
         assertEquals(0, outputStreamedText.getTextColours().size());
 
-        inputStreamedText.append("d\r\n");
+        inputStreamedText.append("dEOL");
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("red\r\n", outputStreamedText.getText());
+        assertEquals("redEOL", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(0, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
@@ -205,29 +308,32 @@ public class StreamingFilterTests {
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
         // Nothing should of changed
-        assertEquals("red\r\n", outputStreamedText.getText());
+        assertEquals("redEOL", outputStreamedText.getText());
         assertEquals(1, outputStreamedText.getTextColours().size());
         assertEquals(0, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
-        inputStreamedText.append("green\r\n");
+        inputStreamedText.append("greenEOL");
         inputStreamedText.addColour(inputStreamedText.getText().length() - 7, Color.GREEN);
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
-        inputStreamedText.append("red\r\n");
+        inputStreamedText.append("redEOL");
         inputStreamedText.addColour(inputStreamedText.getText().length() - 5, Color.RED);
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
-        inputStreamedText.append("green\r\n");
+        inputStreamedText.append("greenEOL");
         inputStreamedText.addColour(inputStreamedText.getText().length() - 7, Color.GREEN);
+        inputStreamedText.addNewLineMarkerAt(inputStreamedText.getText().length());
 
         streamingFilter.parse(inputStreamedText, outputStreamedText);
 
-        assertEquals("red\r\nred\r\n", outputStreamedText.getText());
+        assertEquals("redEOLredEOL", outputStreamedText.getText());
         assertEquals(2, outputStreamedText.getTextColours().size());
 
         assertEquals(0, outputStreamedText.getTextColours().get(0).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
 
-        assertEquals(5, outputStreamedText.getTextColours().get(1).position);
+        assertEquals(6, outputStreamedText.getTextColours().get(1).position);
         assertEquals(Color.RED, outputStreamedText.getTextColours().get(1).color);
     }
 }

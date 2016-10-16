@@ -29,7 +29,7 @@ public class StreamingFilter {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    public void setFilterPatten(String filterPattern) {
+    public void setFilterPattern(String filterPattern) {
 
         this.filterPattern = filterPattern;
         regexPattern = Pattern.compile(filterPattern);
@@ -65,7 +65,8 @@ public class StreamingFilter {
         }
 
         // Search for new line characters
-        String lines[] = inputStreamedText.getText().split("(?<=[\\n])");
+        //String lines[] = inputStreamedText.getText().split("(?<=[\\n])");
+        String lines[] = inputStreamedText.splitTextAtNewLines();
 
         for (String line : lines) {
 
@@ -75,7 +76,11 @@ public class StreamingFilter {
                 logger.debug("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
                 outputStreamedText.shiftCharsIn(inputStreamedText, line.length());
 
-                if(hasNewLineChar(line)) {
+                /*if(hasNewLineChar(line)) {
+                    releaseTextOnCurrLine = false;
+                }*/
+
+                if(line != lines[lines.length - 1]) {
                     releaseTextOnCurrLine = false;
                 }
 
@@ -100,7 +105,8 @@ public class StreamingFilter {
                 // so that next time this function is called, any other text which is also on this line
                 // will be released without question
 
-                if(line == lines[lines.length - 1] && !hasNewLineChar(line)) {
+                //if(line == lines[lines.length - 1] && !hasNewLineChar(line)) {
+                if(line == lines[lines.length - 1]) {
                     releaseTextOnCurrLine = true;
                 }
             } else {
@@ -108,7 +114,8 @@ public class StreamingFilter {
                 // and it can be deleted from the heldStreamedText
                 logger.debug("No match found on line = " + Debugging.convertNonPrintable(line));
 
-                if(hasNewLineChar(line)) {
+                //if(hasNewLineChar(line)) {
+                if(line != lines[lines.length - 1]) {
                     logger.debug("Deleting line.");
                     inputStreamedText.removeChars(line.length());
                 }
@@ -127,7 +134,7 @@ public class StreamingFilter {
      * @param line
      * @return
      */
-    public static boolean hasNewLineChar(String line) {
+    /*public static boolean hasNewLineChar(String line) {
         Pattern pattern = Pattern.compile("\n");
         Matcher matcher = pattern.matcher(line);
 
@@ -135,6 +142,6 @@ public class StreamingFilter {
             return true;
         else
             return false;
-    }
+    }*/
 
 }

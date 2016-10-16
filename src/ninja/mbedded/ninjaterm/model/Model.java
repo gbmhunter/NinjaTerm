@@ -1,10 +1,13 @@
 package ninja.mbedded.ninjaterm.model;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,18 +21,48 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-07
+ * @last-modified 2016-10-12
  */
 public class Model {
 
     public ObservableList<Terminal> terminals = FXCollections.observableArrayList();
-    public Status status;
+
+    /**
+     * The currently selected terminal. This will be the same as one of the objects in <code>terminals</code>.
+     */
+    public SimpleObjectProperty<Terminal> selTerminal = new SimpleObjectProperty<>();
+
+    public Status status = new Status(this);
     public GlobalStats globalStats = new GlobalStats();
 
-    public List<CloseTerminalListener> closedTerminalListeners = new ArrayList<>();
+    public List<TerminalListener> terminalCreatedListeners = new ArrayList<>();
+
+    public List<TerminalListener> closedTerminalListeners = new ArrayList<>();
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     public Model() {
-         status = new Status(this);
+         //status = new Status(this);
+    }
+
+    public void createTerminal() {
+        logger.debug("createTerminal() called.");
+
+        // Create a new Terminal object in the model
+        Terminal terminal = new Terminal(this);
+
+        // Make sure the model has a record to this newly created terminal
+        terminals.add(terminal);
+
+        // Notify listeners
+        for(TerminalListener terminalCreatedListener : terminalCreatedListeners) {
+            terminalCreatedListener.run(terminal);
+        }
+    }
+
+    public void newTerminalSelected(Terminal terminal) {
+        logger.debug("newTerminalSelected() called.");
+        selTerminal.set(terminal);
     }
 
     /**
@@ -48,7 +81,7 @@ public class Model {
             terminalToClose.closeComPort();
 
         // Emit an event for the UI
-        for(CloseTerminalListener closeTerminalListener : closedTerminalListeners) {
+        for(TerminalListener closeTerminalListener : closedTerminalListeners) {
             closeTerminalListener.run(terminalToClose);
         }
 
@@ -69,6 +102,21 @@ public class Model {
             if(terminal.isComPortOpen.get())
                 terminal.closeComPort();
         }
+    }
+
+    /**
+     * This is designed to be called by the Open/Close COM port button when it is
+     * clicked.
+     */
+    public void openOrCloseCurrentComPort() {
+        logger.debug("openOrCloseCurrentComPort() called.");
+
+        // Open or close the COM port
+        if(!selTerminal.get().isComPortOpen.get())
+            selTerminal.get().openComPort();
+        else
+            selTerminal.get().closeComPort();
+
     }
 
 }
