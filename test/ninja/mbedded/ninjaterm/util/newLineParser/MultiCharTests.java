@@ -37,11 +37,11 @@ public class MultiCharTests {
         newLineParser.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
         assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
@@ -54,11 +54,11 @@ public class MultiCharTests {
         newLineParser.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("EO", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
         assertEquals(0, outputStreamedText.getNewLineMarkers().size());
 
         inputStreamedText.append("L456");
@@ -66,11 +66,11 @@ public class MultiCharTests {
         newLineParser.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getTextColours().size());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
         assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
@@ -84,14 +84,14 @@ public class MultiCharTests {
         newLineParser.parse(inputStreamedText, outputStreamedText);
 
         assertEquals("EO", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123", outputStreamedText.getText());
 
-        assertEquals(1, outputStreamedText.getTextColours().size());
-        assertEquals(2, outputStreamedText.getTextColours().get(0).position);
-        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(2, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
 
         assertEquals(0, outputStreamedText.getNewLineMarkers().size());
 
@@ -102,17 +102,17 @@ public class MultiCharTests {
 
         assertEquals("", inputStreamedText.getText());
 
-        assertEquals(0, inputStreamedText.getTextColours().size());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         assertEquals("123EOL456", outputStreamedText.getText());
 
         // There should be two text colour objects
-        assertEquals(2, outputStreamedText.getTextColours().size());
-        assertEquals(2, outputStreamedText.getTextColours().get(0).position);
-        assertEquals(Color.RED, outputStreamedText.getTextColours().get(0).color);
-        assertEquals(5, outputStreamedText.getTextColours().get(1).position);
-        assertEquals(Color.GREEN, outputStreamedText.getTextColours().get(1).color);
+        assertEquals(2, outputStreamedText.getColourMarkers().size());
+        assertEquals(2, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+        assertEquals(5, outputStreamedText.getColourMarkers().get(1).position);
+        assertEquals(Color.GREEN, outputStreamedText.getColourMarkers().get(1).color);
 
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
         assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());

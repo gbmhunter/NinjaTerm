@@ -32,7 +32,7 @@ public class ClearTests {
         streamedText.clear();
 
         assertEquals("", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
         assertEquals(0, streamedText.getNewLineMarkers().size());
     }
 }

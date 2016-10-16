@@ -45,7 +45,7 @@ public class RxDataEngineTests {
     public void asciiEscapeCodesOnTest() throws Exception {
         rxDataEngine.parse("123\u001B[30m456");
         assertEquals("123456", output.getText());
-        assertEquals(1, output.getTextColours().size());
+        assertEquals(1, output.getColourMarkers().size());
     }
 
     @Test
@@ -53,7 +53,7 @@ public class RxDataEngineTests {
         rxDataEngine.setAnsiECEnabled(false);
         rxDataEngine.parse("123\u001B[30m456");
         assertEquals("123\u001B[30m456", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
     }
 
     @Test
@@ -62,8 +62,10 @@ public class RxDataEngineTests {
         rxDataEngine.setFilterPattern("4");
 
         rxDataEngine.parse("123\n456\n789");
-        assertEquals("456\n", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals("456", output.getText());
+        assertEquals(0, output.getColourMarkers().size());
+        assertEquals(1, output.getNewLineMarkers().size());
+        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -71,15 +73,27 @@ public class RxDataEngineTests {
         rxDataEngine.setNewLinePattern("\n");
         rxDataEngine.setFilterPattern("1");
 
+        //==============================================//
+        //===================== RUN 1 ==================//
+        //==============================================//
+
         rxDataEngine.parse("123\n456\n789");
 
-        assertEquals("123\n", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals("123", output.getText());
+        assertEquals(0, output.getColourMarkers().size());
+        assertEquals(1, output.getNewLineMarkers().size());
+        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+
+        //==============================================//
+        //===================== RUN 2 ==================//
+        //==============================================//
 
         rxDataEngine.setFilterPattern("4");
         rxDataEngine.rerunFilterOnExistingData();
-        assertEquals("456\n", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals("456", output.getText());
+        assertEquals(0, output.getColourMarkers().size());
+        assertEquals(1, output.getNewLineMarkers().size());
+        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -88,14 +102,14 @@ public class RxDataEngineTests {
         rxDataEngine.setFilterPattern("");
         rxDataEngine.parse("123\u001B[30m4\r\n56");
 
-        assertEquals("1234\r\n56", output.getText());
+        assertEquals("123456", output.getText());
 
-        assertEquals(1, output.getTextColours().size());
-        assertEquals(3, output.getTextColours().get(0).position);
-        assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
+        assertEquals(1, output.getColourMarkers().size());
+        assertEquals(3, output.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(6, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, output.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
@@ -106,7 +120,7 @@ public class RxDataEngineTests {
 
         // Check there is nothing in the output
         assertEquals("", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
         assertEquals(0, output.getNewLineMarkers().size());
 
         // After receiving this data, we should now have some output
@@ -114,9 +128,9 @@ public class RxDataEngineTests {
 
         assertEquals("456EOL", output.getText());
 
-        assertEquals(1, output.getTextColours().size());
-        assertEquals(0, output.getTextColours().get(0).position);
-        assertEquals(Color.rgb(0, 0, 0), output.getTextColours().get(0).color);
+        assertEquals(1, output.getColourMarkers().size());
+        assertEquals(0, output.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
         assertEquals(6, output.getNewLineMarkers().get(0).intValue());

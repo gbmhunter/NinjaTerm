@@ -76,4 +76,30 @@ public class RemoveCharTests {
         assertEquals(0, streamedText.getNewLineMarkers().get(0).intValue());
         assertEquals(2, streamedText.getNewLineMarkers().get(1).intValue());
     }
+
+    @Test
+    public void removeWithColoursTest() throws Exception {
+
+        streamedText.append("123");
+        streamedText.addColour(0, Color.RED);
+        streamedText.addColour(2, Color.GREEN);
+        streamedText.addNewLineMarkerAt(0);
+        streamedText.addNewLineMarkerAt(3);
+
+        streamedText.removeChar(2);
+
+        assertEquals("12", streamedText.getText());
+
+        // Colour marker checks
+        assertEquals(2, streamedText.getColourMarkers().size());
+        assertEquals(0, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, streamedText.getColourMarkers().get(0).color);
+        assertEquals(1, streamedText.getColourMarkers().get(1).position);
+        assertEquals(Color.GREEN, streamedText.getColourMarkers().get(1).color);
+
+        // New line marker checks
+        assertEquals(2, streamedText.getNewLineMarkers().size());
+        assertEquals(0, streamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(2, streamedText.getNewLineMarkers().get(1).intValue());
+    }
 }

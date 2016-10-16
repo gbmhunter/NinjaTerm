@@ -38,10 +38,10 @@ public class ShiftCharsInUntilPartialMatchTests {
         output.shiftCharsInUntilPartialMatch(input, pattern);
 
         assertEquals("EO", input.getText());
-        assertEquals(0, input.getTextColours().size());
+        assertEquals(0, input.getColourMarkers().size());
 
         assertEquals("123", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
     }
 
     @Test
@@ -52,20 +52,20 @@ public class ShiftCharsInUntilPartialMatchTests {
         output.shiftCharsInUntilPartialMatch(input, pattern);
 
         assertEquals("EO", input.getText());
-        assertEquals(0, input.getTextColours().size());
+        assertEquals(0, input.getColourMarkers().size());
 
         assertEquals("123", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
 
         input.append("L456");
 
         output.shiftCharsInUntilPartialMatch(input, pattern);
 
         assertEquals("", input.getText());
-        assertEquals(0, input.getTextColours().size());
+        assertEquals(0, input.getColourMarkers().size());
 
         assertEquals("123EOL456", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
     }
 
     @Test
@@ -76,19 +76,19 @@ public class ShiftCharsInUntilPartialMatchTests {
         output.shiftCharsInUntilPartialMatch(input, pattern);
 
         assertEquals("EO", input.getText());
-        assertEquals(0, input.getTextColours().size());
+        assertEquals(0, input.getColourMarkers().size());
 
         assertEquals("123EOL456", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
 
         input.append("L789");
 
         output.shiftCharsInUntilPartialMatch(input, pattern);
 
         assertEquals("", input.getText());
-        assertEquals(0, input.getTextColours().size());
+        assertEquals(0, input.getColourMarkers().size());
 
         assertEquals("123EOL456EOL789", output.getText());
-        assertEquals(0, output.getTextColours().size());
+        assertEquals(0, output.getColourMarkers().size());
     }
 }

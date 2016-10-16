@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.util.streamedText;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -31,7 +30,7 @@ public class StreamedText {
     //================================================================================================//
 
     private String text = "";
-    private List<TextColour> textColours = new ArrayList<>();
+    private List<ColourMarker> colourMarkers = new ArrayList<>();
     private Color colorToBeInsertedOnNextChar = null;
 
     /**
@@ -69,8 +68,8 @@ public class StreamedText {
         return text;
     }
 
-    public List<TextColour> getTextColours () {
-        return textColours;
+    public List<ColourMarker> getColourMarkers() {
+        return colourMarkers;
     }
 
     public Color getColorToBeInsertedOnNextChar() {
@@ -100,7 +99,7 @@ public class StreamedText {
     public void clear() {
         // "Reset" this object
         text = "";
-        getTextColours().clear();
+        getColourMarkers().clear();
         colorToBeInsertedOnNextChar = null;
 
         getNewLineMarkers().clear();
@@ -142,34 +141,34 @@ public class StreamedText {
         // going to be placed into this StreamedText object
         if((numChars > 0) && (this.colorToBeInsertedOnNextChar != null)) {
 
-            this.textColours.add(new TextColour(this.text.length(), this.colorToBeInsertedOnNextChar));
+            this.colourMarkers.add(new ColourMarker(this.text.length(), this.colorToBeInsertedOnNextChar));
 
             // We have applied the color to a character, remove the placeholder
             this.colorToBeInsertedOnNextChar = null;
         }
 
-        for (ListIterator<TextColour> iter = inputStreamedText.textColours.listIterator(); iter.hasNext(); ) {
-            TextColour oldTextColour = iter.next();
-            TextColour newTextColor;
+        for (ListIterator<ColourMarker> iter = inputStreamedText.colourMarkers.listIterator(); iter.hasNext(); ) {
+            ColourMarker oldColourMarker = iter.next();
+            ColourMarker newTextColor;
 
             if(copyOrShift == CopyOrShift.COPY) {
                 // Copy text color object
-                newTextColor = new TextColour(oldTextColour);
+                newTextColor = new ColourMarker(oldColourMarker);
             } else if(copyOrShift == CopyOrShift.SHIFT) {
                 // We can just modify the existing object, since we are shifting
-                newTextColor = oldTextColour;
+                newTextColor = oldColourMarker;
             } else {
                 throw new RuntimeException("copyOrShift not recognised.");
             }
 
-            // Check if we have reached TextColour objects which index characters beyond the range
+            // Check if we have reached ColourMarker objects which index characters beyond the range
             // we are shifting, and if so, break out of this loop
-            if(oldTextColour.position < numChars) {
+            if(oldColourMarker.position < numChars) {
 
                 // We need to offset set the position by the length of the existing text
-                newTextColor.position = oldTextColour.position + text.length();
-                // Now add this TextColour object to this objects list, and remove from the input
-                textColours.add(newTextColor);
+                newTextColor.position = oldColourMarker.position + text.length();
+                // Now add this ColourMarker object to this objects list, and remove from the input
+                colourMarkers.add(newTextColor);
 
                 if(copyOrShift == CopyOrShift.SHIFT) {
                     iter.remove();
@@ -284,15 +283,15 @@ public class StreamedText {
             throw new IllegalArgumentException("position was either too small or too large.");
 
         // Make sure all the TextColor objects in the list remain in order
-        if(textColours.size() != 0 && textColours.get(textColours.size() - 1).position > position)
+        if(colourMarkers.size() != 0 && colourMarkers.get(colourMarkers.size() - 1).position > position)
             throw new IllegalArgumentException("position was not greater than all existing positions.");
 
         // Check if we are overwriting the last TextColor object (if they apply to the same text position),
         // or we are needed to create a new TextColor object
-        if(textColours.size() != 0 && textColours.get(textColours.size() - 1).position == position) {
-            textColours.get(textColours.size() - 1).color = color;
+        if(colourMarkers.size() != 0 && colourMarkers.get(colourMarkers.size() - 1).position == position) {
+            colourMarkers.get(colourMarkers.size() - 1).color = color;
         } else {
-            textColours.add(new TextColour(position, color));
+            colourMarkers.add(new ColourMarker(position, color));
         }
 
         checkAllColoursAreInOrder();
@@ -304,8 +303,8 @@ public class StreamedText {
 
         output += "text: \"" + text + "\", ";
         int i = 0;
-        for(TextColour textColour : textColours) {
-            output += " textColor[" + i + "]: ," + textColour.toString();
+        for(ColourMarker colourMarker : colourMarkers) {
+            output += " textColor[" + i + "]: ," + colourMarker.toString();
             i++;
         }
 
@@ -337,13 +336,13 @@ public class StreamedText {
 
         Text lastTextNode = (Text)existingTextNodes.get(nodeIndexToStartShift - 1);
 
-        // Copy all text before first TextColour entry into the first text node
+        // Copy all text before first ColourMarker entry into the first text node
 
         int indexOfLastCharPlusOne;
-        if(getTextColours().size() == 0) {
+        if(getColourMarkers().size() == 0) {
             indexOfLastCharPlusOne = getText().length();
         } else {
-            indexOfLastCharPlusOne = getTextColours().get(0).position;
+            indexOfLastCharPlusOne = getColourMarkers().get(0).position;
         }
 
         lastTextNode.setText(lastTextNode.getText() + getText().substring(0, indexOfLastCharPlusOne));
@@ -351,20 +350,20 @@ public class StreamedText {
         // Create new text nodes and copy all text
         // This loop won't run if there is no elements in the TextColors array
         int currIndexToInsertNodeAt = nodeIndexToStartShift;
-        for(int x = 0; x < getTextColours().size(); x++) {
+        for(int x = 0; x < getColourMarkers().size(); x++) {
             Text newText = new Text();
 
-            int indexOfFirstCharInNode = getTextColours().get(x).position;
+            int indexOfFirstCharInNode = getColourMarkers().get(x).position;
 
             int indexOfLastCharInNodePlusOne;
-            if(x >= getTextColours().size() - 1) {
+            if(x >= getColourMarkers().size() - 1) {
                 indexOfLastCharInNodePlusOne = getText().length();
             } else {
-                indexOfLastCharInNodePlusOne = getTextColours().get(x + 1).position;
+                indexOfLastCharInNodePlusOne = getColourMarkers().get(x + 1).position;
             }
 
             newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-            newText.setFill(getTextColours().get(x).color);
+            newText.setFill(getColourMarkers().get(x).color);
 
             existingTextNodes.add(currIndexToInsertNodeAt, newText);
 
@@ -381,7 +380,7 @@ public class StreamedText {
 
         // Clear all text and the TextColor list
         text = "";
-        textColours.clear();
+        colourMarkers.clear();
 
         checkAllColoursAreInOrder();
     }
@@ -389,11 +388,11 @@ public class StreamedText {
     private void checkAllColoursAreInOrder() {
 
         int charIndex = -1;
-        for(TextColour textColour : textColours) {
-            if(textColour.position <= charIndex)
+        for(ColourMarker colourMarker : colourMarkers) {
+            if(colourMarker.position <= charIndex)
                 throw new RuntimeException("Colours were not in order!");
 
-            charIndex = textColour.position;
+            charIndex = colourMarker.position;
         }
     }
 
@@ -424,8 +423,8 @@ public class StreamedText {
      * @return
      */
     public boolean isColorAt(int charIndex) {
-        for(TextColour textColour : textColours) {
-            if(textColour.position == charIndex)
+        for(ColourMarker colourMarker : colourMarkers) {
+            if(colourMarker.position == charIndex)
                 return true;
         }
 
@@ -518,6 +517,23 @@ public class StreamedText {
         String oldText = text;
 
         text = oldText.substring(0, charIndex) + oldText.substring(charIndex + 1, oldText.length());
+
+        //==============================================//
+        //============ SHIFT COLOUR MARKERS ============//
+        //==============================================//
+
+        // Shift all colour markers from the deleted char onwards
+        for (ListIterator<ColourMarker> iter = colourMarkers.listIterator(); iter.hasNext(); ) {
+            ColourMarker element = iter.next();
+
+            if(element.position != 0 && element.position >= charIndex) {
+                element.position -= 1;
+            }
+        }
+
+        //==============================================//
+        //=========== SHIFT NEW LINE MARKERS ===========//
+        //==============================================//
 
         // Shift all new line markers from the deleted char onwards
         for (ListIterator<Integer> iter = newLineMarkers.listIterator(); iter.hasNext(); ) {

@@ -41,10 +41,10 @@ public class AnsiECParserTests {
 
         assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.getTextColours().size());
+        assertEquals(1, streamedText.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getTextColours().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
+        assertEquals(7, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
     }
 
     @Test
@@ -54,13 +54,13 @@ public class AnsiECParserTests {
 
         assertEquals("defaultredgreen", streamedText.getText());
 
-        assertEquals(2, streamedText.getTextColours().size());
+        assertEquals(2, streamedText.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getTextColours().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
+        assertEquals(7, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
 
-        assertEquals(10, streamedText.getTextColours().get(1).position);
-        assertEquals(Color.rgb(0, 170, 0), streamedText.getTextColours().get(1).color);
+        assertEquals(10, streamedText.getColourMarkers().get(1).position);
+        assertEquals(Color.rgb(0, 170, 0), streamedText.getColourMarkers().get(1).color);
     }
 
     @Test
@@ -70,10 +70,10 @@ public class AnsiECParserTests {
 
         assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.getTextColours().size());
+        assertEquals(1, streamedText.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getTextColours().get(0).position);
-        assertEquals(Color.rgb(255, 85, 85), streamedText.getTextColours().get(0).color);
+        assertEquals(7, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(255, 85, 85), streamedText.getColourMarkers().get(0).color);
     }
 
     @Test
@@ -82,16 +82,16 @@ public class AnsiECParserTests {
         ansiECParser.parse("default\u001B", streamedText);
 
         assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
 
         ansiECParser.parse("[31mred", streamedText);
 
         assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.getTextColours().size());
+        assertEquals(1, streamedText.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getTextColours().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
+        assertEquals(7, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
     }
 
     @Test
@@ -100,20 +100,20 @@ public class AnsiECParserTests {
         ansiECParser.parse("default\u001B", streamedText);
 
         assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
 
         ansiECParser.parse("[", streamedText);
 
         assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
 
         ansiECParser.parse("31mred", streamedText);
 
         assertEquals("defaultred", streamedText.getText());
 
-        assertEquals(1, streamedText.getTextColours().size());
-        assertEquals(7, streamedText.getTextColours().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getTextColours().get(0).color);
+        assertEquals(1, streamedText.getColourMarkers().size());
+        assertEquals(7, streamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[20mdef", streamedText);
 
         assertEquals("abcdef", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 
     @Test
@@ -132,7 +132,7 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[20;5mdef", streamedText);
 
         assertEquals("abcdef", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[20def", streamedText);
 
         assertEquals("abc\u001B[20def", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 
     @Test
@@ -154,7 +154,7 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[def", streamedText);
 
         assertEquals("abc\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 
     @Test
@@ -163,12 +163,12 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[", streamedText);
 
         assertEquals("abc", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
 
         ansiECParser.parse("def", streamedText);
 
         assertEquals("abc\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 
     @Test
@@ -177,11 +177,11 @@ public class AnsiECParserTests {
         ansiECParser.parse("abc\u001B[", streamedText);
 
         assertEquals("abc", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
 
         ansiECParser.parse("12;\u001B[def", streamedText);
 
         assertEquals("abc\u001B[12;\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getTextColours().size());
+        assertEquals(0, streamedText.getColourMarkers().size());
     }
 }
