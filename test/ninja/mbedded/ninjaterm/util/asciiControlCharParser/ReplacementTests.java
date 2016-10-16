@@ -78,4 +78,12 @@ public class ReplacementTests {
         asciiControlCharParser.parse(input, releasedText);
         assertEquals("a↵b␤c", releasedText.getText());
     }
+
+    @Test
+    public void escapeCharSeqTest() throws Exception {
+        input.append("␛");
+        asciiControlCharParser.parse(input, releasedText);
+        assertEquals("␛", releasedText.getText());
+    }
+
 }

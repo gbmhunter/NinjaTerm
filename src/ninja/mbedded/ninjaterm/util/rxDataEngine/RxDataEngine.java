@@ -244,13 +244,16 @@ public class RxDataEngine {
         // to this toBeConsumed object
         bufferBetweenNewLineParserAndFiltering = toBeConsumed;
 
-        streamingFilter.parse(toBeConsumed, bufferBetweenFilterAndControlCharParser);
+        parse("");
 
-        // Notify that there is new UI data to display
-            /*for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
-                newStreamedTextListener.run(bufferBetweenFilterAndControlCharParser);
-            }*/
-        // Call any streamed text listeners (but only if RX data is not frozen)
+        /*StreamedText releasedText = new StreamedText();
+
+        streamingFilter.parse(toBeConsumed, releasedText);
+
+
+
+
+        // Call any streamed text listeners
         for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
             // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
             StreamedText copyOfFilterOutput = new StreamedText(bufferBetweenFilterAndControlCharParser);
@@ -259,7 +262,7 @@ public class RxDataEngine {
 
         // Since the filter output is the last parser in the chain,
         // it's data does not need to persist between calls
-        bufferBetweenFilterAndControlCharParser.clear();
+        bufferBetweenFilterAndControlCharParser.clear();*/
     }
 
     /**

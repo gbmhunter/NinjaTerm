@@ -33,7 +33,8 @@ public class AsciiControlCharParser {
 
     private String[][] controlCharToVisibleCharA = {
             { "\r", "↵"},
-            { "\n", "␤"}
+            { "\n", "␤"},
+            { "\u001B", "␛" }
     };
 
     //================================================================================================//

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-14
+ * @last-modified   2016-10-16
  */
 public class RxDataEngineTests {
 
@@ -52,7 +52,7 @@ public class RxDataEngineTests {
     public void asciiEscapeCodesOffTest() throws Exception {
         rxDataEngine.setAnsiECEnabled(false);
         rxDataEngine.parse("123\u001B[30m456");
-        assertEquals("123\u001B[30m456", output.getText());
+        assertEquals("123[30m456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
     }
 
