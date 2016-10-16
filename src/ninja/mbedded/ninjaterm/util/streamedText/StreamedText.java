@@ -36,9 +36,11 @@ public class StreamedText {
     /**
      * Holds the locations in <code>text</code> at which new lines are detected. This is populated by
      * a <code>NewLineParser</code> object. New lines are to be inserted AFTER the character pointed
-     * to by each newLineIndex.
+     * to by each newLineMarker.
+     *
+     * <code>shiftCharsIn()</code> and <code>copyCharsIn()</code> modifies the markers as appropriate.
      */
-    private List<Integer> newLineIndicies = new ArrayList<>();
+    private List<Integer> newLineMarkers = new ArrayList<>();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -429,11 +431,11 @@ public class StreamedText {
     }
 
     public void addNewLineMarkerAt(int charIndex) {
-        newLineIndicies.add(charIndex);
+        newLineMarkers.add(charIndex);
     }
 
     public List<Integer> getNewLineMarkers() {
-        return newLineIndicies;
+        return newLineMarkers;
     }
 
     public void shiftCharsInUntilPartialMatch(StreamedText input, Pattern pattern) {
