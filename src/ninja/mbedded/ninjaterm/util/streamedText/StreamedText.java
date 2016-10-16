@@ -345,7 +345,20 @@ public class StreamedText {
             indexOfLastCharPlusOne = getColourMarkers().get(0).position;
         }
 
-        lastTextNode.setText(lastTextNode.getText() + getText().substring(0, indexOfLastCharPlusOne));
+        StringBuilder textToAppend = new StringBuilder(getText().substring(0, indexOfLastCharPlusOne));
+
+        // Create new line characters for all new line markers that point to text
+        // shifted above
+        int currNewLineMarkerIndex = 0;
+        for(int i = 0; i < newLineMarkers.size(); i++) {
+            if(newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
+                break;
+
+            textToAppend.insert(newLineMarkers.get(currNewLineMarkerIndex) + i, "\n");
+            currNewLineMarkerIndex++;
+        }
+
+        lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
 
         // Create new text nodes and copy all text
         // This loop won't run if there is no elements in the TextColors array
@@ -362,7 +375,26 @@ public class StreamedText {
                 indexOfLastCharInNodePlusOne = getColourMarkers().get(x + 1).position;
             }
 
-            newText.setText(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+            textToAppend = new StringBuilder(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+
+            // Create new line characters for all new line markers that point to text
+            // shifted above
+            int insertionCount = 0;
+            while(true) {
+                if(currNewLineMarkerIndex >= newLineMarkers.size())
+                    break;
+
+                if(newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
+                    break;
+
+                textToAppend.insert(
+                        newLineMarkers.get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
+                        "\n");
+                currNewLineMarkerIndex++;
+                insertionCount++;
+            }
+
+            newText.setText(textToAppend.toString());
             newText.setFill(getColourMarkers().get(x).color);
 
             existingTextNodes.add(currIndexToInsertNodeAt, newText);
@@ -379,8 +411,7 @@ public class StreamedText {
         }
 
         // Clear all text and the TextColor list
-        text = "";
-        colourMarkers.clear();
+        clear();
 
         checkAllColoursAreInOrder();
     }

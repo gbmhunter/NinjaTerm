@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-02
- * @last-modified   2016-10-06
+ * @last-modified   2016-10-16
  */
 public class ShiftToTextNodeTests {
 
@@ -105,6 +105,81 @@ public class ShiftToTextNodeTests {
         assertEquals("", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
         assertEquals("", ((Text)textNodes.get(1)).getText());
+        assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+    }
+
+    @Test
+    public void newLineAtStartTest() throws Exception {
+
+        streamedText.append("1234");
+        streamedText.addNewLineMarkerAt(0);
+
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+
+        assertEquals(1, textNodes.size());
+        assertEquals("\n1234", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+    }
+
+    @Test
+    public void newLineInMiddleTest() throws Exception {
+
+        streamedText.append("1234");
+        streamedText.addNewLineMarkerAt(2);
+
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+
+        assertEquals(1, textNodes.size());
+        assertEquals("12\n34", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+    }
+
+    @Test
+    public void newLineAtEndTest() throws Exception {
+
+        streamedText.append("1234");
+        streamedText.addNewLineMarkerAt(4);
+
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+
+        assertEquals(1, textNodes.size());
+        assertEquals("1234\n", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+    }
+
+    @Test
+    public void colorsAndNewLinesTest() throws Exception {
+
+        streamedText.append("1234");
+        streamedText.addColour(2, Color.GREEN);
+        streamedText.addNewLineMarkerAt(3);
+
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+
+        assertEquals(2, textNodes.size());
+
+        assertEquals("12", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+
+        assertEquals("3\n4", ((Text)textNodes.get(1)).getText());
+        assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+    }
+
+    @Test
+    public void colorsAndNewLineAtEndOfSecondNodeTest() throws Exception {
+
+        streamedText.append("1234");
+        streamedText.addColour(2, Color.GREEN);
+        streamedText.addNewLineMarkerAt(4);
+
+        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+
+        assertEquals(2, textNodes.size());
+
+        assertEquals("12", ((Text)textNodes.get(0)).getText());
+        assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+
+        assertEquals("34\n", ((Text)textNodes.get(1)).getText());
         assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
     }
 
