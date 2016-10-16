@@ -475,4 +475,32 @@ public class StreamedText {
             //numCharsAdded += charsToAppend.length();
         }
     }
+
+    public String[] splitTextAtNewLines() {
+
+        // Work out how many strings there will be
+        int numOfLines = getNewLineMarkers().size() + 1;
+
+        String[] lines = new String[numOfLines];
+
+        int startIndex = 0;
+        for(int i = 0; i < numOfLines; i++) {
+
+            if(i == numOfLines - 1) {
+                lines[i] = getText().substring(startIndex, getText().length());
+            } else {
+
+                if(startIndex == getText().length()) {
+                    lines[i] = "";
+                } else {
+                    lines[i] = getText().substring(startIndex, getNewLineMarkers().get(i) + 1);
+                    startIndex = getNewLineMarkers().get(i) + 1;
+                }
+            }
+
+        }
+
+        return lines;
+    }
+
 }
