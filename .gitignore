@@ -62,3 +62,6 @@
 
 # Installer-generated files
 /install/
+
+# Compiler files
+target/*
