@@ -130,6 +130,9 @@ public class StreamedText {
         if(numChars > inputStreamedText.getText().length())
             throw new IllegalArgumentException("numChars is greater than the number of characters in inputStreamedText.");
 
+        // Copy/shift the new line markers first
+        copyOrShiftNewLineMarkers(inputStreamedText, numChars, copyOrShift);
+
         // Apply the colour to be inserted on next char, if at least one char is
         // going to be placed into this StreamedText object
         if((numChars > 0) && (this.colorToBeInsertedOnNextChar != null)) {
@@ -208,25 +211,35 @@ public class StreamedText {
     private void copyOrShiftNewLineMarkers(StreamedText input, int numChars, CopyOrShift copyOrShift) {
 
         // Copy/shift markers within range
-        for(int x = 0; x < getNewLineMarkers().size(); x++) {
+        for (ListIterator<Integer> iter = input.getNewLineMarkers().listIterator(); iter.hasNext(); ) {
+            Integer element = iter.next();
 
-            if (getNewLineMarkers().get(x) < numChars) {
+            if (element < numChars) {
 
 
                 // Make a copy of this marker in the output
-                addNewLineMarkerAt(getText().length() + getNewLineMarkers().get(x));
+                addNewLineMarkerAt(getText().length() + element);
 
-                if (copyOrShift == CopyOrShift.SHIFT) {
-                    // Remove the marker from the input
-                    input.getNewLineMarkers().remove(x);
+                switch(copyOrShift) {
+                    case COPY:
+                        // Do nothing
+
+                        break;
+                    case SHIFT:
+                        // Remove the marker from the input
+                        iter.remove();
+                        break;
+                    default:
+                        throw new RuntimeException("CopyOrShift enum unrecognised.");
                 }
 
             } else {
                 // We have copied/shifted all markers within range,
                 // we just need to adjust the marker values for the remaining
                 // markers in the input
-
-                getNewLineMarkers().set(x, getNewLineMarkers().get(x) - numChars);
+                if(copyOrShift == CopyOrShift.SHIFT) {
+                    iter.set(element - numChars);
+                }
             }
         }
     }

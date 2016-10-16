@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-15
- * @last-modified   2016-10-15
+ * @last-modified   2016-10-16
  */
 public class CopyOrShiftNewLinesTests {
 
@@ -27,31 +27,71 @@ public class CopyOrShiftNewLinesTests {
     private StreamedText inputStreamedText;
     private StreamedText outputStreamedText;
 
+    private Method method;
+
     @Before
     public void setUp() throws Exception {
         inputStreamedText = new StreamedText();
         outputStreamedText = new StreamedText();
-    }
 
-    @Test
-    public void shiftWithNewLineTest() throws Exception {
-
-        Method method = StreamedText.class.getDeclaredMethod(
+        // This makes a private method "public" for unit test purposes.
+        method = StreamedText.class.getDeclaredMethod(
                 "copyOrShiftNewLineMarkers",
                 StreamedText.class, int.class, StreamedText.CopyOrShift.class);
         method.setAccessible(true);
+    }
+
+    @Test
+    public void oneMarkerShiftTest() throws Exception {
 
         inputStreamedText.append("123456");
         inputStreamedText.addNewLineMarkerAt(2);
 
-        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+        method.invoke(outputStreamedText, inputStreamedText, inputStreamedText.getText().length(), StreamedText.CopyOrShift.SHIFT);
 
         // Check input
-        assertEquals("", inputStreamedText.getText());
+        assertEquals("123456", inputStreamedText.getText());
         assertEquals(0, inputStreamedText.getNewLineMarkers().size());
 
         // Check output
-        assertEquals("123456", outputStreamedText.getText());
+        assertEquals("", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void twoMarkerShiftTest() throws Exception {
+
+        inputStreamedText.append("123456");
+        inputStreamedText.addNewLineMarkerAt(2);
+        inputStreamedText.addNewLineMarkerAt(4);
+
+        method.invoke(outputStreamedText, inputStreamedText, 3, StreamedText.CopyOrShift.SHIFT);
+
+        // Check input
+        assertEquals(1, inputStreamedText.getNewLineMarkers().size());
+        assertEquals(1, inputStreamedText.getNewLineMarkers().get(0).intValue());
+
+        // Check output
+        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(2, outputStreamedText.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void twoMarkerCopyTest() throws Exception {
+
+        inputStreamedText.append("123456");
+        inputStreamedText.addNewLineMarkerAt(2);
+        inputStreamedText.addNewLineMarkerAt(4);
+
+        method.invoke(outputStreamedText, inputStreamedText, 3, StreamedText.CopyOrShift.COPY);
+
+        // Check input
+        assertEquals(2, inputStreamedText.getNewLineMarkers().size());
+        assertEquals(2, inputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, inputStreamedText.getNewLineMarkers().get(1).intValue());
+
+        // Check output
         assertEquals(1, outputStreamedText.getNewLineMarkers().size());
         assertEquals(2, outputStreamedText.getNewLineMarkers().get(0).intValue());
     }
