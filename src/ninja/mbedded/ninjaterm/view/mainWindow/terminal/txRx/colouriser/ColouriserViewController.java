@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 /**

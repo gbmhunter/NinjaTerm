@@ -9,13 +9,11 @@ import ninja.mbedded.ninjaterm.model.terminal.comPortSettings.ComPortSettings;
 import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
 import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 

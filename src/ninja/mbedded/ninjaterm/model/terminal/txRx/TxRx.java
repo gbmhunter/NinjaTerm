@@ -11,7 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxDataEngine.RxDataEngine;
+import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 

@@ -8,7 +8,6 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
 import org.slf4j.Logger;
 
 import java.io.BufferedWriter;

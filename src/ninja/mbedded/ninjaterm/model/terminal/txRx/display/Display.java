@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 
 /**
  * Model containing data and logic for the display components of the TX/RX data.

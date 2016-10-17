@@ -1,26 +1,12 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.util.converter.NumberStringConverter;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
-import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
-import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
-import org.controlsfx.validation.Severity;
-import org.controlsfx.validation.ValidationResult;
-import org.controlsfx.validation.ValidationSupport;
-import org.controlsfx.validation.Validator;
-
-import java.io.IOException;
 
 /**
  * Backend for the filters pop-up window.

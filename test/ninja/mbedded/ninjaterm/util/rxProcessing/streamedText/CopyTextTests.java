@@ -1,0 +1,213 @@
+package ninja.mbedded.ninjaterm.util.rxProcessing.streamedText;
+
+import javafx.scene.paint.Color;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedText</code> class.
+ *
+ * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since           2016-09-27
+ * @last-modified   2016-10-14
+ */
+public class CopyTextTests {
+
+    private StreamedText inputStreamedText;
+    private StreamedText outputStreamedText;
+
+    @Before
+    public void setUp() throws Exception {
+        inputStreamedText = new StreamedText();
+        outputStreamedText = new StreamedText();
+    }
+
+    @Test
+    public void copyTest() throws Exception {
+
+        inputStreamedText.append("1234");
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 2);
+
+        assertEquals("1234", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
+
+        assertEquals("12", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
+    }
+
+    @Test
+    public void extractAppendAndNodeTextTest() throws Exception {
+
+        inputStreamedText.append("12345678");
+        inputStreamedText.addColour(4, Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 6);
+
+        // Check input
+        assertEquals("12345678", inputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(4, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+
+        // Check output
+        assertEquals("123456", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(4, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+
+    }
+
+    @Test
+    public void copyJustBeforeColorTest() throws Exception {
+
+        inputStreamedText.append("123456789");
+        inputStreamedText.addColour(6, Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 6);
+
+        // Check input
+        assertEquals("123456789", inputStreamedText.getText());
+        assertEquals(1, inputStreamedText.getColourMarkers().size());
+        assertEquals(6, inputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, inputStreamedText.getColourMarkers().get(0).color);
+
+        // Check output
+        assertEquals("123456", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
+    }
+
+    @Test
+    public void copyJustAfterColorTest() throws Exception {
+
+        inputStreamedText.append("123456789");
+        inputStreamedText.addColour(6, Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 7);
+
+        // Check input
+        assertEquals("123456789", inputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(6, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+
+        // Check output
+        assertEquals("1234567", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(6, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+    }
+
+    @Test
+    public void outputAlreadyPopulatedTest() throws Exception {
+
+        inputStreamedText.append("56789");
+        inputStreamedText.addColour(3, Color.RED);
+
+        outputStreamedText.append("1234");
+        outputStreamedText.addColour(2, Color.GREEN);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 4);
+
+        // Check input, should be 1 char left over
+        assertEquals("56789", inputStreamedText.getText());
+        assertEquals(1, inputStreamedText.getColourMarkers().size());
+        assertEquals(3, inputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, inputStreamedText.getColourMarkers().get(0).color);
+
+        // Check output
+        assertEquals("12345678", outputStreamedText.getText());
+        assertEquals(2, outputStreamedText.getColourMarkers().size());
+
+        assertEquals(2, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.GREEN, outputStreamedText.getColourMarkers().get(0).color);
+
+        assertEquals(7, outputStreamedText.getColourMarkers().get(1).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(1).color);
+    }
+
+    @Test
+    public void colorNoTextTest() throws Exception {
+        inputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
+        assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 0);
+
+        assertEquals("", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
+        assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
+
+        assertEquals("", outputStreamedText.getText());
+        assertEquals(0, outputStreamedText.getColourMarkers().size());
+        assertEquals(Color.RED, outputStreamedText.getColorToBeInsertedOnNextChar());
+    }
+
+    @Test
+    public void colorToAddOnNextCharInOutputTest() throws Exception {
+        inputStreamedText.append("123");
+        outputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 3);
+
+        assertEquals("123", inputStreamedText.getText());
+        assertEquals(0, inputStreamedText.getColourMarkers().size());
+        assertEquals(null, inputStreamedText.getColorToBeInsertedOnNextChar());
+
+        assertEquals("123", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+
+        assertEquals(0, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+    }
+
+    @Test
+    public void copyJustColorTest() throws Exception {
+
+        inputStreamedText.setColorToBeInsertedOnNextChar(Color.RED);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 0);
+
+        assertEquals(Color.RED, inputStreamedText.getColorToBeInsertedOnNextChar());
+        assertEquals(Color.RED, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+        inputStreamedText.clear();
+        inputStreamedText.append("abc");
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, 3);
+
+        assertEquals("abc", outputStreamedText.getText());
+        assertEquals(1, outputStreamedText.getColourMarkers().size());
+        assertEquals(0, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+    }
+
+    @Test
+    public void copyWithPreexistingDataTest() throws Exception {
+
+        inputStreamedText.append("5678");
+
+        outputStreamedText.append("1234");
+        outputStreamedText.addColour(1, Color.RED);
+        outputStreamedText.setColorToBeInsertedOnNextChar(Color.GREEN);
+
+        outputStreamedText.copyCharsFrom(inputStreamedText, inputStreamedText.getText().length());
+
+        assertEquals("12345678", outputStreamedText.getText());
+        assertEquals(2, outputStreamedText.getColourMarkers().size());
+        assertEquals(1, outputStreamedText.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+        assertEquals(4, outputStreamedText.getColourMarkers().get(1).position);
+        assertEquals(Color.GREEN, outputStreamedText.getColourMarkers().get(1).color);
+        assertEquals(null, outputStreamedText.getColorToBeInsertedOnNextChar());
+
+    }
+}

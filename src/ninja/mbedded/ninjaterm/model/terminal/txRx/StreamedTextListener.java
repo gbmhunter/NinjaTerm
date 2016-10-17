@@ -1,6 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
 
 /**
  * Interface for a listener that wants to be informed about new "streamed text" being
