@@ -39,7 +39,7 @@ public class Main extends Application {
         //======== COMMAND-LINE ARGUMENT PARSING =======//
         //==============================================//
 
-        logger.debug("Parsing command-line parameters...");
+        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
         for(String arg : getParameters().getRaw()) {
             if(arg.equals("no-splash"))
                 disableSplashScreen = true;

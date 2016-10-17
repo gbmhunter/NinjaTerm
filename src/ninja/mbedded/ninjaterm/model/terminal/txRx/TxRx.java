@@ -166,7 +166,7 @@ public class TxRx {
 
             // Call the RX data function (this function doesn't know the difference between actual RX data
             // and echoed TX data)
-            addRxData(dataAsString);
+            addRxData(dataAsByteArray);
         }
 
         // Finally, update listeners
@@ -229,7 +229,7 @@ public class TxRx {
      *
      * @param data
      */
-    public void addRxData(String data) {
+    public void addRxData(byte[] data) {
 
         rxDataEngine.parse(data);
 
@@ -305,7 +305,7 @@ public class TxRx {
 
         // Call this to release any streamed text which has been building up since the
         // RX data was frozen
-        addRxData("");
+        addRxData(new byte[]{});
     }
 
 }

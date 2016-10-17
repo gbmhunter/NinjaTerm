@@ -62,8 +62,6 @@ public class Terminal {
 
     private OnRxDataListener onRxDataListener;
 
-    public Decoder decoder = new Decoder();
-
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -137,8 +135,8 @@ public class Terminal {
     private void handleOnRxData(byte[] rxData) {
         logger.debug("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
 
-        String rxText;
-        rxText = decoder.parse(rxData);
+        //String rxText;
+        //rxText = decoder.parse(rxData);
 
         //System.out.println("rxText = " + rxText);
 
@@ -146,11 +144,11 @@ public class Terminal {
 
             // Add the received data to the model
             //txRxViewController.addTxRxText(rxText);
-            txRx.addRxData(rxText);
+            txRx.addRxData(rxData);
 
             // Update stats in app model
-            stats.numCharactersRx.set(stats.numCharactersRx.get() + rxText.length());
-            model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxText.length());
+            stats.numCharactersRx.set(stats.numCharactersRx.get() + rxData.length);
+            model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxData.length);
 
         });
     }

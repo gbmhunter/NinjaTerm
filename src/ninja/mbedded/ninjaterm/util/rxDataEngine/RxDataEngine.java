@@ -1,10 +1,14 @@
 package ninja.mbedded.ninjaterm.util.rxDataEngine;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
+import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
+import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.asciiControlCharParser.AsciiControlCharParser;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
@@ -30,6 +34,10 @@ public class RxDataEngine {
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
+
+    private Decoder decoder = new Decoder();
+
+    public SimpleObjectProperty<DecodingOptions> selDecodingOption = new SimpleObjectProperty<>(DecodingOptions.ASCII);
 
     /**
      * Initialise with "" so that it does not display "null".
@@ -96,6 +104,22 @@ public class RxDataEngine {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
+    public RxDataEngine() {
+        // Bind the selDeocdingOption variable to the copy inside the Decoder object
+        // (selDecodingOption exposes the field inside the Decoder object)
+        Bindings.bindBidirectional(selDecodingOption, decoder.decodingOption);
+
+        // If the selected decoding option is changed, we also need to
+        // change the behaviour of the ASCII control char parser
+        selDecodingOption.addListener((observable, oldValue, newValue) -> {
+            if(newValue == DecodingOptions.ASCII_WITH_CONTROL_CHARS) {
+                asciiControlCharParser.replaceWithVisibleSymbols.set(true);
+            } else if(newValue == DecodingOptions.ASCII) {
+                asciiControlCharParser.replaceWithVisibleSymbols.set(false);
+            }
+        });
+    }
+
     /**
      *
      *  <p>
@@ -114,10 +138,16 @@ public class RxDataEngine {
      *              listening to this).
      * </p>
      *
-     * @param data
+     * @param rxData    The received data from the COM port to process.
      */
-    public void parse(String data) {
-        logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");
+    public void parse(byte[] rxData) {
+        /*logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");*/
+
+        //==============================================//
+        //==================== DECODER =================//
+        //==============================================//
+
+        String data = decoder.parse(rxData);
 
         rawRxData.set(rawRxData.get() + data);
 
@@ -244,7 +274,7 @@ public class RxDataEngine {
         // to this toBeConsumed object
         bufferBetweenNewLineParserAndFiltering = toBeConsumed;
 
-        parse("");
+        parse(new byte[]{});
 
         /*StreamedText releasedText = new StreamedText();
 

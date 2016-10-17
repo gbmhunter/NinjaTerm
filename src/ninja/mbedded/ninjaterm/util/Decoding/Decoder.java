@@ -26,7 +26,11 @@ public class Decoder {
     public String parse(byte[] data) {
 
         String output;
-        if(decodingOption.get() == DecodingOptions.ASCII) {
+
+        // All ASCII variants have the same decoding
+        // (ASCII control chars will be processed later)
+        if(decodingOption.get() == DecodingOptions.ASCII ||
+                decodingOption.get() == DecodingOptions.ASCII_WITH_CONTROL_CHARS) {
             try {
                 output = new String(data, "UTF-8");
             } catch (UnsupportedEncodingException e) {

@@ -31,19 +31,19 @@ public class RxDataEngineTests {
 
     @Test
     public void oneCharTest() throws Exception {
-        rxDataEngine.parse("a");
+        rxDataEngine.parse("a".getBytes());
         assertEquals("a", output.getText());
     }
 
     @Test
     public void startOfEscapeSeqTest() throws Exception {
-        rxDataEngine.parse("a\u001B");
+        rxDataEngine.parse("a\u001B".getBytes());
         assertEquals("a", output.getText());
     }
 
     @Test
     public void asciiEscapeCodesOnTest() throws Exception {
-        rxDataEngine.parse("123\u001B[30m456");
+        rxDataEngine.parse("123\u001B[30m456".getBytes());
         assertEquals("123456", output.getText());
         assertEquals(1, output.getColourMarkers().size());
     }
@@ -51,7 +51,7 @@ public class RxDataEngineTests {
     @Test
     public void asciiEscapeCodesOffTest() throws Exception {
         rxDataEngine.setAnsiECEnabled(false);
-        rxDataEngine.parse("123\u001B[30m456");
+        rxDataEngine.parse("123\u001B[30m456".getBytes());
         assertEquals("123[30m456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
     }
@@ -61,7 +61,7 @@ public class RxDataEngineTests {
         rxDataEngine.setNewLinePattern("\n");
         rxDataEngine.setFilterPattern("4");
 
-        rxDataEngine.parse("123\n456\n789");
+        rxDataEngine.parse("123\n456\n789".getBytes());
         assertEquals("456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
@@ -77,7 +77,7 @@ public class RxDataEngineTests {
         //===================== RUN 1 ==================//
         //==============================================//
 
-        rxDataEngine.parse("123\n456\n789");
+        rxDataEngine.parse("123\n456\n789".getBytes());
 
         assertEquals("123", output.getText());
         assertEquals(0, output.getColourMarkers().size());
@@ -100,7 +100,7 @@ public class RxDataEngineTests {
     public void basicColoursAndNewLineTest() throws Exception {
         rxDataEngine.setNewLinePattern("\r\n");
         rxDataEngine.setFilterPattern("");
-        rxDataEngine.parse("123\u001B[30m4\r\n56");
+        rxDataEngine.parse("123\u001B[30m4\r\n56".getBytes());
 
         assertEquals("123456", output.getText());
 
@@ -116,7 +116,7 @@ public class RxDataEngineTests {
     public void basicColoursNewLineFilterTest() throws Exception {
         rxDataEngine.setNewLinePattern("EOL");
         rxDataEngine.setFilterPattern("56");
-        rxDataEngine.parse("123EOL\u001B[30m45");
+        rxDataEngine.parse("123EOL\u001B[30m45".getBytes());
 
         // Check there is nothing in the output
         assertEquals("", output.getText());
@@ -124,7 +124,7 @@ public class RxDataEngineTests {
         assertEquals(0, output.getNewLineMarkers().size());
 
         // After receiving this data, we should now have some output
-        rxDataEngine.parse("6EOL789");
+        rxDataEngine.parse("6EOL789".getBytes());
 
         assertEquals("456EOL", output.getText());
 

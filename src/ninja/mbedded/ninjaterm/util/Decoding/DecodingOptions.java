@@ -6,12 +6,13 @@ package ninja.mbedded.ninjaterm.util.Decoding;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-08-25
- * @last-modified   2016-08-25
+ * @last-modified   2016-10-16
  */
 public enum DecodingOptions {
 
-    ASCII("ASCII"),
-    HEX("Hex"),
+    ASCII("ASCII"), /* Control chars are swallowed */
+    ASCII_WITH_CONTROL_CHARS("ASCII with control chars"), /* Control chars are shown as Unicode symbols */
+    HEX("Hex"), /* Data displayed as hex */
     ;
 
     private String label;

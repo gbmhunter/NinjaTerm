@@ -65,7 +65,7 @@ public class FormattingViewController {
         // Populate decoding options combobox
         decodingComboBox.getItems().setAll(DecodingOptions.values());
 
-        terminal.decoder.decodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
+        terminal.txRx.rxDataEngine.selDecodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
 
         // Add listener to combobox
         /*decodingComboBox.setOnAction(event -> {
