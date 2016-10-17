@@ -420,7 +420,7 @@ public class TxRxViewController {
         // to get updated automatically when the model modifies this
         // ObservableList
         //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
-        terminal.txRx.rxDataEngine.newStreamedTextListeners.add(streamedText -> {
+        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
             newStreamedTextListener(streamedText);
         });
 

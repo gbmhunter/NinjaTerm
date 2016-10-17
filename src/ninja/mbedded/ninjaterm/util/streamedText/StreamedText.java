@@ -576,4 +576,29 @@ public class StreamedText {
         }
 
     }
+
+    /**
+     * Converts a Streamed object into a string with the provided new line character sequence
+     * inserted at the appropriate places as determined by the new line markers.
+     *
+     * On a windows system, the typical new line sequence for logging to a file is "\r\n".
+     *
+     * Does not modify <code>input</code>.
+     *
+     * @return
+     */
+    public String convertToStringWithNewLines(String newLineCharSeq) {
+
+        StringBuilder output = new StringBuilder();
+
+        output.append(getText());
+
+        int numOfInsertedChars = 0;
+        for(Integer newLineMarker : getNewLineMarkers()) {
+            output.insert(newLineMarker + numOfInsertedChars, newLineCharSeq);
+            numOfInsertedChars += newLineCharSeq.length();
+        }
+
+        return output.toString();
+    }
 }

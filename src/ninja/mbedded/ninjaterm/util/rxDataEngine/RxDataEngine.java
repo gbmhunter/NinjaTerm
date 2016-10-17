@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-14
+ * @last-modified 2016-10-17
  */
 public class RxDataEngine {
 
@@ -89,8 +89,13 @@ public class RxDataEngine {
      * This event is emitted every time the ANSI parser is run. The output of the ANSI
      * parser is passed along with the event.
      */
-    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
-    public List<StreamedTextListener> newStreamedTextListeners = new ArrayList<>();
+//    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
+
+    /**
+     * This event is emitted when new streamed output is available. This is what the
+     * RX pane in the UI should be listening for.
+     */
+    public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
 
     public ReadOnlyBooleanProperty isRxFrozen = new ReadOnlyBooleanWrapper();
 
@@ -252,7 +257,8 @@ public class RxDataEngine {
 
         // Call any streamed text listeners
         // This is the output designed for the UI element to listen to to display text!
-        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+        // (the loggging class might also be listening)
+        for (StreamedTextListener newStreamedTextListener : newOutputListeners) {
             // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
             StreamedText copyOfFilterOutput = new StreamedText(releasedText);
             newStreamedTextListener.run(copyOfFilterOutput);
@@ -284,7 +290,7 @@ public class RxDataEngine {
 
 
         // Call any streamed text listeners
-        for (StreamedTextListener newStreamedTextListener : newStreamedTextListeners) {
+        for (StreamedTextListener newStreamedTextListener : newOutputListeners) {
             // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
             StreamedText copyOfFilterOutput = new StreamedText(bufferBetweenFilterAndControlCharParser);
             newStreamedTextListener.run(copyOfFilterOutput);

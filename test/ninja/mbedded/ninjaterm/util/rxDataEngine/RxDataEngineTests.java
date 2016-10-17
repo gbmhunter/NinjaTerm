@@ -24,7 +24,7 @@ public class RxDataEngineTests {
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
 
-        rxDataEngine.newStreamedTextListeners.add(streamedText -> {
+        rxDataEngine.newOutputListeners.add(streamedText -> {
             output = streamedText;
         });
     }
