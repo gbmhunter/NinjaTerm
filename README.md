@@ -30,8 +30,7 @@ Developing
 
 1. Download/clone this repository into a folder on your computer (SourceTree with GitFlow plugin is recommended).
 2. Make sure you have a 32-bit version of the JDK installed (must be at least JDK 8).
-3. Download the community edition of Intellij IDEA (it's free!). Open the project in IntelliJ (`NinjaTerm.iml` file included in repo).
-4. In IntelliJ, open the project settings, and point the projects JDK to the installed version on your computer.
+3. Download the community edition of Intellij IDEA (it's free!). Import the project in IntelliJ (`pom.xml` file included in repo). Select the JDK installed on your computer.
 5. Make sure you are on the develop branch. Create a new branch from the head of the develop branch to create your new feature on.
 6. Write code!
 7. Commit and submit a pull-request when your feature is complete.
