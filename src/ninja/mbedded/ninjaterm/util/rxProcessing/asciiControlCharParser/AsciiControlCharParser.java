@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.asciiControlCharParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -87,7 +87,7 @@ public class AsciiControlCharParser {
 
     }
 
-    public void parse(StreamedText input, StreamedText releasedText) {
+    public void parse(StreamedData input, StreamedData releasedText) {
 
         Pattern pattern = Pattern.compile("\\p{Cntrl}");
 
@@ -118,7 +118,7 @@ public class AsciiControlCharParser {
             }
 
             // Shift all characters before this match
-            releasedText.shiftCharsIn(input, matcher.start() - currIndex);
+            releasedText.shiftDataIn(input, matcher.start() - currIndex);
 
             // Safely delete this char from the input
             // (it should now be the first character)
@@ -141,7 +141,7 @@ public class AsciiControlCharParser {
         // No more matches have been found, but we still need to copy the last piece of
         // text across (if any)
         //output = output + input.substring(currIndex, input.length());
-        releasedText.shiftCharsIn(input, input.getText().length());
+        releasedText.shiftDataIn(input, input.getText().length());
 
         //return output;
     }

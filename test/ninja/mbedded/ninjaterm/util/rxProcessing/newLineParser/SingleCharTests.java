@@ -1,6 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,15 +15,15 @@ import static org.junit.Assert.assertEquals;
  */
 public class SingleCharTests {
 
-    private StreamedText inputStreamedText;
-    private StreamedText outputStreamedText;
+    private StreamedData inputStreamedData;
+    private StreamedData outputStreamedData;
 
     private NewLineParser newLineParser;
 
     @Before
     public void setUp() throws Exception {
-        inputStreamedText = new StreamedText();
-        outputStreamedText = new StreamedText();
+        inputStreamedData = new StreamedData();
+        outputStreamedData = new StreamedData();
 
         newLineParser = new NewLineParser("\n");
     }
@@ -31,87 +31,87 @@ public class SingleCharTests {
     @Test
     public void noNewLineTest() throws Exception {
 
-        inputStreamedText.append("1234");
+        inputStreamedData.append("1234");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("1234", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(0, outputStreamedText.getNewLineMarkers().size());
+        assertEquals("1234", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(0, outputStreamedData.getNewLineMarkers().size());
     }
 
     @Test
     public void oneNewLineTest() throws Exception {
 
-        inputStreamedText.append("123\n456");
+        inputStreamedData.append("123\n456");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123\n456", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(4, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("123\n456", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void twoNewLinesTest() throws Exception {
 
-        inputStreamedText.append("123\n456\n789");
+        inputStreamedData.append("123\n456\n789");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123\n456\n789", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(2, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(4, outputStreamedText.getNewLineMarkers().get(0).intValue());
-        assertEquals(8, outputStreamedText.getNewLineMarkers().get(1).intValue());
+        assertEquals("123\n456\n789", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(2, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(8, outputStreamedData.getNewLineMarkers().get(1).intValue());
     }
 
     @Test
     public void onlyANewLineTest() throws Exception {
 
-        inputStreamedText.append("\n");
+        inputStreamedData.append("\n");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("\n", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("\n", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void twoNewLinesInARowTest() throws Exception {
 
-        inputStreamedText.append("\n\n");
+        inputStreamedData.append("\n\n");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("\n\n", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(2, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().get(0).intValue());
-        assertEquals(2, outputStreamedText.getNewLineMarkers().get(1).intValue());
+        assertEquals("\n\n", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(2, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(2, outputStreamedData.getNewLineMarkers().get(1).intValue());
     }
 
 }

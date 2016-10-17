@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -58,12 +58,12 @@ public class AnsiECParser {
 
     /**
      *
-     * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedText object.
+     * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedData object.
      *
      * @param inputString           The input string which can contain display text and ANSI escape codes.
-     * @param outputStreamedText    Contains streamed text that has been release from this parser.
+     * @param outputStreamedData    Contains streamed text that has been release from this parser.
      */
-    public void parse(String inputString, StreamedText outputStreamedText) {
+    public void parse(String inputString, StreamedData outputStreamedData) {
 
 //        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
@@ -79,7 +79,7 @@ public class AnsiECParser {
 
         if(!isEnabled.get()) {
             // ASCII escape codes are disabled, so just return all the input plus any withheld text
-            outputStreamedText.append(withheldCharsAndInputString);
+            outputStreamedData.append(withheldCharsAndInputString);
             return;
         }
 
@@ -96,7 +96,7 @@ public class AnsiECParser {
 
             // Everything up to the first matched character can be added to the last existing text node
             String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
-            outputStreamedText.append(preText);
+            outputStreamedData.append(preText);
 
             //numCharsAdded += preText.length();
 
@@ -136,7 +136,7 @@ public class AnsiECParser {
 //            System.out.println("Valid escape seqeunce found.");
 
             // Create new Text object with this new color, and add to the text nodes
-            outputStreamedText.setColorToBeInsertedOnNextChar(color);
+            outputStreamedData.setColorToBeInsertedOnNextChar(color);
 
             currPositionInString = m.end();
 
@@ -164,15 +164,15 @@ public class AnsiECParser {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
 //            System.out.println("No partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedText, charsToAppend);
-            outputStreamedText.append(charsToAppend);
+            //addTextToLastNode(outputStreamedData, charsToAppend);
+            outputStreamedData.append(charsToAppend);
             //numCharsAdded += charsToAppend.length();
         } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
 
             String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
 //            System.out.println("Partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedText, charsToAppend);
-            outputStreamedText.append(charsToAppend);
+            //addTextToLastNode(outputStreamedData, charsToAppend);
+            outputStreamedData.append(charsToAppend);
             //numCharsAdded += charsToAppend.length();
         }
 

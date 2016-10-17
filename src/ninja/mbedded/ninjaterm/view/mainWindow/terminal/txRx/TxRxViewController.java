@@ -23,7 +23,7 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -473,24 +473,24 @@ public class TxRxViewController {
      * This listener updates the UI with "streamed" RX data. The model is responsible
      * for calling the listener after RX data has been received and processed.
      *
-     * @param streamedText
+     * @param streamedData
      */
-    private void newStreamedTextListener(StreamedText streamedText) {
+    private void newStreamedTextListener(StreamedData streamedData) {
 
-        logger.debug("newStreamedTextListener() called with streamedText = " + streamedText);
+        logger.debug("newStreamedTextListener() called with streamedData = " + streamedData);
 
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
-        numCharsInRxTextNodes += streamedText.getText().length();
+        numCharsInRxTextNodes += streamedData.getText().length();
 
         // Move all text/colour info provided in this streamed text object into the
         // Text nodes that make up the RX data view
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
-                streamedText.shiftToTextNodes(observableList, observableList.size() - 1);
+                streamedData.shiftToTextNodes(observableList, observableList.size() - 1);
                 break;
             case SEPARATE_TX_RX:
-                streamedText.shiftToTextNodes(observableList, observableList.size());
+                streamedData.shiftToTextNodes(observableList, observableList.size());
                 break;
             default:
                 throw new RuntimeException("selLayoutOption not recognised.");

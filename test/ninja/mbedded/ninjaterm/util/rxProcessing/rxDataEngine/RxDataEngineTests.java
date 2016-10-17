@@ -1,14 +1,14 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine;
 
 import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedText</code> class.
+ * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedData</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
@@ -18,7 +18,7 @@ public class RxDataEngineTests {
 
     private RxDataEngine rxDataEngine;
 
-    private StreamedText output;
+    private StreamedData output;
 
     @Before
     public void setUp() throws Exception {

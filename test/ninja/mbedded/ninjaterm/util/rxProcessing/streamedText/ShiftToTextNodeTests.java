@@ -13,7 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>shiftToTextNodes()</code> method of the <code>{@link StreamedText}</code> class.
+ * Unit tests for the <code>shiftToTextNodes()</code> method of the <code>{@link StreamedData}</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-02
@@ -27,12 +27,12 @@ public class ShiftToTextNodeTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
-    private StreamedText streamedText;
+    private StreamedData streamedData;
     private ObservableList<Node> textNodes;
 
     @Before
     public void setUp() throws Exception {
-        streamedText = new StreamedText();
+        streamedData = new StreamedData();
         textNodes = FXCollections.observableArrayList();
 
         Text text = new Text();
@@ -43,9 +43,9 @@ public class ShiftToTextNodeTests {
     @Test
     public void basicTest() throws Exception {
 
-        streamedText.append("1234");
+        streamedData.append("1234");
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(1, textNodes.size());
         assertEquals("1234", ((Text)textNodes.get(0)).getText());
@@ -55,10 +55,10 @@ public class ShiftToTextNodeTests {
     @Test
     public void colorTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addColour(2, Color.GREEN);
+        streamedData.append("1234");
+        streamedData.addColour(2, Color.GREEN);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(2, textNodes.size());
 
@@ -72,12 +72,12 @@ public class ShiftToTextNodeTests {
     @Test
     public void addColorToNextNodeTest() throws Exception {
 
-        streamedText.append("123456");
-        streamedText.addColour(2, Color.GREEN);
-        streamedText.addColour(3, Color.RED);
-        streamedText.addColour(5, Color.BLUE);
+        streamedData.append("123456");
+        streamedData.addColour(2, Color.GREEN);
+        streamedData.addColour(3, Color.RED);
+        streamedData.addColour(5, Color.BLUE);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(4, textNodes.size());
 
@@ -94,11 +94,11 @@ public class ShiftToTextNodeTests {
     @Test
     public void colourToBeInsertedOnNextCharTest() throws Exception {
 
-        streamedText.setColorToBeInsertedOnNextChar(Color.GREEN);
+        streamedData.setColorToBeInsertedOnNextChar(Color.GREEN);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
-        assertEquals(null, streamedText.getColorToBeInsertedOnNextChar());
+        assertEquals(null, streamedData.getColorToBeInsertedOnNextChar());
 
         assertEquals(2, textNodes.size());
 
@@ -111,10 +111,10 @@ public class ShiftToTextNodeTests {
     @Test
     public void newLineAtStartTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addNewLineMarkerAt(0);
+        streamedData.append("1234");
+        streamedData.addNewLineMarkerAt(0);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(1, textNodes.size());
         assertEquals("\n1234", ((Text)textNodes.get(0)).getText());
@@ -124,10 +124,10 @@ public class ShiftToTextNodeTests {
     @Test
     public void newLineInMiddleTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addNewLineMarkerAt(2);
+        streamedData.append("1234");
+        streamedData.addNewLineMarkerAt(2);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(1, textNodes.size());
         assertEquals("12\n34", ((Text)textNodes.get(0)).getText());
@@ -137,10 +137,10 @@ public class ShiftToTextNodeTests {
     @Test
     public void newLineAtEndTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addNewLineMarkerAt(4);
+        streamedData.append("1234");
+        streamedData.addNewLineMarkerAt(4);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(1, textNodes.size());
         assertEquals("1234\n", ((Text)textNodes.get(0)).getText());
@@ -150,11 +150,11 @@ public class ShiftToTextNodeTests {
     @Test
     public void colorsAndNewLinesTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addColour(2, Color.GREEN);
-        streamedText.addNewLineMarkerAt(3);
+        streamedData.append("1234");
+        streamedData.addColour(2, Color.GREEN);
+        streamedData.addNewLineMarkerAt(3);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(2, textNodes.size());
 
@@ -168,11 +168,11 @@ public class ShiftToTextNodeTests {
     @Test
     public void colorsAndNewLineAtEndOfSecondNodeTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addColour(2, Color.GREEN);
-        streamedText.addNewLineMarkerAt(4);
+        streamedData.append("1234");
+        streamedData.addColour(2, Color.GREEN);
+        streamedData.addNewLineMarkerAt(4);
 
-        streamedText.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size());
 
         assertEquals(2, textNodes.size());
 

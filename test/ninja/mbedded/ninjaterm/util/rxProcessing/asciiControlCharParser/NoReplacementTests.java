@@ -1,6 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.asciiControlCharParser;
 
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,15 +17,15 @@ public class NoReplacementTests {
 
     private AsciiControlCharParser asciiControlCharParser;
 
-    private StreamedText input;
-    private StreamedText releasedText;
+    private StreamedData input;
+    private StreamedData releasedText;
 
     @Before
     public void setUp() throws Exception {
         asciiControlCharParser = new AsciiControlCharParser();
 
-        input = new StreamedText();
-        releasedText = new StreamedText();
+        input = new StreamedData();
+        releasedText = new StreamedData();
     }
 
     @Test

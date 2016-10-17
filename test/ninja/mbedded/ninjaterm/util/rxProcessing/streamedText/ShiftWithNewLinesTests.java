@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>{@link StreamedText}</code> class.
+ * Unit tests for the <code>{@link StreamedData}</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-15
@@ -22,66 +22,66 @@ public class ShiftWithNewLinesTests {
     @Rule
     public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 
-    private StreamedText inputStreamedText;
-    private StreamedText outputStreamedText;
+    private StreamedData inputStreamedData;
+    private StreamedData outputStreamedData;
 
     @Before
     public void setUp() throws Exception {
-        inputStreamedText = new StreamedText();
-        outputStreamedText = new StreamedText();
+        inputStreamedData = new StreamedData();
+        outputStreamedData = new StreamedData();
     }
 
     @Test
     public void shiftWithNewLineTest() throws Exception {
 
-        inputStreamedText.append("123456");
-        inputStreamedText.addNewLineMarkerAt(3);
+        inputStreamedData.append("123456");
+        inputStreamedData.addNewLineMarkerAt(3);
 
-        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
         // Check input
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
         // Check output
-        assertEquals("123456", outputStreamedText.getText());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("123456", outputStreamedData.getText());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void shiftWithNewLineAtEndTest() throws Exception {
 
-        inputStreamedText.append("123");
-        inputStreamedText.addNewLineMarkerAt(3);
+        inputStreamedData.append("123");
+        inputStreamedData.addNewLineMarkerAt(3);
 
-        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
         // Check input
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
         // Check output
-        assertEquals("123", outputStreamedText.getText());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("123", outputStreamedData.getText());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void shiftJustANewLineTest() throws Exception {
 
-        inputStreamedText.append("");
-        inputStreamedText.addNewLineMarkerAt(0);
+        inputStreamedData.append("");
+        inputStreamedData.addNewLineMarkerAt(0);
 
-        outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
         // Check input
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
         // Check output
-        assertEquals("", outputStreamedText.getText());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(0, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("", outputStreamedData.getText());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(0, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 }

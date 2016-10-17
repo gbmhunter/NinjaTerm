@@ -1,7 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
 import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,15 +16,15 @@ import static org.junit.Assert.assertEquals;
  */
 public class MultiCharTests {
 
-    private StreamedText inputStreamedText;
-    private StreamedText outputStreamedText;
+    private StreamedData inputStreamedData;
+    private StreamedData outputStreamedData;
 
     private NewLineParser newLineParser;
 
     @Before
     public void setUp() throws Exception {
-        inputStreamedText = new StreamedText();
-        outputStreamedText = new StreamedText();
+        inputStreamedData = new StreamedData();
+        outputStreamedData = new StreamedData();
 
         newLineParser = new NewLineParser("EOL");
     }
@@ -32,89 +32,89 @@ public class MultiCharTests {
     @Test
     public void multiCharTest() throws Exception {
 
-        inputStreamedText.append("123EOL456");
+        inputStreamedData.append("123EOL456");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123EOL456", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("123EOL456", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void partialTest() throws Exception {
 
-        inputStreamedText.append("123EO");
+        inputStreamedData.append("123EO");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("EO", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("EO", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(0, outputStreamedText.getNewLineMarkers().size());
+        assertEquals("123", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(0, outputStreamedData.getNewLineMarkers().size());
 
-        inputStreamedText.append("L456");
+        inputStreamedData.append("L456");
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123EOL456", outputStreamedText.getText());
-        assertEquals(0, outputStreamedText.getColourMarkers().size());
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals("123EOL456", outputStreamedData.getText());
+        assertEquals(0, outputStreamedData.getColourMarkers().size());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 
     @Test
     public void withColoursTest() throws Exception {
 
-        inputStreamedText.append("123EO");
-        inputStreamedText.addColour(2, Color.RED);
+        inputStreamedData.append("123EO");
+        inputStreamedData.addColour(2, Color.RED);
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("EO", inputStreamedText.getText());
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals("EO", inputStreamedData.getText());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123", outputStreamedText.getText());
+        assertEquals("123", outputStreamedData.getText());
 
-        assertEquals(1, outputStreamedText.getColourMarkers().size());
-        assertEquals(2, outputStreamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
+        assertEquals(1, outputStreamedData.getColourMarkers().size());
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
-        assertEquals(0, outputStreamedText.getNewLineMarkers().size());
+        assertEquals(0, outputStreamedData.getNewLineMarkers().size());
 
-        inputStreamedText.append("L456");
-        inputStreamedText.addColour(inputStreamedText.getText().length() - 4, Color.GREEN);
+        inputStreamedData.append("L456");
+        inputStreamedData.addColour(inputStreamedData.getText().length() - 4, Color.GREEN);
 
-        newLineParser.parse(inputStreamedText, outputStreamedText);
+        newLineParser.parse(inputStreamedData, outputStreamedData);
 
-        assertEquals("", inputStreamedText.getText());
+        assertEquals("", inputStreamedData.getText());
 
-        assertEquals(0, inputStreamedText.getColourMarkers().size());
-        assertEquals(0, inputStreamedText.getNewLineMarkers().size());
+        assertEquals(0, inputStreamedData.getColourMarkers().size());
+        assertEquals(0, inputStreamedData.getNewLineMarkers().size());
 
-        assertEquals("123EOL456", outputStreamedText.getText());
+        assertEquals("123EOL456", outputStreamedData.getText());
 
         // There should be two text colour objects
-        assertEquals(2, outputStreamedText.getColourMarkers().size());
-        assertEquals(2, outputStreamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.RED, outputStreamedText.getColourMarkers().get(0).color);
-        assertEquals(5, outputStreamedText.getColourMarkers().get(1).position);
-        assertEquals(Color.GREEN, outputStreamedText.getColourMarkers().get(1).color);
+        assertEquals(2, outputStreamedData.getColourMarkers().size());
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
+        assertEquals(5, outputStreamedData.getColourMarkers().get(1).position);
+        assertEquals(Color.GREEN, outputStreamedData.getColourMarkers().get(1).color);
 
-        assertEquals(1, outputStreamedText.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedText.getNewLineMarkers().get(0).intValue());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().size());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
     }
 }

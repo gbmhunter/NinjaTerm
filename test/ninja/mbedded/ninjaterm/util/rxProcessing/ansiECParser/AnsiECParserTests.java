@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,113 +26,113 @@ public class AnsiECParserTests {
 
     private AnsiECParser ansiECParser = new AnsiECParser();
 
-    private StreamedText streamedText;
+    private StreamedData streamedData;
 
     @Before
     public void setUp() throws Exception {
         ansiECParser = new AnsiECParser();
-        streamedText = new StreamedText();
+        streamedData = new StreamedData();
     }
 
     @Test
     public void oneSeqTest() throws Exception {
 
-        ansiECParser.parse("default\u001B[31mred", streamedText);
+        ansiECParser.parse("default\u001B[31mred", streamedData);
 
-        assertEquals("defaultred", streamedText.getText());
+        assertEquals("defaultred", streamedData.getText());
 
-        assertEquals(1, streamedText.getColourMarkers().size());
+        assertEquals(1, streamedData.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
+        assertEquals(7, streamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedData.getColourMarkers().get(0).color);
     }
 
     @Test
     public void twoSeqTest() throws Exception {
 
-        ansiECParser.parse("default\u001B[31mred\u001B[32mgreen", streamedText);
+        ansiECParser.parse("default\u001B[31mred\u001B[32mgreen", streamedData);
 
-        assertEquals("defaultredgreen", streamedText.getText());
+        assertEquals("defaultredgreen", streamedData.getText());
 
-        assertEquals(2, streamedText.getColourMarkers().size());
+        assertEquals(2, streamedData.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
+        assertEquals(7, streamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedData.getColourMarkers().get(0).color);
 
-        assertEquals(10, streamedText.getColourMarkers().get(1).position);
-        assertEquals(Color.rgb(0, 170, 0), streamedText.getColourMarkers().get(1).color);
+        assertEquals(10, streamedData.getColourMarkers().get(1).position);
+        assertEquals(Color.rgb(0, 170, 0), streamedData.getColourMarkers().get(1).color);
     }
 
     @Test
     public void boldRedColourTest() throws Exception {
 
-        ansiECParser.parse("default\u001B[31;1mred", streamedText);
+        ansiECParser.parse("default\u001B[31;1mred", streamedData);
 
-        assertEquals("defaultred", streamedText.getText());
+        assertEquals("defaultred", streamedData.getText());
 
-        assertEquals(1, streamedText.getColourMarkers().size());
+        assertEquals(1, streamedData.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.rgb(255, 85, 85), streamedText.getColourMarkers().get(0).color);
+        assertEquals(7, streamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(255, 85, 85), streamedData.getColourMarkers().get(0).color);
     }
 
     @Test
     public void partialSeqTest() throws Exception {
 
-        ansiECParser.parse("default\u001B", streamedText);
+        ansiECParser.parse("default\u001B", streamedData);
 
-        assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("default", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
 
-        ansiECParser.parse("[31mred", streamedText);
+        ansiECParser.parse("[31mred", streamedData);
 
-        assertEquals("defaultred", streamedText.getText());
+        assertEquals("defaultred", streamedData.getText());
 
-        assertEquals(1, streamedText.getColourMarkers().size());
+        assertEquals(1, streamedData.getColourMarkers().size());
 
-        assertEquals(7, streamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
+        assertEquals(7, streamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedData.getColourMarkers().get(0).color);
     }
 
     @Test
     public void partialSeqTest2() throws Exception {
 
-        ansiECParser.parse("default\u001B", streamedText);
+        ansiECParser.parse("default\u001B", streamedData);
 
-        assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("default", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
 
-        ansiECParser.parse("[", streamedText);
+        ansiECParser.parse("[", streamedData);
 
-        assertEquals("default", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("default", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
 
-        ansiECParser.parse("31mred", streamedText);
+        ansiECParser.parse("31mred", streamedData);
 
-        assertEquals("defaultred", streamedText.getText());
+        assertEquals("defaultred", streamedData.getText());
 
-        assertEquals(1, streamedText.getColourMarkers().size());
-        assertEquals(7, streamedText.getColourMarkers().get(0).position);
-        assertEquals(Color.rgb(170, 0, 0), streamedText.getColourMarkers().get(0).color);
+        assertEquals(1, streamedData.getColourMarkers().size());
+        assertEquals(7, streamedData.getColourMarkers().get(0).position);
+        assertEquals(Color.rgb(170, 0, 0), streamedData.getColourMarkers().get(0).color);
     }
 
     @Test
     public void unsupportedEscapeSequenceTest() throws Exception {
 
-        ansiECParser.parse("abc\u001B[20mdef", streamedText);
+        ansiECParser.parse("abc\u001B[20mdef", streamedData);
 
-        assertEquals("abcdef", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abcdef", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 
     @Test
     public void unsupportedEscapeSequence2Test() throws Exception {
 
         // Use a bogus first and second number
-        ansiECParser.parse("abc\u001B[20;5mdef", streamedText);
+        ansiECParser.parse("abc\u001B[20;5mdef", streamedData);
 
-        assertEquals("abcdef", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abcdef", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 
     @Test
@@ -140,10 +140,10 @@ public class AnsiECParserTests {
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiECParser.parse("abc\u001B[20def", streamedText);
+        ansiECParser.parse("abc\u001B[20def", streamedData);
 
-        assertEquals("abc\u001B[20def", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc\u001B[20def", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 
     @Test
@@ -151,37 +151,37 @@ public class AnsiECParserTests {
 
         // Provide escape sequence which has been truncated. Since it is not a valid escape
         // sequence, it should be displayed in the output
-        ansiECParser.parse("abc\u001B[def", streamedText);
+        ansiECParser.parse("abc\u001B[def", streamedData);
 
-        assertEquals("abc\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc\u001B[def", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest3() throws Exception {
 
-        ansiECParser.parse("abc\u001B[", streamedText);
+        ansiECParser.parse("abc\u001B[", streamedData);
 
-        assertEquals("abc", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
 
-        ansiECParser.parse("def", streamedText);
+        ansiECParser.parse("def", streamedData);
 
-        assertEquals("abc\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc\u001B[def", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 
     @Test
     public void truncatedEscapeSequenceTest4() throws Exception {
 
-        ansiECParser.parse("abc\u001B[", streamedText);
+        ansiECParser.parse("abc\u001B[", streamedData);
 
-        assertEquals("abc", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
 
-        ansiECParser.parse("12;\u001B[def", streamedText);
+        ansiECParser.parse("12;\u001B[def", streamedData);
 
-        assertEquals("abc\u001B[12;\u001B[def", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
+        assertEquals("abc\u001B[12;\u001B[def", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
     }
 }

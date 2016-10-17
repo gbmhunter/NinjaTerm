@@ -91,7 +91,7 @@ public class Logging {
         };
 
         newOutputListener = streamedText -> {
-            // Convert the StreamedText object into a linear String with new lines
+            // Convert the StreamedData object into a linear String with new lines
             // inserted at the correct places.
             String ansiParserOutputText = streamedText.convertToStringWithNewLines("\r\n");
             saveNewDataToLogFile(ansiParserOutputText);

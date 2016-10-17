@@ -1,7 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.slf4j.Logger;
 
 import java.util.regex.Matcher;
@@ -48,7 +48,7 @@ public class NewLineParser {
      * @param input
      * @param output
      */
-    public void parse(StreamedText input, StreamedText output) {
+    public void parse(StreamedData input, StreamedData output) {
 
         Matcher matcher = newLinePattern.matcher(input.getText());
 
@@ -64,7 +64,7 @@ public class NewLineParser {
             // We want to add a new line marker at the position of the first character on the new line.
             // This is the same as matcher.end(). We also want to shift all data from input to
             // output up to this point
-            output.shiftCharsIn(input, matcher.end() - currShiftIndex);
+            output.shiftDataIn(input, matcher.end() - currShiftIndex);
 
             output.addNewLineMarkerAt(output.getText().length());
 

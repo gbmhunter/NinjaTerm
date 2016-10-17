@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>shiftCharsInUntilAPartialMatch()</code> method of <code>StreamedText</code> class.
+ * Unit tests for the <code>shiftCharsInUntilAPartialMatch()</code> method of <code>StreamedData</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-15
@@ -16,15 +16,15 @@ import static org.junit.Assert.assertEquals;
  */
 public class ShiftCharsInUntilPartialMatchTests {
 
-    private StreamedText input;
-    private StreamedText output;
+    private StreamedData input;
+    private StreamedData output;
 
     private Pattern pattern;
 
     @Before
     public void setUp() throws Exception {
-        input = new StreamedText();
-        output = new StreamedText();
+        input = new StreamedData();
+        output = new StreamedData();
 
         pattern = Pattern.compile("EOL");
     }

@@ -8,7 +8,7 @@
 //import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 //import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.AnsiECParser;
 //import ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter.StreamingFilter;
-//import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+//import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 //import org.junit.Before;
 //import org.junit.Rule;
 //import org.junit.Test;
@@ -31,22 +31,22 @@
 //    public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
 //
 //    private AnsiECParser ansiECParser;
-//    private StreamedText ansiECParserOutput;
+//    private StreamedData ansiECParserOutput;
 //
 //    private StreamingFilter streamingFilter;
-//    private StreamedText streamFilterOutput;
+//    private StreamedData streamFilterOutput;
 //
 //    private ObservableList<Node> textNodes;
 //
 //    @Before
 //    public void setUp() throws Exception {
 //        ansiECParser = new AnsiECParser();
-//        ansiECParserOutput = new StreamedText();
+//        ansiECParserOutput = new StreamedData();
 //
 //        streamingFilter = new StreamingFilter();
 //        streamingFilter.setFilterPattern("a");
 //
-//        streamFilterOutput = new StreamedText();
+//        streamFilterOutput = new StreamedData();
 //
 //        textNodes = FXCollections.observableArrayList();
 //        Text text = new Text();

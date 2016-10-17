@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedText</code> class.
+ * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedData</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-16
@@ -15,24 +15,24 @@ import static org.junit.Assert.assertEquals;
  */
 public class ClearTests {
 
-    private StreamedText streamedText;
+    private StreamedData streamedData;
 
     @Before
     public void setUp() throws Exception {
-        streamedText = new StreamedText();
+        streamedData = new StreamedData();
     }
 
     @Test
     public void clearTest() throws Exception {
 
-        streamedText.append("1234");
-        streamedText.addColour(0, Color.RED);
-        streamedText.addNewLineMarkerAt(0);
+        streamedData.append("1234");
+        streamedData.addColour(0, Color.RED);
+        streamedData.addNewLineMarkerAt(0);
 
-        streamedText.clear();
+        streamedData.clear();
 
-        assertEquals("", streamedText.getText());
-        assertEquals(0, streamedText.getColourMarkers().size());
-        assertEquals(0, streamedText.getNewLineMarkers().size());
+        assertEquals("", streamedData.getText());
+        assertEquals(0, streamedData.getColourMarkers().size());
+        assertEquals(0, streamedData.getNewLineMarkers().size());
     }
 }

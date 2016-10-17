@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter;
 
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.slf4j.Logger;
 
 import java.util.regex.Matcher;
@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 /**
  * <p>
  * Class contains a static method for shifting a provided number of characters from one input
- * <code>{@link StreamedText}</code> object to another output <code>{@link StreamedText}</code>
+ * <code>{@link StreamedData}</code> object to another output <code>{@link StreamedData}</code>
  * object.</p>
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
@@ -43,29 +43,29 @@ public class StreamingFilter {
      *
      */
     public void parse(
-            StreamedText inputStreamedText,
-            StreamedText outputStreamedText) {
+            StreamedData inputStreamedData,
+            StreamedData outputStreamedData) {
 
         logger.debug(getClass().getSimpleName() + ".parse() called with:");
-        logger.debug("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
-        logger.debug("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
+        logger.debug("inputStreamedData { " + Debugging.convertNonPrintable(inputStreamedData.toString()) + "}.");
+        logger.debug("outputStreamedData { " + Debugging.convertNonPrintable(outputStreamedData.toString()) + "}.");
 
         if(filterPattern.equals("")) {
             logger.debug("Filter text empty. Not performing any filtering.");
 
             // Shift all input to output
-            outputStreamedText.shiftCharsIn(inputStreamedText, inputStreamedText.getText().length());
+            outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
             return;
         }
 
-        if(inputStreamedText.getText().equals("")) {
+        if(inputStreamedData.getText().equals("")) {
             logger.debug("No filtering to perform. Returning...");
             return;
         }
 
         // Search for new line characters
-        //String lines[] = inputStreamedText.getText().split("(?<=[\\n])");
-        String lines[] = inputStreamedText.splitTextAtNewLines();
+        //String lines[] = inputStreamedData.getText().split("(?<=[\\n])");
+        String lines[] = inputStreamedData.splitTextAtNewLines();
 
         for (String line : lines) {
 
@@ -73,7 +73,7 @@ public class StreamingFilter {
             // to check for a match. This will occur if a match has already occurred on this line.
             if(releaseTextOnCurrLine) {
                 logger.debug("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
-                outputStreamedText.shiftCharsIn(inputStreamedText, line.length());
+                outputStreamedData.shiftDataIn(inputStreamedData, line.length());
 
                 /*if(hasNewLineChar(line)) {
                     releaseTextOnCurrLine = false;
@@ -98,7 +98,7 @@ public class StreamingFilter {
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
                 logger.debug("numCharsToRelease = " + numCharsToRelease);
-                outputStreamedText.shiftCharsIn(inputStreamedText, numCharsToRelease);
+                outputStreamedData.shiftDataIn(inputStreamedData, numCharsToRelease);
 
                 // Check to see if this is the last line. If so, set the releaseTextOnCurrLine to true
                 // so that next time this function is called, any other text which is also on this line
@@ -116,15 +116,15 @@ public class StreamingFilter {
                 //if(hasNewLineChar(line)) {
                 if(line != lines[lines.length - 1]) {
                     logger.debug("Deleting line.");
-                    inputStreamedText.removeChars(line.length());
+                    inputStreamedData.removeChars(line.length());
                 }
 
             }
         } // for (String line : lines)
 
         logger.debug(getClass().getSimpleName() + ".parse() finished. Variables are now:");
-        logger.debug("inputStreamedText { " + Debugging.convertNonPrintable(inputStreamedText.toString()) + "}.");
-        logger.debug("outputStreamedText { " + Debugging.convertNonPrintable(outputStreamedText.toString()) + "}.");
+        logger.debug("inputStreamedData { " + Debugging.convertNonPrintable(inputStreamedData.toString()) + "}.");
+        logger.debug("outputStreamedData { " + Debugging.convertNonPrintable(outputStreamedData.toString()) + "}.");
 
     }
 

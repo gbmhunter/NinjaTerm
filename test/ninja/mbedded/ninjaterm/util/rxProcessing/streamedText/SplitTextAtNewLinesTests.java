@@ -6,7 +6,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedText</code> class.
+ * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedData</code> class.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-16
@@ -14,18 +14,18 @@ import static org.junit.Assert.assertEquals;
  */
 public class SplitTextAtNewLinesTests {
 
-    private StreamedText streamedText;
+    private StreamedData streamedData;
 
     @Before
     public void setUp() throws Exception {
-        streamedText = new StreamedText();
+        streamedData = new StreamedData();
     }
 
     @Test
     public void oneLineTest() throws Exception {
 
-        streamedText.append("1234");
-        String[] lines = streamedText.splitTextAtNewLines();
+        streamedData.append("1234");
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(1, lines.length);
         assertEquals("1234", lines[0]);
@@ -34,10 +34,10 @@ public class SplitTextAtNewLinesTests {
     @Test
     public void twoLineTest() throws Exception {
 
-        streamedText.append("123456");
-        streamedText.addNewLineMarkerAt(3);
+        streamedData.append("123456");
+        streamedData.addNewLineMarkerAt(3);
 
-        String[] lines = streamedText.splitTextAtNewLines();
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(2, lines.length);
         assertEquals("123", lines[0]);
@@ -47,11 +47,11 @@ public class SplitTextAtNewLinesTests {
     @Test
     public void threeLineTest() throws Exception {
 
-        streamedText.append("123456789");
-        streamedText.addNewLineMarkerAt(3);
-        streamedText.addNewLineMarkerAt(6);
+        streamedData.append("123456789");
+        streamedData.addNewLineMarkerAt(3);
+        streamedData.addNewLineMarkerAt(6);
 
-        String[] lines = streamedText.splitTextAtNewLines();
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(3, lines.length);
         assertEquals("123", lines[0]);
@@ -62,11 +62,11 @@ public class SplitTextAtNewLinesTests {
     @Test
     public void twoLineMarkersOnSameCharTest() throws Exception {
 
-        streamedText.append("123456");
-        streamedText.addNewLineMarkerAt(3);
-        streamedText.addNewLineMarkerAt(3);
+        streamedData.append("123456");
+        streamedData.addNewLineMarkerAt(3);
+        streamedData.addNewLineMarkerAt(3);
 
-        String[] lines = streamedText.splitTextAtNewLines();
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(3, lines.length);
         assertEquals("123", lines[0]);
@@ -77,10 +77,10 @@ public class SplitTextAtNewLinesTests {
     @Test
     public void justANewLineTest() throws Exception {
 
-        streamedText.append("");
-        streamedText.addNewLineMarkerAt(0);
+        streamedData.append("");
+        streamedData.addNewLineMarkerAt(0);
 
-        String[] lines = streamedText.splitTextAtNewLines();
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(2, lines.length);
         assertEquals("", lines[0]);
@@ -92,11 +92,11 @@ public class SplitTextAtNewLinesTests {
     @Test
     public void newLineAtEndTest() throws Exception {
 
-        streamedText.append("abcEOLdefEOL");
-        streamedText.addNewLineMarkerAt(6);
-        streamedText.addNewLineMarkerAt(12);
+        streamedData.append("abcEOLdefEOL");
+        streamedData.addNewLineMarkerAt(6);
+        streamedData.addNewLineMarkerAt(12);
 
-        String[] lines = streamedText.splitTextAtNewLines();
+        String[] lines = streamedData.splitTextAtNewLines();
 
         assertEquals(3, lines.length);
         assertEquals("abcEOL", lines[0]);
