@@ -108,8 +108,6 @@ public class RxDataEngine {
      */
     public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
 
-    public ReadOnlyBooleanProperty isRxFrozen = new ReadOnlyBooleanWrapper();
-
     public int bufferSize = 20000;
 
 

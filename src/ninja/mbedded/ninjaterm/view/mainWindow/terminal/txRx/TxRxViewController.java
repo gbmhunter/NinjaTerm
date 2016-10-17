@@ -41,8 +41,8 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-11
  * @since 2016-07-16
+ * @last-modified 2016-10-17
  */
 public class TxRxViewController {
 
@@ -372,14 +372,14 @@ public class TxRxViewController {
         //==============================================//
 
         freezeRxButton.setOnAction(event -> {
-            if(!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
+            if(!terminal.txRx.rxDataEngine.isFrozen.get()) {
                 terminal.txRx.freezeRx();
             } else {
                 terminal.txRx.unFreezeRx();
             }
         });
 
-        terminal.txRx.rxDataEngine.isRxFrozen.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.rxDataEngine.isFrozen.addListener((observable, oldValue, newValue) -> {
             refreshFreezeRxButton();
         });
 
@@ -459,7 +459,7 @@ public class TxRxViewController {
     }
 
     private void refreshFreezeRxButton() {
-        if (!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
+        if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
             freezeRxButton.setText("Freeze RX");
             freezeRxButton.setGraphic(glyphFont.create(FontAwesome.Glyph.LOCK));
         } else {
