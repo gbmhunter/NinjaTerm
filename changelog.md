@@ -1,4 +1,4 @@
-vX.X.X
+v0.7.0
 ------
 
 - Added shortcut key to speed up splash screen (spacebar), closes #127.
