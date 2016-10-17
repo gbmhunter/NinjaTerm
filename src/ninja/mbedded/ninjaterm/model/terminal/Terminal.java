@@ -9,13 +9,11 @@ import ninja.mbedded.ninjaterm.model.terminal.comPortSettings.ComPortSettings;
 import ninja.mbedded.ninjaterm.model.terminal.logging.Logging;
 import ninja.mbedded.ninjaterm.model.terminal.stats.Stats;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
-import ninja.mbedded.ninjaterm.util.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortException;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
@@ -61,8 +59,6 @@ public class Terminal {
     public ComPort comPort = new ComPort();
 
     private OnRxDataListener onRxDataListener;
-
-    public Decoder decoder = new Decoder();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -137,8 +133,8 @@ public class Terminal {
     private void handleOnRxData(byte[] rxData) {
         logger.debug("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
 
-        String rxText;
-        rxText = decoder.parse(rxData);
+        //String rxText;
+        //rxText = decoder.parse(rxData);
 
         //System.out.println("rxText = " + rxText);
 
@@ -146,11 +142,11 @@ public class Terminal {
 
             // Add the received data to the model
             //txRxViewController.addTxRxText(rxText);
-            txRx.addRxData(rxText);
+            txRx.addRxData(rxData);
 
             // Update stats in app model
-            stats.numCharactersRx.set(stats.numCharactersRx.get() + rxText.length());
-            model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxText.length());
+            stats.numCharactersRx.set(stats.numCharactersRx.get() + rxData.length);
+            model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxData.length);
 
         });
     }

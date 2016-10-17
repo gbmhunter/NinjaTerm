@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.6.4/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.4_macos.dmg" newVersion="0.6.4" newMediaFileId="36" fileSize="6918279" bundledJre="" archive="false">
-    <comment language="en">v0.6.4&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.7.0/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.0_macos.dmg" newVersion="0.7.0" newMediaFileId="36" fileSize="5791879" bundledJre="" archive="false">
+    <comment language="en">v0.7.0&#xD;
+------&#xD;
+&#xD;
+- Added shortcut key to speed up splash screen (spacebar), closes #127.&#xD;
+- Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.&#xD;
+- Added a "Freeze RX" option to the TX/RX sub-tab, closes #132.&#xD;
+- Fixed bug where freeze RX data functionality did not work correctly with filtering, closes #136.&#xD;
+- Added ability to display non-printable characters on TX/RX panes (e.g. using special font), closes #134.&#xD;
+&#xD;
+v0.6.4&#xD;
 ------&#xD;
 &#xD;
 - When the "Clear Text" button is pressed, the RX text now retains the previous formatting colour, closes #131.&#xD;
@@ -108,8 +117,17 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.6.4_windows.exe" newVersion="0.6.4" newMediaFileId="23" fileSize="7390208" bundledJre="" archive="false">
-    <comment language="en">v0.6.4&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.0_windows.exe" newVersion="0.7.0" newMediaFileId="23" fileSize="6344192" bundledJre="" archive="false">
+    <comment language="en">v0.7.0&#xD;
+------&#xD;
+&#xD;
+- Added shortcut key to speed up splash screen (spacebar), closes #127.&#xD;
+- Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.&#xD;
+- Added a "Freeze RX" option to the TX/RX sub-tab, closes #132.&#xD;
+- Fixed bug where freeze RX data functionality did not work correctly with filtering, closes #136.&#xD;
+- Added ability to display non-printable characters on TX/RX panes (e.g. using special font), closes #134.&#xD;
+&#xD;
+v0.6.4&#xD;
 ------&#xD;
 &#xD;
 - When the "Clear Text" button is pressed, the RX text now retains the previous formatting colour, closes #131.&#xD;

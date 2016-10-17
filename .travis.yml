@@ -1,0 +1,21 @@
+language: java
+
+sudo: required
+
+jdk:
+  - oraclejdk8
+
+install: true
+
+script:
+ # Update to the latest java 8 version for full javafx support 
+ - sudo apt-get update && sudo apt-get install oracle-java8-installer
+ - java -version
+ 
+ # Install a virtual frame buffer so that the screen isn't rendered
+ - sudo apt-get install xvfb
+ - Xvfb :99 &>/dev/null &
+ - export DISPLAY=:99
+ 
+ # Run tests
+ - mvn package assembly:single

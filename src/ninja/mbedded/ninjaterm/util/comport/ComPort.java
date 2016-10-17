@@ -3,7 +3,7 @@ package ninja.mbedded.ninjaterm.util.comport;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortException;
-import ninja.mbedded.ninjaterm.util.Decoding.BytesToString;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.BytesToString;
 
 import java.util.ArrayList;
 import java.util.Iterator;

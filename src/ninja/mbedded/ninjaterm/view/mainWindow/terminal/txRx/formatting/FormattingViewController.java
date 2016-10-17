@@ -2,14 +2,13 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting;
 
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
-import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 /**
@@ -65,7 +64,7 @@ public class FormattingViewController {
         // Populate decoding options combobox
         decodingComboBox.getItems().setAll(DecodingOptions.values());
 
-        terminal.decoder.decodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
+        terminal.txRx.rxDataEngine.selDecodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
 
         // Add listener to combobox
         /*decodingComboBox.setOnAction(event -> {

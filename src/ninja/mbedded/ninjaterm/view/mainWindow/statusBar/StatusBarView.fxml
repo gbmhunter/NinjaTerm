@@ -21,6 +21,9 @@
         </padding>
 
         <HBox spacing="10">
+            <!-- ========================================= -->
+            <!-- ============= STATUS MESSAGES =========== -->
+            <!-- ========================================= -->
             <VBox minHeight="100"
                   maxHeight="100"
                   HBox.hgrow="ALWAYS"
@@ -30,6 +33,16 @@
                     <TextFlow fx:id="statusTextFlow"></TextFlow>
                 </ScrollPane>
             </VBox>
+
+            <!-- ========================================= -->
+            <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
+            <!-- ========================================= -->
+
+            <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="100" contentDisplay="TOP"/>
+
+            <!-- ========================================= -->
+            <!-- ================== LEDS ================= -->
+            <!-- ========================================= -->
             <VBox minWidth="100" maxWidth="100"
                   styleClass="border">
                 <GridPane vgap="5" hgap="5" alignment="CENTER">
@@ -48,6 +61,9 @@
         </HBox>
     </VBox>
 
+    <!-- ========================================= -->
+    <!-- =============== STATUS BAR ============== -->
+    <!-- ========================================= -->
     <HBox minHeight="20" style="-fx-background-color: #CCCCCC;">
         <padding>
             <Insets top="2" bottom="2" left="2" right="2"/>

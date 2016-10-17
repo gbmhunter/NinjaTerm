@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.logging;
 
 import javafx.beans.property.ReadOnlyBooleanWrapper;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
@@ -10,7 +9,6 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +22,7 @@ import java.util.Date;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-22
- * @last-modified   2016-09-25
+ * @last-modified   2016-10-17
  */
 public class Logging {
 
@@ -40,13 +38,19 @@ public class Logging {
         OVERWRITE
     }
 
+    /**
+     * The different data streams that can be logged.
+     */
+    public enum WhatAreWeLogging {
+        RAW_RX_DATA_AS_ASCII,
+        RX_PANE_OUTPUT,
+    }
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
     public SimpleStringProperty logFilePath = new SimpleStringProperty("");
-
-    public SimpleBooleanProperty swallowAnsiEscapeCodes = new SimpleBooleanProperty(false);
 
     public ReadOnlyBooleanWrapper isLogging = new ReadOnlyBooleanWrapper();
 
@@ -55,11 +59,13 @@ public class Logging {
      */
     public SimpleObjectProperty<FileBehaviour> selFileBehaviour = new SimpleObjectProperty<>(FileBehaviour.APPEND);
 
+    public SimpleObjectProperty<WhatAreWeLogging> selWhatAreWeLogging = new SimpleObjectProperty<>(WhatAreWeLogging.RAW_RX_DATA_AS_ASCII);
+
     private Model model;
     private Terminal terminal;
 
     private RawDataReceivedListener rawDataReceivedListener;
-    private StreamedTextListener ansiParserOutputListener;
+    private StreamedTextListener newOutputListener;
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;
@@ -84,8 +90,10 @@ public class Logging {
             saveNewDataToLogFile(data);
         };
 
-        ansiParserOutputListener = streamedText -> {
-            String ansiParserOutputText = streamedText.getText();
+        newOutputListener = streamedText -> {
+            // Convert the StreamedData object into a linear String with new lines
+            // inserted at the correct places.
+            String ansiParserOutputText = streamedText.convertToStringWithNewLines("\r\n");
             saveNewDataToLogFile(ansiParserOutputText);
         };
 
@@ -132,13 +140,15 @@ public class Logging {
             return;
         }
 
-        // Add listener. This will cause saveNewDataToLogFile() to be called when there is new
-        // RX data
-        if(swallowAnsiEscapeCodes.get()) {
-            terminal.txRx.ansiParserOutputListeners.add(ansiParserOutputListener);
-        } else {
+        // Add listener at the correct point along the RX data processing chain.
+        // This will cause saveNewDataToLogFile() to be called when there is new RX data
+        if(selWhatAreWeLogging.get() == WhatAreWeLogging.RAW_RX_DATA_AS_ASCII) {
             // Listen to the raw RX data coming from the COM port
-            terminal.txRx.rawDataReceivedListeners.add(rawDataReceivedListener);
+            terminal.txRx.rxDataEngine.rawDataReceivedListeners.add(rawDataReceivedListener);
+        } else if (selWhatAreWeLogging.get() == WhatAreWeLogging.RX_PANE_OUTPUT){
+            terminal.txRx.rxDataEngine.newOutputListeners.add(newOutputListener);
+        } else {
+            throw new RuntimeException("WhatAreWeLogging enum unsupported.");
         }
 
         model.status.addMsg("Logging enabled to \"" + logFilePath.get() + "\".");
@@ -178,11 +188,15 @@ public class Logging {
 
         isLogging.set(false);
 
-        // Remove the listener. This will stop calls to saveNewDataToLogFile()
-        if(swallowAnsiEscapeCodes.get()) {
-            terminal.txRx.ansiParserOutputListeners.remove(ansiParserOutputListener);
+        // Remove listener at the correct point along the RX data processing chain.
+        // This will stop saveNewDataToLogFile() from being called.
+        if(selWhatAreWeLogging.get() == WhatAreWeLogging.RAW_RX_DATA_AS_ASCII) {
+            // Listen to the raw RX data coming from the COM port
+            terminal.txRx.rxDataEngine.rawDataReceivedListeners.remove(rawDataReceivedListener);
+        } else if (selWhatAreWeLogging.get() == WhatAreWeLogging.RX_PANE_OUTPUT){
+            terminal.txRx.rxDataEngine.newOutputListeners.remove(newOutputListener);
         } else {
-            terminal.txRx.rawDataReceivedListeners.remove(rawDataReceivedListener);
+            throw new RuntimeException("WhatAreWeLogging enum unsupported.");
         }
 
         // Now close the file
