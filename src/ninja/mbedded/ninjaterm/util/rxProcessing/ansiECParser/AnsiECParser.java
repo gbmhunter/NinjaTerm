@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
- * @last-modified   2016-10-14
+ * @last-modified   2016-10-17
  */
 public class AnsiECParser {
 
@@ -63,18 +63,15 @@ public class AnsiECParser {
      * @param inputString           The input string which can contain display text and ANSI escape codes.
      * @param outputStreamedData    Contains streamed text that has been release from this parser.
      */
-    public void parse(String inputString, StreamedData outputStreamedData) {
+    public void parse(StreamedData inputData, StreamedData outputStreamedData) {
 
 //        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
-//        if(inputString.charAt(inputString.length() - 1) == 'm') {
-//            int bogus = 0;
-//        }
+        // Prepend withheld text onto the start of the input string
+        // @// TODO: 2016-10-17 Remove the internal withheld data variable, and just keep the data in the inputData object until it is ready to be release. These next two lines are a hacky work around
+        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
+        inputData.clear();
 
-        //int numCharsAdded = 0;
-
-        // Prepend withheld text onto the end of the input string
-        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputString;
         withheldTextWithPartialMatch = "";
 
         if(!isEnabled.get()) {
