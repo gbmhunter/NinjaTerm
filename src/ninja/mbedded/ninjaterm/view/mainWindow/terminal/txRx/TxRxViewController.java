@@ -23,7 +23,7 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.streamedText.StreamedText;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -41,8 +41,8 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-11
  * @since 2016-07-16
+ * @last-modified 2016-10-17
  */
 public class TxRxViewController {
 
@@ -372,14 +372,14 @@ public class TxRxViewController {
         //==============================================//
 
         freezeRxButton.setOnAction(event -> {
-            if(!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
+            if(!terminal.txRx.rxDataEngine.isFrozen.get()) {
                 terminal.txRx.freezeRx();
             } else {
                 terminal.txRx.unFreezeRx();
             }
         });
 
-        terminal.txRx.rxDataEngine.isRxFrozen.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.rxDataEngine.isFrozen.addListener((observable, oldValue, newValue) -> {
             refreshFreezeRxButton();
         });
 
@@ -420,7 +420,7 @@ public class TxRxViewController {
         // to get updated automatically when the model modifies this
         // ObservableList
         //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
-        terminal.txRx.rxDataEngine.newStreamedTextListeners.add(streamedText -> {
+        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
             newStreamedTextListener(streamedText);
         });
 
@@ -459,7 +459,7 @@ public class TxRxViewController {
     }
 
     private void refreshFreezeRxButton() {
-        if (!terminal.txRx.rxDataEngine.isRxFrozen.get()) {
+        if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
             freezeRxButton.setText("Freeze RX");
             freezeRxButton.setGraphic(glyphFont.create(FontAwesome.Glyph.LOCK));
         } else {
@@ -473,24 +473,24 @@ public class TxRxViewController {
      * This listener updates the UI with "streamed" RX data. The model is responsible
      * for calling the listener after RX data has been received and processed.
      *
-     * @param streamedText
+     * @param streamedData
      */
-    private void newStreamedTextListener(StreamedText streamedText) {
+    private void newStreamedTextListener(StreamedData streamedData) {
 
-        logger.debug("newStreamedTextListener() called with streamedText = " + streamedText);
+        logger.debug("newStreamedTextListener() called with streamedData = " + streamedData);
 
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
-        numCharsInRxTextNodes += streamedText.getText().length();
+        numCharsInRxTextNodes += streamedData.getText().length();
 
         // Move all text/colour info provided in this streamed text object into the
         // Text nodes that make up the RX data view
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
-                streamedText.shiftToTextNodes(observableList, observableList.size() - 1);
+                streamedData.shiftToTextNodes(observableList, observableList.size() - 1);
                 break;
             case SEPARATE_TX_RX:
-                streamedText.shiftToTextNodes(observableList, observableList.size());
+                streamedData.shiftToTextNodes(observableList, observableList.size());
                 break;
             default:
                 throw new RuntimeException("selLayoutOption not recognised.");

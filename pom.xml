@@ -4,7 +4,7 @@
   <artifactId>NinjaTerm</artifactId>
   <groupId>NinjaTerm</groupId>
   <packaging>jar</packaging>
-  <version>0.1</version>
+  <version>0.7.0</version>
   <name>NinjaTerm</name>
   <repositories>
     <repository>
@@ -106,6 +106,33 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-my-jar-with-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>Main</mainClass>
+          <arguments>
+            <argument>no-splash</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>

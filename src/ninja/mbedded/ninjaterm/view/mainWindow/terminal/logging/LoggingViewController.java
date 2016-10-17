@@ -3,7 +3,6 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
@@ -21,7 +20,7 @@ import java.io.File;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-09-25
+ * @last-modified 2016-10-17
  */
 public class LoggingViewController {
 
@@ -48,7 +47,10 @@ public class LoggingViewController {
     private RadioButton overwriteFileBehaviourRadioButton;
 
     @FXML
-    private CheckBox swallowAnsiEscapeCodes;
+    private RadioButton rawRxDataAsAsciiRadioButton;
+
+    @FXML
+    private RadioButton rxPaneOutputRadioButton;
 
     @FXML
     private Button startStopLoggingButton;
@@ -63,6 +65,8 @@ public class LoggingViewController {
     private GlyphFont glyphFont;
 
     private ToggleGroupValue<Logging.FileBehaviour> fileBehvaiourToggleGroupValue = new ToggleGroupValue<>();
+
+    private ToggleGroupValue<Logging.WhatAreWeLogging> whatAreWeLoggingTGV = new ToggleGroupValue<>();
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -113,10 +117,13 @@ public class LoggingViewController {
         Bindings.bindBidirectional(fileBehvaiourToggleGroupValue.valueProperty(), terminal.logging.selFileBehaviour);
 
         //==============================================//
-        //======= SWALLOW ANSI ESCAPE CODES SETUP ======//
+        //========== WHAT ARE WE LOGGING SETUP =========//
         //==============================================//
 
-        Bindings.bindBidirectional(swallowAnsiEscapeCodes.selectedProperty(), terminal.logging.swallowAnsiEscapeCodes);
+        whatAreWeLoggingTGV.add(rawRxDataAsAsciiRadioButton, Logging.WhatAreWeLogging.RAW_RX_DATA_AS_ASCII);
+        whatAreWeLoggingTGV.add(rxPaneOutputRadioButton, Logging.WhatAreWeLogging.RX_PANE_OUTPUT);
+
+        Bindings.bindBidirectional(whatAreWeLoggingTGV.valueProperty(), terminal.logging.selWhatAreWeLogging);
 
     }
 
@@ -150,7 +157,8 @@ public class LoggingViewController {
             browseButton.setDisable(false);
             appendFileBehaviourRadioButton.setDisable(false);
             overwriteFileBehaviourRadioButton.setDisable(false);
-            swallowAnsiEscapeCodes.setDisable(false);
+            rawRxDataAsAsciiRadioButton.setDisable(false);
+            rxPaneOutputRadioButton.setDisable(false);
 
         } else {
             startStopLoggingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
@@ -163,7 +171,8 @@ public class LoggingViewController {
             browseButton.setDisable(true);
             appendFileBehaviourRadioButton.setDisable(true);
             overwriteFileBehaviourRadioButton.setDisable(true);
-            swallowAnsiEscapeCodes.setDisable(true);
+            rawRxDataAsAsciiRadioButton.setDisable(true);
+            rxPaneOutputRadioButton.setDisable(true);
         }
     }
 

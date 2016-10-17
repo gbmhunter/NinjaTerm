@@ -33,6 +33,7 @@ Developing
 3. Download the community edition of Intellij IDEA (it's free!). Import the project in IntelliJ (`pom.xml` file included in repo). Select the JDK installed on your computer.
 5. Make sure you are on the develop branch. Create a new branch from the head of the develop branch to create your new feature on.
 6. Write code!
+7. Build/run NinjaTerm by typing `mvn exec:java` (this will start NinjaTerm without the splash screen, for quicker debugging).
 7. Commit and submit a pull-request when your feature is complete.
 
 [Scene Builder](http://gluonhq.com/labs/scene-builder/) can be great tool to install alongside IntelliJ for faster development of the JavaFX UI.
@@ -42,11 +43,12 @@ Releasing New Version
 
 NOTE: The order of the following tasks is important!
 
-1. Make sure that you are on the "release" branch, and that desired updates have been merged from the feature branches.
+1. Make sure that you are on the `release` branch, and that desired updates have been merged from the feature branches.
 1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
 2. Update README.md with the new version number and "last changed" date.
 3. Update the version number in `docs/index.html`. This is contained on the line `<body onload="updateVersionNumber('v0.4.0')">`. 
-3. Build the .jar artifact by clicking Build->Build Artifacts in IntelliJ.
+3. Update the version number in `pom.xml`, e.g. `<version>0.4.0</version>`.
+3. Build the .jar artifact running `mvn assembly:single` from the command line.
 4. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
 5. Click "Save Project" and then "Build Project".
 6. Once the installers have been created, overwrite the "updates.xml" in the repo root directory with the one from the install/ directory.

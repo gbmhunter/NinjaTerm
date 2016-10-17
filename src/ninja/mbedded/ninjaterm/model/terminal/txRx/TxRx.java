@@ -11,7 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxDataEngine.RxDataEngine;
+import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -166,7 +166,7 @@ public class TxRx {
 
             // Call the RX data function (this function doesn't know the difference between actual RX data
             // and echoed TX data)
-            addRxData(dataAsString);
+            addRxData(dataAsByteArray);
         }
 
         // Finally, update listeners
@@ -229,7 +229,7 @@ public class TxRx {
      *
      * @param data
      */
-    public void addRxData(String data) {
+    public void addRxData(byte[] data) {
 
         rxDataEngine.parse(data);
 
@@ -294,18 +294,18 @@ public class TxRx {
 
     public void freezeRx() {
         //isRxFrozenInternal.set(true);
-        ((SimpleBooleanProperty) rxDataEngine.isRxFrozen).set(true);
+        rxDataEngine.isFrozen.set(true);
         model.status.addMsg("RX data frozen.");
     }
 
     public void unFreezeRx() {
         //isRxFrozenInternal.set(false);
-        ((SimpleBooleanProperty) rxDataEngine.isRxFrozen).set(false);
+        rxDataEngine.isFrozen.set(false);
         model.status.addMsg("RX data un-frozen.");
 
         // Call this to release any streamed text which has been building up since the
         // RX data was frozen
-        addRxData("");
+        addRxData(new byte[]{});
     }
 
 }

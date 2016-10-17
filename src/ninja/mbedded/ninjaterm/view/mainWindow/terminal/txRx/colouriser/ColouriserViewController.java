@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.Decoding.DecodingOptions;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 /**
@@ -50,8 +50,9 @@ public class ColouriserViewController {
         Bindings.bindBidirectional(parseAnsiEscapeCodesCheckBox.selectedProperty(), terminal.txRx.colouriser.ansiEscapeCodesEnabled);
 
         // We only want this checkbox control enabled when the decoding mode is set to ASCII
-        terminal.decoder.decodingOption.addListener((observable, oldValue, newValue) -> {
-            if(newValue == DecodingOptions.ASCII) {
+        // (or an ASCII variant)
+        terminal.txRx.rxDataEngine.selDecodingOption.addListener((observable, oldValue, newValue) -> {
+            if(newValue == DecodingOptions.ASCII || newValue == DecodingOptions.ASCII_WITH_CONTROL_CHARS) {
                 parseAnsiEscapeCodesCheckBox.setDisable(false);
             } else {
                 parseAnsiEscapeCodesCheckBox.setDisable(true);

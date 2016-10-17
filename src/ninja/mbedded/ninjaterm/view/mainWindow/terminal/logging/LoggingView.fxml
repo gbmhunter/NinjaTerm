@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-22
-* @last-modified   2016-09-22
+* @last-modified   2016-10-17
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -43,7 +43,11 @@
             <RadioButton fx:id="overwriteFileBehaviourRadioButton">Overwrite</RadioButton>
         </VBox>
 
-        <CheckBox fx:id="swallowAnsiEscapeCodes">Swallow ANSI escape codes</CheckBox>
+        <VBox spacing="5" fillWidth="false" maxWidth="300" styleClass="border">
+            <Label>What are we logging?</Label>
+            <RadioButton fx:id="rawRxDataAsAsciiRadioButton">Raw Data As ASCII</RadioButton>
+            <RadioButton fx:id="rxPaneOutputRadioButton">RX Pane Output (what you see)</RadioButton>
+        </VBox>
 
         <Button fx:id="startStopLoggingButton" prefWidth="200" prefHeight="40">Open</Button>
 
