@@ -6,10 +6,11 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.view.exceptionPopup.ExceptionPopup;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
-import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.controlsfx.glyphfont.GlyphFontRegistry;
@@ -31,61 +32,70 @@ public class Main extends Application {
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
+    public void start(Stage primaryStage) throws Exception {
 
         logger.debug("start() called.");
 
-        //==============================================//
-        //======== COMMAND-LINE ARGUMENT PARSING =======//
-        //==============================================//
-
-        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
-        for(String arg : getParameters().getRaw()) {
-            if(arg.equals("no-splash"))
-                disableSplashScreen = true;
-
-            if(arg.equals("debug"))
-                LoggerUtils.startDebuggingToFile();
-        }
-
-        if(disableSplashScreen) {
-            // Skip this function, and go straight to loading the main window.
-            loadMainWindow();
-            return;
-        }
-
-        this.splashScreenStage = primaryStage;
-
-        // Load splashscreen FXML file and get controller
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        // Massive try/catch over main, to catch any exceptions that were
+        // not caught by anything else (this should not happen on purpose)
         try {
-            Parent root = loader.load();
-        } catch(IOException e) {
-            return;
-        }
 
-        SplashScreenViewController splashScreenViewController = loader.getController();
-        splashScreenViewController.init();
 
-        Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
-        splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
-            if(newValue) {
+            //==============================================//
+            //======== COMMAND-LINE ARGUMENT PARSING =======//
+            //==============================================//
+
+            logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
+            for (String arg : getParameters().getRaw()) {
+                if (arg.equals("no-splash"))
+                    disableSplashScreen = true;
+
+                if (arg.equals("debug"))
+                    LoggerUtils.startDebuggingToFile();
+            }
+
+            if (disableSplashScreen) {
+                // Skip this function, and go straight to loading the main window.
                 loadMainWindow();
+                return;
             }
-        });
 
-        primaryStage.initStyle(StageStyle.TRANSPARENT);
-        primaryStage.setScene(splashScreenScene);
-        primaryStage.show();
+            this.splashScreenStage = primaryStage;
 
-        splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            //event.getCharacter();
-            if(event.getCode().isWhitespaceKey()) {
-                splashScreenViewController.speedUpSplashScreen();
+            // Load splashscreen FXML file and get controller
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+            try {
+                Parent root = loader.load();
+            } catch (IOException e) {
+                return;
             }
-        });
 
-        splashScreenViewController.startNameVersionInfoMsg();
+            SplashScreenViewController splashScreenViewController = loader.getController();
+            splashScreenViewController.init();
+
+            Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
+            splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
+                if (newValue) {
+                    loadMainWindow();
+                }
+            });
+
+            primaryStage.initStyle(StageStyle.TRANSPARENT);
+            primaryStage.setScene(splashScreenScene);
+            primaryStage.show();
+
+            splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                //event.getCharacter();
+                if (event.getCode().isWhitespaceKey()) {
+                    splashScreenViewController.speedUpSplashScreen();
+                }
+            });
+
+            splashScreenViewController.startNameVersionInfoMsg();
+
+        } catch (Exception e) {
+            ExceptionPopup.showAndWait(e);
+        }
     }
 
     public void loadMainWindow() {
@@ -99,7 +109,7 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
         try {
             Parent root = loader.load();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return;
         }
         MainWindowViewController mainWindowViewController = loader.getController();
@@ -110,7 +120,7 @@ public class Main extends Application {
 
 
         // If the splashscreen was skipped, splashScreenStage will be null
-        if(!disableSplashScreen)
+        if (!disableSplashScreen)
             splashScreenStage.close();
 
         mainStage = new Stage();
@@ -137,9 +147,11 @@ public class Main extends Application {
 
     /**
      * Entry point for application. This calls <code>launch(args)</code> which starts the JavaFX UI.
+     *
      * @param args
      */
     public static void main(String[] args) {
+
         launch(args);
     }
 }
