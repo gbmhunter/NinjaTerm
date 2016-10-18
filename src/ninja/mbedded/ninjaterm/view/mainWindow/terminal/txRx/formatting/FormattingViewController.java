@@ -93,7 +93,7 @@ public class FormattingViewController {
                 terminal.txRx.rxDataEngine.newLinePattern
         );
 
-        TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input.");
+        TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input. Leaving this field empty will result in no new lines being added.");
 
         //==============================================//
         //======== ENTER KEY TX BEHAVIOUR SETUP ========//
