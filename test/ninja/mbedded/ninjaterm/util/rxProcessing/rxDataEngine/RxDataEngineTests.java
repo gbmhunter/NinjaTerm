@@ -137,6 +137,25 @@ public class RxDataEngineTests {
     }
 
     public void changeNewLinePatternText() throws Exception {
+        rxDataEngine.newLinePattern.set("EOL1");
+        rxDataEngine.parse("123EOL1456EOL2".getBytes());
+
+        assertEquals("123EOL1456EOL2", output.getText());
+
+        assertEquals(1, output.getColourMarkers().size());
+
+        assertEquals(7, output.getColourMarkers().get(0));
+
+        // Now change the new line pattern
+        rxDataEngine.newLinePattern.set("EOL2");
+        rxDataEngine.parse("123EOL1456EOL2".getBytes());
+
+        assertEquals("123EOL1456EOL2123EOL1456EOL2", output.getText());
+
+        assertEquals(2, output.getColourMarkers().size());
+
+        assertEquals(7, output.getColourMarkers().get(0));
+        assertEquals(25, output.getColourMarkers().get(1));
 
     }
 }
