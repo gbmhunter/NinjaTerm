@@ -18,14 +18,14 @@ public class SmallTests {
 
     private RxDataEngine rxDataEngine;
 
-    private StreamedData output;
+    private StreamedData output = new StreamedData();
 
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
-            output = streamedText;
+            output.shiftDataIn(streamedText, streamedText.getText().length());
         });
     }
 
@@ -88,6 +88,8 @@ public class SmallTests {
         //===================== RUN 2 ==================//
         //==============================================//
 
+        output.clear();
+
         rxDataEngine.setFilterPattern("4");
         rxDataEngine.rerunFilterOnExistingData();
         assertEquals("456", output.getText());
@@ -136,26 +138,27 @@ public class SmallTests {
         assertEquals(6, output.getNewLineMarkers().get(0).intValue());
     }
 
+    @Test
     public void changeNewLinePatternText() throws Exception {
         rxDataEngine.newLinePattern.set("EOL1");
-        rxDataEngine.parse("123EOL1456EOL2".getBytes());
+        rxDataEngine.parse("abcEOL1defEOL2".getBytes());
 
-        assertEquals("123EOL1456EOL2", output.getText());
+        assertEquals("abcEOL1defEOL2", output.getText());
 
-        assertEquals(1, output.getColourMarkers().size());
+        assertEquals(1, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getColourMarkers().get(0));
+        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
 
         // Now change the new line pattern
         rxDataEngine.newLinePattern.set("EOL2");
-        rxDataEngine.parse("123EOL1456EOL2".getBytes());
+        rxDataEngine.parse("abcEOL1defEOL2".getBytes());
 
-        assertEquals("123EOL1456EOL2123EOL1456EOL2", output.getText());
+        assertEquals("abcEOL1defEOL2abcEOL1defEOL2", output.getText());
 
-        assertEquals(2, output.getColourMarkers().size());
+        assertEquals(2, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getColourMarkers().get(0));
-        assertEquals(25, output.getColourMarkers().get(1));
+        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(28, output.getNewLineMarkers().get(1).intValue());
 
     }
 }
