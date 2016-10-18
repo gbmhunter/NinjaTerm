@@ -14,7 +14,7 @@ import static org.junit.Assert.assertEquals;
  * @since           2016-09-27
  * @last-modified   2016-10-18
  */
-public class RxDataEngineTests {
+public class SmallTests {
 
     private RxDataEngine rxDataEngine;
 
