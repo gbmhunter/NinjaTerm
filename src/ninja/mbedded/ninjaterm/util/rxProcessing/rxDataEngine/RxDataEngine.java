@@ -25,13 +25,15 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-17
+ * @last-modified 2016-10-18
  */
 public class RxDataEngine {
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
+
+    // These are grouped by stream processing function
 
     //==============================================//
     //================== DECODER ===================//
@@ -66,9 +68,19 @@ public class RxDataEngine {
 
     private StreamedData bufferBetweenAnsiParserAndNewLineParser = new StreamedData();
 
-    private NewLineParser newLineParser = new NewLineParser("\n");
+    //==============================================//
+    //================ NEW LINE PARSER =============//
+    //==============================================//
+
+    public SimpleStringProperty newLinePattern = new SimpleStringProperty("\n");
+
+    private NewLineParser newLineParser = new NewLineParser(newLinePattern.get());
 
     private StreamedData bufferBetweenNewLineParserAndFiltering = new StreamedData();
+
+    //==============================================//
+    //==================== FILTER ==================//
+    //==============================================//
 
     /**
      * Used to provide filtering functionality to the RX data.
@@ -80,6 +92,10 @@ public class RxDataEngine {
      * consumed by the <code>asciiControlCharParser</code>.
      */
     public StreamedData bufferBetweenFilterAndControlCharParser = new StreamedData();
+
+    //==============================================//
+    //========== ASCII CONTROL CHAR PARSER =========//
+    //==============================================//
 
     private AsciiControlCharParser asciiControlCharParser = new AsciiControlCharParser();
 
@@ -93,7 +109,9 @@ public class RxDataEngine {
     public StreamedData totalNewLineParserOutput = new StreamedData();
 
 
-
+    /**
+     * Listeners will be called whenever raw data is received.
+     */
     public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
 
     /**
@@ -132,12 +150,24 @@ public class RxDataEngine {
                 asciiControlCharParser.replaceWithVisibleSymbols.set(false);
             }
         });
+
+        // If an external class modifies the new line pattern, update
+        // the new line parser object correctly
+        newLinePattern.addListener((observable, oldValue, newValue) -> {
+
+            // Update the new line pattern in the new line parser
+            newLineParser.setNewLinePattern(newValue);
+
+        });
     }
 
     /**
+     * This method passes RX data. It encapsulates all the individual processes on the RX
+     * stream.
      *
+     * Process:
      *  <p>
-     *     1. Receive RX data as pure string
+     *     1. Receive RX data as byte array.
      *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters. This takes
      *              in a string put outs a StreamedData object. It populates the textColours array with objects that
      *              what colour and where colour changes occur.
@@ -151,6 +181,10 @@ public class RxDataEngine {
      *     5. The resulting StreamedData object is outputted to any listeners (the RX pane on the GUI should be
      *              listening to this).
      * </p>
+     *
+     * The method can be called with an empty byte array. This will cause all RX parsers to be run,
+     * but without any new data (can be useful to do this after making changes to some of the
+     * properties, e.g. the filter pattern).
      *
      * @param rxData    The received data from the COM port to process.
      */
@@ -302,25 +336,9 @@ public class RxDataEngine {
         // to this toBeConsumed object
         bufferBetweenNewLineParserAndFiltering = toBeConsumed;
 
+        // Re-call parse() to process tha above changes, but
+        // don't provide any new data
         parse(new byte[]{});
-
-        /*StreamedData releasedText = new StreamedData();
-
-        streamingFilter.parse(toBeConsumed, releasedText);
-
-
-
-
-        // Call any streamed text listeners
-        for (StreamedTextListener newStreamedTextListener : newOutputListeners) {
-            // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
-            StreamedData copyOfFilterOutput = new StreamedData(bufferBetweenFilterAndControlCharParser);
-            newStreamedTextListener.run(copyOfFilterOutput);
-        }
-
-        // Since the filter output is the last parser in the chain,
-        // it's data does not need to persist between calls
-        bufferBetweenFilterAndControlCharParser.clear();*/
     }
 
     /**
@@ -329,10 +347,6 @@ public class RxDataEngine {
      */
     public void setAnsiECEnabled(boolean trueFalse) {
         ansiECParser.isEnabled.set(trueFalse);
-    }
-
-    public void setNewLinePattern(String newLineString) {
-        newLineParser.setNewLinePattern(newLineString);
     }
 
     /**
