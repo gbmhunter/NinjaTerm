@@ -4,6 +4,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
@@ -16,7 +17,7 @@ import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-26
- * @last-modified 2016-10-07
+ * @last-modified 2016-10-18
  */
 public class FormattingViewController {
 
@@ -26,6 +27,17 @@ public class FormattingViewController {
 
     @FXML
     private ComboBox<DecodingOptions> decodingComboBox;
+
+    //==============================================//
+    //== WHEN TO INSERT NEW LINES IN THE RX DATA ===//
+    //==============================================//
+
+    @FXML
+    private TextField rxNewLinePatternTextField;
+
+    //==============================================//
+    //==== WHAT TO SEND WHEN ENTER IS PRESSED ======//
+    //==============================================//
 
     @FXML
     private RadioButton carriageReturnCheckBox;
@@ -58,7 +70,7 @@ public class FormattingViewController {
         this.terminal = terminal;
 
         //==============================================//
-        //============== SETUP TX DECODING =============//
+        //============== SETUP RX DECODING =============//
         //==============================================//
 
         // Populate decoding options combobox
@@ -66,21 +78,25 @@ public class FormattingViewController {
 
         terminal.txRx.rxDataEngine.selDecodingOption.bind(decodingComboBox.getSelectionModel().selectedItemProperty());
 
-        // Add listener to combobox
-        /*decodingComboBox.setOnAction(event -> {
-
-            // Bind the decoder decoding option to what has been selected in the
-            // combobox
-            terminal.decoder.decodingOption = decodingComboBox.getSelectionModel().getSelectedItem();
-        });*/
-
         // Set default
         decodingComboBox.getSelectionModel().select(DecodingOptions.ASCII);
 
         TooltipUtil.addDefaultTooltip(decodingComboBox, "The incoming RX data will be decoded according to this selection. \"ASCII\" is one of the most popular choices. The colouriser (ANSI escape codes) are only available when the decoding is \"ASCII\".");
 
         //==============================================//
-        //========= ENTER KEY BEHAVIOUR SETUP ==========//
+        //========== RX NEW LINE PATTERN SETUP =========//
+        //==============================================//
+
+        // Bind the text in the text field to the new line pattern in the RX data engine
+        // (the model also sets the default value)
+        rxNewLinePatternTextField.textProperty().bindBidirectional(
+                terminal.txRx.rxDataEngine.newLinePattern
+        );
+
+        TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input.");
+
+        //==============================================//
+        //======== ENTER KEY TX BEHAVIOUR SETUP ========//
         //==============================================//
 
         enterKeyBehaviourTGV.add(carriageReturnCheckBox, Formatting.EnterKeyBehaviour.CARRIAGE_RETURN);

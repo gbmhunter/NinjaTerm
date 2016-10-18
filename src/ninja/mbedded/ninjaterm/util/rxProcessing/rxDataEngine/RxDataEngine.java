@@ -72,7 +72,7 @@ public class RxDataEngine {
     //================ NEW LINE PARSER =============//
     //==============================================//
 
-    public SimpleStringProperty newLinePattern = new SimpleStringProperty("\n");
+    public SimpleStringProperty newLinePattern = new SimpleStringProperty("\\n");
 
     private NewLineParser newLineParser = new NewLineParser(newLinePattern.get());
 

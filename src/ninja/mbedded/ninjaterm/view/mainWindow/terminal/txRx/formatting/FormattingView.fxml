@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-10-07
+* @last-modified   2016-10-18
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -25,6 +25,14 @@
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Decoding:</Label>
             <ComboBox fx:id="decodingComboBox"></ComboBox>
+        </HBox>
+    </VBox>
+
+    <!-- NEW LINE PATTERN -->
+    <VBox spacing="5" styleClass="border">
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label>RX New Line Pattern:</Label>
+            <TextField fx:id="rxNewLinePatternTextField"></TextField>
         </HBox>
     </VBox>
 
