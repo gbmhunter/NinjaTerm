@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- An empty new line pattern textfield now results in no new line markers being added, closes #139.
+
 v0.7.0
 ------
 

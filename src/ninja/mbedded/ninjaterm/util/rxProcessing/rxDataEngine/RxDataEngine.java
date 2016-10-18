@@ -155,7 +155,14 @@ public class RxDataEngine {
         // the new line parser object correctly
         newLinePattern.addListener((observable, oldValue, newValue) -> {
 
+            if(newValue.equals(""))
+                newLineParser.isEnabled.set(false);
+            else
+                newLineParser.isEnabled.set(true);
+
             // Update the new line pattern in the new line parser
+            // (note that this will only have any effect if the
+            // new line parser is enabled)
             newLineParser.setNewLinePattern(newValue);
 
         });

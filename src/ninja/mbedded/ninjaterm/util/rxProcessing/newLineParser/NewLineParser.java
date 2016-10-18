@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.slf4j.Logger;
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-15
- * @last-modified 2016-10-16
+ * @last-modified 2016-10-18
  */
 public class NewLineParser {
 
@@ -21,8 +22,15 @@ public class NewLineParser {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    //String newLineString;
-    Pattern newLinePattern;
+    /**
+     * Use this to enable/disable the new line parser.
+     *
+     * If the new line parser is disables, <code>parse()</code> will just
+     * pass all input to output, without adding any new line markers.
+     */
+    public SimpleBooleanProperty isEnabled = new SimpleBooleanProperty(true);
+
+    private Pattern newLinePattern;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -40,7 +48,8 @@ public class NewLineParser {
     }
 
     /**
-     * Searches the input for new lines. If new lines are found, it populates the newLineIndicies array.
+     * Searches the input for new lines. If new lines are found, it populates the
+     * <code>newLineMarkers</code> array.
      * Once text has been searched, it shifts the data from the input to the output.
      *
      * Data may remain in the input if a partial match for a new line is found.
@@ -49,6 +58,16 @@ public class NewLineParser {
      * @param output
      */
     public void parse(StreamedData input, StreamedData output) {
+
+        // If the new line paser has been disabled, then just shift
+        // all input to the output, without adding any new line
+        // markers
+        if(!isEnabled.get()) {
+            output.shiftDataIn(input, input.getText().length());
+            return;
+        }
+
+        // IF WE REACH HERE THEN THE NEW LINE PASER IS ENABLED
 
         Matcher matcher = newLinePattern.matcher(input.getText());
 
