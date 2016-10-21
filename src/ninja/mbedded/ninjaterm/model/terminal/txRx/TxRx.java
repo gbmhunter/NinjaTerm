@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -149,7 +148,7 @@ public class TxRx {
         terminal.comPort.sendData(dataAsByteArray);
 
         // Update stats
-        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
+        terminal.stats.totalNumCharsTx.setValue(terminal.stats.totalNumCharsTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
         // Create string from data

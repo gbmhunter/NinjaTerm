@@ -12,51 +12,51 @@
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController"
         xmlns:fx="http://javafx.com/fxml"
         text="Stats" closable="false">
-<VBox  alignment="TOP_LEFT"
-         spacing="20"
-         prefHeight="500" prefWidth="800"
-         fillWidth="true" GridPane.vgrow="ALWAYS"
-         stylesheets="@../../../../resources/style.css">
-    <!--style="-fx-background-color: red;" -->
+    <VBox alignment="TOP_LEFT"
+          spacing="20"
+          prefHeight="500" prefWidth="800"
+          fillWidth="true" GridPane.vgrow="ALWAYS"
+          stylesheets="@../../../../resources/style.css">
+        <!--style="-fx-background-color: red;" -->
 
-    <padding>
-        <Insets top="40" bottom="40" left="40" right="40"/>
-    </padding>
+        <padding>
+            <Insets top="40" bottom="40" left="40" right="40"/>
+        </padding>
 
-    <VBox spacing="10" fillWidth="false" styleClass="border">
-        <Label>Total Character Count:</Label>
-        <GridPane vgap="5" hgap="10">
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
+        <VBox spacing="10" fillWidth="false" styleClass="border">
+            <Label>Buffer Sizes:</Label>
+            <GridPane vgap="5" hgap="10">
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="numCharsInTxBufferLabel"></Label>
 
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
-        </GridPane>
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="numCharsInRxBufferLabel"></Label>
+            </GridPane>
+        </VBox>
+
+        <VBox spacing="10" fillWidth="false" styleClass="border">
+            <Label>Total Character Count:</Label>
+            <GridPane vgap="5" hgap="10">
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
+
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
+            </GridPane>
+        </VBox>
+
+        <VBox spacing="10" fillWidth="false" styleClass="border">
+            <Label>Bytes/second (note this is not the same as the baud rate):</Label>
+            <GridPane vgap="5" hgap="10">
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (bytes/second):</Label>
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bytesPerSecondTxLabel"></Label>
+
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (bytes/second):</Label>
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bytesPerSecondRxLabel"></Label>
+            </GridPane>
+        </VBox>
+
     </VBox>
-
-    <VBox spacing="10" fillWidth="false" styleClass="border">
-        <Label>Buffer Sizes:</Label>
-        <GridPane vgap="5" hgap="10">
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bufferSizesTxLabel"></Label>
-
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bufferSizesRxLabel"></Label>
-        </GridPane>
-    </VBox>
-
-    <VBox spacing="10" fillWidth="false" styleClass="border">
-        <Label>Bytes/second (note this is not the same as the baud rate):</Label>
-        <GridPane vgap="5" hgap="10">
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (bytes/second):</Label>
-            <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="bytesPerSecondTxLabel"></Label>
-
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (bytes/second):</Label>
-            <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="bytesPerSecondRxLabel"></Label>
-        </GridPane>
-    </VBox>
-
-</VBox>
 </Tab>
 
 
