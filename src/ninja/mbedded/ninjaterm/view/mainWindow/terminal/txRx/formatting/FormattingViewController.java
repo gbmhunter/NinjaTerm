@@ -9,6 +9,7 @@ import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
@@ -35,7 +36,7 @@ public class FormattingViewController {
     //==============================================//
 
     @FXML
-    private TextField rxNewLinePatternTextField;
+    private ApplyTextField rxNewLinePatternTextField;
 
     //==============================================//
     //==== WHAT TO SEND WHEN ENTER IS PRESSED ======//
@@ -93,20 +94,8 @@ public class FormattingViewController {
 
         // Only send the new line pattern information to the model when either the
         // enter key is pressed, or the text field loses focus.
-        rxNewLinePatternTextField.onKeyTypedProperty().set(event -> {
-            logger.debug("onKeyTypeProperty().addListener() called.");
-
-            if(event.getCharacter().equals("\r")) {
-                logger.debug("Enter was pressed.");
-
-                terminal.txRx.rxDataEngine.newLinePattern.set(rxNewLinePatternTextField.textProperty().get());
-            }
-        });
-
-        rxNewLinePatternTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if(!newValue) {
-                terminal.txRx.rxDataEngine.newLinePattern.set(rxNewLinePatternTextField.textProperty().get());
-            }
+        rxNewLinePatternTextField.onApply.addListener((observable, oldValue, newValue) -> {
+            terminal.txRx.rxDataEngine.newLinePattern.set(newValue);
         });
 
         // Get the default value from the model

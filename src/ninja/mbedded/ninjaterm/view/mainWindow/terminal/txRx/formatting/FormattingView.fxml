@@ -10,6 +10,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField?>
 <VBox
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController"
         xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
@@ -34,7 +35,7 @@
     <VBox spacing="5" styleClass="border">
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>RX New Line Pattern:</Label>
-            <TextField fx:id="rxNewLinePatternTextField"></TextField>
+            <ApplyTextField fx:id="rxNewLinePatternTextField"></ApplyTextField>
         </HBox>
     </VBox>
 

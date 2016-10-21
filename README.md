@@ -61,10 +61,10 @@ NOTE: The order of the following tasks is important!
 13. Click "Create new release", and it is all done!
  
 
-File Structure 
-==============
+File/Package Structure 
+======================
 
-
+NinjaTerm uses a MVC-style architecture which is reflected in the folder/package structure.
 
 src/
 ----
@@ -75,12 +75,12 @@ Then there are the following sub-directories:
 
 | Directory    | Description                                                                                                                 |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| controllers  | Contains the Java classes that act as controllers for the `.fxml` views in `view/`.                                         |
-| interfaces   | Contains interfaces for classes which implement the Observer pattern to communicate events.                                 |
+| model        | The model for the application. This contains all the business logic (where most of the programs logic resides). Classes in here are not aware of the view.            |                               |
 | resources    | Contains things such as images and CSS files.                                                                               |
-| util         | Contains non-view specific Java classes that are used by the controllers.                                                   |
-| view         | Contains the .fxml files which describe sections of the UI. For each .fxml file there is a controller in `controllers/`.    |
+| util         | Contains many utility classes that are used through-out the model and the view controllers.                                                |
+| view         | Contains the .fxml files and their controllers which describe sections of the UI. For each .fxml file there is also one controller. The model is injected into the view controllers.  |
 
+`Interfaces` are not placed in their own directory, but rather placed in the same package/folder that contains the classes most relevant (for a `Interface` class that is being used to implement the Observer pattern, this would be in the same package as the class which fires the event).
 
 Debugging
 =========
@@ -90,6 +90,8 @@ Debug output from NinjaTerm can be enabled by providing the `debug` command-line
 `java -jar NinjaTerm.jar debug`
 
 This will instruct NinjaTerm to output debug information to your default user directory (on Windows this is `C:\Users\<your user name>\`. The file name should be in the format `NinjaTerm-<DATE>-DEBUG.log`.
+
+You can also use the command-line parameter `no-splash` to stop the splash-screen from running. This can be useful for speeding things up when debugging.
 
 
 Changelog
