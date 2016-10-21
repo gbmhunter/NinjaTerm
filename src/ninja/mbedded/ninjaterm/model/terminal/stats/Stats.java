@@ -66,7 +66,7 @@ public class Stats {
         });
 
         terminal.txRx.rxDataEngine.rawRxData.addListener((observable, oldValue, newValue) -> {
-            numCharsInTxBuffer.set(newValue.length());
+            numCharsInRxBuffer.set(newValue.length());
         });
 
         //==============================================//

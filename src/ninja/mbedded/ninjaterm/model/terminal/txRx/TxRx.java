@@ -64,8 +64,13 @@ public class TxRx {
         this.terminal = terminal;
 
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
-            removeOldCharsFromBuffers();
+            trimTxBuffer();
         });
+
+        // Bind the RX data engine's buffer size to the value held in the
+        // display class (the value in the display class will be updated by the
+        // user)
+        rxDataEngine.maxBufferSize.bind(display.bufferSizeChars);
 
         filters.filterApplyType.addListener((observable, oldValue, newValue) -> {
             if (newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
@@ -234,19 +239,17 @@ public class TxRx {
 
     }
 
-
-
-    public void removeOldCharsFromBuffers() {
+    public void trimTxBuffer() {
 
         if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
             txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
+        /*if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
             rxDataEngine.rawRxData.set(StringUtils.removeOldChars(rxDataEngine.rawRxData.get(), display.bufferSizeChars.get()));
-        }
+        }*/
     }
 
     /**

@@ -25,9 +25,11 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-18
+ * @last-modified 2016-10-21
  */
 public class RxDataEngine {
+
+    public final int DEFAULT_BUFFER_SIZE = 20000;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -115,20 +117,12 @@ public class RxDataEngine {
     public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
 
     /**
-     * This event is emitted every time the ANSI parser is run. The output of the ANSI
-     * parser is passed along with the event.
-     */
-//    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
-
-    /**
      * This event is emitted when new streamed output is available. This is what the
      * RX pane in the UI should be listening for.
      */
     public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
 
-    public int bufferSize = 20000;
-
-
+    public SimpleIntegerProperty maxBufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -137,7 +131,7 @@ public class RxDataEngine {
     //================================================================================================//
 
     public RxDataEngine() {
-        // Bind the selDeocdingOption variable to the copy inside the Decoder object
+        // Bind the selDecodingOption variable to the copy inside the Decoder object
         // (selDecodingOption exposes the field inside the Decoder object)
         Bindings.bindBidirectional(selDecodingOption, decoder.decodingOption);
 
@@ -168,6 +162,30 @@ public class RxDataEngine {
             logger.debug("newLineParser.isEnabled set to \"" + newLineParser.isEnabled.get() + "\" and newLineParser.newLinePattern set to \"" + newLineParser.getNewLinePattern() + "\".");
 
         });
+
+        maxBufferSize.addListener((observable, oldValue, newValue) -> {
+            logger.debug("maxBufferSize set to " + Integer.toString(newValue.intValue()) + ".");
+
+            trimBuffer();
+        });
+
+        rawRxData.addListener((observable, oldValue, newValue) -> {
+            trimBuffer();
+        });
+    }
+
+    /**
+     * Trims the internal RX buffer according to the value set in maxBufferSize.
+     */
+    public void trimBuffer() {
+        logger.debug(
+                "trimBuffer() called. rawRxData.length() = " + rawRxData.length() +
+                ", maxBufferSize = " + maxBufferSize.get() + ".");
+        // Truncate if necessary
+        if (rawRxData.get().length() > maxBufferSize.get()) {
+            // Remove old characters from buffer
+            rawRxData.set(StringUtils.removeOldChars(rawRxData.get(), maxBufferSize.get()));
+        }
     }
 
     /**
@@ -206,13 +224,9 @@ public class RxDataEngine {
 
         String newDecodedData = decoder.parse(rxData);
 
+        // Data should be automatically trimmed (there is a listener attached
+        // to this property)
         rawRxData.set(rawRxData.get() + newDecodedData);
-
-        // Truncate if necessary
-        if (rawRxData.get().length() > bufferSize) {
-            // Remove old characters from buffer
-            rawRxData.set(StringUtils.removeOldChars(rawRxData.get(), bufferSize));
-        }
 
         bufferBetweenDecoderAndFreezeParser.append(newDecodedData);
 
@@ -302,9 +316,9 @@ public class RxDataEngine {
         //==============================================//
 
         // Trim total ANSI parser output
-        if (totalNewLineParserOutput.getText().length() > bufferSize) {
+        if (totalNewLineParserOutput.getText().length() > maxBufferSize.get()) {
             logger.debug("Trimming totalNewLineParserOutput...");
-            int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - bufferSize;
+            int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - maxBufferSize.get();
             totalNewLineParserOutput.removeChars(numOfCharsToRemove);
         }
 
