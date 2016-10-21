@@ -1,9 +1,11 @@
 <!--
-* Inner content for the formatting pop-up of NinjaTerm
+* Inner content for the formatting pop-up of NinjaTerm.
+* This controls things such as the decoding protocol, the new-line detection
+* and what to do when enter is pressed.
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-10-18
+* @last-modified   2016-10-21
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -43,6 +45,7 @@
         <RadioButton fx:id="newLineCheckBox">New Line (\n)</RadioButton>
         <RadioButton fx:id="carriageReturnAndNewLineCheckBox">Carriage Return + New Line (\r\n)</RadioButton>
     </VBox>
+
 </VBox>
 
 

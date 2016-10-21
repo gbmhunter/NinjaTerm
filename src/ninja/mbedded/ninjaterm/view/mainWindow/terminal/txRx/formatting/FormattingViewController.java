@@ -9,8 +9,10 @@ import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
+import org.slf4j.Logger;
 
 /**
  * Controller for the formatting pop-up window.
@@ -57,6 +59,8 @@ public class FormattingViewController {
 
     ToggleGroupValue<Formatting.EnterKeyBehaviour> enterKeyBehaviourTGV = new ToggleGroupValue<>();
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -87,11 +91,20 @@ public class FormattingViewController {
         //========== RX NEW LINE PATTERN SETUP =========//
         //==============================================//
 
-        // Bind the text in the text field to the new line pattern in the RX data engine
-        // (the model also sets the default value)
-        rxNewLinePatternTextField.textProperty().bindBidirectional(
-                terminal.txRx.rxDataEngine.newLinePattern
-        );
+        // Only send the new line pattern information to the model when the
+        // enter key is pressed
+        rxNewLinePatternTextField.onKeyTypedProperty().set(event -> {
+            logger.debug("onKeyTypeProperty().addListener() called.");
+
+            if(event.getCharacter().equals("\r")) {
+                logger.debug("Enter was pressed.");
+
+                terminal.txRx.rxDataEngine.newLinePattern.set(rxNewLinePatternTextField.textProperty().get());
+            }
+        });
+
+        // Get the default value from the model
+        rxNewLinePatternTextField.textProperty().set(terminal.txRx.rxDataEngine.newLinePattern.get());
 
         TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input. Leaving this field empty will result in no new lines being added.");
 

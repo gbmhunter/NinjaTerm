@@ -9,7 +9,7 @@ import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.view.exceptionPopup.ExceptionPopup;
+import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;

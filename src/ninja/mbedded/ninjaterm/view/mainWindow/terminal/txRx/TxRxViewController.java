@@ -561,7 +561,7 @@ public class TxRxViewController {
 
     public void showPopover(Button button, PopOver popOver) {
 
-        logger.debug(getClass().getName() + ".showPopover() called.");
+        logger.debug(".showPopover() called.");
 
         //==============================================//
         //=============== DECODING POPOVER =============//

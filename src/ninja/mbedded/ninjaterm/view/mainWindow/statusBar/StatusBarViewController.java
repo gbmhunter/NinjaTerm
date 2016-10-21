@@ -11,14 +11,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
-import ninja.mbedded.ninjaterm.view.led.Led;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
+import ninja.mbedded.ninjaterm.util.javafx.led.Led;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
-
-import java.util.List;
 
 /**
  * Controller for the "Status Bar" which is part of the main window.
