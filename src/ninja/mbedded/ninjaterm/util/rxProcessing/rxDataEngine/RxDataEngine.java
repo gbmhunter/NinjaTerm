@@ -165,6 +165,8 @@ public class RxDataEngine {
             // new line parser is enabled)
             newLineParser.setNewLinePattern(newValue);
 
+            logger.debug("newLineParser.isEnabled set to \"" + newLineParser.isEnabled.get() + "\" and newLineParser.newLinePattern set to \"" + newLineParser.getNewLinePattern() + "\".");
+
         });
     }
 

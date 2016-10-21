@@ -47,6 +47,10 @@ public class NewLineParser {
         newLinePattern = Pattern.compile(newLineString);
     }
 
+    public String getNewLinePattern() {
+        return newLinePattern.pattern();
+    }
+
     /**
      * Searches the input for new lines. If new lines are found, it populates the
      * <code>newLineMarkers</code> array.

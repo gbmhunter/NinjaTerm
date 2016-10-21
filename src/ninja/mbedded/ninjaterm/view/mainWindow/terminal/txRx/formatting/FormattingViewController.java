@@ -91,8 +91,8 @@ public class FormattingViewController {
         //========== RX NEW LINE PATTERN SETUP =========//
         //==============================================//
 
-        // Only send the new line pattern information to the model when the
-        // enter key is pressed
+        // Only send the new line pattern information to the model when either the
+        // enter key is pressed, or the text field loses focus.
         rxNewLinePatternTextField.onKeyTypedProperty().set(event -> {
             logger.debug("onKeyTypeProperty().addListener() called.");
 
@@ -103,10 +103,16 @@ public class FormattingViewController {
             }
         });
 
+        rxNewLinePatternTextField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if(!newValue) {
+                terminal.txRx.rxDataEngine.newLinePattern.set(rxNewLinePatternTextField.textProperty().get());
+            }
+        });
+
         // Get the default value from the model
         rxNewLinePatternTextField.textProperty().set(terminal.txRx.rxDataEngine.newLinePattern.get());
 
-        TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input. Leaving this field empty will result in no new lines being added.");
+        TooltipUtil.addDefaultTooltip(rxNewLinePatternTextField, "This is the regex pattern which NinjaTerm will attempt to match incoming data with. If there is a match, a new line will be inserted into the output. A common value is \"\\n\", which will insert a new line everytime a ASCII new line control code is detected in the input. Leaving this field empty will result in no new lines being added. This is updated either when ENTER is pressed, or if the textfield loses focus.");
 
         //==============================================//
         //======== ENTER KEY TX BEHAVIOUR SETUP ========//
