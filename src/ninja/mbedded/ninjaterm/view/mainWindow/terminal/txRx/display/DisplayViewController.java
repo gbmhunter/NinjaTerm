@@ -3,12 +3,16 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Control;
+import javafx.scene.control.RadioButton;
 import javafx.util.converter.NumberStringConverter;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
+import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
@@ -16,11 +20,11 @@ import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
 
 /**
- * Controller for the "display" settings pop-up window.
+ * View controller for the "display" settings pop-up window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-10-21
  * @since 2016-09-16
- * @last-modified 2016-10-07
  */
 public class DisplayViewController {
 
@@ -47,10 +51,10 @@ public class DisplayViewController {
     private CheckBox wrappingCheckBox;
 
     @FXML
-    private TextField wrappingWidthTextField;
+    private ApplyTextField wrappingWidthTextField;
 
     @FXML
-    private TextField bufferSizeTextField;
+    private ApplyTextField bufferSizeTextField;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -65,6 +69,10 @@ public class DisplayViewController {
     }
 
     public void init(Model model, Terminal terminal) {
+
+        //==============================================//
+        //================ DECODING SETUP ==============//
+        //==============================================//
 
         // Populate decoding options combobox
         layoutOptionsComboBox.getItems().setAll(Display.LayoutOptions.values());
@@ -83,7 +91,7 @@ public class DisplayViewController {
         TooltipUtil.addDefaultTooltip(layoutOptionsComboBox, "Separate mode displays a separate pane for RX data (top), and TX data (bottom). Combined mode shows one pane for both RX and TX data (if local echo is enabled). Combined mode with local echo turned on behaves similarly to a terminal.");
 
         //==============================================//
-        //=========== SETUP TX RADIOBUTTONS ============//
+        //============== TX BEHAVIOUR SETUP ============//
         //==============================================//
 
         ToggleGroupValue<Display.TxCharSendingOptions> toggleGroup = new ToggleGroupValue();
@@ -115,7 +123,7 @@ public class DisplayViewController {
         // Enable this checkbox only if the selected TX sending option is
         // on press on the "enter" key (this is the only way that this functionality makes sense)
         ChangeListener<Display.TxCharSendingOptions> changeListener = (observable, oldValue, newValue) -> {
-            switch(newValue) {
+            switch (newValue) {
                 case SEND_TX_CHARS_IMMEDIATELY:
                     backspaceRemovesLastTypedCharCheckBox.setDisable(true);
                     break;
@@ -145,31 +153,31 @@ public class DisplayViewController {
 
         TooltipUtil.addDefaultTooltip(wrappingCheckBox, "Enable this to wrap at a certain pixel width (as defined below). If this is disabled, long lines of TX/RX text will cause horizontal scroll-bars to appear.");
 
-        // Perform a bi-directional bind, with custom string-to-number conversion which takes care
-        // of any errors.
-        Bindings.bindBidirectional(wrappingWidthTextField.textProperty(), terminal.txRx.display.wrappingWidth, new NumberStringConverter() {
-            @Override
-            public Number fromString(String value) {
-                System.out.println("Converting from string.");
-
-                // Convert wrapping width string into double, and then perform
-                // sanity checks
-                Double wrappingWidth;
-                try {
-                    wrappingWidth = Double.parseDouble(value);
-                } catch (NumberFormatException e) {
-                    model.status.addErr("Wrapping width was not a valid number.");
-                    return 0.0;
-                }
-
-                if (wrappingWidth <= 0.0) {
-                    model.status.addErr("Wrapping width must be greater than 0.");
-                    return 0.0;
-                }
-
-                return wrappingWidth;
+        // Upon pressing enter or loosing focus, try and convert the wrapping width value and
+        // update the model
+        wrappingWidthTextField.onApply.addListener((observable, oldValue, newValue) -> {
+            // Convert wrapping width string into double, and then perform
+            // sanity checks
+            Double wrappingWidth;
+            try {
+                wrappingWidth = Double.parseDouble(newValue);
+            } catch (NumberFormatException e) {
+                model.status.addErr("Wrapping width was not a valid number.");
+                wrappingWidth = 0.0;
             }
+
+            if (wrappingWidth <= 0.0) {
+                model.status.addErr("Wrapping width must be greater than 0.");
+                wrappingWidth = 0.0;
+            }
+
+            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
         });
+
+        // Set default value from model
+        // (we assume the value in the model to be valid and no checking needed)
+        wrappingWidthTextField.textProperty().set(Double.toString(terminal.txRx.display.wrappingWidth.get()));
+
 
         // Disable the wrapping width textfield if wrapping is disabled.
         terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
@@ -187,53 +195,56 @@ public class DisplayViewController {
 
         // Perform a bi-directional bind, with custom string-to-number conversion which takes care
         // of any errors.
-        Bindings.bindBidirectional(bufferSizeTextField.textProperty(), terminal.txRx.display.bufferSizeChars, new NumberStringConverter() {
-            @Override
-            public Number fromString(String value) {
+        Bindings.bindBidirectional(
+                bufferSizeTextField.onApply,
+                terminal.txRx.display.bufferSizeChars,
+                new NumberStringConverter() {
+                    @Override
+                    public Number fromString(String value) {
 
-                // Convert wrapping width string into double, and then perform
-                // sanity checks
-                Integer intValue;
-                try {
-                    intValue = Integer.parseInt(value);
-                } catch (NumberFormatException e) {
-                    model.status.addErr("Buffer size is not a valid integer.");
-                    return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
-                }
+                        // Convert wrapping width string into double, and then perform
+                        // sanity checks
+                        Integer intValue;
+                        try {
+                            intValue = Integer.parseInt(value);
+                        } catch (NumberFormatException e) {
+                            model.status.addErr("Buffer size is not a valid integer.");
+                            return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
+                        }
 
-                if (intValue <= 0.0) {
-                    model.status.addErr("Buffer size must be greater than 0.");
-                    return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
-                }
+                        if (intValue <= 0.0) {
+                            model.status.addErr("Buffer size must be greater than 0.");
+                            return terminal.txRx.display.DEFAULT_BUFFER_SIZE_CHARS;
+                        }
 
-                return intValue;
-            }
+                        return intValue;
+                    }
 
-            @Override
-            public String toString(Number value) {
-                return ((Integer)value).toString();
-            }
-        });
+                    @Override
+                    public String toString(Number value) {
+                        return ((Integer) value).toString();
+                    }
+                });
 
+        // Add validation support for the buffer size
         ValidationSupport support = new ValidationSupport();
 
         Validator<String> validator = (Control control, String value) ->
-            {
-                boolean condition;
-                try {
-                    Integer.parseInt(value);
-                    condition = false;
-                } catch(RuntimeException e) {
-                    condition = true;
-                }
-
-                return ValidationResult.fromMessageIf(control, "Not a valid integer", Severity.ERROR, condition );
+        {
+            boolean condition;
+            try {
+                Integer.parseInt(value);
+                condition = false;
+            } catch (RuntimeException e) {
+                condition = true;
             }
-        ;
 
-        support.registerValidator(bufferSizeTextField, true, validator );
+            return ValidationResult.fromMessageIf(control, "Not a valid integer", Severity.ERROR, condition);
+        };
 
-        TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are deleted from memory.");
+        support.registerValidator(bufferSizeTextField, true, validator);
+
+        TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are removed from the UI (this does not affect logging).");
 
     }
 }

@@ -546,14 +546,14 @@ public class TxRxViewController {
     private void updateTextWrapping() {
 
         if (terminal.txRx.display.wrappingEnabled.get()) {
-            logger.debug("\"Wrapping\" checkbox checked.");
+            logger.debug("\"Wrapping\" checkbox is currently checked, applying wrapping value.");
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
             rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
-            logger.debug("\"Wrapping\" checkbox unchecked.");
+            logger.debug("\"Wrapping\" checkbox is current unchecked, not apply wrapping value.");
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }

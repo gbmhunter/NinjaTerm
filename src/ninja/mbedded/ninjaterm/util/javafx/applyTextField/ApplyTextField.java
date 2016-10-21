@@ -33,20 +33,30 @@ public class ApplyTextField extends TextField {
 
         // Only send the new line pattern information to the model when either the
         // enter key is pressed, or the text field loses focus.
+
+        // ENTER KEY
         onKeyTypedProperty().set(event -> {
-            logger.debug("onKeyTypeProperty().addListener() called.");
+            //logger.debug("onKeyTypeProperty().addListener() called.");
 
             if(event.getCharacter().equals("\r")) {
-                logger.debug("Enter was pressed.");
-
+                //logger.debug("Enter was pressed.");
                 onApply.set(textProperty().get());
             }
         });
 
+        // ON DE-FOCUS
         focusedProperty().addListener((observable, oldValue, newValue) -> {
             if(!newValue) {
                 onApply.set(textProperty().get());
             }
+        });
+
+        // We also want to update the text property if the onApply property gets updated
+        // (so bi-directional binding will work)
+        // This will not cause and endless loop since Java properties are protected from this
+        // by default
+        onApply.addListener((observable, oldValue, newValue) -> {
+            textProperty().set(onApply.get());
         });
 
     }

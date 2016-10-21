@@ -4,13 +4,15 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
 
 /**
  * Model containing data and logic for the display components of the TX/RX data.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-06
+ * @last-modified   2016-10-21
  */
 public class Display {
 
@@ -36,6 +38,10 @@ public class Display {
         SEND_TX_CHARS_ON_ENTER
     }
 
+    //================================================================================================//
+    //============================================ CONSTANTS =========================================//
+    //================================================================================================//
+
     /**
      * The default buffer size (in chars/bytes) for both TX and RX data.
      * Setting this too large may cause performance issues.
@@ -44,6 +50,10 @@ public class Display {
      * No RX data filter was active at this time.
      */
     public final int DEFAULT_BUFFER_SIZE_CHARS = 20000;
+
+    //================================================================================================//
+    //============================================= FIELDS ===========================================//
+    //================================================================================================//
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
     public SimpleBooleanProperty backspaceRemovesLastTypedChar = new SimpleBooleanProperty(true);
@@ -59,7 +69,17 @@ public class Display {
     public SimpleBooleanProperty wrappingEnabled = new SimpleBooleanProperty(false);
     public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(800.0);
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    //================================================================================================//
+    //============================================= METHODS ==========================================//
+    //================================================================================================//
+
     public Display() {
+
+        wrappingWidth.addListener((observable, oldValue, newValue) -> {
+            logger.debug("wrappingWidth set to \"" + Double.toString(newValue.doubleValue()) + "\".");
+        });
 
     }
 

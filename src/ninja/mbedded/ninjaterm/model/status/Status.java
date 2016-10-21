@@ -16,6 +16,8 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.DataSentTxListener;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.Date;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-18
- * @last-modified   2016-10-07
+ * @last-modified   2016-10-21
  */
 public class Status {
 
@@ -43,6 +45,8 @@ public class Status {
 
     public SimpleDoubleProperty totalBytesPerSecTx = new SimpleDoubleProperty();
     public SimpleDoubleProperty totalBytesPerSecRx = new SimpleDoubleProperty();
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     public Status(Model model) {
 
@@ -120,7 +124,10 @@ public class Status {
         String dateString = sdf.format(date);
 
         //statusTextFlow.getChildren().add(new Text(dateString + ": " + msg + "\r\n"));
-        statusMsgs.add(new Text(dateString + ": " + msg + "\r\n"));
+        Text text = new Text(dateString + ": " + msg + "\r\n");
+        statusMsgs.add(text);
+
+        logger.info(text.getText());
     }
 
     /**
@@ -139,6 +146,8 @@ public class Status {
         text.setFill(Color.RED);
         //statusTextFlow.getChildren().add(text);
         statusMsgs.add(text);
+
+        logger.error(text.getText());
     }
 
 }

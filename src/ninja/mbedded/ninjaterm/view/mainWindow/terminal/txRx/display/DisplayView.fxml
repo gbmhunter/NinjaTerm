@@ -3,11 +3,12 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-24
-* @last-modified   2016-10-07
+* @last-modified   2016-10-21
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
       spacing="20"
@@ -38,7 +39,7 @@
 
         <HBox spacing="5" alignment="CENTER_LEFT">
             <Label>Buffer Size:</Label>
-            <TextField fx:id="bufferSizeTextField"></TextField>
+            <ApplyTextField fx:id="bufferSizeTextField"></ApplyTextField>
         </HBox>
     </VBox>
 
@@ -48,7 +49,7 @@
 
         <HBox alignment="CENTER_LEFT" spacing="10">
             <Label>Wrapping Width:</Label>
-            <TextField fx:id="wrappingWidthTextField" prefWidth="60"></TextField>
+            <ApplyTextField fx:id="wrappingWidthTextField" prefWidth="60"></ApplyTextField>
             <Label>px</Label>
         </HBox>
     </VBox>
