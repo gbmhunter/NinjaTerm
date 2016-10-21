@@ -14,7 +14,7 @@ import java.io.StringWriter;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-18
- * @last-modified 2016-10-18
+ * @last-modified 2016-10-21
  */
 public class ExceptionPopup {
 
@@ -31,7 +31,9 @@ public class ExceptionPopup {
 
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
-        alert.setHeaderText("Hot dang, an unexpected exception occurred! If you want this looked at, please copy and forward the textual information below to gbmhunter@gmail.com. I promise to do my best to resolve the issue!");
+
+        // Ask the user to create a new issue on the GitHub repo
+        alert.setHeaderText("Hot dang, an unexpected exception occurred! If you want this looked at, please copy the textual information below and create a new issue on the GitHub repo at www.github.com/mbedded-ninja/NinjaTerm/issues (while also adding any other information that may help). I promise to do my best to resolve the problem!");
         alert.setContentText(ex.getMessage());
 
         // Create expandable Exception.
