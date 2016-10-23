@@ -99,9 +99,13 @@ public class Main extends Application {
     }
 
     public void loadMainWindow() {
+
+
         // Initialise fontAwesome glyths (these are downloaded from CDN)
-        //! @todo Remove dependency on internet connection
-        glyphFont = GlyphFontRegistry.font("FontAwesome");
+        // (this old method required the internet, new method uses local font in resources)
+        //glyphFont = GlyphFontRegistry.font("FontAwesome");
+        logger.debug("Loading font \"FontAwesome\"...");
+        glyphFont = new GlyphFont("FontAwesome", 12, "ninja/mbedded/ninjaterm/resources/fontawesome-webfont.ttf");
 
         // Create application model (data/state)
         Model model = new Model();

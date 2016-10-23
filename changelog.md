@@ -3,6 +3,7 @@ vX.X.X
 
 - An empty new line pattern textfield now results in no new line markers being added, closes #139.
 - All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.
+- Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.
 
 v0.7.0
 ------

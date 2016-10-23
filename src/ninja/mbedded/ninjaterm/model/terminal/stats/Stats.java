@@ -11,9 +11,12 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 /**
  * Model containing data and logic for statistics about a terminal (COM port).
  *
+ * This class does not concern itself with any global stats, but just those
+ * of single terminal instance (COM port).
+ *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-21
+ * @last-modified   2016-10-23
  */
 public class Stats {
 

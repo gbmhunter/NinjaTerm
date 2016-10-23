@@ -48,7 +48,8 @@ NOTE: The order of the following tasks is important!
 2. Update README.md with the new version number and "last changed" date.
 3. Update the version number in `docs/index.html`. This is contained on the line `<body onload="updateVersionNumber('v0.4.0')">`. 
 3. Update the version number in `pom.xml`, e.g. `<version>0.4.0</version>`.
-3. Build the .jar artifact running `mvn assembly:single` from the command line.
+3. Package the source code into a .jar file with external dependencies by running `mvn package` from the command line.
+3. Build a "fat" .jar (all dependencies included) by running `mvn assembly:single` (make sure `mvn package` has been run first!).
 4. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
 5. Click "Save Project" and then "Build Project".
 6. Once the installers have been created, overwrite the "updates.xml" in the repo root directory with the one from the install/ directory.
