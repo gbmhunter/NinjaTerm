@@ -522,6 +522,9 @@ public class TxRxViewController {
 
         numCharsInRxTextNodes += numCharsAdded.intValue();
 
+        //==============================================//
+        //==================== TRIMMING ================//
+        //==============================================//
 
 
         // Trim RX UI if necessary
@@ -531,6 +534,10 @@ public class TxRxViewController {
             int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
             MutableInteger numNewLinesRemoved = new MutableInteger(0);
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
+
+            //==============================================//
+            //=============== SMART SCROLLING ==============//
+            //==============================================//
 
             rxDataTextFlow.requestLayout();
             double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
@@ -568,6 +575,7 @@ public class TxRxViewController {
                 }
                 logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
 
+                // Adjust the scrolling
                 rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
             }
 
