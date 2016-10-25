@@ -25,6 +25,12 @@ import java.util.regex.Pattern;
  */
 public class StreamedData {
 
+    /**
+     * The character sequence which causes a new line to be inserted into a TextFlow
+     * UI object in JavaFX. This is needed for the <code>shiftToTextNodes()</code> method.
+     */
+    public static final char NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW = '\n';
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
@@ -400,7 +406,7 @@ public class StreamedData {
 
                 textToAppend.insert(
                         newLineMarkers.get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-                        "\n");
+                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
                 currNewLineMarkerIndex++;
                 insertionCount++;
             }
@@ -438,7 +444,7 @@ public class StreamedData {
         }
     }
 
-    public boolean checkAllNewLinesHaveColors() {
+    /*public boolean checkAllNewLinesHaveColors() {
 
         // Check all characters but the last one (since there can't
         // be any char after this new line to have a color attached to it)
@@ -457,7 +463,7 @@ public class StreamedData {
 
         // If we make it here, all new lines must of had colors
         return true;
-    }
+    }*/
 
     /**
      * Checks if there is a colour change at the specified character index.
@@ -549,6 +555,11 @@ public class StreamedData {
         return lines;
     }
 
+    /**
+     * Removes the character at the provided character index. This is a "safe" remove operation, and
+     * makes sure that all colour and new line markers after the char that is removed are shifted appropriately.
+     * @param charIndex     The 0-based index of the character in the StreamedText object that you wish to remove.
+     */
     public void removeChar(int charIndex) {
 
         if(charIndex >= getText().length()) {

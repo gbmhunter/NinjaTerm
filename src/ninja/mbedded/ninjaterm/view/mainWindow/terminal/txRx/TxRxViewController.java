@@ -23,6 +23,7 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -149,6 +150,8 @@ public class TxRxViewController {
      * (which would be processor intensive)
      */
     private int numCharsInRxTextNodes = 0;
+
+    private double heightOfOneLineOfText = 0.0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -453,6 +456,12 @@ public class TxRxViewController {
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
+
+        //==============================================//
+        //=== WORK OUT THE HEIGHT OF ONE LINE OF TEXT ==//
+        //==============================================//
+
+        recalcHeightOfOneLine();
     }
 
     private void refreshFreezeRxButton() {
@@ -481,38 +490,12 @@ public class TxRxViewController {
         rxDataTextFlow.layout();
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
-        //==============================================//
-        //== RECORD THE POSITION OF THE LAST ELEMENT ===//
-        //==============================================//
-
-        Text lastExistingTextNodeWithText = null;
-        for (int i = 0; i < observableList.size(); i++) {
-            lastExistingTextNodeWithText = (Text) (observableList.get(observableList.size() - 1 - i));
-            if (!lastExistingTextNodeWithText.getText().equals("")) {
-                break;
-            }
-        }
-        double positionBeforeTextInsertion = 0.0;
-        //double positionBeforeTextInsertion = lastExistingTextNodeWithText.getBoundsInParent().getMinY();
-        if (lastExistingTextNodeWithText != null) {
-            positionBeforeTextInsertion = lastExistingTextNodeWithText.getLayoutY();
-            if (lastExistingTextNodeWithText.getLayoutY() == 10.0) {
-                int blah = 0;
-            }
-
-            logger.debug(
-                    "BEFORE TEXT INSERTION: " +
-                            "lastExistingTextNodeWithText.getLayoutY() = " +
-                            lastExistingTextNodeWithText.getLayoutY() +
-                            ", lastExistingTextNodeWithText.getBoundsInParent().getMinY() = " +
-                            lastExistingTextNodeWithText.getBoundsInParent().getMinY());
-        }
-
 
         //==============================================//
         //=============== INSERT NEW TEXT ==============//
         //==============================================//
 
+        // 
         numCharsInRxTextNodes += streamedData.getText().length();
 
         // Move all text/colour info provided in this streamed text object into the
@@ -533,44 +516,25 @@ public class TxRxViewController {
         if (numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
             logger.debug("Trimming data in RX pane. numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
             int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
-            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
+            MutableInteger numNewLinesRemoved = new MutableInteger(0);
+            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
 
-            // Now we have removed chars, update the count
-            numCharsInRxTextNodes -= numCharsToRemove;
-            logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
-        }
-
-        //==============================================//
-        //=========== POST INSERTION SCROLLING =========//
-        //==============================================//
-
-        if (lastExistingTextNodeWithText != null) {
-            // This here forces the RX pane to perform layout of it's child nodes, which means that all
-            // layout dimensions will be valid.
-            rxDataTextFlow.layout();
-
-            logger.debug(
-                    "AFTER TEXT INSERTION: " +
-                            "lastExistingTextNodeWithText.getLayoutY() = " +
-                            lastExistingTextNodeWithText.getLayoutY() +
-                            ", lastExistingTextNodeWithText.getBoundsInParent().getMinY() = " +
-                            lastExistingTextNodeWithText.getBoundsInParent().getMinY());
-
-            //double positionAfterTextInsertion = lastExistingTextNodeWithText.getBoundsInParent().getMinY();
-            double positionAfterTextInsertion = lastExistingTextNodeWithText.getLayoutY();
-
-            double shiftInTextNode = positionAfterTextInsertion - positionBeforeTextInsertion;
-
-            logger.debug("shiftInTextNode = " + shiftInTextNode);
+            logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
 
             // Update the scroll position of the RX pane
             if (!terminal.txRx.autoScrollEnabled.get()) {
                 // Auto-scroll is not enabled, so we want to display the same text in the pane as
                 // before
-                if (shiftInTextNode > 0.0) {
-                    rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() - shiftInTextNode);
-                }
+                double amountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
+                logger.debug("amountToShiftBy = " + amountToShiftBy);
+
+                rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + amountToShiftBy);
             }
+
+
+            // Now we have removed chars, update the count
+            numCharsInRxTextNodes -= numCharsToRemove;
+            logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
         }
 
     }
@@ -700,5 +664,22 @@ public class TxRxViewController {
     public void handleKeyTyped(KeyEvent keyEvent) {
 
         terminal.txRx.handleKeyPressed((byte) keyEvent.getCharacter().charAt(0));
+    }
+
+    private void recalcHeightOfOneLine() {
+
+        TextFlow textFlow = new TextFlow();
+
+        Text text = new Text();
+        textFlow.getChildren().add(text);
+
+        text.setText("1");
+        double positionOfLine1 = text.getBoundsInParent().getMaxY();
+
+        text.setText("1\n2");
+        double positionOfLine2 = text.getBoundsInParent().getMaxY();
+
+        heightOfOneLineOfText = positionOfLine2 - positionOfLine1;
+
     }
 }
