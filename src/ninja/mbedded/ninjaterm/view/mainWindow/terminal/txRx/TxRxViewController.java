@@ -47,6 +47,9 @@ import java.io.IOException;
  */
 public class TxRxViewController {
 
+    /**
+     * This is a fudge factor to get smart scrolling working correctly.
+     */
     double scalingFactor = 3.5;
 
     //================================================================================================//
