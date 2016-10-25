@@ -42,10 +42,12 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-17
  * @since 2016-07-16
+ * @last-modified 2016-10-25
  */
 public class TxRxViewController {
+
+    double scalingFactor = 3.5;
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -488,6 +490,8 @@ public class TxRxViewController {
         // This here forces the RX pane to perform layout of it's child nodes, which means that all
         // layout dimensions will be valid.
         rxDataTextFlow.layout();
+        double rxDataTextFlowHeightBeforeTrimming = rxDataTextFlow.getHeight();
+        logger.debug("rxDataTextFlowHeightBeforeTrimming = " + rxDataTextFlowHeightBeforeTrimming);
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
 
@@ -495,21 +499,27 @@ public class TxRxViewController {
         //=============== INSERT NEW TEXT ==============//
         //==============================================//
 
-        // 
-        numCharsInRxTextNodes += streamedData.getText().length();
+        // This old method was buggy, because it didn't take into account the new line characters!
+        //numCharsInRxTextNodes += streamedData.getText().length();
+
+        MutableInteger numCharsAdded = new MutableInteger(0);
 
         // Move all text/colour info provided in this streamed text object into the
         // Text nodes that make up the RX data view
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
-                streamedData.shiftToTextNodes(observableList, observableList.size() - 1);
+                streamedData.shiftToTextNodes(observableList, observableList.size() - 1, numCharsAdded);
                 break;
             case SEPARATE_TX_RX:
-                streamedData.shiftToTextNodes(observableList, observableList.size());
+                streamedData.shiftToTextNodes(observableList, observableList.size(), numCharsAdded);
                 break;
             default:
                 throw new RuntimeException("selLayoutOption not recognised.");
         }
+
+        numCharsInRxTextNodes += numCharsAdded.intValue();
+
+
 
         // Trim RX UI if necessary
         // (the ANSI parser output data is trimmed separately in the model)
@@ -519,16 +529,32 @@ public class TxRxViewController {
             MutableInteger numNewLinesRemoved = new MutableInteger(0);
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
 
+            rxDataTextFlow.requestLayout();
+            double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
+            logger.debug("rxDataTextFlowHeightAfterTrimming = " + rxDataTextFlowHeightAfterTrimming);
+
+            double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
+            logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
+            if(rxDataTextFlowHeightChange != 0.0) {
+                int blah = 0;
+            }
+
             logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
 
             // Update the scroll position of the RX pane
             if (!terminal.txRx.autoScrollEnabled.get()) {
                 // Auto-scroll is not enabled, so we want to display the same text in the pane as
                 // before
-                double amountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
-                logger.debug("amountToShiftBy = " + amountToShiftBy);
 
-                rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + amountToShiftBy);
+                double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText*scalingFactor;
+                //absAmountToShiftBy -= 40.0;
+
+                logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
+
+                double percAmountToShiftBy = absAmountToShiftBy/rxDataTextFlow.getHeight();
+                logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
+
+                rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
             }
 
 
@@ -679,7 +705,23 @@ public class TxRxViewController {
         text.setText("1\n2");
         double positionOfLine2 = text.getBoundsInParent().getMaxY();
 
-        heightOfOneLineOfText = positionOfLine2 - positionOfLine1;
+        text.setText("1\n2\n3");
+        double positionOfLine3 = text.getBoundsInParent().getMaxY();
+
+        double heightBetween1And2 = positionOfLine2 - positionOfLine1;
+        double heightBetween2And3 = positionOfLine2 - positionOfLine1;
+
+        if(heightBetween1And2 != heightBetween2And3)
+            throw new RuntimeException("The heights of the lines of text are not the same.");
+
+        //heightOfOneLineOfText = heightBetween1And2;
+
+        // @debug
+        heightOfOneLineOfText = 16.0;
+
+    }
+
+    private void convertHeightToPercentageFromScrollView() {
 
     }
 }

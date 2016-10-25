@@ -14,7 +14,7 @@ void setup() {
 // the loop routine runs over and over again forever:
 void loop() {
   
-#define DELAY_TIME_MS (500)
+#define DELAY_TIME_MS (300)
   
   Serial.println("0");
   delay(DELAY_TIME_MS);

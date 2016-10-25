@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
 import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.AnsiECParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
@@ -34,6 +35,8 @@ public class LargeNumOfPacketsTests {
 
     private ObservableList<Node> textNodes;
 
+    private MutableInteger numCharsAdded;
+
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
@@ -43,8 +46,10 @@ public class LargeNumOfPacketsTests {
         text.setFill(Color.BLACK);
         textNodes.add(text);
 
+        numCharsAdded = new MutableInteger(0);
+
         rxDataEngine.newOutputListeners.add(streamedData -> {
-            streamedData.shiftToTextNodes(textNodes, textNodes.size());
+            streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
         });
 
         rxDataEngine.newLinePattern.set("\n");
@@ -63,6 +68,7 @@ public class LargeNumOfPacketsTests {
         assertEquals(1, textNodes.size());
         assertEquals("", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.BLACK, ((Text)textNodes.get(0)).getFill());
+        assertEquals(0, numCharsAdded.intValue());
 
         runOneIteration("[");
         assertEquals(1, textNodes.size());
