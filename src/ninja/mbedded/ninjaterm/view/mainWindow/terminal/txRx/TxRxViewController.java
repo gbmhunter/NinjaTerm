@@ -50,7 +50,7 @@ public class TxRxViewController {
     /**
      * This is a fudge factor to get smart scrolling working correctly.
      */
-    double scalingFactor = 3.5;
+    private final double SMART_SCROLLING_SCALE_FACTOR = 2.95;
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -538,9 +538,6 @@ public class TxRxViewController {
 
             double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
             logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
-            if(rxDataTextFlowHeightChange != 0.0) {
-                int blah = 0;
-            }
 
             logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
 
@@ -548,13 +545,27 @@ public class TxRxViewController {
             if (!terminal.txRx.autoScrollEnabled.get()) {
                 // Auto-scroll is not enabled, so we want to display the same text in the pane as
                 // before
-
-                double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText*scalingFactor;
+                double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
                 //absAmountToShiftBy -= 40.0;
 
                 logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
 
-                double percAmountToShiftBy = absAmountToShiftBy/rxDataTextFlow.getHeight();
+                double percAmountToShiftBy;
+                if(rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
+                    // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
+                    // that sets the current position of the scroll pane does not take into account the
+                    // last section of the TextFlow object (this is normally how scroll panes work)
+                    percAmountToShiftBy =
+                            absAmountToShiftBy /
+                                    // I don't know if  rxDataTextFlow.getPadding().getTop() should be here, but it seems
+                                    // to make the scrolling "almost" perfect
+                                    (rxDataTextFlow.getHeight() + rxDataTextFlow.getPadding().getTop() -
+                                            (rxDataScrollPane.getHeight() - rxDataScrollPane.getPadding().getTop() - rxDataScrollPane.getPadding().getBottom()));
+                } else {
+                    // If the TextFlow object is smaller than the scroll pane, don't do any adjustment to the
+                    // scrolling at all
+                    percAmountToShiftBy = 0.0;
+                }
                 logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
 
                 rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
