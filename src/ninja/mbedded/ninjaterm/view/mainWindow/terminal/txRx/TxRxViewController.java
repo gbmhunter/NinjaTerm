@@ -41,8 +41,8 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-07-16
  * @last-modified 2016-10-17
+ * @since 2016-07-16
  */
 public class TxRxViewController {
 
@@ -120,12 +120,6 @@ public class TxRxViewController {
      * This needs to be more than when the mouse is not hovering on it.
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
-
-    /**
-     * Determines whether the RX data terminal will auto-scroll to bottom
-     * as more data arrives.
-     */
-    private Boolean autoScrollEnabled = true;
 
     private Text rxDataText = new Text();
 
@@ -225,7 +219,7 @@ public class TxRxViewController {
         rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
             //logger.debug("heightProperty changed to " + newValue);
 
-            if (autoScrollEnabled) {
+            if (terminal.txRx.autoScrollEnabled.get()) {
                 rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
             }
 
@@ -240,7 +234,7 @@ public class TxRxViewController {
 
             // Since the user has now scrolled upwards (manually), disable the
             // auto-scroll
-            autoScrollEnabled = false;
+            terminal.txRx.autoScrollEnabled.set(false);
 
             autoScrollButtonPane.setVisible(true);
         });
@@ -255,11 +249,14 @@ public class TxRxViewController {
                 }
         );
 
+        /**
+         * This will be called when the user clicks the down arrow button
+         */
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
                     //logger.debug("Mouse click detected! " + mouseEvent.getSource());
 
                     // Enable auto-scroll
-                    autoScrollEnabled = true;
+                    terminal.txRx.autoScrollEnabled.set(true);
 
                     // Hide the auto-scroll button. This is made visible again when the user
                     // manually scrolls.
@@ -372,7 +369,7 @@ public class TxRxViewController {
         //==============================================//
 
         freezeRxButton.setOnAction(event -> {
-            if(!terminal.txRx.rxDataEngine.isFrozen.get()) {
+            if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
                 terminal.txRx.freezeRx();
             } else {
                 terminal.txRx.unFreezeRx();
@@ -479,7 +476,42 @@ public class TxRxViewController {
 
         logger.debug("newStreamedTextListener() called with streamedData = " + streamedData);
 
+        // This here forces the RX pane to perform layout of it's child nodes, which means that all
+        // layout dimensions will be valid.
+        rxDataTextFlow.layout();
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
+
+        //==============================================//
+        //== RECORD THE POSITION OF THE LAST ELEMENT ===//
+        //==============================================//
+
+        Text lastExistingTextNodeWithText = null;
+        for (int i = 0; i < observableList.size(); i++) {
+            lastExistingTextNodeWithText = (Text) (observableList.get(observableList.size() - 1 - i));
+            if (!lastExistingTextNodeWithText.getText().equals("")) {
+                break;
+            }
+        }
+        double positionBeforeTextInsertion = 0.0;
+        //double positionBeforeTextInsertion = lastExistingTextNodeWithText.getBoundsInParent().getMinY();
+        if (lastExistingTextNodeWithText != null) {
+            positionBeforeTextInsertion = lastExistingTextNodeWithText.getLayoutY();
+            if (lastExistingTextNodeWithText.getLayoutY() == 10.0) {
+                int blah = 0;
+            }
+
+            logger.debug(
+                    "BEFORE TEXT INSERTION: " +
+                            "lastExistingTextNodeWithText.getLayoutY() = " +
+                            lastExistingTextNodeWithText.getLayoutY() +
+                            ", lastExistingTextNodeWithText.getBoundsInParent().getMinY() = " +
+                            lastExistingTextNodeWithText.getBoundsInParent().getMinY());
+        }
+
+
+        //==============================================//
+        //=============== INSERT NEW TEXT ==============//
+        //==============================================//
 
         numCharsInRxTextNodes += streamedData.getText().length();
 
@@ -507,6 +539,40 @@ public class TxRxViewController {
             numCharsInRxTextNodes -= numCharsToRemove;
             logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
         }
+
+        //==============================================//
+        //=========== POST INSERTION SCROLLING =========//
+        //==============================================//
+
+        if (lastExistingTextNodeWithText != null) {
+            // This here forces the RX pane to perform layout of it's child nodes, which means that all
+            // layout dimensions will be valid.
+            rxDataTextFlow.layout();
+
+            logger.debug(
+                    "AFTER TEXT INSERTION: " +
+                            "lastExistingTextNodeWithText.getLayoutY() = " +
+                            lastExistingTextNodeWithText.getLayoutY() +
+                            ", lastExistingTextNodeWithText.getBoundsInParent().getMinY() = " +
+                            lastExistingTextNodeWithText.getBoundsInParent().getMinY());
+
+            //double positionAfterTextInsertion = lastExistingTextNodeWithText.getBoundsInParent().getMinY();
+            double positionAfterTextInsertion = lastExistingTextNodeWithText.getLayoutY();
+
+            double shiftInTextNode = positionAfterTextInsertion - positionBeforeTextInsertion;
+
+            logger.debug("shiftInTextNode = " + shiftInTextNode);
+
+            // Update the scroll position of the RX pane
+            if (!terminal.txRx.autoScrollEnabled.get()) {
+                // Auto-scroll is not enabled, so we want to display the same text in the pane as
+                // before
+                if (shiftInTextNode > 0.0) {
+                    rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() - shiftInTextNode);
+                }
+            }
+        }
+
     }
 
     /**

@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -51,6 +52,12 @@ public class TxRx {
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     public RxDataEngine rxDataEngine = new RxDataEngine();
+
+    /**
+     * Determines whether the RX data terminal will auto-scroll to bottom
+     * as more data arrives.
+     */
+    public SimpleBooleanProperty autoScrollEnabled = new SimpleBooleanProperty(true);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

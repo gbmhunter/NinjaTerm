@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-28
- * @last-modified 2016-10-14
+ * @last-modified 2016-10-25
  */
 public class StreamedData {
 
@@ -309,6 +309,17 @@ public class StreamedData {
         }
 
         output += "colorToBeInsertedOnNextChar: " + colorToBeInsertedOnNextChar;
+
+        //==============================================//
+        //=============== NEW LINE MARKERS =============//
+        //==============================================//
+        output += ", newLineMarkers = {";
+        for(Integer newLineMarker : newLineMarkers) {
+            output += " " + newLineMarker + ",";
+        }
+        output += " }";
+
+        // Terminating bracket
         output += " }";
         return output;
     }
