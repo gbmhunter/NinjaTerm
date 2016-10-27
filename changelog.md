@@ -1,4 +1,4 @@
-vX.X.X
+v0.7.1
 ------
 
 - An empty new line pattern textfield now results in no new line markers being added, closes #139.

@@ -125,7 +125,7 @@ public class RxDataEngine {
     /**
      * The maximum buffer size of any <code>StreamedData</code> object within the <code>{@link RxDataEngine}</code>.
      */
-    public SimpleIntegerProperty maxBufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
+    public SimpleIntegerProperty maxBufferSize = new SimpleIntegerProperty();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -178,6 +178,8 @@ public class RxDataEngine {
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenFilterAndControlCharParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, totalNewLineParserOutput.maxNumChars);
+
+        maxBufferSize.set(DEFAULT_BUFFER_SIZE);
 
         maxBufferSize.addListener((observable, oldValue, newValue) -> {
             logger.debug("maxBufferSize set to " + Integer.toString(newValue.intValue()) + ".");
