@@ -7,6 +7,7 @@ vX.X.X
 - When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.
 - Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.
 - Added "build passing" and other stickers to the README and homepage, closes #145.
+- Set max. char limits on all buffers, closes #146.
 
 v0.7.0
 ------

@@ -65,10 +65,19 @@ public class TxRx {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
+    /**
+     * Constructor.
+     * @param model         The root object of the model.
+     * @param terminal      The ancestor "terminal" model for this TxRx model.
+     */
     public TxRx(Model model, Terminal terminal) {
 
         this.model = model;
         this.terminal = terminal;
+
+        //====================================//
+        //========= BUFFER-SIZE SETUP ========//
+        //====================================//
 
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
             trimTxBuffer();
@@ -78,6 +87,10 @@ public class TxRx {
         // display class (the value in the display class will be updated by the
         // user)
         rxDataEngine.maxBufferSize.bind(display.bufferSizeChars);
+
+        //====================================//
+        //============ FILTER SETUP =========//
+        //====================================//
 
         filters.filterApplyType.addListener((observable, oldValue, newValue) -> {
             if (newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {

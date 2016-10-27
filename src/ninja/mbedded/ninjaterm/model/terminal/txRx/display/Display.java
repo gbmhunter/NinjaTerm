@@ -83,6 +83,11 @@ public class Display {
     public SimpleObjectProperty<LayoutOptions> selLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
 
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
+
+    /**
+     * The maximum TX and RX buffer size, for any "buffer". For RX data, this sets the max. size for all StreamedData objects,
+     * as well as the maximum number of characters displayed in the RX panel.
+     */
     public SimpleIntegerProperty bufferSizeChars = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE_CHARS);
 
     /**

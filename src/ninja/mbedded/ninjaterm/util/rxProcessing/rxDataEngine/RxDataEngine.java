@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-21
+ * @last-modified 2016-10-27
  */
 public class RxDataEngine {
 
@@ -122,6 +122,9 @@ public class RxDataEngine {
      */
     public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
 
+    /**
+     * The maximum buffer size of any <code>StreamedData</code> object within the <code>{@link RxDataEngine}</code>.
+     */
     public SimpleIntegerProperty maxBufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -163,23 +166,35 @@ public class RxDataEngine {
 
         });
 
+        //==============================================//
+        //============ MAX BUFFER SIZE SETUP ===========//
+        //==============================================//
+
+        // Bind the max buffer size to all of the "max num. chars" properties of all
+        // StreamedData objects
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndFreezeParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenFreezeParserAndAnsiParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenAnsiParserAndNewLineParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenFilterAndControlCharParser.maxNumChars);
+
         maxBufferSize.addListener((observable, oldValue, newValue) -> {
             logger.debug("maxBufferSize set to " + Integer.toString(newValue.intValue()) + ".");
 
-            trimBuffer();
+            trimRawRxData();
         });
 
         rawRxData.addListener((observable, oldValue, newValue) -> {
-            trimBuffer();
+            trimRawRxData();
         });
     }
 
     /**
      * Trims the internal RX buffer according to the value set in maxBufferSize.
      */
-    public void trimBuffer() {
+    public void trimRawRxData() {
         logger.debug(
-                "trimBuffer() called. rawRxData.length() = " + rawRxData.length() +
+                "trimRawRxData() called. rawRxData.length() = " + rawRxData.length() +
                 ", maxBufferSize = " + maxBufferSize.get() + ".");
         // Truncate if necessary
         if (rawRxData.get().length() > maxBufferSize.get()) {
