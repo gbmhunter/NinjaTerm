@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats;
 
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -12,7 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-07
+ * @last-modified 2016-10-21
  */
 public class StatsViewController {
 
@@ -27,10 +26,10 @@ public class StatsViewController {
     private Label characterCountRxLabel;
 
     @FXML
-    private Label bufferSizesTxLabel;
+    private Label numCharsInTxBufferLabel;
 
     @FXML
-    private Label bufferSizesRxLabel;
+    private Label numCharsInRxBufferLabel;
 
     @FXML
     private Label bytesPerSecondTxLabel;
@@ -46,47 +45,49 @@ public class StatsViewController {
 
     public StatsViewController() { }
 
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
     public void init(Terminal terminal) {
 
         this.terminal = terminal;
 
         //==============================================//
-        //=========== CHARACTER COUNT SETUP ============//
+        //========= NUM. CHARS IN BUFFER SETUP =========//
+        //==============================================//
+
+        //======================= TX ===================//
+        terminal.stats.numCharsInTxBuffer.addListener((observable, oldValue, newValue) -> {
+            numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxBuffer.get()));
+        });
+        // Set default value
+        numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxBuffer.get()));
+
+        //======================= RX ===================//
+        terminal.stats.numCharsInRxBuffer.addListener((observable, oldValue, newValue) -> {
+            numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxBuffer.get()));
+        });
+        // Set default value
+        numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxBuffer.get()));
+
+        //==============================================//
+        //========= TOTAL CHARACTER COUNT SETUP ========//
         //==============================================//
 
         //======================= RX ===================//
-        characterCountTxLabel.setText(Integer.toString(terminal.stats.numCharactersTx.getValue()));
-        terminal.stats.numCharactersTx.addListener((observable, oldValue, newValue) -> {
+        characterCountTxLabel.setText(Integer.toString(terminal.stats.totalNumCharsTx.getValue()));
+        terminal.stats.totalNumCharsTx.addListener((observable, oldValue, newValue) -> {
             // Convert new value into string and update label
             characterCountTxLabel.setText(Integer.toString(newValue.intValue()));
         });
 
         //======================= TX ===================//
-        characterCountRxLabel.setText(Integer.toString(terminal.stats.numCharactersRx.getValue()));
-        terminal.stats.numCharactersRx.addListener((observable, oldValue, newValue) -> {
+        characterCountRxLabel.setText(Integer.toString(terminal.stats.totalNumCharsRx.getValue()));
+        terminal.stats.totalNumCharsRx.addListener((observable, oldValue, newValue) -> {
             // Convert new value into string and update label
             characterCountRxLabel.setText(Integer.toString(newValue.intValue()));
         });
-
-        //==============================================//
-        //============= BUFFER SIZE SETUP ==============//
-        //==============================================//
-
-        //======================= TX ===================//
-        ChangeListener<String> bufferSizesTxChangeListener = (observable, oldValue, newValue) -> {
-            bufferSizesTxLabel.setText(Integer.toString(terminal.txRx.txData.get().length()));
-        };
-        terminal.txRx.txData.addListener(bufferSizesTxChangeListener);
-        // Set default (giving bogus data as it is not used)
-        bufferSizesTxChangeListener.changed(new SimpleStringProperty(), "", "");
-
-        //======================= RX ===================//
-        ChangeListener<String> bufferSizesRxChangeListener = (observable, oldValue, newValue) -> {
-            bufferSizesRxLabel.setText(Integer.toString(terminal.txRx.rxDataEngine.rawRxData.get().length()));
-        };
-        terminal.txRx.rxDataEngine.rawRxData.addListener(bufferSizesRxChangeListener);
-        // Set default (giving bogus data as it is not used)
-        bufferSizesRxChangeListener.changed(new SimpleStringProperty(), "", "");
 
         //==============================================//
         //============= BYTES/SECOND SETUP =============//

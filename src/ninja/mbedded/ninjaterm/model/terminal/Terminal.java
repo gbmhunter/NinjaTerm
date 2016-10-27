@@ -145,7 +145,7 @@ public class Terminal {
             txRx.addRxData(rxData);
 
             // Update stats in app model
-            stats.numCharactersRx.set(stats.numCharactersRx.get() + rxData.length);
+            stats.totalNumCharsRx.set(stats.totalNumCharsRx.get() + rxData.length);
             model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxData.length);
 
         });

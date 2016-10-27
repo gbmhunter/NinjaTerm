@@ -11,16 +11,42 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 /**
  * Model containing data and logic for statistics about a terminal (COM port).
  *
+ * This class does not concern itself with any global stats, but just those
+ * of single terminal instance (COM port).
+ *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-07
+ * @last-modified   2016-10-23
  */
 public class Stats {
 
+    //================================================================================================//
+    //======================================== CLASS CONSTANTS =======================================//
+    //================================================================================================//
+
     private static final double BYTES_PER_SECOND_CALC_PERIOD_MS = 1000.0;
 
-    public SimpleIntegerProperty numCharactersTx = new SimpleIntegerProperty(0);
-    public SimpleIntegerProperty numCharactersRx = new SimpleIntegerProperty(0);
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
+    //==============================================//
+    //========= NUM. CHARS IN BUFFER FIELDS ========//
+    //==============================================//
+
+    public SimpleIntegerProperty numCharsInTxBuffer = new SimpleIntegerProperty();
+    public SimpleIntegerProperty numCharsInRxBuffer = new SimpleIntegerProperty();
+
+    //==============================================//
+    //=========== TOTAL CHAR COUNT FIELDS ==========//
+    //==============================================//
+
+    public SimpleIntegerProperty totalNumCharsTx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalNumCharsRx = new SimpleIntegerProperty(0);
+
+    //==============================================//
+    //=============== BYTES/SEC FIELDS =============//
+    //==============================================//
 
     private double bytesSinceLastCalcRx = 0.0;
     private double bytesSinceLastCalcTx = 0.0;
@@ -28,7 +54,27 @@ public class Stats {
     public SimpleDoubleProperty bytesPerSecondTx = new SimpleDoubleProperty(0.0);
     public SimpleDoubleProperty bytesPerSecondRx = new SimpleDoubleProperty(0.0);
 
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
+
     public Stats(Terminal terminal) {
+
+        //==============================================//
+        //========== NUM. CHARS IN BUFFER SETUP ========//
+        //==============================================//
+
+        terminal.txRx.txData.addListener((observable, oldValue, newValue) -> {
+            numCharsInTxBuffer.set(newValue.length());
+        });
+
+        terminal.txRx.rxDataEngine.rawRxData.addListener((observable, oldValue, newValue) -> {
+            numCharsInRxBuffer.set(newValue.length());
+        });
+
+        //==============================================//
+        //================ BYTES/SEC SETUP =============//
+        //==============================================//
 
         // INSTALL TX/RX DATA LISTENERS
         terminal.txRx.dataSentTxListeners.add(txData -> {
@@ -48,7 +94,8 @@ public class Stats {
     }
 
     /**
-     * This should be called once every <code>BYTES_PER_SECOND_CALC_PERIOD_MS</code>.
+     * This should be called once every <code>BYTES_PER_SECOND_CALC_PERIOD_MS</code> by a Timeline object
+     * setup in this classes constructor.
      */
     private void calculateBytesPerSecond() {
 

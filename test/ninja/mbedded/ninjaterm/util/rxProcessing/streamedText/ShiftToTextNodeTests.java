@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-02
- * @last-modified   2016-10-16
+ * @last-modified   2016-10-25
  */
 public class ShiftToTextNodeTests {
 
@@ -29,6 +30,7 @@ public class ShiftToTextNodeTests {
 
     private StreamedData streamedData;
     private ObservableList<Node> textNodes;
+    private MutableInteger numCharsAdded;
 
     @Before
     public void setUp() throws Exception {
@@ -38,6 +40,8 @@ public class ShiftToTextNodeTests {
         Text text = new Text();
         text.setFill(Color.RED);
         textNodes.add(text);
+
+        numCharsAdded = new MutableInteger(0);
     }
 
     @Test
@@ -45,11 +49,12 @@ public class ShiftToTextNodeTests {
 
         streamedData.append("1234");
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(1, textNodes.size());
         assertEquals("1234", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+        assertEquals(4, numCharsAdded.intValue());
     }
 
     @Test
@@ -58,7 +63,7 @@ public class ShiftToTextNodeTests {
         streamedData.append("1234");
         streamedData.addColour(2, Color.GREEN);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(2, textNodes.size());
 
@@ -67,6 +72,8 @@ public class ShiftToTextNodeTests {
 
         assertEquals("34", ((Text)textNodes.get(1)).getText());
         assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+
+        assertEquals(4, numCharsAdded.intValue());
     }
 
     @Test
@@ -77,7 +84,7 @@ public class ShiftToTextNodeTests {
         streamedData.addColour(3, Color.RED);
         streamedData.addColour(5, Color.BLUE);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(4, textNodes.size());
 
@@ -89,6 +96,8 @@ public class ShiftToTextNodeTests {
         assertEquals(Color.RED, ((Text)textNodes.get(2)).getFill());
         assertEquals("6", ((Text)textNodes.get(3)).getText());
         assertEquals(Color.BLUE, ((Text)textNodes.get(3)).getFill());
+
+        assertEquals(6, numCharsAdded.intValue());
     }
 
     @Test
@@ -96,7 +105,7 @@ public class ShiftToTextNodeTests {
 
         streamedData.setColorToBeInsertedOnNextChar(Color.GREEN);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(null, streamedData.getColorToBeInsertedOnNextChar());
 
@@ -106,6 +115,8 @@ public class ShiftToTextNodeTests {
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
         assertEquals("", ((Text)textNodes.get(1)).getText());
         assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+
+        assertEquals(0, numCharsAdded.intValue());
     }
 
     @Test
@@ -114,11 +125,13 @@ public class ShiftToTextNodeTests {
         streamedData.append("1234");
         streamedData.addNewLineMarkerAt(0);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(1, textNodes.size());
         assertEquals("\n1234", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+
+        assertEquals(5, numCharsAdded.intValue());
     }
 
     @Test
@@ -127,11 +140,13 @@ public class ShiftToTextNodeTests {
         streamedData.append("1234");
         streamedData.addNewLineMarkerAt(2);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(1, textNodes.size());
         assertEquals("12\n34", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+
+        assertEquals(5, numCharsAdded.intValue());
     }
 
     @Test
@@ -140,11 +155,13 @@ public class ShiftToTextNodeTests {
         streamedData.append("1234");
         streamedData.addNewLineMarkerAt(4);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(1, textNodes.size());
         assertEquals("1234\n", ((Text)textNodes.get(0)).getText());
         assertEquals(Color.RED, ((Text)textNodes.get(0)).getFill());
+
+        assertEquals(5, numCharsAdded.intValue());
     }
 
     @Test
@@ -154,7 +171,7 @@ public class ShiftToTextNodeTests {
         streamedData.addColour(2, Color.GREEN);
         streamedData.addNewLineMarkerAt(3);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(2, textNodes.size());
 
@@ -163,6 +180,8 @@ public class ShiftToTextNodeTests {
 
         assertEquals("3\n4", ((Text)textNodes.get(1)).getText());
         assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+
+        assertEquals(5, numCharsAdded.intValue());
     }
 
     @Test
@@ -172,7 +191,7 @@ public class ShiftToTextNodeTests {
         streamedData.addColour(2, Color.GREEN);
         streamedData.addNewLineMarkerAt(4);
 
-        streamedData.shiftToTextNodes(textNodes, textNodes.size());
+        streamedData.shiftToTextNodes(textNodes, textNodes.size(), numCharsAdded);
 
         assertEquals(2, textNodes.size());
 
@@ -181,6 +200,8 @@ public class ShiftToTextNodeTests {
 
         assertEquals("34\n", ((Text)textNodes.get(1)).getText());
         assertEquals(Color.GREEN, ((Text)textNodes.get(1)).getFill());
+
+        assertEquals(5, numCharsAdded.intValue());
     }
 
 }

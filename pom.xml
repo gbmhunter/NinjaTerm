@@ -4,7 +4,7 @@
   <artifactId>NinjaTerm</artifactId>
   <groupId>NinjaTerm</groupId>
   <packaging>jar</packaging>
-  <version>0.7.0</version>
+  <version>0.7.1</version>
   <name>NinjaTerm</name>
   <repositories>
     <repository>
@@ -46,6 +46,11 @@
       <groupId>com.install4j</groupId>
       <artifactId>i4jruntime</artifactId>
       <version>5.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>2.0.2-beta</version>
     </dependency>
   </dependencies>
   <build>

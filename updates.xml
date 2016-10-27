@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.7.0/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.0_macos.dmg" newVersion="0.7.0" newMediaFileId="36" fileSize="5791879" bundledJre="" archive="false">
-    <comment language="en">v0.7.0&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.7.1/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.1_macos.dmg" newVersion="0.7.1" newMediaFileId="36" fileSize="6877319" bundledJre="" archive="false">
+    <comment language="en">v0.7.1&#xD;
+------&#xD;
+&#xD;
+- An empty new line pattern textfield now results in no new line markers being added, closes #139.&#xD;
+- All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.&#xD;
+- Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.&#xD;
+- When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.&#xD;
+- Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.&#xD;
+- Added "build passing" and other stickers to the README and homepage, closes #145.&#xD;
+- Set max. char limits on all buffers, closes #146.&#xD;
+- Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.&#xD;
+&#xD;
+v0.7.0&#xD;
 ------&#xD;
 &#xD;
 - Added shortcut key to speed up splash screen (spacebar), closes #127.&#xD;
@@ -117,8 +129,20 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.0_windows.exe" newVersion="0.7.0" newMediaFileId="23" fileSize="6344192" bundledJre="" archive="false">
-    <comment language="en">v0.7.0&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.7.1_windows.exe" newVersion="0.7.1" newMediaFileId="23" fileSize="7429120" bundledJre="" archive="false">
+    <comment language="en">v0.7.1&#xD;
+------&#xD;
+&#xD;
+- An empty new line pattern textfield now results in no new line markers being added, closes #139.&#xD;
+- All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.&#xD;
+- Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.&#xD;
+- When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.&#xD;
+- Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.&#xD;
+- Added "build passing" and other stickers to the README and homepage, closes #145.&#xD;
+- Set max. char limits on all buffers, closes #146.&#xD;
+- Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.&#xD;
+&#xD;
+v0.7.0&#xD;
 ------&#xD;
 &#xD;
 - Added shortcut key to speed up splash screen (spacebar), closes #127.&#xD;

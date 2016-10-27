@@ -1,3 +1,15 @@
+v0.7.1
+------
+
+- An empty new line pattern textfield now results in no new line markers being added, closes #139.
+- All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.
+- Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.
+- When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.
+- Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.
+- Added "build passing" and other stickers to the README and homepage, closes #145.
+- Set max. char limits on all buffers, closes #146.
+- Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.
+
 v0.7.0
 ------
 

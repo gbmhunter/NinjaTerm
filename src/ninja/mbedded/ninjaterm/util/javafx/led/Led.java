@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.view.led;
+package ninja.mbedded.ninjaterm.util.javafx.led;
 
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;

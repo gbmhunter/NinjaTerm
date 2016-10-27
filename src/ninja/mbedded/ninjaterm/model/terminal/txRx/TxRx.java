@@ -23,8 +23,8 @@ import java.util.List;
  * tab in the GUI.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-11
  * @since 2016-09-16
+ * @last-modified 2016-10-27
  */
 public class TxRx {
 
@@ -53,20 +53,44 @@ public class TxRx {
 
     public RxDataEngine rxDataEngine = new RxDataEngine();
 
+    /**
+     * Determines whether the RX data terminal will auto-scroll to bottom
+     * as more data arrives.
+     */
+    public SimpleBooleanProperty autoScrollEnabled = new SimpleBooleanProperty(true);
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
+    /**
+     * Constructor.
+     * @param model         The root object of the model.
+     * @param terminal      The ancestor "terminal" model for this TxRx model.
+     */
     public TxRx(Model model, Terminal terminal) {
 
         this.model = model;
         this.terminal = terminal;
 
+        //====================================//
+        //========= BUFFER-SIZE SETUP ========//
+        //====================================//
+
         display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
-            removeOldCharsFromBuffers();
+            trimTxBuffer();
         });
+
+        // Bind the RX data engine's buffer size to the value held in the
+        // display class (the value in the display class will be updated by the
+        // user)
+        rxDataEngine.maxBufferSize.bind(display.bufferSizeChars);
+
+        //====================================//
+        //============ FILTER SETUP =========//
+        //====================================//
 
         filters.filterApplyType.addListener((observable, oldValue, newValue) -> {
             if (newValue == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
@@ -149,7 +173,7 @@ public class TxRx {
         terminal.comPort.sendData(dataAsByteArray);
 
         // Update stats
-        terminal.stats.numCharactersTx.setValue(terminal.stats.numCharactersTx.getValue() + dataAsByteArray.length);
+        terminal.stats.totalNumCharsTx.setValue(terminal.stats.totalNumCharsTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
         // Create string from data
@@ -235,28 +259,36 @@ public class TxRx {
 
     }
 
-
-
-    public void removeOldCharsFromBuffers() {
+    public void trimTxBuffer() {
 
         if (txData.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
             txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
         }
 
-        if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
+        /*if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
             // Remove old characters from buffer
             rxDataEngine.rawRxData.set(StringUtils.removeOldChars(rxDataEngine.rawRxData.get(), display.bufferSizeChars.get()));
-        }
+        }*/
     }
 
     /**
-     * Call this if you want to clear TX/RX data from the UI.
+     * Clears data from all internal buffers and emits an RxDataCleared event
+     * for the UI.
      */
     public void clearTxAndRxData() {
         logger.debug("clearTxAndRxData() called.");
 
-        // Emit RX data cleared event
+        // Clear all internal buffers
+        rxDataEngine.clearAllData();
+
+        emitEventToClearTxRxDataOnUI();
+
+        model.status.addMsg("Terminal TX/RX text cleared.");
+    }
+
+    private void emitEventToClearTxRxDataOnUI() {
+        // Emit RX data cleared event for the UI
         for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
@@ -281,13 +313,12 @@ public class TxRx {
     private void filterTextChanged(String filterText) {
 
         logger.debug("filterTextChanged() called.");
-
         rxDataEngine.setFilterPattern(filterText);
 
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
-            clearTxAndRxData();
+            emitEventToClearTxRxDataOnUI();
             rxDataEngine.rerunFilterOnExistingData();
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
