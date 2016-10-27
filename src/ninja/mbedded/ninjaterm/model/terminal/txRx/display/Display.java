@@ -12,9 +12,13 @@ import org.slf4j.Logger;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-21
+ * @last-modified   2016-10-27
  */
 public class Display {
+
+    //================================================================================================//
+    //============================================= ENUMS ============================================//
+    //================================================================================================//
 
     public enum LayoutOptions {
         SINGLE_PANE("Single Pane"),
@@ -38,6 +42,19 @@ public class Display {
         SEND_TX_CHARS_ON_ENTER
     }
 
+    /**
+     * The options for the RX pane scroll behaviour.
+     */
+    public enum ScrollBehaviour {
+        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
+         * the same lines of RX text in view. **/
+        STANDARD,
+
+        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
+         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
+        SMART,
+    }
+
     //================================================================================================//
     //============================================ CONSTANTS =========================================//
     //================================================================================================//
@@ -50,6 +67,8 @@ public class Display {
      * No RX data filter was active at this time.
      */
     public final int DEFAULT_BUFFER_SIZE_CHARS = 20000;
+
+    public final double DEFAULT_WRAPPING_WIDTH_PX = 800;
 
     //================================================================================================//
     //============================================= FIELDS ===========================================//
@@ -66,8 +85,20 @@ public class Display {
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
     public SimpleIntegerProperty bufferSizeChars = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE_CHARS);
 
+    /**
+     * If true wrapping is enabled, otherwise false.
+     */
     public SimpleBooleanProperty wrappingEnabled = new SimpleBooleanProperty(false);
-    public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(800.0);
+
+    /**
+     * The wrapping width of text in the RX pane.
+     */
+    public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(DEFAULT_WRAPPING_WIDTH_PX);
+
+    /**
+     * The selected scroll behaviour. This is set by radio buttons in the UI.
+     */
+    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

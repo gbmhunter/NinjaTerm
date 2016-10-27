@@ -5,6 +5,7 @@ vX.X.X
 - All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.
 - Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.
 - When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.
+- Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.
 
 v0.7.0
 ------

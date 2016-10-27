@@ -22,6 +22,7 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
@@ -535,56 +536,73 @@ public class TxRxViewController {
             MutableInteger numNewLinesRemoved = new MutableInteger(0);
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
 
-            //==============================================//
-            //=============== SMART SCROLLING ==============//
-            //==============================================//
-
-            rxDataTextFlow.requestLayout();
-            double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
-            logger.debug("rxDataTextFlowHeightAfterTrimming = " + rxDataTextFlowHeightAfterTrimming);
-
-            double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
-            logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
-
-            logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
-
-            // Update the scroll position of the RX pane
-            if (!terminal.txRx.autoScrollEnabled.get()) {
-                // Auto-scroll is not enabled, so we want to display the same text in the pane as
-                // before
-                double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
-                //absAmountToShiftBy -= 40.0;
-
-                logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
-
-                double percAmountToShiftBy;
-                if(rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
-                    // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
-                    // that sets the current position of the scroll pane does not take into account the
-                    // last section of the TextFlow object (this is normally how scroll panes work)
-                    percAmountToShiftBy =
-                            absAmountToShiftBy /
-                                    // I don't know if  rxDataTextFlow.getPadding().getTop() should be here, but it seems
-                                    // to make the scrolling "almost" perfect
-                                    (rxDataTextFlow.getHeight() + rxDataTextFlow.getPadding().getTop() -
-                                            (rxDataScrollPane.getHeight() - rxDataScrollPane.getPadding().getTop() - rxDataScrollPane.getPadding().getBottom()));
-                } else {
-                    // If the TextFlow object is smaller than the scroll pane, don't do any adjustment to the
-                    // scrolling at all
-                    percAmountToShiftBy = 0.0;
-                }
-                logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
-
-                // Adjust the scrolling
-                rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
-            }
-
+            // Perform smart scrolling only if enabled
+            if(terminal.txRx.display.scrollBehaviour.get() == Display.ScrollBehaviour.SMART)
+                smartScroll(numNewLinesRemoved, rxDataTextFlowHeightBeforeTrimming);
 
             // Now we have removed chars, update the count
             numCharsInRxTextNodes -= numCharsToRemove;
             logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
         }
 
+    }
+
+    /**
+     * Scrolls the RX pane so that the same text is visible after trimming.
+     *
+     * Should be called straight after trimming, and only if smart scrolling is enabled.
+     *
+     * @param numNewLinesRemoved    The number of new lines that were just removed in the trimming operation.
+     * @param rxDataTextFlowHeightBeforeTrimming    The height (in pixels) of the RX TextFlow object before the trimming operation.
+     */
+    private void smartScroll(MutableInteger numNewLinesRemoved, double rxDataTextFlowHeightBeforeTrimming) {
+        //==============================================//
+        //=============== SMART SCROLLING ==============//
+        //==============================================//
+
+        rxDataTextFlow.requestLayout();
+        double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
+        logger.debug("rxDataTextFlowHeightAfterTrimming = " + rxDataTextFlowHeightAfterTrimming);
+
+        double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
+        logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
+
+        if(rxDataTextFlowHeightChange != 0.0) {
+            throw new RuntimeException("The RX data TextFlow object changed height after trimming text. This scenario is not supported by smart scroll.");
+        }
+
+        logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
+
+        // Update the scroll position of the RX pane
+        if (!terminal.txRx.autoScrollEnabled.get()) {
+            // Auto-scroll is not enabled, so we want to display the same text in the pane as
+            // before
+            double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
+            //absAmountToShiftBy -= 40.0;
+
+            logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
+
+            double percAmountToShiftBy;
+            if(rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
+                // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
+                // that sets the current position of the scroll pane does not take into account the
+                // last section of the TextFlow object (this is normally how scroll panes work)
+                percAmountToShiftBy =
+                        absAmountToShiftBy /
+                                // I don't know if  rxDataTextFlow.getPadding().getTop() should be here, but it seems
+                                // to make the scrolling "almost" perfect
+                                (rxDataTextFlow.getHeight() + rxDataTextFlow.getPadding().getTop() -
+                                        (rxDataScrollPane.getHeight() - rxDataScrollPane.getPadding().getTop() - rxDataScrollPane.getPadding().getBottom()));
+            } else {
+                // If the TextFlow object is smaller than the scroll pane, don't do any adjustment to the
+                // scrolling at all
+                percAmountToShiftBy = 0.0;
+            }
+            logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
+
+            // Adjust the scrolling
+            rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
+        }
     }
 
     /**

@@ -23,8 +23,8 @@ import org.controlsfx.validation.Validator;
  * View controller for the "display" settings pop-up window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-21
  * @since 2016-09-16
+ * @last-modified 2016-10-27
  */
 public class DisplayViewController {
 
@@ -55,6 +55,16 @@ public class DisplayViewController {
 
     @FXML
     private ApplyTextField bufferSizeTextField;
+
+    //==============================================//
+    //=============== SCROLL BEHAVIOUR =============//
+    //==============================================//
+
+    @FXML
+    private RadioButton scrollBehaviourStandardRadioButton;
+
+    @FXML
+    private RadioButton scrollBehaviourSmartRadioButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -245,6 +255,19 @@ public class DisplayViewController {
         support.registerValidator(bufferSizeTextField, true, validator);
 
         TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are removed from the UI (this does not affect logging).");
+
+        //==============================================//
+        //=========== SCROLL BEHAVIOUR SETUP ===========//
+        //==============================================//
+
+        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
+        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
+        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
+
+        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
+
+        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
+        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
 
     }
 }
