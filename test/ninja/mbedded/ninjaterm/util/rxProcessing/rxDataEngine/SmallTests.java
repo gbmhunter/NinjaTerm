@@ -12,20 +12,20 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-16
+ * @last-modified   2016-10-18
  */
-public class RxDataEngineTests {
+public class SmallTests {
 
     private RxDataEngine rxDataEngine;
 
-    private StreamedData output;
+    private StreamedData output = new StreamedData();
 
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
-            output = streamedText;
+            output.shiftDataIn(streamedText, streamedText.getText().length());
         });
     }
 
@@ -58,7 +58,7 @@ public class RxDataEngineTests {
 
     @Test
     public void filterTest() throws Exception {
-        rxDataEngine.setNewLinePattern("\n");
+        rxDataEngine.newLinePattern.set("\n");
         rxDataEngine.setFilterPattern("4");
 
         rxDataEngine.parse("123\n456\n789".getBytes());
@@ -70,7 +70,7 @@ public class RxDataEngineTests {
 
     @Test
     public void resetFilterTest() throws Exception {
-        rxDataEngine.setNewLinePattern("\n");
+        rxDataEngine.newLinePattern.set("\n");
         rxDataEngine.setFilterPattern("1");
 
         //==============================================//
@@ -88,6 +88,8 @@ public class RxDataEngineTests {
         //===================== RUN 2 ==================//
         //==============================================//
 
+        output.clear();
+
         rxDataEngine.setFilterPattern("4");
         rxDataEngine.rerunFilterOnExistingData();
         assertEquals("456", output.getText());
@@ -98,7 +100,7 @@ public class RxDataEngineTests {
 
     @Test
     public void basicColoursAndNewLineTest() throws Exception {
-        rxDataEngine.setNewLinePattern("\r\n");
+        rxDataEngine.newLinePattern.set("\r\n");
         rxDataEngine.setFilterPattern("");
         rxDataEngine.parse("123\u001B[30m4\r\n56".getBytes());
 
@@ -114,7 +116,7 @@ public class RxDataEngineTests {
 
     @Test
     public void basicColoursNewLineFilterTest() throws Exception {
-        rxDataEngine.setNewLinePattern("EOL");
+        rxDataEngine.newLinePattern.set("EOL");
         rxDataEngine.setFilterPattern("56");
         rxDataEngine.parse("123EOL\u001B[30m45".getBytes());
 
@@ -134,5 +136,29 @@ public class RxDataEngineTests {
 
         assertEquals(1, output.getNewLineMarkers().size());
         assertEquals(6, output.getNewLineMarkers().get(0).intValue());
+    }
+
+    @Test
+    public void changeNewLinePatternText() throws Exception {
+        rxDataEngine.newLinePattern.set("EOL1");
+        rxDataEngine.parse("abcEOL1defEOL2".getBytes());
+
+        assertEquals("abcEOL1defEOL2", output.getText());
+
+        assertEquals(1, output.getNewLineMarkers().size());
+
+        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
+
+        // Now change the new line pattern
+        rxDataEngine.newLinePattern.set("EOL2");
+        rxDataEngine.parse("abcEOL1defEOL2".getBytes());
+
+        assertEquals("abcEOL1defEOL2abcEOL1defEOL2", output.getText());
+
+        assertEquals(2, output.getNewLineMarkers().size());
+
+        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(28, output.getNewLineMarkers().get(1).intValue());
+
     }
 }

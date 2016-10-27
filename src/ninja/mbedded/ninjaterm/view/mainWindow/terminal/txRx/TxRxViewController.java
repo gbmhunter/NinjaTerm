@@ -22,7 +22,9 @@ import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -42,9 +44,14 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-10-17
+ * @last-modified 2016-10-25
  */
 public class TxRxViewController {
+
+    /**
+     * This is a fudge factor to get smart scrolling working correctly.
+     */
+    private final double SMART_SCROLLING_SCALE_FACTOR = 2.95;
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -121,12 +128,6 @@ public class TxRxViewController {
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
 
-    /**
-     * Determines whether the RX data terminal will auto-scroll to bottom
-     * as more data arrives.
-     */
-    private Boolean autoScrollEnabled = true;
-
     private Text rxDataText = new Text();
 
     private GlyphFont glyphFont;
@@ -155,6 +156,8 @@ public class TxRxViewController {
      * (which would be processor intensive)
      */
     private int numCharsInRxTextNodes = 0;
+
+    private double heightOfOneLineOfText = 0.0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -225,7 +228,7 @@ public class TxRxViewController {
         rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
             //logger.debug("heightProperty changed to " + newValue);
 
-            if (autoScrollEnabled) {
+            if (terminal.txRx.autoScrollEnabled.get()) {
                 rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
             }
 
@@ -240,7 +243,7 @@ public class TxRxViewController {
 
             // Since the user has now scrolled upwards (manually), disable the
             // auto-scroll
-            autoScrollEnabled = false;
+            terminal.txRx.autoScrollEnabled.set(false);
 
             autoScrollButtonPane.setVisible(true);
         });
@@ -255,11 +258,14 @@ public class TxRxViewController {
                 }
         );
 
+        /**
+         * This will be called when the user clicks the down arrow button
+         */
         autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
                     //logger.debug("Mouse click detected! " + mouseEvent.getSource());
 
                     // Enable auto-scroll
-                    autoScrollEnabled = true;
+                    terminal.txRx.autoScrollEnabled.set(true);
 
                     // Hide the auto-scroll button. This is made visible again when the user
                     // manually scrolls.
@@ -280,7 +286,6 @@ public class TxRxViewController {
         clearTextButton.setOnAction(event -> {
             logger.debug("clearTextButton clicked.");
             terminal.txRx.clearTxAndRxData();
-            model.status.addMsg("Terminal TX/RX text cleared.");
         });
 
         terminal.txRx.rxDataClearedListeners.add(() -> {
@@ -372,7 +377,7 @@ public class TxRxViewController {
         //==============================================//
 
         freezeRxButton.setOnAction(event -> {
-            if(!terminal.txRx.rxDataEngine.isFrozen.get()) {
+            if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
                 terminal.txRx.freezeRx();
             } else {
                 terminal.txRx.unFreezeRx();
@@ -456,6 +461,12 @@ public class TxRxViewController {
             dataDirectionRxStackPane.setMinWidth(newWidth);
             dataDirectionRxStackPane.setMaxWidth(newWidth);
         });*/
+
+        //==============================================//
+        //=== WORK OUT THE HEIGHT OF ONE LINE OF TEXT ==//
+        //==============================================//
+
+        recalcHeightOfOneLine();
     }
 
     private void refreshFreezeRxButton() {
@@ -479,33 +490,117 @@ public class TxRxViewController {
 
         logger.debug("newStreamedTextListener() called with streamedData = " + streamedData);
 
+        // This here forces the RX pane to perform layout of it's child nodes, which means that all
+        // layout dimensions will be valid.
+        rxDataTextFlow.layout();
+        double rxDataTextFlowHeightBeforeTrimming = rxDataTextFlow.getHeight();
+        logger.debug("rxDataTextFlowHeightBeforeTrimming = " + rxDataTextFlowHeightBeforeTrimming);
         ObservableList<Node> observableList = rxDataTextFlow.getChildren();
 
-        numCharsInRxTextNodes += streamedData.getText().length();
+
+        //==============================================//
+        //=============== INSERT NEW TEXT ==============//
+        //==============================================//
+
+        // This old method was buggy, because it didn't take into account the new line characters!
+        //numCharsInRxTextNodes += streamedData.getText().length();
+
+        MutableInteger numCharsAdded = new MutableInteger(0);
 
         // Move all text/colour info provided in this streamed text object into the
         // Text nodes that make up the RX data view
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
-                streamedData.shiftToTextNodes(observableList, observableList.size() - 1);
+                streamedData.shiftToTextNodes(observableList, observableList.size() - 1, numCharsAdded);
                 break;
             case SEPARATE_TX_RX:
-                streamedData.shiftToTextNodes(observableList, observableList.size());
+                streamedData.shiftToTextNodes(observableList, observableList.size(), numCharsAdded);
                 break;
             default:
                 throw new RuntimeException("selLayoutOption not recognised.");
         }
+
+        numCharsInRxTextNodes += numCharsAdded.intValue();
+
+        //==============================================//
+        //==================== TRIMMING ================//
+        //==============================================//
+
 
         // Trim RX UI if necessary
         // (the ANSI parser output data is trimmed separately in the model)
         if (numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
             logger.debug("Trimming data in RX pane. numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
             int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
-            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove);
+            MutableInteger numNewLinesRemoved = new MutableInteger(0);
+            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
+
+            // Perform smart scrolling only if enabled
+            if(terminal.txRx.display.scrollBehaviour.get() == Display.ScrollBehaviour.SMART)
+                smartScroll(numNewLinesRemoved, rxDataTextFlowHeightBeforeTrimming);
 
             // Now we have removed chars, update the count
             numCharsInRxTextNodes -= numCharsToRemove;
             logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
+        }
+
+    }
+
+    /**
+     * Scrolls the RX pane so that the same text is visible after trimming.
+     *
+     * Should be called straight after trimming, and only if smart scrolling is enabled.
+     *
+     * @param numNewLinesRemoved    The number of new lines that were just removed in the trimming operation.
+     * @param rxDataTextFlowHeightBeforeTrimming    The height (in pixels) of the RX TextFlow object before the trimming operation.
+     */
+    private void smartScroll(MutableInteger numNewLinesRemoved, double rxDataTextFlowHeightBeforeTrimming) {
+        //==============================================//
+        //=============== SMART SCROLLING ==============//
+        //==============================================//
+
+        rxDataTextFlow.requestLayout();
+        double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
+        logger.debug("rxDataTextFlowHeightAfterTrimming = " + rxDataTextFlowHeightAfterTrimming);
+
+        double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
+        logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
+
+        if(rxDataTextFlowHeightChange != 0.0) {
+            throw new RuntimeException("The RX data TextFlow object changed height after trimming text. This scenario is not supported by smart scroll.");
+        }
+
+        logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
+
+        // Update the scroll position of the RX pane
+        if (!terminal.txRx.autoScrollEnabled.get()) {
+            // Auto-scroll is not enabled, so we want to display the same text in the pane as
+            // before
+            double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
+            //absAmountToShiftBy -= 40.0;
+
+            logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
+
+            double percAmountToShiftBy;
+            if(rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
+                // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
+                // that sets the current position of the scroll pane does not take into account the
+                // last section of the TextFlow object (this is normally how scroll panes work)
+                percAmountToShiftBy =
+                        absAmountToShiftBy /
+                                // I don't know if  rxDataTextFlow.getPadding().getTop() should be here, but it seems
+                                // to make the scrolling "almost" perfect
+                                (rxDataTextFlow.getHeight() + rxDataTextFlow.getPadding().getTop() -
+                                        (rxDataScrollPane.getHeight() - rxDataScrollPane.getPadding().getTop() - rxDataScrollPane.getPadding().getBottom()));
+            } else {
+                // If the TextFlow object is smaller than the scroll pane, don't do any adjustment to the
+                // scrolling at all
+                percAmountToShiftBy = 0.0;
+            }
+            logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
+
+            // Adjust the scrolling
+            rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
         }
     }
 
@@ -546,14 +641,14 @@ public class TxRxViewController {
     private void updateTextWrapping() {
 
         if (terminal.txRx.display.wrappingEnabled.get()) {
-            logger.debug("\"Wrapping\" checkbox checked.");
+            logger.debug("\"Wrapping\" checkbox is currently checked, applying wrapping value.");
 
             // Set the width of the TextFlow UI object. This will set the wrapping width
             // (there is no wrapping object)
             rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
 
         } else {
-            logger.debug("\"Wrapping\" checkbox unchecked.");
+            logger.debug("\"Wrapping\" checkbox is current unchecked, not apply wrapping value.");
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }
@@ -561,7 +656,7 @@ public class TxRxViewController {
 
     public void showPopover(Button button, PopOver popOver) {
 
-        logger.debug(getClass().getName() + ".showPopover() called.");
+        logger.debug(".showPopover() called.");
 
         //==============================================//
         //=============== DECODING POPOVER =============//
@@ -634,5 +729,38 @@ public class TxRxViewController {
     public void handleKeyTyped(KeyEvent keyEvent) {
 
         terminal.txRx.handleKeyPressed((byte) keyEvent.getCharacter().charAt(0));
+    }
+
+    private void recalcHeightOfOneLine() {
+
+        TextFlow textFlow = new TextFlow();
+
+        Text text = new Text();
+        textFlow.getChildren().add(text);
+
+        text.setText("1");
+        double positionOfLine1 = text.getBoundsInParent().getMaxY();
+
+        text.setText("1\n2");
+        double positionOfLine2 = text.getBoundsInParent().getMaxY();
+
+        text.setText("1\n2\n3");
+        double positionOfLine3 = text.getBoundsInParent().getMaxY();
+
+        double heightBetween1And2 = positionOfLine2 - positionOfLine1;
+        double heightBetween2And3 = positionOfLine2 - positionOfLine1;
+
+        if(heightBetween1And2 != heightBetween2And3)
+            throw new RuntimeException("The heights of the lines of text are not the same.");
+
+        //heightOfOneLineOfText = heightBetween1And2;
+
+        // @debug
+        heightOfOneLineOfText = 16.0;
+
+    }
+
+    private void convertHeightToPercentageFromScrollView() {
+
     }
 }

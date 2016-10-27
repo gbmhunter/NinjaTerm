@@ -9,7 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.TextFlow?>
-<?import ninja.mbedded.ninjaterm.view.led.Led?>
+<?import ninja.mbedded.ninjaterm.util.javafx.led.Led?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER_LEFT"
       fillWidth="true"

@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,6 +25,9 @@ public class SingleCharTests {
     public void setUp() throws Exception {
         inputStreamedData = new StreamedData();
         outputStreamedData = new StreamedData();
+
+        StreamedData debug = mock(StreamedData.class);
+        debug.clear();
 
         newLineParser = new NewLineParser("\n");
     }

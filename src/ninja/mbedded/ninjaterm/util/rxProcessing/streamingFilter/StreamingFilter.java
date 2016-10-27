@@ -116,7 +116,7 @@ public class StreamingFilter {
                 //if(hasNewLineChar(line)) {
                 if(line != lines[lines.length - 1]) {
                     logger.debug("Deleting line.");
-                    inputStreamedData.removeChars(line.length());
+                    inputStreamedData.removeCharsFromStart(line.length());
                 }
 
             }

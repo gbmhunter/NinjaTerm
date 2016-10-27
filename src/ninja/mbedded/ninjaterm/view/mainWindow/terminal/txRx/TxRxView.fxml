@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-09-26
+* @last-modified   2016-10-25
 -->
 <!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
@@ -39,6 +39,9 @@
                 <!-- ================== TERMINAL =============== -->
                 <!-- =========================================== -->
                 <ScrollPane fx:id="rxDataScrollPane">
+                    <padding>
+                        <Insets top="0" bottom="0" left="0" right="0"/>
+                    </padding>
                     <!-- style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-color: transparent;"> -->
                     <!-- This TextFlow holds the many RX Text objects -->
                     <TextFlow fx:id="rxDataTextFlow" styleClass="txRxText"

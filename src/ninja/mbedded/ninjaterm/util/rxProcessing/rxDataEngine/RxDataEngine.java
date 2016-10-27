@@ -25,13 +25,17 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-17
+ * @last-modified 2016-10-27
  */
 public class RxDataEngine {
+
+    public final int DEFAULT_BUFFER_SIZE = 20000;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
+
+    // These are grouped by stream processing function
 
     //==============================================//
     //================== DECODER ===================//
@@ -66,9 +70,19 @@ public class RxDataEngine {
 
     private StreamedData bufferBetweenAnsiParserAndNewLineParser = new StreamedData();
 
-    private NewLineParser newLineParser = new NewLineParser("\n");
+    //==============================================//
+    //================ NEW LINE PARSER =============//
+    //==============================================//
+
+    public SimpleStringProperty newLinePattern = new SimpleStringProperty("\\n");
+
+    private NewLineParser newLineParser = new NewLineParser(newLinePattern.get());
 
     private StreamedData bufferBetweenNewLineParserAndFiltering = new StreamedData();
+
+    //==============================================//
+    //==================== FILTER ==================//
+    //==============================================//
 
     /**
      * Used to provide filtering functionality to the RX data.
@@ -80,6 +94,10 @@ public class RxDataEngine {
      * consumed by the <code>asciiControlCharParser</code>.
      */
     public StreamedData bufferBetweenFilterAndControlCharParser = new StreamedData();
+
+    //==============================================//
+    //========== ASCII CONTROL CHAR PARSER =========//
+    //==============================================//
 
     private AsciiControlCharParser asciiControlCharParser = new AsciiControlCharParser();
 
@@ -93,14 +111,10 @@ public class RxDataEngine {
     public StreamedData totalNewLineParserOutput = new StreamedData();
 
 
-
-    public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
-
     /**
-     * This event is emitted every time the ANSI parser is run. The output of the ANSI
-     * parser is passed along with the event.
+     * Listeners will be called whenever raw data is received.
      */
-//    public List<StreamedTextListener> ansiParserOutputListeners = new ArrayList<>();
+    public List<RawDataReceivedListener> rawDataReceivedListeners = new ArrayList<>();
 
     /**
      * This event is emitted when new streamed output is available. This is what the
@@ -108,9 +122,10 @@ public class RxDataEngine {
      */
     public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
 
-    public int bufferSize = 20000;
-
-
+    /**
+     * The maximum buffer size of any <code>StreamedData</code> object within the <code>{@link RxDataEngine}</code>.
+     */
+    public SimpleIntegerProperty maxBufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -119,7 +134,7 @@ public class RxDataEngine {
     //================================================================================================//
 
     public RxDataEngine() {
-        // Bind the selDeocdingOption variable to the copy inside the Decoder object
+        // Bind the selDecodingOption variable to the copy inside the Decoder object
         // (selDecodingOption exposes the field inside the Decoder object)
         Bindings.bindBidirectional(selDecodingOption, decoder.decodingOption);
 
@@ -132,12 +147,70 @@ public class RxDataEngine {
                 asciiControlCharParser.replaceWithVisibleSymbols.set(false);
             }
         });
+
+        // If an external class modifies the new line pattern, update
+        // the new line parser object correctly
+        newLinePattern.addListener((observable, oldValue, newValue) -> {
+
+            if(newValue.equals(""))
+                newLineParser.isEnabled.set(false);
+            else
+                newLineParser.isEnabled.set(true);
+
+            // Update the new line pattern in the new line parser
+            // (note that this will only have any effect if the
+            // new line parser is enabled)
+            newLineParser.setNewLinePattern(newValue);
+
+            logger.debug("newLineParser.isEnabled set to \"" + newLineParser.isEnabled.get() + "\" and newLineParser.newLinePattern set to \"" + newLineParser.getNewLinePattern() + "\".");
+
+        });
+
+        //==============================================//
+        //============ MAX BUFFER SIZE SETUP ===========//
+        //==============================================//
+
+        // Bind the max buffer size to all of the "max num. chars" properties of all
+        // StreamedData objects
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndFreezeParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenFreezeParserAndAnsiParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenAnsiParserAndNewLineParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenFilterAndControlCharParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, totalNewLineParserOutput.maxNumChars);
+
+        maxBufferSize.addListener((observable, oldValue, newValue) -> {
+            logger.debug("maxBufferSize set to " + Integer.toString(newValue.intValue()) + ".");
+
+            trimRawRxData();
+        });
+
+        rawRxData.addListener((observable, oldValue, newValue) -> {
+            trimRawRxData();
+        });
     }
 
     /**
+     * Trims the internal RX buffer according to the value set in maxBufferSize.
+     */
+    public void trimRawRxData() {
+        logger.debug(
+                "trimRawRxData() called. rawRxData.length() = " + rawRxData.length() +
+                ", maxBufferSize = " + maxBufferSize.get() + ".");
+        // Truncate if necessary
+        if (rawRxData.get().length() > maxBufferSize.get()) {
+            // Remove old characters from buffer
+            rawRxData.set(StringUtils.removeOldChars(rawRxData.get(), maxBufferSize.get()));
+        }
+    }
+
+    /**
+     * This method passes RX data. It encapsulates all the individual processes on the RX
+     * stream.
      *
+     * Process:
      *  <p>
-     *     1. Receive RX data as pure string
+     *     1. Receive RX data as byte array.
      *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters. This takes
      *              in a string put outs a StreamedData object. It populates the textColours array with objects that
      *              what colour and where colour changes occur.
@@ -152,6 +225,10 @@ public class RxDataEngine {
      *              listening to this).
      * </p>
      *
+     * The method can be called with an empty byte array. This will cause all RX parsers to be run,
+     * but without any new data (can be useful to do this after making changes to some of the
+     * properties, e.g. the filter pattern).
+     *
      * @param rxData    The received data from the COM port to process.
      */
     public void parse(byte[] rxData) {
@@ -163,13 +240,9 @@ public class RxDataEngine {
 
         String newDecodedData = decoder.parse(rxData);
 
+        // Data should be automatically trimmed (there is a listener attached
+        // to this property)
         rawRxData.set(rawRxData.get() + newDecodedData);
-
-        // Truncate if necessary
-        if (rawRxData.get().length() > bufferSize) {
-            // Remove old characters from buffer
-            rawRxData.set(StringUtils.removeOldChars(rawRxData.get(), bufferSize));
-        }
 
         bufferBetweenDecoderAndFreezeParser.append(newDecodedData);
 
@@ -259,10 +332,10 @@ public class RxDataEngine {
         //==============================================//
 
         // Trim total ANSI parser output
-        if (totalNewLineParserOutput.getText().length() > bufferSize) {
+        if (totalNewLineParserOutput.getText().length() > maxBufferSize.get()) {
             logger.debug("Trimming totalNewLineParserOutput...");
-            int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - bufferSize;
-            totalNewLineParserOutput.removeChars(numOfCharsToRemove);
+            int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - maxBufferSize.get();
+            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove);
         }
 
         // NOTE: UI buffer is trimmed in view controller
@@ -302,25 +375,9 @@ public class RxDataEngine {
         // to this toBeConsumed object
         bufferBetweenNewLineParserAndFiltering = toBeConsumed;
 
+        // Re-call parse() to process tha above changes, but
+        // don't provide any new data
         parse(new byte[]{});
-
-        /*StreamedData releasedText = new StreamedData();
-
-        streamingFilter.parse(toBeConsumed, releasedText);
-
-
-
-
-        // Call any streamed text listeners
-        for (StreamedTextListener newStreamedTextListener : newOutputListeners) {
-            // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
-            StreamedData copyOfFilterOutput = new StreamedData(bufferBetweenFilterAndControlCharParser);
-            newStreamedTextListener.run(copyOfFilterOutput);
-        }
-
-        // Since the filter output is the last parser in the chain,
-        // it's data does not need to persist between calls
-        bufferBetweenFilterAndControlCharParser.clear();*/
     }
 
     /**
@@ -331,16 +388,24 @@ public class RxDataEngine {
         ansiECParser.isEnabled.set(trueFalse);
     }
 
-    public void setNewLinePattern(String newLineString) {
-        newLineParser.setNewLinePattern(newLineString);
-    }
-
     /**
      * Sets the filter pattern to be used by the streaming filter.
      * @param filterPattern
      */
     public void setFilterPattern(String filterPattern) {
         streamingFilter.setFilterPattern(filterPattern);
+    }
+
+    /**
+     * Clears data from all internal buffers.
+     */
+    public void clearAllData() {
+        bufferBetweenDecoderAndFreezeParser.clear();
+        bufferBetweenFreezeParserAndAnsiParser.clear();
+        bufferBetweenAnsiParserAndNewLineParser.clear();
+        bufferBetweenNewLineParserAndFiltering.clear();
+        bufferBetweenFilterAndControlCharParser.clear();
+        totalNewLineParserOutput.clear();
     }
 
 }
