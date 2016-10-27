@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Added blurb on smart scrolling to homepage, closes #148.
+
 v0.7.2
 ------
 
