@@ -137,7 +137,7 @@ public class ShiftWithColoursTests {
         inputStreamedData.addColour(5, Color.RED);
         inputStreamedData.addColour(6, Color.GREEN);
 
-        inputStreamedData.removeChars(3);
+        inputStreamedData.removeCharsFromStart(3);
 
         assertEquals("456789", inputStreamedData.getText());
         assertEquals(2, inputStreamedData.getColourMarkers().size());
@@ -156,7 +156,7 @@ public class ShiftWithColoursTests {
         inputStreamedData.addColour(2, Color.RED);
         inputStreamedData.addColour(4, Color.GREEN);
 
-        inputStreamedData.removeChars(3);
+        inputStreamedData.removeCharsFromStart(3);
 
         assertEquals("4567", inputStreamedData.getText());
         assertEquals(1, inputStreamedData.getColourMarkers().size());

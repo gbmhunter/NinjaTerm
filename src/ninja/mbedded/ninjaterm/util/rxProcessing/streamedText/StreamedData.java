@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedText;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -21,16 +22,37 @@ import java.util.regex.Pattern;
  * whose output is another <code>{@link StreamedData}</code> object.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-25
  * @since 2016-09-28
+ * @last-modified 2016-10-27
  */
 public class StreamedData {
+
+    //================================================================================================//
+    //======================================== CLASS CONSTANTS =======================================//
+    //================================================================================================//
 
     /**
      * The character sequence which causes a new line to be inserted into a TextFlow
      * UI object in JavaFX. This is needed for the <code>shiftToTextNodes()</code> method.
      */
     public static final char NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW = '\n';
+
+    //================================================================================================//
+    //=========================================== ENUMS ==============================================//
+    //================================================================================================//
+
+    public enum CopyOrShift {
+
+        /**
+         * Copies data and does not alter the "copied from" object.
+         */
+        COPY,
+
+        /**
+         * Shifts data and deletes the shifted data from the "shifted from" object.
+         */
+        SHIFT,
+    }
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -49,6 +71,15 @@ public class StreamedData {
      */
     private List<Integer> newLineMarkers = new ArrayList<>();
 
+    /**
+     * The maximum number of chars this StreamedData object will contain, before it starts trimming the
+     * oldest data.
+     *
+     * If <code>maxNumChars</code> = -1, then the StreamedData object does not have a limit and
+     * will never delete old data.
+     */
+    public SimpleIntegerProperty maxNumChars = new SimpleIntegerProperty(-1);
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -60,14 +91,25 @@ public class StreamedData {
      */
     public StreamedData() {
 
+        // Add a listener so that if the maxNumChars property is changed, we trim as
+        // required
+        maxNumChars.addListener((observable, oldValue, newValue) -> {
+            trimDataIfRequired();
+        });
     }
 
     /**
      * Copy constructor. Uses the <code>copyCharsFrom()</code> to do the actual copying.
      *
+     * This also copies colour and new line markers correctly.
+     *
      * @param streamedData
      */
     public StreamedData(StreamedData streamedData) {
+
+        // Call default constructor
+        this();
+
         this.copyCharsFrom(streamedData, streamedData.getText().length());
     }
 
@@ -104,6 +146,11 @@ public class StreamedData {
         copyOrShiftCharsFrom(inputStreamedData, numChars, CopyOrShift.SHIFT);
     }
 
+    /**
+     * Clears all text, colour markers and new line markers from this object.
+     *
+     * This leaves the object in the same state as a new StreamedData object.
+     */
     public void clear() {
         // "Reset" this object
         text = "";
@@ -113,15 +160,14 @@ public class StreamedData {
         getNewLineMarkers().clear();
     }
 
-    public void removeChars(int numChars) {
+    /**
+     * Removes the specified number of characters from the start of this <code>{@link StreamedData}</code> object.
+      * @param numChars     The number of characters to remove.
+     */
+    public void removeCharsFromStart(int numChars) {
         StreamedData dummyStreamedData = new StreamedData();
         dummyStreamedData.shiftDataIn(this, numChars);
         checkAllColoursAreInOrder();
-    }
-
-    public enum CopyOrShift {
-        COPY,
-        SHIFT,
     }
 
     /**
@@ -210,6 +256,10 @@ public class StreamedData {
         }
 
         checkAllColoursAreInOrder();
+
+        // The last thing we do before returning is trim the data
+        // if now there is too much in this object
+        trimDataIfRequired();
     }
 
     /**
@@ -283,6 +333,10 @@ public class StreamedData {
         }
 
         checkAllColoursAreInOrder();
+
+        // The last thing we do before returning is trim the data
+        // if now there is too much in this object
+        trimDataIfRequired();
     }
 
     public void addColour(int position, Color color) {
@@ -464,27 +518,6 @@ public class StreamedData {
         }
     }
 
-    /*public boolean checkAllNewLinesHaveColors() {
-
-        // Check all characters but the last one (since there can't
-        // be any char after this new line to have a color attached to it)
-        for(int x = 0; x < text.length() - 1; x++) {
-
-            if (text.charAt(x) != '\n') {
-                continue;
-            }
-
-            // Look for entry in color array
-            if (!isColorAt(x + 1)) {
-                logger.debug("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
-                return false;
-            }
-        }
-
-        // If we make it here, all new lines must of had colors
-        return true;
-    }*/
-
     /**
      * Checks if there is a colour change at the specified character index.
      *
@@ -516,6 +549,17 @@ public class StreamedData {
         return newLineMarkers;
     }
 
+    /**
+     * Shifts as much data as it can from the <code>input</code> to this <code>StreamedData</code> object,
+     * until a partial match (a mutli-character regex pattern) is detected in the input.
+     *
+     * Internally uses the <code>shiftDataIn()</code> method to actually move data.
+     *
+     * Used by the <code>{@link ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineParser}</code>
+     *
+     * @param input     The input <code>StreamedData</code> object to shift data from.
+     * @param pattern   The regex pattern that defines a match.
+     */
     public void shiftCharsInUntilPartialMatch(StreamedData input, Pattern pattern) {
 
         int firstCharAfterLastFullMatch = 0;
@@ -538,22 +582,20 @@ public class StreamedData {
         // There might be remaining input after the last ANSI escpe code has been processed.
         // This can all be put in the last text node, which should be by now set up correctly.
         if (startIndexOfPartialMatch == -1) {
-
             String charsToAppend = input.getText().substring(firstCharAfterLastFullMatch);
-//            System.out.println("No partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedText, charsToAppend);
             shiftDataIn(input, input.getText().length());
-            //numCharsAdded += charsToAppend.length();
         } else {
-
-            //String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
-//            System.out.println("Partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedText, charsToAppend);
             shiftDataIn(input, startIndexOfPartialMatch);
-            //numCharsAdded += charsToAppend.length();
         }
     }
 
+    /**
+     * Splits the text up at the new lines as specified by the new line markers.
+     *
+     * Does not modify the <code>StreamedData</code> object.
+     *
+     * @return
+     */
     public String[] splitTextAtNewLines() {
 
         // Work out how many strings there will be
@@ -645,4 +687,49 @@ public class StreamedData {
 
         return output.toString();
     }
+
+    /**
+     * Trims this StreamedData object as necessary to keep the number of chars no greater than
+     * <code>maxNumChars</code>.
+     */
+    private void trimDataIfRequired() {
+
+        logger.debug("trimDataIfRequired() called.");
+
+        // Check if -1, if so, we don't want to perform any trimming
+        if(maxNumChars.get() == -1)
+            return;
+
+        if(text.length() > maxNumChars.get()) {
+            int numCharsToRemove = text.length() - maxNumChars.get();
+            logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
+            removeCharsFromStart(numCharsToRemove);
+        }
+    }
+
+    //================================================================================================//
+    //=========================================== GRAVEYARD ==========================================//
+    //================================================================================================//
+
+    /*public boolean checkAllNewLinesHaveColors() {
+
+        // Check all characters but the last one (since there can't
+        // be any char after this new line to have a color attached to it)
+        for(int x = 0; x < text.length() - 1; x++) {
+
+            if (text.charAt(x) != '\n') {
+                continue;
+            }
+
+            // Look for entry in color array
+            if (!isColorAt(x + 1)) {
+                logger.debug("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
+                return false;
+            }
+        }
+
+        // If we make it here, all new lines must of had colors
+        return true;
+    }*/
+
 }

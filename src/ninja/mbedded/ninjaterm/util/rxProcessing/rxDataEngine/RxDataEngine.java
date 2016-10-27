@@ -319,7 +319,7 @@ public class RxDataEngine {
         if (totalNewLineParserOutput.getText().length() > maxBufferSize.get()) {
             logger.debug("Trimming totalNewLineParserOutput...");
             int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - maxBufferSize.get();
-            totalNewLineParserOutput.removeChars(numOfCharsToRemove);
+            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove);
         }
 
         // NOTE: UI buffer is trimmed in view controller
