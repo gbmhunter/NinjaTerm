@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-18
+ * @last-modified   2016-10-27
  */
 public class LargeNumOfPacketsTests {
 
