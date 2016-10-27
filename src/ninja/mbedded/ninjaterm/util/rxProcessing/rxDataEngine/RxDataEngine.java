@@ -177,6 +177,7 @@ public class RxDataEngine {
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenAnsiParserAndNewLineParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenFilterAndControlCharParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, totalNewLineParserOutput.maxNumChars);
 
         maxBufferSize.addListener((observable, oldValue, newValue) -> {
             logger.debug("maxBufferSize set to " + Integer.toString(newValue.intValue()) + ".");
@@ -393,6 +394,18 @@ public class RxDataEngine {
      */
     public void setFilterPattern(String filterPattern) {
         streamingFilter.setFilterPattern(filterPattern);
+    }
+
+    /**
+     * Clears data from all internal buffers.
+     */
+    public void clearAllData() {
+        bufferBetweenDecoderAndFreezeParser.clear();
+        bufferBetweenFreezeParserAndAnsiParser.clear();
+        bufferBetweenAnsiParserAndNewLineParser.clear();
+        bufferBetweenNewLineParserAndFiltering.clear();
+        bufferBetweenFilterAndControlCharParser.clear();
+        totalNewLineParserOutput.clear();
     }
 
 }

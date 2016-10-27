@@ -8,6 +8,7 @@ vX.X.X
 - Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.
 - Added "build passing" and other stickers to the README and homepage, closes #145.
 - Set max. char limits on all buffers, closes #146.
+- Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.
 
 v0.7.0
 ------

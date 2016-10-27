@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-18
+ * @last-modified 2016-10-27
  */
 public class TxRx {
 
@@ -273,12 +273,22 @@ public class TxRx {
     }
 
     /**
-     * Call this if you want to clear TX/RX data from the UI.
+     * Clears data from all internal buffers and emits an RxDataCleared event
+     * for the UI.
      */
     public void clearTxAndRxData() {
         logger.debug("clearTxAndRxData() called.");
 
-        // Emit RX data cleared event
+        // Clear all internal buffers
+        rxDataEngine.clearAllData();
+
+        emitEventToClearTxRxDataOnUI();
+
+        model.status.addMsg("Terminal TX/RX text cleared.");
+    }
+
+    private void emitEventToClearTxRxDataOnUI() {
+        // Emit RX data cleared event for the UI
         for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
@@ -303,13 +313,12 @@ public class TxRx {
     private void filterTextChanged(String filterText) {
 
         logger.debug("filterTextChanged() called.");
-
         rxDataEngine.setFilterPattern(filterText);
 
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
-            clearTxAndRxData();
+            emitEventToClearTxRxDataOnUI();
             rxDataEngine.rerunFilterOnExistingData();
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }

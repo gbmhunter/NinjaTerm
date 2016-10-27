@@ -286,7 +286,6 @@ public class TxRxViewController {
         clearTextButton.setOnAction(event -> {
             logger.debug("clearTextButton clicked.");
             terminal.txRx.clearTxAndRxData();
-            model.status.addMsg("Terminal TX/RX text cleared.");
         });
 
         terminal.txRx.rxDataClearedListeners.add(() -> {
