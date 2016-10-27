@@ -1,3 +1,8 @@
+v0.7.2
+------
+
+- The "fat" .jar now retains the same name (NinjaTerm.jar) between different versions, and is the same name as before the maven integration, closes #147.
+
 v0.7.1
 ------
 
