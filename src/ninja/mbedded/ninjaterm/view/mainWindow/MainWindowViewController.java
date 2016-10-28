@@ -55,7 +55,7 @@ public class MainWindowViewController {
     private Tab newTerminalTab;
 
     @FXML
-    private StatusBarViewController statusBarViewController;
+    public StatusBarViewController statusBarViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//

@@ -64,12 +64,12 @@ public class NinjaTermAppTest extends ApplicationTest {
         //write("myTextfile.txt").push(ENTER);
 
         // Make sure the open/close COM port button says "Open" by default
-        verifyThat("#openCloseComPortButton", hasText("Open"));
+        verifyThat(mainWindowViewController.statusBarViewController.openCloseComPortButton, hasText("Open"));
 
         // Click on the button
-        clickOn("#openCloseComPortButton");
+        clickOn(mainWindowViewController.statusBarViewController.openCloseComPortButton);
 
-        TextFlow statusTextFlow = (TextFlow)lookup("#statusTextFlow").queryFirst();
+        
 
         // then:
         //verifyThat("#statusTextFlow", hasChildren(0, ".file"));

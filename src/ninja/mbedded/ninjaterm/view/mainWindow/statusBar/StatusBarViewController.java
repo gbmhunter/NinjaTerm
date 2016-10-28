@@ -20,7 +20,7 @@ import org.controlsfx.glyphfont.GlyphFont;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-07-10
- * @last-modified   2016-10-07
+ * @last-modified   2016-10-28
  */
 public class StatusBarViewController {
 
@@ -32,10 +32,10 @@ public class StatusBarViewController {
     private ScrollPane statusScrollPane;
 
     @FXML
-    private TextFlow statusTextFlow;
+    public TextFlow statusTextFlow;
 
     @FXML
-    private Button openCloseComPortButton;
+    public Button openCloseComPortButton;
 
     @FXML
     private Led activityTxLed;
