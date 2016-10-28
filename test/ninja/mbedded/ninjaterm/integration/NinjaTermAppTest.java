@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.integration;
 
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -16,6 +17,7 @@ import org.testfx.framework.junit.ApplicationTest;
 import java.io.IOException;
 
 import static javafx.scene.input.KeyCode.ENTER;
+import static junit.framework.TestCase.assertEquals;
 import static org.testfx.api.FxAssert.verifyThat;
 import static org.testfx.matcher.base.NodeMatchers.hasChildren;
 import static org.testfx.matcher.base.NodeMatchers.hasText;
@@ -55,23 +57,37 @@ public class NinjaTermAppTest extends ApplicationTest {
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         stage.setScene(scene);
         stage.show();
+
+        model.createTerminal();
     }
 
     @Test
     public void basicTest() {
-        // given:
-        //rightClickOn("#mainVBox").moveTo("New").clickOn("Text Document");
-        //write("myTextfile.txt").push(ENTER);
 
-        // Make sure the open/close COM port button says "Open" by default
-        verifyThat(mainWindowViewController.statusBarViewController.openCloseComPortButton, hasText("Open"));
+        Platform.runLater(() -> {
+            // given:
+            //rightClickOn("#mainVBox").moveTo("New").clickOn("Text Document");
+            //write("myTextfile.txt").push(ENTER);
 
-        // Click on the button
-        clickOn(mainWindowViewController.statusBarViewController.openCloseComPortButton);
+            // Make sure the open/close COM port button says "Open" by default
+            verifyThat(mainWindowViewController.statusBarViewController.openCloseComPortButton, hasText("Open"));
 
-        
+            // Make sure there is one terminal by default
+            assertEquals(1, mainWindowViewController.terminalViewControllers.size());
 
-        // then:
-        //verifyThat("#statusTextFlow", hasChildren(0, ".file"));
+            //clickOn();
+
+            int numOfChildrenBeforeAction = mainWindowViewController.statusBarViewController.statusTextFlow.getChildren().size();
+            mainWindowViewController.terminalViewControllers.get(0).comSettingsViewController.reScanButton.fire();
+
+            assertEquals(numOfChildrenBeforeAction + 1, mainWindowViewController.statusBarViewController.statusTextFlow.getChildren().size());
+
+            // Click on the button
+            //clickOn(mainWindowViewController.terminalViewControllers);
+
+
+            // then:
+        });
+
     }
 }

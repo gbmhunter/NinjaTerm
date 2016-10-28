@@ -88,6 +88,8 @@ public class MainWindowViewController {
      */
     public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
 
+        System.out.println("init() called.");
+
         this.model = model;
         this.glyphFont = glyphFont;
         this.comPortManager = comPortManager;

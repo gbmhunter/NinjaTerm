@@ -20,8 +20,8 @@ import java.util.Optional;
  * Controller for the "terminal" which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-04
  * @since 2016-08-23
+ * @last-modified 2016-10-28
  */
 public class TerminalViewController {
 
