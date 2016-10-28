@@ -6,14 +6,14 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.comport.ComPort;
+import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
-import org.controlsfx.glyphfont.GlyphFontRegistry;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -108,7 +108,7 @@ public class Main extends Application {
         glyphFont = new GlyphFont("FontAwesome", 12, "ninja/mbedded/ninjaterm/resources/fontawesome-webfont.ttf");
 
         // Create application model (data/state)
-        Model model = new Model();
+        Model model = new Model(new ComPortFactory());
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
         try {
@@ -118,7 +118,7 @@ public class Main extends Application {
         }
         MainWindowViewController mainWindowViewController = loader.getController();
 
-        mainWindowViewController.init(model, glyphFont, new ComPortManager());
+        mainWindowViewController.init(model, glyphFont);
 
         //mainWindowViewController.addNewTerminal();
 
