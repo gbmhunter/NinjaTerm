@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -13,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -44,7 +46,7 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-10-25
+ * @last-modified 2016-11-04
  */
 public class TxRxViewController {
 
@@ -89,6 +91,12 @@ public class TxRxViewController {
 
     @FXML
     public ImageView scrollToBottomImageView;
+
+    @FXML
+    private HBox draggableHBox;
+
+    @FXML
+    private StackPane rxDataStackPane;
 
     //==============================================//
     //=========== RIGHT-HAND SIDE PANE =============//
@@ -467,6 +475,14 @@ public class TxRxViewController {
         //==============================================//
 
         recalcHeightOfOneLine();
+
+        //==============================================//
+        //============ SETUP DRAGGABLE HBOX ============//
+        //==============================================//
+
+        draggableHBox.setOnMousePressed(circleOnMousePressedEventHandler);
+        draggableHBox.setOnMouseDragged(circleOnMouseDraggedEventHandler);
+
     }
 
     private void refreshFreezeRxButton() {
@@ -536,7 +552,7 @@ public class TxRxViewController {
             TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
 
             // Perform smart scrolling only if enabled
-            if(terminal.txRx.display.scrollBehaviour.get() == Display.ScrollBehaviour.SMART)
+            if (terminal.txRx.display.scrollBehaviour.get() == Display.ScrollBehaviour.SMART)
                 smartScroll(numNewLinesRemoved, rxDataTextFlowHeightBeforeTrimming);
 
             // Now we have removed chars, update the count
@@ -548,11 +564,11 @@ public class TxRxViewController {
 
     /**
      * Scrolls the RX pane so that the same text is visible after trimming.
-     *
+     * <p>
      * Should be called straight after trimming, and only if smart scrolling is enabled.
      *
-     * @param numNewLinesRemoved    The number of new lines that were just removed in the trimming operation.
-     * @param rxDataTextFlowHeightBeforeTrimming    The height (in pixels) of the RX TextFlow object before the trimming operation.
+     * @param numNewLinesRemoved                 The number of new lines that were just removed in the trimming operation.
+     * @param rxDataTextFlowHeightBeforeTrimming The height (in pixels) of the RX TextFlow object before the trimming operation.
      */
     private void smartScroll(MutableInteger numNewLinesRemoved, double rxDataTextFlowHeightBeforeTrimming) {
         //==============================================//
@@ -566,7 +582,7 @@ public class TxRxViewController {
         double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
         logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
 
-        if(rxDataTextFlowHeightChange != 0.0) {
+        if (rxDataTextFlowHeightChange != 0.0) {
             throw new RuntimeException("The RX data TextFlow object changed height after trimming text. This scenario is not supported by smart scroll.");
         }
 
@@ -576,13 +592,13 @@ public class TxRxViewController {
         if (!terminal.txRx.autoScrollEnabled.get()) {
             // Auto-scroll is not enabled, so we want to display the same text in the pane as
             // before
-            double absAmountToShiftBy = -1*numNewLinesRemoved.intValue()*heightOfOneLineOfText;
+            double absAmountToShiftBy = -1 * numNewLinesRemoved.intValue() * heightOfOneLineOfText;
             //absAmountToShiftBy -= 40.0;
 
             logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
 
             double percAmountToShiftBy;
-            if(rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
+            if (rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
                 // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
                 // that sets the current position of the scroll pane does not take into account the
                 // last section of the TextFlow object (this is normally how scroll panes work)
@@ -750,7 +766,7 @@ public class TxRxViewController {
         double heightBetween1And2 = positionOfLine2 - positionOfLine1;
         double heightBetween2And3 = positionOfLine2 - positionOfLine1;
 
-        if(heightBetween1And2 != heightBetween2And3)
+        if (heightBetween1And2 != heightBetween2And3)
             throw new RuntimeException("The heights of the lines of text are not the same.");
 
         //heightOfOneLineOfText = heightBetween1And2;
@@ -760,7 +776,43 @@ public class TxRxViewController {
 
     }
 
-    private void convertHeightToPercentageFromScrollView() {
+    private double orgSceneX;
+    private double orgSceneY;
+    private double orgRxDataStackPaneHeight;
 
-    }
+    EventHandler<MouseEvent> circleOnMousePressedEventHandler =
+            new EventHandler<MouseEvent>() {
+
+                @Override
+                public void handle(MouseEvent t) {
+                    logger.debug("Event handler for onMousePressed called.");
+
+                    orgSceneY = t.getSceneY();
+
+                    orgRxDataStackPaneHeight = rxDataStackPane.getHeight();
+                }
+            };
+
+    EventHandler<MouseEvent> circleOnMouseDraggedEventHandler =
+            new EventHandler<MouseEvent>() {
+
+                @Override
+                public void handle(MouseEvent t) {
+
+                    double offsetY = t.getSceneY() - orgSceneY;
+
+                    logger.debug("offsetY = " + offsetY);
+
+                    double newRxDataStackPaneHeight = orgRxDataStackPaneHeight + offsetY;
+
+                    if(newRxDataStackPaneHeight < 0.0)
+                        newRxDataStackPaneHeight = 0.0;
+
+                    logger.debug("newRxDataStackPaneHeight = " + newRxDataStackPaneHeight);
+
+                    rxDataStackPane.setMinHeight(newRxDataStackPaneHeight);
+                    rxDataStackPane.setMaxHeight(newRxDataStackPaneHeight);
+
+                }
+            };
 }

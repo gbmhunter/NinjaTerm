@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-10-25
+* @last-modified   2016-11-04
 -->
 <!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
@@ -31,9 +31,13 @@
     <HBox VBox.vgrow="ALWAYS" spacing="10">
 
         <!-- This VBox holds both the TX and RX panes -->
-        <VBox fx:id="dataContainerVBox" HBox.hgrow="ALWAYS" spacing="20">
+        <VBox fx:id="dataContainerVBox" HBox.hgrow="ALWAYS">
+
+            <!-- =========================================== -->
+            <!-- ================ RX DATA PANE ============= -->
+            <!-- =========================================== -->
             <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
-            <StackPane VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
+            <StackPane fx:id="rxDataStackPane" VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
 
                 <!-- =========================================== -->
                 <!-- ================== TERMINAL =============== -->
@@ -79,10 +83,17 @@
             </StackPane>
 
             <!-- =========================================== -->
+            <!-- ============== DRAGGABLE NODE ============= -->
+            <!-- =========================================== -->
+            <!-- This node is used to create a draggable element which the user can adjust to change
+             the sizes of the TX and RX panes -->
+            <HBox fx:id="draggableHBox" minHeight="50" style="-fx-background-color: red;" />
+
+            <!-- =========================================== -->
             <!-- ================ TX DATA PANE ============= -->
             <!-- =========================================== -->
             <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
-            <StackPane fx:id="txDataStackPane" minHeight="100" maxHeight="100" style="-fx-background-color: black;">
+            <StackPane fx:id="txDataStackPane" VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
 
                 <!-- =========================================== -->
                 <!-- ================== TX DATA ================ -->
