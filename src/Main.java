@@ -11,12 +11,15 @@ import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class Main extends Application {
 
@@ -94,6 +97,8 @@ public class Main extends Application {
             splashScreenViewController.startNameVersionInfoMsg();
 
         } catch (Exception e) {
+            // Write the exception to the logger, and also show pop-up
+            logger.error(StringUtils.throwableToString(e));
             ExceptionPopup.showAndWait(e);
         }
     }

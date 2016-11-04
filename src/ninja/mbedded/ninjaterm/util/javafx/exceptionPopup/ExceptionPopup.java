@@ -14,7 +14,7 @@ import java.io.StringWriter;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-18
- * @last-modified 2016-10-21
+ * @last-modified 2016-11-04
  */
 public class ExceptionPopup {
 

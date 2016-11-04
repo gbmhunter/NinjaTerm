@@ -2,6 +2,9 @@ package ninja.mbedded.ninjaterm.util.stringUtils;
 
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
  * Created by gbmhu on 2016-10-14.
  */
@@ -36,6 +39,19 @@ public class StringUtils {
         }
 
         return numNewLines;
+    }
+
+    /**
+     * Converts a throwable (such as an exception) into a full blown string, just like how
+     * IntelliJ print exceptions to stdout.
+     * @param throwable
+     * @return
+     */
+    public static String throwableToString(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
     }
 
 }

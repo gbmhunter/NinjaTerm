@@ -14,10 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -60,7 +57,7 @@ public class TxRxViewController {
     //================================================================================================//
 
     @FXML
-    public VBox dataContainerVBox;
+    private GridPane dataContainerGridPane;
 
     @FXML
     public ScrollPane rxDataScrollPane;
@@ -121,7 +118,7 @@ public class TxRxViewController {
     private Button freezeRxButton;
 
     //================================================================================================//
-    //=========================================== CLASS FIELDS =======================================//
+    //========================================= CLASS CONSTANS =======================================//
     //================================================================================================//
 
     /**
@@ -135,6 +132,16 @@ public class TxRxViewController {
      * This needs to be more than when the mouse is not hovering on it.
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
+
+    /**
+     * The default amount of screen space given to the TX vs. the RX data panes.
+     * Normally, you would want more screen space for the RX data.
+     */
+    private static final double DEFAULT_TX_RX_VIEW_RATIO = 0.2;
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
 
     private Text rxDataText = new Text();
 
@@ -168,6 +175,8 @@ public class TxRxViewController {
     private double heightOfOneLineOfText = 0.0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    private double currTxRxViewRatio = DEFAULT_TX_RX_VIEW_RATIO;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -483,6 +492,8 @@ public class TxRxViewController {
         draggableHBox.setOnMousePressed(circleOnMousePressedEventHandler);
         draggableHBox.setOnMouseDragged(circleOnMouseDraggedEventHandler);
 
+        //resizeTxRxPanes();
+
     }
 
     private void refreshFreezeRxButton() {
@@ -707,8 +718,8 @@ public class TxRxViewController {
 
                 //txTextFlow.setMinHeight(0.0);
                 //txTextFlow.setMaxHeight(0.0);
-                if (dataContainerVBox.getChildren().contains(txDataStackPane)) {
-                    dataContainerVBox.getChildren().remove(txDataStackPane);
+                if (dataContainerGridPane.getChildren().contains(txDataStackPane)) {
+                    dataContainerGridPane.getChildren().remove(txDataStackPane);
                 }
 
                 // Add the caret in the shared pane
@@ -722,8 +733,8 @@ public class TxRxViewController {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if (!dataContainerVBox.getChildren().contains(txDataStackPane)) {
-                    dataContainerVBox.getChildren().add(txDataStackPane);
+                if (!dataContainerGridPane.getChildren().contains(txDataStackPane)) {
+                    dataContainerGridPane.getChildren().add(txDataStackPane);
                 }
 
                 // Remove the caret in the shared pane
@@ -805,14 +816,36 @@ public class TxRxViewController {
 
                     double newRxDataStackPaneHeight = orgRxDataStackPaneHeight + offsetY;
 
+                    // MIN LIMIT
                     if(newRxDataStackPaneHeight < 0.0)
                         newRxDataStackPaneHeight = 0.0;
 
+                    //=========== MAX LIMIT ===========//
+
+                    // We don't want the RX pane to ever be larger than the height of it's
+                    // parent container, minus the height of the draggable HBox
+                    double maxHeight = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
+                    if(newRxDataStackPaneHeight > maxHeight)
+                        newRxDataStackPaneHeight = maxHeight;
+
                     logger.debug("newRxDataStackPaneHeight = " + newRxDataStackPaneHeight);
 
-                    rxDataStackPane.setMinHeight(newRxDataStackPaneHeight);
-                    rxDataStackPane.setMaxHeight(newRxDataStackPaneHeight);
+                    //rxDataStackPane.setMinHeight(newRxDataStackPaneHeight);
+                    //rxDataStackPane.setMaxHeight(newRxDataStackPaneHeight);
 
                 }
             };
+
+    private void resizeTxRxPanes() {
+
+        // Just change the TX pane, the RX pane should adjust automatically
+        double totalHeightOfBothTxAndRxPanes = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
+
+        double txPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
+
+        txDataStackPane.setMinHeight(txPaneHeight);
+        txDataStackPane.setMaxHeight(txPaneHeight);
+
+
+    }
 }
