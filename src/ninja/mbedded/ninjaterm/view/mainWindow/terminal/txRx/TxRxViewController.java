@@ -32,6 +32,7 @@ import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.Colouris
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting.FormattingViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.MacrosViewController;
 import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -141,7 +142,12 @@ public class TxRxViewController {
     @FXML
     private Button freezeRxButton;
 
+    //==============================================//
+    //======== RIGHT-HAND SIDE MACROS PANE =========//
+    //==============================================//
 
+    @FXML
+    private MacrosViewController macrosViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -530,6 +536,12 @@ public class TxRxViewController {
         // Cause the mouse cursor to change to a vertical resize icon when over
         // the draggable HBox
         draggableHBox.setCursor(Cursor.V_RESIZE);
+
+        //==============================================//
+        //================ MACROS SETUP ================//
+        //==============================================//
+
+        macrosViewController.init(model, terminal);
 
     }
 

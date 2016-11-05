@@ -1,0 +1,30 @@
+<!--
+* The view for the "Macro" pane in NinjaTerm.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-11-05
+* @last-modified   2016-11-05
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.MacrosViewController"
+      xmlns:fx="http://javafx.com/fxml"
+      alignment="TOP_CENTER"
+      spacing="20"
+      fillWidth="true"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <Label>Macros</Label>
+
+
+</VBox>
+
+
+

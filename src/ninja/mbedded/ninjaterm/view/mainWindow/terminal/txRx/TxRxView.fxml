@@ -161,9 +161,7 @@
             <!-- =========================================== -->
             <!-- =========== RIGHT-HAND SIDE PANE ========== -->
             <!-- =========================================== -->
-            <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER" style="-fx-background-color: red;">
-                <Label>Macros</Label>
-            </VBox>
+            <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
 
         </HBox>
     </VBox>
