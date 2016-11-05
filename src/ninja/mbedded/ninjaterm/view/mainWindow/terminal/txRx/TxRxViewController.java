@@ -647,7 +647,7 @@ public class TxRxViewController {
         // show() is called.
         PopOver popover = new PopOver();
         popover.setContentNode(content);
-        popover.setArrowLocation(PopOver.ArrowLocation.RIGHT_CENTER);
+        popover.setArrowLocation(PopOver.ArrowLocation.LEFT_CENTER);
         popover.setCornerRadius(4);
         popover.setTitle(popOverTitle);
 
@@ -696,7 +696,11 @@ public class TxRxViewController {
                 button.localToScreen(button.getBoundsInLocal()).getMaxY()) / 2;
 
         popOver.show(button.getScene().getWindow());
-        popOver.setX(clickX - popOver.getWidth());
+        // Show on left
+//        popOver.setX(clickX - popOver.getWidth());
+//        popOver.setY(clickY - popOver.getHeight() / 2);
+        // Show on right
+        popOver.setX(clickX + 40.0);
         popOver.setY(clickY - popOver.getHeight() / 2);
     }
 

@@ -21,7 +21,7 @@ import java.util.Optional;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-08-23
- * @last-modified 2016-10-28
+ * @last-modified 2016-11-05
  */
 public class TerminalViewController {
 

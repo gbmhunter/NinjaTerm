@@ -22,13 +22,35 @@
           prefHeight="500" prefWidth="800"
           fillWidth="true" GridPane.vgrow="ALWAYS"
           stylesheets="@../../../../resources/style.css">
-        <!--style="-fx-background-color: red;" -->
 
         <padding>
             <Insets top="20" bottom="20" left="20" right="20"/>
         </padding>
 
         <HBox VBox.vgrow="ALWAYS" spacing="10">
+
+            <VBox minWidth="120" alignment="TOP_CENTER"
+                  spacing="10"
+                  style=
+                          "-fx-border-style: hidden solid hidden hidden;
+                            -fx-border-width: 0 1 0 0;
+                            -fx-border-color: silver;">
+                <!-- ========================================= -->
+                <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
+                <!-- ========================================= -->
+
+                <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="80" contentDisplay="TOP"/>
+
+                <!-- SPACER -->
+                <VBox minHeight="20"></VBox>
+
+                <Button fx:id="clearTextButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Clear Text</Button>
+                <Button fx:id="displayButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Display</Button>
+                <Button fx:id="formattingButton"    minWidth="80" minHeight="50" contentDisplay="TOP">Formatting</Button>
+                <Button fx:id="coloriserButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
+                <Button fx:id="filtersButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
+                <Button fx:id="freezeRxButton"      minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
+            </VBox>
 
             <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
 
@@ -139,15 +161,8 @@
             <!-- =========================================== -->
             <!-- =========== RIGHT-HAND SIDE PANE ========== -->
             <!-- =========================================== -->
-            <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER">
-                <Button fx:id="clearTextButton" minWidth="100">Clear Text</Button>
-                <!-- SPACER -->
-                <VBox minHeight="20"></VBox>
-                <Button fx:id="displayButton" minWidth="100">Display</Button>
-                <Button fx:id="formattingButton" minWidth="100">Formatting</Button>
-                <Button fx:id="coloriserButton" minWidth="100">Colouriser</Button>
-                <Button fx:id="filtersButton" minWidth="100">Filters</Button>
-                <Button fx:id="freezeRxButton" minWidth="100" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
+            <VBox minWidth="100" prefWidth="100" spacing="10" alignment="TOP_CENTER" style="-fx-background-color: red;">
+                <Label>Macros</Label>
             </VBox>
 
         </HBox>
