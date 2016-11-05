@@ -31,6 +31,13 @@
         <HBox VBox.vgrow="ALWAYS" spacing="10" style="-fx-background-color: green;">
 
             <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS" style="-fx-background-color: yellow;">
+
+                <rowConstraints>
+                    <RowConstraints vgrow="ALWAYS"/>
+                    <RowConstraints vgrow="NEVER"/>
+                    <RowConstraints vgrow="ALWAYS"/>
+                </rowConstraints>
+
                 <columnConstraints>
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
@@ -95,7 +102,7 @@
                  the sizes of the TX and RX panes -->
                 <HBox fx:id="draggableHBox"
                       GridPane.rowIndex="1" GridPane.columnIndex="0"
-                      minHeight="50" style="-fx-background-color: red;"/>
+                      minHeight="10" style="-fx-background-color: red;"/>
 
                 <!-- =========================================== -->
                 <!-- ================ TX DATA PANE ============= -->
@@ -108,7 +115,7 @@
                     <!-- =========================================== -->
                     <!-- ================== TX DATA ================ -->
                     <!-- =========================================== -->
-                    <ScrollPane fx:id="txTextScrollPane" minHeight="100" maxHeight="100">
+                    <ScrollPane fx:id="txTextScrollPane">
                         <TextFlow fx:id="txTextFlow" styleClass="txRxText">
                             <padding>
                                 <Insets top="10" bottom="10" left="10" right="10"/>

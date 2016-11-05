@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -492,7 +493,9 @@ public class TxRxViewController {
         draggableHBox.setOnMousePressed(circleOnMousePressedEventHandler);
         draggableHBox.setOnMouseDragged(circleOnMouseDraggedEventHandler);
 
-        //resizeTxRxPanes();
+        // Cause the mouse cursor to change to a vertical resize icon when over
+        // the draggable HBox
+        draggableHBox.setCursor(Cursor.V_RESIZE);
 
     }
 
@@ -817,21 +820,27 @@ public class TxRxViewController {
                     double newRxDataStackPaneHeight = orgRxDataStackPaneHeight + offsetY;
 
                     // MIN LIMIT
-                    if(newRxDataStackPaneHeight < 0.0)
-                        newRxDataStackPaneHeight = 0.0;
+                    if(newRxDataStackPaneHeight < 40.0)
+                        newRxDataStackPaneHeight = 40.0;
 
                     //=========== MAX LIMIT ===========//
 
                     // We don't want the RX pane to ever be larger than the height of it's
                     // parent container, minus the height of the draggable HBox
                     double maxHeight = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
-                    if(newRxDataStackPaneHeight > maxHeight)
-                        newRxDataStackPaneHeight = maxHeight;
+                    if(newRxDataStackPaneHeight > maxHeight - 40.0)
+                        newRxDataStackPaneHeight = maxHeight - 40.0;
 
                     logger.debug("newRxDataStackPaneHeight = " + newRxDataStackPaneHeight);
 
+                    // Convert to a percentage of total height
+                    currTxRxViewRatio = newRxDataStackPaneHeight/dataContainerGridPane.getHeight();
+
+                    logger.debug("currTxRxViewRatio = " + currTxRxViewRatio);
+
                     //rxDataStackPane.setMinHeight(newRxDataStackPaneHeight);
                     //rxDataStackPane.setMaxHeight(newRxDataStackPaneHeight);
+                    resizeTxRxPanes();
 
                 }
             };
@@ -841,10 +850,14 @@ public class TxRxViewController {
         // Just change the TX pane, the RX pane should adjust automatically
         double totalHeightOfBothTxAndRxPanes = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
 
-        double txPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
+        double rxPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
 
-        txDataStackPane.setMinHeight(txPaneHeight);
-        txDataStackPane.setMaxHeight(txPaneHeight);
+        logger.debug("rxPaneHeight = "+ rxPaneHeight);
+
+        //txDataStackPane.setMinHeight(rxPaneHeight);
+        //txDataStackPane.setMaxHeight(rxPaneHeight);
+        dataContainerGridPane.getRowConstraints().get(0).setMinHeight(rxPaneHeight);
+        dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(rxPaneHeight);
 
 
     }

@@ -4,6 +4,7 @@ vX.X.X
 - Added blurb on smart scrolling to homepage, closes #148.
 - Added first application test, closes #149.
 - Created a "ComPortFactory" which returns mocked "ComPort" objects, which are then injected into the model, closes #151.
+- Made the division of space for TX and RX modifiable (e.g. through a drag mechanism), closes #150.
 
 v0.7.2
 ------
