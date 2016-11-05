@@ -78,12 +78,14 @@ public class NinjaTermAppTest extends ApplicationTest {
             //rightClickOn("#mainVBox").moveTo("New").clickOn("Text Document");
             //write("myTextfile.txt").push(ENTER);
 
-            // Make sure the open/close COM port button says "Open" by default, and is currently disabled
-            verifyThat(mainWindowViewController.statusBarViewController.openCloseComPortButton, hasText("Open"));
-            //assertEquals(true, mainWindowViewController.statusBarViewController.openCloseComPortButton.isDisable());
+
 
             // Make sure there is one terminal by default
             assertEquals(1, mainWindowViewController.terminalViewControllers.size());
+
+            // Make sure the open/close COM port button says "Open" by default, and is currently disabled
+            verifyThat(mainWindowViewController.terminalViewControllers.get(0).txRxViewController.openCloseComPortButton, hasText("Open"));
+            //assertEquals(true, mainWindowViewController.statusBarViewController.openCloseComPortButton.isDisable());
 
             //clickOn();
 

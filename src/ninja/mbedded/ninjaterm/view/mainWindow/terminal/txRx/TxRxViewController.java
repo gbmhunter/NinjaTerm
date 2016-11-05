@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -116,8 +117,11 @@ public class TxRxViewController {
     private StackPane rxDataStackPane;
 
     //==============================================//
-    //=========== RIGHT-HAND SIDE PANE =============//
+    //============ LEFT-HAND SIDE PANE =============//
     //==============================================//
+
+    @FXML
+    public Button openCloseComPortButton;
 
     @FXML
     private Button clearTextButton;
@@ -177,6 +181,8 @@ public class TxRxViewController {
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     private double currTxRxViewRatio = DEFAULT_TX_RX_VIEW_RATIO;
+
+    private ChangeListener<? super Boolean> openCloseChangeListener;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -293,6 +299,35 @@ public class TxRxViewController {
                     rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
                 }
         );
+
+        //==============================================//
+        //====== OPEN/CLOSE COM PORT BUTTON SETUP ======//
+        //==============================================//
+
+        openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+        openCloseComPortButton.setText("Open");
+
+        openCloseComPortButton.setOnAction(event -> {
+            model.openOrCloseCurrentComPort();
+        });
+
+        // Create a listener which refreshes the open/close COM port button
+        openCloseChangeListener = (observable, oldValue, newValue) -> {
+            refreshOpenCloseButton();
+        };
+
+        model.selTerminal.addListener((observable, oldValue, newValue) -> {
+
+            if(oldValue != null) {
+                oldValue.isComPortOpen.removeListener(openCloseChangeListener);
+            }
+
+            newValue.isComPortOpen.addListener(openCloseChangeListener);
+
+            // Refresh the style of the open/close COM port button when the selected
+            // terminal changes (i.e. when the user selects a different terminal tab)
+            refreshOpenCloseButton();
+        });
 
         //==============================================//
         //========== CLEAR TEXT BUTTON SETUP ===========//
@@ -573,6 +608,24 @@ public class TxRxViewController {
             logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
         }
 
+    }
+
+    /**
+     * This updates the styling of the Open/Close COM port button based on whether the currently
+     * selected terminal in the model has a open or closed COM port.
+     */
+    private void refreshOpenCloseButton() {
+        if (!model.selTerminal.get().isComPortOpen.get()) {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
+            openCloseComPortButton.setText("Open");
+            openCloseComPortButton.getStyleClass().remove("failure");
+            openCloseComPortButton.getStyleClass().add("success");
+        } else {
+            openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.STOP));
+            openCloseComPortButton.setText("Close");
+            openCloseComPortButton.getStyleClass().remove("success");
+            openCloseComPortButton.getStyleClass().add("failure");
+        }
     }
 
     /**
