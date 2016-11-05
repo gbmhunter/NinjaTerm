@@ -48,10 +48,29 @@ import java.io.IOException;
  */
 public class TxRxViewController {
 
+    //================================================================================================//
+    //========================================= CLASS CONSTANS =======================================//
+    //================================================================================================//
+
     /**
-     * This is a fudge factor to get smart scrolling working correctly.
+     * Opacity for auto-scroll button (which is just an image) when the mouse is not hovering over it.
+     * This needs to be less than when the mouse is hovering on it.
      */
-    private final double SMART_SCROLLING_SCALE_FACTOR = 2.95;
+    private static final double AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER = 0.35;
+
+    /**
+     * Opacity for auto-scroll button (which is just an image) when the mouse IS hovering over it.
+     * This needs to be more than when the mouse is not hovering on it.
+     */
+    private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
+
+    /**
+     * The default amount of screen space given to the TX vs. the RX data panes.
+     * Normally, you would want more screen space for the RX data.
+     */
+    private static final double DEFAULT_TX_RX_VIEW_RATIO = 0.2;
+
+    private static final double MIN_HEIGHT_OF_TX_OR_RX_PANE_PX = 40.0;
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -118,27 +137,7 @@ public class TxRxViewController {
     @FXML
     private Button freezeRxButton;
 
-    //================================================================================================//
-    //========================================= CLASS CONSTANS =======================================//
-    //================================================================================================//
 
-    /**
-     * Opacity for auto-scroll button (which is just an image) when the mouse is not hovering over it.
-     * This needs to be less than when the mouse is hovering on it.
-     */
-    private static final double AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER = 0.35;
-
-    /**
-     * Opacity for auto-scroll button (which is just an image) when the mouse IS hovering over it.
-     * This needs to be more than when the mouse is not hovering on it.
-     */
-    private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
-
-    /**
-     * The default amount of screen space given to the TX vs. the RX data panes.
-     * Normally, you would want more screen space for the RX data.
-     */
-    private static final double DEFAULT_TX_RX_VIEW_RATIO = 0.2;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -815,21 +814,19 @@ public class TxRxViewController {
 
                     double offsetY = t.getSceneY() - orgSceneY;
 
-                    logger.debug("offsetY = " + offsetY);
-
                     double newRxDataStackPaneHeight = orgRxDataStackPaneHeight + offsetY;
 
-                    // MIN LIMIT
-                    if(newRxDataStackPaneHeight < 40.0)
-                        newRxDataStackPaneHeight = 40.0;
+                    //=========== MIN LIMIT ===========//
+                    if(newRxDataStackPaneHeight < MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
+                        newRxDataStackPaneHeight = MIN_HEIGHT_OF_TX_OR_RX_PANE_PX;
 
                     //=========== MAX LIMIT ===========//
 
                     // We don't want the RX pane to ever be larger than the height of it's
                     // parent container, minus the height of the draggable HBox
                     double maxHeight = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
-                    if(newRxDataStackPaneHeight > maxHeight - 40.0)
-                        newRxDataStackPaneHeight = maxHeight - 40.0;
+                    if(newRxDataStackPaneHeight > maxHeight - MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
+                        newRxDataStackPaneHeight = maxHeight - MIN_HEIGHT_OF_TX_OR_RX_PANE_PX;
 
                     logger.debug("newRxDataStackPaneHeight = " + newRxDataStackPaneHeight);
 
