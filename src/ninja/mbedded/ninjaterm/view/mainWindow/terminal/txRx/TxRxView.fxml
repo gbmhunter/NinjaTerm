@@ -28,9 +28,9 @@
             <Insets top="20" bottom="20" left="20" right="20"/>
         </padding>
 
-        <HBox VBox.vgrow="ALWAYS" spacing="10" style="-fx-background-color: green;">
+        <HBox VBox.vgrow="ALWAYS" spacing="10">
 
-            <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS" style="-fx-background-color: yellow;">
+            <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
 
                 <rowConstraints>
                     <RowConstraints vgrow="ALWAYS"/>
@@ -102,7 +102,7 @@
                  the sizes of the TX and RX panes -->
                 <HBox fx:id="draggableHBox"
                       GridPane.rowIndex="1" GridPane.columnIndex="0"
-                      minHeight="10" style="-fx-background-color: red;"/>
+                      minHeight="10"/>
 
                 <!-- =========================================== -->
                 <!-- ================ TX DATA PANE ============= -->
