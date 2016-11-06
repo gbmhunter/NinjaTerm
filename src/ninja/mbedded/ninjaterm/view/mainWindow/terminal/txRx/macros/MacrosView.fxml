@@ -23,9 +23,13 @@
 
     <Label>Macros</Label>
 
-    <GridPane>
-        <TextField GridPane.rowIndex="0" GridPane.columnIndex="0"></TextField>
-        <Button fx:id="macroButton" GridPane.rowIndex="0" GridPane.columnIndex="1"></Button>
+    <GridPane hgap="5" vgap="5">
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="1">Sequence</Label>
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="2">Send</Label>
+        <TextField GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="30"></TextField>
+        <TextField GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="50"></TextField>
+        <Button fx:id="macroButton" GridPane.rowIndex="1" GridPane.columnIndex="2"></Button>
     </GridPane>
 
 </VBox>
