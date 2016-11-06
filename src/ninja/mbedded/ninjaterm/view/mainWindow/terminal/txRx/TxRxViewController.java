@@ -541,7 +541,7 @@ public class TxRxViewController {
         //================ MACROS SETUP ================//
         //==============================================//
 
-        macrosViewController.init(model, terminal);
+        macrosViewController.init(model, terminal, glyphFont);
 
         //! @debug
         dataContainerGridPane.heightProperty().addListener((observable, oldValue, newValue) -> {
