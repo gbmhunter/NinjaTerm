@@ -70,7 +70,7 @@ public class TxRxViewController {
      * The default amount of screen space given to the TX vs. the RX data panes.
      * Normally, you would want more screen space for the RX data.
      */
-    private static final double DEFAULT_TX_RX_VIEW_RATIO = 0.2;
+    private static final double DEFAULT_RX_TO_TX_VIEW_RATIO = 0.8;
 
     private static final double MIN_HEIGHT_OF_TX_OR_RX_PANE_PX = 40.0;
 
@@ -186,7 +186,7 @@ public class TxRxViewController {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    private double currTxRxViewRatio = DEFAULT_TX_RX_VIEW_RATIO;
+    private double currTxRxViewRatio = DEFAULT_RX_TO_TX_VIEW_RATIO;
 
     private ChangeListener<? super Boolean> openCloseChangeListener;
 
@@ -542,6 +542,11 @@ public class TxRxViewController {
         //==============================================//
 
         macrosViewController.init(model, terminal);
+
+        //! @debug
+        dataContainerGridPane.heightProperty().addListener((observable, oldValue, newValue) -> {
+            resizeTxRxPanes();
+        });
 
     }
 
@@ -911,10 +916,16 @@ public class TxRxViewController {
                 }
             };
 
+    /**
+     * Resizes the TX and RX panes based on the value of <code>currTxRxViewRatio</code>.
+     */
     private void resizeTxRxPanes() {
 
         // Just change the TX pane, the RX pane should adjust automatically
         double totalHeightOfBothTxAndRxPanes = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
+
+        if(totalHeightOfBothTxAndRxPanes <= 0.0)
+            throw new RuntimeException("Total height of TX and RX panes was not greater than 0.");
 
         double rxPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
 
@@ -924,6 +935,9 @@ public class TxRxViewController {
         //txDataStackPane.setMaxHeight(rxPaneHeight);
         dataContainerGridPane.getRowConstraints().get(0).setMinHeight(rxPaneHeight);
         dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(rxPaneHeight);
+
+        //rxDataScrollPane.setMinHeight(rxPaneHeight);
+        //rxDataScrollPane.setMaxHeight(rxPaneHeight);
 
 
     }
