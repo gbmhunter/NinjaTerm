@@ -14,7 +14,8 @@
       alignment="TOP_CENTER"
       spacing="20"
       fillWidth="true"
-      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css"
+        styleClass="border">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -23,13 +24,13 @@
 
     <Label>Macros</Label>
 
-    <GridPane hgap="5" vgap="5">
+    <GridPane fx:id="macroGridPane" hgap="5" vgap="5">
         <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="1">Sequence</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="2">Send</Label>
-        <TextField GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="30"></TextField>
+        <!--<TextField GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="30"></TextField>
         <TextField GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="50"></TextField>
-        <Button fx:id="macroButton" GridPane.rowIndex="1" GridPane.columnIndex="2"></Button>
+        <Button fx:id="macroButton" GridPane.rowIndex="1" GridPane.columnIndex="2"></Button>-->
     </GridPane>
 
 </VBox>

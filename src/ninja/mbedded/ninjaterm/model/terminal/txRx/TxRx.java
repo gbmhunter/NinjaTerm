@@ -10,6 +10,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
@@ -41,6 +42,7 @@ public class TxRx {
     public Formatting formatting = new Formatting();
     public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
+    public MacroManager macroManager = new MacroManager();
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
     public SimpleStringProperty txData = new SimpleStringProperty("");
