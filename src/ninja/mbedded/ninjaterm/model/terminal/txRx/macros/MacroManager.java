@@ -2,10 +2,16 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx.macros;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
+import ninja.mbedded.ninjaterm.util.encodingUtils.EncodingUtils;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages the macros assigned to each terminal.
@@ -18,15 +24,17 @@ public class MacroManager {
 
     private final int DEFAULT_NUM_OF_MACROS = 3;
 
-    public ObservableList<Macro> macros = FXCollections.observableArrayList();
+    private Model model;
+    private Terminal terminal;
 
-    private TxRx txRx;
+    public ObservableList<Macro> macros = FXCollections.observableArrayList();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    public MacroManager(TxRx txRx) {
+    public MacroManager(Model model, Terminal terminal) {
 
-        this.txRx = txRx;
+        this.model = model;
+        this.terminal = terminal;
 
         // Add default macros (they will all be blank)
         for(int i = 0; i < DEFAULT_NUM_OF_MACROS; i++) {
@@ -41,15 +49,61 @@ public class MacroManager {
     public void runMacro(Macro macro) {
         logger.debug("runMacro() called with macro = " + macro);
 
+        switch(macro.encoding.get()) {
+
+            case ASCII:
+                parseAscii(macro);
+                break;
+            case HEX:
+                parseHex(macro);
+                break;
+            default:
+                throw new RuntimeException("Encoding enum not recognised.");
+        }
+
+
+    }
+
+    private void parseAscii(Macro macro) {
         // "Un-escape" any escape sequences found in the sequence
         // We use the Apachi StringEscapeUtils class to do this
         String parsedString = StringEscapeUtils.unescapeJava(macro.sequence.get());
 
         // Send the un-escaped string to the COM port
-        txRx.addTxCharsToSend(parsedString.getBytes());
+        terminal.txRx.addTxCharsToSend(parsedString.getBytes());
 
         if(macro.sendSequenceImmediately.get())
-            txRx.sendBufferedTxDataToSerialPort();
+            terminal.txRx.sendBufferedTxDataToSerialPort();
+    }
+
+    private void parseHex(Macro macro) {
+
+        List<Byte> byteList = new ArrayList<>();
+        EncodingUtils.ReturnResult returnResult = new EncodingUtils.ReturnResult();
+        EncodingUtils.hexStringToByteArray(macro.sequence.get(), byteList, returnResult);
+
+        switch(returnResult.id) {
+            case OK:
+                break;
+            case STRING_DID_NOT_HAVE_EVEN_NUMBER_OF_CHARS:
+                model.status.addErr("Macro hex string does not have an even number of characters.");
+                return;
+            default:
+                throw new RuntimeException("ReturnCode was not recognised.");
+        }
+
+        byte[] byteArray = new byte[byteList.size()];
+        for(int i = 0; i < byteList.size(); i++) {
+            byteArray[i] = byteList.get(i);
+        }
+
+        // Send the un-escaped string to the COM port
+        terminal.txRx.addTxCharsToSend(byteArray);
+
+        if(macro.sendSequenceImmediately.get())
+            terminal.txRx.sendBufferedTxDataToSerialPort();
+
+
     }
 
 }

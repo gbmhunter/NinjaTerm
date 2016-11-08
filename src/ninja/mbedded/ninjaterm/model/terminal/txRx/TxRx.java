@@ -43,7 +43,7 @@ public class TxRx {
     public Formatting formatting = new Formatting();
     public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
-    public MacroManager macroManager = new MacroManager(this);
+    public MacroManager macroManager;
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
     public SimpleStringProperty txDataToDisplay = new SimpleStringProperty("");
@@ -77,6 +77,8 @@ public class TxRx {
 
         this.model = model;
         this.terminal = terminal;
+
+        macroManager = new MacroManager(model, terminal);
 
         //====================================//
         //========= BUFFER-SIZE SETUP ========//

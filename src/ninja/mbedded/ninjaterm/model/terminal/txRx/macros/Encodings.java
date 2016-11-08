@@ -6,6 +6,7 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx.macros;
 public enum Encodings {
 
     ASCII("ASCII"),
+    HEX("Hex"),
     ;
 
     private String label;
