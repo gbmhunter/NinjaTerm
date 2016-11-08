@@ -64,7 +64,7 @@ public class Stats {
         //========== NUM. CHARS IN BUFFER SETUP ========//
         //==============================================//
 
-        terminal.txRx.txData.addListener((observable, oldValue, newValue) -> {
+        terminal.txRx.txDataToDisplay.addListener((observable, oldValue, newValue) -> {
             numCharsInTxBuffer.set(newValue.length());
         });
 

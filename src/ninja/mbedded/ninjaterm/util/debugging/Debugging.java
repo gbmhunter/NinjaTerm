@@ -34,4 +34,14 @@ public class Debugging {
         return output;
     }
 
+    public static String toString(byte[] byteA) {
+        StringBuilder output = new StringBuilder();
+        output.append("{ ");
+        for (byte singleByte : byteA) {
+            output.append(String.format("%02x", singleByte) + ", ");
+        }
+        output.append("}");
+        return output.toString();
+    }
+
 }

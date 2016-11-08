@@ -11,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -28,15 +29,17 @@ import java.io.IOException;
 public class MacroRow {
 
     Model model;
+    Terminal terminal;
     Macro macro;
 
     public TextField nameTextField = new TextField();
     public TextField sequenceTextField = new TextField();
     public Button sendButton = new Button();
 
-    public MacroRow(Model model, Macro macro, GlyphFont glyphFont) {
+    public MacroRow(Model model, Terminal terminal, Macro macro, GlyphFont glyphFont) {
 
         this.model = model;
+        this.terminal = terminal;
         this.macro = macro;
 
         nameTextField.setPrefWidth(50);
@@ -73,6 +76,16 @@ public class MacroRow {
                 }
             }
         });
+
+        //==============================================//
+        //== NOTIFY MODEL WHEN SEND BUTTON IS PUSHED ===//
+        //==============================================//
+
+        sendButton.setOnAction(event -> {
+            terminal.txRx.macroManager.sendMacro(macro);
+        });
+
+
     }
 
     public void showMacroSettingsWindow() {

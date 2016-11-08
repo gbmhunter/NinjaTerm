@@ -11,6 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
@@ -42,10 +43,10 @@ public class TxRx {
     public Formatting formatting = new Formatting();
     public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
-    public MacroManager macroManager = new MacroManager();
+    public MacroManager macroManager = new MacroManager(this);
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
-    public SimpleStringProperty txData = new SimpleStringProperty("");
+    public SimpleStringProperty txDataToDisplay = new SimpleStringProperty("");
 
 
 
@@ -136,14 +137,13 @@ public class TxRx {
 
             switch (formatting.selEnterKeyBehaviour.get()) {
                 case CARRIAGE_RETURN:
-                    addTxCharToSend((byte) '\r');
+                    addTxCharsToSend(new byte[]{'\r'});
                     break;
                 case NEW_LINE:
-                    addTxCharToSend((byte) '\n');
+                    addTxCharsToSend(new byte[]{'\n'});
                     break;
                 case CARRIAGE_RETURN_AND_NEW_LINE:
-                    addTxCharToSend((byte) '\r');
-                    addTxCharToSend((byte) '\n');
+                    addTxCharsToSend(new byte[]{'\r', '\n'});
                     break;
                 default:
                     throw new RuntimeException("selEnterKeyBehaviour was not recognised.");
@@ -151,7 +151,7 @@ public class TxRx {
         } else {
             // Key pressed was NOT enter,
             // so append the character to the end of the "to send" TX buffer
-            addTxCharToSend(asciiCodeForKey);
+            addTxCharsToSend(new byte[]{asciiCodeForKey});
         }
 
         // Check so see what TX mode we are in
@@ -169,7 +169,7 @@ public class TxRx {
         }
     }
 
-    private void sendBufferedTxDataToSerialPort() {
+    public void sendBufferedTxDataToSerialPort() {
         // Send data to COM port, and update stats (both local and global)
         byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
@@ -217,22 +217,26 @@ public class TxRx {
      *
      * @param data
      */
-    public void addTxCharToSend(byte data) {
+    public void addTxCharsToSend(byte[] data) {
 
-        System.out.printf(getClass().getName() + ".addTxCharToSend() called with data = 0x%02X\r\n", data);
+        System.out.printf(getClass().getName() + ".addTxCharsToSend() called with data = " + Debugging.toString(data));
 
-        // Create string from data
-        /*String dataAsString = "";
+        // Add the data to the "to send" TX buffer
+        for(byte dataByte : data) {
+            toSendTxData.add(dataByte);
+        }
+
+        // Add to TX data that the user sees displayed in UI
+        String dataAsString = "";
         for(int i = 0; i < data.length; i++) {
             dataAsString = dataAsString + (char)data[i];
-        }*/
+        }
+        txDataToDisplay.set(txDataToDisplay.get() + dataAsString);
 
-        txData.set(txData.get() + (char) data);
-        toSendTxData.add(data);
-
-        if (txData.get().length() > display.bufferSizeChars.get()) {
+        // Trim data displayed in UI if needed
+        if (txDataToDisplay.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            txDataToDisplay.set(StringUtils.removeOldChars(txDataToDisplay.get(), display.bufferSizeChars.get()));
         }
 
     }
@@ -243,7 +247,7 @@ public class TxRx {
             // Remove the last char from both the "to send" TX buffer,
             // and the TX display string
             toSendTxData.remove(toSendTxData.size() - 1);
-            txData.set(txData.get().substring(0, txData.get().length() - 1));
+            txDataToDisplay.set(txDataToDisplay.get().substring(0, txDataToDisplay.get().length() - 1));
         }
     }
 
@@ -263,9 +267,9 @@ public class TxRx {
 
     public void trimTxBuffer() {
 
-        if (txData.get().length() > display.bufferSizeChars.get()) {
+        if (txDataToDisplay.get().length() > display.bufferSizeChars.get()) {
             // Truncate TX data, removing old characters
-            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
+            txDataToDisplay.set(StringUtils.removeOldChars(txDataToDisplay.get(), display.bufferSizeChars.get()));
         }
 
         /*if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {

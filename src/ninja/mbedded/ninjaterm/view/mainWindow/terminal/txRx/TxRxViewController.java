@@ -487,7 +487,7 @@ public class TxRxViewController {
             newStreamedTextListener(streamedText);
         });
 
-        txDataText.textProperty().bind(terminal.txRx.txData);
+        txDataText.textProperty().bind(terminal.txRx.txDataToDisplay);
 
         // Call this to update the display of the TX/RX pane into its default
         // state
