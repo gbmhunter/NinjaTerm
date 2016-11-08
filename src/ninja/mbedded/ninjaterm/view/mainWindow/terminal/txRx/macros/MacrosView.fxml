@@ -3,19 +3,18 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-11-05
-* @last-modified   2016-11-05
+* @last-modified   2016-11-08
 -->
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
-<?import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.MacrosViewController"
       xmlns:fx="http://javafx.com/fxml"
       alignment="TOP_CENTER"
       spacing="20"
       fillWidth="true"
       stylesheets="/ninja/mbedded/ninjaterm/resources/style.css"
-        styleClass="border">
+      styleClass="border">
     <!--style="-fx-background-color: red;" -->
 
     <padding>
@@ -28,9 +27,8 @@
         <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="1">Sequence</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="2">Send</Label>
-        <!--<TextField GridPane.rowIndex="1" GridPane.columnIndex="0" prefWidth="30"></TextField>
-        <TextField GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="50"></TextField>
-        <Button fx:id="macroButton" GridPane.rowIndex="1" GridPane.columnIndex="2"></Button>-->
+
+        <!-- MACRO ROWS WILL BE INSERTED HERE BY THE CONTROLLER -->
     </GridPane>
 
 </VBox>
