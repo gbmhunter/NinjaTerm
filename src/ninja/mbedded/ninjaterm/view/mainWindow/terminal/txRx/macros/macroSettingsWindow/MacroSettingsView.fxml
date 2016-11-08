@@ -11,8 +11,8 @@
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="rootVBox"
-      alignment="TOP_CENTER"
-      spacing="20"
+      alignment="CENTER_LEFT"
+      spacing="10"
       fillWidth="true"
       stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
 
@@ -20,24 +20,32 @@
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <Label>Macro</Label>
-
-    <GridPane hgap="5" vgap="5">
-        <Label      GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
         <TextField fx:id="nameTextField"
                    GridPane.rowIndex="0" GridPane.columnIndex="1"></TextField>
-        <Label     GridPane.rowIndex="1" GridPane.columnIndex="0">Sequence</Label>
-        <TextField fx:id="sequenceTextField"
-                   GridPane.rowIndex="1" GridPane.columnIndex="1"></TextField>
-    </GridPane>
+    </HBox>
 
-    <CheckBox>Send Sequence Immediately</CheckBox>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Encoding</Label>
+        <ComboBox fx:id="encodingComboBox"
+                  GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label GridPane.rowIndex="2" GridPane.columnIndex="0">Sequence</Label>
+        <TextField fx:id="sequenceTextField"
+                   GridPane.rowIndex="2" GridPane.columnIndex="1"></TextField>
+    </HBox>
+
+    <HBox alignment="CENTER">
+        <CheckBox fx:id="sendSequenceImmediatelyCheckBox">Send Sequence Immediately</CheckBox>
+    </HBox>
 
     <HBox alignment="CENTER_RIGHT" spacing="5">
         <Button fx:id="okButton" prefWidth="80">OK</Button>
         <Button fx:id="cancelButton" prefWidth="80">Cancel</Button>
     </HBox>
-
 
 </VBox>
 

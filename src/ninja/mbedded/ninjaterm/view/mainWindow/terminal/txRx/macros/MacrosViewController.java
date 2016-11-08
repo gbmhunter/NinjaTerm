@@ -1,10 +1,7 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.RowConstraints;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
@@ -46,7 +43,7 @@ public class MacrosViewController {
         for(Macro macro : terminal.txRx.macroManager.macros) {
 
             MacroRow macroRow = new MacroRow(model, terminal, macro, glyphFont);
-            macroGridPane.addRow(GridPaneHelper.getNumRows(macroGridPane), macroRow.nameTextField, macroRow.sequenceTextField, macroRow.sendButton);
+            macroGridPane.addRow(GridPaneHelper.getNumRows(macroGridPane), macroRow.nameTextField, macroRow.sequenceTextField, macroRow.runButton);
 
             // Make sure added row
 //            RowConstraints rowConstraints = new RowConstraints();

@@ -28,7 +28,7 @@ public class MacroManager {
 
         this.txRx = txRx;
 
-        // Add default macros
+        // Add default macros (they will all be blank)
         for(int i = 0; i < DEFAULT_NUM_OF_MACROS; i++) {
             macros.add(new Macro());
         }
@@ -38,8 +38,8 @@ public class MacroManager {
      * Sends the macro sequence to the COM port (TX).
      * @param macro     The macro to send.
      */
-    public void sendMacro(Macro macro) {
-        logger.debug("sendMacro() called with macro = " + macro);
+    public void runMacro(Macro macro) {
+        logger.debug("runMacro() called with macro = " + macro);
 
         // "Un-escape" any escape sequences found in the sequence
         // We use the Apachi StringEscapeUtils class to do this
@@ -47,7 +47,9 @@ public class MacroManager {
 
         // Send the un-escaped string to the COM port
         txRx.addTxCharsToSend(parsedString.getBytes());
-        txRx.sendBufferedTxDataToSerialPort();
+
+        if(macro.sendSequenceImmediately.get())
+            txRx.sendBufferedTxDataToSerialPort();
     }
 
 }

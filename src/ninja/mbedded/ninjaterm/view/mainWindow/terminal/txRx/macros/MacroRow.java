@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -13,6 +12,7 @@ import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -34,7 +34,7 @@ public class MacroRow {
 
     public TextField nameTextField = new TextField();
     public TextField sequenceTextField = new TextField();
-    public Button sendButton = new Button();
+    public Button runButton = new Button();
 
     public MacroRow(Model model, Terminal terminal, Macro macro, GlyphFont glyphFont) {
 
@@ -42,23 +42,12 @@ public class MacroRow {
         this.terminal = terminal;
         this.macro = macro;
 
+        //==============================================//
+        //============== NAME TEXTFIELD SETUP ==========//
+        //==============================================//
+
         nameTextField.setPrefWidth(50);
-
-        sequenceTextField.setPrefWidth(80);
-
-        sendButton.setGraphic(glyphFont.create(FontAwesome.Glyph.SHARE_SQUARE));
-
-        //==============================================//
-        //=============== SETUP BINDING ================//
-        //==============================================//
-
         nameTextField.textProperty().bindBidirectional(macro.name);
-        sequenceTextField.textProperty().bindBidirectional(macro.sequence);
-
-        //==============================================//
-        //======= INSTALL DOUBLE-CLICK HANDLERS ========//
-        //==============================================//
-
         nameTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
@@ -67,7 +56,14 @@ public class MacroRow {
                 }
             }
         });
+        TooltipUtil.addDefaultTooltip(nameTextField, "Double-click for more settings/info.");
 
+        //==============================================//
+        //=========== SEQUENCE TEXTFIELD SETUP =========//
+        //==============================================//
+
+        sequenceTextField.setPrefWidth(80);
+        sequenceTextField.textProperty().bindBidirectional(macro.sequence);
         sequenceTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
@@ -76,15 +72,17 @@ public class MacroRow {
                 }
             }
         });
+        TooltipUtil.addDefaultTooltip(sequenceTextField, "Double-click for more settings/info.");
 
         //==============================================//
-        //== NOTIFY MODEL WHEN SEND BUTTON IS PUSHED ===//
+        //============== RUN BUTTON SETUP ==============//
         //==============================================//
 
-        sendButton.setOnAction(event -> {
-            terminal.txRx.macroManager.sendMacro(macro);
+        runButton.setOnAction(event -> {
+            terminal.txRx.macroManager.runMacro(macro);
         });
-
+        runButton.setGraphic(glyphFont.create(FontAwesome.Glyph.SHARE_SQUARE));
+        TooltipUtil.addDefaultTooltip(nameTextField, "Click to run the macro.");
 
     }
 
@@ -115,8 +113,9 @@ public class MacroRow {
         });
 
         // Create a scene and display the dialogue window
-        Scene dialogScene = new Scene(root, 300, 200);
+        Scene dialogScene = new Scene(root, 450, 300);
         stage.setScene(dialogScene);
+        stage.setTitle("Macro Settings");
         stage.show();
     }
 }
