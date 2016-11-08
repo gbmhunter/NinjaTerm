@@ -7,12 +7,14 @@ import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 
@@ -62,6 +64,8 @@ public class TerminalViewController {
     private Model model;
 
     private OnRxDataListener onRxDataListener;
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     public TerminalViewController() {
     }
@@ -143,8 +147,24 @@ public class TerminalViewController {
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
         terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+
+            // Catch all key-presses that occur inside a TextInputControl object, and prevent them
+            // from being sent to the COM port
+            if(ke.getTarget() instanceof TextInputControl){
+                logger.debug("Key was pressed inside a TextInputControl object, so not sending to COM port.");
+                return;
+            }
+
             handleKeyTyped(ke);
         });
+
+        /*terminalTab.getContent().setFocusTraversable(true);
+        terminalTab.getContent().onKeyTypedProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println("TESTING!");
+        });*/
+
+
+
 
         //==============================================//
         //============== INIT LOGGING TAB ==============//

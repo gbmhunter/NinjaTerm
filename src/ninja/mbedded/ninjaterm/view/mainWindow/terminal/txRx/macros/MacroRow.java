@@ -1,11 +1,13 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
 import javafx.beans.binding.Bindings;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
@@ -60,6 +62,11 @@ public class MacroRow {
                 }
             }
         });
+
+        /*nameTextField.addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+            System.out.println("Consuming event.");
+            ke.consume();
+        });*/
 
         sequenceTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
