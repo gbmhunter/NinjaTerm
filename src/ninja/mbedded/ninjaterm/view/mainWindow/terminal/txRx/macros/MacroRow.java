@@ -113,7 +113,7 @@ public class MacroRow {
         });
 
         // Create a scene and display the dialogue window
-        Scene dialogScene = new Scene(root, 450, 300);
+        Scene dialogScene = new Scene(root, 450, 400);
         stage.setScene(dialogScene);
         stage.setTitle("Macro Settings");
         stage.show();

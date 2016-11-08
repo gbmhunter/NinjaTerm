@@ -8,6 +8,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.shape.Line?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="rootVBox"
@@ -21,26 +24,36 @@
     </padding>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
-        <TextField fx:id="nameTextField"
-                   GridPane.rowIndex="0" GridPane.columnIndex="1"></TextField>
+        <Label>Name</Label>
+        <TextField fx:id="nameTextField"></TextField>
     </HBox>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Encoding</Label>
-        <ComboBox fx:id="encodingComboBox"
-                  GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label>Encoding</Label>
+        <ComboBox fx:id="encodingComboBox"/>
     </HBox>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label GridPane.rowIndex="2" GridPane.columnIndex="0">Sequence</Label>
-        <TextField fx:id="sequenceTextField"
-                   GridPane.rowIndex="2" GridPane.columnIndex="1"></TextField>
+        <Label>Sequence</Label>
+        <TextField fx:id="sequenceTextField" prefWidth="300"></TextField>
     </HBox>
 
     <HBox alignment="CENTER">
         <CheckBox fx:id="sendSequenceImmediatelyCheckBox">Send Sequence Immediately</CheckBox>
     </HBox>
+
+    <VBox styleClass="border">
+        <Label styleClass="h2">Encoding Info:</Label>
+        <Line startX="0" startY="0" endX="100" endY="0" styleClass="underline"></Line>
+
+        <!-- SPACER -->
+        <HBox prefHeight="10" />
+
+        <TextFlow>
+            <Text style="-fx-font-weight: bold;" text="ASCII&#10;"/>
+            <Text text="Non-printable characters can be used in the sequence. The standard C-style escapes are supported (e.g. new line = '\n', carriage return = '\r'). C-style unicode escapes for any ASCII characters are also supported in the form '\uXXXX' (e.g. escape character = '\u001B'."/>
+        </TextFlow>
+    </VBox>
 
     <HBox alignment="CENTER_RIGHT" spacing="5">
         <Button fx:id="okButton" prefWidth="80">OK</Button>

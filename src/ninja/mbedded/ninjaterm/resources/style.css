@@ -165,3 +165,20 @@ which are displaying dynamic content */
 .root {
   -fx-glass-color: rgba(95, 158, 160, 0.9);
 }
+
+/* =========================================== */
+/* ============= UNDERLINE STYLING =========== */
+/* =========================================== */
+
+/* This targets a Line node. Used to underlining things such as text headers */
+.underline {
+    -fx-stroke: silver;
+}
+
+/* =========================================== */
+/* ============== HEADING STYLING ============ */
+/* =========================================== */
+
+.h2 {
+    -fx-font-size: 16px;
+}

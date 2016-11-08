@@ -22,7 +22,7 @@
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
 
-    <Label>Macros</Label>
+    <Label styleClass="h2">Macros</Label>
 
     <GridPane fx:id="macroGridPane" hgap="5" vgap="5">
         <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
