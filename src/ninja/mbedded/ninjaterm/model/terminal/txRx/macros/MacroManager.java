@@ -86,7 +86,10 @@ public class MacroManager {
             case OK:
                 break;
             case STRING_DID_NOT_HAVE_EVEN_NUMBER_OF_CHARS:
-                model.status.addErr("Macro hex string does not have an even number of characters.");
+                model.status.addErr("Macro hex string \"" + macro.sequence.get() + "\" does not have an even number of characters.");
+                return;
+            case INVALID_CHAR:
+                model.status.addErr("Macro hex string \"" + macro.sequence.get() + "\" contains invalid chars (must only contain numbers or the letters A-F).");
                 return;
             default:
                 throw new RuntimeException("ReturnCode was not recognised.");
