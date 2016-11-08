@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.*?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController"
       xmlns:fx="http://javafx.com/fxml"
+      fx:id="rootVBox"
       alignment="TOP_CENTER"
       spacing="20"
       fillWidth="true"
@@ -31,7 +32,7 @@
     </GridPane>
 
     <HBox alignment="CENTER_RIGHT" spacing="5">
-        <Button prefWidth="80">OK</Button>
+        <Button fx:id="okButton" prefWidth="80">OK</Button>
         <Button fx:id="cancelButton" prefWidth="80">Cancel</Button>
     </HBox>
 

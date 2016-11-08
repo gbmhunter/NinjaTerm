@@ -1,18 +1,15 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
-import javafx.beans.binding.Bindings;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController;
@@ -22,7 +19,11 @@ import org.controlsfx.glyphfont.GlyphFont;
 import java.io.IOException;
 
 /**
- * Created by gbmhu on 2016-11-07.
+ * Represents a single row in the macro GridPane.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-08
+ * @since 2016-11-05
  */
 public class MacroRow {
 
@@ -39,6 +40,7 @@ public class MacroRow {
         this.macro = macro;
 
         nameTextField.setPrefWidth(50);
+
         sequenceTextField.setPrefWidth(80);
 
         sendButton.setGraphic(glyphFont.create(FontAwesome.Glyph.SHARE_SQUARE));
@@ -62,11 +64,6 @@ public class MacroRow {
                 }
             }
         });
-
-        /*nameTextField.addEventFilter(KeyEvent.KEY_TYPED, ke -> {
-            System.out.println("Consuming event.");
-            ke.consume();
-        });*/
 
         sequenceTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
@@ -102,17 +99,6 @@ public class MacroRow {
         // Make sure main window is un-blurred when dialogue closes
         stage.setOnCloseRequest(event -> {
             model.isPrimaryStageBlurred.set(false);
-        });
-
-        macroSettingsViewController.cancelButton.setOnAction(event -> {
-            // This closes the stage the "clean" way, which causes all OnCloseRequest event handler
-            // to be called correctly
-            stage.fireEvent(
-                    new WindowEvent(
-                            stage,
-                            WindowEvent.WINDOW_CLOSE_REQUEST
-                    )
-            );
         });
 
         // Create a scene and display the dialogue window

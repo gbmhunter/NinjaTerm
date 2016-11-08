@@ -1,7 +1,10 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.RowConstraints;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
@@ -44,6 +47,12 @@ public class MacrosViewController {
 
             MacroRow macroRow = new MacroRow(model, macro, glyphFont);
             macroGridPane.addRow(GridPaneHelper.getNumRows(macroGridPane), macroRow.nameTextField, macroRow.sequenceTextField, macroRow.sendButton);
+
+            // Make sure added row
+//            RowConstraints rowConstraints = new RowConstraints();
+//            rowConstraints.setValignment(VPos.CENTER);
+//            macroGridPane.getRowConstraints().add(rowConstraints);
+
         }
 
     }
