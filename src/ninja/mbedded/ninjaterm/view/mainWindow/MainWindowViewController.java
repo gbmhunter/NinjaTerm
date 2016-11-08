@@ -7,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -28,8 +29,8 @@ import java.util.List;
  * Controller for the main window of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-13
  * @since 2016-07-08
+ * @last-modified 2016-11-08
  */
 public class MainWindowViewController {
 
@@ -84,7 +85,6 @@ public class MainWindowViewController {
      *
      * @param model
      * @param glyphFont
-     * @param comPortManager
      */
     public void init(Model model, GlyphFont glyphFont) {
 
@@ -176,6 +176,20 @@ public class MainWindowViewController {
         //==============================================//
 
         statusBarViewController.init(model, glyphFont);
+
+        //==============================================//
+        //===== ATTACH LISTENER TO BLUR MAIN WINDOW ====//
+        //==============================================//
+
+        model.isPrimaryStageBlurred.addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                // Blur main window
+                mainVBox.setEffect(new BoxBlur());
+            } else {
+                // Make sure main window is not blurred
+                mainVBox.setEffect(null);
+            }
+        });
 
     }
 

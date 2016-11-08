@@ -1,0 +1,42 @@
+<!--
+* The view for the "Macro Settings" dialogue box in NinjaTerm.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-11-08
+* @last-modified   2016-11-08
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController"
+      xmlns:fx="http://javafx.com/fxml"
+      alignment="TOP_CENTER"
+      spacing="20"
+      fillWidth="true"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <Label>Macro</Label>
+
+    <GridPane hgap="5" vgap="5">
+        <Label      GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
+        <TextField fx:id="nameTextField"
+                   GridPane.rowIndex="0" GridPane.columnIndex="1"></TextField>
+        <Label     GridPane.rowIndex="1" GridPane.columnIndex="0">Sequence</Label>
+        <TextField fx:id="sequenceTextField"
+                   GridPane.rowIndex="1" GridPane.columnIndex="1"></TextField>
+    </GridPane>
+
+    <HBox alignment="CENTER_RIGHT" spacing="5">
+        <Button prefWidth="80">OK</Button>
+        <Button fx:id="cancelButton" prefWidth="80">Cancel</Button>
+    </HBox>
+
+
+</VBox>
+
+
+

@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.model;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-12
+ * @last-modified 2016-11-08
  */
 public class Model {
 
@@ -45,7 +46,13 @@ public class Model {
 
     public List<TerminalListener> closedTerminalListeners = new ArrayList<>();
 
-    ComPortFactory comPortFactory;
+    private ComPortFactory comPortFactory;
+
+    /**
+     * Determines whether the primary stage in the UI is blurred. Useful when secondary
+     * modal windows are shown.
+     */
+    public SimpleBooleanProperty isPrimaryStageBlurred = new SimpleBooleanProperty();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

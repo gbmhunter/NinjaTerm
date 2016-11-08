@@ -14,4 +14,9 @@ public class Macro {
     SimpleStringProperty name = new SimpleStringProperty();
     SimpleStringProperty sequence = new SimpleStringProperty();
 
+    public Macro() {
+
+
+    }
+
 }
