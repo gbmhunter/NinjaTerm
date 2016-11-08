@@ -42,8 +42,8 @@ public class MacrosViewController {
         // Create a macro view for every macro in the model
         for(Macro macro : terminal.txRx.macroManager.macros) {
 
-            MacroRow macroRow = new MacroRow(model, glyphFont);
-            macroGridPane.addRow(GridPaneHelper.getNumRows(macroGridPane), macroRow.name, macroRow.sequence, macroRow.sendButton);
+            MacroRow macroRow = new MacroRow(model, macro, glyphFont);
+            macroGridPane.addRow(GridPaneHelper.getNumRows(macroGridPane), macroRow.nameTextField, macroRow.sequenceTextField, macroRow.sendButton);
         }
 
     }

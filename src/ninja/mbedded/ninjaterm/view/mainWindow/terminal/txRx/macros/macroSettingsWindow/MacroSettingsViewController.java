@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -45,7 +46,14 @@ public class MacroSettingsViewController {
     public MacroSettingsViewController() {
     }
 
-    public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
+    public void init(Macro macro) {
+
+        //==============================================//
+        //=============== SETUP BINDING ================//
+        //==============================================//
+
+        nameTextField.textProperty().bindBidirectional(macro.name);
+        sequenceTextField.textProperty().bindBidirectional(macro.sequence);
 
     }
 }

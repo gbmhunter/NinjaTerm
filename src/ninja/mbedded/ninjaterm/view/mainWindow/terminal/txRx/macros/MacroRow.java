@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros;
 
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -11,6 +12,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -23,25 +25,45 @@ import java.io.IOException;
 public class MacroRow {
 
     Model model;
+    Macro macro;
 
-    public TextField name = new TextField();
-    public TextField sequence = new TextField();
+    public TextField nameTextField = new TextField();
+    public TextField sequenceTextField = new TextField();
     public Button sendButton = new Button();
 
-    public MacroRow(Model model, GlyphFont glyphFont) {
+    public MacroRow(Model model, Macro macro, GlyphFont glyphFont) {
 
         this.model = model;
+        this.macro = macro;
 
-        name.setPrefWidth(50);
-        sequence.setPrefWidth(80);
+        nameTextField.setPrefWidth(50);
+        sequenceTextField.setPrefWidth(80);
 
         sendButton.setGraphic(glyphFont.create(FontAwesome.Glyph.SHARE_SQUARE));
 
-        // INSTALL DOUBLE-CLICK HANDLERS
-        name.setOnMouseClicked((MouseEvent mouseEvent) -> {
+        //==============================================//
+        //=============== SETUP BINDING ================//
+        //==============================================//
+
+        nameTextField.textProperty().bindBidirectional(macro.name);
+        sequenceTextField.textProperty().bindBidirectional(macro.sequence);
+
+        //==============================================//
+        //======= INSTALL DOUBLE-CLICK HANDLERS ========//
+        //==============================================//
+
+        nameTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
-                    System.out.println("Node was double clicked.");
+                    // Create and show the macro settings window
+                    showMacroSettingsWindow();
+                }
+            }
+        });
+
+        sequenceTextField.setOnMouseClicked((MouseEvent mouseEvent) -> {
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                if (mouseEvent.getClickCount() == 2) {
                     // Create and show the macro settings window
                     showMacroSettingsWindow();
                 }
@@ -64,7 +86,8 @@ public class MacroRow {
         }
         MacroSettingsViewController macroSettingsViewController = loader.getController();
 
-        //mainWindowViewController.init(model, glyphFont);
+
+        macroSettingsViewController.init(macro);
 
         // Blur the main window
         model.isPrimaryStageBlurred.set(true);
@@ -73,9 +96,6 @@ public class MacroRow {
         stage.setOnCloseRequest(event -> {
             model.isPrimaryStageBlurred.set(false);
         });
-
-        Scene dialogScene = new Scene(root, 300, 200);
-        stage.setScene(dialogScene);
 
         macroSettingsViewController.cancelButton.setOnAction(event -> {
             // This closes the stage the "clean" way, which causes all OnCloseRequest event handler
@@ -88,7 +108,9 @@ public class MacroRow {
             );
         });
 
-
+        // Create a scene and display the dialogue window
+        Scene dialogScene = new Scene(root, 300, 200);
+        stage.setScene(dialogScene);
         stage.show();
     }
 }

@@ -11,8 +11,8 @@ import javafx.beans.property.SimpleStringProperty;
  */
 public class Macro {
 
-    SimpleStringProperty name = new SimpleStringProperty();
-    SimpleStringProperty sequence = new SimpleStringProperty();
+    public SimpleStringProperty name = new SimpleStringProperty();
+    public SimpleStringProperty sequence = new SimpleStringProperty();
 
     public Macro() {
 
