@@ -31,6 +31,8 @@
                    GridPane.rowIndex="1" GridPane.columnIndex="1"></TextField>
     </GridPane>
 
+    <CheckBox>Send Sequence Immediately</CheckBox>
+
     <HBox alignment="CENTER_RIGHT" spacing="5">
         <Button fx:id="okButton" prefWidth="80">OK</Button>
         <Button fx:id="cancelButton" prefWidth="80">Cancel</Button>

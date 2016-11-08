@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 
 /**
@@ -33,10 +34,19 @@ public class MacroManager {
         }
     }
 
+    /**
+     * Sends the macro sequence to the COM port (TX).
+     * @param macro     The macro to send.
+     */
     public void sendMacro(Macro macro) {
         logger.debug("sendMacro() called with macro = " + macro);
 
-        txRx.addTxCharsToSend(macro.sequence.get().getBytes());
+        // "Un-escape" any escape sequences found in the sequence
+        // We use the Apachi StringEscapeUtils class to do this
+        String parsedString = StringEscapeUtils.unescapeJava(macro.sequence.get());
+
+        // Send the un-escaped string to the COM port
+        txRx.addTxCharsToSend(parsedString.getBytes());
         txRx.sendBufferedTxDataToSerialPort();
     }
 
