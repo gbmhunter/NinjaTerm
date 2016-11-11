@@ -10,7 +10,9 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Encodings;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
+import org.slf4j.Logger;
 
 /**
  * View controller for the "Macro Settings" dialogue box.
@@ -59,6 +61,8 @@ public class MacrosManagerViewController {
     Model model;
     Terminal terminal;
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -106,6 +110,12 @@ public class MacrosManagerViewController {
                 };
                 return cell;
             }
+        });
+
+        macrosListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // The user has selected a different macro in the list view, update the
+            // right-hand side display
+            updateDisplayedMacro(newValue);
         });
 
         //==============================================//
@@ -167,6 +177,10 @@ public class MacrosManagerViewController {
             close();
         });
 
+    }
+
+    private void updateDisplayedMacro(Macro macro) {
+        logger.debug("updateDisplayedMacro() called.");
     }
 
     private void close() {

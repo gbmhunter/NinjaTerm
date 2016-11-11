@@ -14,24 +14,21 @@
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macrosManagerWindow.MacrosManagerViewController"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="rootVBox"
-      alignment="CENTER_LEFT"
-      spacing="10"
       fillWidth="true"
       stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
 
-    <padding>
-        <Insets top="10" bottom="10" left="10" right="10"/>
-    </padding>
+    <HBox fillHeight="true" spacing="10">
+        <padding>
+            <Insets top="10" bottom="10" left="10" right="10"/>
+        </padding>
 
-    <HBox>
-
-        <VBox>
+        <VBox spacing="5">
             <Button fx:id="deleteMacroButton">Delete</Button>
             <ListView fx:id="macrosListView" minWidth="100" />
         </VBox>
 
         <!-- RIGHT-HAND "SELECTED MACRO" PANE -->
-        <VBox>
+        <VBox spacing="10">
 
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label>Name</Label>
