@@ -1,5 +1,7 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macrosManagerWindow;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
@@ -17,8 +19,12 @@ import org.slf4j.Logger;
 /**
  * View controller for the "Macro Settings" dialogue box.
  *
+ * This controller copies the entire macro array from the model before making any
+ * changes, and only overwrites the one in the model if the "OK" button
+ * is pressed.
+ *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-08
+ * @last-modified 2016-11-11
  * @since 2016-11-08
  */
 public class MacrosManagerViewController {
@@ -61,6 +67,8 @@ public class MacrosManagerViewController {
     Model model;
     Terminal terminal;
 
+    private ObservableList<Macro> copyOfMacros;
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -76,18 +84,25 @@ public class MacrosManagerViewController {
         this.terminal = terminal;
 
         //==============================================//
+        //===== COPY THE MACRO LIST FROM THE MODEL =====//
+        //==============================================//
+
+        // This performs a copy
+        copyOfMacros = FXCollections.observableArrayList(terminal.txRx.macroManager.macros);
+
+        //==============================================//
         //========= DELETE MACRO BUTTON SETUP ==========//
         //==============================================//
 
         deleteMacroButton.setOnAction(event -> {
-            terminal.txRx.macroManager.deleteMacro(macrosListView.getSelectionModel().getSelectedItem());
+            copyOfMacros.remove(macrosListView.getSelectionModel().getSelectedItem());
         });
 
         //==============================================//
         //=========== MACROS LISTVIEW SETUP ============//
         //==============================================//
 
-        macrosListView.setItems(terminal.txRx.macroManager.macros);
+        macrosListView.setItems(copyOfMacros);
 
         // Set a custom cell factory which will display the macro's name
         // in the ListView pane
@@ -122,8 +137,6 @@ public class MacrosManagerViewController {
         //============ NAME TEXTFIELD SETUP ============//
         //==============================================//
 
-        nameTextField.textProperty().set(macro.name.get());
-
         TooltipUtil.addDefaultTooltip(encodingComboBox, "You can give this macro a name to easily identify it among all the other macros on the right-hand side pane on the TX/RX sub-tab.");
 
         //==============================================//
@@ -131,8 +144,6 @@ public class MacrosManagerViewController {
         //==============================================//
 
         encodingComboBox.getItems().setAll(Encodings.values());
-        // Copy selected item from model
-        encodingComboBox.getSelectionModel().select(macro.encoding.get());
 
         TooltipUtil.addDefaultTooltip(encodingComboBox, "Choose the encoding of the sequence. The entered sequence must be valid for the specified encoding.");
 
@@ -140,15 +151,11 @@ public class MacrosManagerViewController {
         //=========== SEQUENCE TEXTFIELD SETUP =========//
         //==============================================//
 
-        sequenceTextField.textProperty().set(macro.sequence.get());
         TooltipUtil.addDefaultTooltip(sequenceTextField, "The sequence of data to send when this macro's send button is pressed. This sequence must be valid for the chosen encoding.");
 
         //==============================================//
         //== SEND SEQUENCE IMMEDIATELY CHECKBOX SETUP ==//
         //==============================================//
-
-        // Set default state from model
-        sendSequenceImmediatelyCheckBox.setSelected(macro.sendSequenceImmediately.get());
 
         TooltipUtil.addDefaultTooltip(sendSequenceImmediatelyCheckBox, "When ticked, the macro's sequence will be sent as soon as the \"send\" button is pressed. If unticked, the send behaviour will depend on the \"Send Behaviour\" in the Formatting pop-up.");
 
@@ -181,6 +188,17 @@ public class MacrosManagerViewController {
 
     private void updateDisplayedMacro(Macro macro) {
         logger.debug("updateDisplayedMacro() called.");
+
+        nameTextField.textProperty().set(macro.name.get());
+
+        // Copy selected item from model
+        encodingComboBox.getSelectionModel().select(macro.encoding.get());
+
+        sequenceTextField.textProperty().set(macro.sequence.get());
+
+        // Set default state from model
+        sendSequenceImmediatelyCheckBox.setSelected(macro.sendSequenceImmediately.get());
+
     }
 
     private void close() {
