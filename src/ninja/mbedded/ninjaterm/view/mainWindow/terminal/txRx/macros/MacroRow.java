@@ -13,7 +13,7 @@ import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
-import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow.MacroSettingsViewController;
+import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macrosManagerWindow.MacrosManagerViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
@@ -52,7 +52,7 @@ public class MacroRow {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     // Create and show the macro settings window
-                    showMacroSettingsWindow();
+                    showMacrosManagerWindow();
                 }
             }
         });
@@ -68,7 +68,7 @@ public class MacroRow {
             if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
                 if (mouseEvent.getClickCount() == 2) {
                     // Create and show the macro settings window
-                    showMacroSettingsWindow();
+                    showMacrosManagerWindow();
                 }
             }
         });
@@ -82,27 +82,27 @@ public class MacroRow {
             terminal.txRx.macroManager.runMacro(macro);
         });
         runButton.setGraphic(glyphFont.create(FontAwesome.Glyph.SHARE_SQUARE));
-        TooltipUtil.addDefaultTooltip(nameTextField, "Click to run the macro.");
+        TooltipUtil.addDefaultTooltip(runButton, "Click to run the macro.");
 
     }
 
-    public void showMacroSettingsWindow() {
+    public void showMacrosManagerWindow() {
         final Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         //stage.initOwner(primaryStage);
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("macroSettingsWindow/MacroSettingsView.fxml"));
+                getClass().getResource("macrosManagerWindow/MacrosManagerView.fxml"));
         Parent root;
         try {
             root = loader.load();
         } catch (IOException e) {
             return;
         }
-        MacroSettingsViewController macroSettingsViewController = loader.getController();
+        MacrosManagerViewController macrosManagerViewController = loader.getController();
 
 
-        macroSettingsViewController.init(macro);
+        macrosManagerViewController.init(model, terminal, macro);
 
         // Blur the main window
         model.isPrimaryStageBlurred.set(true);
@@ -113,9 +113,9 @@ public class MacroRow {
         });
 
         // Create a scene and display the dialogue window
-        Scene dialogScene = new Scene(root, 450, 400);
+        Scene dialogScene = new Scene(root, 600, 400);
         stage.setScene(dialogScene);
-        stage.setTitle("Macro Settings");
+        stage.setTitle("Macro Manager");
         stage.show();
     }
 }

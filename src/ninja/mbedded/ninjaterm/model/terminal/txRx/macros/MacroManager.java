@@ -38,7 +38,9 @@ public class MacroManager {
 
         // Add default macros (they will all be blank)
         for(int i = 0; i < DEFAULT_NUM_OF_MACROS; i++) {
-            macros.add(new Macro());
+            Macro macro = new Macro();
+            macro.name.set("M" + Integer.toString(i));
+            macros.add(macro);
         }
     }
 

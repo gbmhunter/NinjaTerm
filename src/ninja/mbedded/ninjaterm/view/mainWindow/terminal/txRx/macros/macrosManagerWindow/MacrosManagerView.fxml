@@ -1,0 +1,72 @@
+<!--
+* The view for the "Macro Settings" dialogue box in NinjaTerm.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-11-08
+* @last-modified   2016-11-08
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macrosManagerWindow.MacrosManagerViewController"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:id="rootVBox"
+      alignment="CENTER_LEFT"
+      spacing="10"
+      fillWidth="true"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css">
+
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <HBox>
+        <ListView fx:id="macrosListView" minWidth="100" />
+        <VBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label>Name</Label>
+                <TextField fx:id="nameTextField"></TextField>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label>Encoding</Label>
+                <ComboBox fx:id="encodingComboBox"/>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label>Sequence</Label>
+                <TextField fx:id="sequenceTextField" prefWidth="300"></TextField>
+            </HBox>
+
+            <HBox alignment="CENTER">
+                <CheckBox fx:id="sendSequenceImmediatelyCheckBox">Send Sequence Immediately</CheckBox>
+            </HBox>
+
+            <VBox styleClass="border">
+                <Label styleClass="h2">Encoding Info:</Label>
+                <Line startX="0" startY="0" endX="100" endY="0" styleClass="underline"></Line>
+
+                <!-- SPACER -->
+                <HBox prefHeight="10"/>
+
+                <TextFlow>
+                    <Text style="-fx-font-weight: bold;" text="ASCII&#10;"/>
+                    <Text text="Non-printable characters can be used in the sequence. The standard C-style escapes are supported (e.g. new line = '\n', carriage return = '\r'). C-style unicode escapes for any ASCII characters are also supported in the form '\uXXXX' (e.g. escape character = '\u001B'."/>
+                </TextFlow>
+            </VBox>
+
+            <HBox alignment="CENTER_RIGHT" spacing="5">
+                <Button fx:id="okButton" prefWidth="80">OK</Button>
+                <Button fx:id="cancelButton" prefWidth="80">Cancel</Button>
+            </HBox>
+        </VBox>
+    </HBox>
+
+</VBox>
+
+
+

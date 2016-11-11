@@ -1,13 +1,13 @@
-package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macroSettingsWindow;
+package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.macrosManagerWindow;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Callback;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Encodings;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
@@ -19,7 +19,7 @@ import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
  * @last-modified 2016-11-08
  * @since 2016-11-08
  */
-public class MacroSettingsViewController {
+public class MacrosManagerViewController {
 
     //================================================================================================//
     //========================================== FXML BINDINGS =======================================//
@@ -27,6 +27,9 @@ public class MacroSettingsViewController {
 
     @FXML
     private VBox rootVBox;
+
+    @FXML
+    private ListView macrosListView;
 
     @FXML
     private TextField nameTextField;
@@ -50,15 +53,48 @@ public class MacroSettingsViewController {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
+    Model model;
+    Terminal terminal;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public MacroSettingsViewController() {
+    public MacrosManagerViewController() {
     }
 
-    public void init(Macro macro) {
+    public class ListViewCell extends ListCell<Macro>
+    {
+        @Override
+        public void updateItem(Macro macro, boolean empty)
+        {
+            super.updateItem(macro, empty);
+            if(macro != null)
+            {
+                setText(macro.name.get());
+            }
+        }
+    }
+
+    public void init(Model model, Terminal terminal, Macro macro) {
+
+        this.model = model;
+        this.terminal = terminal;
+
+        //==============================================//
+        //=========== MACROS LISTVIEW SETUP ============//
+        //==============================================//
+
+        macrosListView.setItems(terminal.txRx.macroManager.macros);
+
+        macrosListView.setCellFactory(new Callback<ListView<Macro>, ListCell<Macro>>()
+        {
+            @Override
+            public ListCell<Macro> call(ListView<Macro> listView)
+            {
+                return new ListViewCell();
+            }
+        });
 
         //==============================================//
         //============ NAME TEXTFIELD SETUP ============//

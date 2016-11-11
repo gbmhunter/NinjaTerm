@@ -119,7 +119,8 @@ public class Main extends Application {
         try {
             Parent root = loader.load();
         } catch (IOException e) {
-            return;
+            throw new RuntimeException(e);
+            //return;
         }
         MainWindowViewController mainWindowViewController = loader.getController();
 
