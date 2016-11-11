@@ -63,19 +63,6 @@ public class MacrosManagerViewController {
     public MacrosManagerViewController() {
     }
 
-    public class ListViewCell extends ListCell<Macro>
-    {
-        @Override
-        public void updateItem(Macro macro, boolean empty)
-        {
-            super.updateItem(macro, empty);
-            if(macro != null)
-            {
-                setText(macro.name.get());
-            }
-        }
-    }
-
     public void init(Model model, Terminal terminal, Macro macro) {
 
         this.model = model;
@@ -87,12 +74,26 @@ public class MacrosManagerViewController {
 
         macrosListView.setItems(terminal.txRx.macroManager.macros);
 
-        macrosListView.setCellFactory(new Callback<ListView<Macro>, ListCell<Macro>>()
-        {
+        // Set a custom cell factory which will display the macro's name
+        // in the ListView pane
+        macrosListView.setCellFactory(new Callback<ListView<Macro>, ListCell<Macro>>() {
+
             @Override
-            public ListCell<Macro> call(ListView<Macro> listView)
-            {
-                return new ListViewCell();
+            public ListCell<Macro> call(ListView<Macro> param) {
+                ListCell<Macro> cell = new ListCell<Macro>() {
+
+                    @Override
+                    protected void updateItem(Macro item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (item != null) {
+                            // THIS IS THE IMPORTANT LINE
+                            setText(item.name.get());
+                        } else {
+                            setText("");
+                        }
+                    }
+                };
+                return cell;
             }
         });
 
@@ -168,4 +169,5 @@ public class MacrosManagerViewController {
                 )
         );
     }
+
 }
