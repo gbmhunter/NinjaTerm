@@ -68,6 +68,10 @@ public class MacroManager {
 
     }
 
+    public void deleteMacro(Macro macro) {
+        macros.remove(macro);
+    }
+
     private void parseAscii(Macro macro) {
         // "Un-escape" any escape sequences found in the sequence
         // We use the Apachi StringEscapeUtils class to do this

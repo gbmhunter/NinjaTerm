@@ -24,7 +24,13 @@
     </padding>
 
     <HBox>
-        <ListView fx:id="macrosListView" minWidth="100" />
+
+        <VBox>
+            <Button fx:id="deleteMacroButton">Delete</Button>
+            <ListView fx:id="macrosListView" minWidth="100" />
+        </VBox>
+
+        <!-- RIGHT-HAND "SELECTED MACRO" PANE -->
         <VBox>
 
             <HBox spacing="10" alignment="CENTER_LEFT">

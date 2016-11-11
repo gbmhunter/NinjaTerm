@@ -29,7 +29,10 @@ public class MacrosManagerViewController {
     private VBox rootVBox;
 
     @FXML
-    private ListView macrosListView;
+    private Button deleteMacroButton;
+
+    @FXML
+    private ListView<Macro> macrosListView;
 
     @FXML
     private TextField nameTextField;
@@ -67,6 +70,14 @@ public class MacrosManagerViewController {
 
         this.model = model;
         this.terminal = terminal;
+
+        //==============================================//
+        //========= DELETE MACRO BUTTON SETUP ==========//
+        //==============================================//
+
+        deleteMacroButton.setOnAction(event -> {
+            terminal.txRx.macroManager.deleteMacro(macrosListView.getSelectionModel().getSelectedItem());
+        });
 
         //==============================================//
         //=========== MACROS LISTVIEW SETUP ============//
