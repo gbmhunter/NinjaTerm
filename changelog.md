@@ -6,6 +6,7 @@ vX.X.X
 - Created a "ComPortFactory" which returns mocked "ComPort" objects, which are then injected into the model, closes #151.
 - Made the division of space for TX and RX modifiable (e.g. through a drag mechanism), closes #150.
 - Added the ability to the user to specify text sequences to send to the COM port (macros), closes #155.
+- Converted the "Macro Settings" window into a "Macro Manager" window, closes #157.
 
 v0.7.2
 ------

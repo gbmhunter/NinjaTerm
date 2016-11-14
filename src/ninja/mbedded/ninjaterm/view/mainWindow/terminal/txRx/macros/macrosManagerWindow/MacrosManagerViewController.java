@@ -14,6 +14,8 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Encodings;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.Macro;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
 
 /**
@@ -35,6 +37,9 @@ public class MacrosManagerViewController {
 
     @FXML
     private VBox rootVBox;
+
+    @FXML
+    private Button addMacroButton;
 
     @FXML
     private Button deleteMacroButton;
@@ -66,6 +71,7 @@ public class MacrosManagerViewController {
 
     Model model;
     Terminal terminal;
+    GlyphFont glyphFont;
 
     private ObservableList<Macro> copyOfMacros;
 
@@ -78,10 +84,11 @@ public class MacrosManagerViewController {
     public MacrosManagerViewController() {
     }
 
-    public void init(Model model, Terminal terminal, Macro macro) {
+    public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
         this.model = model;
         this.terminal = terminal;
+        this.glyphFont = glyphFont;
 
         //==============================================//
         //===== COPY THE MACRO LIST FROM THE MODEL =====//
@@ -94,8 +101,20 @@ public class MacrosManagerViewController {
         }
 
         //==============================================//
+        //=========== ADD MACRO BUTTON SETUP ===========//
+        //==============================================//
+
+        addMacroButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLUS));
+
+        addMacroButton.setOnAction(event -> {
+            addNewMacro();
+        });
+
+        //==============================================//
         //========= DELETE MACRO BUTTON SETUP ==========//
         //==============================================//
+
+        deleteMacroButton.setGraphic(glyphFont.create(FontAwesome.Glyph.TRASH));
 
         deleteMacroButton.setOnAction(event -> {
             copyOfMacros.remove(macrosListView.getSelectionModel().getSelectedItem());
@@ -173,8 +192,10 @@ public class MacrosManagerViewController {
 
         okButton.setOnAction(event -> {
             // Replace all of the macros in the model with the copied macros
-            for(int i = 0; i < terminal.txRx.macroManager.macros.size(); i++) {
-                terminal.txRx.macroManager.macros.set(i, copyOfMacros.get(i));
+            terminal.txRx.macroManager.macros.clear();
+
+            for(Macro macro : copyOfMacros) {
+                terminal.txRx.macroManager.macros.add(macro);
             }
 
             close();
@@ -217,6 +238,15 @@ public class MacrosManagerViewController {
         newMacro.encoding.bind(encodingComboBox.getSelectionModel().selectedItemProperty());
         sequenceTextField.textProperty().bindBidirectional(newMacro.sequence);
         sendSequenceImmediatelyCheckBox.selectedProperty().bindBidirectional(newMacro.sendSequenceImmediately);
+    }
+
+    private void addNewMacro() {
+        Macro macro = new Macro();
+        copyOfMacros.add(macro);
+
+        // Select this newly added macro
+        macrosListView.selectionModelProperty().get().select(macro);
+
     }
 
     /**

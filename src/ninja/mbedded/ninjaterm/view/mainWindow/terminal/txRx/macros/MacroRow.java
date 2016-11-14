@@ -30,6 +30,7 @@ public class MacroRow {
 
     Model model;
     Terminal terminal;
+    GlyphFont glyphFont;
     Macro macro;
 
     public TextField nameTextField = new TextField();
@@ -40,6 +41,7 @@ public class MacroRow {
 
         this.model = model;
         this.terminal = terminal;
+        this.glyphFont = glyphFont;
         this.macro = macro;
 
         //==============================================//
@@ -102,7 +104,7 @@ public class MacroRow {
         MacrosManagerViewController macrosManagerViewController = loader.getController();
 
 
-        macrosManagerViewController.init(model, terminal, macro);
+        macrosManagerViewController.init(model, terminal, glyphFont);
 
         // Blur the main window
         model.isPrimaryStageBlurred.set(true);
