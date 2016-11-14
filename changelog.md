@@ -7,6 +7,7 @@ vX.X.X
 - Made the division of space for TX and RX modifiable (e.g. through a drag mechanism), closes #150.
 - Added the ability to the user to specify text sequences to send to the COM port (macros), closes #155.
 - Converted the "Macro Settings" window into a "Macro Manager" window, closes #157.
+- Macro name is automatically generated when a new macro is added, closes #158.
 
 v0.7.2
 ------

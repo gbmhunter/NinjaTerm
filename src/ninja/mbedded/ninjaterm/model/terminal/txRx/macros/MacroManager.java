@@ -4,13 +4,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.TxRx;
 import ninja.mbedded.ninjaterm.util.encodingUtils.EncodingUtils;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +17,7 @@ import java.util.List;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-11-06
- * @last-modified   2016-11-08
+ * @last-modified   2016-11-14
  */
 public class MacroManager {
 
@@ -31,6 +30,7 @@ public class MacroManager {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
+
     public MacroManager(Model model, Terminal terminal) {
 
         this.model = model;
@@ -41,7 +41,7 @@ public class MacroManager {
             Macro macro = new Macro();
 
             // Give macro a default name (M1, M2, ...)
-            macro.name.set("M" + Integer.toString(i));
+            macro.name.set("M" + Integer.toString(macros.size()));
             macros.add(macro);
         }
     }
@@ -61,15 +61,14 @@ public class MacroManager {
         switch(macro.encoding.get()) {
 
             case ASCII:
-                parseAscii(macro);
+                runAscii(macro);
                 break;
             case HEX:
-                parseHex(macro);
+                runHex(macro);
                 break;
             default:
                 throw new RuntimeException("Encoding enum not recognised.");
         }
-
 
     }
 
@@ -77,7 +76,7 @@ public class MacroManager {
         macros.remove(macro);
     }
 
-    private void parseAscii(Macro macro) {
+    private void runAscii(Macro macro) {
         // "Un-escape" any escape sequences found in the sequence
         // We use the Apachi StringEscapeUtils class to do this
         String parsedString = StringEscapeUtils.unescapeJava(macro.sequence.get());
@@ -89,13 +88,17 @@ public class MacroManager {
             terminal.txRx.sendBufferedTxDataToSerialPort();
     }
 
-    private void parseHex(Macro macro) {
+    /**
+     * Runs a macro, treating the sequence as a hex sequence.
+     * @param macro
+     */
+    private void runHex(Macro macro) {
 
-        List<Byte> byteList = new ArrayList<>();
-        EncodingUtils.ReturnResult returnResult = new EncodingUtils.ReturnResult();
-        EncodingUtils.hexStringToByteArray(macro.sequence.get(), byteList, returnResult);
+        Pair<List<Byte>, EncodingUtils.ReturnId> result = EncodingUtils.hexStringToByteArray(macro.sequence.get());
+        List<Byte> bytes = result.getValue0();
+        EncodingUtils.ReturnId returnId = result.getValue1();
 
-        switch(returnResult.id) {
+        switch(returnId) {
             case OK:
                 break;
             case STRING_DID_NOT_HAVE_EVEN_NUMBER_OF_CHARS:
@@ -108,9 +111,9 @@ public class MacroManager {
                 throw new RuntimeException("ReturnCode was not recognised.");
         }
 
-        byte[] byteArray = new byte[byteList.size()];
-        for(int i = 0; i < byteList.size(); i++) {
-            byteArray[i] = byteList.get(i);
+        byte[] byteArray = new byte[bytes.size()];
+        for(int i = 0; i < bytes.size(); i++) {
+            byteArray[i] = bytes.get(i);
         }
 
         // Send the un-escaped string to the COM port
@@ -118,7 +121,6 @@ public class MacroManager {
 
         if(macro.sendSequenceImmediately.get())
             terminal.txRx.sendBufferedTxDataToSerialPort();
-
 
     }
 

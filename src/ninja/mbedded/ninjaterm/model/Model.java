@@ -123,6 +123,7 @@ public class Model {
             if(terminal.isComPortOpen.get())
                 terminal.closeComPort();
         }
+
     }
 
     /**

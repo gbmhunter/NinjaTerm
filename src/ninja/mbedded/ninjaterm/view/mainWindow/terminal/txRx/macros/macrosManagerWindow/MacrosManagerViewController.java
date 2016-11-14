@@ -242,11 +242,13 @@ public class MacrosManagerViewController {
 
     private void addNewMacro() {
         Macro macro = new Macro();
+
+        // Set the default name
+        macro.name.set("M" + Integer.toString(copyOfMacros.size()));
         copyOfMacros.add(macro);
 
         // Select this newly added macro
         macrosListView.selectionModelProperty().get().select(macro);
-
     }
 
     /**
