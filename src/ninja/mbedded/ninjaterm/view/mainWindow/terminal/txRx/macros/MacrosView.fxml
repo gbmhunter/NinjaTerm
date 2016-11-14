@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-11-05
-* @last-modified   2016-11-08
+* @last-modified   2016-11-14
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
@@ -13,6 +13,8 @@
       alignment="TOP_CENTER"
       spacing="20"
       fillWidth="true"
+      minWidth="180"
+      maxWidth="180"
       stylesheets="/ninja/mbedded/ninjaterm/resources/style.css"
       styleClass="border">
     <!--style="-fx-background-color: red;" -->
