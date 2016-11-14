@@ -88,7 +88,10 @@ public class MacrosManagerViewController {
         //==============================================//
 
         // This performs a copy
-        copyOfMacros = FXCollections.observableArrayList(terminal.txRx.macroManager.macros);
+        copyOfMacros = FXCollections.observableArrayList();
+        for(Macro macroToCopy : terminal.txRx.macroManager.macros) {
+            copyOfMacros.add(new Macro(macroToCopy));
+        }
 
         //==============================================//
         //========= DELETE MACRO BUTTON SETUP ==========//
@@ -130,7 +133,7 @@ public class MacrosManagerViewController {
         macrosListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             // The user has selected a different macro in the list view, update the
             // right-hand side display
-            updateDisplayedMacro(newValue);
+            updateDisplayedMacro(oldValue, newValue);
         });
 
         //==============================================//
@@ -166,10 +169,10 @@ public class MacrosManagerViewController {
         okButton.setOnAction(event -> {
             // Copy the values from the dialogue controls into the model, then
             // close
-            macro.name.set(nameTextField.textProperty().get());
-            macro.encoding.set(encodingComboBox.getValue());
-            macro.sequence.set(sequenceTextField.textProperty().get());
-            macro.sendSequenceImmediately.set(sendSequenceImmediatelyCheckBox.isSelected());
+            //macro.name.set(nameTextField.textProperty().get());
+            //macro.encoding.set(encodingComboBox.getValue());
+            //macro.sequence.set(sequenceTextField.textProperty().get());
+            //macro.sendSequenceImmediately.set(sendSequenceImmediatelyCheckBox.isSelected());
 
             close();
         });
@@ -186,18 +189,27 @@ public class MacrosManagerViewController {
 
     }
 
-    private void updateDisplayedMacro(Macro macro) {
+    /**
+     * Updates the displayed macro (right-hand pane).
+     *
+     * Bi-directionally binds the UI controls to the properties in the provided <code>macro</code>.
+     * @param newMacro      The new macro object to bind the UI controls to.
+     */
+    private void updateDisplayedMacro(Macro oldMacro, Macro newMacro) {
         logger.debug("updateDisplayedMacro() called.");
 
-        nameTextField.textProperty().set(macro.name.get());
+        nameTextField.textProperty().unbindBidirectional(oldMacro.name);
+        nameTextField.textProperty().bindBidirectional(newMacro.name);
 
-        // Copy selected item from model
-        encodingComboBox.getSelectionModel().select(macro.encoding.get());
+        oldMacro.encoding.unbind();
+        encodingComboBox.getSelectionModel().select(newMacro.encoding.get());
+        newMacro.encoding.bind(encodingComboBox.getSelectionModel().selectedItemProperty());
 
-        sequenceTextField.textProperty().set(macro.sequence.get());
+        sequenceTextField.textProperty().unbindBidirectional(oldMacro.sequence);
+        sequenceTextField.textProperty().bindBidirectional(newMacro.sequence);
 
-        // Set default state from model
-        sendSequenceImmediatelyCheckBox.setSelected(macro.sendSequenceImmediately.get());
+        sendSequenceImmediatelyCheckBox.selectedProperty().unbindBidirectional(oldMacro.sendSequenceImmediately);
+        sendSequenceImmediatelyCheckBox.selectedProperty().bindBidirectional(newMacro.sendSequenceImmediately);
 
     }
 

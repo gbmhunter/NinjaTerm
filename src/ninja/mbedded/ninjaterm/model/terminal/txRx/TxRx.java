@@ -114,10 +114,6 @@ public class TxRx {
 
     public void handleKeyPressed(byte asciiCodeForKey) {
         logger.debug("handleKeyPressed() called.");
-        if (terminal.comPort.isPortOpen() == false) {
-            model.status.addErr("Cannot send data to COM port, port is not open.");
-            return;
-        }
 
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
@@ -171,7 +167,18 @@ public class TxRx {
         }
     }
 
+    /**
+     * Send any data that is in the TX buffer to the COM port.
+     *
+     * This will return without sending if the COM port is not open.
+     */
     public void sendBufferedTxDataToSerialPort() {
+
+        if (terminal.comPort.isPortOpen() == false) {
+            model.status.addErr("Cannot send data to COM port, port is not open.");
+            return;
+        }
+
         // Send data to COM port, and update stats (both local and global)
         byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
