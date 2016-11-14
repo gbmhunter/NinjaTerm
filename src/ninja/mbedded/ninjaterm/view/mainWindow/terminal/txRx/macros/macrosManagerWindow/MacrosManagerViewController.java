@@ -153,6 +153,10 @@ public class MacrosManagerViewController {
             // The user has selected a different macro in the list view, update the
             // right-hand side display
             updateDisplayedMacro(oldValue, newValue);
+
+            // This causes the cell factory to be re-run, updating any macro names that may
+            // have changed
+            macrosListView.refresh();
         });
 
         // Select the first macro (if one exists)

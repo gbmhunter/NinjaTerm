@@ -8,6 +8,7 @@ vX.X.X
 - Added the ability to the user to specify text sequences to send to the COM port (macros), closes #155.
 - Converted the "Macro Settings" window into a "Macro Manager" window, closes #157.
 - Macro name is automatically generated when a new macro is added, closes #158.
+- Fixed bug where macro manager left-hand side list text did not update when the macro name was updated, closes #160.
 
 v0.7.2
 ------
