@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
+<?import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane?>
 <Tab
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
         xmlns:fx="http://javafx.com/fxml"
@@ -155,6 +156,9 @@
                         <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
                     </StackPane>
                 </StackPane>
+
+                <ComDataPane GridPane.rowIndex="2" GridPane.columnIndex="0"
+                style="-fx-background-color: red;"/>
 
             </GridPane>
 
