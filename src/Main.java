@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -7,7 +8,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
@@ -18,8 +18,6 @@ import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 public class Main extends Application {
 
@@ -39,68 +37,62 @@ public class Main extends Application {
 
         logger.debug("start() called.");
 
-        // Massive try/catch over main, to catch any exceptions that were
-        // not caught by anything else (this should not happen on purpose)
-        try {
+        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            showError(thread, throwable);
+        });
 
 
-            //==============================================//
-            //======== COMMAND-LINE ARGUMENT PARSING =======//
-            //==============================================//
+        //==============================================//
+        //======== COMMAND-LINE ARGUMENT PARSING =======//
+        //==============================================//
 
-            logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
-            for (String arg : getParameters().getRaw()) {
-                if (arg.equals("no-splash"))
-                    disableSplashScreen = true;
+        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
+        for (String arg : getParameters().getRaw()) {
+            if (arg.equals("no-splash"))
+                disableSplashScreen = true;
 
-                if (arg.equals("debug"))
-                    LoggerUtils.startDebuggingToFile();
-            }
-
-            if (disableSplashScreen) {
-                // Skip this function, and go straight to loading the main window.
-                loadMainWindow();
-                return;
-            }
-
-            this.splashScreenStage = primaryStage;
-
-            // Load splashscreen FXML file and get controller
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
-            try {
-                Parent root = loader.load();
-            } catch (IOException e) {
-                return;
-            }
-
-            SplashScreenViewController splashScreenViewController = loader.getController();
-            splashScreenViewController.init();
-
-            Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
-            splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
-                if (newValue) {
-                    loadMainWindow();
-                }
-            });
-
-            primaryStage.initStyle(StageStyle.TRANSPARENT);
-            primaryStage.setScene(splashScreenScene);
-            primaryStage.show();
-
-            splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-                //event.getCharacter();
-                if (event.getCode().isWhitespaceKey()) {
-                    splashScreenViewController.speedUpSplashScreen();
-                }
-            });
-
-            splashScreenViewController.startNameVersionInfoMsg();
-
-        } catch (Exception e) {
-            // Write the exception to the logger, and also show pop-up
-            logger.error(StringUtils.throwableToString(e));
-            ExceptionPopup.showAndWait(e);
+            if (arg.equals("debug"))
+                LoggerUtils.startDebuggingToFile();
         }
+
+        if (disableSplashScreen) {
+            // Skip this function, and go straight to loading the main window.
+            loadMainWindow();
+            return;
+        }
+
+        this.splashScreenStage = primaryStage;
+
+        // Load splashscreen FXML file and get controller
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        try {
+            Parent root = loader.load();
+        } catch (IOException e) {
+            return;
+        }
+
+        SplashScreenViewController splashScreenViewController = loader.getController();
+        splashScreenViewController.init();
+
+        Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
+        splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                loadMainWindow();
+            }
+        });
+
+        primaryStage.initStyle(StageStyle.TRANSPARENT);
+        primaryStage.setScene(splashScreenScene);
+        primaryStage.show();
+
+        splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            //event.getCharacter();
+            if (event.getCode().isWhitespaceKey()) {
+                splashScreenViewController.speedUpSplashScreen();
+            }
+        });
+
+        splashScreenViewController.startNameVersionInfoMsg();
     }
 
     public void loadMainWindow() {
@@ -152,6 +144,18 @@ public class Main extends Application {
         });
 
         model.createTerminal();
+    }
+
+    private void showError(Thread t, Throwable e) {
+        System.err.println("***Default exception handler***");
+        if (Platform.isFxApplicationThread()) {
+            // Write the exception to the logger, and also show pop-up
+            logger.error(StringUtils.throwableToString(e));
+            ExceptionPopup.showAndWait(e);
+        } else {
+            System.err.println("An unexpected error occurred in " + t);
+
+        }
     }
 
 

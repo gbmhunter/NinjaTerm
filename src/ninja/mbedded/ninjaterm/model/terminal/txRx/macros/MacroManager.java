@@ -53,6 +53,11 @@ public class MacroManager {
     public void runMacro(Macro macro) {
         logger.debug("runMacro() called with macro = " + macro);
 
+        if(macro.sequence.get().equals("")) {
+            model.status.addErr("Macro sequence is empty, cannot run.");
+            return;
+        }
+
         switch(macro.encoding.get()) {
 
             case ASCII:

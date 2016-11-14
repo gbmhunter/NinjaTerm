@@ -15,10 +15,10 @@ import org.slf4j.Logger;
  */
 public class Macro {
 
-    public SimpleStringProperty name = new SimpleStringProperty();
+    public SimpleStringProperty name = new SimpleStringProperty("");
 
     public SimpleObjectProperty<Encodings> encoding = new SimpleObjectProperty<>(Encodings.ASCII);
-    public SimpleStringProperty sequence = new SimpleStringProperty();
+    public SimpleStringProperty sequence = new SimpleStringProperty("");
 
     public SimpleBooleanProperty sendSequenceImmediately = new SimpleBooleanProperty(true);
 
@@ -46,4 +46,14 @@ public class Macro {
         sendSequenceImmediately.set(macro.sendSequenceImmediately.get());
     }
 
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        output.append("{ ");
+        output.append("name = " + name.get() + ", ");
+        output.append("encoding = " + encoding.get() + ", ");
+        output.append("sequence = " + sequence.get() + ", ");
+        output.append("sendSequenceImmediately = " + sendSequenceImmediately.get() + " }");
+        return output.toString();
+    }
 }

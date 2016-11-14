@@ -136,6 +136,11 @@ public class MacrosManagerViewController {
             updateDisplayedMacro(oldValue, newValue);
         });
 
+        // Select the first macro (if one exists)
+        if(macrosListView.itemsProperty().get().size() > 0) {
+            macrosListView.selectionModelProperty().get().select(0);
+        }
+
         //==============================================//
         //============ NAME TEXTFIELD SETUP ============//
         //==============================================//
@@ -167,12 +172,10 @@ public class MacrosManagerViewController {
         //==============================================//
 
         okButton.setOnAction(event -> {
-            // Copy the values from the dialogue controls into the model, then
-            // close
-            //macro.name.set(nameTextField.textProperty().get());
-            //macro.encoding.set(encodingComboBox.getValue());
-            //macro.sequence.set(sequenceTextField.textProperty().get());
-            //macro.sendSequenceImmediately.set(sendSequenceImmediatelyCheckBox.isSelected());
+            // Replace all of the macros in the model with the copied macros
+            for(int i = 0; i < terminal.txRx.macroManager.macros.size(); i++) {
+                terminal.txRx.macroManager.macros.set(i, copyOfMacros.get(i));
+            }
 
             close();
         });
@@ -193,26 +196,32 @@ public class MacrosManagerViewController {
      * Updates the displayed macro (right-hand pane).
      *
      * Bi-directionally binds the UI controls to the properties in the provided <code>macro</code>.
+     * @param oldMacro      The old macro object to unbind from the UI controls.
      * @param newMacro      The new macro object to bind the UI controls to.
      */
     private void updateDisplayedMacro(Macro oldMacro, Macro newMacro) {
         logger.debug("updateDisplayedMacro() called.");
 
-        nameTextField.textProperty().unbindBidirectional(oldMacro.name);
-        nameTextField.textProperty().bindBidirectional(newMacro.name);
+        // Un-bind old macro from UI controls (if there
+        // was a previous macro)
+        if(oldMacro != null) {
+            nameTextField.textProperty().unbindBidirectional(oldMacro.name);
+            oldMacro.encoding.unbind();
+            sequenceTextField.textProperty().unbindBidirectional(oldMacro.sequence);
+            sendSequenceImmediatelyCheckBox.selectedProperty().unbindBidirectional(oldMacro.sendSequenceImmediately);
+        }
 
-        oldMacro.encoding.unbind();
+        // Bind new macro to the UI controls
+        nameTextField.textProperty().bindBidirectional(newMacro.name);
         encodingComboBox.getSelectionModel().select(newMacro.encoding.get());
         newMacro.encoding.bind(encodingComboBox.getSelectionModel().selectedItemProperty());
-
-        sequenceTextField.textProperty().unbindBidirectional(oldMacro.sequence);
         sequenceTextField.textProperty().bindBidirectional(newMacro.sequence);
-
-        sendSequenceImmediatelyCheckBox.selectedProperty().unbindBidirectional(oldMacro.sendSequenceImmediately);
         sendSequenceImmediatelyCheckBox.selectedProperty().bindBidirectional(newMacro.sendSequenceImmediately);
-
     }
 
+    /**
+     * Closes the "Macro Manager" window.
+     */
     private void close() {
         // This closes the stage the "clean" way, which causes all OnCloseRequest event handler
         // to be called correctly
