@@ -1,6 +1,6 @@
 package ninja.mbedded.ninjaterm.util.stringUtils;
 
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

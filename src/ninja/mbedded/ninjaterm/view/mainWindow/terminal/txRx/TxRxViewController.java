@@ -24,9 +24,10 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
+import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -116,6 +117,9 @@ public class TxRxViewController {
 
     @FXML
     private StackPane rxDataStackPane;
+
+    @FXML
+    private ComDataPane rxComDataPane;
 
     //==============================================//
     //============ LEFT-HAND SIDE PANE =============//
@@ -485,6 +489,11 @@ public class TxRxViewController {
         //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
         terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
             newStreamedTextListener(streamedText);
+        });
+
+        // Add a listener for the new ComDataPane object
+        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
+            rxComDataPane.addData(streamedText);
         });
 
         txDataText.textProperty().bind(terminal.txRx.txDataToDisplay);

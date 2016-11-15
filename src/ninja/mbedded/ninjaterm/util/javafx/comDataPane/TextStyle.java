@@ -16,7 +16,7 @@ import org.fxmisc.richtext.model.Codec;
 /**
  * Holds information about the style of a text fragment.
  */
-class TextStyle {
+public class TextStyle {
 
     public static final TextStyle EMPTY = new TextStyle();
 
@@ -290,6 +290,10 @@ class TextStyle {
 
     public TextStyle updateTextColor(Color textColor) {
         return new TextStyle(bold, italic, underline, strikethrough, fontSize, fontFamily, Optional.of(textColor), backgroundColor);
+    }
+
+    public Color getTextColor() {
+        return this.textColor.get();
     }
 
     public TextStyle updateBackgroundColor(Color backgroundColor) {

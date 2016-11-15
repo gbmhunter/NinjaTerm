@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.asciiControlCharParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.slf4j.Logger;
 
 import java.util.HashMap;

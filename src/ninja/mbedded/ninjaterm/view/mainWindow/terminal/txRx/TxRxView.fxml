@@ -118,6 +118,9 @@
                     </Pane>
                 </StackPane>
 
+                <ComDataPane fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"
+                             style="-fx-background-color: red;"/>
+
                 <!-- =========================================== -->
                 <!-- ============== DRAGGABLE NODE ============= -->
                 <!-- =========================================== -->
@@ -156,9 +159,6 @@
                         <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
                     </StackPane>
                 </StackPane>
-
-                <ComDataPane GridPane.rowIndex="2" GridPane.columnIndex="0"
-                style="-fx-background-color: red;"/>
 
             </GridPane>
 

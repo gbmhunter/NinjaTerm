@@ -1,7 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.freezeParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 
 /**
  * Very simple class which can freeze input streamed data, and prevent it from

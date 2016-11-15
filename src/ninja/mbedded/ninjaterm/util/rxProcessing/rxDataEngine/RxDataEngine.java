@@ -12,7 +12,7 @@ import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.freezeParser.FreezeParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineParser;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter.StreamingFilter;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
@@ -280,8 +280,8 @@ public class RxDataEngine {
         /*for (StreamedTextListener streamedTextListener : ansiParserOutputListeners) {
             // Create a new copy of the streamed text so that the listeners can't modify
             // the contents by mistake
-            StreamedData streamedText = new StreamedData(frozenAnsiParserOutput);
-            streamedTextListener.run(streamedText);
+            StreamedData streamedData = new StreamedData(frozenAnsiParserOutput);
+            streamedTextListener.run(streamedData);
         }*/
 
         // Now add all the new ANSI parser output to any that was not used up by the
