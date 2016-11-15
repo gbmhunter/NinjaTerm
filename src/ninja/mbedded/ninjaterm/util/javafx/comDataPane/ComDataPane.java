@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.util.javafx.comDataPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyledTextArea;
 
 import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
@@ -38,8 +39,11 @@ public class ComDataPane extends StackPane {
 
         //styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), "hello");
 
-        // Add the StyledTextArea to the StackPane
-        getChildren().add(styledTextArea);
+        // Add a virtual scroll pane (this is provided with the StyledTextArea)
+        VirtualizedScrollPane virtualizedScrollPane = new VirtualizedScrollPane<>(styledTextArea);
+
+        // Add scroll pane to StackPane
+        getChildren().add(virtualizedScrollPane);
 
     }
 
