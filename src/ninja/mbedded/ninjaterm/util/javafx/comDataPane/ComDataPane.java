@@ -28,6 +28,9 @@ public class ComDataPane extends StackPane {
     //====================================== CLASS CONSTANTS =========================================//
     //================================================================================================//
 
+    /**
+     * The default the buffer size. This can be changed with <code>setBufferSize()</code>.
+     */
     private final int DEFAULT_BUFFER_SIZE = 1000;
 
     //================================================================================================//
@@ -292,6 +295,14 @@ public class ComDataPane extends StackPane {
         // Trim the text buffer if needed
         // (this method will decide if required)
         trimBufferIfRequired();
+
+        // Fix up the scroll position
+        if(scrollState == ScrollState.FIXED_TO_BOTTOM) {
+            //styledTextArea.setEstimatedScrollY(styledTextArea.getTotalHeightEstimate());
+
+            // This moves the caret to the end of the "document"
+            styledTextArea.moveTo(styledTextArea.getLength());
+        }
 
         return numCharsAdded;
 
