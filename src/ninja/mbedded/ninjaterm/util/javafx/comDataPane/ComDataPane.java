@@ -31,7 +31,7 @@ public class ComDataPane extends StackPane {
     /**
      * The default the buffer size. This can be changed with <code>setBufferSize()</code>.
      */
-    private final int DEFAULT_BUFFER_SIZE = 1000;
+    private final int DEFAULT_BUFFER_SIZE = 10000;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -140,7 +140,7 @@ public class ComDataPane extends StackPane {
             // Since the user has now scrolled upwards (manually), disable the
             // auto-scroll
             //terminal.txRx.autoScrollEnabled.set(false);
-            scrollState = ScrollState.FIXED_POSITION;
+            scrollState = ScrollState.SMART_SCROLL;
 
             //autoScrollButtonPane.setVisible(true);
         });
@@ -171,9 +171,13 @@ public class ComDataPane extends StackPane {
 //            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
 //        }
 
-        // Reset the mutable integer (we don't care about what it's last value was)
-        //numCharsAdded.set(0);
         int numCharsAdded = 0;
+
+        // Remember the caret position before insertion of new text,
+        // incase we need to use it for setting the scroll position
+        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
+
+        logger.debug("caretPosBeforeTextInsertion = " + caretPosBeforeTextInsertion);
 
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
@@ -297,12 +301,24 @@ public class ComDataPane extends StackPane {
         trimBufferIfRequired();
 
         // Fix up the scroll position
-        if(scrollState == ScrollState.FIXED_TO_BOTTOM) {
-            //styledTextArea.setEstimatedScrollY(styledTextArea.getTotalHeightEstimate());
+        switch(scrollState) {
+            case FIXED_TO_BOTTOM:
+                //styledTextArea.setEstimatedScrollY(styledTextArea.getTotalHeightEstimate());
 
-            // This moves the caret to the end of the "document"
-            styledTextArea.moveTo(styledTextArea.getLength());
+                // This moves the caret to the end of the "document"
+                styledTextArea.moveTo(styledTextArea.getLength());
+                break;
+
+            case SMART_SCROLL:
+
+                // Scroll
+                styledTextArea.moveTo(caretPosBeforeTextInsertion);
+
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
         }
+
 
         return numCharsAdded;
 
@@ -316,6 +332,10 @@ public class ComDataPane extends StackPane {
         this.bufferSize = bufferSize;
     }
 
+    /**
+     * WARNING: If text is trimmed, this will cause the scroll position to jump to the top of the
+     * document.
+     */
     private void trimBufferIfRequired() {
 
         if(styledTextArea.getLength() > bufferSize) {
