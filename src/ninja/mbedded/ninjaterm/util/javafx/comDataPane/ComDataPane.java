@@ -1,26 +1,101 @@
 package ninja.mbedded.ninjaterm.util.javafx.comDataPane;
 
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyledTextArea;
+import org.slf4j.Logger;
 
 import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
 
 
 /**
- * Created by gbmhu on 2016-11-14.
+ * UI node which presents COM port data to the user (can be either TX, RX, or both).
+ *
+ * Uses a third-party <code>{@link StyledTextArea}</code> to enabled rich-text formatting
+ * functionality.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-11-14
+ * @last-modified 2016-14-16
  */
 public class ComDataPane extends StackPane {
 
+    //================================================================================================//
+    //====================================== CLASS CONSTANTS =========================================//
+    //================================================================================================//
+
+    private final int DEFAULT_BUFFER_SIZE = 1000;
+
+    //================================================================================================//
+    //=========================================== ENUMS ==============================================//
+    //================================================================================================//
+
+    public enum ScrollBehaviour {
+        /**
+         * Scroll bars will be kept at a fixed position. If new data arrives, and old data is removed
+         * (due to display buffer being full), the user will see the text moving, even though the scroll position
+         * has not changed.
+         */
+        FIXED_POSITION,
+
+        /**
+         * The scroll amount will be modified as new data arrives and old data is removed, so that the user
+         * is always looking at the same data, until the data is lost.
+         */
+        SMART_SCROLL,
+    }
+
+    private enum ScrollState {
+
+        /**
+         * Scroll pane is always scrolled to the bottom so that new data is displayed.
+         * This is the default behaviour.
+         */
+        FIXED_TO_BOTTOM,
+
+        /**
+         * Scroll bars will be kept at a fixed position. If new data arrives, and old data is removed
+         * (due to display buffer being full), the user will see the text moving, even though the scroll position
+         * has not changed.
+         */
+        FIXED_POSITION,
+
+        /**
+         * The scroll amount will be modified as new data arrives and old data is removed, so that the user
+         * is always looking at the same data, until the data is lost.
+         */
+        SMART_SCROLL,
+    }
+
+    //================================================================================================//
+    //=========================================== CLASS FIELDS =======================================//
+    //================================================================================================//
+
     public final StyledTextArea<ParStyle, TextStyle> styledTextArea;
+
+    private VirtualizedScrollPane virtualizedScrollPane;
 
     /**
      * Variable to remember what colour to apply to the next character, since a <code>{@link StyledTextArea}</code>
      * has no way of adding a colour style to text which does not exist yet.
      */
     private Color colorToApplyToNextChar = null;
+
+    private int bufferSize;
+
+    private ScrollBehaviour scrollBehaviour = ScrollBehaviour.FIXED_POSITION;
+    private ScrollState scrollState = ScrollState.FIXED_TO_BOTTOM;
+
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+    //================================================================================================//
+    //========================================== CLASS METHODS =======================================//
+    //================================================================================================//
 
     public ComDataPane() {
 
@@ -34,16 +109,48 @@ public class ComDataPane extends StackPane {
 
         // We don't want the user to be able to edit the data pane
         styledTextArea.setEditable(false);
-        //EditableStyledDocument editableStyledDocument = styledTextArea.getContent();
-        //styledTextArea.replaceText(0, 0, "test");
 
-        //styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), "hello");
+        styledTextArea.heightProperty().addListener((observable, oldValue, newValue) -> {
+            logger.debug("heightProperty listener called.");
+        });
 
         // Add a virtual scroll pane (this is provided with the StyledTextArea)
-        VirtualizedScrollPane virtualizedScrollPane = new VirtualizedScrollPane<>(styledTextArea);
+        virtualizedScrollPane = new VirtualizedScrollPane<>(styledTextArea);
+
+        virtualizedScrollPane.totalHeightEstimateProperty().addListener((observable, oldValue, newValue) -> {
+            logger.debug("totalHeightEstimateProperty() listener called. newValue = " + newValue);
+        });
+
+        virtualizedScrollPane.estimatedScrollYProperty().addListener((observable, oldValue, newValue) -> {
+            logger.debug("estimatedScrollYProperty() listener called. newValue = " + newValue);
+        });
+
+        virtualizedScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
+
+            // If the user scrolled downwards, we don't want to disable auto-scroll,
+            // so check and return if so.
+            if (event.getDeltaY() <= 0)
+                return;
+
+            logger.debug("User has scrolled upwards, disabling auto-scroll...");
+
+            // Since the user has now scrolled upwards (manually), disable the
+            // auto-scroll
+            //terminal.txRx.autoScrollEnabled.set(false);
+            scrollState = ScrollState.FIXED_POSITION;
+
+            //autoScrollButtonPane.setVisible(true);
+        });
+
 
         // Add scroll pane to StackPane
         getChildren().add(virtualizedScrollPane);
+
+        //==============================================//
+        //============== BUFFER SIZE SETUP =============//
+        //==============================================//
+
+        this.bufferSize = DEFAULT_BUFFER_SIZE;
 
     }
 
@@ -182,7 +289,34 @@ public class ComDataPane extends StackPane {
 
         //checkAllColoursAreInOrder();
 
+        // Trim the text buffer if needed
+        // (this method will decide if required)
+        trimBufferIfRequired();
+
         return numCharsAdded;
+
+    }
+
+    public int getBufferSize() {
+        return bufferSize;
+    }
+
+    public void setBufferSize(int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+
+    private void trimBufferIfRequired() {
+
+        if(styledTextArea.getLength() > bufferSize) {
+
+            // We need to trim the text buffer in the styled text area node
+            int numCharsToRemove = styledTextArea.getLength() - bufferSize;
+
+            // Remove the earliest text by doing a replace() call, replacing with
+            // nothing ("")
+            styledTextArea.replaceText(0, numCharsToRemove, "");
+
+        }
 
     }
 
