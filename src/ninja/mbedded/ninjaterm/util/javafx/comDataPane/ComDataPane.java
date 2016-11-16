@@ -104,7 +104,7 @@ public class ComDataPane extends StackPane {
      */
     private Color colorToApplyToNextChar = null;
 
-    private int bufferSize;
+    public SimpleIntegerProperty bufferSize;
 
     private SimpleObjectProperty<ScrollState> scrollState = new SimpleObjectProperty<>(ScrollState.FIXED_TO_BOTTOM);
 
@@ -228,7 +228,11 @@ public class ComDataPane extends StackPane {
         //============== BUFFER SIZE SETUP =============//
         //==============================================//
 
-        this.bufferSize = DEFAULT_BUFFER_SIZE;
+        bufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
+        bufferSize.addListener((observable, oldValue, newValue) -> {
+            trimBufferIfRequired();
+        });
+
 
         //==============================================//
         //================== NAME SETUP ================//
@@ -423,26 +427,26 @@ public class ComDataPane extends StackPane {
         //===================================================//
 
         OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
-        int charAtZeroZeroBeforeRemoval;
+        int charAtZeroTenBeforeRemoval;
         if(optionalInt.isPresent())
-            charAtZeroZeroBeforeRemoval = optionalInt.getAsInt();
+            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
         else
-            charAtZeroZeroBeforeRemoval = 0;
+            charAtZeroTenBeforeRemoval = 0;
 
 
-        logger.debug("charAtZeroZeroBeforeRemoval = " + charAtZeroZeroBeforeRemoval);
+        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
 
         // Trim the text buffer if needed
         // (this method will decide if required)
-        int numCharsRemoved = trimBufferIfRequired();
+        trimBufferIfRequired();
 
         //==============================================//
         //============== SCROLL POSITION ===============//
         //==============================================//
 
-        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
-        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
-        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
+//        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
+//        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
+//        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
 
         switch(scrollState.get()) {
             case FIXED_TO_BOTTOM:
@@ -455,13 +459,7 @@ public class ComDataPane extends StackPane {
 
                 // Scroll so that the same text is displayed in the view port
                 // as before the text insertion/removalS
-
-//                int desiredPos = currCharPositionInText - numCharsRemoved;
-//                if(desiredPos < 0)
-//                    desiredPos = 0;
-//
-//                currCharPositionInText = desiredPos;
-                styledTextArea.moveTo(charAtZeroZeroBeforeRemoval);
+                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
                 break;
             default:
                 throw new RuntimeException("scrollState not recognised.");
@@ -477,16 +475,6 @@ public class ComDataPane extends StackPane {
         styledTextArea.replaceText(0, styledTextArea.getLength(), "");
     }
 
-    public int getBufferSize() {
-        return bufferSize;
-    }
-
-    public void setBufferSize(int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
-
-
-
     /**
      * @return The numbers of chars removed (if any).
      *
@@ -498,10 +486,10 @@ public class ComDataPane extends StackPane {
 
         int numCharsToRemove = 0;
 
-        if(styledTextArea.getLength() > bufferSize) {
+        if(styledTextArea.getLength() > bufferSize.get()) {
 
             // We need to trim the text buffer in the styled text area node
-            numCharsToRemove = styledTextArea.getLength() - bufferSize;
+            numCharsToRemove = styledTextArea.getLength() - bufferSize.get();
 
             // Remove the earliest text by doing a replace() call, replacing with
             // nothing ("")

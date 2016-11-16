@@ -183,6 +183,23 @@ which are displaying dynamic content */
     -fx-font-size: 16px;
 }
 
-.virtual-flow {
+/* =========================================== */
+/* ========== RICH TEXT AREA STYLING ========= */
+/* =========================================== */
+
+/* NONE OF THESE SEEM TO WORK! */
+.styled-text-area .paragraph-box .paragraph-text {
+    -fx-padding: 10 10 10 10;
+}
+
+.styled-text-area .virtual-flow {
+    -fx-insets: 10 10 10 10;
+}
+
+.virtualized-scroll-pane .styled-text-area .paragraph-box: .paragraph-text {
+    -fx-padding: 10 10 10 10;
+}
+
+.styled-text-area .paragraph-box:first-paragraph .paragraph-text {
     -fx-padding: 10 10 10 10;
 }

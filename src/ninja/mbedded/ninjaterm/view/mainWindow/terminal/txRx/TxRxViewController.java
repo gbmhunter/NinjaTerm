@@ -341,7 +341,7 @@ public class TxRxViewController {
         });
 
         //==============================================//
-        //======= BIND TERMINAL TEXT TO TXRX DATA ======//
+        //============== SETUP RX DATA PANE ============//
         //==============================================//
 
         // Add a listener for the new ComDataPane object
@@ -349,9 +349,17 @@ public class TxRxViewController {
             rxComDataPane.addData(streamedText);
         });
 
+        rxComDataPane.bufferSize.bind(terminal.txRx.display.bufferSizeChars);
+
+        //==============================================//
+        //============== SETUP TX DATA PANE ============//
+        //==============================================//
+
         terminal.txRx.txDataToDisplayListeners.add(streamedData -> {
             txComDataPane.addData(streamedData);
         });
+
+        txComDataPane.bufferSize.bind(terminal.txRx.display.bufferSizeChars);
 
         // Call this to update the display of the TX/RX pane into its default
         // state
