@@ -232,8 +232,6 @@ public class MainWindowViewController {
 
         // Select this newly created terminal tab
         terminalTabPane.getSelectionModel().select(terminalTab);
-
-
     }
 
     /**

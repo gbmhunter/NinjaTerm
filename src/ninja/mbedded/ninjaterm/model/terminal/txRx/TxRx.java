@@ -1,7 +1,6 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -14,6 +13,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -46,8 +46,8 @@ public class TxRx {
     public MacroManager macroManager;
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
-    public SimpleStringProperty txDataToDisplay = new SimpleStringProperty("");
 
+    public List<StreamedDataListener> txDataToDisplayListeners = new ArrayList<>();
 
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
@@ -83,10 +83,6 @@ public class TxRx {
         //====================================//
         //========= BUFFER-SIZE SETUP ========//
         //====================================//
-
-        display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
-            trimTxBuffer();
-        });
 
         // Bind the RX data engine's buffer size to the value held in the
         // display class (the value in the display class will be updated by the
@@ -240,12 +236,11 @@ public class TxRx {
         for(int i = 0; i < data.length; i++) {
             dataAsString = dataAsString + (char)data[i];
         }
-        txDataToDisplay.set(txDataToDisplay.get() + dataAsString);
 
-        // Trim data displayed in UI if needed
-        if (txDataToDisplay.get().length() > display.bufferSizeChars.get()) {
-            // Truncate TX data, removing old characters
-            txDataToDisplay.set(StringUtils.removeOldChars(txDataToDisplay.get(), display.bufferSizeChars.get()));
+        for(StreamedDataListener streamedDataListener : txDataToDisplayListeners) {
+            StreamedData txStreamedData = new StreamedData();
+            txStreamedData.append(dataAsString);
+            streamedDataListener.run(txStreamedData);
         }
 
     }
@@ -256,7 +251,8 @@ public class TxRx {
             // Remove the last char from both the "to send" TX buffer,
             // and the TX display string
             toSendTxData.remove(toSendTxData.size() - 1);
-            txDataToDisplay.set(txDataToDisplay.get().substring(0, txDataToDisplay.get().length() - 1));
+            //txDataToDisplay.set(txDataToDisplay.get().substring(0, txDataToDisplay.get().length() - 1));
+            // TODO: 2016-11-16 Implement
         }
     }
 
@@ -272,19 +268,6 @@ public class TxRx {
 
         rxDataEngine.parse(data);
 
-    }
-
-    public void trimTxBuffer() {
-
-        if (txDataToDisplay.get().length() > display.bufferSizeChars.get()) {
-            // Truncate TX data, removing old characters
-            txDataToDisplay.set(StringUtils.removeOldChars(txDataToDisplay.get(), display.bufferSizeChars.get()));
-        }
-
-        /*if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
-            // Remove old characters from buffer
-            rxDataEngine.rawRxData.set(StringUtils.removeOldChars(rxDataEngine.rawRxData.get(), display.bufferSizeChars.get()));
-        }*/
     }
 
     /**

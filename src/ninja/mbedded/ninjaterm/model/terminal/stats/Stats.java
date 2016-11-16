@@ -64,9 +64,10 @@ public class Stats {
         //========== NUM. CHARS IN BUFFER SETUP ========//
         //==============================================//
 
-        terminal.txRx.txDataToDisplay.addListener((observable, oldValue, newValue) -> {
+        // // TODO: 2016-11-16 Fix 
+        /*terminal.txRx.txDataToDisplay.addListener((observable, oldValue, newValue) -> {
             numCharsInTxBuffer.set(newValue.length());
-        });
+        });*/
 
         terminal.txRx.rxDataEngine.rawRxData.addListener((observable, oldValue, newValue) -> {
             numCharsInRxBuffer.set(newValue.length());

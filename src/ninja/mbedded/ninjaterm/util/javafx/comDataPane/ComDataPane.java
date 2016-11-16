@@ -4,6 +4,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -82,6 +83,10 @@ public class ComDataPane extends StackPane {
     //================================================================================================//
 
     public SimpleBooleanProperty isCaretEnabled = new SimpleBooleanProperty(false);
+
+    public SimpleStringProperty name = new SimpleStringProperty("");
+
+    private Label nameLabel;
 
     private VirtualizedScrollPane virtualizedScrollPane;
 
@@ -226,23 +231,30 @@ public class ComDataPane extends StackPane {
         this.bufferSize = DEFAULT_BUFFER_SIZE;
 
         //==============================================//
-        //========== DATA DIRECTION LABEL SETUP ========//
+        //================== NAME SETUP ================//
         //==============================================//
 
-        StackPane dataDirectionStackPane = new StackPane();
-        dataDirectionStackPane.setMaxWidth(100.0);
-        dataDirectionStackPane.setMaxHeight(20.0);
-        dataDirectionStackPane.setAlignment(Pos.CENTER);
-        dataDirectionStackPane.setStyle("-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;");
+        StackPane nameStackPane = new StackPane();
+        nameStackPane.setMaxWidth(100.0);
+        nameStackPane.setMaxHeight(20.0);
+        nameStackPane.setAlignment(Pos.CENTER);
+        nameStackPane.setStyle("-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;");
         // Add to the parent node
-        getChildren().add(dataDirectionStackPane);
-        setAlignment(dataDirectionStackPane, Pos.TOP_RIGHT);
+        getChildren().add(nameStackPane);
+        setAlignment(nameStackPane, Pos.TOP_RIGHT);
 
-        Label dataDirectionLabel = new Label();
-        dataDirectionLabel.setAlignment(Pos.CENTER);
-        dataDirectionLabel.setStyle("-fx-text-fill: white;");
+        nameLabel = new Label();
+        nameLabel.setAlignment(Pos.CENTER);
+        nameLabel.setStyle("-fx-text-fill: white;");
         // Add to parent node
-        dataDirectionStackPane.getChildren().add(dataDirectionLabel);
+        nameStackPane.getChildren().add(nameLabel);
+
+        // EVENT LISTENERS
+        name.addListener((observable, oldValue, newValue) -> {
+            nameLabel.setText(newValue);
+        });
+
+        nameLabel.setText(name.get());
 
 
         //==============================================//

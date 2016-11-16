@@ -83,28 +83,13 @@ public class TxRxViewController {
     private GridPane dataContainerGridPane;
 
     @FXML
-    public Label dataDirectionRxLabel;
-
-    @FXML
-    public StackPane dataDirectionRxStackPane;
-
-    @FXML
-    public StackPane txDataStackPane;
-
-    @FXML
-    public ScrollPane txTextScrollPane;
-
-    @FXML
-    public TextFlow txTextFlow;
-
-    @FXML
-    public Text txDataText;
+    private ComDataPane rxComDataPane;
 
     @FXML
     private HBox draggableHBox;
 
     @FXML
-    private ComDataPane rxComDataPane;
+    private ComDataPane txComDataPane;
 
     //==============================================//
     //============ LEFT-HAND SIDE PANE =============//
@@ -364,27 +349,23 @@ public class TxRxViewController {
             rxComDataPane.addData(streamedText);
         });
 
-        txDataText.textProperty().bind(terminal.txRx.txDataToDisplay);
+        terminal.txRx.txDataToDisplayListeners.add(streamedData -> {
+            txComDataPane.addData(streamedData);
+        });
 
         // Call this to update the display of the TX/RX pane into its default
         // state
         updateLayout();
 
         //==============================================//
-        //============= SETUP TX AUTO-SCROLL ===========//
-        //==============================================//
-
-        txTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
-            txTextScrollPane.setVvalue(txTextFlow.getHeight());
-        });
-
-        //==============================================//
-        //========== SETUP RX DIRECTION TEXT ===========//
+        //============ SETUP DIRECTION TEXT ============//
         //==============================================//
 
         terminal.txRx.display.localTxEcho.addListener((observable, oldValue, newValue) -> {
             updateDataDirectionText();
         });
+
+        updateDataDirectionText();
 
         // The following code was meant to resize the RX direction indicator region
         // to always just fit the child text, but...
@@ -531,10 +512,13 @@ public class TxRxViewController {
 
     private void updateDataDirectionText() {
         if (terminal.txRx.display.localTxEcho.get()) {
-            dataDirectionRxLabel.setText("RX + TX echo");
+            rxComDataPane.name.set("RX + TX echo");
         } else {
-            dataDirectionRxLabel.setText("RX");
+            rxComDataPane.name.set("RX");
         }
+
+        // This is always going to say "TX"
+        txComDataPane.name.set("TX");
     }
 
     /**
@@ -545,12 +529,9 @@ public class TxRxViewController {
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
 
-                // Hide TX pane
-
-                //txTextFlow.setMinHeight(0.0);
-                //txTextFlow.setMaxHeight(0.0);
-                if (dataContainerGridPane.getChildren().contains(txDataStackPane)) {
-                    dataContainerGridPane.getChildren().remove(txDataStackPane);
+                // Hide TX ComDataPane
+                if (dataContainerGridPane.getChildren().contains(txComDataPane)) {
+                    dataContainerGridPane.getChildren().remove(txComDataPane);
                 }
 
                 // Add the caret in the shared pane
@@ -564,8 +545,8 @@ public class TxRxViewController {
                 // Show TX pane
                 //txTextFlow.setMinHeight(100.0);
                 //txTextFlow.setMaxHeight(100.0);
-                if (!dataContainerGridPane.getChildren().contains(txDataStackPane)) {
-                    dataContainerGridPane.getChildren().add(txDataStackPane);
+                if (!dataContainerGridPane.getChildren().contains(txComDataPane)) {
+                    dataContainerGridPane.getChildren().add(txComDataPane);
                 }
 
                 // Remove the caret in the shared pane

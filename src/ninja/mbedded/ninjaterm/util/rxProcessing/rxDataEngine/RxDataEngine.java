@@ -3,7 +3,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedDataListener;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.Decoder;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.DecodingOptions;
 import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.AnsiECParser;
@@ -120,7 +120,7 @@ public class RxDataEngine {
      * This event is emitted when new streamed output is available. This is what the
      * RX pane in the UI should be listening for.
      */
-    public List<StreamedTextListener> newOutputListeners = new ArrayList<>();
+    public List<StreamedDataListener> newOutputListeners = new ArrayList<>();
 
     /**
      * The maximum buffer size of any <code>StreamedData</code> object within the <code>{@link RxDataEngine}</code>.
@@ -277,7 +277,7 @@ public class RxDataEngine {
         }*/
 
         // Fire ansiParserOutput event
-        /*for (StreamedTextListener streamedTextListener : ansiParserOutputListeners) {
+        /*for (StreamedDataListener streamedTextListener : ansiParserOutputListeners) {
             // Create a new copy of the streamed text so that the listeners can't modify
             // the contents by mistake
             StreamedData streamedData = new StreamedData(frozenAnsiParserOutput);
@@ -355,10 +355,10 @@ public class RxDataEngine {
         // Call any streamed text listeners
         // This is the output designed for the UI element to listen to to display text!
         // (the loggging class might also be listening)
-        for (StreamedTextListener newStreamedTextListener : newOutputListeners) {
+        for (StreamedDataListener newStreamedDataListener : newOutputListeners) {
             // Make a copy so that the listeners can't modify the bufferBetweenFilterAndControlCharParser variable
             StreamedData copyOfFilterOutput = new StreamedData(releasedData);
-            newStreamedTextListener.run(copyOfFilterOutput);
+            newStreamedDataListener.run(copyOfFilterOutput);
         }
 
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");

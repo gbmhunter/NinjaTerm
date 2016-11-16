@@ -82,32 +82,7 @@
                 <!-- =========================================== -->
                 <!-- ================ TX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <!-- StackPane is so that the "scroll to bottom" image can be overlaid ontop of the terminal window -->
-                <StackPane fx:id="txDataStackPane"
-                           GridPane.rowIndex="2" GridPane.columnIndex="0"
-                           VBox.vgrow="ALWAYS" style="-fx-background-color: black;">
-
-                    <!-- =========================================== -->
-                    <!-- ================== TX DATA ================ -->
-                    <!-- =========================================== -->
-                    <ScrollPane fx:id="txTextScrollPane">
-                        <TextFlow fx:id="txTextFlow" styleClass="txRxText">
-                            <padding>
-                                <Insets top="10" bottom="10" left="10" right="10"/>
-                            </padding>
-                            <Text fx:id="txDataText" style="-fx-fill: lime;"></Text>
-                            <!--<TextArea>Testing</TextArea>-->
-                        </TextFlow>
-                    </ScrollPane>
-
-                    <!-- =========================================== -->
-                    <!-- ========== DATA DIRECTION INDICATOR ======= -->
-                    <!-- =========================================== -->
-                    <StackPane StackPane.alignment="TOP_RIGHT" maxWidth="100" maxHeight="20" alignment="CENTER"
-                               style="-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;">
-                        <Label alignment="CENTER" style="-fx-text-fill: white;">TX</Label>
-                    </StackPane>
-                </StackPane>
+                <ComDataPane fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
 
             </GridPane>
 
