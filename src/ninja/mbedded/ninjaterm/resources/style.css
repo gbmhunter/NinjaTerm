@@ -182,3 +182,7 @@ which are displaying dynamic content */
 .h2 {
     -fx-font-size: 16px;
 }
+
+.virtual-flow {
+    -fx-padding: 10 10 10 10;
+}
