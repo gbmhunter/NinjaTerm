@@ -206,7 +206,7 @@ public class MainWindowViewController {
         try {
             terminalTab = (Tab) loader.load();
         } catch (IOException e) {
-            return;
+            throw new RuntimeException(e);
         }
 
         terminalTab.setOnCloseRequest(event -> {

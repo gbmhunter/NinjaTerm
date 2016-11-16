@@ -47,7 +47,7 @@ import java.io.IOException;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-16
- * @last-modified 2016-11-04
+ * @last-modified 2016-11-16
  */
 public class TxRxViewController {
 
@@ -83,16 +83,10 @@ public class TxRxViewController {
     private GridPane dataContainerGridPane;
 
     @FXML
-    public ScrollPane rxDataScrollPane;
-
-    @FXML
     public Label dataDirectionRxLabel;
 
     @FXML
     public StackPane dataDirectionRxStackPane;
-
-    @FXML
-    public TextFlow rxDataTextFlow;
 
     @FXML
     public StackPane txDataStackPane;
@@ -107,16 +101,7 @@ public class TxRxViewController {
     public Text txDataText;
 
     @FXML
-    public Pane autoScrollButtonPane;
-
-    @FXML
-    public ImageView scrollToBottomImageView;
-
-    @FXML
     private HBox draggableHBox;
-
-    @FXML
-    private StackPane rxDataStackPane;
 
     @FXML
     private ComDataPane rxComDataPane;
@@ -156,8 +141,6 @@ public class TxRxViewController {
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
-
-    private Text rxDataText = new Text();
 
     private GlyphFont glyphFont;
 
@@ -217,99 +200,6 @@ public class TxRxViewController {
         this.glyphFont = glyphFont;
 
 
-        // Remove all dummy children (which are added just for design purposes
-        // in scene builder)
-        rxDataTextFlow.getChildren().clear();
-
-        // Hide the auto-scroll image-button, this will be made visible
-        // when the user manually scrolls
-        autoScrollButtonPane.setVisible(false);
-
-        // Add default Text node to text flow. Received text
-        // will be added to this node.
-        rxDataTextFlow.getChildren().add(rxDataText);
-        rxDataText.setFill(Color.LIME);
-
-        //==============================================//
-        //============== CREATE CARET ==================//
-        //==============================================//
-
-        // Create caret symbol using ANSI character
-        caretText = new Text("█");
-        caretText.setFill(Color.LIME);
-
-        // Add an animation so the caret blinks
-        FadeTransition ft = new FadeTransition(Duration.millis(200), caretText);
-        ft.setFromValue(1.0);
-        ft.setToValue(0.1);
-        ft.setCycleCount(Timeline.INDEFINITE);
-        ft.setAutoReverse(true);
-        ft.play();
-
-        // Finally, add the blinking caret as the last child in the TextFlow
-        rxDataTextFlow.getChildren().add(caretText);
-
-        // Set default opacity for scroll-to-bottom image
-        scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
-
-        //==============================================//
-        //==== AUTO-SCROLL RELATED EVENT HANDLERS ======//
-        //==============================================//
-
-        // This adds a listener which will implement the "auto-scroll" functionality
-        // when it is enabled with @link{autoScrollEnabled}.
-        rxDataTextFlow.heightProperty().addListener((observable, oldValue, newValue) -> {
-            //logger.debug("heightProperty changed to " + newValue);
-
-            if (terminal.txRx.autoScrollEnabled.get()) {
-                rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
-            }
-
-        });
-
-        rxDataScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
-
-            // If the user scrolled downwards, we don't want to disable auto-scroll,
-            // so check and return if so.
-            if (event.getDeltaY() <= 0)
-                return;
-
-            // Since the user has now scrolled upwards (manually), disable the
-            // auto-scroll
-            terminal.txRx.autoScrollEnabled.set(false);
-
-            autoScrollButtonPane.setVisible(true);
-        });
-
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
-                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_HOVER);
-                }
-        );
-
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_EXITED, (MouseEvent mouseEvent) -> {
-                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
-                }
-        );
-
-        /**
-         * This will be called when the user clicks the down arrow button
-         */
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
-                    //logger.debug("Mouse click detected! " + mouseEvent.getSource());
-
-                    // Enable auto-scroll
-                    terminal.txRx.autoScrollEnabled.set(true);
-
-                    // Hide the auto-scroll button. This is made visible again when the user
-                    // manually scrolls.
-                    autoScrollButtonPane.setVisible(false);
-
-                    // Manually perform one auto-scroll, since the next automatic one won't happen until
-                    // the height of rxDataTextFlow changes.
-                    rxDataScrollPane.setVvalue(rxDataTextFlow.getHeight());
-                }
-        );
-
         //==============================================//
         //====== OPEN/CLOSE COM PORT BUTTON SETUP ======//
         //==============================================//
@@ -351,15 +241,7 @@ public class TxRxViewController {
         });
 
         terminal.txRx.rxDataClearedListeners.add(() -> {
-            // Clear children from the RX text flow, this should empty
-            // all data from the RX pane
-            rxDataTextFlow.getChildren().remove(0, rxDataTextFlow.getChildren().size() - 1);
-            //rxDataTextFlow.getChildren().add(new Text());
-            Text lastRemainingTextNode = (Text) rxDataTextFlow.getChildren().get(0);
-            lastRemainingTextNode.setText("");
-
-            // Reset the variable which counts the number of RX chars
-            numCharsInRxTextNodes = 0;
+            rxComDataPane.clearData();
         });
 
         //==============================================//
@@ -457,15 +339,12 @@ public class TxRxViewController {
         //== ATTACH LISTENERS TO WRAPPING PROPERTIES ===//
         //==============================================//
         terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
-            updateTextWrapping();
+            //updateTextWrapping();
         });
 
         terminal.txRx.display.wrappingWidth.addListener((observable, oldValue, newValue) -> {
-            updateTextWrapping();
+            //updateTextWrapping();
         });
-
-        // Update to default wrapping values in model
-        updateTextWrapping();
 
         //==============================================//
         //========== ATTACH LISTENER TO LAYOUT =========//
@@ -479,17 +358,6 @@ public class TxRxViewController {
         //==============================================//
         //======= BIND TERMINAL TEXT TO TXRX DATA ======//
         //==============================================//
-
-        //rxDataText.textProperty().bind(terminal.txRx.filteredRxData);
-
-        // Setting the models ObservableList of nodes to point to the
-        // children of the RX data TextFlow will allow the textflow
-        // to get updated automatically when the model modifies this
-        // ObservableList
-        //terminal.txRx.rxDataAsList = rxDataTextFlow.getChildren();
-        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
-            newStreamedTextListener(streamedText);
-        });
 
         // Add a listener for the new ComDataPane object
         terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
@@ -571,72 +439,6 @@ public class TxRxViewController {
     }
 
     /**
-     * This listener updates the UI with "streamed" RX data. The model is responsible
-     * for calling the listener after RX data has been received and processed.
-     *
-     * @param streamedData
-     */
-    private void newStreamedTextListener(StreamedData streamedData) {
-
-        logger.debug("newStreamedTextListener() called with streamedData = " + streamedData);
-
-        // This here forces the RX pane to perform layout of it's child nodes, which means that all
-        // layout dimensions will be valid.
-        rxDataTextFlow.layout();
-        double rxDataTextFlowHeightBeforeTrimming = rxDataTextFlow.getHeight();
-        logger.debug("rxDataTextFlowHeightBeforeTrimming = " + rxDataTextFlowHeightBeforeTrimming);
-        ObservableList<Node> observableList = rxDataTextFlow.getChildren();
-
-
-        //==============================================//
-        //=============== INSERT NEW TEXT ==============//
-        //==============================================//
-
-        // This old method was buggy, because it didn't take into account the new line characters!
-        //numCharsInRxTextNodes += streamedData.getText().length();
-
-        MutableInteger numCharsAdded = new MutableInteger(0);
-
-        // Move all text/colour info provided in this streamed text object into the
-        // Text nodes that make up the RX data view
-        switch (terminal.txRx.display.selLayoutOption.get()) {
-            case SINGLE_PANE:
-                streamedData.shiftToTextNodes(observableList, observableList.size() - 1, numCharsAdded);
-                break;
-            case SEPARATE_TX_RX:
-                streamedData.shiftToTextNodes(observableList, observableList.size(), numCharsAdded);
-                break;
-            default:
-                throw new RuntimeException("selLayoutOption not recognised.");
-        }
-
-        numCharsInRxTextNodes += numCharsAdded.intValue();
-
-        //==============================================//
-        //==================== TRIMMING ================//
-        //==============================================//
-
-
-        // Trim RX UI if necessary
-        // (the ANSI parser output data is trimmed separately in the model)
-        if (numCharsInRxTextNodes > terminal.txRx.display.bufferSizeChars.get()) {
-            logger.debug("Trimming data in RX pane. numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
-            int numCharsToRemove = numCharsInRxTextNodes - terminal.txRx.display.bufferSizeChars.get();
-            MutableInteger numNewLinesRemoved = new MutableInteger(0);
-            TextNodeInList.trimTextNodesFromStart(observableList, numCharsToRemove, numNewLinesRemoved);
-
-            // Perform smart scrolling only if enabled
-            if (terminal.txRx.display.scrollBehaviour.get() == Display.ScrollBehaviour.SMART)
-                smartScroll(numNewLinesRemoved, rxDataTextFlowHeightBeforeTrimming);
-
-            // Now we have removed chars, update the count
-            numCharsInRxTextNodes -= numCharsToRemove;
-            logger.debug("After trim, numCharsInRxTextNodes = " + Integer.toString(numCharsInRxTextNodes));
-        }
-
-    }
-
-    /**
      * This updates the styling of the Open/Close COM port button based on whether the currently
      * selected terminal in the model has a open or closed COM port.
      */
@@ -654,63 +456,7 @@ public class TxRxViewController {
         }
     }
 
-    /**
-     * Scrolls the RX pane so that the same text is visible after trimming.
-     * <p>
-     * Should be called straight after trimming, and only if smart scrolling is enabled.
-     *
-     * @param numNewLinesRemoved                 The number of new lines that were just removed in the trimming operation.
-     * @param rxDataTextFlowHeightBeforeTrimming The height (in pixels) of the RX TextFlow object before the trimming operation.
-     */
-    private void smartScroll(MutableInteger numNewLinesRemoved, double rxDataTextFlowHeightBeforeTrimming) {
-        //==============================================//
-        //=============== SMART SCROLLING ==============//
-        //==============================================//
 
-        rxDataTextFlow.requestLayout();
-        double rxDataTextFlowHeightAfterTrimming = rxDataTextFlow.getHeight();
-        logger.debug("rxDataTextFlowHeightAfterTrimming = " + rxDataTextFlowHeightAfterTrimming);
-
-        double rxDataTextFlowHeightChange = rxDataTextFlowHeightAfterTrimming - rxDataTextFlowHeightBeforeTrimming;
-        logger.debug("rxDataTextFlowHeightChange = " + rxDataTextFlowHeightChange);
-
-        if (rxDataTextFlowHeightChange != 0.0) {
-            throw new RuntimeException("The RX data TextFlow object changed height after trimming text. This scenario is not supported by smart scroll.");
-        }
-
-        logger.debug("numNewLinesRemoved = " + numNewLinesRemoved.intValue());
-
-        // Update the scroll position of the RX pane
-        if (!terminal.txRx.autoScrollEnabled.get()) {
-            // Auto-scroll is not enabled, so we want to display the same text in the pane as
-            // before
-            double absAmountToShiftBy = -1 * numNewLinesRemoved.intValue() * heightOfOneLineOfText;
-            //absAmountToShiftBy -= 40.0;
-
-            logger.debug("absAmountToShiftBy = " + absAmountToShiftBy);
-
-            double percAmountToShiftBy;
-            if (rxDataTextFlow.getHeight() > rxDataScrollPane.getHeight()) {
-                // We have to subtract of the height of the scroll pane, as the 0 to 1 percentage
-                // that sets the current position of the scroll pane does not take into account the
-                // last section of the TextFlow object (this is normally how scroll panes work)
-                percAmountToShiftBy =
-                        absAmountToShiftBy /
-                                // I don't know if  rxDataTextFlow.getPadding().getTop() should be here, but it seems
-                                // to make the scrolling "almost" perfect
-                                (rxDataTextFlow.getHeight() + rxDataTextFlow.getPadding().getTop() -
-                                        (rxDataScrollPane.getHeight() - rxDataScrollPane.getPadding().getTop() - rxDataScrollPane.getPadding().getBottom()));
-            } else {
-                // If the TextFlow object is smaller than the scroll pane, don't do any adjustment to the
-                // scrolling at all
-                percAmountToShiftBy = 0.0;
-            }
-            logger.debug("percAmountToShiftBy = " + percAmountToShiftBy);
-
-            // Adjust the scrolling
-            rxDataScrollPane.setVvalue(rxDataScrollPane.getVvalue() + percAmountToShiftBy);
-        }
-    }
 
     /**
      * Helper method to attach a pop-over to a button (so it appears/disappears when you
@@ -746,7 +492,7 @@ public class TxRxViewController {
      * Updates the text wrapping to the current user-selected settings.
      * Called from both the checkbox and wrapping width textfield listeners.
      */
-    private void updateTextWrapping() {
+    /*private void updateTextWrapping() {
 
         if (terminal.txRx.display.wrappingEnabled.get()) {
             logger.debug("\"Wrapping\" checkbox is currently checked, applying wrapping value.");
@@ -759,7 +505,7 @@ public class TxRxViewController {
             logger.debug("\"Wrapping\" checkbox is current unchecked, not apply wrapping value.");
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
-    }
+    }*/
 
 
     public void showPopover(Button button, PopOver popOver) {
@@ -808,9 +554,9 @@ public class TxRxViewController {
                 }
 
                 // Add the caret in the shared pane
-                if (!rxDataTextFlow.getChildren().contains(caretText)) {
-                    rxDataTextFlow.getChildren().add(caretText);
-                }
+//                if (!rxDataTextFlow.getChildren().contains(caretText)) {
+//                    rxDataTextFlow.getChildren().add(caretText);
+//                }
 
                 break;
             case SEPARATE_TX_RX:
@@ -823,14 +569,14 @@ public class TxRxViewController {
                 }
 
                 // Remove the caret in the shared pane
-                if (rxDataTextFlow.getChildren().contains(caretText)) {
-                    rxDataTextFlow.getChildren().remove(caretText);
-                }
+//                if (rxDataTextFlow.getChildren().contains(caretText)) {
+//                    rxDataTextFlow.getChildren().remove(caretText);
+//                }
 
                 // Add the caret to the TX pane
-                if (!txTextFlow.getChildren().contains(caretText)) {
-                    txTextFlow.getChildren().add(caretText);
-                }
+//                if (!txTextFlow.getChildren().contains(caretText)) {
+//                    txTextFlow.getChildren().add(caretText);
+//                }
 
                 break;
             default:
@@ -885,7 +631,7 @@ public class TxRxViewController {
 
                     orgSceneY = t.getSceneY();
 
-                    orgRxDataStackPaneHeight = rxDataStackPane.getHeight();
+                    orgRxDataStackPaneHeight = rxComDataPane.getHeight();
                 }
             };
 

@@ -1,8 +1,21 @@
 package ninja.mbedded.ninjaterm.util.javafx.comDataPane;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.Timeline;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.fxmisc.flowless.VirtualizedScrollPane;
@@ -33,24 +46,21 @@ public class ComDataPane extends StackPane {
      */
     private final int DEFAULT_BUFFER_SIZE = 10000;
 
+    /**
+     * Opacity for auto-scroll button (which is just an image) when the mouse is not hovering over it.
+     * This needs to be less than when the mouse is hovering on it.
+     */
+    private static final double AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER = 0.35;
+
+    /**
+     * Opacity for auto-scroll button (which is just an image) when the mouse IS hovering over it.
+     * This needs to be more than when the mouse is not hovering on it.
+     */
+    private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
+
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
     //================================================================================================//
-
-    public enum ScrollBehaviour {
-        /**
-         * Scroll bars will be kept at a fixed position. If new data arrives, and old data is removed
-         * (due to display buffer being full), the user will see the text moving, even though the scroll position
-         * has not changed.
-         */
-        FIXED_POSITION,
-
-        /**
-         * The scroll amount will be modified as new data arrives and old data is removed, so that the user
-         * is always looking at the same data, until the data is lost.
-         */
-        SMART_SCROLL,
-    }
 
     private enum ScrollState {
 
@@ -59,13 +69,6 @@ public class ComDataPane extends StackPane {
          * This is the default behaviour.
          */
         FIXED_TO_BOTTOM,
-
-        /**
-         * Scroll bars will be kept at a fixed position. If new data arrives, and old data is removed
-         * (due to display buffer being full), the user will see the text moving, even though the scroll position
-         * has not changed.
-         */
-        FIXED_POSITION,
 
         /**
          * The scroll amount will be modified as new data arrives and old data is removed, so that the user
@@ -78,9 +81,13 @@ public class ComDataPane extends StackPane {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
-    public final StyledTextArea<ParStyle, TextStyle> styledTextArea;
+    public SimpleBooleanProperty isCaretEnabled = new SimpleBooleanProperty(false);
 
     private VirtualizedScrollPane virtualizedScrollPane;
+
+    public final StyledTextArea<ParStyle, TextStyle> styledTextArea;
+
+    private Pane autoScrollButtonPane;
 
     /**
      * Variable to remember what colour to apply to the next character, since a <code>{@link StyledTextArea}</code>
@@ -90,9 +97,9 @@ public class ComDataPane extends StackPane {
 
     private int bufferSize;
 
-    private ScrollBehaviour scrollBehaviour = ScrollBehaviour.FIXED_POSITION;
-    private ScrollState scrollState = ScrollState.FIXED_TO_BOTTOM;
+    private SimpleObjectProperty<ScrollState> scrollState = new SimpleObjectProperty<>(ScrollState.FIXED_TO_BOTTOM);
 
+    private Text caretText;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -101,6 +108,16 @@ public class ComDataPane extends StackPane {
     //================================================================================================//
 
     public ComDataPane() {
+
+        //==============================================//
+        //============== STYLESHEET SETUP ==============//
+        //==============================================//
+
+        getStylesheets().add("ninja/mbedded/ninjaterm/resources/style.css");
+
+        //==============================================//
+        //============ STYLED TEXT AREA SETUP ==========//
+        //==============================================//
 
         styledTextArea = new StyledTextArea<>(
                 ParStyle.EMPTY, ( paragraph, style) -> paragraph.setStyle(style.toCss()),
@@ -117,8 +134,18 @@ public class ComDataPane extends StackPane {
             logger.debug("heightProperty listener called.");
         });
 
+        styledTextArea.setPadding(new Insets(10, 10, 10, 10));
+
+        styledTextArea.getStylesheets().add("ninja/mbedded/ninjaterm/resources/style.css");
+
+        //==============================================//
+        //========== VIRTUAL SCROLL AREA SETUP =========//
+        //==============================================//
+
         // Add a virtual scroll pane (this is provided with the StyledTextArea)
         virtualizedScrollPane = new VirtualizedScrollPane<>(styledTextArea);
+
+        virtualizedScrollPane.setPadding(new Insets(10, 10, 10, 10));
 
         virtualizedScrollPane.totalHeightEstimateProperty().addListener((observable, oldValue, newValue) -> {
             logger.debug("totalHeightEstimateProperty() listener called. newValue = " + newValue);
@@ -129,20 +156,11 @@ public class ComDataPane extends StackPane {
         });
 
         virtualizedScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
-
             // If the user scrolled downwards, we don't want to disable auto-scroll,
             // so check and return if so.
             if (event.getDeltaY() <= 0)
                 return;
-
-            logger.debug("User has scrolled upwards, disabling auto-scroll...");
-
-            // Since the user has now scrolled upwards (manually), disable the
-            // auto-scroll
-            //terminal.txRx.autoScrollEnabled.set(false);
-            scrollState = ScrollState.SMART_SCROLL;
-
-            //autoScrollButtonPane.setVisible(true);
+            handleUserScrolledUpwards();
         });
 
 
@@ -150,10 +168,100 @@ public class ComDataPane extends StackPane {
         getChildren().add(virtualizedScrollPane);
 
         //==============================================//
+        //============= AUTO-SCROLL BUTTON =============//
+        //==============================================//
+
+        // PANE
+        autoScrollButtonPane = new Pane();
+        autoScrollButtonPane.setTranslateX(-20.0);
+        autoScrollButtonPane.setTranslateY(-20.0);
+        autoScrollButtonPane.setMaxWidth(100.0);
+        autoScrollButtonPane.setMaxHeight(100.0);
+
+        // IMAGE
+        ImageView scrollToBottomImageView = new ImageView();
+        scrollToBottomImageView.setFitWidth(100.0);
+        scrollToBottomImageView.setFitHeight(100.0);
+        scrollToBottomImageView.setImage(new Image("ninja/mbedded/ninjaterm/util/javafx/comDataPane/down-arrow.png"));
+        scrollToBottomImageView.getStyleClass().add("scrollToBottomButton");
+        autoScrollButtonPane.getChildren().add(scrollToBottomImageView);
+
+        getChildren().add(autoScrollButtonPane);
+        setAlignment(autoScrollButtonPane, Pos.BOTTOM_RIGHT);
+
+        //=============== VISIBILITY SETUP ==============//
+
+        // Attach handler
+        scrollState.addListener((observable, oldValue, newValue) -> {
+            handleScrollStateChanged();
+        });
+
+        // Call once to setup default
+        handleScrollStateChanged();
+
+        //================= OPACITY CHANGES =============//
+        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
+                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_HOVER);
+                }
+        );
+
+        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_EXITED, (MouseEvent mouseEvent) -> {
+                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
+                }
+        );
+
+        /**
+         * This will be called when the user clicks the down arrow button
+         */
+        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
+                    //logger.debug("Mouse click detected! " + mouseEvent.getSource());
+                    handleScrollToBottomButtonClicked();
+                }
+        );
+
+        //==============================================//
         //============== BUFFER SIZE SETUP =============//
         //==============================================//
 
         this.bufferSize = DEFAULT_BUFFER_SIZE;
+
+        //==============================================//
+        //========== DATA DIRECTION LABEL SETUP ========//
+        //==============================================//
+
+        StackPane dataDirectionStackPane = new StackPane();
+        dataDirectionStackPane.setMaxWidth(100.0);
+        dataDirectionStackPane.setMaxHeight(20.0);
+        dataDirectionStackPane.setAlignment(Pos.CENTER);
+        dataDirectionStackPane.setStyle("-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;");
+        // Add to the parent node
+        getChildren().add(dataDirectionStackPane);
+        setAlignment(dataDirectionStackPane, Pos.TOP_RIGHT);
+
+        Label dataDirectionLabel = new Label();
+        dataDirectionLabel.setAlignment(Pos.CENTER);
+        dataDirectionLabel.setStyle("-fx-text-fill: white;");
+        // Add to parent node
+        dataDirectionStackPane.getChildren().add(dataDirectionLabel);
+
+
+        //==============================================//
+        //============== CREATE CARET ==================//
+        //==============================================//
+
+        // Create caret symbol using ANSI character
+        caretText = new Text("█");
+        caretText.setFill(Color.LIME);
+
+        // Add an animation so the caret blinks
+        FadeTransition ft = new FadeTransition(Duration.millis(200), caretText);
+        ft.setFromValue(1.0);
+        ft.setToValue(0.1);
+        ft.setCycleCount(Timeline.INDEFINITE);
+        ft.setAutoReverse(true);
+        ft.play();
+
+        // Need to implement caret functionality!
 
     }
 
@@ -300,8 +408,11 @@ public class ComDataPane extends StackPane {
         // (this method will decide if required)
         trimBufferIfRequired();
 
-        // Fix up the scroll position
-        switch(scrollState) {
+        //==============================================//
+        //============== SCROLL POSITION ===============//
+        //==============================================//
+
+        switch(scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 //styledTextArea.setEstimatedScrollY(styledTextArea.getTotalHeightEstimate());
 
@@ -311,7 +422,8 @@ public class ComDataPane extends StackPane {
 
             case SMART_SCROLL:
 
-                // Scroll
+                // Scroll so that the same text is displayed in the view port
+                // as before the text insertion/removalS
                 styledTextArea.moveTo(caretPosBeforeTextInsertion);
 
                 break;
@@ -324,6 +436,11 @@ public class ComDataPane extends StackPane {
 
     }
 
+    public void clearData() {
+        // Remove all text from the StyledTextArea node
+        styledTextArea.replaceText(0, styledTextArea.getLength(), "");
+    }
+
     public int getBufferSize() {
         return bufferSize;
     }
@@ -331,6 +448,8 @@ public class ComDataPane extends StackPane {
     public void setBufferSize(int bufferSize) {
         this.bufferSize = bufferSize;
     }
+
+
 
     /**
      * WARNING: If text is trimmed, this will cause the scroll position to jump to the top of the
@@ -349,6 +468,48 @@ public class ComDataPane extends StackPane {
 
         }
 
+    }
+
+    /**
+     * This should be called when the user clicks the "scroll to bottom"
+     * button.
+     */
+    private void handleScrollToBottomButtonClicked() {
+        // Change state to fixed-to-bottom
+        scrollState.set(ScrollState.FIXED_TO_BOTTOM);
+
+
+        //autoScrollButtonPane.setVisible(false);
+
+        // Manually perform one scroll-to-bottom, since the next automatic one won't happen until
+        // more data is added via addData().
+        styledTextArea.moveTo(styledTextArea.getLength());
+    }
+
+    /**
+     * Updates the visibility of the scroll-to-bottom button.
+     * This should be called when <code>scrollState</code> changes.
+     */
+    private void handleScrollStateChanged() {
+        switch(scrollState.get()) {
+            case FIXED_TO_BOTTOM:
+                autoScrollButtonPane.setVisible(false);
+                break;
+            case SMART_SCROLL:
+                autoScrollButtonPane.setVisible(true);
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
+        }
+    }
+
+    private void handleUserScrolledUpwards() {
+
+        logger.debug("User has scrolled upwards, disabling auto-scroll...");
+
+        // Since the user has now scrolled upwards (manually), disable the
+        // auto-scroll
+        scrollState.set(ScrollState.SMART_SCROLL);
     }
 
 }
