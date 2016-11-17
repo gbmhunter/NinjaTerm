@@ -145,7 +145,7 @@ public class ComDataPane extends StackPane {
             logger.debug("heightProperty listener called.");
         });
 
-        styledTextArea.setPadding(new Insets(10, 10, 10, 10));
+        //styledTextArea.setPadding(new Insets(10, 10, 10, 10));
 
         styledTextArea.getStylesheets().add("ninja/mbedded/ninjaterm/resources/style.css");
 
@@ -163,14 +163,12 @@ public class ComDataPane extends StackPane {
             handleUserScrolled(event);
         });
 
+        // Make the vertical scrollbars always present, but the horizontal bars only if needed
+        virtualizedScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        virtualizedScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
         // Add scroll pane to StackPane
         getChildren().add(virtualizedScrollPane);
-
-//        ScrollPane scrollPane = new ScrollPane();
-//        scrollPane.setContent(styledTextArea);
-//        scrollPane.setMinHeight(300);
-//        scrollPane.setMaxHeight(300);
-//        getChildren().add(scrollPane);
 
         //==============================================//
         //============= AUTO-SCROLL BUTTON =============//
@@ -534,25 +532,6 @@ public class ComDataPane extends StackPane {
     }
 
     private void handleUserScrolled(ScrollEvent scrollEvent) {
-
-//        logger.debug("getHeight = " + styledTextArea.getHeight());
-//        logger.debug("getTotalHeightEstimate = " + styledTextArea.getTotalHeightEstimate());
-//        logger.debug("getEstimatedScrollY() = " + styledTextArea.getEstimatedScrollY());
-//
-//        int numberOfCharsToShiftBy = (int)(scrollEvent.getDeltaY()*-1.0);
-//        logger.debug("numberOfCharsToShiftBy = " + numberOfCharsToShiftBy);
-//
-//        int newCharPos = currCharPositionInText + numberOfCharsToShiftBy;
-//        logger.debug("newCharPos = " + newCharPos);
-//
-//        if(newCharPos < 0)
-//            newCharPos = 0;
-//        else if(newCharPos > styledTextArea.getLength()) {
-//            newCharPos = styledTextArea.getLength();
-//        }
-//
-//        currCharPositionInText = newCharPos;
-//        styledTextArea.moveTo(currCharPositionInText);
 
         // If the user scrolled downwards, we don't want to disable auto-scroll,
         // so check and return if so.

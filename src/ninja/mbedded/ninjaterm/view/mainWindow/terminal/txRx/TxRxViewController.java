@@ -1,34 +1,22 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.Timeline;
 import javafx.beans.value.ChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
+import javafx.scene.control.Control;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
-import ninja.mbedded.ninjaterm.util.textNodeInList.TextNodeInList;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.filters.FiltersViewController;
@@ -337,7 +325,7 @@ public class TxRxViewController {
 
         terminal.txRx.display.selLayoutOption.addListener((observable, oldValue, newValue) -> {
             logger.debug("Selected layout option has been changed.");
-            updateLayout();
+            updateTxRxPaneLayout();
         });
 
         //==============================================//
@@ -363,7 +351,7 @@ public class TxRxViewController {
 
         // Call this to update the display of the TX/RX pane into its default
         // state
-        updateLayout();
+        updateTxRxPaneLayout();
 
         //==============================================//
         //============ SETUP DIRECTION TEXT ============//
@@ -390,14 +378,14 @@ public class TxRxViewController {
         //=== WORK OUT THE HEIGHT OF ONE LINE OF TEXT ==//
         //==============================================//
 
-        recalcHeightOfOneLine();
+        //recalcHeightOfOneLine();
 
         //==============================================//
         //============ SETUP DRAGGABLE HBOX ============//
         //==============================================//
 
-        draggableHBox.setOnMousePressed(circleOnMousePressedEventHandler);
-        draggableHBox.setOnMouseDragged(circleOnMouseDraggedEventHandler);
+        draggableHBox.setOnMousePressed(draggableHBoxOnMousePressedEventHandler);
+        draggableHBox.setOnMouseDragged(draggableHBoxOnMouseDraggedEventHandler);
 
         // Cause the mouse cursor to change to a vertical resize icon when over
         // the draggable HBox
@@ -530,10 +518,10 @@ public class TxRxViewController {
     }
 
     /**
-     * Updates the layout of the TX/RX tab based on the layout option selected
+     * Updates the layout of the TX/RX panes based on the layout option selected
      * in the model.
      */
-    public void updateLayout() {
+    public void updateTxRxPaneLayout() {
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
 
@@ -541,6 +529,19 @@ public class TxRxViewController {
                 if (dataContainerGridPane.getChildren().contains(txComDataPane)) {
                     dataContainerGridPane.getChildren().remove(txComDataPane);
                 }
+
+                if(dataContainerGridPane.getChildren().contains(draggableHBox)) {
+                    dataContainerGridPane.getChildren().remove(draggableHBox);
+                }
+
+                //rxComDataPane.maxHeight(Control.USE_COMPUTED_SIZE);
+                //rxComDataPane.minHeight(Control.USE_COMPUTED_SIZE);
+                //rxComDataPane.prefHeight(Control.USE_COMPUTED_SIZE);
+
+                // Let the first row grow to max. height, and max the 2 and 3rd rows disappear (no height)
+                dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(Control.USE_COMPUTED_SIZE);
+                dataContainerGridPane.getRowConstraints().get(1).setMaxHeight(0.0);
+                dataContainerGridPane.getRowConstraints().get(2).setMaxHeight(0.0);
 
                 // Add the caret in the shared pane
 //                if (!rxDataTextFlow.getChildren().contains(caretText)) {
@@ -557,6 +558,10 @@ public class TxRxViewController {
                     dataContainerGridPane.getChildren().add(txComDataPane);
                 }
 
+                if(!dataContainerGridPane.getChildren().contains(draggableHBox)) {
+                    dataContainerGridPane.getChildren().add(draggableHBox);
+                }
+
                 // Remove the caret in the shared pane
 //                if (rxDataTextFlow.getChildren().contains(caretText)) {
 //                    rxDataTextFlow.getChildren().remove(caretText);
@@ -566,6 +571,15 @@ public class TxRxViewController {
 //                if (!txTextFlow.getChildren().contains(caretText)) {
 //                    txTextFlow.getChildren().add(caretText);
 //                }
+
+                // Let the first row grow to max. height, and max the 2 and 3rd rows disappear (no height)
+                dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(Control.USE_COMPUTED_SIZE);
+                dataContainerGridPane.getRowConstraints().get(1).setMaxHeight(Control.USE_COMPUTED_SIZE);
+                dataContainerGridPane.getRowConstraints().get(2).setMaxHeight(Control.USE_COMPUTED_SIZE);
+
+                // Force a resize, this will take the old ratio into account
+                // from last time we were in this state
+                resizeTxRxPanes();
 
                 break;
             default:
@@ -611,7 +625,7 @@ public class TxRxViewController {
     private double orgSceneY;
     private double orgRxDataStackPaneHeight;
 
-    EventHandler<MouseEvent> circleOnMousePressedEventHandler =
+    EventHandler<MouseEvent> draggableHBoxOnMousePressedEventHandler =
             new EventHandler<MouseEvent>() {
 
                 @Override
@@ -624,7 +638,7 @@ public class TxRxViewController {
                 }
             };
 
-    EventHandler<MouseEvent> circleOnMouseDraggedEventHandler =
+    EventHandler<MouseEvent> draggableHBoxOnMouseDraggedEventHandler =
             new EventHandler<MouseEvent>() {
 
                 @Override
@@ -665,11 +679,14 @@ public class TxRxViewController {
      */
     private void resizeTxRxPanes() {
 
-        // Just change the TX pane, the RX pane should adjust automatically
+        // Just change the RX pane, the TX pane should adjust automatically
         double totalHeightOfBothTxAndRxPanes = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
 
-        if(totalHeightOfBothTxAndRxPanes <= 0.0)
-            throw new RuntimeException("Total height of TX and RX panes was not greater than 0.");
+        if(totalHeightOfBothTxAndRxPanes <= 0.0) {
+            //throw new RuntimeException("Total height of TX and RX panes was not greater than 0.");
+            logger.debug("Can't resize TX/RX panes, total height of TX and RX panes not greater than 0. This can occur when this method is called for the first time before the panes are displayed in the UI.");
+            return;
+        }
 
         double rxPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
 
