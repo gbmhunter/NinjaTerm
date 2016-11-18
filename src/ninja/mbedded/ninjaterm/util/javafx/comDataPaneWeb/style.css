@@ -1,8 +1,24 @@
 html {
     height:100%;
     margin:0;
+    overflow: hidden;
 }
 
 body {
     height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+#com-data {
+    font-family: monospace;
+    font-size: 18px;
+    overflow-y: scroll;
+    overflow-x: auto;
+    padding: 0px;
+
+    background-color: black;
+
+    height: 100%;
+    width: 200px;
 }

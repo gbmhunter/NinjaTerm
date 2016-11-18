@@ -4,6 +4,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
@@ -16,14 +18,13 @@ import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
+import org.w3c.dom.Document;
 
 
 import java.net.URL;
-import java.util.OptionalInt;
 
 import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
 
@@ -133,36 +134,28 @@ public class ComDataPaneWeb extends StackPane {
         webView = new WebView();
         webEngine = webView.getEngine();
 
-        getChildren().add(webView);
-
-        final URL mapUrl = this.getClass().getResource("richText.html");
-
-//        webEngine.getLoadWorker().stateProperty().addListener(
-//                new ChangeListener<State>() {
-//                    public void changed(ObservableValue ov, State oldState, State newState) {
-//                        if (newState == State.SUCCEEDED) {
-//                            webEngine.executeScript("addPoints("+arg0+","+arg1+","+arg2+")");
-//                        }
-//                    }
-//                });
-        webEngine.javaScriptEnabledProperty().set(true);
-        webEngine.load(mapUrl.toExternalForm());
-        //webView.getEngine().executeScript("window.alert(\"sometext\");");
-        webView.getEngine().executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
-
-
-        webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
-
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
         {
             JSObject window = (JSObject) webEngine.executeScript("window");
-            JavaBridge bridge = new JavaBridge();
-            window.setMember("java", bridge);
+            JavaBridge javaBridge = new JavaBridge();
+            window.setMember("java", javaBridge);
             webEngine.executeScript("console.log = function(message)\n" +
                     "{\n" +
                     "    java.log(message);\n" +
                     "}; console.log(\"test\")");
+
+            enableFirebug(webEngine);
+            webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
         });
+
+        getChildren().add(webView);
+
+        final URL mapUrl = this.getClass().getResource("richText.html");
+
+        webEngine.javaScriptEnabledProperty().set(true);
+
+        webEngine.load(mapUrl.toExternalForm());
+        //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
 
 
         //==============================================//
@@ -179,6 +172,14 @@ public class ComDataPaneWeb extends StackPane {
 
         // Need to implement caret functionality!
 
+    }
+
+    /**
+     * Enables Firebug Lite for debugging a webEngine.
+     * @param engine the webEngine for which debugging is to be enabled.
+     */
+    private static void enableFirebug(final WebEngine engine) {
+        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
     }
 
     public int addData(StreamedData streamedData) {
@@ -348,6 +349,7 @@ public class ComDataPaneWeb extends StackPane {
 //                throw new RuntimeException("scrollState not recognised.");
 //        }
 
+        scrollToBottom();
 
         return numCharsAdded;
 
@@ -426,6 +428,10 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.executeScript(js);
     }
 
+    private void scrollToBottom() {
+        webEngine.executeScript("scrollToBottom()");
+    }
+
     public class JavaBridge
     {
         private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -433,6 +439,10 @@ public class ComDataPaneWeb extends StackPane {
         public void log(String text)
         {
             logger.debug(text);
+        }
+
+        public void scrolled() {
+            logger.debug("Scrolled!");
         }
     }
 
