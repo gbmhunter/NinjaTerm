@@ -1,32 +1,28 @@
-package ninja.mbedded.ninjaterm.util.javafx.comDataPane;
+package ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb;
 
-import javafx.animation.FadeTransition;
-import javafx.animation.Timeline;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
+import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.flowless.VirtualizedScrollPane;
-import org.fxmisc.richtext.InlineCssTextArea;
-import org.fxmisc.richtext.InlineStyleTextArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
+
+import java.net.URL;
 import java.util.OptionalInt;
 
 import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
@@ -42,7 +38,7 @@ import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedDat
  * @since 2016-11-14
  * @last-modified 2016-14-16
  */
-public class ComDataPane extends StackPane {
+public class ComDataPaneWeb extends StackPane {
 
     //================================================================================================//
     //====================================== CLASS CONSTANTS =========================================//
@@ -96,8 +92,7 @@ public class ComDataPane extends StackPane {
 
     private VirtualizedScrollPane virtualizedScrollPane;
 
-//    public final StyledTextArea<ParStyle, TextStyle> styledTextArea;
-    public final InlineCssTextArea styledTextArea;
+    public final WebView webView;
 
     private Pane autoScrollButtonPane;
 
@@ -115,13 +110,15 @@ public class ComDataPane extends StackPane {
 
     private int currCharPositionInText = 0;
 
+    private WebEngine webEngine;
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public ComDataPane() {
+    public ComDataPaneWeb() {
 
         //==============================================//
         //============== STYLESHEET SETUP ==============//
@@ -133,101 +130,40 @@ public class ComDataPane extends StackPane {
         //============ STYLED TEXT AREA SETUP ==========//
         //==============================================//
 
-//        styledTextArea = new StyledTextArea<>(
-//                ParStyle.EMPTY, ( paragraph, style) -> paragraph.setStyle(style.toCss()),
-//                TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(Color.GREEN),
-//                ( text, style) -> text.setStyle(style.toCss()));
-        styledTextArea = new InlineCssTextArea();
+        webView = new WebView();
+        webEngine = webView.getEngine();
 
-        // Set the background to black
-        styledTextArea.setStyle("-fx-background-color: black;");
+        getChildren().add(webView);
 
-        // We don't want the user to be able to edit the data pane
-        styledTextArea.setEditable(true);
+        final URL mapUrl = this.getClass().getResource("richText.html");
 
-        styledTextArea.heightProperty().addListener((observable, oldValue, newValue) -> {
-            logger.debug("heightProperty listener called.");
+//        webEngine.getLoadWorker().stateProperty().addListener(
+//                new ChangeListener<State>() {
+//                    public void changed(ObservableValue ov, State oldState, State newState) {
+//                        if (newState == State.SUCCEEDED) {
+//                            webEngine.executeScript("addPoints("+arg0+","+arg1+","+arg2+")");
+//                        }
+//                    }
+//                });
+        webEngine.javaScriptEnabledProperty().set(true);
+        webEngine.load(mapUrl.toExternalForm());
+        //webView.getEngine().executeScript("window.alert(\"sometext\");");
+        webView.getEngine().executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
+
+
+        webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
+
+        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
+        {
+            JSObject window = (JSObject) webEngine.executeScript("window");
+            JavaBridge bridge = new JavaBridge();
+            window.setMember("java", bridge);
+            webEngine.executeScript("console.log = function(message)\n" +
+                    "{\n" +
+                    "    java.log(message);\n" +
+                    "}; console.log(\"test\")");
         });
 
-        //styledTextArea.setPadding(new Insets(10, 10, 10, 10));
-
-        styledTextArea.getStylesheets().add("ninja/mbedded/ninjaterm/resources/style.css");
-
-        styledTextArea.setMinHeight(300);
-        styledTextArea.setMaxHeight(Double.MAX_VALUE);
-
-        styledTextArea.setShowCaret(StyledTextArea.CaretVisibility.ON);
-
-
-        //==============================================//
-        //========== VIRTUAL SCROLL AREA SETUP =========//
-        //==============================================//
-
-        // Add a virtual scroll pane (this is provided with the StyledTextArea)
-        virtualizedScrollPane = new VirtualizedScrollPane<>(styledTextArea);
-
-        virtualizedScrollPane.addEventFilter(ScrollEvent.ANY, event -> {
-            handleUserScrolled(event);
-        });
-
-        // Make the vertical scrollbars always present, but the horizontal bars only if needed
-        virtualizedScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        virtualizedScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-
-        // Add scroll pane to StackPane
-        getChildren().add(virtualizedScrollPane);
-
-        //==============================================//
-        //============= AUTO-SCROLL BUTTON =============//
-        //==============================================//
-
-        // PANE
-        autoScrollButtonPane = new Pane();
-        autoScrollButtonPane.setTranslateX(-20.0);
-        autoScrollButtonPane.setTranslateY(-20.0);
-        autoScrollButtonPane.setMaxWidth(100.0);
-        autoScrollButtonPane.setMaxHeight(100.0);
-
-        // IMAGE
-        ImageView scrollToBottomImageView = new ImageView();
-        scrollToBottomImageView.setFitWidth(100.0);
-        scrollToBottomImageView.setFitHeight(100.0);
-        scrollToBottomImageView.setImage(new Image("ninja/mbedded/ninjaterm/util/javafx/comDataPane/down-arrow.png"));
-        scrollToBottomImageView.getStyleClass().add("scrollToBottomButton");
-        autoScrollButtonPane.getChildren().add(scrollToBottomImageView);
-
-        getChildren().add(autoScrollButtonPane);
-        setAlignment(autoScrollButtonPane, Pos.BOTTOM_RIGHT);
-
-        //=============== VISIBILITY SETUP ==============//
-
-        // Attach handler
-        scrollState.addListener((observable, oldValue, newValue) -> {
-            handleScrollStateChanged();
-        });
-
-        // Call once to setup default
-        handleScrollStateChanged();
-
-        //================= OPACITY CHANGES =============//
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_ENTERED, (MouseEvent mouseEvent) -> {
-                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_HOVER);
-                }
-        );
-
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_EXITED, (MouseEvent mouseEvent) -> {
-                    scrollToBottomImageView.setOpacity(AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER);
-                }
-        );
-
-        /**
-         * This will be called when the user clicks the down arrow button
-         */
-        autoScrollButtonPane.addEventFilter(MouseEvent.MOUSE_CLICKED, (MouseEvent mouseEvent) -> {
-                    //logger.debug("Mouse click detected! " + mouseEvent.getSource());
-                    handleScrollToBottomButtonClicked();
-                }
-        );
 
         //==============================================//
         //============== BUFFER SIZE SETUP =============//
@@ -239,48 +175,7 @@ public class ComDataPane extends StackPane {
         });
 
 
-        //==============================================//
-        //================== NAME SETUP ================//
-        //==============================================//
 
-        StackPane nameStackPane = new StackPane();
-        nameStackPane.setMaxWidth(100.0);
-        nameStackPane.setMaxHeight(20.0);
-        nameStackPane.setAlignment(Pos.CENTER);
-        nameStackPane.setStyle("-fx-background-color: rgba(150, 150, 150, 0.5); -fx-background-radius: 0 0 0 15;");
-        // Add to the parent node
-        getChildren().add(nameStackPane);
-        setAlignment(nameStackPane, Pos.TOP_RIGHT);
-
-        nameLabel = new Label();
-        nameLabel.setAlignment(Pos.CENTER);
-        nameLabel.setStyle("-fx-text-fill: white;");
-        // Add to parent node
-        nameStackPane.getChildren().add(nameLabel);
-
-        // EVENT LISTENERS
-        name.addListener((observable, oldValue, newValue) -> {
-            nameLabel.setText(newValue);
-        });
-
-        nameLabel.setText(name.get());
-
-
-        //==============================================//
-        //============== CREATE CARET ==================//
-        //==============================================//
-
-        // Create caret symbol using ANSI character
-        caretText = new Text("█");
-        caretText.setFill(Color.LIME);
-
-        // Add an animation so the caret blinks
-        FadeTransition ft = new FadeTransition(Duration.millis(200), caretText);
-        ft.setFromValue(1.0);
-        ft.setToValue(0.1);
-        ft.setCycleCount(Timeline.INDEFINITE);
-        ft.setAutoReverse(true);
-        ft.play();
 
         // Need to implement caret functionality!
 
@@ -290,27 +185,15 @@ public class ComDataPane extends StackPane {
 
         logger.debug("addData() called with streamedData = " + streamedData);
 
-        //==============================================//
-        //============= INPUT ARG CHECKS ===============//
-        //==============================================//
-
-//        if (existingTextNodes.size() == 0) {
-//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
-//        }
-//
-//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
-//        }
-
         int numCharsAdded = 0;
 
         // Remember the caret position before insertion of new text,
         // incase we need to use it for setting the scroll position
-        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
-        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
-
-        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
-        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
+//        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
+//        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
+//
+//        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
+//        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
 
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
@@ -340,24 +223,18 @@ public class ComDataPane extends StackPane {
             currNewLineMarkerIndex++;
         }
 
-        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-        int startIndex = styledTextArea.getLength();
-        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
-        int stopIndex = styledTextArea.getLength();
-
         // If the previous StreamedText object had a colour to apply when the next character was received,
         // add it now
         if(colorToApplyToNextChar != null) {
-            /*styledTextArea.setStyle(
-                    startIndex,
-                    stopIndex,
-                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
-            /*styledTextArea.setStyle(
-                    startIndex,
-                    stopIndex,
-                    "-fx-font-size: 12;");*/
+            appendColor(colorToApplyToNextChar);
             colorToApplyToNextChar = null;
         }
+
+        String html;
+        html = textToAppend.toString();
+        html = html.replace("\n", "<br>");
+        appendHtml(html);
+
 
         // Update the number of chars added with what was added to the last existing text node
         numCharsAdded += textToAppend.length();
@@ -400,14 +277,11 @@ public class ComDataPane extends StackPane {
             //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
             //==============================================//
 
-            int insertionStartIndex = styledTextArea.getLength();
-            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
-            int insertionStopIndex = styledTextArea.getLength();
+            appendColor(streamedData.getColourMarkers().get(x).color);
 
-//            styledTextArea.setStyle(
-//                    insertionStartIndex,
-//                    insertionStopIndex,
-//                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(streamedData.getColourMarkers().get(x).color));
+            html = textToAppend.toString();
+            html = html.replace("\n", "<br>");
+            appendHtml(html);
 
             // Update the num. chars added with all the text added to this new Text node
             numCharsAdded += textToAppend.length();
@@ -435,44 +309,44 @@ public class ComDataPane extends StackPane {
         //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
         //===================================================//
 
-        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
-        int charAtZeroTenBeforeRemoval;
-        if(optionalInt.isPresent())
-            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
-        else
-            charAtZeroTenBeforeRemoval = 0;
-
-
-        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
-
-        // Trim the text buffer if needed
-        // (this method will decide if required)
-        trimBufferIfRequired();
-
-        //==============================================//
-        //============== SCROLL POSITION ===============//
-        //==============================================//
-
-//        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
-//        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
-//        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
-
-        switch(scrollState.get()) {
-            case FIXED_TO_BOTTOM:
-                // This moves the caret to the end of the "document"
-                currCharPositionInText = styledTextArea.getLength();
-                styledTextArea.moveTo(currCharPositionInText);
-                break;
-
-            case SMART_SCROLL:
-
-                // Scroll so that the same text is displayed in the view port
-                // as before the text insertion/removalS
-                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
-                break;
-            default:
-                throw new RuntimeException("scrollState not recognised.");
-        }
+//        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
+//        int charAtZeroTenBeforeRemoval;
+//        if(optionalInt.isPresent())
+//            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
+//        else
+//            charAtZeroTenBeforeRemoval = 0;
+//
+//
+//        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
+//
+//        // Trim the text buffer if needed
+//        // (this method will decide if required)
+//        trimBufferIfRequired();
+//
+//        //==============================================//
+//        //============== SCROLL POSITION ===============//
+//        //==============================================//
+//
+////        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
+////        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
+////        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
+//
+//        switch(scrollState.get()) {
+//            case FIXED_TO_BOTTOM:
+//                // This moves the caret to the end of the "document"
+//                currCharPositionInText = styledTextArea.getLength();
+//                styledTextArea.moveTo(currCharPositionInText);
+//                break;
+//
+//            case SMART_SCROLL:
+//
+//                // Scroll so that the same text is displayed in the view port
+//                // as before the text insertion/removalS
+//                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
+//                break;
+//            default:
+//                throw new RuntimeException("scrollState not recognised.");
+//        }
 
 
         return numCharsAdded;
@@ -481,7 +355,7 @@ public class ComDataPane extends StackPane {
 
     public void clearData() {
         // Remove all text from the StyledTextArea node
-        styledTextArea.replaceText(0, styledTextArea.getLength(), "");
+
     }
 
     /**
@@ -495,16 +369,7 @@ public class ComDataPane extends StackPane {
 
         int numCharsToRemove = 0;
 
-        if(styledTextArea.getLength() > bufferSize.get()) {
 
-            // We need to trim the text buffer in the styled text area node
-            numCharsToRemove = styledTextArea.getLength() - bufferSize.get();
-
-            // Remove the earliest text by doing a replace() call, replacing with
-            // nothing ("")
-            styledTextArea.replaceText(0, numCharsToRemove, "");
-
-        }
 
         return numCharsToRemove;
     }
@@ -515,14 +380,7 @@ public class ComDataPane extends StackPane {
      */
     private void handleScrollToBottomButtonClicked() {
         // Change state to fixed-to-bottom
-        scrollState.set(ScrollState.FIXED_TO_BOTTOM);
 
-
-        //autoScrollButtonPane.setVisible(false);
-
-        // Manually perform one scroll-to-bottom, since the next automatic one won't happen until
-        // more data is added via addData().
-        styledTextArea.moveTo(styledTextArea.getLength());
     }
 
     /**
@@ -554,6 +412,28 @@ public class ComDataPane extends StackPane {
         // Since the user has now scrolled upwards (manually), disable the
         // auto-scroll
         scrollState.set(ScrollState.SMART_SCROLL);
+    }
+
+    private void appendHtml(String html) {
+        String js = "addText(\"" + html + "\")";
+        logger.debug("js = " + js);
+        webEngine.executeScript(js);
+    }
+
+    private void appendColor(Color color) {
+        String js = "addColor(\"" + StringUtils.toWebColor(color) + "\")";
+        logger.debug("js = " + js);
+        webEngine.executeScript(js);
+    }
+
+    public class JavaBridge
+    {
+        private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
+        public void log(String text)
+        {
+            logger.debug(text);
+        }
     }
 
 }

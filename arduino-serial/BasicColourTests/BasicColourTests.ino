@@ -16,12 +16,12 @@ void setup() {
 
 void loop() {
 
-#define DISPLAY_PERIOD (100)
+#define DISPLAY_PERIOD (1000)
 
   Serial.println("\x1B[31mred");
   delay(DISPLAY_PERIOD);
-  /*Serial.println("\x1B[32mnormal green");
-  delay(DISPLAY_PERIOD);*/
+  Serial.println("\x1B[32mnormal green");
+  delay(DISPLAY_PERIOD);
 
 }
 

@@ -14,6 +14,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 <?import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane?>
+<?import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb?>
 <Tab
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
         xmlns:fx="http://javafx.com/fxml"
@@ -68,7 +69,7 @@
                 <!-- =========================================== -->
                 <!-- ================ RX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <ComDataPane fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
 
                 <!-- =========================================== -->
                 <!-- ============== DRAGGABLE NODE ============= -->

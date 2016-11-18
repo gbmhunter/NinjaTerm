@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.stringUtils;
 
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 
 import java.io.PrintWriter;
@@ -52,6 +53,14 @@ public class StringUtils {
         final PrintWriter pw = new PrintWriter(sw, true);
         throwable.printStackTrace(pw);
         return sw.getBuffer().toString();
+    }
+
+
+    public static String toWebColor( Color color ) {
+        return String.format( "#%02X%02X%02X",
+                (int)( color.getRed() * 255 ),
+                (int)( color.getGreen() * 255 ),
+                (int)( color.getBlue() * 255 ) );
     }
 
 }

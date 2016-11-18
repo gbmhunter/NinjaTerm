@@ -16,6 +16,7 @@ import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
+import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -71,7 +72,7 @@ public class TxRxViewController {
     private GridPane dataContainerGridPane;
 
     @FXML
-    private ComDataPane rxComDataPane;
+    private ComDataPaneWeb rxComDataPane;
 
     @FXML
     private HBox draggableHBox;

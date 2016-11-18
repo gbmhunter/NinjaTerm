@@ -79,10 +79,18 @@
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx -->
-    <dependency>
+    <!--<dependency>
       <groupId>org.fxmisc.richtext</groupId>
       <artifactId>richtextfx</artifactId>
       <version>0.7-M2</version>
+    </dependency>-->
+
+    <dependency>
+      <groupId>org.fxmisc.richtext</groupId>
+      <artifactId>richtextfx</artifactId>
+      <version>9.0.0</version>
+      <!--<scope>system</scope>
+      <systemPath>../src/main/resources/yourJar.jar</systemPath>-->
     </dependency>
 
   </dependencies>
@@ -96,6 +104,8 @@
           <include>**/*.png</include>
           <include>**/*.fxml</include>
           <include>**/*.css</include>
+          <include>**/*.html</include>
+          <include>**/*.js</include>
         </includes>
       </resource>
     </resources>

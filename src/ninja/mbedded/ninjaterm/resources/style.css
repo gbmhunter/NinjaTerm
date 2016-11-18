@@ -188,3 +188,25 @@ which are displaying dynamic content */
 /* =========================================== */
 
 /* NONE OF THESE SEEM TO WORK! */
+
+.caret {
+    -fx-stroke: green;
+    /*-fx-stroke-width: 10px;*/
+}
+
+.styled-text-area .paragraph-box .paragraph-text {
+    -fx-padding: 10px 10px 10px 10px;
+}
+
+.styled-text-area .paragraph-box:last-paragraph .paragraph-text {
+    -fx-padding: 0 5px 5px 5px;
+}
+
+.styled-text-area .paragraph-box:first-paragraph .paragraph-text {
+    -fx-padding: 5px 5px 0 5px;
+}
+
+.styled-text-area .text{
+
+    -fx-fill: yellow;
+}

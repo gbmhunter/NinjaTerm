@@ -41,78 +41,78 @@ public class ComDataPaneTest {
         streamedData = new StreamedData();
     }
 
-    @Test
-    public void streamedDataIsClearedTest() throws Exception {
-
-        streamedData.append("123");
-        comDataPane.addData(streamedData);
-
-        assertEquals("", streamedData.getText());
-        assertEquals(0, streamedData.getColourMarkers().size());
-        assertEquals(null, streamedData.getColorToBeInsertedOnNextChar());
-        assertEquals(0, streamedData.getNewLineMarkers().size());
-    }
-
-    @Test
-    public void singleColourTest() throws Exception {
-
-        streamedData.append("123");
-        comDataPane.addData(streamedData);
-
-        assertEquals(3, comDataPane.styledTextArea.getLength());
-        // Make sure there is only 1 style
-        assertEquals(1, comDataPane.styledTextArea.getStyleSpans(0,comDataPane.styledTextArea.getLength()).getSpanCount());
-
-        assertEquals(
-                Color.GREEN,
-                comDataPane.styledTextArea.getStyleSpans(0,comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
-
-    }
-
-    @Test
-    public void twoColourTest() throws Exception {
-
-        streamedData.append("123456");
-        streamedData.addColour(3, Color.RED);
-
-        comDataPane.addData(streamedData);
-
-        assertEquals(6, comDataPane.styledTextArea.getLength());
-        // Make sure there are two styles
-        assertEquals(2, comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getSpanCount());
-
-        assertEquals(
-                Color.GREEN,
-                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
-
-        assertEquals(
-                Color.RED,
-                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(1).getStyle().getTextColor());
-
-    }
-
-    @Test
-    public void colourToBeInsertedOnNextCharTest() throws Exception {
-
-        streamedData.append("123");
-        streamedData.setColorToBeInsertedOnNextChar(Color.RED);
-        comDataPane.addData(streamedData);
-
-        streamedData.append("456");
-        comDataPane.addData(streamedData);
-
-        assertEquals(6, comDataPane.styledTextArea.getLength());
-        // Make sure there are two styles
-        assertEquals(2, comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getSpanCount());
-
-        assertEquals(
-                Color.GREEN,
-                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
-
-        assertEquals(
-                Color.RED,
-                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(1).getStyle().getTextColor());
-
-    }
+//    @Test
+//    public void streamedDataIsClearedTest() throws Exception {
+//
+//        streamedData.append("123");
+//        comDataPane.addData(streamedData);
+//
+//        assertEquals("", streamedData.getText());
+//        assertEquals(0, streamedData.getColourMarkers().size());
+//        assertEquals(null, streamedData.getColorToBeInsertedOnNextChar());
+//        assertEquals(0, streamedData.getNewLineMarkers().size());
+//    }
+//
+//    @Test
+//    public void singleColourTest() throws Exception {
+//
+//        streamedData.append("123");
+//        comDataPane.addData(streamedData);
+//
+//        assertEquals(3, comDataPane.styledTextArea.getLength());
+//        // Make sure there is only 1 style
+//        assertEquals(1, comDataPane.styledTextArea.getStyleSpans(0,comDataPane.styledTextArea.getLength()).getSpanCount());
+//
+//        assertEquals(
+//                Color.GREEN,
+//                comDataPane.styledTextArea.getStyleSpans(0,comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
+//
+//    }
+//
+//    @Test
+//    public void twoColourTest() throws Exception {
+//
+//        streamedData.append("123456");
+//        streamedData.addColour(3, Color.RED);
+//
+//        comDataPane.addData(streamedData);
+//
+//        assertEquals(6, comDataPane.styledTextArea.getLength());
+//        // Make sure there are two styles
+//        assertEquals(2, comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getSpanCount());
+//
+//        assertEquals(
+//                Color.GREEN,
+//                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
+//
+//        assertEquals(
+//                Color.RED,
+//                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(1).getStyle().getTextColor());
+//
+//    }
+//
+//    @Test
+//    public void colourToBeInsertedOnNextCharTest() throws Exception {
+//
+//        streamedData.append("123");
+//        streamedData.setColorToBeInsertedOnNextChar(Color.RED);
+//        comDataPane.addData(streamedData);
+//
+//        streamedData.append("456");
+//        comDataPane.addData(streamedData);
+//
+//        assertEquals(6, comDataPane.styledTextArea.getLength());
+//        // Make sure there are two styles
+//        assertEquals(2, comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getSpanCount());
+//
+//        assertEquals(
+//                Color.GREEN,
+//                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(0).getStyle().getTextColor());
+//
+//        assertEquals(
+//                Color.RED,
+//                comDataPane.styledTextArea.getStyleSpans(0, comDataPane.styledTextArea.getLength()).getStyleSpan(1).getStyle().getTextColor());
+//
+//    }
 
 }
