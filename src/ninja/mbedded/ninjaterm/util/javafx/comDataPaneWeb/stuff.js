@@ -6,7 +6,7 @@ $( document ).ready(function() {
 
     $("#com-data").scroll(function() { //.box is the class of the div
         //console.log("Scrolled!");
-        java.scrolled();
+        java.scrolled($("#com-data").scrollTop());
     });
 });
 

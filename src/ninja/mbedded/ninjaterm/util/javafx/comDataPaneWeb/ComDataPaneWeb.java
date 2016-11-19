@@ -432,6 +432,11 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.executeScript("scrollToBottom()");
     }
 
+    /**
+     * Acts as a bridge between Java and Javascript.
+     *
+     * Javascript calls methods in this class.
+     */
     public class JavaBridge
     {
         private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -441,8 +446,12 @@ public class ComDataPaneWeb extends StackPane {
             logger.debug(text);
         }
 
-        public void scrolled() {
-            logger.debug("Scrolled!");
+        /**
+         * Called by Javascript when the user scrolls the COM data up or down
+         * @param scrollTop
+         */
+        public void scrolled(Double scrollTop) {
+            logger.debug("scrolled() called. scrollTop = " + scrollTop);
         }
     }
 
