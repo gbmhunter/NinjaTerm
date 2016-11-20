@@ -4,9 +4,9 @@
 $( document ).ready(function() {
     console.log('doc ready');
 
-    $("#com-data").scroll(function() { //.box is the class of the div
+    $("#com-data-wrapper").scroll(function() {
         //console.log("Scrolled!");
-        java.scrolled($("#com-data").scrollTop());
+        java.scrolled($("#com-data-wrapper").scrollTop());
     });
 
     $("#down-arrow").click(function(){
@@ -39,8 +39,27 @@ function addColor(color) {
 }
 
 function scrollToBottom() {
-    var objDiv = document.getElementById("com-data");
-    objDiv.scrollTop = objDiv.scrollHeight;
+    /*var objDiv = $("com-data");
+    objDiv.scrollTop = objDiv.scrollHeight;*/
 
+    $("#com-data-wrapper").scrollTop($("#com-data").height()-$("#com-data-wrapper").height());
+
+//    $("#com-data-wrapper").animate({
+//       scrollTop: $("#com-data").height()-$("#com-data-wrapper").height()},
+//       1400,
+//       "swing"
+//    );
+
+}
+
+function showDownArrow(trueFalse) {
+    java.log("showDownArrow() called with trueFalse = " + trueFalse);
+    if(trueFalse) {
+        java.log("Showing down-arrow...");
+        $("#down-arrow").show();
+    } else {
+        java.log("Hiding down-arrow...");
+        $("#down-arrow").hide();
+    }
 }
 

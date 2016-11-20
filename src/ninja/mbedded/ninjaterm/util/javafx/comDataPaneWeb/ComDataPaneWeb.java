@@ -89,13 +89,7 @@ public class ComDataPaneWeb extends StackPane {
 
     public SimpleStringProperty name = new SimpleStringProperty("");
 
-    private Label nameLabel;
-
-    private VirtualizedScrollPane virtualizedScrollPane;
-
     public final WebView webView;
-
-    private Pane autoScrollButtonPane;
 
     /**
      * Variable to remember what colour to apply to the next character, since a <code>{@link StyledTextArea}</code>
@@ -112,6 +106,8 @@ public class ComDataPaneWeb extends StackPane {
     private int currCharPositionInText = 0;
 
     private WebEngine webEngine;
+
+    private double currScrollPos = 0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -169,7 +165,9 @@ public class ComDataPaneWeb extends StackPane {
 
 
 
-        // Need to implement caret functionality!
+        scrollState.addListener((observable, oldValue, newValue) -> {
+            handleScrollStateChanged();
+        });
 
     }
 
@@ -376,43 +374,21 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     /**
-     * This should be called when the user clicks the "scroll to bottom"
-     * button.
-     */
-    private void handleScrollToBottomButtonClicked() {
-        // Change state to fixed-to-bottom
-
-    }
-
-    /**
      * Updates the visibility of the scroll-to-bottom button.
      * This should be called when <code>scrollState</code> changes.
      */
     private void handleScrollStateChanged() {
+        logger.debug("handleScrollStateChanged() called.");
         switch(scrollState.get()) {
             case FIXED_TO_BOTTOM:
-                autoScrollButtonPane.setVisible(false);
+                webEngine.executeScript("showDownArrow(false)");
                 break;
             case SMART_SCROLL:
-                autoScrollButtonPane.setVisible(true);
+                webEngine.executeScript("showDownArrow(true)");
                 break;
             default:
                 throw new RuntimeException("scrollState not recognised.");
         }
-    }
-
-    private void handleUserScrolled(ScrollEvent scrollEvent) {
-
-        // If the user scrolled downwards, we don't want to disable auto-scroll,
-        // so check and return if so.
-        if (scrollState.get() == ScrollState.SMART_SCROLL || scrollEvent.getDeltaY() <= 0)
-            return;
-
-        logger.debug("User has scrolled upwards while in SCROLL_TO_BOTTOM mode, disabling SCROLL_TO_BOTTOM...");
-
-        // Since the user has now scrolled upwards (manually), disable the
-        // auto-scroll
-        scrollState.set(ScrollState.SMART_SCROLL);
     }
 
     private void appendHtml(String html) {
@@ -434,6 +410,7 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     private void scrollToBottom() {
+
         webEngine.executeScript("scrollToBottom()");
     }
 
@@ -447,11 +424,34 @@ public class ComDataPaneWeb extends StackPane {
      * @param scrollTop
      */
     public void scrolled(Double scrollTop) {
+
         logger.debug("scrolled() called. scrollTop = " + scrollTop);
+
+        if(scrollTop >= currScrollPos) {
+            currScrollPos = scrollTop;
+            return;
+        }
+
+        // If the user scrolled downwards, we don't want to disable auto-scroll,
+        // so check and return if so.
+        if (scrollState.get() == ScrollState.SMART_SCROLL)
+            return;
+
+        logger.debug("User has scrolled upwards while in SCROLL_TO_BOTTOM mode, disabling SCROLL_TO_BOTTOM...");
+
+        // Since the user has now scrolled upwards (manually), disable the
+        // auto-scroll
+        scrollState.set(ScrollState.SMART_SCROLL);
+
+        currScrollPos = scrollTop;
     }
 
     public void downArrowClicked() {
         logger.debug("Down arrow clicked.");
+
+        scrollState.set(ScrollState.FIXED_TO_BOTTOM);
+
+        scrollToBottom();
     }
 
 }
