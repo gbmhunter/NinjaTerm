@@ -79,18 +79,10 @@
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx -->
-    <!--<dependency>
-      <groupId>org.fxmisc.richtext</groupId>
-      <artifactId>richtextfx</artifactId>
-      <version>0.7-M2</version>
-    </dependency>-->
-
     <dependency>
       <groupId>org.fxmisc.richtext</groupId>
       <artifactId>richtextfx</artifactId>
-      <version>9.0.0</version>
-      <!--<scope>system</scope>
-      <systemPath>../src/main/resources/yourJar.jar</systemPath>-->
+      <version>0.7-M2</version>
     </dependency>
 
   </dependencies>
@@ -100,6 +92,7 @@
     <resources>
       <resource>
         <directory>src</directory>
+        <!-- MAKE SURE TO ADD FILE EXTENSIONS OF ALL FILES YOU WANT INCLUDED HERE! -->
         <includes>
           <include>**/*.png</include>
           <include>**/*.fxml</include>

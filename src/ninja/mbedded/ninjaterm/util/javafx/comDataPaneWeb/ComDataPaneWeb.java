@@ -137,12 +137,11 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
         {
             JSObject window = (JSObject) webEngine.executeScript("window");
-            JavaBridge javaBridge = new JavaBridge();
-            window.setMember("java", javaBridge);
+            window.setMember("java", this);
             webEngine.executeScript("console.log = function(message)\n" +
                     "{\n" +
                     "    java.log(message);\n" +
-                    "}; console.log(\"test\")");
+                    "};");
 
             enableFirebug(webEngine);
             webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
@@ -417,6 +416,12 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     private void appendHtml(String html) {
+
+        // Return if empty string
+        // (JS will throw null error)
+        if(html.equals(""))
+            return;
+
         String js = "addText(\"" + html + "\")";
         logger.debug("js = " + js);
         webEngine.executeScript(js);
@@ -432,27 +437,21 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.executeScript("scrollToBottom()");
     }
 
-    /**
-     * Acts as a bridge between Java and Javascript.
-     *
-     * Javascript calls methods in this class.
-     */
-    public class JavaBridge
+    public void log(String text)
     {
-        private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+        logger.debug("JS: " + text);
+    }
 
-        public void log(String text)
-        {
-            logger.debug(text);
-        }
+    /**
+     * Called by Javascript when the user scrolls the COM data up or down
+     * @param scrollTop
+     */
+    public void scrolled(Double scrollTop) {
+        logger.debug("scrolled() called. scrollTop = " + scrollTop);
+    }
 
-        /**
-         * Called by Javascript when the user scrolls the COM data up or down
-         * @param scrollTop
-         */
-        public void scrolled(Double scrollTop) {
-            logger.debug("scrolled() called. scrollTop = " + scrollTop);
-        }
+    public void downArrowClicked() {
+        logger.debug("Down arrow clicked.");
     }
 
 }
