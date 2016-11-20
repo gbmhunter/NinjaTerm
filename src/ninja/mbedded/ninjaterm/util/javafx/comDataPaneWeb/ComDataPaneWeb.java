@@ -307,12 +307,11 @@ public class ComDataPaneWeb extends StackPane {
         //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
         //===================================================//
 
-//        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
-//        int charAtZeroTenBeforeRemoval;
-//        if(optionalInt.isPresent())
-//            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
-//        else
-//            charAtZeroTenBeforeRemoval = 0;
+
+        Double textHeight = getTextHeight();
+
+        logger.debug("textHeight = " + textHeight);
+
 //
 //
 //        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
@@ -452,6 +451,10 @@ public class ComDataPaneWeb extends StackPane {
         scrollState.set(ScrollState.FIXED_TO_BOTTOM);
 
         scrollToBottom();
+    }
+
+    private double getTextHeight() {
+        return (Integer)webEngine.executeScript("getTextHeight()");
     }
 
 }

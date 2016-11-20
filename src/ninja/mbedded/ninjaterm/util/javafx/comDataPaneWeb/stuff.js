@@ -63,3 +63,40 @@ function showDownArrow(trueFalse) {
     }
 }
 
+function getTextHeight() {
+    java.log("height = " + $("#com-data").height());
+    return $("#com-data").height();
+}
+
+function trim(numChars) {
+
+    numCharsToRemove = numChars;
+
+    $("#com-data").children().each(function(index, element) {
+
+        console.log("currChildNode = ")
+        console.log(element);
+
+        text = $(element).text();
+        console.log("text = ");
+        console.log(text);
+
+        if(text.length > numCharsToRemove) {
+            $(element).text(text.slice(numCharsToRemove));
+            // We have remove enough chars, stop loop
+            return false;
+        } else {
+            numCharsToRemove -= text.length
+            $(element).remove();
+
+            if(numCharsToRemove == 0)
+            return false;
+        }
+
+    });
+
+    if(numCharsToRemove > 0)
+        throw "trim() was requested to remove too many chars.";
+
+}
+
