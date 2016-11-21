@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.concurrent.Worker;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -117,15 +118,23 @@ public class ComDataPaneWeb extends StackPane {
 
         webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
         {
-            JSObject window = (JSObject) webEngine.executeScript("window");
-            window.setMember("java", this);
-            webEngine.executeScript("console.log = function(message)\n" +
-                    "{\n" +
-                    "    java.log(message);\n" +
-                    "};");
 
-            enableFirebug(webEngine);
-            webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
+            if(newValue == Worker.State.SUCCEEDED) {
+                logger.debug("WebView has loaded page and is ready.");
+
+                JSObject window = (JSObject) webEngine.executeScript("window");
+                window.setMember("java", this);
+                webEngine.executeScript("console.log = function(message)\n" +
+                        "{\n" +
+                        "    java.log(message);\n" +
+                        "};");
+
+                enableFirebug(webEngine);
+                webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
+
+                // Call to setup defaults
+                handleScrollStateChanged();
+            }
         });
 
         getChildren().add(webView);
@@ -147,6 +156,10 @@ public class ComDataPaneWeb extends StackPane {
 //            trimBufferIfRequired();
 //        });
 
+
+        //==============================================//
+        //================= SCROLL SETUP ===============//
+        //==============================================//
 
         scrollState.addListener((observable, oldValue, newValue) -> {
             handleScrollStateChanged();
@@ -363,8 +376,19 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     public void clearData() {
-        // Remove all text from the StyledTextArea node
+        // Remove all COM data
+        webEngine.executeScript("clearData()");
 
+        // Add new default span (since all existing ones have now
+        // been deleted)
+        appendColor(Color.GREEN);
+
+        // Reset scrolling
+        setComDataWrapperScrollTop(0);
+        currScrollPos = 0;
+
+        // Reset character count
+        currNumChars = 0;
     }
 
     /**

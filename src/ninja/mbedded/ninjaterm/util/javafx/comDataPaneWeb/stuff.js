@@ -65,6 +65,10 @@ function setComDataWrapperScrollTop(scrollTop) {
     $("#com-data-wrapper").scrollTop(scrollTop);
 }
 
+function clearData() {
+    $("#com-data").empty();
+}
+
 function showDownArrow(trueFalse) {
     java.log("showDownArrow() called with trueFalse = " + trueFalse);
     if(trueFalse) {
@@ -112,8 +116,7 @@ function trim(numChars) {
     });
 
     if(numCharsToRemove > 0) {
-        java.log("trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove);
-        throw "Error";
+        throw "trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove;
     }
 
 }
