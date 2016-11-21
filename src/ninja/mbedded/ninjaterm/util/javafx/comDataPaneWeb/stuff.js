@@ -49,10 +49,14 @@ function addColor(color) {
         // If the caret is shown, we have to insert this new color before
         // the caret node
         $(html).insertBefore("#caret")
+
+        // Set the caret color to be the same as the current text color
+        $('#caret').css('color', color);
     } else {
         $("#com-data").append(html);
     }
 
+    currColor = color;
 }
 
 function scrollToBottom() {
@@ -147,6 +151,8 @@ function showCaret(trueFalse) {
         $("#com-data").append('<span id="caret">█</span>');
 //        java.log("$('#com-data') (after adding caret) = " + JSON.stringify($("#com-data")));
 
+        $('#caret').css('color', currColor);
+
         isCaretShown = true;
 
     } else {
@@ -159,5 +165,6 @@ function showCaret(trueFalse) {
 }
 
 isCaretShown = false;
+currColor = '#FFFFFF';
 
 

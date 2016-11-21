@@ -49,6 +49,8 @@ public class ComDataPaneWeb extends StackPane {
 
     private final boolean SHOW_FIREBUG = false;
 
+    private final Color DEFAULT_COLOR = Color.GREEN;
+
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
     //================================================================================================//
@@ -193,6 +195,9 @@ public class ComDataPaneWeb extends StackPane {
         isCaretEnabled.addListener((observable, oldValue, newValue) -> {
             handleIsCaretEnabledChange();
         });
+
+        // This sets the current text color and the current caret color
+        appendColor(DEFAULT_COLOR);
 
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -480,17 +485,6 @@ public class ComDataPaneWeb extends StackPane {
             });
 
         }
-
-//        if(webEngine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
-//            webEngine.executeScript(script);
-//        } else {
-//            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
-//            {
-//                if (newValue == Worker.State.SUCCEEDED) {
-//                    webEngine.executeScript(script);
-//                }
-//            });
-//        }
     }
 
     private void appendHtml(String html) {
@@ -512,8 +506,9 @@ public class ComDataPaneWeb extends StackPane {
 
     private void appendColor(Color color) {
         String js = "addColor(\"" + StringUtils.toWebColor(color) + "\")";
-        logger.debug("js = " + js);
-        webEngine.executeScript(js);
+        //logger.debug("js = " + js);
+        //webEngine.executeScript(js);
+        runScriptWhenReady(js);
     }
 
     private void scrollToBottom() {

@@ -74,18 +74,11 @@ body {
 }
 
 #caret {
-    color: green;
-    /*-webkit-transition: all 1s ease-in-out;
-        /*-moz-transition: all 1s ease-in-out;
-        -o-transition: all 1s ease-in-out;
-        -ms-transition: all 1s ease-in-out;
-        transition: all 1s ease-in-out;*/
-
-        -webkit-animation-direction: normal;
-        -webkit-animation-duration: 0.5s;
-        -webkit-animation-iteration-count: infinite;
-        -webkit-animation-name: blink;
-        -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-direction: normal;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-name: blink;
+    -webkit-animation-timing-function: ease-in-out;
 }
 
 @-webkit-keyframes blink {
