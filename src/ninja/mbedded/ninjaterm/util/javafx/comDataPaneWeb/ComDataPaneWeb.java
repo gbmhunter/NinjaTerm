@@ -49,6 +49,8 @@ public class ComDataPaneWeb extends StackPane {
 
     private final Color DEFAULT_COLOR = Color.GREEN;
 
+    private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
+
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
     //================================================================================================//
@@ -213,7 +215,7 @@ public class ComDataPaneWeb extends StackPane {
                            }
                        },
                 // 1s seems to be enough to let the web page fully load
-                1000);
+                WEB_VIEW_LOAD_WAIT_TIME_MS);
 
     }
 
