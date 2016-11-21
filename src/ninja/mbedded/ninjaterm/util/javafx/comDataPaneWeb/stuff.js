@@ -85,6 +85,11 @@ function getTextHeight() {
     return $("#com-data").height();
 }
 
+function setName(name) {
+    java.log("setName() called with name = " + name);
+    $("#name-text").text(name);
+}
+
 function trim(numChars) {
 
     numCharsToRemove = numChars;
@@ -120,4 +125,6 @@ function trim(numChars) {
     }
 
 }
+
+
 

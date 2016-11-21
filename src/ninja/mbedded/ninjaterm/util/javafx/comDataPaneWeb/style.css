@@ -49,3 +49,26 @@ body {
 #down-arrow:hover {
     opacity: 1.0;
 }
+
+#name {
+    width: 80px;
+    height: 20px;
+
+    position: fixed;
+    top: 0px;
+    right: 0px;
+
+    display: table;
+
+    background-color: rgba(150, 150, 150, 0.5);
+
+}
+
+#name-text {
+    color: white;
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    font-family: "Arial";
+    font-size: 12px;
+}

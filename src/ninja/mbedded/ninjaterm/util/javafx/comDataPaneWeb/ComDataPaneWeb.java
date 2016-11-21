@@ -165,6 +165,14 @@ public class ComDataPaneWeb extends StackPane {
             handleScrollStateChanged();
         });
 
+        //==============================================//
+        //================== NAME SETUP ================//
+        //==============================================//
+
+        name.addListener((observable, oldValue, newValue) -> {
+            handleNameChanged();
+        });
+
     }
 
     /**
@@ -174,6 +182,20 @@ public class ComDataPaneWeb extends StackPane {
      */
     private static void enableFirebug(final WebEngine engine) {
         engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
+    }
+
+    private void handleNameChanged() {
+
+        if(webEngine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
+            webEngine.executeScript("setName('" + name.get() + "')");
+        } else {
+            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
+            {
+                if (newValue == Worker.State.SUCCEEDED) {
+                    webEngine.executeScript("setName('" + name.get() + "')");
+                }
+            });
+        }
     }
 
     public void addData(StreamedData streamedData) {
