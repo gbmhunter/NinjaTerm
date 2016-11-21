@@ -297,9 +297,9 @@ public class ComDataPaneWeb extends StackPane {
         //===================================================//
 
 
-        Double textHeight = getTextHeight();
+        Integer textHeightBeforeTrim = getTextHeight();
 
-        logger.debug("textHeight = " + textHeight);
+        logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
 
         if (currNumChars >= bufferSize.get()) {
 
@@ -313,43 +313,53 @@ public class ComDataPaneWeb extends StackPane {
 
         }
 
-//
-//
-//        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
-//
-//        // Trim the text buffer if needed
-//        // (this method will decide if required)
-//        trimBufferIfRequired();
-//
-//        //==============================================//
-//        //============== SCROLL POSITION ===============//
-//        //==============================================//
-//
-////        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
-////        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
-////        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
-//
-//        switch(scrollState.get()) {
-//            case FIXED_TO_BOTTOM:
-//                // This moves the caret to the end of the "document"
-//                currCharPositionInText = styledTextArea.getLength();
-//                styledTextArea.moveTo(currCharPositionInText);
-//                break;
-//
-//            case SMART_SCROLL:
-//
-//                // Scroll so that the same text is displayed in the view port
-//                // as before the text insertion/removalS
-//                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
-//                break;
-//            default:
-//                throw new RuntimeException("scrollState not recognised.");
-//        }
+        Integer textHeightAfterTrim = getTextHeight();
+        logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
 
-        scrollToBottom();
+
+        //==============================================//
+        //============== SCROLL POSITION ===============//
+        //==============================================//
+
+        switch(scrollState.get()) {
+            case FIXED_TO_BOTTOM:
+                // Scroll to the bottom
+                scrollToBottom();
+                break;
+
+            case SMART_SCROLL:
+
+                Integer heightChange = textHeightBeforeTrim - textHeightAfterTrim;
+                logger.debug("heightChange = " + heightChange);
+
+                // We need to shift the scroll up by the amount the height changed
+                Integer oldScrollTop = getComDataWrapperScrollTop();
+                logger.debug("oldScrollTop = " + oldScrollTop);
+
+                Integer newScrollTop = oldScrollTop - heightChange;
+                if(newScrollTop < 0)
+                    newScrollTop = 0;
+                logger.debug("newScrollTop = " + newScrollTop);
+
+                setComDataWrapperScrollTop(newScrollTop);
+
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
+        }
+
+
 
 //        return numCharsAdded;
 
+    }
+
+    private Integer getComDataWrapperScrollTop() {
+        return (Integer) webEngine.executeScript("getComDataWrapperScrollTop()");
+    }
+
+    private void setComDataWrapperScrollTop(Integer value) {
+        webEngine.executeScript("setComDataWrapperScrollTop(" + value + ")");
     }
 
     public void clearData() {
@@ -415,6 +425,8 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     public void log(String text) {
+        // Since the JavaScript will be calling this, add "JS: " to the front of the
+        // messages
         logger.debug("JS: " + text);
     }
 
@@ -454,7 +466,7 @@ public class ComDataPaneWeb extends StackPane {
         scrollToBottom();
     }
 
-    private double getTextHeight() {
+    private Integer getTextHeight() {
         return (Integer) webEngine.executeScript("getTextHeight()");
     }
 

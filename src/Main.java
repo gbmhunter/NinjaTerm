@@ -148,6 +148,12 @@ public class Main extends Application {
 
     private void showError(Thread t, Throwable e) {
         System.err.println("***Default exception handler***");
+
+        for (Thread thread : Thread.getAllStackTraces().keySet())
+        {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
+            thread.stop();
+        }
+
         if (Platform.isFxApplicationThread()) {
             // Write the exception to the logger, and also show pop-up
             logger.error(StringUtils.throwableToString(e));

@@ -57,6 +57,14 @@ function scrollToBottom() {
 
 }
 
+function getComDataWrapperScrollTop() {
+    return $("#com-data-wrapper").scrollTop();
+}
+
+function setComDataWrapperScrollTop(scrollTop) {
+    $("#com-data-wrapper").scrollTop(scrollTop);
+}
+
 function showDownArrow(trueFalse) {
     java.log("showDownArrow() called with trueFalse = " + trueFalse);
     if(trueFalse) {
