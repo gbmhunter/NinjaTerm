@@ -13,6 +13,7 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
+import ninja.mbedded.ninjaterm.util.arrayUtils.ArrayUtils;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
@@ -58,12 +59,6 @@ public class TxRx {
     public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     public RxDataEngine rxDataEngine = new RxDataEngine();
-
-    /**
-     * Determines whether the RX data terminal will auto-scroll to bottom
-     * as more data arrives.
-     */
-    public SimpleBooleanProperty autoScrollEnabled = new SimpleBooleanProperty(true);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -211,7 +206,7 @@ public class TxRx {
         }
 
         // Send data to COM port, and update stats (both local and global)
-        byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
+        byte[] dataAsByteArray = ArrayUtils.fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
 
         // Update stats
@@ -239,17 +234,6 @@ public class TxRx {
         for (DataSentTxListener dataSentTxListener : dataSentTxListeners) {
             dataSentTxListener.run(dataAsString);
         }
-    }
-
-    private byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
-
-        byte[] data = new byte[observableList.size()];
-        int i = 0;
-        for (Byte singleByte : observableList) {
-            data[i++] = singleByte;
-        }
-
-        return data;
     }
 
     /**
