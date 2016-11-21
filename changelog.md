@@ -1,3 +1,17 @@
+v0.8.0
+------
+
+- Added blurb on smart scrolling to homepage, closes #148.
+- Added first application test, closes #149.
+- Created a "ComPortFactory" which returns mocked "ComPort" objects, which are then injected into the model, closes #151.
+- Made the division of space for TX and RX modifiable (e.g. through a drag mechanism), closes #150.
+- Added the ability to the user to specify text sequences to send to the COM port (macros), closes #155.
+- Converted the "Macro Settings" window into a "Macro Manager" window, closes #157.
+- Macro name is automatically generated when a new macro is added, closes #158.
+- Fixed bug where macro manager left-hand side list text did not update when the macro name was updated, closes #160.
+- Fixed bug where macro pane got squashed when TX/RX text extended of the end of the text view, closes #159.
+- Added basic copy/paste support, closes #133.
+
 v0.7.2
 ------
 

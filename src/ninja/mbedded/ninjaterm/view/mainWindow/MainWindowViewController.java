@@ -3,10 +3,13 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
@@ -17,7 +20,6 @@ import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.Glyph;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-07-08
- * @last-modified 2016-10-13
+ * @last-modified 2016-11-08
  */
 public class MainWindowViewController {
 
@@ -55,13 +57,11 @@ public class MainWindowViewController {
     private Tab newTerminalTab;
 
     @FXML
-    private StatusBarViewController statusBarViewController;
+    public StatusBarViewController statusBarViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
-
-    private ComPortManager comPortManager;
 
     public List<TerminalViewController> terminalViewControllers = new ArrayList<>();
 
@@ -82,15 +82,16 @@ public class MainWindowViewController {
     /**
      * Initialises everything that cannot be done in the constructor (due to JavaFX creating the
      * object automatically).
+     *
      * @param model
      * @param glyphFont
-     * @param comPortManager
      */
-    public void init(Model model, GlyphFont glyphFont, ComPortManager comPortManager) {
+    public void init(Model model, GlyphFont glyphFont) {
+
+        System.out.println("init() called.");
 
         this.model = model;
         this.glyphFont = glyphFont;
-        this.comPortManager = comPortManager;
 
         //==============================================//
         //=================== MENU SETUP ===============//
@@ -119,7 +120,7 @@ public class MainWindowViewController {
 
             // Sometimes the version number will be null, but this should only occur when running from IntelliJ
             // in a development environment (install4j will add the appropriate .dll when a .exe is built)
-            if(versionNumber == null) {
+            if (versionNumber == null) {
                 versionNumber = "?.?.?";
             }
 
@@ -152,15 +153,15 @@ public class MainWindowViewController {
         terminalTabPane.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
 
             // Firstly, check if newly selected tab is the "new terminal tab" (the "+" sign)
-            if(newValue == newTerminalTab) {
+            if (newValue == newTerminalTab) {
                 logger.debug("\"New terminal\" tab clicked.");
                 model.createTerminal();
                 return;
             }
 
             // Selected tab must of been an existing terminal, tell the model about it
-            for(TerminalViewController terminalViewController : terminalViewControllers) {
-                if(terminalViewController.getTerminalTab() == newValue) {
+            for (TerminalViewController terminalViewController : terminalViewControllers) {
+                if (terminalViewController.getTerminalTab() == newValue) {
                     model.newTerminalSelected(terminalViewController.getTerminal());
                     return;
                 }
@@ -176,6 +177,20 @@ public class MainWindowViewController {
 
         statusBarViewController.init(model, glyphFont);
 
+        //==============================================//
+        //===== ATTACH LISTENER TO BLUR MAIN WINDOW ====//
+        //==============================================//
+
+        model.isPrimaryStageBlurred.addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
+                // Blur main window
+                mainVBox.setEffect(new BoxBlur());
+            } else {
+                // Make sure main window is not blurred
+                mainVBox.setEffect(null);
+            }
+        });
+
     }
 
     /**
@@ -189,9 +204,9 @@ public class MainWindowViewController {
 
         Tab terminalTab;
         try {
-            terminalTab = (Tab)loader.load();
-        } catch(IOException e) {
-            return;
+            terminalTab = (Tab) loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         terminalTab.setOnCloseRequest(event -> {
@@ -206,9 +221,9 @@ public class MainWindowViewController {
         // Save a reference to this TerminalView controller
         terminalViewControllers.add(terminalViewController);
 
-        terminalViewController.comSettingsViewController.setComPortManager(comPortManager);
         // Peform a scan of the COM ports on start-up
-        terminalViewController.comSettingsViewController.scanComPorts();
+        //terminalViewController.comSettingsViewController.scanComPorts();
+        terminal.comPortSettings.scanComPorts();
 
         // Add the Tab view to the TabPane
         // NOTE: The last tab is the static "new tab" button, so always insert a new tab
@@ -217,19 +232,18 @@ public class MainWindowViewController {
 
         // Select this newly created terminal tab
         terminalTabPane.getSelectionModel().select(terminalTab);
-
-
     }
 
     /**
      * Handler for a CloseTerminal event sent from the model.
+     *
      * @param terminal
      */
     public void handleCloseTerminal(Terminal terminal) {
 
         // Find the terminal controller associated with this terminal
-        for(TerminalViewController terminalViewController : terminalViewControllers) {
-            if(terminalViewController.getTerminal() == terminal) {
+        for (TerminalViewController terminalViewController : terminalViewControllers) {
+            if (terminalViewController.getTerminal() == terminal) {
                 // We have found the correct terminal to close
                 // Remove both the Tab from the TabPane and the TerminalController
                 // from the list

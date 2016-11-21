@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.util.comport;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortException;
+import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.BytesToString;
 
 import java.util.ArrayList;
@@ -17,8 +18,8 @@ import java.util.List;
  * the future, and this means the code changes just have to occur in this file.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-07-17
  * @since 2016-07-16
+ * @last-modified 2016-10-28
  */
 public class ComPort {
 
@@ -67,6 +68,18 @@ public class ComPort {
     //================================================================================================//
 
     public ComPort() {
+    }
+
+    public ComPort createNew() {
+        return new ComPort();
+    }
+
+    /**
+     * Scans the computer for COM ports, and returns a list of their names.
+     * @return
+     */
+    public String[] scan() {
+        return SerialPortList.getPortNames();
     }
 
     public void setName(String name) { this.name = name; }

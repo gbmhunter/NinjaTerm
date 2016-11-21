@@ -38,7 +38,6 @@ public class LoggerUtils {
 
         // CONSOLE APPENDER
         consoleAppender = new ConsoleAppender<>();
-        //consoleAppender = new CountingConsoleAppender();
         consoleAppender.setContext(loggerContext);
         consoleAppender.setEncoder(patternLayoutEncoder);
         consoleAppender.setName("stdout");

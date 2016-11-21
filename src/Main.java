@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -6,14 +7,14 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.controlsfx.glyphfont.GlyphFont;
-import org.controlsfx.glyphfont.GlyphFontRegistry;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -36,66 +37,62 @@ public class Main extends Application {
 
         logger.debug("start() called.");
 
-        // Massive try/catch over main, to catch any exceptions that were
-        // not caught by anything else (this should not happen on purpose)
-        try {
+        Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            showError(thread, throwable);
+        });
 
 
-            //==============================================//
-            //======== COMMAND-LINE ARGUMENT PARSING =======//
-            //==============================================//
+        //==============================================//
+        //======== COMMAND-LINE ARGUMENT PARSING =======//
+        //==============================================//
 
-            logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
-            for (String arg : getParameters().getRaw()) {
-                if (arg.equals("no-splash"))
-                    disableSplashScreen = true;
+        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
+        for (String arg : getParameters().getRaw()) {
+            if (arg.equals("no-splash"))
+                disableSplashScreen = true;
 
-                if (arg.equals("debug"))
-                    LoggerUtils.startDebuggingToFile();
-            }
-
-            if (disableSplashScreen) {
-                // Skip this function, and go straight to loading the main window.
-                loadMainWindow();
-                return;
-            }
-
-            this.splashScreenStage = primaryStage;
-
-            // Load splashscreen FXML file and get controller
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
-            try {
-                Parent root = loader.load();
-            } catch (IOException e) {
-                return;
-            }
-
-            SplashScreenViewController splashScreenViewController = loader.getController();
-            splashScreenViewController.init();
-
-            Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
-            splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
-                if (newValue) {
-                    loadMainWindow();
-                }
-            });
-
-            primaryStage.initStyle(StageStyle.TRANSPARENT);
-            primaryStage.setScene(splashScreenScene);
-            primaryStage.show();
-
-            splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-                //event.getCharacter();
-                if (event.getCode().isWhitespaceKey()) {
-                    splashScreenViewController.speedUpSplashScreen();
-                }
-            });
-
-            splashScreenViewController.startNameVersionInfoMsg();
-
-        } catch (Exception e) {
-            ExceptionPopup.showAndWait(e);
+            if (arg.equals("debug"))
+                LoggerUtils.startDebuggingToFile();
         }
+
+        if (disableSplashScreen) {
+            // Skip this function, and go straight to loading the main window.
+            loadMainWindow();
+            return;
+        }
+
+        this.splashScreenStage = primaryStage;
+
+        // Load splashscreen FXML file and get controller
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        try {
+            Parent root = loader.load();
+        } catch (IOException e) {
+            return;
+        }
+
+        SplashScreenViewController splashScreenViewController = loader.getController();
+        splashScreenViewController.init();
+
+        Scene splashScreenScene = new Scene(loader.getRoot(), 800, 600, Color.TRANSPARENT);
+        splashScreenViewController.isFinished.addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                loadMainWindow();
+            }
+        });
+
+        primaryStage.initStyle(StageStyle.TRANSPARENT);
+        primaryStage.setScene(splashScreenScene);
+        primaryStage.show();
+
+        splashScreenScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            //event.getCharacter();
+            if (event.getCode().isWhitespaceKey()) {
+                splashScreenViewController.speedUpSplashScreen();
+            }
+        });
+
+        splashScreenViewController.startNameVersionInfoMsg();
     }
 
     public void loadMainWindow() {
@@ -108,17 +105,18 @@ public class Main extends Application {
         glyphFont = new GlyphFont("FontAwesome", 12, "ninja/mbedded/ninjaterm/resources/fontawesome-webfont.ttf");
 
         // Create application model (data/state)
-        Model model = new Model();
+        Model model = new Model(new ComPortFactory());
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
         try {
             Parent root = loader.load();
         } catch (IOException e) {
-            return;
+            throw new RuntimeException(e);
+            //return;
         }
         MainWindowViewController mainWindowViewController = loader.getController();
 
-        mainWindowViewController.init(model, glyphFont, new ComPortManager());
+        mainWindowViewController.init(model, glyphFont);
 
         //mainWindowViewController.addNewTerminal();
 
@@ -146,6 +144,24 @@ public class Main extends Application {
         });
 
         model.createTerminal();
+    }
+
+    private void showError(Thread t, Throwable e) {
+        System.err.println("***Default exception handler***");
+
+        for (Thread thread : Thread.getAllStackTraces().keySet())
+        {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
+            thread.stop();
+        }
+
+        if (Platform.isFxApplicationThread()) {
+            // Write the exception to the logger, and also show pop-up
+            logger.error(StringUtils.throwableToString(e));
+            ExceptionPopup.showAndWait(e);
+        } else {
+            System.err.println("An unexpected error occurred in " + t);
+
+        }
     }
 
 

@@ -1,6 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;

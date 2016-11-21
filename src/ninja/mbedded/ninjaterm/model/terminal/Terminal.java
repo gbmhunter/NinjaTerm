@@ -22,7 +22,7 @@ import java.util.Arrays;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-11
+ * @last-modified   2016-10-28
  */
 public class Terminal {
 
@@ -46,8 +46,10 @@ public class Terminal {
 
     public SimpleBooleanProperty isComPortOpen = new SimpleBooleanProperty(false);
 
+    // PARENT MODEL
     private Model model;
 
+    // CHILD MODELS
     public ComPortSettings comPortSettings;
     public TxRx txRx;
     public Logging logging;
@@ -56,7 +58,7 @@ public class Terminal {
     /**
      * The COM port instance attached to this terminal.
      */
-    public ComPort comPort = new ComPort();
+    public ComPort comPort;
 
     private OnRxDataListener onRxDataListener;
 
@@ -66,14 +68,16 @@ public class Terminal {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public Terminal(Model model) {
+    public Terminal(Model model, ComPort comPort) {
 
         this.model = model;
 
-        comPortSettings = new ComPortSettings(model, this);
+        comPortSettings = new ComPortSettings(model, this, comPort);
         txRx = new TxRx(model, this);
         logging = new Logging(model, this);
         stats = new Stats(this);
+
+        this.comPort = comPort;
 
         onRxDataListener = rxData -> {
             handleOnRxData(rxData);

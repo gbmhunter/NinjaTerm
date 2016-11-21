@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.rxProcessing.streamedText;
+package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
 import org.junit.Before;

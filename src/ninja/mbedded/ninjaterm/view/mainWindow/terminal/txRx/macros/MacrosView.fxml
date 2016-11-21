@@ -1,0 +1,39 @@
+<!--
+* The view for the "Macro" pane in NinjaTerm.
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-11-05
+* @last-modified   2016-11-14
+-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.macros.MacrosViewController"
+      xmlns:fx="http://javafx.com/fxml"
+      alignment="TOP_CENTER"
+      spacing="20"
+      fillWidth="true"
+      minWidth="180"
+      maxWidth="180"
+      stylesheets="/ninja/mbedded/ninjaterm/resources/style.css"
+      styleClass="border">
+    <!--style="-fx-background-color: red;" -->
+
+    <padding>
+        <Insets top="10" bottom="10" left="10" right="10"/>
+    </padding>
+
+    <Label styleClass="h2">Macros</Label>
+
+    <GridPane fx:id="macroGridPane" hgap="5" vgap="5">
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="1">Sequence</Label>
+        <Label GridPane.rowIndex="0" GridPane.columnIndex="2">Send</Label>
+
+        <!-- MACRO ROWS WILL BE INSERTED HERE BY THE CONTROLLER -->
+    </GridPane>
+
+</VBox>
+
+
+

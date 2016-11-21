@@ -1,14 +1,13 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx.formatting;
 
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 
 /**
  * Model containing data and logic for the formatting of TX/RX data.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-26
- * @last-modified   2016-09-26
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-21
+ * @since 2016-09-26
  */
 public class Formatting {
 
@@ -18,6 +17,11 @@ public class Formatting {
         CARRIAGE_RETURN_AND_NEW_LINE,
     }
 
-    public SimpleObjectProperty<EnterKeyBehaviour> selEnterKeyBehaviour = new SimpleObjectProperty<>(EnterKeyBehaviour.CARRIAGE_RETURN);
+    /**
+     * Controls what is send to the COM port (TX) when "ENTER" is pressed.
+     *
+     * Sending a new line is the most common behaviour.
+     */
+    public SimpleObjectProperty<EnterKeyBehaviour> selEnterKeyBehaviour = new SimpleObjectProperty<>(EnterKeyBehaviour.NEW_LINE);
 
 }

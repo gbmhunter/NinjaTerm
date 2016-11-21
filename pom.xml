@@ -4,7 +4,7 @@
   <artifactId>NinjaTerm</artifactId>
   <groupId>NinjaTerm</groupId>
   <packaging>jar</packaging>
-  <version>0.7.2</version>
+  <version>0.8.0</version>
   <name>NinjaTerm</name>
   <repositories>
     <repository>
@@ -52,6 +52,39 @@
       <artifactId>mockito-all</artifactId>
       <version>2.0.2-beta</version>
     </dependency>
+    <dependency>
+      <groupId>org.testfx</groupId>
+      <artifactId>testfx-core</artifactId>
+      <version>4.0.1-alpha</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testfx</groupId>
+      <artifactId>testfx-junit</artifactId>
+      <version>4.0.1-alpha</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.javatuples/javatuples -->
+    <dependency>
+      <groupId>org.javatuples</groupId>
+      <artifactId>javatuples</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.fxmisc.richtext/richtextfx -->
+    <dependency>
+      <groupId>org.fxmisc.richtext</groupId>
+      <artifactId>richtextfx</artifactId>
+      <version>0.7-M2</version>
+    </dependency>
+
   </dependencies>
   <build>
     <sourceDirectory>src/</sourceDirectory>
@@ -59,10 +92,13 @@
     <resources>
       <resource>
         <directory>src</directory>
+        <!-- MAKE SURE TO ADD FILE EXTENSIONS OF ALL FILES YOU WANT INCLUDED HERE! -->
         <includes>
           <include>**/*.png</include>
           <include>**/*.fxml</include>
           <include>**/*.css</include>
+          <include>**/*.html</include>
+          <include>**/*.js</include>
         </includes>
       </resource>
     </resources>

@@ -2,12 +2,11 @@ package ninja.mbedded.ninjaterm.model.terminal.comPortSettings;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.comport.BaudRates;
-import ninja.mbedded.ninjaterm.util.comport.NumDataBits;
-import ninja.mbedded.ninjaterm.util.comport.NumStopBits;
-import ninja.mbedded.ninjaterm.util.comport.Parities;
+import ninja.mbedded.ninjaterm.util.comport.*;
 
 /**
  * Model containing data and logic relating to the COM settings for a terminal.
@@ -16,7 +15,7 @@ import ninja.mbedded.ninjaterm.util.comport.Parities;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-05
- * @last-modified   2016-10-05
+ * @last-modified   2016-10-28
  */
 public class ComPortSettings {
 
@@ -26,8 +25,32 @@ public class ComPortSettings {
     public SimpleObjectProperty<Parities> selParity = new SimpleObjectProperty<>(Parities.NONE);
     public SimpleObjectProperty<NumStopBits> selNumStopBits = new SimpleObjectProperty<>(NumStopBits.ONE);
 
-    public ComPortSettings(Model model, Terminal terminal) {
+    public ObservableList<String> scannedComPorts = FXCollections.observableArrayList();
 
+
+    // PARENT MODEL
+    private Model model;
+
+    private ComPort comPort;
+
+    public ComPortSettings(Model model, Terminal terminal, ComPort comPort) {
+        this.model = model;
+        this.comPort = comPort;
+    }
+
+    public void scanComPorts() {
+        String[] portNames = comPort.scan();
+
+        if (portNames.length == 0) {
+            model.status.addMsg("No COM ports found on this computer.");
+            return;
+        }
+
+        model.status.addMsg("Searched for COM ports. " + portNames.length + " COM port(s) found.");
+
+        // Update the variable which holds all the scanned and found
+        // COM ports (the UI should be listening to changes on this variable)
+        scannedComPorts.setAll(portNames);
     }
 
 }

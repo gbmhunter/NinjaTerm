@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-10-07
+* @last-modified   2016-11-05
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -17,15 +17,15 @@
     <!--style="-fx-background-color: red;" -->
     <VBox spacing="20">
         <padding>
-            <Insets top="10" bottom="10" left="10" right="10"/>
+            <Insets top="5" bottom="5" left="5" right="5"/>
         </padding>
 
         <HBox spacing="10">
             <!-- ========================================= -->
             <!-- ============= STATUS MESSAGES =========== -->
             <!-- ========================================= -->
-            <VBox minHeight="100"
-                  maxHeight="100"
+            <VBox minHeight="50"
+                  maxHeight="50"
                   HBox.hgrow="ALWAYS"
                   styleClass="border">
                 <!-- ScrollPane does not exceed it's parent dimensions -->
@@ -35,34 +35,20 @@
             </VBox>
 
             <!-- ========================================= -->
-            <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
-            <!-- ========================================= -->
-
-            <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="100" contentDisplay="TOP"/>
-
-            <!-- ========================================= -->
             <!-- ================== LEDS ================= -->
             <!-- ========================================= -->
-            <VBox minWidth="100" maxWidth="100"
-                  styleClass="border">
-                <GridPane vgap="5" hgap="5" alignment="CENTER">
-                    <padding>
-                        <Insets top="10" bottom="10" left="10" right="10"/>
-                    </padding>
-                    <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX</Label>
-                    <Led GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="activityTxLed" radius="10" color="#3d2bc6" maxFlashRateMs="150"/>
+            <HBox alignment="CENTER" spacing="10" styleClass="border">
+                    <Label>TX</Label>
+                    <Led fx:id="activityTxLed" radius="10" color="#3d2bc6" maxFlashRateMs="150"/>
 
-                    <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX</Label>
-                    <Led GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="activityRxLed" color="#166b35" radius="10" maxFlashRateMs="150"/>
-
-                </GridPane>
-
-            </VBox>
+                    <Label>RX</Label>
+                    <Led fx:id="activityRxLed" color="#166b35" radius="10" maxFlashRateMs="150"/>
+            </HBox>
         </HBox>
     </VBox>
 
     <!-- ========================================= -->
-    <!-- =============== STATUS BAR ============== -->
+    <!-- =========== LOWER STATUS STRIP ========== -->
     <!-- ========================================= -->
     <HBox minHeight="20" style="-fx-background-color: #CCCCCC;">
         <padding>
