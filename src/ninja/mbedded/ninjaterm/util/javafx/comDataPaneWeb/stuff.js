@@ -16,26 +16,31 @@ $( document ).ready(function() {
 
 function addText(newText)
 {
-    console.log("addText() called with newText = " + newText);
+    java.log("addText() called with newText = " + newText);
 
     if(!newText)
         return;
 
-    var innerHTML = $("#com-data").html();
-    console.log("innerHTML (before add) = " + innerHTML);
+    var lastChild = $("#com-data").children().last();
+    java.log("lastChild = ")
+    java.log(lastChild);
 
-    // Insert before the last </span>
-    innerHTML = innerHTML.substr(0, innerHTML.length - 7) + newText + innerHTML.substr(innerHTML.length - 7);
-    console.log("innerHTML (after add) = " + innerHTML);
 
-    document.getElementById("com-data").innerHTML = innerHTML;
+    java.log("lastChild.html() (before add) = ");
+    java.log(lastChild.html());
+
+    // Add text to this last span element
+    lastChild.html(lastChild.html() + newText);
+
+    java.log("lastChild.html() (after add) = ");
+    java.log(lastChild.html());
 }
 
 function addColor(color) {
     html = "<span style='color: " + color + ";'>";
-    console.log("html = " + html);
+    java.log("html = " + html);
     document.getElementById("com-data").innerHTML = document.getElementById("com-data").innerHTML + html;
-    console.log("innerHTML = " + document.getElementById("com-data").innerHTML);
+    java.log("innerHTML = " + document.getElementById("com-data").innerHTML);
 }
 
 function scrollToBottom() {
@@ -74,29 +79,34 @@ function trim(numChars) {
 
     $("#com-data").children().each(function(index, element) {
 
-        console.log("currChildNode = ")
-        console.log(element);
+        java.log("currChildNode = ")
+        java.log(JSON.stringify(element));
 
         text = $(element).text();
-        console.log("text = ");
-        console.log(text);
+        java.log("element.text() = ");
+        java.log(JSON.stringify(text));
 
         if(text.length > numCharsToRemove) {
+            java.log("element has enough text to satisfy trim() operation.");
             $(element).text(text.slice(numCharsToRemove));
+            numCharsToRemove = 0;
             // We have remove enough chars, stop loop
             return false;
         } else {
+            java.log("element does not has enough text to satisfy trim() operation, removing and progressing through loop.");
             numCharsToRemove -= text.length
             $(element).remove();
 
             if(numCharsToRemove == 0)
-            return false;
+                return false;
         }
 
     });
 
-    if(numCharsToRemove > 0)
-        throw "trim() was requested to remove too many chars.";
+    if(numCharsToRemove > 0) {
+        java.log("trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove);
+        throw "Error";
+    }
 
 }
 

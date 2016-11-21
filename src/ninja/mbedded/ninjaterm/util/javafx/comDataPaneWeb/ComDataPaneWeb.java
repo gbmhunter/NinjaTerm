@@ -4,11 +4,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.scene.control.Label;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -18,11 +13,9 @@ import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
-import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
-import org.w3c.dom.Document;
-
 
 import java.net.URL;
 
@@ -31,13 +24,13 @@ import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedDat
 
 /**
  * UI node which presents COM port data to the user (can be either TX, RX, or both).
- *
+ * <p>
  * Uses a third-party <code>{@link StyledTextArea}</code> to enabled rich-text formatting
  * functionality.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-11-14
  * @last-modified 2016-14-16
+ * @since 2016-11-14
  */
 public class ComDataPaneWeb extends StackPane {
 
@@ -46,21 +39,9 @@ public class ComDataPaneWeb extends StackPane {
     //================================================================================================//
 
     /**
-     * The default the buffer size. This can be changed with <code>setBufferSize()</code>.
+     * The default buffer size.
      */
     private final int DEFAULT_BUFFER_SIZE = 10000;
-
-    /**
-     * Opacity for auto-scroll button (which is just an image) when the mouse is not hovering over it.
-     * This needs to be less than when the mouse is hovering on it.
-     */
-    private static final double AUTO_SCROLL_BUTTON_OPACITY_NON_HOVER = 0.35;
-
-    /**
-     * Opacity for auto-scroll button (which is just an image) when the mouse IS hovering over it.
-     * This needs to be more than when the mouse is not hovering on it.
-     */
-    private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -105,9 +86,13 @@ public class ComDataPaneWeb extends StackPane {
 
     private int currCharPositionInText = 0;
 
+    private int currNumChars = 0;
+
     private WebEngine webEngine;
 
     private double currScrollPos = 0;
+
+    private boolean hasAddDataBeenCalledBefore = false;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -158,11 +143,9 @@ public class ComDataPaneWeb extends StackPane {
         //==============================================//
 
         bufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
-        bufferSize.addListener((observable, oldValue, newValue) -> {
-            trimBufferIfRequired();
-        });
-
-
+//        bufferSize.addListener((observable, oldValue, newValue) -> {
+//            trimBufferIfRequired();
+//        });
 
 
         scrollState.addListener((observable, oldValue, newValue) -> {
@@ -173,17 +156,21 @@ public class ComDataPaneWeb extends StackPane {
 
     /**
      * Enables Firebug Lite for debugging a webEngine.
+     *
      * @param engine the webEngine for which debugging is to be enabled.
      */
     private static void enableFirebug(final WebEngine engine) {
         engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
     }
 
-    public int addData(StreamedData streamedData) {
+    public void addData(StreamedData streamedData) {
 
         logger.debug("addData() called with streamedData = " + streamedData);
 
-        int numCharsAdded = 0;
+        if(!hasAddDataBeenCalledBefore) {
+            appendColor(Color.GREEN);
+            hasAddDataBeenCalledBefore = true;
+        }
 
         // Remember the caret position before insertion of new text,
         // incase we need to use it for setting the scroll position
@@ -223,19 +210,20 @@ public class ComDataPaneWeb extends StackPane {
 
         // If the previous StreamedText object had a colour to apply when the next character was received,
         // add it now
-        if(colorToApplyToNextChar != null) {
+        if (colorToApplyToNextChar != null) {
             appendColor(colorToApplyToNextChar);
             colorToApplyToNextChar = null;
         }
 
         String html;
         html = textToAppend.toString();
-        html = html.replace("\n", "<br>");
+        //html = html.replace("\n", "<br>");
+
         appendHtml(html);
 
-
         // Update the number of chars added with what was added to the last existing text node
-        numCharsAdded += textToAppend.length();
+        currNumChars += textToAppend.toString().length();
+
 
         // Create new text nodes and copy all text
         // This loop won't run if there is no elements in the TextColors array
@@ -278,11 +266,12 @@ public class ComDataPaneWeb extends StackPane {
             appendColor(streamedData.getColourMarkers().get(x).color);
 
             html = textToAppend.toString();
-            html = html.replace("\n", "<br>");
+            //html = html.replace("\n", "<br>");
             appendHtml(html);
 
             // Update the num. chars added with all the text added to this new Text node
-            numCharsAdded += textToAppend.length();
+            //            numCharsAdded += textToAppend.length();
+            currNumChars += textToAppend.length();
 
             //existingTextNodes.add(currIndexToInsertNodeAt, newText);
 
@@ -311,6 +300,18 @@ public class ComDataPaneWeb extends StackPane {
         Double textHeight = getTextHeight();
 
         logger.debug("textHeight = " + textHeight);
+
+        if (currNumChars >= bufferSize.get()) {
+
+            int numCharsToRemove = currNumChars - bufferSize.get();
+            logger.debug("Need to trim display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
+
+            trim(numCharsToRemove);
+            currNumChars = currNumChars - numCharsToRemove;
+
+            logger.debug("currNumChars = " + currNumChars);
+
+        }
 
 //
 //
@@ -347,7 +348,7 @@ public class ComDataPaneWeb extends StackPane {
 
         scrollToBottom();
 
-        return numCharsAdded;
+//        return numCharsAdded;
 
     }
 
@@ -358,18 +359,13 @@ public class ComDataPaneWeb extends StackPane {
 
     /**
      * @return The numbers of chars removed (if any).
-     *
+     * <p>
      * WARNING: If text is trimmed, this will cause the scroll position to jump to the top of the
      * document.
-     *
      */
-    private int trimBufferIfRequired() {
-
-        int numCharsToRemove = 0;
-
-
-
-        return numCharsToRemove;
+    private void trim(int numChasToRemove) {
+        logger.debug("trim() called with numChasToRemove = " + numChasToRemove);
+        webEngine.executeScript("trim(" + numChasToRemove + ")");
     }
 
     /**
@@ -378,7 +374,7 @@ public class ComDataPaneWeb extends StackPane {
      */
     private void handleScrollStateChanged() {
         logger.debug("handleScrollStateChanged() called.");
-        switch(scrollState.get()) {
+        switch (scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 webEngine.executeScript("showDownArrow(false)");
                 break;
@@ -394,8 +390,13 @@ public class ComDataPaneWeb extends StackPane {
 
         // Return if empty string
         // (JS will throw null error)
-        if(html.equals(""))
+        if (html.equals(""))
             return;
+
+        // Escape new lines
+        logger.debug("Non-escaped HTML = " + html);
+        html = StringEscapeUtils.escapeJava(html);
+        logger.debug("Escaped HTML = " + html);
 
         String js = "addText(\"" + html + "\")";
         logger.debug("js = " + js);
@@ -413,20 +414,20 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.executeScript("scrollToBottom()");
     }
 
-    public void log(String text)
-    {
+    public void log(String text) {
         logger.debug("JS: " + text);
     }
 
     /**
      * Called by Javascript when the user scrolls the COM data up or down
+     *
      * @param scrollTop
      */
     public void scrolled(Double scrollTop) {
 
         logger.debug("scrolled() called. scrollTop = " + scrollTop);
 
-        if(scrollTop >= currScrollPos) {
+        if (scrollTop >= currScrollPos) {
             currScrollPos = scrollTop;
             return;
         }
@@ -454,7 +455,7 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     private double getTextHeight() {
-        return (Integer)webEngine.executeScript("getTextHeight()");
+        return (Integer) webEngine.executeScript("getTextHeight()");
     }
 
 }
