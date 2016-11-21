@@ -149,6 +149,8 @@ public class Main extends Application {
     private void showError(Thread t, Throwable e) {
         System.err.println("***Default exception handler***");
 
+        // Stop all threads except this one
+        // @todo Improve the way that the other threads are stopped, the current way is dangerous and unpredictable
         for (Thread thread : Thread.getAllStackTraces().keySet())
         {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
             thread.stop();

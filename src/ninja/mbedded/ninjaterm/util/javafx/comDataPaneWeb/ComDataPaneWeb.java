@@ -47,7 +47,7 @@ public class ComDataPaneWeb extends StackPane {
 
     private final boolean SHOW_FIREBUG = false;
 
-    private final Color DEFAULT_COLOR = Color.GREEN;
+    private final Color DEFAULT_COLOR = new Color(1, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
 
@@ -95,8 +95,6 @@ public class ComDataPaneWeb extends StackPane {
     private WebEngine webEngine;
 
     private double currScrollPos = 0;
-
-    private boolean hasAddDataBeenCalledBefore = false;
 
     private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
 
@@ -245,11 +243,6 @@ public class ComDataPaneWeb extends StackPane {
     public void addData(StreamedData streamedData) {
 
         logger.debug("addData() called with streamedData = " + streamedData);
-
-        if (!hasAddDataBeenCalledBefore) {
-            appendColor(Color.GREEN);
-            hasAddDataBeenCalledBefore = true;
-        }
 
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
