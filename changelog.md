@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.0
 ------
 
 - Added blurb on smart scrolling to homepage, closes #148.
@@ -10,6 +10,7 @@ vX.X.X
 - Macro name is automatically generated when a new macro is added, closes #158.
 - Fixed bug where macro manager left-hand side list text did not update when the macro name was updated, closes #160.
 - Fixed bug where macro pane got squashed when TX/RX text extended of the end of the text view, closes #159.
+- Added basic copy/paste support, closes #133.
 
 v0.7.2
 ------
