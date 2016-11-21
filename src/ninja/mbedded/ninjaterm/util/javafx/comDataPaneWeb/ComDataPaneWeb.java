@@ -5,10 +5,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.concurrent.Worker;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
@@ -132,25 +130,25 @@ public class ComDataPaneWeb extends StackPane {
         webEngine.load(mapUrl.toExternalForm());
         //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
 
-        if(safeToRunScripts.get()) {
+        if (safeToRunScripts.get()) {
             logger.debug("WebView has loaded page and is ready.");
 
             JSObject window = (JSObject) webEngine.executeScript("window");
             window.setMember("java", this);
 
-            if(SHOW_FIREBUG)
+            if (SHOW_FIREBUG)
                 enableFirebug(webEngine);
             webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
         } else {
             safeToRunScripts.addListener((observable, oldValue, newValue) ->
             {
-                if(newValue) {
+                if (newValue) {
                     logger.debug("WebView has loaded page and is ready.");
 
                     JSObject window = (JSObject) webEngine.executeScript("window");
                     window.setMember("java", this);
 
-                    if(SHOW_FIREBUG)
+                    if (SHOW_FIREBUG)
                         enableFirebug(webEngine);
 
                     webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
@@ -167,9 +165,9 @@ public class ComDataPaneWeb extends StackPane {
         //==============================================//
 
         bufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
-//        bufferSize.addListener((observable, oldValue, newValue) -> {
-//            trimBufferIfRequired();
-//        });
+        bufferSize.addListener((observable, oldValue, newValue) -> {
+            trimIfRequired();
+        });
 
 
         //==============================================//
@@ -199,21 +197,28 @@ public class ComDataPaneWeb extends StackPane {
         // This sets the current text color and the current caret color
         appendColor(DEFAULT_COLOR);
 
+        //==============================================//
+        //========= "SAFE TO RUN SCRIPTS" SETUP ========//
+        //==============================================//
+
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                // Your database code here
-                Platform.runLater(() -> {
-                    safeToRunScripts.set(true);
-                });
-            }
-        }, 1000);
+                           @Override
+                           public void run() {
+                               Platform.runLater(() -> {
+                                   // This is hacky! This is just a simple timeout, and which point the webpage inside
+                                   // WebView should have fully loaded.
+                                   safeToRunScripts.set(true);
+                               });
+                           }
+                       },
+                // 1s seems to be enough to let the web page fully load
+                1000);
 
     }
 
     private void handleIsCaretEnabledChange() {
-        if(isCaretEnabled.get()) {
+        if (isCaretEnabled.get()) {
             logger.debug("Showing caret...");
             runScriptWhenReady("showCaret(true)");
         } else {
@@ -239,24 +244,15 @@ public class ComDataPaneWeb extends StackPane {
 
         logger.debug("addData() called with streamedData = " + streamedData);
 
-        if(!hasAddDataBeenCalledBefore) {
+        if (!hasAddDataBeenCalledBefore) {
             appendColor(Color.GREEN);
             hasAddDataBeenCalledBefore = true;
         }
-
-        // Remember the caret position before insertion of new text,
-        // incase we need to use it for setting the scroll position
-//        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
-//        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
-//
-//        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
-//        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
 
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
         //==============================================//
 
-        //Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
 
         // Copy all text before first ColourMarker entry into the first text node
 
@@ -342,12 +338,7 @@ public class ComDataPaneWeb extends StackPane {
             appendHtml(html);
 
             // Update the num. chars added with all the text added to this new Text node
-            //            numCharsAdded += textToAppend.length();
             currNumChars += textToAppend.length();
-
-            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
-
-            //currIndexToInsertNodeAt++;
         }
 
         if (streamedData.getColorToBeInsertedOnNextChar() != null) {
@@ -373,17 +364,7 @@ public class ComDataPaneWeb extends StackPane {
 
         logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
 
-        if (currNumChars >= bufferSize.get()) {
-
-            int numCharsToRemove = currNumChars - bufferSize.get();
-            logger.debug("Need to trim display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
-
-            trim(numCharsToRemove);
-            currNumChars = currNumChars - numCharsToRemove;
-
-            logger.debug("currNumChars = " + currNumChars);
-
-        }
+        trimIfRequired();
 
         Integer textHeightAfterTrim = getTextHeight();
         logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
@@ -393,7 +374,7 @@ public class ComDataPaneWeb extends StackPane {
         //============== SCROLL POSITION ===============//
         //==============================================//
 
-        switch(scrollState.get()) {
+        switch (scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 // Scroll to the bottom
                 scrollToBottom();
@@ -409,7 +390,7 @@ public class ComDataPaneWeb extends StackPane {
                 logger.debug("oldScrollTop = " + oldScrollTop);
 
                 Integer newScrollTop = oldScrollTop - heightChange;
-                if(newScrollTop < 0)
+                if (newScrollTop < 0)
                     newScrollTop = 0;
                 logger.debug("newScrollTop = " + newScrollTop);
 
@@ -447,15 +428,28 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     /**
-     *
+     * Removes the specified number of characters from the start of the COM data displayed to the user.
      */
-    private void trim(int numChasToRemove) {
-        logger.debug("trim() called with numChasToRemove = " + numChasToRemove);
-        webEngine.executeScript("trim(" + numChasToRemove + ")");
+    private void trimIfRequired() {
+
+        logger.debug("trimIfRequired() called.");
+
+        if (currNumChars >= bufferSize.get()) {
+
+            int numCharsToRemove = currNumChars - bufferSize.get();
+            logger.debug("Need to trimIfRequired display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
+
+            webEngine.executeScript("trim(" + numCharsToRemove + ")");
+
+            // Update the character count
+            currNumChars = currNumChars - numCharsToRemove;
+
+            logger.debug("currNumChars = " + currNumChars);
+        }
     }
 
     /**
-     * Updates the visibility of the scroll-to-bottom button.
+     * Updates the visibility of the scroll-to-bottom (the down arrow) button.
      * This should be called when <code>scrollState</code> changes.
      */
     private void handleScrollStateChanged() {
@@ -472,14 +466,18 @@ public class ComDataPaneWeb extends StackPane {
         }
     }
 
+    /**
+     * @param script
+     * @warning This is hacky! Relies on {@code safeToRunScripts}, which is set by a simple timeout.
+     */
     private void runScriptWhenReady(String script) {
         logger.debug("runScriptWhenReady() called with script = " + script);
 
-        if(safeToRunScripts.get()) {
+        if (safeToRunScripts.get()) {
             webEngine.executeScript(script);
         } else {
             safeToRunScripts.addListener((observable, oldValue, newValue) -> {
-                if(newValue) {
+                if (newValue) {
                     webEngine.executeScript(script);
                 }
             });
