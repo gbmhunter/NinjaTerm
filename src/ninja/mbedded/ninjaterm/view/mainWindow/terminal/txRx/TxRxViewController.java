@@ -8,6 +8,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
@@ -573,40 +574,9 @@ public class TxRxViewController {
     }
 
     public void handleKeyTyped(KeyEvent keyEvent) {
-
-        terminal.txRx.handleKeyPressed((byte) keyEvent.getCharacter().charAt(0));
+        terminal.txRx.handleKeyPressed(keyEvent);
     }
 
-    private void recalcHeightOfOneLine() {
-
-        TextFlow textFlow = new TextFlow();
-
-        Text text = new Text();
-        textFlow.getChildren().add(text);
-
-        text.setText("1");
-        double positionOfLine1 = text.getBoundsInParent().getMaxY();
-
-        text.setText("1\n2");
-        double positionOfLine2 = text.getBoundsInParent().getMaxY();
-
-        text.setText("1\n2\n3");
-        double positionOfLine3 = text.getBoundsInParent().getMaxY();
-
-        double heightBetween1And2 = positionOfLine2 - positionOfLine1;
-        double heightBetween2And3 = positionOfLine2 - positionOfLine1;
-
-        if (heightBetween1And2 != heightBetween2And3)
-            throw new RuntimeException("The heights of the lines of text are not the same.");
-
-        //heightOfOneLineOfText = heightBetween1And2;
-
-        // @debug
-        heightOfOneLineOfText = 16.0;
-
-    }
-
-    private double orgSceneX;
     private double orgSceneY;
     private double orgRxDataStackPaneHeight;
 

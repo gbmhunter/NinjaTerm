@@ -50,6 +50,10 @@ body {
     opacity: 1.0;
 }
 
+/* ==============================================================================================*/
+/* ========================== NAME (IN UPPER-RIGHT CORNER) STYLING ==============================*/
+/* ==============================================================================================*/
+
 #name {
     width: 100px;
     height: 25px;
@@ -58,20 +62,30 @@ body {
     top: 0px;
     right: 0px;
 
+    /* This is so we can center the #name-text div */
     display: table;
 
+    /* Add some transparency to the background, so we can still see
+    the COM data and the scroll bars */
     background-color: rgba(150, 150, 150, 0.5);
 
 }
 
 #name-text {
     color: white;
+
+    /* Center the text */
     display: table-cell;
     vertical-align: middle;
     text-align: center;
+
     font-family: "Arial";
     font-size: 12px;
 }
+
+/* ==============================================================================================*/
+/* ======================================== CARET STYLING =======================================*/
+/* ==============================================================================================*/
 
 #caret {
     -webkit-animation-direction: normal;

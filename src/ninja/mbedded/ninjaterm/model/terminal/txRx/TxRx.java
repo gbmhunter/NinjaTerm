@@ -3,6 +3,9 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
@@ -108,8 +111,40 @@ public class TxRx {
 
     }
 
-    public void handleKeyPressed(byte asciiCodeForKey) {
-        logger.debug("handleKeyPressed() called.");
+    public void handleKeyPressed(KeyEvent keyEvent) {
+        logger.debug("handleKeyPressed() called with keyEvent = " + keyEvent);
+
+        //==============================================//
+        //============ LOOK FOR COPY/PASTE =============//
+        //==============================================//
+
+        // PASTE
+        if(keyEvent.isControlDown() && keyEvent.getCharacter().equals("\u0016")) {
+            logger.debug("Detected paste command.");
+
+            if(!Clipboard.getSystemClipboard().hasContent(DataFormat.PLAIN_TEXT)) {
+                model.status.addErr("Clipboard did not contain plain text. Can only paste plain text into TX.");
+                return;
+            }
+
+            String contents = Clipboard.getSystemClipboard().getString();
+            logger.debug("Clipboard contents = " + contents);
+
+            terminal.txRx.addTxCharsToSend(contents.getBytes());
+
+            if(terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
+                terminal.txRx.sendBufferedTxDataToSerialPort();
+            }
+
+            return;
+        }
+
+
+        //==============================================//
+        //========= HANDLE STANDARD KEY PRESS ==========//
+        //==============================================//
+
+        char asciiCodeForKey = (char)keyEvent.getCharacter().charAt(0);
 
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
@@ -117,7 +152,7 @@ public class TxRx {
         if ((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
                 display.backspaceRemovesLastTypedChar.get()) {
 
-            if ((char) asciiCodeForKey == '\b') {
+            if (asciiCodeForKey == '\b') {
                 // We need to remove the last typed char from the "to send" TX buffer
                 removeLastCharInTxBuffer();
                 return;
@@ -126,7 +161,7 @@ public class TxRx {
 
         // Look for enter. If enter was pressed, we need to insert the right chars as
         // set by the user in the ("enter key behaviour" radio buttons).
-        if ((char) asciiCodeForKey == '\r') {
+        if (asciiCodeForKey == '\r') {
             logger.debug("Enter key was pressed.");
 
             switch (formatting.selEnterKeyBehaviour.get()) {
@@ -145,7 +180,7 @@ public class TxRx {
         } else {
             // Key pressed was NOT enter,
             // so append the character to the end of the "to send" TX buffer
-            addTxCharsToSend(new byte[]{asciiCodeForKey});
+            addTxCharsToSend(new byte[]{(byte)asciiCodeForKey});
         }
 
         // Check so see what TX mode we are in
@@ -155,7 +190,7 @@ public class TxRx {
                 break;
             case SEND_TX_CHARS_ON_ENTER:
                 // Check for enter key before sending data
-                if (((char) asciiCodeForKey == '\r'))
+                if ((asciiCodeForKey == '\r'))
                     sendBufferedTxDataToSerialPort();
                 break;
             default:

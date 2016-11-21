@@ -3,6 +3,9 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
@@ -158,13 +161,21 @@ public class TerminalViewController {
             handleKeyTyped(ke);
         });
 
-        /*terminalTab.getContent().setFocusTraversable(true);
-        terminalTab.getContent().onKeyTypedProperty().addListener((observable, oldValue, newValue) -> {
-            System.out.println("TESTING!");
-        });*/
+        terminalTab.getContent().addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            logger.debug("Key pressed. event.getCode = " + event.getCode());
 
+            KeyCodeCombination copyKeyCodeCompination = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
 
+            if (copyKeyCodeCompination.match(event)) {
+                logger.debug("CTRL+C pressed");
 
+            }
+
+            if(event.isControlDown() && event.getCode() == KeyCode.V) {
+                logger.debug("CTRL+V pressed");
+                // e.consume();
+            }
+        });
 
         //==============================================//
         //============== INIT LOGGING TAB ==============//
