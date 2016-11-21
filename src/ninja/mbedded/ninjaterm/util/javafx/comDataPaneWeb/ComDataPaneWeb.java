@@ -47,7 +47,7 @@ public class ComDataPaneWeb extends StackPane {
 
     private final boolean SHOW_FIREBUG = false;
 
-    private final Color DEFAULT_COLOR = new Color(1, 1, 0, 1);
+    private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
 
