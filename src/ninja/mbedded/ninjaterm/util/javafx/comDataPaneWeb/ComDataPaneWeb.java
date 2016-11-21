@@ -33,7 +33,7 @@ import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedDat
  * functionality.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-14-16
+ * @last-modified 2016-14-21
  * @since 2016-11-14
  */
 public class ComDataPaneWeb extends StackPane {
@@ -46,6 +46,8 @@ public class ComDataPaneWeb extends StackPane {
      * The default buffer size.
      */
     private final int DEFAULT_BUFFER_SIZE = 10000;
+
+    private final boolean SHOW_FIREBUG = false;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -85,10 +87,6 @@ public class ComDataPaneWeb extends StackPane {
     public SimpleIntegerProperty bufferSize;
 
     private SimpleObjectProperty<ScrollState> scrollState = new SimpleObjectProperty<>(ScrollState.FIXED_TO_BOTTOM);
-
-    private Text caretText;
-
-    private int currCharPositionInText = 0;
 
     private int currNumChars = 0;
 
@@ -138,7 +136,8 @@ public class ComDataPaneWeb extends StackPane {
             JSObject window = (JSObject) webEngine.executeScript("window");
             window.setMember("java", this);
 
-            enableFirebug(webEngine);
+            if(SHOW_FIREBUG)
+                enableFirebug(webEngine);
             webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
         } else {
             safeToRunScripts.addListener((observable, oldValue, newValue) ->
@@ -149,7 +148,9 @@ public class ComDataPaneWeb extends StackPane {
                     JSObject window = (JSObject) webEngine.executeScript("window");
                     window.setMember("java", this);
 
-                    //enableFirebug(webEngine);
+                    if(SHOW_FIREBUG)
+                        enableFirebug(webEngine);
+
                     webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
 
                     // Call to setup defaults
@@ -185,6 +186,14 @@ public class ComDataPaneWeb extends StackPane {
             handleNameChanged();
         });
 
+        //==============================================//
+        //================= CARET SETUP ================//
+        //==============================================//
+
+        isCaretEnabled.addListener((observable, oldValue, newValue) -> {
+            handleIsCaretEnabledChange();
+        });
+
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -196,6 +205,16 @@ public class ComDataPaneWeb extends StackPane {
             }
         }, 1000);
 
+    }
+
+    private void handleIsCaretEnabledChange() {
+        if(isCaretEnabled.get()) {
+            logger.debug("Showing caret...");
+            runScriptWhenReady("showCaret(true)");
+        } else {
+            logger.debug("Hiding caret...");
+            runScriptWhenReady("showCaret(false)");
+        }
     }
 
     /**

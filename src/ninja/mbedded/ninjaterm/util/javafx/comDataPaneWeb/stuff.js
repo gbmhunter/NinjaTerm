@@ -21,7 +21,12 @@ function addText(newText)
     if(!newText)
         return;
 
-    var lastChild = $("#com-data").children().last();
+    if(isCaretShown) {
+        lastChild = $("#com-data").children().last().prev();
+    } else {
+        lastChild = $("#com-data").children().last();
+    }
+
     java.log("lastChild = ")
     java.log(lastChild);
 
@@ -39,8 +44,15 @@ function addText(newText)
 function addColor(color) {
     html = "<span style='color: " + color + ";'>";
     java.log("html = " + html);
-    document.getElementById("com-data").innerHTML = document.getElementById("com-data").innerHTML + html;
-    java.log("innerHTML = " + document.getElementById("com-data").innerHTML);
+
+    if(isCaretShown) {
+        // If the caret is shown, we have to insert this new color before
+        // the caret node
+        $(html).insertBefore("#caret")
+    } else {
+        $("#com-data").append(html);
+    }
+
 }
 
 function scrollToBottom() {
@@ -126,5 +138,26 @@ function trim(numChars) {
 
 }
 
+function showCaret(trueFalse) {
+    if(trueFalse) {
+        // Create cursor
+        java.log("Displaying caret...");
+
+//        java.log("$('#com-data') (before adding caret) = " + JSON.stringify($("#com-data")));
+        $("#com-data").append('<span id="caret">█</span>');
+//        java.log("$('#com-data') (after adding caret) = " + JSON.stringify($("#com-data")));
+
+        isCaretShown = true;
+
+    } else {
+        java.log("Hiding caret...");
+
+        $("#caret").remove();
+
+        isCaretShown = false;
+    }
+}
+
+isCaretShown = false;
 
 

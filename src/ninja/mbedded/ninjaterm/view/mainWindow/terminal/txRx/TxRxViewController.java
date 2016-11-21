@@ -136,13 +136,6 @@ public class TxRxViewController {
     private ColouriserViewController colouriserViewController;
     private FiltersViewController filtersViewController;
 
-    /**
-     * This is used to remember how many chars are in the RX text nodes, incase we need to trim the nodes
-     * due to the buffer size. This is calculated incrementaly rather than recalculated from all off the nodes
-     * (which would be processor intensive)
-     */
-    private int numCharsInRxTextNodes = 0;
-
     private double heightOfOneLineOfText = 0.0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -328,6 +321,8 @@ public class TxRxViewController {
             logger.debug("Selected layout option has been changed.");
             updateTxRxPaneLayout();
         });
+
+        updateTxRxPaneLayout();
 
         //==============================================//
         //============== SETUP RX DATA PANE ============//
@@ -535,19 +530,14 @@ public class TxRxViewController {
                     dataContainerGridPane.getChildren().remove(draggableHBox);
                 }
 
-                //rxComDataPane.maxHeight(Control.USE_COMPUTED_SIZE);
-                //rxComDataPane.minHeight(Control.USE_COMPUTED_SIZE);
-                //rxComDataPane.prefHeight(Control.USE_COMPUTED_SIZE);
-
                 // Let the first row grow to max. height, and max the 2 and 3rd rows disappear (no height)
                 dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(Control.USE_COMPUTED_SIZE);
                 dataContainerGridPane.getRowConstraints().get(1).setMaxHeight(0.0);
                 dataContainerGridPane.getRowConstraints().get(2).setMaxHeight(0.0);
 
                 // Add the caret in the shared pane
-//                if (!rxDataTextFlow.getChildren().contains(caretText)) {
-//                    rxDataTextFlow.getChildren().add(caretText);
-//                }
+                rxComDataPane.isCaretEnabled.set(true);
+                txComDataPane.isCaretEnabled.set(false);
 
                 break;
             case SEPARATE_TX_RX:
@@ -563,20 +553,14 @@ public class TxRxViewController {
                     dataContainerGridPane.getChildren().add(draggableHBox);
                 }
 
-                // Remove the caret in the shared pane
-//                if (rxDataTextFlow.getChildren().contains(caretText)) {
-//                    rxDataTextFlow.getChildren().remove(caretText);
-//                }
-
-                // Add the caret to the TX pane
-//                if (!txTextFlow.getChildren().contains(caretText)) {
-//                    txTextFlow.getChildren().add(caretText);
-//                }
-
                 // Let the first row grow to max. height, and max the 2 and 3rd rows disappear (no height)
                 dataContainerGridPane.getRowConstraints().get(0).setMaxHeight(Control.USE_COMPUTED_SIZE);
                 dataContainerGridPane.getRowConstraints().get(1).setMaxHeight(Control.USE_COMPUTED_SIZE);
                 dataContainerGridPane.getRowConstraints().get(2).setMaxHeight(Control.USE_COMPUTED_SIZE);
+
+                // Add the caret in the TX pane
+                rxComDataPane.isCaretEnabled.set(false);
+                txComDataPane.isCaretEnabled.set(true);
 
                 // Force a resize, this will take the old ratio into account
                 // from last time we were in this state
