@@ -3,6 +3,8 @@ vX.X.X
 
 - Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.
 - Brightened the default data colour, closes #162.
+- Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.
+- Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.
 
 v0.8.0
 ------

@@ -208,6 +208,10 @@ public class TxRxViewController {
             terminal.txRx.clearTxAndRxData();
         });
 
+        terminal.txRx.txDataClearedListeners.add(() -> {
+            txComDataPane.clearData();
+        });
+
         terminal.txRx.rxDataClearedListeners.add(() -> {
             rxComDataPane.clearData();
         });

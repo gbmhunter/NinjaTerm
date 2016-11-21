@@ -410,9 +410,12 @@ public class ComDataPaneWeb extends StackPane {
         // Remove all COM data
         webEngine.executeScript("clearData()");
 
+        // Re-show the caret, if it is enabled
+        handleIsCaretEnabledChange();
+
         // Add new default span (since all existing ones have now
         // been deleted)
-        appendColor(Color.GREEN);
+        appendColor(DEFAULT_COLOR);
 
         // Reset scrolling
         setComDataWrapperScrollTop(0);
@@ -420,6 +423,8 @@ public class ComDataPaneWeb extends StackPane {
 
         // Reset character count
         currNumChars = 0;
+
+
     }
 
     /**
@@ -520,6 +525,7 @@ public class ComDataPaneWeb extends StackPane {
      *
      * @param scrollTop
      */
+    @SuppressWarnings("unused")
     public void scrolled(Double scrollTop) {
 
         logger.debug("scrolled() called. scrollTop = " + scrollTop);
@@ -543,6 +549,7 @@ public class ComDataPaneWeb extends StackPane {
         currScrollPos = scrollTop;
     }
 
+    @SuppressWarnings("unused")
     public void downArrowClicked() {
         logger.debug("Down arrow clicked.");
 

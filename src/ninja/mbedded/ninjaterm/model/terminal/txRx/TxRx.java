@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.input.Clipboard;
@@ -18,7 +17,6 @@ import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
-import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -56,7 +54,8 @@ public class TxRx {
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
 
-    public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
+    public List<DataClearedListener> txDataClearedListeners = new ArrayList<>();
+    public List<DataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     public RxDataEngine rxDataEngine = new RxDataEngine();
 
@@ -299,16 +298,16 @@ public class TxRx {
         // Clear all internal buffers
         rxDataEngine.clearAllData();
 
-        emitEventToClearTxRxDataOnUI();
-
-        model.status.addMsg("Terminal TX/RX text cleared.");
-    }
-
-    private void emitEventToClearTxRxDataOnUI() {
         // Emit RX data cleared event for the UI
-        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
+
+        for (DataClearedListener txDataClearedListener : txDataClearedListeners) {
+            txDataClearedListener.run();
+        }
+
+        model.status.addMsg("Terminal TX/RX text cleared.");
     }
 
     /**
@@ -316,7 +315,7 @@ public class TxRx {
      */
     private void updateBufferedRxDataWithNewFilterPattern() {
         // Emit RX data cleared event
-        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
     }
@@ -335,8 +334,13 @@ public class TxRx {
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
-            emitEventToClearTxRxDataOnUI();
+            for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+                rxDataClearedListener.run();
+            }
+
+            // Now re-run filter. This will re-populate the RX data that the user sees
             rxDataEngine.rerunFilterOnExistingData();
+
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
 
