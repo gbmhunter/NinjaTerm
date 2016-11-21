@@ -14,7 +14,7 @@ import java.io.StringWriter;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-18
- * @last-modified 2016-10-21
+ * @last-modified 2016-11-14
  */
 public class ExceptionPopup {
 
@@ -27,7 +27,7 @@ public class ExceptionPopup {
      *
      * @param ex
      */
-    public static void showAndWait(Exception ex) {
+    public static void showAndWait(Throwable ex) {
 
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Exception Dialog");
@@ -35,6 +35,11 @@ public class ExceptionPopup {
         // Ask the user to create a new issue on the GitHub repo
         alert.setHeaderText("Hot dang, an unexpected exception occurred! If you want this looked at, please copy the textual information below and create a new issue on the GitHub repo at www.github.com/mbedded-ninja/NinjaTerm/issues (while also adding any other information that may help). I promise to do my best to resolve the problem!");
         alert.setContentText(ex.getMessage());
+
+        // Fix the alert dialogue window size. Without this code,
+        // the window can take up the entire width of the screen
+        alert.setResizable(true);
+        alert.getDialogPane().setPrefSize(600, 400);
 
         // Create expandable Exception.
         StringWriter sw = new StringWriter();

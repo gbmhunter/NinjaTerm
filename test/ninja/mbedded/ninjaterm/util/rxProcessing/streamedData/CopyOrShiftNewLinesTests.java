@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.rxProcessing.streamedText;
+package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import org.junit.Before;

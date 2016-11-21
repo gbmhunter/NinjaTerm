@@ -1,24 +1,23 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings;
 
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.managers.ComPortManager;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comport.*;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Controller for the "COM Settings tab" which is part of the main window.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-07-10
- * @last-modified   2016-10-05
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @since 2016-07-10
+ * @last-modified 2016-10-28
  */
 public class ComSettingsViewController {
 
@@ -52,8 +51,7 @@ public class ComSettingsViewController {
     //================================================================================================//
 
     private Model model;
-
-    private ComPortManager comPortManager;
+    private Terminal terminal;
 
     private GlyphFont glyphFont;
 
@@ -69,6 +67,7 @@ public class ComSettingsViewController {
     public void init(Model model, Terminal terminal, GlyphFont glyphFont) {
 
         this.model = model;
+        this.terminal = terminal;
         this.glyphFont = glyphFont;
 
         // Attach handler for "Scan" button press
@@ -113,11 +112,19 @@ public class ComSettingsViewController {
         });
 
         //==============================================//
+        //====== ATTACH LISTENERS TO COM PORT SCAN =====//
+        //==============================================//
+
+        terminal.comPortSettings.scannedComPorts.addListener((ListChangeListener.Change<? extends String> c) -> {
+            handleComPortsScanned();
+        });
+
+        //==============================================//
         //=== ATTACH LISTENERS TO COM PORT OPEN/CLOSE ==//
         //==============================================//
 
         terminal.isComPortOpen.addListener((observable, oldValue, newValue) -> {
-            if(!newValue)
+            if (!newValue)
                 setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
             else
                 setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.CLOSE);
@@ -154,39 +161,22 @@ public class ComSettingsViewController {
         }
     }
 
-//    public void setStatusBarController(Model model) {
-//        this.model = model;
-//    }
 
     private void scanButtonPressed() {
         logger.debug("Scan button pressed.");
 
-        scanComPorts();
+        //        logger.debug(this.getClass().getName() + ".scanComPorts() called.");
+        terminal.comPortSettings.scanComPorts();
     }
 
-    public void scanComPorts() {
-
-//        logger.debug(this.getClass().getName() + ".scanComPorts() called.");
-
+    private void handleComPortsScanned() {
         // Clear any existing COM ports that are in the combobox from a previous scan
         foundComPortsComboBox.getItems().clear();
 
-        String[] portNames = comPortManager.scan();
-
-        if(portNames.length == 0) {
-            model.status.addMsg("No COM ports found on this computer.");
-            return;
-        }
-
-        model.status.addMsg("Searched for COM ports. " + portNames.length + " COM port(s) found.");
-        foundComPortsComboBox.getItems().addAll(portNames);
+        foundComPortsComboBox.getItems().addAll(terminal.comPortSettings.scannedComPorts);
 
         // Select first one in list for convenience
         foundComPortsComboBox.getSelectionModel().select(0);
-    }
-
-    public void setComPortManager(ComPortManager comPortManager) {
-        this.comPortManager = comPortManager;
     }
 
 }

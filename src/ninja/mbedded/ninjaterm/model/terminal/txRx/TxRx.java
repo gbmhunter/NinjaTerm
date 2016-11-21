@@ -1,17 +1,22 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.DataFormat;
+import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.colouriser.Colouriser;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
+import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -41,10 +46,11 @@ public class TxRx {
     public Formatting formatting = new Formatting();
     public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
+    public MacroManager macroManager;
 
     public ObservableList<Byte> toSendTxData = FXCollections.observableArrayList();
-    public SimpleStringProperty txData = new SimpleStringProperty("");
 
+    public List<StreamedDataListener> txDataToDisplayListeners = new ArrayList<>();
 
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
@@ -75,13 +81,11 @@ public class TxRx {
         this.model = model;
         this.terminal = terminal;
 
+        macroManager = new MacroManager(model, terminal);
+
         //====================================//
         //========= BUFFER-SIZE SETUP ========//
         //====================================//
-
-        display.bufferSizeChars.addListener((observable, oldValue, newValue) -> {
-            trimTxBuffer();
-        });
 
         // Bind the RX data engine's buffer size to the value held in the
         // display class (the value in the display class will be updated by the
@@ -107,12 +111,40 @@ public class TxRx {
 
     }
 
-    public void handleKeyPressed(byte asciiCodeForKey) {
-        logger.debug("handleKeyPressed() called.");
-        if (terminal.comPort.isPortOpen() == false) {
-            model.status.addErr("Cannot send data to COM port, port is not open.");
+    public void handleKeyPressed(KeyEvent keyEvent) {
+        logger.debug("handleKeyPressed() called with keyEvent = " + keyEvent);
+
+        //==============================================//
+        //============ LOOK FOR COPY/PASTE =============//
+        //==============================================//
+
+        // PASTE
+        if(keyEvent.isControlDown() && keyEvent.getCharacter().equals("\u0016")) {
+            logger.debug("Detected paste command.");
+
+            if(!Clipboard.getSystemClipboard().hasContent(DataFormat.PLAIN_TEXT)) {
+                model.status.addErr("Clipboard did not contain plain text. Can only paste plain text into TX.");
+                return;
+            }
+
+            String contents = Clipboard.getSystemClipboard().getString();
+            logger.debug("Clipboard contents = " + contents);
+
+            terminal.txRx.addTxCharsToSend(contents.getBytes());
+
+            if(terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
+                terminal.txRx.sendBufferedTxDataToSerialPort();
+            }
+
             return;
         }
+
+
+        //==============================================//
+        //========= HANDLE STANDARD KEY PRESS ==========//
+        //==============================================//
+
+        char asciiCodeForKey = (char)keyEvent.getCharacter().charAt(0);
 
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
@@ -120,7 +152,7 @@ public class TxRx {
         if ((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
                 display.backspaceRemovesLastTypedChar.get()) {
 
-            if ((char) asciiCodeForKey == '\b') {
+            if (asciiCodeForKey == '\b') {
                 // We need to remove the last typed char from the "to send" TX buffer
                 removeLastCharInTxBuffer();
                 return;
@@ -129,19 +161,18 @@ public class TxRx {
 
         // Look for enter. If enter was pressed, we need to insert the right chars as
         // set by the user in the ("enter key behaviour" radio buttons).
-        if ((char) asciiCodeForKey == '\r') {
+        if (asciiCodeForKey == '\r') {
             logger.debug("Enter key was pressed.");
 
             switch (formatting.selEnterKeyBehaviour.get()) {
                 case CARRIAGE_RETURN:
-                    addTxCharToSend((byte) '\r');
+                    addTxCharsToSend(new byte[]{'\r'});
                     break;
                 case NEW_LINE:
-                    addTxCharToSend((byte) '\n');
+                    addTxCharsToSend(new byte[]{'\n'});
                     break;
                 case CARRIAGE_RETURN_AND_NEW_LINE:
-                    addTxCharToSend((byte) '\r');
-                    addTxCharToSend((byte) '\n');
+                    addTxCharsToSend(new byte[]{'\r', '\n'});
                     break;
                 default:
                     throw new RuntimeException("selEnterKeyBehaviour was not recognised.");
@@ -149,7 +180,7 @@ public class TxRx {
         } else {
             // Key pressed was NOT enter,
             // so append the character to the end of the "to send" TX buffer
-            addTxCharToSend(asciiCodeForKey);
+            addTxCharsToSend(new byte[]{(byte)asciiCodeForKey});
         }
 
         // Check so see what TX mode we are in
@@ -159,7 +190,7 @@ public class TxRx {
                 break;
             case SEND_TX_CHARS_ON_ENTER:
                 // Check for enter key before sending data
-                if (((char) asciiCodeForKey == '\r'))
+                if ((asciiCodeForKey == '\r'))
                     sendBufferedTxDataToSerialPort();
                 break;
             default:
@@ -167,7 +198,18 @@ public class TxRx {
         }
     }
 
-    private void sendBufferedTxDataToSerialPort() {
+    /**
+     * Send any data that is in the TX buffer to the COM port.
+     *
+     * This will return without sending if the COM port is not open.
+     */
+    public void sendBufferedTxDataToSerialPort() {
+
+        if (terminal.comPort.isPortOpen() == false) {
+            model.status.addErr("Cannot send data to COM port, port is not open.");
+            return;
+        }
+
         // Send data to COM port, and update stats (both local and global)
         byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
@@ -215,22 +257,25 @@ public class TxRx {
      *
      * @param data
      */
-    public void addTxCharToSend(byte data) {
+    public void addTxCharsToSend(byte[] data) {
 
-        System.out.printf(getClass().getName() + ".addTxCharToSend() called with data = 0x%02X\r\n", data);
+        System.out.printf(getClass().getName() + ".addTxCharsToSend() called with data = " + Debugging.toString(data));
 
-        // Create string from data
-        /*String dataAsString = "";
+        // Add the data to the "to send" TX buffer
+        for(byte dataByte : data) {
+            toSendTxData.add(dataByte);
+        }
+
+        // Add to TX data that the user sees displayed in UI
+        String dataAsString = "";
         for(int i = 0; i < data.length; i++) {
             dataAsString = dataAsString + (char)data[i];
-        }*/
+        }
 
-        txData.set(txData.get() + (char) data);
-        toSendTxData.add(data);
-
-        if (txData.get().length() > display.bufferSizeChars.get()) {
-            // Truncate TX data, removing old characters
-            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
+        for(StreamedDataListener streamedDataListener : txDataToDisplayListeners) {
+            StreamedData txStreamedData = new StreamedData();
+            txStreamedData.append(dataAsString);
+            streamedDataListener.run(txStreamedData);
         }
 
     }
@@ -241,7 +286,8 @@ public class TxRx {
             // Remove the last char from both the "to send" TX buffer,
             // and the TX display string
             toSendTxData.remove(toSendTxData.size() - 1);
-            txData.set(txData.get().substring(0, txData.get().length() - 1));
+            //txDataToDisplay.set(txDataToDisplay.get().substring(0, txDataToDisplay.get().length() - 1));
+            // TODO: 2016-11-16 Implement
         }
     }
 
@@ -257,19 +303,6 @@ public class TxRx {
 
         rxDataEngine.parse(data);
 
-    }
-
-    public void trimTxBuffer() {
-
-        if (txData.get().length() > display.bufferSizeChars.get()) {
-            // Truncate TX data, removing old characters
-            txData.set(StringUtils.removeOldChars(txData.get(), display.bufferSizeChars.get()));
-        }
-
-        /*if (rxDataEngine.rawRxData.get().length() > display.bufferSizeChars.get()) {
-            // Remove old characters from buffer
-            rxDataEngine.rawRxData.set(StringUtils.removeOldChars(rxDataEngine.rawRxData.get(), display.bufferSizeChars.get()));
-        }*/
     }
 
     /**

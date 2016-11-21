@@ -3,16 +3,21 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings.ComSettingsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.logging.LoggingViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.stats.StatsViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
+import org.slf4j.Logger;
 
 import java.util.Optional;
 
@@ -20,8 +25,8 @@ import java.util.Optional;
  * Controller for the "terminal" which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-04
  * @since 2016-08-23
+ * @last-modified 2016-11-05
  */
 public class TerminalViewController {
 
@@ -62,6 +67,8 @@ public class TerminalViewController {
     private Model model;
 
     private OnRxDataListener onRxDataListener;
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     public TerminalViewController() {
     }
@@ -143,7 +150,31 @@ public class TerminalViewController {
         // NOTE: KEY_TYPED is ideal because it handles the pressing of shift to make capital
         // letters automatically (so we don't have to worry about them here)
         terminalTab.getContent().addEventFilter(KeyEvent.KEY_TYPED, ke -> {
+
+            // Catch all key-presses that occur inside a TextInputControl object, and prevent them
+            // from being sent to the COM port
+            if(ke.getTarget() instanceof TextInputControl){
+                logger.debug("Key was pressed inside a TextInputControl object, so not sending to COM port.");
+                return;
+            }
+
             handleKeyTyped(ke);
+        });
+
+        terminalTab.getContent().addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            logger.debug("Key pressed. event.getCode = " + event.getCode());
+
+            KeyCodeCombination copyKeyCodeCompination = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+
+            if (copyKeyCodeCompination.match(event)) {
+                logger.debug("CTRL+C pressed");
+
+            }
+
+            if(event.isControlDown() && event.getCode() == KeyCode.V) {
+                logger.debug("CTRL+V pressed");
+                // e.consume();
+            }
         });
 
         //==============================================//

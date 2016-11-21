@@ -20,8 +20,8 @@ void loop() {
 
   Serial.println("\x1B[31mred");
   delay(DISPLAY_PERIOD);
-  /*Serial.println("\x1B[32mnormal green");
-  delay(DISPLAY_PERIOD);*/
+  Serial.println("\x1B[32mgreen");
+  delay(DISPLAY_PERIOD);
 
 }
 

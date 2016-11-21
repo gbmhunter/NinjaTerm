@@ -157,3 +157,56 @@ which are displaying dynamic content */
     -fx-font-size: 14px;
     -fx-fill: #555555;
 }
+
+/* =========================================== */
+/* ================ MODAL DIALOG ============= */
+/* =========================================== */
+
+.root {
+  -fx-glass-color: rgba(95, 158, 160, 0.9);
+}
+
+/* =========================================== */
+/* ============= UNDERLINE STYLING =========== */
+/* =========================================== */
+
+/* This targets a Line node. Used to underlining things such as text headers */
+.underline {
+    -fx-stroke: silver;
+}
+
+/* =========================================== */
+/* ============== HEADING STYLING ============ */
+/* =========================================== */
+
+.h2 {
+    -fx-font-size: 16px;
+}
+
+/* =========================================== */
+/* ========== RICH TEXT AREA STYLING ========= */
+/* =========================================== */
+
+/* NONE OF THESE SEEM TO WORK! */
+
+.caret {
+    -fx-stroke: green;
+    /*-fx-stroke-width: 10px;*/
+}
+
+.styled-text-area .paragraph-box .paragraph-text {
+    -fx-padding: 10px 10px 10px 10px;
+}
+
+.styled-text-area .paragraph-box:last-paragraph .paragraph-text {
+    -fx-padding: 0 5px 5px 5px;
+}
+
+.styled-text-area .paragraph-box:first-paragraph .paragraph-text {
+    -fx-padding: 5px 5px 0 5px;
+}
+
+.styled-text-area .text{
+
+    -fx-fill: yellow;
+}

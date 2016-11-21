@@ -1,16 +1,23 @@
 package ninja.mbedded.ninjaterm.model;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.comport.ComPort;
+import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Model for the NinjaTerm application.
@@ -21,7 +28,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-12
+ * @last-modified 2016-11-08
  */
 public class Model {
 
@@ -39,17 +46,31 @@ public class Model {
 
     public List<TerminalListener> closedTerminalListeners = new ArrayList<>();
 
+    private ComPortFactory comPortFactory;
+
+    /**
+     * Determines whether the primary stage in the UI is blurred. Useful when secondary
+     * modal windows are shown.
+     */
+    public SimpleBooleanProperty isPrimaryStageBlurred = new SimpleBooleanProperty();
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    public Model() {
-         //status = new Status(this);
+    /**
+     * Basic constructor. Passing in the type of the COM port object to create allows
+     * a mocked COM port object to be inserted for application testing, but a real object
+     * to be inserted when the normal application is run.
+     * @param comPortFactory
+     */
+    public Model(ComPortFactory comPortFactory) {
+         this.comPortFactory = comPortFactory;
     }
 
     public void createTerminal() {
         logger.debug("createTerminal() called.");
 
         // Create a new Terminal object in the model
-        Terminal terminal = new Terminal(this);
+        Terminal terminal = new Terminal(this, comPortFactory.create());
 
         // Make sure the model has a record to this newly created terminal
         terminals.add(terminal);
@@ -102,6 +123,7 @@ public class Model {
             if(terminal.isComPortOpen.get())
                 terminal.closeComPort();
         }
+
     }
 
     /**

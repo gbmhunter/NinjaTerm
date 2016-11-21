@@ -2,7 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedText.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

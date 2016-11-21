@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.RawDataReceivedListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedTextListener;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.StreamedDataListener;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 
@@ -65,7 +65,7 @@ public class Logging {
     private Terminal terminal;
 
     private RawDataReceivedListener rawDataReceivedListener;
-    private StreamedTextListener newOutputListener;
+    private StreamedDataListener newOutputListener;
 
     private FileWriter fileWriter;
     private BufferedWriter bufferedWriter;

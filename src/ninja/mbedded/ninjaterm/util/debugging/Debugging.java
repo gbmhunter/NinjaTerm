@@ -5,7 +5,11 @@ import sun.nio.cs.US_ASCII;
 import java.math.BigInteger;
 
 /**
- * Created by gbmhu on 2016-09-29.
+ * Various utility methods that help with debugging.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-08
+ * @since 2016-09-29
  */
 public class Debugging {
 
@@ -13,12 +17,12 @@ public class Debugging {
 
         byte[] bytes = stringOfChars.getBytes(US_ASCII.defaultCharset());
 
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for(byte aByte : bytes) {
-            output += String.format("%x, ", aByte);
+            output.append(String.format("%x, ", aByte));
         }
 
-        return output;
+        return output.toString();
     }
 
     public static String convertNonPrintable(String input) {
@@ -27,11 +31,23 @@ public class Debugging {
     }
 
     public static String toString(String[] stringA) {
-        String output = "{ ";
+        StringBuilder output = new StringBuilder();
+        output.append("{ ");
         for (String string : stringA) {
-            output = output + string + ", ";
+            output.append(string + ", ");
         }
-        return output;
+        output.append("}");
+        return output.toString();
+    }
+
+    public static String toString(byte[] byteA) {
+        StringBuilder output = new StringBuilder();
+        output.append("{ ");
+        for (byte singleByte : byteA) {
+            output.append(String.format("%02x", singleByte) + ", ");
+        }
+        output.append("}");
+        return output.toString();
     }
 
 }
