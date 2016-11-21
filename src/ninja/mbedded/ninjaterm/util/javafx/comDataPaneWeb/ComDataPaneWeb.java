@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,6 +20,8 @@ import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
 
@@ -95,6 +98,8 @@ public class ComDataPaneWeb extends StackPane {
 
     private boolean hasAddDataBeenCalledBefore = false;
 
+    private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -102,6 +107,8 @@ public class ComDataPaneWeb extends StackPane {
     //================================================================================================//
 
     public ComDataPaneWeb() {
+
+        logger.debug("ComDataPaneWeb() called. Object = " + this);
 
         //==============================================//
         //============== STYLESHEET SETUP ==============//
@@ -116,27 +123,6 @@ public class ComDataPaneWeb extends StackPane {
         webView = new WebView();
         webEngine = webView.getEngine();
 
-        webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
-        {
-
-            if(newValue == Worker.State.SUCCEEDED) {
-                logger.debug("WebView has loaded page and is ready.");
-
-                JSObject window = (JSObject) webEngine.executeScript("window");
-                window.setMember("java", this);
-                webEngine.executeScript("console.log = function(message)\n" +
-                        "{\n" +
-                        "    java.log(message);\n" +
-                        "};");
-
-                enableFirebug(webEngine);
-                webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
-
-                // Call to setup defaults
-                handleScrollStateChanged();
-            }
-        });
-
         getChildren().add(webView);
 
         final URL mapUrl = this.getClass().getResource("richText.html");
@@ -145,6 +131,32 @@ public class ComDataPaneWeb extends StackPane {
 
         webEngine.load(mapUrl.toExternalForm());
         //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
+
+        if(safeToRunScripts.get()) {
+            logger.debug("WebView has loaded page and is ready.");
+
+            JSObject window = (JSObject) webEngine.executeScript("window");
+            window.setMember("java", this);
+
+            enableFirebug(webEngine);
+            webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
+        } else {
+            safeToRunScripts.addListener((observable, oldValue, newValue) ->
+            {
+                if(newValue) {
+                    logger.debug("WebView has loaded page and is ready.");
+
+                    JSObject window = (JSObject) webEngine.executeScript("window");
+                    window.setMember("java", this);
+
+                    //enableFirebug(webEngine);
+                    webEngine.setUserStyleSheetLocation(getClass().getResource("style.css").toString());
+
+                    // Call to setup defaults
+                    handleScrollStateChanged();
+                }
+            });
+        }
 
 
         //==============================================//
@@ -173,6 +185,17 @@ public class ComDataPaneWeb extends StackPane {
             handleNameChanged();
         });
 
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                // Your database code here
+                Platform.runLater(() -> {
+                    safeToRunScripts.set(true);
+                });
+            }
+        }, 1000);
+
     }
 
     /**
@@ -185,17 +208,7 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     private void handleNameChanged() {
-
-        if(webEngine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
-            webEngine.executeScript("setName('" + name.get() + "')");
-        } else {
-            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
-            {
-                if (newValue == Worker.State.SUCCEEDED) {
-                    webEngine.executeScript("setName('" + name.get() + "')");
-                }
-            });
-        }
+        runScriptWhenReady("setName('" + name.get() + "')");
     }
 
     public void addData(StreamedData streamedData) {
@@ -383,10 +396,6 @@ public class ComDataPaneWeb extends StackPane {
                 throw new RuntimeException("scrollState not recognised.");
         }
 
-
-
-//        return numCharsAdded;
-
     }
 
     private Integer getComDataWrapperScrollTop() {
@@ -414,10 +423,7 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     /**
-     * @return The numbers of chars removed (if any).
-     * <p>
-     * WARNING: If text is trimmed, this will cause the scroll position to jump to the top of the
-     * document.
+     *
      */
     private void trim(int numChasToRemove) {
         logger.debug("trim() called with numChasToRemove = " + numChasToRemove);
@@ -432,14 +438,40 @@ public class ComDataPaneWeb extends StackPane {
         logger.debug("handleScrollStateChanged() called.");
         switch (scrollState.get()) {
             case FIXED_TO_BOTTOM:
-                webEngine.executeScript("showDownArrow(false)");
+                runScriptWhenReady("showDownArrow(false)");
                 break;
             case SMART_SCROLL:
-                webEngine.executeScript("showDownArrow(true)");
+                runScriptWhenReady("showDownArrow(true)");
                 break;
             default:
                 throw new RuntimeException("scrollState not recognised.");
         }
+    }
+
+    private void runScriptWhenReady(String script) {
+        logger.debug("runScriptWhenReady() called with script = " + script);
+
+        if(safeToRunScripts.get()) {
+            webEngine.executeScript(script);
+        } else {
+            safeToRunScripts.addListener((observable, oldValue, newValue) -> {
+                if(newValue) {
+                    webEngine.executeScript(script);
+                }
+            });
+
+        }
+
+//        if(webEngine.getLoadWorker().getState() == Worker.State.SUCCEEDED) {
+//            webEngine.executeScript(script);
+//        } else {
+//            webEngine.getLoadWorker().stateProperty().addListener((observable, oldValue, newValue) ->
+//            {
+//                if (newValue == Worker.State.SUCCEEDED) {
+//                    webEngine.executeScript(script);
+//                }
+//            });
+//        }
     }
 
     private void appendHtml(String html) {

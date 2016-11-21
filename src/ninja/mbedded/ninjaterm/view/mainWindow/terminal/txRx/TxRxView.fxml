@@ -83,7 +83,7 @@
                 <!-- =========================================== -->
                 <!-- ================ TX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <ComDataPane fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
 
             </GridPane>
 

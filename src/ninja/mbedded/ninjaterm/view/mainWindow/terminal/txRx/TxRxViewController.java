@@ -78,7 +78,7 @@ public class TxRxViewController {
     private HBox draggableHBox;
 
     @FXML
-    private ComDataPane txComDataPane;
+    private ComDataPaneWeb txComDataPane;
 
     //==============================================//
     //============ LEFT-HAND SIDE PANE =============//
