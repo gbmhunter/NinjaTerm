@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 /**
  * Model containing data and logic for the display components of the TX/RX data.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-16
- * @last-modified   2016-10-27
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-22
+ * @since 2016-09-16
  */
 public class Display {
 
@@ -20,10 +20,12 @@ public class Display {
     //============================================= ENUMS ============================================//
     //================================================================================================//
 
+    /**
+     * The different layout options for the TX and RX panes.
+     */
     public enum LayoutOptions {
         SINGLE_PANE("Single Pane"),
-        SEPARATE_TX_RX("Separate TX/RX"),
-        ;
+        SEPARATE_TX_RX("Separate TX/RX"),;
 
         private String label;
 
@@ -42,18 +44,18 @@ public class Display {
         SEND_TX_CHARS_ON_ENTER
     }
 
-    /**
-     * The options for the RX pane scroll behaviour.
-     */
-    public enum ScrollBehaviour {
-        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
-         * the same lines of RX text in view. **/
-        STANDARD,
-
-        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
-         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
-        SMART,
-    }
+//    /**
+//     * The options for the RX pane scroll behaviour.
+//     */
+//    public enum ScrollBehaviour {
+//        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
+//         * the same lines of RX text in view. **/
+//        STANDARD,
+//
+//        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
+//         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
+//        SMART,
+//    }
 
     //================================================================================================//
     //============================================ CONSTANTS =========================================//
@@ -103,7 +105,7 @@ public class Display {
     /**
      * The selected scroll behaviour. This is set by radio buttons in the UI.
      */
-    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
+//    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

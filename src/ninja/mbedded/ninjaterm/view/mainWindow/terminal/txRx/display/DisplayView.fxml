@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-08-24
-* @last-modified   2016-10-21
+* @last-modified   2016-11-22
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -55,11 +55,11 @@
     </VBox>
 
     <!-- SCROLL BEHAVIOUR -->
-    <VBox spacing="5" styleClass="border">
+    <!--<VBox spacing="5" styleClass="border">
         <Label>Scroll Behaviour</Label>
         <RadioButton fx:id="scrollBehaviourStandardRadioButton">Standard</RadioButton>
         <RadioButton fx:id="scrollBehaviourSmartRadioButton">Smart</RadioButton>
-    </VBox>
+    </VBox>-->
 
 </VBox>
 

@@ -6,6 +6,7 @@ vX.X.X
 - Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.
 - Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.
 - Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.
+- Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.
 
 v0.8.0
 ------

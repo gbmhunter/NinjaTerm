@@ -24,7 +24,7 @@ import org.controlsfx.validation.Validator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-27
+ * @last-modified 2016-11-22
  */
 public class DisplayViewController {
 
@@ -60,11 +60,11 @@ public class DisplayViewController {
     //=============== SCROLL BEHAVIOUR =============//
     //==============================================//
 
-    @FXML
-    private RadioButton scrollBehaviourStandardRadioButton;
-
-    @FXML
-    private RadioButton scrollBehaviourSmartRadioButton;
+//    @FXML
+//    private RadioButton scrollBehaviourStandardRadioButton;
+//
+//    @FXML
+//    private RadioButton scrollBehaviourSmartRadioButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -260,14 +260,14 @@ public class DisplayViewController {
         //=========== SCROLL BEHAVIOUR SETUP ===========//
         //==============================================//
 
-        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
-        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
-        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
-
-        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
-
-        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
-        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
+//        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
+//        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
+//        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
+//
+//        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
+//
+//        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
+//        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
 
     }
 }
