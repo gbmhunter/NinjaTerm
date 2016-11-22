@@ -8,15 +8,12 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Control;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -340,6 +337,13 @@ public class TxRxViewController {
 
         rxComDataPane.bufferSize.bind(terminal.txRx.display.bufferSizeChars);
 
+        // Bind to stats
+        rxComDataPane.currNumChars.addListener((observable, oldValue, newValue) -> {
+            terminal.stats.numCharsInRxDisplayBuffer.set(newValue.intValue());
+        });
+        terminal.stats.numCharsInRxDisplayBuffer.set(rxComDataPane.currNumChars.intValue());
+
+
         //==============================================//
         //============== SETUP TX DATA PANE ============//
         //==============================================//
@@ -349,6 +353,12 @@ public class TxRxViewController {
         });
 
         txComDataPane.bufferSize.bind(terminal.txRx.display.bufferSizeChars);
+
+        // Bind to stats
+        txComDataPane.currNumChars.addListener((observable, oldValue, newValue) -> {
+            terminal.stats.numCharsInTxDisplayBuffer.set(newValue.intValue());
+        });
+        terminal.stats.numCharsInTxDisplayBuffer.set(txComDataPane.currNumChars.intValue());
 
         // Call this to update the display of the TX/RX pane into its default
         // state

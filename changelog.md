@@ -8,6 +8,8 @@ vX.X.X
 - Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.
 - Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.
 - Moved the "send" options from display pop-up to the formatting pop-up, closes #154.
+- Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.
+- Fixed bug where screen buffer size stats where not being updated, closes #170.
 
 v0.8.0
 ------

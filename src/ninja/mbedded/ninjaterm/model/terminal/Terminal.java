@@ -22,7 +22,7 @@ import java.util.Arrays;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-28
+ * @last-modified   2016-11-22
  */
 public class Terminal {
 

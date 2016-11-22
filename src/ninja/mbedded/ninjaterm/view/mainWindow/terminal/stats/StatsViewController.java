@@ -11,7 +11,7 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-21
+ * @last-modified 2016-11-22
  */
 public class StatsViewController {
 
@@ -58,18 +58,18 @@ public class StatsViewController {
         //==============================================//
 
         //======================= TX ===================//
-        terminal.stats.numCharsInTxBuffer.addListener((observable, oldValue, newValue) -> {
-            numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxBuffer.get()));
+        terminal.stats.numCharsInTxDisplayBuffer.addListener((observable, oldValue, newValue) -> {
+            numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxDisplayBuffer.get()));
         });
         // Set default value
-        numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxBuffer.get()));
+        numCharsInTxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInTxDisplayBuffer.get()));
 
         //======================= RX ===================//
-        terminal.stats.numCharsInRxBuffer.addListener((observable, oldValue, newValue) -> {
-            numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxBuffer.get()));
+        terminal.stats.numCharsInRxDisplayBuffer.addListener((observable, oldValue, newValue) -> {
+            numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxDisplayBuffer.get()));
         });
         // Set default value
-        numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxBuffer.get()));
+        numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxDisplayBuffer.get()));
 
         //==============================================//
         //========= TOTAL CHARACTER COUNT SETUP ========//

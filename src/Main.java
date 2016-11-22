@@ -35,8 +35,16 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        //==============================================//
+        //================ LOGGING SETUP ===============//
+        //==============================================//
+
+        LoggerUtils.consoleLoggingEnabled.set(false);
         logger.debug("start() called.");
 
+        //==============================================//
+        //========== UN-CAUGHT EXCEPTION SETUP =========//
+        //==============================================//
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
             showError(thread, throwable);
         });
@@ -117,9 +125,6 @@ public class Main extends Application {
         MainWindowViewController mainWindowViewController = loader.getController();
 
         mainWindowViewController.init(model, glyphFont);
-
-        //mainWindowViewController.addNewTerminal();
-
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if (!disableSplashScreen)

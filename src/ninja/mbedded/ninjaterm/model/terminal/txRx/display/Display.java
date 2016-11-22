@@ -55,7 +55,7 @@ public class Display {
 //    }
 
     //================================================================================================//
-    //============================================ CONSTANTS =========================================//
+    //========================================= CLASS CONSTANTS ======================================//
     //================================================================================================//
 
     /**
@@ -64,13 +64,20 @@ public class Display {
      * When set to 50,000, on a Surface Pro 4 with i5, 8G RAM, the rendering of 50,000 characters
      * 10 times a second (basic "Hello, world!" RX data) would cause the processor usage to jump up by 30%.
      * No RX data filter was active at this time.
+     *
+     * When using a WebView-based UI to display the data, {@code DEFAULT_BUFFER_SIZE_CHARS = 20000} caused
+     * a small but noticeable amount of lag when the visible buffer size hit max. capacity, and chars had to
+     * be deleted each time new data was inserted. {@code DEFAULT_BUFFER_SIZE_CHARS = 10000} seems to be o.k.
      */
-    public final int DEFAULT_BUFFER_SIZE_CHARS = 20000;
+    public final int DEFAULT_BUFFER_SIZE_CHARS = 10000;
 
+    /**
+     * The default width at which text will wrap in the TX and RX data display panes.
+     */
     public final double DEFAULT_WRAPPING_WIDTH_PX = 800;
 
     //================================================================================================//
-    //============================================= FIELDS ===========================================//
+    //========================================= CLASS FIELDS =========================================//
     //================================================================================================//
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
