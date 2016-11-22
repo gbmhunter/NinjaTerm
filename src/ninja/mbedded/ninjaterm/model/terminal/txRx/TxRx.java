@@ -108,6 +108,11 @@ public class TxRx {
     public void handleKeyPressed(KeyEvent keyEvent) {
         logger.debug("handleKeyPressed() called with keyEvent = " + keyEvent);
 
+        if (terminal.comPort.isPortOpen() == false) {
+            model.status.addErr("Cannot send data to COM port, port is not open.");
+            return;
+        }
+
         //==============================================//
         //============ LOOK FOR COPY/PASTE =============//
         //==============================================//
@@ -242,7 +247,7 @@ public class TxRx {
      */
     public void addTxCharsToSend(byte[] data) {
 
-        System.out.printf(getClass().getName() + ".addTxCharsToSend() called with data = " + Debugging.toString(data));
+        logger.debug("addTxCharsToSend() called with data = " + Debugging.toString(data));
 
         // Add the data to the "to send" TX buffer
         for(byte dataByte : data) {
