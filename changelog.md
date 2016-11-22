@@ -7,6 +7,7 @@ vX.X.X
 - Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.
 - Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.
 - Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.
+- Moved the "send" options from display pop-up to the formatting pop-up, closes #154.
 
 v0.8.0
 ------

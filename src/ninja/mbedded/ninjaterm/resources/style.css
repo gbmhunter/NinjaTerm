@@ -183,6 +183,10 @@ which are displaying dynamic content */
     -fx-font-size: 16px;
 }
 
+.h3 {
+    -fx-font-weight: bold;
+}
+
 /* =========================================== */
 /* ========== RICH TEXT AREA STYLING ========= */
 /* =========================================== */

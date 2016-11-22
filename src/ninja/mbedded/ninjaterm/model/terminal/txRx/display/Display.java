@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 public class Display {
 
     //================================================================================================//
-    //============================================= ENUMS ============================================//
+    //========================================= CLASS ENUMS ==========================================//
     //================================================================================================//
 
     /**
@@ -39,10 +39,7 @@ public class Display {
         }
     }
 
-    public enum TxCharSendingOptions {
-        SEND_TX_CHARS_IMMEDIATELY,
-        SEND_TX_CHARS_ON_ENTER
-    }
+
 
 //    /**
 //     * The options for the RX pane scroll behaviour.
@@ -83,8 +80,6 @@ public class Display {
      * The selected layout option for the TX and RX data. This is changed by the user.
      */
     public SimpleObjectProperty<LayoutOptions> selLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
-
-    public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
 
     /**
      * The maximum TX and RX buffer size, for any "buffer". For RX data, this sets the max. size for all StreamedData objects,

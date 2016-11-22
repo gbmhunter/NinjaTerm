@@ -27,11 +27,6 @@
             <ComboBox fx:id="layoutOptionsComboBox"></ComboBox>
         </HBox>
 
-        <VBox spacing="5">
-            <RadioButton fx:id="sendTxCharsImmediatelyRadioButton">Send TX chars immediately</RadioButton>
-            <RadioButton fx:id="sendTxCharsOnEnterRadioButton">Send TX chars on enter</RadioButton>
-        </VBox>
-
         <CheckBox fx:id="localTxEchoCheckBox">Local TX Echo</CheckBox>
 
         <CheckBox fx:id="backspaceRemovesLastTypedCharCheckBox" text="Backspace removes last typed char">

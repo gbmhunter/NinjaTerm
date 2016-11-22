@@ -131,7 +131,8 @@ public class TxRx {
 
             terminal.txRx.addTxCharsToSend(contents.getBytes());
 
-            if(terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
+            if(terminal.txRx.formatting.selTxCharSendingOption.get() ==
+                    Formatting.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
                 terminal.txRx.sendBufferedTxDataToSerialPort();
             }
 
@@ -148,7 +149,7 @@ public class TxRx {
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
         // treating this character as something to send.
-        if ((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
+        if ((formatting.selTxCharSendingOption.get() == Formatting.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
                 display.backspaceRemovesLastTypedChar.get()) {
 
             if (asciiCodeForKey == '\b') {
@@ -183,7 +184,7 @@ public class TxRx {
         }
 
         // Check so see what TX mode we are in
-        switch (display.selTxCharSendingOption.get()) {
+        switch (formatting.selTxCharSendingOption.get()) {
             case SEND_TX_CHARS_IMMEDIATELY:
                 sendBufferedTxDataToSerialPort();
                 break;

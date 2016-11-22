@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
@@ -50,6 +51,16 @@ public class FormattingViewController {
 
     @FXML
     private RadioButton carriageReturnAndNewLineCheckBox;
+
+    //==============================================//
+    //============== TX SEND OPTIONS ===============//
+    //==============================================//
+
+    @FXML
+    private RadioButton sendTxCharsImmediatelyRadioButton;
+
+    @FXML
+    private RadioButton sendTxCharsOnEnterRadioButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -112,6 +123,19 @@ public class FormattingViewController {
         enterKeyBehaviourTGV.add(carriageReturnAndNewLineCheckBox, Formatting.EnterKeyBehaviour.CARRIAGE_RETURN_AND_NEW_LINE);
 
         Bindings.bindBidirectional(enterKeyBehaviourTGV.valueProperty(), terminal.txRx.formatting.selEnterKeyBehaviour);
+
+        //==============================================//
+        //=========== TX SEND BEHAVIOUR SETUP ==========//
+        //==============================================//
+
+        ToggleGroupValue<Formatting.TxCharSendingOptions> toggleGroup = new ToggleGroupValue();
+        toggleGroup.add(sendTxCharsImmediatelyRadioButton, Formatting.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
+        toggleGroup.add(sendTxCharsOnEnterRadioButton, Formatting.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
+
+        Bindings.bindBidirectional(toggleGroup.valueProperty(), terminal.txRx.formatting.selTxCharSendingOption);
+
+        TooltipUtil.addDefaultTooltip(sendTxCharsImmediatelyRadioButton, "TX characters will be sent as soon as they are typed.");
+        TooltipUtil.addDefaultTooltip(sendTxCharsOnEnterRadioButton, "TX characters will only be sent when \"ENTER\" is pressed.");
 
     }
 }
