@@ -31,18 +31,18 @@ public class Stats {
     //================================================================================================//
 
     //==============================================//
-    //========= NUM. CHARS IN BUFFER FIELDS ========//
+    //==== NUM. CHARS IN DISPLAY BUFFER FIELDS =====//
     //==============================================//
 
     public SimpleIntegerProperty numCharsInTxDisplayBuffer = new SimpleIntegerProperty();
     public SimpleIntegerProperty numCharsInRxDisplayBuffer = new SimpleIntegerProperty();
 
     //==============================================//
-    //=========== TOTAL CHAR COUNT FIELDS ==========//
+    //========== TOTAL RAW CHAR COUNT SETUP ========//
     //==============================================//
 
-    public SimpleIntegerProperty totalNumCharsTx = new SimpleIntegerProperty(0);
-    public SimpleIntegerProperty totalNumCharsRx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalRawCharCountTx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalRawCharCountRx = new SimpleIntegerProperty(0);
 
     //==============================================//
     //=============== BYTES/SEC FIELDS =============//
@@ -61,17 +61,12 @@ public class Stats {
     public Stats(Terminal terminal) {
 
         //==============================================//
-        //========== NUM. CHARS IN BUFFER SETUP ========//
+        //===== NUM. CHARS IN DISPLAY BUFFER SETUP =====//
         //==============================================//
 
-        // // TODO: 2016-11-16 Fix
-        /*terminal.txRx.txDataToDisplay.addListener((observable, oldValue, newValue) -> {
-            numCharsInTxDisplayBuffer.set(newValue.length());
-        });*/
-
-//        terminal.txRx.rxDataEngine.rawRxData.addListener((observable, oldValue, newValue) -> {
-//            numCharsInRxDisplayBuffer.set(newValue.length());
-//        });
+        // NOTE: These stats are "pushed" to this stat model
+        // rather than "pulled", as the values are calculated
+        // in the view
 
         //==============================================//
         //================ BYTES/SEC SETUP =============//

@@ -34,14 +34,14 @@
             </GridPane>
         </VBox>
 
-        <VBox spacing="10" fillWidth="false" styleClass="border">
-            <Label styleClass="h3">Total Character Count:</Label>
+        <VBox fx:id="totalRawCharCountVBox" spacing="10" fillWidth="false" styleClass="border">
+            <Label styleClass="h3">Total Raw Character Count:</Label>
             <GridPane vgap="5" hgap="10">
                 <Label GridPane.rowIndex="0" GridPane.columnIndex="0">TX (chars):</Label>
-                <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="characterCountTxLabel"></Label>
+                <Label GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="totalRawCharCountTxLabel"></Label>
 
                 <Label GridPane.rowIndex="1" GridPane.columnIndex="0">RX (chars):</Label>
-                <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="characterCountRxLabel"></Label>
+                <Label GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="totalRawCharCountRxLabel"></Label>
             </GridPane>
         </VBox>
 

@@ -10,8 +10,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Control;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
-import javafx.scene.text.Text;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb;
@@ -33,8 +33,8 @@ import java.io.IOException;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-22
  * @since 2016-07-16
- * @last-modified 2016-11-16
  */
 public class TxRxViewController {
 
@@ -123,18 +123,10 @@ public class TxRxViewController {
      */
     private Terminal terminal;
 
-    /**
-     * A Text object which holds a flashing caret. This is moved between the shared TX/RX pane and
-     * the TX pane.
-     */
-    private Text caretText;
-
     private DisplayViewController displayViewController;
     private FormattingViewController formattingViewController;
     private ColouriserViewController colouriserViewController;
     private FiltersViewController filtersViewController;
-
-    private double heightOfOneLineOfText = 0.0;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -183,7 +175,7 @@ public class TxRxViewController {
 
         model.selTerminal.addListener((observable, oldValue, newValue) -> {
 
-            if(oldValue != null) {
+            if (oldValue != null) {
                 oldValue.isComPortOpen.removeListener(openCloseChangeListener);
             }
 
@@ -445,7 +437,6 @@ public class TxRxViewController {
     }
 
 
-
     /**
      * Helper method to attach a pop-over to a button (so it appears/disappears when you
      * click the button).
@@ -494,8 +485,6 @@ public class TxRxViewController {
             rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
         }
     }*/
-
-
     public void showPopover(Button button, PopOver popOver) {
 
         logger.debug(".showPopover() called.");
@@ -541,7 +530,7 @@ public class TxRxViewController {
                     dataContainerGridPane.getChildren().remove(txComDataPane);
                 }
 
-                if(dataContainerGridPane.getChildren().contains(draggableHBox)) {
+                if (dataContainerGridPane.getChildren().contains(draggableHBox)) {
                     dataContainerGridPane.getChildren().remove(draggableHBox);
                 }
 
@@ -564,7 +553,7 @@ public class TxRxViewController {
                     dataContainerGridPane.getChildren().add(txComDataPane);
                 }
 
-                if(!dataContainerGridPane.getChildren().contains(draggableHBox)) {
+                if (!dataContainerGridPane.getChildren().contains(draggableHBox)) {
                     dataContainerGridPane.getChildren().add(draggableHBox);
                 }
 
@@ -618,7 +607,7 @@ public class TxRxViewController {
                     double newRxDataStackPaneHeight = orgRxDataStackPaneHeight + offsetY;
 
                     //=========== MIN LIMIT ===========//
-                    if(newRxDataStackPaneHeight < MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
+                    if (newRxDataStackPaneHeight < MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
                         newRxDataStackPaneHeight = MIN_HEIGHT_OF_TX_OR_RX_PANE_PX;
 
                     //=========== MAX LIMIT ===========//
@@ -626,13 +615,13 @@ public class TxRxViewController {
                     // We don't want the RX pane to ever be larger than the height of it's
                     // parent container, minus the height of the draggable HBox
                     double maxHeight = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
-                    if(newRxDataStackPaneHeight > maxHeight - MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
+                    if (newRxDataStackPaneHeight > maxHeight - MIN_HEIGHT_OF_TX_OR_RX_PANE_PX)
                         newRxDataStackPaneHeight = maxHeight - MIN_HEIGHT_OF_TX_OR_RX_PANE_PX;
 
                     logger.debug("newRxDataStackPaneHeight = " + newRxDataStackPaneHeight);
 
                     // Convert to a percentage of total height
-                    currTxRxViewRatio = newRxDataStackPaneHeight/dataContainerGridPane.getHeight();
+                    currTxRxViewRatio = newRxDataStackPaneHeight / dataContainerGridPane.getHeight();
 
                     logger.debug("currTxRxViewRatio = " + currTxRxViewRatio);
 
@@ -651,7 +640,7 @@ public class TxRxViewController {
         // Just change the RX pane, the TX pane should adjust automatically
         double totalHeightOfBothTxAndRxPanes = dataContainerGridPane.getHeight() - draggableHBox.getHeight();
 
-        if(totalHeightOfBothTxAndRxPanes <= 0.0) {
+        if (totalHeightOfBothTxAndRxPanes <= 0.0) {
             //throw new RuntimeException("Total height of TX and RX panes was not greater than 0.");
             logger.debug("Can't resize TX/RX panes, total height of TX and RX panes not greater than 0. This can occur when this method is called for the first time before the panes are displayed in the UI.");
             return;
@@ -659,7 +648,7 @@ public class TxRxViewController {
 
         double rxPaneHeight = totalHeightOfBothTxAndRxPanes * currTxRxViewRatio;
 
-        logger.debug("rxPaneHeight = "+ rxPaneHeight);
+        logger.debug("rxPaneHeight = " + rxPaneHeight);
 
         //txDataStackPane.setMinHeight(rxPaneHeight);
         //txDataStackPane.setMaxHeight(rxPaneHeight);

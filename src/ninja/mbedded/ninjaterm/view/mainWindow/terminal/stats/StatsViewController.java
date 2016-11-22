@@ -4,7 +4,9 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 
 /**
  * Controller for the "StatsView" sub-tab which is part of a terminal tab.
@@ -20,10 +22,13 @@ public class StatsViewController {
     //================================================================================================//
 
     @FXML
-    private Label characterCountTxLabel;
+    private VBox totalRawCharCountVBox;
 
     @FXML
-    private Label characterCountRxLabel;
+    private Label totalRawCharCountTxLabel;
+
+    @FXML
+    private Label totalRawCharCountRxLabel;
 
     @FXML
     private Label numCharsInTxBufferLabel;
@@ -72,21 +77,23 @@ public class StatsViewController {
         numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxDisplayBuffer.get()));
 
         //==============================================//
-        //========= TOTAL CHARACTER COUNT SETUP ========//
+        //========= TOTAL RAW CHAR COUNT SETUP ========//
         //==============================================//
 
-        //======================= RX ===================//
-        characterCountTxLabel.setText(Integer.toString(terminal.stats.totalNumCharsTx.getValue()));
-        terminal.stats.totalNumCharsTx.addListener((observable, oldValue, newValue) -> {
-            // Convert new value into string and update label
-            characterCountTxLabel.setText(Integer.toString(newValue.intValue()));
-        });
+        TooltipUtil.addDefaultTooltip(totalRawCharCountVBox, "The number of characters/bytes that have either been sent or received to/from the COM port. These are raw values, i.e. can differ from the number of displayed characters if things like ANSI escape codes have been parsed.");
 
         //======================= TX ===================//
-        characterCountRxLabel.setText(Integer.toString(terminal.stats.totalNumCharsRx.getValue()));
-        terminal.stats.totalNumCharsRx.addListener((observable, oldValue, newValue) -> {
+        totalRawCharCountTxLabel.setText(Integer.toString(terminal.stats.totalRawCharCountTx.getValue()));
+        terminal.stats.totalRawCharCountTx.addListener((observable, oldValue, newValue) -> {
             // Convert new value into string and update label
-            characterCountRxLabel.setText(Integer.toString(newValue.intValue()));
+            totalRawCharCountTxLabel.setText(Integer.toString(newValue.intValue()));
+        });
+
+        //======================= RX ===================//
+        totalRawCharCountRxLabel.setText(Integer.toString(terminal.stats.totalRawCharCountRx.getValue()));
+        terminal.stats.totalRawCharCountRx.addListener((observable, oldValue, newValue) -> {
+            // Convert new value into string and update label
+            totalRawCharCountRxLabel.setText(Integer.toString(newValue.intValue()));
         });
 
         //==============================================//

@@ -215,7 +215,7 @@ public class TxRx {
         terminal.comPort.sendData(dataAsByteArray);
 
         // Update stats
-        terminal.stats.totalNumCharsTx.setValue(terminal.stats.totalNumCharsTx.getValue() + dataAsByteArray.length);
+        terminal.stats.totalRawCharCountTx.setValue(terminal.stats.totalRawCharCountTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
         // Create string from data
