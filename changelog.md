@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Moved the "scroll to bottom" arrow slightly to the left so it does not block the scroll bar, closes #174.
+- Removed the instruction to run `mvn assembly:single` from README, as it is not needed, closes #175.
 
 v0.8.1
 ------
