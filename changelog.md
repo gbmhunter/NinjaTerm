@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Moved the "scroll to bottom" arrow slightly to the left so it does not block the scroll bar, closes #174.
+
 v0.8.1
 ------
 
