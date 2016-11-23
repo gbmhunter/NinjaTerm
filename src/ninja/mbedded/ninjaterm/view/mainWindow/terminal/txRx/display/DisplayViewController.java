@@ -12,6 +12,7 @@ import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
+import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField;
 import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import org.controlsfx.validation.Severity;
@@ -24,7 +25,7 @@ import org.controlsfx.validation.Validator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-10-27
+ * @last-modified 2016-11-22
  */
 public class DisplayViewController {
 
@@ -34,12 +35,6 @@ public class DisplayViewController {
 
     @FXML
     private ComboBox<Display.LayoutOptions> layoutOptionsComboBox;
-
-    @FXML
-    private RadioButton sendTxCharsImmediatelyRadioButton;
-
-    @FXML
-    private RadioButton sendTxCharsOnEnterRadioButton;
 
     @FXML
     private CheckBox localTxEchoCheckBox;
@@ -60,11 +55,11 @@ public class DisplayViewController {
     //=============== SCROLL BEHAVIOUR =============//
     //==============================================//
 
-    @FXML
-    private RadioButton scrollBehaviourStandardRadioButton;
-
-    @FXML
-    private RadioButton scrollBehaviourSmartRadioButton;
+//    @FXML
+//    private RadioButton scrollBehaviourStandardRadioButton;
+//
+//    @FXML
+//    private RadioButton scrollBehaviourSmartRadioButton;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -101,19 +96,6 @@ public class DisplayViewController {
         TooltipUtil.addDefaultTooltip(layoutOptionsComboBox, "Separate mode displays a separate pane for RX data (top), and TX data (bottom). Combined mode shows one pane for both RX and TX data (if local echo is enabled). Combined mode with local echo turned on behaves similarly to a terminal.");
 
         //==============================================//
-        //============== TX BEHAVIOUR SETUP ============//
-        //==============================================//
-
-        ToggleGroupValue<Display.TxCharSendingOptions> toggleGroup = new ToggleGroupValue();
-        toggleGroup.add(sendTxCharsImmediatelyRadioButton, Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
-        toggleGroup.add(sendTxCharsOnEnterRadioButton, Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER);
-
-        Bindings.bindBidirectional(toggleGroup.valueProperty(), terminal.txRx.display.selTxCharSendingOption);
-
-        TooltipUtil.addDefaultTooltip(sendTxCharsImmediatelyRadioButton, "TX characters will be sent as soon as they are typed.");
-        TooltipUtil.addDefaultTooltip(sendTxCharsOnEnterRadioButton, "TX characters will only be sent when \"ENTER\" is pressed.");
-
-        //==============================================//
         //============= SETUP LOCAL TX ECHO ============//
         //==============================================//
 
@@ -132,7 +114,7 @@ public class DisplayViewController {
 
         // Enable this checkbox only if the selected TX sending option is
         // on press on the "enter" key (this is the only way that this functionality makes sense)
-        ChangeListener<Display.TxCharSendingOptions> changeListener = (observable, oldValue, newValue) -> {
+        ChangeListener<Formatting.TxCharSendingOptions> changeListener = (observable, oldValue, newValue) -> {
             switch (newValue) {
                 case SEND_TX_CHARS_IMMEDIATELY:
                     backspaceRemovesLastTypedCharCheckBox.setDisable(true);
@@ -144,13 +126,13 @@ public class DisplayViewController {
                     throw new RuntimeException("TxCharSendingOptions option not recognised.");
             }
         };
-        terminal.txRx.display.selTxCharSendingOption.addListener(changeListener);
+        terminal.txRx.formatting.selTxCharSendingOption.addListener(changeListener);
 
         // Update disabled state to default
         changeListener.changed(
-                terminal.txRx.display.selTxCharSendingOption,
-                terminal.txRx.display.selTxCharSendingOption.get(),
-                terminal.txRx.display.selTxCharSendingOption.get());
+                terminal.txRx.formatting.selTxCharSendingOption,
+                terminal.txRx.formatting.selTxCharSendingOption.get(),
+                terminal.txRx.formatting.selTxCharSendingOption.get());
 
         TooltipUtil.addDefaultTooltip(backspaceRemovesLastTypedCharCheckBox, "Enabling this will allow you to use backspace to delete TX chars before they are sent (on applicable if 'Send TX chars on enter' is selected). Disabling this will instead send the backspace character to the COM port.");
 
@@ -260,14 +242,14 @@ public class DisplayViewController {
         //=========== SCROLL BEHAVIOUR SETUP ===========//
         //==============================================//
 
-        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
-        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
-        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
-
-        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
-
-        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
-        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
+//        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
+//        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
+//        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
+//
+//        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
+//
+//        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
+//        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
 
     }
 }

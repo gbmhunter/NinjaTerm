@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx;
 
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.input.Clipboard;
@@ -13,11 +12,11 @@ import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.filters.Filters;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.macros.MacroManager;
+import ninja.mbedded.ninjaterm.util.arrayUtils.ArrayUtils;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine.RxDataEngine;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
-import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -55,15 +54,10 @@ public class TxRx {
 
     public List<DataSentTxListener> dataSentTxListeners = new ArrayList<>();
 
-    public List<RxDataClearedListener> rxDataClearedListeners = new ArrayList<>();
+    public List<DataClearedListener> txDataClearedListeners = new ArrayList<>();
+    public List<DataClearedListener> rxDataClearedListeners = new ArrayList<>();
 
     public RxDataEngine rxDataEngine = new RxDataEngine();
-
-    /**
-     * Determines whether the RX data terminal will auto-scroll to bottom
-     * as more data arrives.
-     */
-    public SimpleBooleanProperty autoScrollEnabled = new SimpleBooleanProperty(true);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -114,6 +108,11 @@ public class TxRx {
     public void handleKeyPressed(KeyEvent keyEvent) {
         logger.debug("handleKeyPressed() called with keyEvent = " + keyEvent);
 
+        if (terminal.comPort.isPortOpen() == false) {
+            model.status.addErr("Cannot send data to COM port, port is not open.");
+            return;
+        }
+
         //==============================================//
         //============ LOOK FOR COPY/PASTE =============//
         //==============================================//
@@ -132,7 +131,8 @@ public class TxRx {
 
             terminal.txRx.addTxCharsToSend(contents.getBytes());
 
-            if(terminal.txRx.display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
+            if(terminal.txRx.formatting.selTxCharSendingOption.get() ==
+                    Formatting.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
                 terminal.txRx.sendBufferedTxDataToSerialPort();
             }
 
@@ -149,7 +149,7 @@ public class TxRx {
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
         // treating this character as something to send.
-        if ((display.selTxCharSendingOption.get() == Display.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
+        if ((formatting.selTxCharSendingOption.get() == Formatting.TxCharSendingOptions.SEND_TX_CHARS_ON_ENTER) &&
                 display.backspaceRemovesLastTypedChar.get()) {
 
             if (asciiCodeForKey == '\b') {
@@ -184,7 +184,7 @@ public class TxRx {
         }
 
         // Check so see what TX mode we are in
-        switch (display.selTxCharSendingOption.get()) {
+        switch (formatting.selTxCharSendingOption.get()) {
             case SEND_TX_CHARS_IMMEDIATELY:
                 sendBufferedTxDataToSerialPort();
                 break;
@@ -211,11 +211,11 @@ public class TxRx {
         }
 
         // Send data to COM port, and update stats (both local and global)
-        byte[] dataAsByteArray = fromObservableListToByteArray(toSendTxData);
+        byte[] dataAsByteArray = ArrayUtils.fromObservableListToByteArray(toSendTxData);
         terminal.comPort.sendData(dataAsByteArray);
 
         // Update stats
-        terminal.stats.totalNumCharsTx.setValue(terminal.stats.totalNumCharsTx.getValue() + dataAsByteArray.length);
+        terminal.stats.totalRawCharCountTx.setValue(terminal.stats.totalRawCharCountTx.getValue() + dataAsByteArray.length);
         model.globalStats.numCharactersTx.setValue(model.globalStats.numCharactersTx.getValue() + dataAsByteArray.length);
 
         // Create string from data
@@ -241,17 +241,6 @@ public class TxRx {
         }
     }
 
-    private byte[] fromObservableListToByteArray(ObservableList<Byte> observableList) {
-
-        byte[] data = new byte[observableList.size()];
-        int i = 0;
-        for (Byte singleByte : observableList) {
-            data[i++] = singleByte;
-        }
-
-        return data;
-    }
-
     /**
      * Add a TX char to send to COM port. This DOES NOT send the data but rather only adds it to a buffer.
      *
@@ -259,7 +248,7 @@ public class TxRx {
      */
     public void addTxCharsToSend(byte[] data) {
 
-        System.out.printf(getClass().getName() + ".addTxCharsToSend() called with data = " + Debugging.toString(data));
+        logger.debug("addTxCharsToSend() called with data = " + Debugging.toString(data));
 
         // Add the data to the "to send" TX buffer
         for(byte dataByte : data) {
@@ -315,16 +304,16 @@ public class TxRx {
         // Clear all internal buffers
         rxDataEngine.clearAllData();
 
-        emitEventToClearTxRxDataOnUI();
-
-        model.status.addMsg("Terminal TX/RX text cleared.");
-    }
-
-    private void emitEventToClearTxRxDataOnUI() {
         // Emit RX data cleared event for the UI
-        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
+
+        for (DataClearedListener txDataClearedListener : txDataClearedListeners) {
+            txDataClearedListener.run();
+        }
+
+        model.status.addMsg("Terminal TX/RX text cleared.");
     }
 
     /**
@@ -332,7 +321,7 @@ public class TxRx {
      */
     private void updateBufferedRxDataWithNewFilterPattern() {
         // Emit RX data cleared event
-        for (RxDataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+        for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
             rxDataClearedListener.run();
         }
     }
@@ -351,8 +340,13 @@ public class TxRx {
         if (filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA) {
 
             // Firstly, clear RX data on UI
-            emitEventToClearTxRxDataOnUI();
+            for (DataClearedListener rxDataClearedListener : rxDataClearedListeners) {
+                rxDataClearedListener.run();
+            }
+
+            // Now re-run filter. This will re-populate the RX data that the user sees
             rxDataEngine.rerunFilterOnExistingData();
+
         } // if(filters.filterApplyType.get() == Filters.FilterApplyTypes.APPLY_TO_BUFFERED_AND_NEW_RX_DATA)
     }
 

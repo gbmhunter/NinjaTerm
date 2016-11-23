@@ -10,13 +10,13 @@ import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 
 /**
  * Model containing data and logic for statistics about a terminal (COM port).
- *
+ * <p>
  * This class does not concern itself with any global stats, but just those
  * of single terminal instance (COM port).
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-16
- * @last-modified   2016-10-23
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-22
+ * @since 2016-09-16
  */
 public class Stats {
 
@@ -31,18 +31,18 @@ public class Stats {
     //================================================================================================//
 
     //==============================================//
-    //========= NUM. CHARS IN BUFFER FIELDS ========//
+    //==== NUM. CHARS IN DISPLAY BUFFER FIELDS =====//
     //==============================================//
 
-    public SimpleIntegerProperty numCharsInTxBuffer = new SimpleIntegerProperty();
-    public SimpleIntegerProperty numCharsInRxBuffer = new SimpleIntegerProperty();
+    public SimpleIntegerProperty numCharsInTxDisplayBuffer = new SimpleIntegerProperty();
+    public SimpleIntegerProperty numCharsInRxDisplayBuffer = new SimpleIntegerProperty();
 
     //==============================================//
-    //=========== TOTAL CHAR COUNT FIELDS ==========//
+    //========== TOTAL RAW CHAR COUNT SETUP ========//
     //==============================================//
 
-    public SimpleIntegerProperty totalNumCharsTx = new SimpleIntegerProperty(0);
-    public SimpleIntegerProperty totalNumCharsRx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalRawCharCountTx = new SimpleIntegerProperty(0);
+    public SimpleIntegerProperty totalRawCharCountRx = new SimpleIntegerProperty(0);
 
     //==============================================//
     //=============== BYTES/SEC FIELDS =============//
@@ -61,17 +61,12 @@ public class Stats {
     public Stats(Terminal terminal) {
 
         //==============================================//
-        //========== NUM. CHARS IN BUFFER SETUP ========//
+        //===== NUM. CHARS IN DISPLAY BUFFER SETUP =====//
         //==============================================//
 
-        // // TODO: 2016-11-16 Fix
-        /*terminal.txRx.txDataToDisplay.addListener((observable, oldValue, newValue) -> {
-            numCharsInTxBuffer.set(newValue.length());
-        });*/
-
-        terminal.txRx.rxDataEngine.rawRxData.addListener((observable, oldValue, newValue) -> {
-            numCharsInRxBuffer.set(newValue.length());
-        });
+        // NOTE: These stats are "pushed" to this stat model
+        // rather than "pulled", as the values are calculated
+        // in the view
 
         //==============================================//
         //================ BYTES/SEC SETUP =============//
@@ -100,10 +95,10 @@ public class Stats {
      */
     private void calculateBytesPerSecond() {
 
-        bytesPerSecondTx.set(bytesSinceLastCalcTx / (BYTES_PER_SECOND_CALC_PERIOD_MS /1000.0));
+        bytesPerSecondTx.set(bytesSinceLastCalcTx / (BYTES_PER_SECOND_CALC_PERIOD_MS / 1000.0));
         bytesSinceLastCalcTx = 0.0;
 
-        bytesPerSecondRx.set(bytesSinceLastCalcRx / (BYTES_PER_SECOND_CALC_PERIOD_MS /1000.0));
+        bytesPerSecondRx.set(bytesSinceLastCalcRx / (BYTES_PER_SECOND_CALC_PERIOD_MS / 1000.0));
         bytesSinceLastCalcRx = 0.0;
     }
 

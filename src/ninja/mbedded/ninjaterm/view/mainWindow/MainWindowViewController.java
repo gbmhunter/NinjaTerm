@@ -88,7 +88,7 @@ public class MainWindowViewController {
      */
     public void init(Model model, GlyphFont glyphFont) {
 
-        System.out.println("init() called.");
+        logger.debug("init() called.");
 
         this.model = model;
         this.glyphFont = glyphFont;

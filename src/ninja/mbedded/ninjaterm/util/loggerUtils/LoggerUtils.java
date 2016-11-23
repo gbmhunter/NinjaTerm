@@ -1,15 +1,14 @@
 package ninja.mbedded.ninjaterm.util.loggerUtils;
 
-import ch.qos.logback.core.ConsoleAppender;
-import javafx.application.Platform;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
+import javafx.beans.property.SimpleBooleanProperty;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -19,6 +18,25 @@ public class LoggerUtils {
 
     private static ConsoleAppender consoleAppender;
     private static FileAppender<ILoggingEvent> fileAppender;
+
+    /**
+     * Starts appending log data to a file on the file system.
+     *
+     * This will typically be controlled by a command-line argument.
+     */
+    public static void startDebuggingToFile() {
+        fileAppender.start();
+    }
+
+    /**
+     * Controls whether console logging is enabled or disabled.
+     */
+    public static SimpleBooleanProperty consoleLoggingEnabled;
+
+    /**
+     * Controls whether file logging is enabled or disabled.
+     */
+    public static SimpleBooleanProperty fileLoggingEnabled;
 
     static {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -33,7 +51,7 @@ public class LoggerUtils {
         patternLayoutEncoder.start();
 
         //==============================================//
-        //================ APPENDER SETUP ==============//
+        //=========== CONSOLE APPENDER SETUP ===========//
         //==============================================//
 
         // CONSOLE APPENDER
@@ -48,6 +66,18 @@ public class LoggerUtils {
         rootLogger.addAppender(consoleAppender);
         rootLogger.setLevel(Level.WARN);*/
 
+        consoleLoggingEnabled = new SimpleBooleanProperty(false);
+        consoleLoggingEnabled.addListener((observable, oldValue, newValue) -> {
+            handleConsoleLoggingEnabledChanged();
+        });
+        // Update to default state
+        handleConsoleLoggingEnabledChanged();
+
+
+        //==============================================//
+        //============= FILE APPENDER SETUP ============//
+        //==============================================//
+
         // FILE APPENDER
         fileAppender = new FileAppender<ILoggingEvent>();
         String userHomeDir = System.getProperty("user.home");
@@ -59,22 +89,35 @@ public class LoggerUtils {
         fileAppender.setFile(defaultDebugLogFilePath);
         fileAppender.setEncoder(patternLayoutEncoder);
         fileAppender.setContext(loggerContext);
-        // Note the fileAppender is not started until startDebuggingToFile() is called.
-        //fileAppender.start();
+
+        fileLoggingEnabled = new SimpleBooleanProperty(false);
+        fileLoggingEnabled.addListener((observable, oldValue, newValue) -> {
+            handleFileLoggingEnabledChanged();
+        });
+        // Update to default state
+        handleFileLoggingEnabledChanged();
 
     }
 
-    /**
-     * Starts appending log data to a file on the file system.
-     */
-    public static void startDebuggingToFile() {
-        fileAppender.start();
+    private static void handleConsoleLoggingEnabledChanged() {
+        if(consoleLoggingEnabled.get())
+            consoleAppender.start();
+        else
+            consoleAppender.stop();
+    }
+
+    private static void handleFileLoggingEnabledChanged() {
+        if(fileLoggingEnabled.get())
+            fileAppender.start();
+        else
+            fileAppender.stop();
     }
 
     /**
      * Creates a logger which already has a file appender attached to it.
      * The file appender is not started until <code>startDebuggingToFile()</code>
      * is called.
+     *
      * @param string
      * @return
      */
