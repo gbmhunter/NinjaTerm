@@ -33,6 +33,11 @@ public class LoggerUtils {
      */
     public static SimpleBooleanProperty consoleLoggingEnabled;
 
+    /**
+     * Controls whether file logging is enabled or disabled.
+     */
+    public static SimpleBooleanProperty fileLoggingEnabled;
+
     static {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
@@ -61,7 +66,7 @@ public class LoggerUtils {
         rootLogger.addAppender(consoleAppender);
         rootLogger.setLevel(Level.WARN);*/
 
-        consoleLoggingEnabled = new SimpleBooleanProperty(true);
+        consoleLoggingEnabled = new SimpleBooleanProperty(false);
         consoleLoggingEnabled.addListener((observable, oldValue, newValue) -> {
             handleConsoleLoggingEnabledChanged();
         });
@@ -84,8 +89,13 @@ public class LoggerUtils {
         fileAppender.setFile(defaultDebugLogFilePath);
         fileAppender.setEncoder(patternLayoutEncoder);
         fileAppender.setContext(loggerContext);
-        // Note the fileAppender is not started until startDebuggingToFile() is called.
-        //fileAppender.start();
+
+        fileLoggingEnabled = new SimpleBooleanProperty(false);
+        fileLoggingEnabled.addListener((observable, oldValue, newValue) -> {
+            handleFileLoggingEnabledChanged();
+        });
+        // Update to default state
+        handleFileLoggingEnabledChanged();
 
     }
 
@@ -94,6 +104,13 @@ public class LoggerUtils {
             consoleAppender.start();
         else
             consoleAppender.stop();
+    }
+
+    private static void handleFileLoggingEnabledChanged() {
+        if(fileLoggingEnabled.get())
+            fileAppender.start();
+        else
+            fileAppender.stop();
     }
 
     /**

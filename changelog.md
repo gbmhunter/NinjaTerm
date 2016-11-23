@@ -10,6 +10,7 @@ vX.X.X
 - Moved the "send" options from display pop-up to the formatting pop-up, closes #154.
 - Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.
 - Fixed bug where screen buffer size stats where not being updated, closes #170.
+- Added a proper command-line argument parsing tool, closes #173.
 
 v0.8.0
 ------
