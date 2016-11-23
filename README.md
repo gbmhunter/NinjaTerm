@@ -42,7 +42,7 @@ Developing
 Releasing New Version
 =====================
 
-NOTE: The order of the following tasks is important!
+*NOTE: The order of the following tasks is important!*
 
 **UPDATING VERSION NUMBER**
 
