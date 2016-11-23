@@ -14,6 +14,7 @@ import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.MainWindowViewController;
 import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
+import org.apache.commons.cli.*;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
 
@@ -32,11 +33,21 @@ public class Main extends Application {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
+    private Stage primaryStage;
+
     @Override
     public void start(Stage primaryStage) throws Exception {
 
+        //==============================================//
+        //================ LOGGING SETUP ===============//
+        //==============================================//
+
+        LoggerUtils.consoleLoggingEnabled.set(false);
         logger.debug("start() called.");
 
+        //==============================================//
+        //========== UN-CAUGHT EXCEPTION SETUP =========//
+        //==============================================//
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
             showError(thread, throwable);
         });
@@ -46,14 +57,54 @@ public class Main extends Application {
         //======== COMMAND-LINE ARGUMENT PARSING =======//
         //==============================================//
 
-        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
-        for (String arg : getParameters().getRaw()) {
-            if (arg.equals("no-splash"))
-                disableSplashScreen = true;
+        Options options = new Options();
 
-            if (arg.equals("debug"))
-                LoggerUtils.startDebuggingToFile();
+        Option logc = Option.builder(null).longOpt("logc").numberOfArgs(0).desc("log to console").build();
+        options.addOption(logc);
+
+        Option logf = Option.builder(null).longOpt("logf").numberOfArgs(0).desc("log to file").build();
+        options.addOption(logf);
+
+        Option noSplash = Option.builder(null).longOpt("nosplash").numberOfArgs(0).desc("disable splashscreen").build();
+        options.addOption(noSplash);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+
+
+        try {
+            cmd = parser.parse(options, getParameters().getRaw().toArray(new String[0]));
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+            return;
         }
+
+//        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
+//        for (String arg : getParameters().getRaw()) {
+//            if (arg.equals("no-splash"))
+//                disableSplashScreen = true;
+//
+//            if (arg.equals("debug"))
+//                LoggerUtils.startDebuggingToFile();
+//        }
+
+        if(cmd.hasOption(logc.getLongOpt())) {
+            LoggerUtils.consoleLoggingEnabled.set(true);
+        }
+
+        if(cmd.hasOption(logf.getLongOpt())) {
+            LoggerUtils.fileLoggingEnabled.set(true);
+        }
+
+        if(cmd.hasOption(noSplash.getLongOpt())) {
+            disableSplashScreen = true;
+        }
+
+        this.primaryStage = primaryStage;
 
         if (disableSplashScreen) {
             // Skip this function, and go straight to loading the main window.
@@ -61,6 +112,11 @@ public class Main extends Application {
             return;
         }
 
+        loadSplashScreen();
+
+    }
+
+    private void loadSplashScreen() {
         this.splashScreenStage = primaryStage;
 
         // Load splashscreen FXML file and get controller
@@ -118,9 +174,6 @@ public class Main extends Application {
 
         mainWindowViewController.init(model, glyphFont);
 
-        //mainWindowViewController.addNewTerminal();
-
-
         // If the splashscreen was skipped, splashScreenStage will be null
         if (!disableSplashScreen)
             splashScreenStage.close();
@@ -149,6 +202,8 @@ public class Main extends Application {
     private void showError(Thread t, Throwable e) {
         System.err.println("***Default exception handler***");
 
+        // Stop all threads except this one
+        // @todo Improve the way that the other threads are stopped, the current way is dangerous and unpredictable
         for (Thread thread : Thread.getAllStackTraces().keySet())
         {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
             thread.stop();

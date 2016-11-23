@@ -1,3 +1,17 @@
+v0.8.1
+------
+
+- Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.
+- Brightened the default data colour, closes #162.
+- Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.
+- Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.
+- Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.
+- Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.
+- Moved the "send" options from display pop-up to the formatting pop-up, closes #154.
+- Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.
+- Fixed bug where screen buffer size stats where not being updated, closes #170.
+- Added a proper command-line argument parsing tool, closes #173.
+
 v0.8.0
 ------
 

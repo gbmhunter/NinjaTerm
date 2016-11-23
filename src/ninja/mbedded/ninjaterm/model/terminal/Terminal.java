@@ -22,7 +22,7 @@ import java.util.Arrays;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-16
- * @last-modified   2016-10-28
+ * @last-modified   2016-11-22
  */
 public class Terminal {
 
@@ -149,7 +149,7 @@ public class Terminal {
             txRx.addRxData(rxData);
 
             // Update stats in app model
-            stats.totalNumCharsRx.set(stats.totalNumCharsRx.get() + rxData.length);
+            stats.totalRawCharCountRx.set(stats.totalRawCharCountRx.get() + rxData.length);
             model.globalStats.numCharactersRx.set(model.globalStats.numCharactersRx.get() + rxData.length);
 
         });

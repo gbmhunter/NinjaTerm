@@ -24,8 +24,8 @@
             <!-- ========================================= -->
             <!-- ============= STATUS MESSAGES =========== -->
             <!-- ========================================= -->
-            <VBox minHeight="50"
-                  maxHeight="50"
+            <VBox minHeight="70"
+                  maxHeight="70"
                   HBox.hgrow="ALWAYS"
                   styleClass="border">
                 <!-- ScrollPane does not exceed it's parent dimensions -->

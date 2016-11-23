@@ -4,7 +4,9 @@ import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.BytesToString;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,8 +20,8 @@ import java.util.List;
  * the future, and this means the code changes just have to occur in this file.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-22
  * @since 2016-07-16
- * @last-modified 2016-10-28
  */
 public class ComPort {
 
@@ -63,6 +65,8 @@ public class ComPort {
 
     public List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -76,13 +80,17 @@ public class ComPort {
 
     /**
      * Scans the computer for COM ports, and returns a list of their names.
+     *
      * @return
      */
     public String[] scan() {
         return SerialPortList.getPortNames();
     }
 
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getName() {
         return name;
     }
@@ -223,7 +231,7 @@ public class ComPort {
     }
 
     public void sendData(byte[] data) {
-        System.out.println(getName() + "sendData() called with data = " + BytesToString.bytesToHex(data));
+        logger.debug("sendData() called with data = " + BytesToString.bytesToHex(data));
 
         // Send the data to the serial port library
         try {
@@ -237,29 +245,30 @@ public class ComPort {
      * This will be called by jSSC when any "serial port event" occurs.
      * This maybe because RX data has been received, or the state of the signalling
      * wires (e.g. CTS, RTS) has changed.
+     *
      * @param serialPortEvent
      */
     public void onSerialPortEvent(SerialPortEvent serialPortEvent) {
 
-            if (serialPortEvent.isRXCHAR()) {
-                //System.out.println("Data received!");
+        if (serialPortEvent.isRXCHAR()) {
+            //System.out.println("Data received!");
 
-                int numBytes = serialPortEvent.getEventValue();
+            int numBytes = serialPortEvent.getEventValue();
 
-                byte[] rxData;
-                try {
-                    rxData = serialPort.readBytes(numBytes);
-                } catch (SerialPortException e) {
-                    throw new RuntimeException(e);
-                }
-
-                //System.out.println("rxData = " + Arrays.toString(rxData));
-
-                for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
-                    OnRxDataListener onRxDataListener = it.next();
-                    onRxDataListener.run(rxData);
-                }
+            byte[] rxData;
+            try {
+                rxData = serialPort.readBytes(numBytes);
+            } catch (SerialPortException e) {
+                throw new RuntimeException(e);
             }
+
+            //System.out.println("rxData = " + Arrays.toString(rxData));
+
+            for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
+                OnRxDataListener onRxDataListener = it.next();
+                onRxDataListener.run(rxData);
+            }
+        }
     }
 
     public void close() throws ComPortException {

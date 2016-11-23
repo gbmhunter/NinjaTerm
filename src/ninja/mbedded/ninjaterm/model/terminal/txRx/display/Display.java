@@ -10,20 +10,22 @@ import org.slf4j.Logger;
 /**
  * Model containing data and logic for the display components of the TX/RX data.
  *
- * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-16
- * @last-modified   2016-10-27
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-22
+ * @since 2016-09-16
  */
 public class Display {
 
     //================================================================================================//
-    //============================================= ENUMS ============================================//
+    //========================================= CLASS ENUMS ==========================================//
     //================================================================================================//
 
+    /**
+     * The different layout options for the TX and RX panes.
+     */
     public enum LayoutOptions {
         SINGLE_PANE("Single Pane"),
-        SEPARATE_TX_RX("Separate TX/RX"),
-        ;
+        SEPARATE_TX_RX("Separate TX/RX"),;
 
         private String label;
 
@@ -37,26 +39,23 @@ public class Display {
         }
     }
 
-    public enum TxCharSendingOptions {
-        SEND_TX_CHARS_IMMEDIATELY,
-        SEND_TX_CHARS_ON_ENTER
-    }
 
-    /**
-     * The options for the RX pane scroll behaviour.
-     */
-    public enum ScrollBehaviour {
-        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
-         * the same lines of RX text in view. **/
-        STANDARD,
 
-        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
-         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
-        SMART,
-    }
+//    /**
+//     * The options for the RX pane scroll behaviour.
+//     */
+//    public enum ScrollBehaviour {
+//        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
+//         * the same lines of RX text in view. **/
+//        STANDARD,
+//
+//        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
+//         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
+//        SMART,
+//    }
 
     //================================================================================================//
-    //============================================ CONSTANTS =========================================//
+    //========================================= CLASS CONSTANTS ======================================//
     //================================================================================================//
 
     /**
@@ -65,13 +64,20 @@ public class Display {
      * When set to 50,000, on a Surface Pro 4 with i5, 8G RAM, the rendering of 50,000 characters
      * 10 times a second (basic "Hello, world!" RX data) would cause the processor usage to jump up by 30%.
      * No RX data filter was active at this time.
+     *
+     * When using a WebView-based UI to display the data, {@code DEFAULT_BUFFER_SIZE_CHARS = 20000} caused
+     * a small but noticeable amount of lag when the visible buffer size hit max. capacity, and chars had to
+     * be deleted each time new data was inserted. {@code DEFAULT_BUFFER_SIZE_CHARS = 10000} seems to be o.k.
      */
-    public final int DEFAULT_BUFFER_SIZE_CHARS = 20000;
+    public final int DEFAULT_BUFFER_SIZE_CHARS = 10000;
 
+    /**
+     * The default width at which text will wrap in the TX and RX data display panes.
+     */
     public final double DEFAULT_WRAPPING_WIDTH_PX = 800;
 
     //================================================================================================//
-    //============================================= FIELDS ===========================================//
+    //========================================= CLASS FIELDS =========================================//
     //================================================================================================//
 
     public SimpleBooleanProperty localTxEcho = new SimpleBooleanProperty(false);
@@ -81,8 +87,6 @@ public class Display {
      * The selected layout option for the TX and RX data. This is changed by the user.
      */
     public SimpleObjectProperty<LayoutOptions> selLayoutOption = new SimpleObjectProperty<>(LayoutOptions.SEPARATE_TX_RX);
-
-    public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
 
     /**
      * The maximum TX and RX buffer size, for any "buffer". For RX data, this sets the max. size for all StreamedData objects,
@@ -103,7 +107,7 @@ public class Display {
     /**
      * The selected scroll behaviour. This is set by radio buttons in the UI.
      */
-    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
+//    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

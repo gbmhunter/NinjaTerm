@@ -42,6 +42,9 @@ function addText(newText)
 }
 
 function addColor(color) {
+
+    java.log("addColor() called with color = " + color);
+
     html = "<span style='color: " + color + ";'>";
     java.log("html = " + html);
 

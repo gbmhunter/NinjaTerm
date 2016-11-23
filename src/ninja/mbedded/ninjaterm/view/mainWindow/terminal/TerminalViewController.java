@@ -246,7 +246,7 @@ public class TerminalViewController {
         if (terminalTabPane.getSelectionModel().getSelectedItem() != txRxView) {
             return;
         }
-        System.out.println("TX/RX sub-tab selected.");
+        logger.debug("TX/RX sub-tab selected.");
 
         // Now that we have made sure the RX/TX sub-tab was open when the key was pressed,
         // call the appropriate function in the RX/TX controller.

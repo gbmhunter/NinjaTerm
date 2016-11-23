@@ -47,7 +47,7 @@ public class ComDataPaneWeb extends StackPane {
 
     private final boolean SHOW_FIREBUG = false;
 
-    private final Color DEFAULT_COLOR = Color.GREEN;
+    private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
 
@@ -90,13 +90,11 @@ public class ComDataPaneWeb extends StackPane {
 
     private SimpleObjectProperty<ScrollState> scrollState = new SimpleObjectProperty<>(ScrollState.FIXED_TO_BOTTOM);
 
-    private int currNumChars = 0;
+    public SimpleIntegerProperty currNumChars = new SimpleIntegerProperty(0);
 
     private WebEngine webEngine;
 
     private double currScrollPos = 0;
-
-    private boolean hasAddDataBeenCalledBefore = false;
 
     private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
 
@@ -168,9 +166,10 @@ public class ComDataPaneWeb extends StackPane {
 
         bufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
         bufferSize.addListener((observable, oldValue, newValue) -> {
+            // If the buffer size is changed, we may need to trim the data
+            // to fit the new size (if smaller)
             trimIfRequired();
         });
-
 
         //==============================================//
         //================= SCROLL SETUP ===============//
@@ -246,11 +245,6 @@ public class ComDataPaneWeb extends StackPane {
 
         logger.debug("addData() called with streamedData = " + streamedData);
 
-        if (!hasAddDataBeenCalledBefore) {
-            appendColor(Color.GREEN);
-            hasAddDataBeenCalledBefore = true;
-        }
-
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
         //==============================================//
@@ -292,7 +286,7 @@ public class ComDataPaneWeb extends StackPane {
         appendHtml(html);
 
         // Update the number of chars added with what was added to the last existing text node
-        currNumChars += textToAppend.toString().length();
+        currNumChars.set(currNumChars.get() + textToAppend.toString().length());
 
 
         // Create new text nodes and copy all text
@@ -340,7 +334,7 @@ public class ComDataPaneWeb extends StackPane {
             appendHtml(html);
 
             // Update the num. chars added with all the text added to this new Text node
-            currNumChars += textToAppend.length();
+            currNumChars.set(currNumChars.get() + textToAppend.toString().length());
         }
 
         if (streamedData.getColorToBeInsertedOnNextChar() != null) {
@@ -417,16 +411,21 @@ public class ComDataPaneWeb extends StackPane {
         // Remove all COM data
         webEngine.executeScript("clearData()");
 
+        // Re-show the caret, if it is enabled
+        handleIsCaretEnabledChange();
+
         // Add new default span (since all existing ones have now
         // been deleted)
-        appendColor(Color.GREEN);
+        appendColor(DEFAULT_COLOR);
 
         // Reset scrolling
         setComDataWrapperScrollTop(0);
         currScrollPos = 0;
 
         // Reset character count
-        currNumChars = 0;
+        currNumChars.set(0);
+
+
     }
 
     /**
@@ -436,17 +435,17 @@ public class ComDataPaneWeb extends StackPane {
 
         logger.debug("trimIfRequired() called.");
 
-        if (currNumChars >= bufferSize.get()) {
+        if (currNumChars.get() >= bufferSize.get()) {
 
-            int numCharsToRemove = currNumChars - bufferSize.get();
+            int numCharsToRemove = currNumChars.get() - bufferSize.get();
             logger.debug("Need to trimIfRequired display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
 
             webEngine.executeScript("trim(" + numCharsToRemove + ")");
 
             // Update the character count
-            currNumChars = currNumChars - numCharsToRemove;
+            currNumChars.set(currNumChars.get() - numCharsToRemove);
 
-            logger.debug("currNumChars = " + currNumChars);
+            logger.debug("currNumChars.get() = " + currNumChars.get());
         }
     }
 
@@ -527,6 +526,7 @@ public class ComDataPaneWeb extends StackPane {
      *
      * @param scrollTop
      */
+    @SuppressWarnings("unused")
     public void scrolled(Double scrollTop) {
 
         logger.debug("scrolled() called. scrollTop = " + scrollTop);
@@ -550,6 +550,7 @@ public class ComDataPaneWeb extends StackPane {
         currScrollPos = scrollTop;
     }
 
+    @SuppressWarnings("unused")
     public void downArrowClicked() {
         logger.debug("Down arrow clicked.");
 

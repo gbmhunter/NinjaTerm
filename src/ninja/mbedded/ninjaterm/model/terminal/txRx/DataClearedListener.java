@@ -8,6 +8,6 @@ package ninja.mbedded.ninjaterm.model.terminal.txRx;
  * @since           2016-09-30
  * @last-modified   2016-10-07
  */
-public interface RxDataClearedListener {
+public interface DataClearedListener {
     void run();
 }

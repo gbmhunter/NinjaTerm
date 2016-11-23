@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.0/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.0_macos.dmg" newVersion="0.8.0" newMediaFileId="36" fileSize="8024199" bundledJre="" archive="false">
-    <comment language="en">v0.8.0&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.1/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.1_macos.dmg" newVersion="0.8.1" newMediaFileId="36" fileSize="8069255" bundledJre="" archive="false">
+    <comment language="en">v0.8.1&#xD;
+------&#xD;
+&#xD;
+- Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.&#xD;
+- Brightened the default data colour, closes #162.&#xD;
+- Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.&#xD;
+- Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.&#xD;
+- Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.&#xD;
+- Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.&#xD;
+- Moved the "send" options from display pop-up to the formatting pop-up, closes #154.&#xD;
+- Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.&#xD;
+- Fixed bug where screen buffer size stats where not being updated, closes #170.&#xD;
+- Added a proper command-line argument parsing tool, closes #173.&#xD;
+&#xD;
+v0.8.0&#xD;
 ------&#xD;
 &#xD;
 - Added blurb on smart scrolling to homepage, closes #148.&#xD;
@@ -148,8 +162,22 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.0_windows.exe" newVersion="0.8.0" newMediaFileId="23" fileSize="8578560" bundledJre="" archive="false">
-    <comment language="en">v0.8.0&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.1_windows.exe" newVersion="0.8.1" newMediaFileId="23" fileSize="8623104" bundledJre="" archive="false">
+    <comment language="en">v0.8.1&#xD;
+------&#xD;
+&#xD;
+- Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.&#xD;
+- Brightened the default data colour, closes #162.&#xD;
+- Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.&#xD;
+- Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.&#xD;
+- Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.&#xD;
+- Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.&#xD;
+- Moved the "send" options from display pop-up to the formatting pop-up, closes #154.&#xD;
+- Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.&#xD;
+- Fixed bug where screen buffer size stats where not being updated, closes #170.&#xD;
+- Added a proper command-line argument parsing tool, closes #173.&#xD;
+&#xD;
+v0.8.0&#xD;
 ------&#xD;
 &#xD;
 - Added blurb on smart scrolling to homepage, closes #148.&#xD;
