@@ -20,15 +20,6 @@ public class LoggerUtils {
     private static FileAppender<ILoggingEvent> fileAppender;
 
     /**
-     * Starts appending log data to a file on the file system.
-     *
-     * This will typically be controlled by a command-line argument.
-     */
-    public static void startDebuggingToFile() {
-        fileAppender.start();
-    }
-
-    /**
      * Controls whether console logging is enabled or disabled.
      */
     public static SimpleBooleanProperty consoleLoggingEnabled;
@@ -126,7 +117,7 @@ public class LoggerUtils {
         Logger logger = (Logger) LoggerFactory.getLogger(string);
 
         logger.addAppender(consoleAppender);
-        //logger.addAppender(fileAppender);
+        logger.addAppender(fileAppender);
 
         logger.setLevel(Level.DEBUG);
         logger.setAdditive(false); /* set to true if root should log too */
