@@ -87,21 +87,17 @@ Then there are the following sub-directories:
 Command-Line Arguments
 ======================
 
-| Option     | Description                             |
-|------------|-----------------------------------------|
-| --logc     | Prints debug data to the console.       |
-| --logf     | Prints debug data to a file.            |
-| --nosplash | Disables the splash screen.             |
+Command-line arguments can be provided by opening up a command-line window/shell in the same directory as the .jar file (on Windows this is located in a directory similar to `C:\Program Files (x86)\NinjaTerm`.
 
-Debugging
-=========
+Then start NinjaTerm in the following manner:
 
-Debug output from NinjaTerm can be enabled by providing command-line arguments when starting the program. This can be done by opening up a command-line window/shell in the same directory as the .jar file (on Windows this is located in a directory similar to `C:\Program Files (x86)\NinjaTerm`. Then start NinjaTerm with the following command:
+`java -jar NinjaTerm.jar <command-line arguments go here>`
 
-`java -jar NinjaTerm.jar debug`
-
-This will instruct NinjaTerm to output debug information to your default user directory (on Windows this is `C:\Users\<your user name>\`. The file name should be in the format `NinjaTerm-<DATE>-DEBUG.log`.
-
+| Option       | Description                             | Comments                                 |
+|--------------|-----------------------------------------|------------------------------------------|
+| `--logc`     | Prints debug data to the console.       | Prints the debug data to `stdout`. This will typically be the terminal you started the process with. |
+| `--logf`     | Prints debug data to a file.            | This will instruct NinjaTerm to output debug information to your default user directory (on Windows this is `C:\Users\<your user name>\`. The file name should be in the format `NinjaTerm-<DATE>-DEBUG.log`. |
+| `--nosplash` | Disables the splash screen.             | NinjaTerm loads straight the main window. This is useful for debugging, or if you are are getting impatient with the pretty animations. |
 
 Changelog
 =========
