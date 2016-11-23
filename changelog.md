@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.1
 ------
 
 - Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.

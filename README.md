@@ -8,8 +8,8 @@ NinjaTerm
 
 - Author: gbmhunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2016-11-21
-- Version: v0.8.0
+- Last Modified: 2016-11-23
+- Version: v0.8.1
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -84,16 +84,23 @@ Then there are the following sub-directories:
 
 `Interfaces` are not placed in their own directory, but rather placed in the same package/folder that contains the classes most relevant (for a `Interface` class that is being used to implement the Observer pattern, this would be in the same package as the class which fires the event).
 
+Command-Line Arguments
+======================
+
+| Option     | Description                             |
+|------------|-----------------------------------------|
+| --logc     | Prints debug data to the console.       |
+| --logf     | Prints debug data to a file.            |
+| --nosplash | Disables the splash screen.             |
+
 Debugging
 =========
 
-Debug output from NinjaTerm can be enabled by providing the `debug` command-line argument when starting the program. This can be done by opening up a command-line window/shell in the same directory as the .jar file (on Windows this is located in a directory similar to `C:\Program Files (x86)\NinjaTerm`. Then start NinjaTerm with the following command:
+Debug output from NinjaTerm can be enabled by providing command-line arguments when starting the program. This can be done by opening up a command-line window/shell in the same directory as the .jar file (on Windows this is located in a directory similar to `C:\Program Files (x86)\NinjaTerm`. Then start NinjaTerm with the following command:
 
 `java -jar NinjaTerm.jar debug`
 
 This will instruct NinjaTerm to output debug information to your default user directory (on Windows this is `C:\Users\<your user name>\`. The file name should be in the format `NinjaTerm-<DATE>-DEBUG.log`.
-
-You can also use the command-line parameter `no-splash` to stop the splash-screen from running. This can be useful for speeding things up when debugging.
 
 
 Changelog
