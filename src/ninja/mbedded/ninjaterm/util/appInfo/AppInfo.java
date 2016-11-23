@@ -32,6 +32,9 @@ public class AppInfo {
             // This can occur if the .dll cannot be found. This can occur in a development environment
             // (i.e. running from within IntelliJ, but should not occur with a .exe built with install4j.
             return null;
+        } catch (NoClassDefFoundError e) {
+            // For some reason, this exception can also been thrown in the development environment
+            return null;
         }
 
         // applicationInfo array will be 0 in length if not application info for the provided ID

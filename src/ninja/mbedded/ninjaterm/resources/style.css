@@ -21,6 +21,10 @@
 }
 */
 
+* {
+   -colour-about-link: #0095C9;
+}
+
 /* ScrollPane objects have an annoying grey border by default, lets get rid of this */
 .scroll-pane {
     -fx-background-color: transparent;
@@ -213,4 +217,25 @@ which are displaying dynamic content */
 .styled-text-area .text{
 
     -fx-fill: yellow;
+}
+
+/* =========================================== */
+/* ========== ABOUT DIALOGUE STYLING ========= */
+/* =========================================== */
+
+.about BorderPane {
+    -fx-padding: 10 20 10 10;
+    -fx-border-insets: 10 10 10 10;
+    -fx-border-color: lightgrey;
+    -fx-border-style: dashed;
+}
+
+.about Label, .about Hyperlink {
+    -fx-font-size: 15;
+    /*-fx-padding: 7 0 7 0;*/
+}
+
+.about Hyperlink {
+    -fx-fill: -colour-about-link;
+    -glyph-size: 30;
 }

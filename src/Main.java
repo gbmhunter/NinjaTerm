@@ -200,22 +200,20 @@ public class Main extends Application {
     }
 
     private void showError(Thread t, Throwable e) {
-        System.err.println("***Default exception handler***");
+//        System.err.println("***Default exception handler***");
 
         // Stop all threads except this one
         // @todo Improve the way that the other threads are stopped, the current way is dangerous and unpredictable
-        for (Thread thread : Thread.getAllStackTraces().keySet())
-        {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
-            thread.stop();
-        }
+//        for (Thread thread : Thread.getAllStackTraces().keySet())
+//        {  if (thread != Thread.currentThread() && thread.getState() == Thread.State.RUNNABLE)
+//            thread.stop();
+//        }
+
+        logger.error(StringUtils.throwableToString(e));
 
         if (Platform.isFxApplicationThread()) {
             // Write the exception to the logger, and also show pop-up
-            logger.error(StringUtils.throwableToString(e));
             ExceptionPopup.showAndWait(e);
-        } else {
-            System.err.println("An unexpected error occurred in " + t);
-
         }
     }
 
