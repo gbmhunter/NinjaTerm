@@ -67,7 +67,7 @@ public class NewLineParser {
         // all input to the output, without adding any new line
         // markers
         if(!isEnabled.get()) {
-            output.shiftDataIn(input, input.getText().length());
+            output.shiftDataIn(input, input.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
             return;
         }
 
@@ -87,7 +87,7 @@ public class NewLineParser {
             // We want to add a new line marker at the position of the first character on the new line.
             // This is the same as matcher.end(). We also want to shift all data from input to
             // output up to this point
-            output.shiftDataIn(input, matcher.end() - currShiftIndex);
+            output.shiftDataIn(input, matcher.end() - currShiftIndex, StreamedData.MarkerBehaviour.NOT_FILTERING);
 
 //            output.addNewLineMarkerAt(output.getText().length());
             output.getMarkers().add(new NewLineMarker(output.getText().length()));

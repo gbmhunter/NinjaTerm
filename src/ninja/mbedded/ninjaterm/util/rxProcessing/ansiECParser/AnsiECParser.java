@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 
 import java.util.HashMap;
@@ -60,7 +61,7 @@ public class AnsiECParser {
      *
      * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedData object.
      *
-     * @param inputString           The input string which can contain display text and ANSI escape codes.
+     * @param inputData           The input string which can contain display text and ANSI escape codes.
      * @param outputStreamedData    Contains streamed text that has been release from this parser.
      */
     public void parse(StreamedData inputData, StreamedData outputStreamedData) {
@@ -133,7 +134,8 @@ public class AnsiECParser {
 //            System.out.println("Valid escape seqeunce found.");
 
             // Create new Text object with this new color, and add to the text nodes
-            outputStreamedData.setColorToBeInsertedOnNextChar(color);
+//            outputStreamedData.setColorToBeInsertedOnNextChar(color);
+            outputStreamedData.getMarkers().add(new ColourMarker(outputStreamedData.getText().length(), color));
 
             currPositionInString = m.end();
 

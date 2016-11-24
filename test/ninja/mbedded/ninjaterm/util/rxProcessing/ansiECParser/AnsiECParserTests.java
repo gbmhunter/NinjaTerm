@@ -47,7 +47,7 @@ public class AnsiECParserTests {
 
         assertEquals(1, releasedData.getColourMarkers().size());
 
-        assertEquals(7, releasedData.getColourMarkers().get(0).position);
+        assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
     }
 
@@ -61,10 +61,10 @@ public class AnsiECParserTests {
 
         assertEquals(2, releasedData.getColourMarkers().size());
 
-        assertEquals(7, releasedData.getColourMarkers().get(0).position);
+        assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
 
-        assertEquals(10, releasedData.getColourMarkers().get(1).position);
+        assertEquals(10, releasedData.getColourMarkers().get(1).charPos);
         assertEquals(Color.rgb(0, 170, 0), releasedData.getColourMarkers().get(1).color);
     }
 
@@ -78,7 +78,7 @@ public class AnsiECParserTests {
 
         assertEquals(1, releasedData.getColourMarkers().size());
 
-        assertEquals(7, releasedData.getColourMarkers().get(0).position);
+        assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(255, 85, 85), releasedData.getColourMarkers().get(0).color);
     }
 
@@ -98,7 +98,7 @@ public class AnsiECParserTests {
 
         assertEquals(1, releasedData.getColourMarkers().size());
 
-        assertEquals(7, releasedData.getColourMarkers().get(0).position);
+        assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
     }
 
@@ -123,7 +123,7 @@ public class AnsiECParserTests {
         assertEquals("defaultred", releasedData.getText());
 
         assertEquals(1, releasedData.getColourMarkers().size());
-        assertEquals(7, releasedData.getColourMarkers().get(0).position);
+        assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
     }
 

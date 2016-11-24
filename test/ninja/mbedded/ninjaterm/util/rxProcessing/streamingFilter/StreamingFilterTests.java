@@ -3,6 +3,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter;
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,7 +16,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-29
- * @last-modified   2016-10-02
+ * @last-modified   2016-11-24
  */
 public class StreamingFilterTests {
 
@@ -43,9 +44,8 @@ public class StreamingFilterTests {
     public void basicTest() throws Exception {
 
         inputStreamedData.append("abcEOLdefEOL");
-//        inputStreamedData.addNewLineMarkerAt(6);
+
         inputStreamedData.getMarkers().add(new NewLineMarker(6));
-//        inputStreamedData.addNewLineMarkerAt(12);
         inputStreamedData.getMarkers().add(new NewLineMarker(12));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
@@ -220,7 +220,9 @@ public class StreamingFilterTests {
     public void coloursAndNewLinesTest() throws Exception {
 
         inputStreamedData.append("abcEOL");
-        inputStreamedData.addColour(2, Color.RED);
+//        inputStreamedData.addColour(2, Color.RED);
+        inputStreamedData.addMarker(new ColourMarker(2, Color.RED));
+
 //        inputStreamedData.addNewLineMarkerAt(6);
         inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
@@ -229,7 +231,7 @@ public class StreamingFilterTests {
         // Check output
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
         assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
@@ -239,8 +241,12 @@ public class StreamingFilterTests {
     public void complexNodesTest() throws Exception {
 
         inputStreamedData.append("abcdefEOL");
-        inputStreamedData.addColour(2, Color.RED);
-        inputStreamedData.addColour(3, Color.GREEN);
+//        inputStreamedData.addColour(2, Color.RED);
+        inputStreamedData.addMarker(new ColourMarker(2, Color.RED));
+//        inputStreamedData.addColour(3, Color.GREEN);
+        inputStreamedData.addMarker(new ColourMarker(3, Color.GREEN));
+
+
 //        inputStreamedData.addNewLineMarkerAt(9);
         inputStreamedData.getMarkers().add(new NewLineMarker(9));
 
@@ -249,10 +255,10 @@ public class StreamingFilterTests {
         assertEquals("abcdefEOL", outputStreamedData.getText());
         assertEquals(2, outputStreamedData.getColourMarkers().size());
 
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
-        assertEquals(3, outputStreamedData.getColourMarkers().get(1).position);
+        assertEquals(3, outputStreamedData.getColourMarkers().get(1).charPos);
         assertEquals(Color.GREEN, outputStreamedData.getColourMarkers().get(1).color);
 
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
@@ -267,7 +273,9 @@ public class StreamingFilterTests {
         //==============================================//
 
         inputStreamedData.append("abcEOL");
-        inputStreamedData.addColour(2, Color.RED);
+//        inputStreamedData.addColour(2, Color.RED);
+        inputStreamedData.addMarker(new ColourMarker(2, Color.RED));
+
 //        inputStreamedData.addNewLineMarkerAt(6);
         inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
@@ -275,7 +283,7 @@ public class StreamingFilterTests {
 
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
         assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
@@ -285,7 +293,9 @@ public class StreamingFilterTests {
         //==============================================//
 
         inputStreamedData.append("defEOL");
-        inputStreamedData.addColour(0, Color.GREEN);
+//        inputStreamedData.addColour(0, Color.GREEN);
+        inputStreamedData.addMarker(new ColourMarker(0, Color.GREEN));
+
 //        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
         inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
@@ -293,7 +303,7 @@ public class StreamingFilterTests {
 
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
         assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
@@ -305,7 +315,8 @@ public class StreamingFilterTests {
         streamingFilter.setFilterPattern("d");
 
         inputStreamedData.append("re");
-        inputStreamedData.addColour(0, Color.RED);
+//        inputStreamedData.addColour(0, Color.RED);
+        inputStreamedData.addMarker(new ColourMarker(0, Color.RED));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -320,7 +331,7 @@ public class StreamingFilterTests {
 
         assertEquals("redEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(0, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(0, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
@@ -328,33 +339,37 @@ public class StreamingFilterTests {
         // Nothing should of changed
         assertEquals("redEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(0, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(0, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
         inputStreamedData.append("greenEOL");
-        inputStreamedData.addColour(inputStreamedData.getText().length() - 8, Color.GREEN);
+//        inputStreamedData.addColour(inputStreamedData.getText().length() - 8, Color.GREEN);
+        inputStreamedData.addMarker(new ColourMarker(
+                inputStreamedData.getText().length() - 8, Color.GREEN));
+
 //        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
         inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         inputStreamedData.append("redEOL");
-        inputStreamedData.addColour(inputStreamedData.getText().length() - 6, Color.RED);
-//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.addMarker(new ColourMarker(
+                inputStreamedData.getText().length() - 6, Color.RED));
         inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         inputStreamedData.append("greenEOL");
-        inputStreamedData.addColour(inputStreamedData.getText().length() - 8, Color.GREEN);
-//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.addMarker(new ColourMarker(
+                inputStreamedData.getText().length() - 8, Color.GREEN));
         inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
         assertEquals("redEOLredEOL", outputStreamedData.getText());
+
         assertEquals(2, outputStreamedData.getColourMarkers().size());
 
-        assertEquals(0, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(0, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
-        assertEquals(6, outputStreamedData.getColourMarkers().get(1).position);
+        assertEquals(6, outputStreamedData.getColourMarkers().get(1).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(1).color);
     }
 }

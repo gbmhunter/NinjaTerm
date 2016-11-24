@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-15
- * @last-modified   2016-10-16
+ * @last-modified   2016-11-24
  */
 public class CopyOrShiftNewLinesTests {
 
@@ -38,7 +38,7 @@ public class CopyOrShiftNewLinesTests {
         // This makes a private method "public" for unit test purposes.
         method = StreamedData.class.getDeclaredMethod(
                 "copyOrShiftMarkers",
-                StreamedData.class, int.class, StreamedData.CopyOrShift.class);
+                StreamedData.class, int.class, StreamedData.CopyOrShift.class, StreamedData.MarkerBehaviour.class);
         method.setAccessible(true);
     }
 
@@ -49,7 +49,11 @@ public class CopyOrShiftNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(2);
         inputStreamedData.getMarkers().add(new NewLineMarker(2));
 
-        method.invoke(outputStreamedData, inputStreamedData, inputStreamedData.getText().length(), StreamedData.CopyOrShift.SHIFT);
+        method.invoke(outputStreamedData,
+                inputStreamedData,
+                inputStreamedData.getText().length(),
+                StreamedData.CopyOrShift.SHIFT,
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals("123456", inputStreamedData.getText());
@@ -70,7 +74,12 @@ public class CopyOrShiftNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(6);
         inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
-        method.invoke(outputStreamedData, inputStreamedData, 3, StreamedData.CopyOrShift.SHIFT);
+        method.invoke(
+                outputStreamedData,
+                inputStreamedData,
+                3,
+                StreamedData.CopyOrShift.SHIFT,
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals(1, inputStreamedData.getNewLineMarkers().size());
@@ -90,7 +99,7 @@ public class CopyOrShiftNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(4);
         inputStreamedData.getMarkers().add(new NewLineMarker(4));
 
-        method.invoke(outputStreamedData, inputStreamedData, 3, StreamedData.CopyOrShift.COPY);
+        method.invoke(outputStreamedData, inputStreamedData, 3, StreamedData.CopyOrShift.COPY, StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals(2, inputStreamedData.getNewLineMarkers().size());

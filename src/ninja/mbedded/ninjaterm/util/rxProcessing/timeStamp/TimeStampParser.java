@@ -69,7 +69,7 @@ public class TimeStampParser {
         // all input to the output, without adding any
         // markers
         if(!isEnabled.get()) {
-            output.shiftDataIn(input, input.getText().length());
+            output.shiftDataIn(input, input.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
             return;
         }
 
@@ -93,7 +93,7 @@ public class TimeStampParser {
 
             // Shift all data from input to last character of end of new line
             // sequence into output
-            output.shiftDataIn(input, matcher.end() - currShiftIndex);
+            output.shiftDataIn(input, matcher.end() - currShiftIndex, StreamedData.MarkerBehaviour.NOT_FILTERING);
 
             nextCharIsOnNewLine = true;
 

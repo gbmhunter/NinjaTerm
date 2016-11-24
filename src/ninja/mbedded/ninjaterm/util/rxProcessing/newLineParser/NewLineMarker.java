@@ -8,11 +8,11 @@ import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
 public class NewLineMarker extends Marker {
 
     public NewLineMarker(NewLineMarker newLineMarker) {
-        this.setCharPos(newLineMarker.getCharPos());
+        this(newLineMarker.charPos);
     }
 
     public NewLineMarker(int charPos) {
-        this.charPos = charPos;
+        super(charPos, Association.SPACE_BEFORE);
     }
 
     @Override

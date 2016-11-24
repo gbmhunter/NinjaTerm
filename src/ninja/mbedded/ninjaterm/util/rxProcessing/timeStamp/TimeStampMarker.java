@@ -16,15 +16,16 @@ public class TimeStampMarker extends Marker {
     public LocalDateTime localDateTime;
 
     public TimeStampMarker(int charPos, LocalDateTime localDateTime) {
-        this.charPos = charPos;
+        super(charPos, Association.CHAR_ON);
+
         this.localDateTime = localDateTime;
     }
 
     public TimeStampMarker(TimeStampMarker timeStampMarker) {
-        charPos = timeStampMarker.getCharPos();
+
         // LocalDateTime is immutable so this is o.k.!
         // (no copying required)
-        localDateTime = timeStampMarker.localDateTime;
+        this(timeStampMarker.charPos, timeStampMarker.localDateTime);
     }
 
     @Override

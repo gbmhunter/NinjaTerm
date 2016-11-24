@@ -266,7 +266,7 @@ public class RxDataEngine {
         releasedData.clear();
         freezeParser.parse(bufferBetweenDecoderAndFreezeParser, releasedData);
 
-        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //============== ANSI ESCAPE CODES =============//
@@ -279,7 +279,7 @@ public class RxDataEngine {
 
         // Now add all the new ANSI parser output to any that was not used up by the
         // streaming filter from last time
-        bufferBetweenAnsiParserAndNewLineParser.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenAnsiParserAndNewLineParser.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndNewLineParser = " + bufferBetweenAnsiParserAndNewLineParser);
 
@@ -296,10 +296,10 @@ public class RxDataEngine {
         // NOTE: We only want to append NEW data added to the ANSI parser output, since
         // there may still be characters in there from last time this method was called, and
         // we don't want to add them twice
-        totalNewLineParserOutput.copyCharsFrom(releasedData, releasedData.getText().length());
+        totalNewLineParserOutput.copyCharsFrom(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Add released text to buffer
-        bufferBetweenNewLineParserAndFiltering.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenNewLineParserAndFiltering.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //================== FILTERING =================//
@@ -310,7 +310,10 @@ public class RxDataEngine {
         streamingFilter.parse(bufferBetweenNewLineParserAndFiltering, releasedData);
 
         // Add the released text to buffer
-        bufferBetweenFilterAndControlCharParser.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenFilterAndControlCharParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //=========== ASCII CONTROL CHAR PARSING =======//
@@ -328,7 +331,7 @@ public class RxDataEngine {
         if (totalNewLineParserOutput.getText().length() > maxBufferSize.get()) {
             logger.debug("Trimming totalNewLineParserOutput...");
             int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - maxBufferSize.get();
-            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove);
+            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove, true);
         }
 
         // NOTE: UI buffer is trimmed in view controller

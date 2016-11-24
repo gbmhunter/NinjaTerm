@@ -27,7 +27,8 @@ public class ClearTests {
     public void clearTest() throws Exception {
 
         streamedData.append("1234");
-        streamedData.addColour(0, Color.RED);
+//        streamedData.addColour(0, Color.RED);
+        streamedData.addMarker(new ColourMarker(0, Color.RED));
 //        streamedData.addNewLineMarkerAt(0);
         streamedData.getMarkers().add(new NewLineMarker(0));
 

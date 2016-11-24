@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-18
+ * @last-modified   2016-11-24
  */
 public class SmallTests {
 
@@ -25,7 +25,7 @@ public class SmallTests {
         rxDataEngine = new RxDataEngine();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
-            output.shiftDataIn(streamedText, streamedText.getText().length());
+            output.shiftDataIn(streamedText, streamedText.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
         });
     }
 
@@ -107,7 +107,7 @@ public class SmallTests {
         assertEquals("123456", output.getText());
 
         assertEquals(1, output.getColourMarkers().size());
-        assertEquals(3, output.getColourMarkers().get(0).position);
+        assertEquals(3, output.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
@@ -130,8 +130,9 @@ public class SmallTests {
 
         assertEquals("456EOL", output.getText());
 
+        // There should be a color marker at the first char position
         assertEquals(1, output.getColourMarkers().size());
-        assertEquals(0, output.getColourMarkers().get(0).position);
+        assertEquals(0, output.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());

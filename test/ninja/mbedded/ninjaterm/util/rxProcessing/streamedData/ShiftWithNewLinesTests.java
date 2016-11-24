@@ -39,7 +39,7 @@ public class ShiftWithNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(3);
         inputStreamedData.getMarkers().add(new NewLineMarker(3));
 
-        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals("", inputStreamedData.getText());
@@ -58,7 +58,7 @@ public class ShiftWithNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(3);
         inputStreamedData.getMarkers().add(new NewLineMarker(3));
 
-        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals("", inputStreamedData.getText());
@@ -77,7 +77,7 @@ public class ShiftWithNewLinesTests {
 //        inputStreamedData.addNewLineMarkerAt(0);
         inputStreamedData.getMarkers().add(new NewLineMarker(0));
 
-        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
+        outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Check input
         assertEquals("", inputStreamedData.getText());

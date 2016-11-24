@@ -11,6 +11,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -18,6 +19,7 @@ import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -256,7 +258,7 @@ public class ComDataPaneWeb extends StackPane {
         if (streamedData.getColourMarkers().size() == 0) {
             indexOfLastCharPlusOne = streamedData.getText().length();
         } else {
-            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).position;
+            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).charPos;
         }
 
         StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
@@ -295,13 +297,13 @@ public class ComDataPaneWeb extends StackPane {
         for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
             //Text newText = new Text();
 
-            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).position;
+            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).charPos;
 
             int indexOfLastCharInNodePlusOne;
             if (x >= streamedData.getColourMarkers().size() - 1) {
                 indexOfLastCharInNodePlusOne = streamedData.getText().length();
             } else {
-                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).position;
+                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).charPos;
             }
 
             textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
@@ -337,12 +339,14 @@ public class ComDataPaneWeb extends StackPane {
             currNumChars.set(currNumChars.get() + textToAppend.toString().length());
         }
 
-        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
+//        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
+        List<ColourMarker> colourMarkers = streamedData.getColourMarkers();
+        if(colourMarkers.get(colourMarkers.size() - 1).charPos == streamedData.getText().length()) {
             // Add new node with no text
             //Text text = new Text();
             //text.setFill(colorToBeInsertedOnNextChar);
             //existingTextNodes.add(currIndexToInsertNodeAt, text);
-            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
+            colorToApplyToNextChar = colourMarkers.get(colourMarkers.size() - 1).color;
             //colorToBeInsertedOnNextChar = null;
         }
 
