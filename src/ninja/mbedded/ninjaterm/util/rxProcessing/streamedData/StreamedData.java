@@ -8,6 +8,8 @@ import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
+import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampParser;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -70,6 +72,8 @@ public class StreamedData {
      * <code>shiftDataIn()</code> and <code>copyCharsIn()</code> modifies the markers as appropriate.
      */
     private List<Integer> newLineMarkers = new ArrayList<>();
+
+    private List<TimeStampMarker> timeStampMarkers = new ArrayList<>();
 
     /**
      * The maximum number of chars this StreamedData object will contain, before it starts trimming the
@@ -705,6 +709,14 @@ public class StreamedData {
             logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
             removeCharsFromStart(numCharsToRemove);
         }
+    }
+
+    public void addTimeStampMarker(TimeStampMarker timeStampMarker) {
+        timeStampMarkers.add(timeStampMarker);
+    }
+
+    public List<TimeStampMarker> getTimeStampMarkers() {
+        return timeStampMarkers;
     }
 
     //================================================================================================//
