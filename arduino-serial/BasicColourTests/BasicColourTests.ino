@@ -16,7 +16,7 @@ void setup() {
 
 void loop() {
 
-#define DISPLAY_PERIOD (100)
+#define DISPLAY_PERIOD (2000)
 
   Serial.println("\x1B[31mred");
   delay(DISPLAY_PERIOD);
