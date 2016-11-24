@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
  * whose output is another <code>{@link StreamedData}</code> object.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-09-28
  * @last-modified 2016-10-27
+ * @since 2016-09-28
  */
 public class StreamedData {
 
@@ -70,14 +70,14 @@ public class StreamedData {
      */
 //    private List<Integer> newLineMarkers = new ArrayList<>();
 
-    private List<TimeStampMarker> timeStampMarkers = new ArrayList<>();
+//    private List<TimeStampMarker> timeStampMarkers = new ArrayList<>();
 
     private List<Marker> markers = new ArrayList<>();
 
     /**
      * The maximum number of chars this StreamedData object will contain, before it starts trimming the
      * oldest data.
-     *
+     * <p>
      * If <code>maxNumChars</code> = -1, then the StreamedData object does not have a limit and
      * will never delete old data.
      */
@@ -103,7 +103,7 @@ public class StreamedData {
 
     /**
      * Copy constructor. Uses the <code>copyCharsFrom()</code> to do the actual copying.
-     *
+     * <p>
      * This also copies colour and new line markers correctly.
      *
      * @param streamedData
@@ -155,7 +155,7 @@ public class StreamedData {
 
     /**
      * Clears all text, colour markers and new line markers from this object.
-     *
+     * <p>
      * This leaves the object in the same state as a new StreamedData object.
      */
     public void clear() {
@@ -170,7 +170,8 @@ public class StreamedData {
 
     /**
      * Removes the specified number of characters from the start of this <code>{@link StreamedData}</code> object.
-      * @param numChars     The number of characters to remove.
+     *
+     * @param numChars The number of characters to remove.
      */
     public void removeCharsFromStart(int numChars) {
         StreamedData dummyStreamedData = new StreamedData();
@@ -562,9 +563,22 @@ public class StreamedData {
 
         // Extract new line markers
         List<NewLineMarker> output = new ArrayList<>();
-        for(Marker marker : markers) {
-            if(marker instanceof NewLineMarker) {
-                output.add((NewLineMarker)marker);
+        for (Marker marker : markers) {
+            if (marker instanceof NewLineMarker) {
+                output.add((NewLineMarker) marker);
+            }
+        }
+        return output;
+    }
+
+    public List<TimeStampMarker> getTimeStampMarkers() {
+        //return newLineMarkers;
+
+        // Extract new line markers
+        List<TimeStampMarker> output = new ArrayList<>();
+        for (Marker marker : markers) {
+            if (marker instanceof TimeStampMarker) {
+                output.add((TimeStampMarker) marker);
             }
         }
         return output;
@@ -573,13 +587,13 @@ public class StreamedData {
     /**
      * Shifts as much data as it can from the <code>input</code> to this <code>StreamedData</code> object,
      * until a partial match (a mutli-character regex pattern) is detected in the input.
-     *
+     * <p>
      * Internally uses the <code>shiftDataIn()</code> method to actually move data.
-     *
+     * <p>
      * Used by the <code>{@link ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineParser}</code>
      *
-     * @param input     The input <code>StreamedData</code> object to shift data from.
-     * @param pattern   The regex pattern that defines a match.
+     * @param input   The input <code>StreamedData</code> object to shift data from.
+     * @param pattern The regex pattern that defines a match.
      */
     public void shiftCharsInUntilPartialMatch(StreamedData input, Pattern pattern) {
 
@@ -612,7 +626,7 @@ public class StreamedData {
 
     /**
      * Splits the text up at the new lines as specified by the new line markers.
-     *
+     * <p>
      * Does not modify the <code>StreamedData</code> object.
      *
      * @return
@@ -731,23 +745,23 @@ public class StreamedData {
         logger.debug("trimDataIfRequired() called.");
 
         // Check if -1, if so, we don't want to perform any trimming
-        if(maxNumChars.get() == -1)
+        if (maxNumChars.get() == -1)
             return;
 
-        if(text.length() > maxNumChars.get()) {
+        if (text.length() > maxNumChars.get()) {
             int numCharsToRemove = text.length() - maxNumChars.get();
             logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
             removeCharsFromStart(numCharsToRemove);
         }
     }
 
-    public void addTimeStampMarker(TimeStampMarker timeStampMarker) {
-        timeStampMarkers.add(timeStampMarker);
-    }
+//    public void addTimeStampMarker(TimeStampMarker timeStampMarker) {
+//        timeStampMarkers.add(timeStampMarker);
+//    }
 
-    public List<TimeStampMarker> getTimeStampMarkers() {
-        return timeStampMarkers;
-    }
+//    public List<TimeStampMarker> getTimeStampMarkers() {
+//        return timeStampMarkers;
+//    }
 
     //================================================================================================//
     //=========================================== GRAVEYARD ==========================================//

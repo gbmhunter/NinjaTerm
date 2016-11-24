@@ -86,7 +86,7 @@ public class TimeStampParser {
             // NEW LINE FOUND!
 
             if(nextCharIsOnNewLine) {
-                output.addTimeStampMarker(new TimeStampMarker(output.getText().length(), LocalDateTime.now()));
+                output.getMarkers().add(new TimeStampMarker(output.getText().length(), LocalDateTime.now()));
                 nextCharIsOnNewLine = false;
             }
 
@@ -108,7 +108,7 @@ public class TimeStampParser {
         output.shiftCharsInUntilPartialMatch(input, newLinePattern);
 
         if(output.getText().length() > beforeLength && nextCharIsOnNewLine) {
-            output.addTimeStampMarker(new TimeStampMarker(beforeLength, LocalDateTime.now()));
+            output.getMarkers().add(new TimeStampMarker(beforeLength, LocalDateTime.now()));
         }
 
 
