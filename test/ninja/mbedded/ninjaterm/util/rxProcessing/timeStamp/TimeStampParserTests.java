@@ -89,6 +89,10 @@ public class TimeStampParserTests {
         assertEquals(1, outputStreamedData.getTimeStampMarkers().size());
         assertEquals(0, outputStreamedData.getTimeStampMarkers().get(0).charPos);
 
+        // Sleep enough that the next TimeStamp is guaranteed to be greater than
+        // the first (delay must be larger than the min. LocalDateTime resolution)
+        Thread.sleep(10);
+
         //==============================================//
         //====================== RUN 2 =================//
         //==============================================//
