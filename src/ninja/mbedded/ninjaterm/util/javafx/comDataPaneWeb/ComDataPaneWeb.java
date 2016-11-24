@@ -339,16 +339,15 @@ public class ComDataPaneWeb extends StackPane {
             currNumChars.set(currNumChars.get() + textToAppend.toString().length());
         }
 
-//        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
         List<ColourMarker> colourMarkers = streamedData.getColourMarkers();
-        if(colourMarkers.get(colourMarkers.size() - 1).charPos == streamedData.getText().length()) {
-            // Add new node with no text
-            //Text text = new Text();
-            //text.setFill(colorToBeInsertedOnNextChar);
-            //existingTextNodes.add(currIndexToInsertNodeAt, text);
-            colorToApplyToNextChar = colourMarkers.get(colourMarkers.size() - 1).color;
-            //colorToBeInsertedOnNextChar = null;
+
+        if(colourMarkers.size() != 0) {
+            if(colourMarkers.get(colourMarkers.size() - 1).charPos == streamedData.getText().length()) {
+
+                colorToApplyToNextChar = colourMarkers.get(colourMarkers.size() - 1).color;
+            }
         }
+
 
         // Clear all text and the TextColor list
         streamedData.clear();
