@@ -265,10 +265,10 @@ public class ComDataPaneWeb extends StackPane {
         // shifted above
         int currNewLineMarkerIndex = 0;
         for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
-            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
+            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharPlusOne)
                 break;
 
-            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + i, "\n");
+            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + i, "\n");
             currNewLineMarkerIndex++;
         }
 
@@ -313,11 +313,11 @@ public class ComDataPaneWeb extends StackPane {
                 if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
                     break;
 
-                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
+                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharInNodePlusOne)
                     break;
 
                 textToAppend.insert(
-                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
+                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + insertionCount - indexOfFirstCharInNode,
                         NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
                 currNewLineMarkerIndex++;
                 insertionCount++;

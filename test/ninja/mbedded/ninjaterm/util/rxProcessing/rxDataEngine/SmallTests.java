@@ -65,7 +65,7 @@ public class SmallTests {
         assertEquals("456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class SmallTests {
         assertEquals("123", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
 
         //==============================================//
         //===================== RUN 2 ==================//
@@ -95,7 +95,7 @@ public class SmallTests {
         assertEquals("456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class SmallTests {
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(4, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -135,7 +135,7 @@ public class SmallTests {
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(6, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -147,7 +147,7 @@ public class SmallTests {
 
         assertEquals(1, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(7, output.getNewLineMarkers().get(0).charPos);
 
         // Now change the new line pattern
         rxDataEngine.newLinePattern.set("EOL2");
@@ -157,8 +157,8 @@ public class SmallTests {
 
         assertEquals(2, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
-        assertEquals(28, output.getNewLineMarkers().get(1).intValue());
+        assertEquals(7, output.getNewLineMarkers().get(0).charPos);
+        assertEquals(28, output.getNewLineMarkers().get(1).charPos);
 
     }
 }

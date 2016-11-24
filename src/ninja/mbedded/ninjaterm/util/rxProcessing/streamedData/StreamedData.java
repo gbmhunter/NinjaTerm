@@ -1,15 +1,12 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
-import ninja.mbedded.ninjaterm.util.mutable.MutableInteger;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
-import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampParser;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -71,9 +68,11 @@ public class StreamedData {
      * <p>
      * <code>shiftDataIn()</code> and <code>copyCharsIn()</code> modifies the markers as appropriate.
      */
-    private List<Integer> newLineMarkers = new ArrayList<>();
+//    private List<Integer> newLineMarkers = new ArrayList<>();
 
     private List<TimeStampMarker> timeStampMarkers = new ArrayList<>();
+
+    private List<Marker> markers = new ArrayList<>();
 
     /**
      * The maximum number of chars this StreamedData object will contain, before it starts trimming the
@@ -135,6 +134,10 @@ public class StreamedData {
         this.colorToBeInsertedOnNextChar = color;
     }
 
+    public List<Marker> getMarkers() {
+        return markers;
+    }
+
     /**
      * The method extracts the specified number of chars from the input and places them in the output.
      * It extract chars from the "to append" String first, and then starts removing chars from the first of the
@@ -161,7 +164,8 @@ public class StreamedData {
         getColourMarkers().clear();
         colorToBeInsertedOnNextChar = null;
 
-        getNewLineMarkers().clear();
+        //getNewLineMarkers().clear();
+        markers.clear();
     }
 
     /**
@@ -193,7 +197,7 @@ public class StreamedData {
             throw new IllegalArgumentException("numChars is greater than the number of characters in inputStreamedData.");
 
         // Copy/shift the new line markers first
-        copyOrShiftNewLineMarkers(inputStreamedData, numChars, copyOrShift);
+        copyOrShiftMarkers(inputStreamedData, numChars, copyOrShift);
 
         // Apply the colour to be inserted on next char, if at least one char is
         // going to be placed into this StreamedData object
@@ -266,6 +270,7 @@ public class StreamedData {
         trimDataIfRequired();
     }
 
+
     /**
      * This method expects the chars to be removed after this method is finished (otherwise
      * the input and output StreamedData objects will be left in an invalid state).
@@ -274,17 +279,19 @@ public class StreamedData {
      * @param numChars
      * @param copyOrShift
      */
-    private void copyOrShiftNewLineMarkers(StreamedData input, int numChars, CopyOrShift copyOrShift) {
+    private void copyOrShiftMarkers(StreamedData input, int numChars, CopyOrShift copyOrShift) {
 
         // Copy/shift markers within range
-        for (ListIterator<Integer> iter = input.getNewLineMarkers().listIterator(); iter.hasNext(); ) {
-            Integer element = iter.next();
+        for (ListIterator<Marker> iter = input.getMarkers().listIterator(); iter.hasNext(); ) {
+            Marker element = iter.next();
 
-            if (element <= numChars) {
-
+            if (element.getCharPos() <= numChars) {
 
                 // Make a copy of this marker in the output
-                addNewLineMarkerAt(getText().length() + element);
+//                addNewLineMarkerAt(getText().length() + element);
+                Marker newMarker = element.deepCopy();
+                newMarker.setCharPos(getText().length() + element.getCharPos());
+                markers.add(newMarker);
 
                 switch (copyOrShift) {
                     case COPY:
@@ -304,7 +311,8 @@ public class StreamedData {
                 // we just need to adjust the marker values for the remaining
                 // markers in the input
                 if (copyOrShift == CopyOrShift.SHIFT) {
-                    iter.set(element - numChars);
+//                    iter.set(element - numChars);
+                    element.setCharPos(element.getCharPos() - numChars);
                 }
             }
         }
@@ -380,7 +388,7 @@ public class StreamedData {
         //=============== NEW LINE MARKERS =============//
         //==============================================//
         output += ", newLineMarkers = {";
-        for (Integer newLineMarker : newLineMarkers) {
+        for (NewLineMarker newLineMarker : getNewLineMarkers()) {
             output += " " + newLineMarker + ",";
         }
         output += " }";
@@ -390,126 +398,126 @@ public class StreamedData {
         return output;
     }
 
-    /**
-     * Shifts all the text in this streamed text object into the provided list of text nodes, leaving
-     * this streamed text object empty.
-     *
-     * @param existingTextNodes     (input) The existing Text nodes to add the streamed text to.
-     * @param nodeIndexToStartShift (input) The index in the observable list at which you want the streaming text to
-     *                              start being shifted to.
-     * @param numCharsAdded         (output) The number of characters added to the Text nodes. Note that this is not the
-     *                              same as getText(), as getText() does not take into account the new line chars which are
-     *                              added.
-     */
-    public void shiftToTextNodes(
-            ObservableList<Node> existingTextNodes,
-            int nodeIndexToStartShift,
-            MutableInteger numCharsAdded) {
-
-        //==============================================//
-        //============= INPUT ARG CHECKS ===============//
-        //==============================================//
-
-        if (existingTextNodes.size() == 0) {
-            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
-        }
-
-        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
-        }
-
-        // Reset the mutable integer (we don't care about what it's last value was)
-        numCharsAdded.set(0);
-
-        //==============================================//
-        //======== ADD TEXT TO LAST EXISTING NODE ======//
-        //==============================================//
-
-        Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
-
-        // Copy all text before first ColourMarker entry into the first text node
-
-        int indexOfLastCharPlusOne;
-        if (getColourMarkers().size() == 0) {
-            indexOfLastCharPlusOne = getText().length();
-        } else {
-            indexOfLastCharPlusOne = getColourMarkers().get(0).position;
-        }
-
-        StringBuilder textToAppend = new StringBuilder(getText().substring(0, indexOfLastCharPlusOne));
-
-        // Create new line characters for all new line markers that point to text
-        // shifted above
-        int currNewLineMarkerIndex = 0;
-        for (int i = 0; i < newLineMarkers.size(); i++) {
-            if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
-                break;
-
-            textToAppend.insert(newLineMarkers.get(currNewLineMarkerIndex) + i, "\n");
-            currNewLineMarkerIndex++;
-        }
-
-        lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-        // Update the number of chars added with what was added to the last existing text node
-        numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
-
-        // Create new text nodes and copy all text
-        // This loop won't run if there is no elements in the TextColors array
-        int currIndexToInsertNodeAt = nodeIndexToStartShift;
-        for (int x = 0; x < getColourMarkers().size(); x++) {
-            Text newText = new Text();
-
-            int indexOfFirstCharInNode = getColourMarkers().get(x).position;
-
-            int indexOfLastCharInNodePlusOne;
-            if (x >= getColourMarkers().size() - 1) {
-                indexOfLastCharInNodePlusOne = getText().length();
-            } else {
-                indexOfLastCharInNodePlusOne = getColourMarkers().get(x + 1).position;
-            }
-
-            textToAppend = new StringBuilder(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-
-            // Create new line characters for all new line markers that point to text
-            // shifted above
-            int insertionCount = 0;
-            while (true) {
-                if (currNewLineMarkerIndex >= newLineMarkers.size())
-                    break;
-
-                if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
-                    break;
-
-                textToAppend.insert(
-                        newLineMarkers.get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
-                currNewLineMarkerIndex++;
-                insertionCount++;
-            }
-
-            newText.setText(textToAppend.toString());
-            newText.setFill(getColourMarkers().get(x).color);
-            // Update the num. chars added with all the text added to this new Text node
-            numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
-
-            existingTextNodes.add(currIndexToInsertNodeAt, newText);
-
-            currIndexToInsertNodeAt++;
-        }
-
-        if (colorToBeInsertedOnNextChar != null) {
-            // Add new node with no text
-            Text text = new Text();
-            text.setFill(colorToBeInsertedOnNextChar);
-            existingTextNodes.add(currIndexToInsertNodeAt, text);
-            colorToBeInsertedOnNextChar = null;
-        }
-
-        // Clear all text and the TextColor list
-        clear();
-
-        checkAllColoursAreInOrder();
-    }
+//    /**
+//     * Shifts all the text in this streamed text object into the provided list of text nodes, leaving
+//     * this streamed text object empty.
+//     *
+//     * @param existingTextNodes     (input) The existing Text nodes to add the streamed text to.
+//     * @param nodeIndexToStartShift (input) The index in the observable list at which you want the streaming text to
+//     *                              start being shifted to.
+//     * @param numCharsAdded         (output) The number of characters added to the Text nodes. Note that this is not the
+//     *                              same as getText(), as getText() does not take into account the new line chars which are
+//     *                              added.
+//     */
+//    public void shiftToTextNodes(
+//            ObservableList<Node> existingTextNodes,
+//            int nodeIndexToStartShift,
+//            MutableInteger numCharsAdded) {
+//
+//        //==============================================//
+//        //============= INPUT ARG CHECKS ===============//
+//        //==============================================//
+//
+//        if (existingTextNodes.size() == 0) {
+//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
+//        }
+//
+//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
+//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
+//        }
+//
+//        // Reset the mutable integer (we don't care about what it's last value was)
+//        numCharsAdded.set(0);
+//
+//        //==============================================//
+//        //======== ADD TEXT TO LAST EXISTING NODE ======//
+//        //==============================================//
+//
+//        Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
+//
+//        // Copy all text before first ColourMarker entry into the first text node
+//
+//        int indexOfLastCharPlusOne;
+//        if (getColourMarkers().size() == 0) {
+//            indexOfLastCharPlusOne = getText().length();
+//        } else {
+//            indexOfLastCharPlusOne = getColourMarkers().get(0).position;
+//        }
+//
+//        StringBuilder textToAppend = new StringBuilder(getText().substring(0, indexOfLastCharPlusOne));
+//
+//        // Create new line characters for all new line markers that point to text
+//        // shifted above
+//        int currNewLineMarkerIndex = 0;
+//        for (int i = 0; i < newLineMarkers.size(); i++) {
+//            if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
+//                break;
+//
+//            textToAppend.insert(newLineMarkers.get(currNewLineMarkerIndex) + i, "\n");
+//            currNewLineMarkerIndex++;
+//        }
+//
+//        lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
+//        // Update the number of chars added with what was added to the last existing text node
+//        numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
+//
+//        // Create new text nodes and copy all text
+//        // This loop won't run if there is no elements in the TextColors array
+//        int currIndexToInsertNodeAt = nodeIndexToStartShift;
+//        for (int x = 0; x < getColourMarkers().size(); x++) {
+//            Text newText = new Text();
+//
+//            int indexOfFirstCharInNode = getColourMarkers().get(x).position;
+//
+//            int indexOfLastCharInNodePlusOne;
+//            if (x >= getColourMarkers().size() - 1) {
+//                indexOfLastCharInNodePlusOne = getText().length();
+//            } else {
+//                indexOfLastCharInNodePlusOne = getColourMarkers().get(x + 1).position;
+//            }
+//
+//            textToAppend = new StringBuilder(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+//
+//            // Create new line characters for all new line markers that point to text
+//            // shifted above
+//            int insertionCount = 0;
+//            while (true) {
+//                if (currNewLineMarkerIndex >= newLineMarkers.size())
+//                    break;
+//
+//                if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
+//                    break;
+//
+//                textToAppend.insert(
+//                        newLineMarkers.get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
+//                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
+//                currNewLineMarkerIndex++;
+//                insertionCount++;
+//            }
+//
+//            newText.setText(textToAppend.toString());
+//            newText.setFill(getColourMarkers().get(x).color);
+//            // Update the num. chars added with all the text added to this new Text node
+//            numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
+//
+//            existingTextNodes.add(currIndexToInsertNodeAt, newText);
+//
+//            currIndexToInsertNodeAt++;
+//        }
+//
+//        if (colorToBeInsertedOnNextChar != null) {
+//            // Add new node with no text
+//            Text text = new Text();
+//            text.setFill(colorToBeInsertedOnNextChar);
+//            existingTextNodes.add(currIndexToInsertNodeAt, text);
+//            colorToBeInsertedOnNextChar = null;
+//        }
+//
+//        // Clear all text and the TextColor list
+//        clear();
+//
+//        checkAllColoursAreInOrder();
+//    }
 
     private void checkAllColoursAreInOrder() {
 
@@ -538,19 +546,28 @@ public class StreamedData {
         return false;
     }
 
-    public void addNewLineMarkerAt(int charIndex) {
+//    public void addNewLineMarkerAt(int charIndex) {
+//
+//        // We can't check this, because some of the other methods in this class add the markers
+//        // before adding the text
+////        if(charIndex > getText().length()) {
+////            throw new RuntimeException("charIndex must be between 0 and the num. of chars (inclusive at both ends).");
+////        }
+//
+//        newLineMarkers.add(charIndex);
+//    }
 
-        // We can't check this, because some of the other methods in this class add the markers
-        // before adding the text
-//        if(charIndex > getText().length()) {
-//            throw new RuntimeException("charIndex must be between 0 and the num. of chars (inclusive at both ends).");
-//        }
+    public List<NewLineMarker> getNewLineMarkers() {
+        //return newLineMarkers;
 
-        newLineMarkers.add(charIndex);
-    }
-
-    public List<Integer> getNewLineMarkers() {
-        return newLineMarkers;
+        // Extract new line markers
+        List<NewLineMarker> output = new ArrayList<>();
+        for(Marker marker : markers) {
+            if(marker instanceof NewLineMarker) {
+                output.add((NewLineMarker)marker);
+            }
+        }
+        return output;
     }
 
     /**
@@ -613,8 +630,8 @@ public class StreamedData {
             if (i == numOfLines - 1) {
                 lines[i] = getText().substring(startIndex, getText().length());
             } else {
-                lines[i] = getText().substring(startIndex, getNewLineMarkers().get(i));
-                startIndex = getNewLineMarkers().get(i);
+                lines[i] = getText().substring(startIndex, getNewLineMarkers().get(i).getCharPos());
+                startIndex = getNewLineMarkers().get(i).getCharPos();
             }
 
         }
@@ -651,46 +668,59 @@ public class StreamedData {
                 element.position -= 1;
             }
         }
+//
+//        //==============================================//
+//        //=========== SHIFT NEW LINE MARKERS ===========//
+//        //==============================================//
+//
+//        // Shift all new line markers from the deleted char onwards
+//        for (ListIterator<Integer> iter = newLineMarkers.listIterator(); iter.hasNext(); ) {
+//            Integer element = iter.next();
+//
+//            if (element != 0 && element >= charIndex) {
+//                iter.set(element - 1);
+//            }
+//        }
 
         //==============================================//
-        //=========== SHIFT NEW LINE MARKERS ===========//
+        //================= SHIFT MARKERS ==============//
         //==============================================//
 
         // Shift all new line markers from the deleted char onwards
-        for (ListIterator<Integer> iter = newLineMarkers.listIterator(); iter.hasNext(); ) {
-            Integer element = iter.next();
+        for (ListIterator<Marker> iter = markers.listIterator(); iter.hasNext(); ) {
+            Marker element = iter.next();
 
-            if (element != 0 && element >= charIndex) {
-                iter.set(element - 1);
+            if (element.getCharPos() != 0 && element.getCharPos() >= charIndex) {
+                element.setCharPos(element.getCharPos() - 1);
             }
         }
 
     }
 
-    /**
-     * Converts a Streamed object into a string with the provided new line character sequence
-     * inserted at the appropriate places as determined by the new line markers.
-     * <p>
-     * On a windows system, the typical new line sequence for logging to a file is "\r\n".
-     * <p>
-     * Does not modify <code>input</code>.
-     *
-     * @return
-     */
-    public String convertToStringWithNewLines(String newLineCharSeq) {
-
-        StringBuilder output = new StringBuilder();
-
-        output.append(getText());
-
-        int numOfInsertedChars = 0;
-        for (Integer newLineMarker : getNewLineMarkers()) {
-            output.insert(newLineMarker + numOfInsertedChars, newLineCharSeq);
-            numOfInsertedChars += newLineCharSeq.length();
-        }
-
-        return output.toString();
-    }
+//    /**
+//     * Converts a Streamed object into a string with the provided new line character sequence
+//     * inserted at the appropriate places as determined by the new line markers.
+//     * <p>
+//     * On a windows system, the typical new line sequence for logging to a file is "\r\n".
+//     * <p>
+//     * Does not modify <code>input</code>.
+//     *
+//     * @return
+//     */
+//    public String convertToStringWithNewLines(String newLineCharSeq) {
+//
+//        StringBuilder output = new StringBuilder();
+//
+//        output.append(getText());
+//
+//        int numOfInsertedChars = 0;
+//        for (Integer newLineMarker : getNewLineMarkers()) {
+//            output.insert(newLineMarker + numOfInsertedChars, newLineCharSeq);
+//            numOfInsertedChars += newLineCharSeq.length();
+//        }
+//
+//        return output.toString();
+//    }
 
     /**
      * Trims this StreamedData object as necessary to keep the number of chars no greater than

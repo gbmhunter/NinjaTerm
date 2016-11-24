@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter;
 
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,8 +43,10 @@ public class StreamingFilterTests {
     public void basicTest() throws Exception {
 
         inputStreamedData.append("abcEOLdefEOL");
-        inputStreamedData.addNewLineMarkerAt(6);
-        inputStreamedData.addNewLineMarkerAt(12);
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
+//        inputStreamedData.addNewLineMarkerAt(12);
+        inputStreamedData.getMarkers().add(new NewLineMarker(12));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -56,7 +59,7 @@ public class StreamingFilterTests {
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
 
     }
 
@@ -64,9 +67,12 @@ public class StreamingFilterTests {
     public void multipleLinesTest() throws Exception {
 
         inputStreamedData.append("abcEOLabcEOLdefEOL");
-        inputStreamedData.addNewLineMarkerAt(6);
-        inputStreamedData.addNewLineMarkerAt(12);
-        inputStreamedData.addNewLineMarkerAt(18);
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
+//        inputStreamedData.addNewLineMarkerAt(12);
+        inputStreamedData.getMarkers().add(new NewLineMarker(12));
+//        inputStreamedData.addNewLineMarkerAt(18);
+        inputStreamedData.getMarkers().add(new NewLineMarker(18));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -79,17 +85,20 @@ public class StreamingFilterTests {
         assertEquals("abcEOLabcEOL", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(2, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
     public void MatchedLinesBetweenNonMatchTest() throws Exception {
 
         inputStreamedData.append("abcEOLdefEOLabcEOL");
-        inputStreamedData.addNewLineMarkerAt(6);
-        inputStreamedData.addNewLineMarkerAt(12);
-        inputStreamedData.addNewLineMarkerAt(18);
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
+//        inputStreamedData.addNewLineMarkerAt(12);
+        inputStreamedData.getMarkers().add(new NewLineMarker(12));
+//        inputStreamedData.addNewLineMarkerAt(18);
+        inputStreamedData.getMarkers().add(new NewLineMarker(18));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -102,8 +111,8 @@ public class StreamingFilterTests {
         assertEquals("abcEOLabcEOL", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(2, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
@@ -117,7 +126,8 @@ public class StreamingFilterTests {
         assertEquals("ab", outputStreamedData.getText());
 
         inputStreamedData.append("cEOL");
-        inputStreamedData.addNewLineMarkerAt(4);
+//        inputStreamedData.addNewLineMarkerAt(4);
+        inputStreamedData.getMarkers().add(new NewLineMarker(4));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -127,7 +137,7 @@ public class StreamingFilterTests {
         // Check output
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -152,7 +162,8 @@ public class StreamingFilterTests {
         //==============================================//
 
         inputStreamedData.append("cEOLde");
-        inputStreamedData.addNewLineMarkerAt(4);
+//        inputStreamedData.addNewLineMarkerAt(4);
+        inputStreamedData.getMarkers().add(new NewLineMarker(4));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -162,14 +173,15 @@ public class StreamingFilterTests {
         // Check output
         assertEquals("abcEOL", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
 
         //==============================================//
         //==================== PASS 3 ==================//
         //==============================================//
 
         inputStreamedData.append("fEOLa");
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length() - 1);
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length() - 1);
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length() - 1));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -180,14 +192,15 @@ public class StreamingFilterTests {
         // Check output
         assertEquals("abcEOLa", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
 
         //==============================================//
         //==================== PASS 4 ==================//
         //==============================================//
 
         inputStreamedData.append("bcEOL");
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -198,8 +211,8 @@ public class StreamingFilterTests {
         // Check output
         assertEquals("abcEOLabcEOL", outputStreamedData.getText());
         assertEquals(2, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(12, outputStreamedData.getNewLineMarkers().get(1).charPos);
 
     }
 
@@ -208,7 +221,8 @@ public class StreamingFilterTests {
 
         inputStreamedData.append("abcEOL");
         inputStreamedData.addColour(2, Color.RED);
-        inputStreamedData.addNewLineMarkerAt(6);
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -218,7 +232,7 @@ public class StreamingFilterTests {
         assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -227,7 +241,8 @@ public class StreamingFilterTests {
         inputStreamedData.append("abcdefEOL");
         inputStreamedData.addColour(2, Color.RED);
         inputStreamedData.addColour(3, Color.GREEN);
-        inputStreamedData.addNewLineMarkerAt(9);
+//        inputStreamedData.addNewLineMarkerAt(9);
+        inputStreamedData.getMarkers().add(new NewLineMarker(9));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -241,7 +256,7 @@ public class StreamingFilterTests {
         assertEquals(Color.GREEN, outputStreamedData.getColourMarkers().get(1).color);
 
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(9, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(9, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -253,7 +268,8 @@ public class StreamingFilterTests {
 
         inputStreamedData.append("abcEOL");
         inputStreamedData.addColour(2, Color.RED);
-        inputStreamedData.addNewLineMarkerAt(6);
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -262,7 +278,7 @@ public class StreamingFilterTests {
         assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
 
         //==============================================//
         //==================== PASS 2 ==================//
@@ -270,7 +286,8 @@ public class StreamingFilterTests {
 
         inputStreamedData.append("defEOL");
         inputStreamedData.addColour(0, Color.GREEN);
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -279,7 +296,7 @@ public class StreamingFilterTests {
         assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -296,7 +313,8 @@ public class StreamingFilterTests {
         assertEquals(0, outputStreamedData.getColourMarkers().size());
 
         inputStreamedData.append("dEOL");
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 
@@ -315,15 +333,18 @@ public class StreamingFilterTests {
 
         inputStreamedData.append("greenEOL");
         inputStreamedData.addColour(inputStreamedData.getText().length() - 8, Color.GREEN);
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         inputStreamedData.append("redEOL");
         inputStreamedData.addColour(inputStreamedData.getText().length() - 6, Color.RED);
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         inputStreamedData.append("greenEOL");
         inputStreamedData.addColour(inputStreamedData.getText().length() - 8, Color.GREEN);
-        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+//        inputStreamedData.addNewLineMarkerAt(inputStreamedData.getText().length());
+        inputStreamedData.getMarkers().add(new NewLineMarker(inputStreamedData.getText().length()));
 
         streamingFilter.parse(inputStreamedData, outputStreamedData);
 

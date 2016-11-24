@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +30,8 @@ public class MaxNumCharsTests {
 
         streamedData.append("12");
         streamedData.addColour(0, Color.RED);
-        streamedData.addNewLineMarkerAt(0);
+        //        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
 
         // This should overwrite all the existing data
         streamedData.append("34");

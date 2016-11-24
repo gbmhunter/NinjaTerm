@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class CopyOrShiftNewLinesTests {
 
         // This makes a private method "public" for unit test purposes.
         method = StreamedData.class.getDeclaredMethod(
-                "copyOrShiftNewLineMarkers",
+                "copyOrShiftMarkers",
                 StreamedData.class, int.class, StreamedData.CopyOrShift.class);
         method.setAccessible(true);
     }
@@ -45,7 +46,8 @@ public class CopyOrShiftNewLinesTests {
     public void oneMarkerShiftTest() throws Exception {
 
         inputStreamedData.append("123456");
-        inputStreamedData.addNewLineMarkerAt(2);
+//        inputStreamedData.addNewLineMarkerAt(2);
+        inputStreamedData.getMarkers().add(new NewLineMarker(2));
 
         method.invoke(outputStreamedData, inputStreamedData, inputStreamedData.getText().length(), StreamedData.CopyOrShift.SHIFT);
 
@@ -56,43 +58,47 @@ public class CopyOrShiftNewLinesTests {
         // Check output
         assertEquals("", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(2, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(2, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
     public void twoMarkerShiftTest() throws Exception {
 
         inputStreamedData.append("123456");
-        inputStreamedData.addNewLineMarkerAt(3);
-        inputStreamedData.addNewLineMarkerAt(6);
+//        inputStreamedData.addNewLineMarkerAt(3);
+        inputStreamedData.getMarkers().add(new NewLineMarker(3));
+//        inputStreamedData.addNewLineMarkerAt(6);
+        inputStreamedData.getMarkers().add(new NewLineMarker(6));
 
         method.invoke(outputStreamedData, inputStreamedData, 3, StreamedData.CopyOrShift.SHIFT);
 
         // Check input
         assertEquals(1, inputStreamedData.getNewLineMarkers().size());
-        assertEquals(3, inputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, inputStreamedData.getNewLineMarkers().get(0).getCharPos());
 
         // Check output
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).getCharPos());
     }
 
     @Test
     public void twoMarkerCopyTest() throws Exception {
 
         inputStreamedData.append("123456");
-        inputStreamedData.addNewLineMarkerAt(2);
-        inputStreamedData.addNewLineMarkerAt(4);
+//        inputStreamedData.addNewLineMarkerAt(2);
+        inputStreamedData.getMarkers().add(new NewLineMarker(2));
+//        inputStreamedData.addNewLineMarkerAt(4);
+        inputStreamedData.getMarkers().add(new NewLineMarker(4));
 
         method.invoke(outputStreamedData, inputStreamedData, 3, StreamedData.CopyOrShift.COPY);
 
         // Check input
         assertEquals(2, inputStreamedData.getNewLineMarkers().size());
-        assertEquals(2, inputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(4, inputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(2, inputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(4, inputStreamedData.getNewLineMarkers().get(1).charPos);
 
         // Check output
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(2, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(2, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 }

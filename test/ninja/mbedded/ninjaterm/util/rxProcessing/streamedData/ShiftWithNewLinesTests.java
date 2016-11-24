@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +36,8 @@ public class ShiftWithNewLinesTests {
     public void shiftWithNewLineTest() throws Exception {
 
         inputStreamedData.append("123456");
-        inputStreamedData.addNewLineMarkerAt(3);
+//        inputStreamedData.addNewLineMarkerAt(3);
+        inputStreamedData.getMarkers().add(new NewLineMarker(3));
 
         outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
@@ -46,14 +48,15 @@ public class ShiftWithNewLinesTests {
         // Check output
         assertEquals("123456", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
     public void shiftWithNewLineAtEndTest() throws Exception {
 
         inputStreamedData.append("123");
-        inputStreamedData.addNewLineMarkerAt(3);
+//        inputStreamedData.addNewLineMarkerAt(3);
+        inputStreamedData.getMarkers().add(new NewLineMarker(3));
 
         outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
@@ -64,14 +67,15 @@ public class ShiftWithNewLinesTests {
         // Check output
         assertEquals("123", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
     public void shiftJustANewLineTest() throws Exception {
 
         inputStreamedData.append("");
-        inputStreamedData.addNewLineMarkerAt(0);
+//        inputStreamedData.addNewLineMarkerAt(0);
+        inputStreamedData.getMarkers().add(new NewLineMarker(0));
 
         outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
 
@@ -82,6 +86,6 @@ public class ShiftWithNewLinesTests {
         // Check output
         assertEquals("", outputStreamedData.getText());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(0, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(0, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 }

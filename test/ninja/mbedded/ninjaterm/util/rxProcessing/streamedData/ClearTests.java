@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +28,8 @@ public class ClearTests {
 
         streamedData.append("1234");
         streamedData.addColour(0, Color.RED);
-        streamedData.addNewLineMarkerAt(0);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
 
         streamedData.clear();
 

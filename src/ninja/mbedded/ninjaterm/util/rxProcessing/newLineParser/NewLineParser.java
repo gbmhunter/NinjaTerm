@@ -89,7 +89,8 @@ public class NewLineParser {
             // output up to this point
             output.shiftDataIn(input, matcher.end() - currShiftIndex);
 
-            output.addNewLineMarkerAt(output.getText().length());
+//            output.addNewLineMarkerAt(output.getText().length());
+            output.getMarkers().add(new NewLineMarker(output.getText().length()));
 
             currShiftIndex = matcher.end();
         }

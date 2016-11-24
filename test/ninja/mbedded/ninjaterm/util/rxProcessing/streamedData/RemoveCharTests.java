@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,45 +37,51 @@ public class RemoveCharTests {
     public void textAndNewLineTest() throws Exception {
 
         streamedData.append("123");
-        streamedData.addNewLineMarkerAt(0);
-        streamedData.addNewLineMarkerAt(2);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
+//        streamedData.addNewLineMarkerAt(2);
+        streamedData.getMarkers().add(new NewLineMarker(2));
 
         streamedData.removeChar(1);
 
         assertEquals("13", streamedData.getText());
         assertEquals(2, streamedData.getNewLineMarkers().size());
-        assertEquals(0, streamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(1, streamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(0, streamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(1, streamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
     public void removeFirstCharTest() throws Exception {
 
         streamedData.append("123");
-        streamedData.addNewLineMarkerAt(0);
-        streamedData.addNewLineMarkerAt(2);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
+//        streamedData.addNewLineMarkerAt(2);
+        streamedData.getMarkers().add(new NewLineMarker(2));
 
         streamedData.removeChar(0);
 
         assertEquals("23", streamedData.getText());
         assertEquals(2, streamedData.getNewLineMarkers().size());
-        assertEquals(0, streamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(1, streamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(0, streamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(1, streamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
     public void removeLastCharTest() throws Exception {
 
         streamedData.append("123");
-        streamedData.addNewLineMarkerAt(0);
-        streamedData.addNewLineMarkerAt(3);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
 
         streamedData.removeChar(2);
 
         assertEquals("12", streamedData.getText());
         assertEquals(2, streamedData.getNewLineMarkers().size());
-        assertEquals(0, streamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(2, streamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(0, streamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(2, streamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
@@ -83,9 +90,12 @@ public class RemoveCharTests {
         streamedData.append("123");
         streamedData.addColour(0, Color.RED);
         streamedData.addColour(2, Color.GREEN);
-        streamedData.addNewLineMarkerAt(0);
-        streamedData.addNewLineMarkerAt(3);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
 
+        // Remove the third character (the "3")
         streamedData.removeChar(2);
 
         assertEquals("12", streamedData.getText());
@@ -99,7 +109,7 @@ public class RemoveCharTests {
 
         // New line marker checks
         assertEquals(2, streamedData.getNewLineMarkers().size());
-        assertEquals(0, streamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(2, streamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(0, streamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(2, streamedData.getNewLineMarkers().get(1).charPos);
     }
 }
