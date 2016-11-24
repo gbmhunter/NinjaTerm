@@ -18,11 +18,12 @@ public class SmallTests {
 
     private RxDataEngine rxDataEngine;
 
-    private StreamedData output = new StreamedData();
+    private StreamedData output;
 
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
+        output = new StreamedData();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
             output.shiftDataIn(streamedText, streamedText.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);

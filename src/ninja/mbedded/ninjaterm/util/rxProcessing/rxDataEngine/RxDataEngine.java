@@ -14,6 +14,7 @@ import ninja.mbedded.ninjaterm.util.rxProcessing.freezeParser.FreezeParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter.StreamingFilter;
+import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampParser;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -50,7 +51,15 @@ public class RxDataEngine {
      */
     public SimpleStringProperty rawRxData = new SimpleStringProperty("");
 
-    private StreamedData bufferBetweenDecoderAndFreezeParser = new StreamedData();
+    private StreamedData bufferBetweenDecoderAndTimeStampParser = new StreamedData();
+
+    //==============================================//
+    //============== TIME STAMP PARSER =============//
+    //==============================================//
+
+    private TimeStampParser timeStampParser = new TimeStampParser("\\n");
+
+    private StreamedData bufferBetweenTimeStampParserAndFreezeParser = new StreamedData();
 
     //==============================================//
     //================ FREEZE PARSER ===============//
@@ -152,15 +161,23 @@ public class RxDataEngine {
         // the new line parser object correctly
         newLinePattern.addListener((observable, oldValue, newValue) -> {
 
-            if(newValue.equals(""))
+            if(newValue.equals("")) {
+                // Fully disable the new line parser if the new line pattern
+                // is empty
+                timeStampParser.isEnabled.set(false);
                 newLineParser.isEnabled.set(false);
-            else
+            }
+            else {
+                timeStampParser.isEnabled.set(true);
                 newLineParser.isEnabled.set(true);
+            }
 
             // Update the new line pattern in the new line parser
             // (note that this will only have any effect if the
             // new line parser is enabled)
+            timeStampParser.setNewLinePattern(newValue);
             newLineParser.setNewLinePattern(newValue);
+
 
             logger.debug("newLineParser.isEnabled set to \"" + newLineParser.isEnabled.get() + "\" and newLineParser.newLinePattern set to \"" + newLineParser.getNewLinePattern() + "\".");
 
@@ -172,7 +189,8 @@ public class RxDataEngine {
 
         // Bind the max buffer size to all of the "max num. chars" properties of all
         // StreamedData objects
-        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndFreezeParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndTimeStampParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenTimeStampParserAndFreezeParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenFreezeParserAndAnsiParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenAnsiParserAndNewLineParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
@@ -252,11 +270,23 @@ public class RxDataEngine {
         // to this property)
         rawRxData.set(rawRxData.get() + newDecodedData);
 
-        bufferBetweenDecoderAndFreezeParser.append(newDecodedData);
+        bufferBetweenDecoderAndTimeStampParser.append(newDecodedData);
 
         // This streamed data object is just to temporarily hold released output
         // from each parser, before it is shifted into the appropriate buffer
         StreamedData releasedData = new StreamedData();
+
+        //==============================================//
+        //=============== TIME STAMP PARSER ============//
+        //==============================================//
+
+        releasedData.clear();
+        timeStampParser.parse(bufferBetweenDecoderAndTimeStampParser, releasedData);
+
+        bufferBetweenTimeStampParserAndFreezeParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
 
         //==============================================//
@@ -264,9 +294,12 @@ public class RxDataEngine {
         //==============================================//
 
         releasedData.clear();
-        freezeParser.parse(bufferBetweenDecoderAndFreezeParser, releasedData);
+        freezeParser.parse(bufferBetweenTimeStampParserAndFreezeParser, releasedData);
 
-        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
+        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //============== ANSI ESCAPE CODES =============//
@@ -400,7 +433,8 @@ public class RxDataEngine {
      * Clears data from all internal buffers.
      */
     public void clearAllData() {
-        bufferBetweenDecoderAndFreezeParser.clear();
+        bufferBetweenDecoderAndTimeStampParser.clear();
+        bufferBetweenTimeStampParserAndFreezeParser.clear();
         bufferBetweenFreezeParserAndAnsiParser.clear();
         bufferBetweenAnsiParserAndNewLineParser.clear();
         bufferBetweenNewLineParserAndFiltering.clear();
