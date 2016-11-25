@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.rxDataEngine;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +43,7 @@ public class TimeStampTests {
     }
 
     @Test
-    public void basicTest() throws Exception {
+    public void basicOneTimeStampTest() throws Exception {
 
         rxDataEngine.parse("123EOL".getBytes());
 
@@ -52,7 +53,7 @@ public class TimeStampTests {
     }
 
     @Test
-    public void basicTwoLineTest() throws Exception {
+    public void basicTwoTimeStampTest() throws Exception {
 
         rxDataEngine.parse("123EOL456EOL".getBytes());
 
@@ -65,6 +66,10 @@ public class TimeStampTests {
 
     @Test
     public void temporalTest() throws Exception {
+
+        //==============================================//
+        //====================== RUN 1 =================//
+        //==============================================//
 
         rxDataEngine.parse("123EO".getBytes());
 
@@ -92,6 +97,43 @@ public class TimeStampTests {
         Instant time0 = output.getTimeStampMarkers().get(0).localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         Instant time1 = output.getTimeStampMarkers().get(1).localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         assertEquals(true, time1.isAfter(time0));
+
+    }
+
+    /**
+     * A test which includes time stamps, ANSI esc. codes and new lines.
+     * @throws Exception
+     */
+    @Test
+    public void timeStampAnsiEscSeqNewLineTest() throws Exception {
+
+        rxDataEngine.parse("123\u001B[30mEOL456EOL".getBytes());
+
+        // Check tot. number of markers and that they are increasing monotonically
+        assertEquals(5, output.getMarkers().size());
+        int currCharPos = 0;
+        for(Marker marker : output.getMarkers()) {
+            assertEquals("Markers are not increasing monotonically.", true, marker.charPos >= currCharPos);
+            currCharPos = marker.charPos;
+        }
+
+        // Check output text
+        assertEquals("123EOL456EOL", output.getText());
+
+        // Check ANSI esc. code markers
+        assertEquals(1, output.getColourMarkers().size());
+        assertEquals(3, output.getColourMarkers().get(0).charPos);
+        assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
+
+        // Check new line markers
+        assertEquals(2, output.getNewLineMarkers().size());
+        assertEquals(6, output.getNewLineMarkers().get(0).charPos);
+        assertEquals(12, output.getNewLineMarkers().get(1).charPos);
+
+        // Check time stamp markers
+        assertEquals(2, output.getTimeStampMarkers().size());
+        assertEquals(0, output.getTimeStampMarkers().get(0).charPos);
+        assertEquals(6, output.getTimeStampMarkers().get(1).charPos);
 
     }
 }
