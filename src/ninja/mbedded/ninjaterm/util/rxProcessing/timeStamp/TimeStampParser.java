@@ -109,6 +109,7 @@ public class TimeStampParser {
 
         if(output.getText().length() > beforeLength && nextCharIsOnNewLine) {
             output.getMarkers().add(new TimeStampMarker(beforeLength, LocalDateTime.now()));
+            nextCharIsOnNewLine = false;
         }
 
 

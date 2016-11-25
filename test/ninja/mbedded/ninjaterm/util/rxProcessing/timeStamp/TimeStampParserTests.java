@@ -117,6 +117,35 @@ public class TimeStampParserTests {
 
     }
 
+    @Test
+    public void partialLineTest() throws Exception {
+
+        inputStreamedData.append("123EO");
+
+        timeStampParser.parse(inputStreamedData, outputStreamedData);
+
+        // Check input
+        assertEquals("EO", inputStreamedData.getText());
+
+        // Check output
+        assertEquals("123", outputStreamedData.getText());
+        assertEquals(1, outputStreamedData.getTimeStampMarkers().size());
+        assertEquals(0, outputStreamedData.getTimeStampMarkers().get(0).charPos);
+
+        inputStreamedData.append("L456");
+
+        timeStampParser.parse(inputStreamedData, outputStreamedData);
+
+        // Check input
+        assertEquals("", inputStreamedData.getText());
+
+        // Check output
+        assertEquals("123EOL456", outputStreamedData.getText());
+        assertEquals(2, outputStreamedData.getTimeStampMarkers().size());
+        assertEquals(0, outputStreamedData.getTimeStampMarkers().get(0).charPos);
+        assertEquals(6, outputStreamedData.getTimeStampMarkers().get(1).charPos);
+    }
+
 //    @Test
 //    public void multipleLinesTest() throws Exception {
 //

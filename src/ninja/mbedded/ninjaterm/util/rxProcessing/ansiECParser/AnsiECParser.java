@@ -22,13 +22,13 @@ public class AnsiECParser {
     Map<String, Color> codeToNormalColourMap = new HashMap<>();
     Map<String, Color> codeToBoldColourMap = new HashMap<>();
 
-    private Pattern p;
+    private Pattern pattern;
 
     /**
      * Partial matches and the end of provided input strings to <code>parse()</code> are
      * stored in this variable for the next time <code>parse() is called.</code>
      */
-    private String withheldTextWithPartialMatch = "";
+//    private String withheldTextWithPartialMatch = "";
 
     public SimpleBooleanProperty isEnabled = new SimpleBooleanProperty(true);
 
@@ -54,7 +54,7 @@ public class AnsiECParser {
 
         // This pattern matches an ANSI escape code. It matches an arbitrary number of
         // numbers after the "[ESC][", separated by a ";" and then prefixed by a "m".
-        p = Pattern.compile("\u001B\\[[;\\d]*m");
+        pattern = Pattern.compile("\u001B\\[[;\\d]*m");
     }
 
     /**
@@ -70,43 +70,51 @@ public class AnsiECParser {
 
         // Prepend withheld text onto the start of the input string
         // @// TODO: 2016-10-17 Remove the internal withheld data variable, and just keep the data in the inputData object until it is ready to be release. These next two lines are a hacky work around
-        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
-        inputData.clear();
+//        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
+//        inputData.clear();
 
-        withheldTextWithPartialMatch = "";
+//        withheldTextWithPartialMatch = "";
 
         if(!isEnabled.get()) {
             // ASCII escape codes are disabled, so just return all the input plus any withheld text
-            outputStreamedData.append(withheldCharsAndInputString);
+//            outputStreamedData.append(withheldCharsAndInputString);
+            outputStreamedData.shiftDataIn(inputData, inputData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
             return;
         }
 
         // IF WE REACH HERE ASCII ESCAPE CODE PARSING IS ENABLED
 
-        Matcher m = p.matcher(withheldCharsAndInputString);
+        Matcher matcher = pattern.matcher(inputData.getText());
 
         //String remainingInput = "";
-        int currPositionInString = 0;
+        int currShiftIndex = 0;
 
         //m.reset();
-        while (m.find(currPositionInString)) {
+        while (matcher.find()) {
 //            System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
 
             // Everything up to the first matched character can be added to the last existing text node
-            String preText = withheldCharsAndInputString.substring(currPositionInString, m.start());
-            outputStreamedData.append(preText);
+//            String preText = withheldCharsAndInputString.substring(currPositionInString, matcher.start());
+//            outputStreamedData.append(preText);
+            outputStreamedData.shiftDataIn(
+                    inputData,
+                    matcher.start() - currShiftIndex,
+                    StreamedData.MarkerBehaviour.NOT_FILTERING);
 
-            //numCharsAdded += preText.length();
 
-            // Now extract the code
-            String ansiEscapeCode = withheldCharsAndInputString.substring(m.start(), m.end());
+            // Now extract the ANSI escape code
+            StreamedData ansiEscapeCode = new StreamedData();
+            ansiEscapeCode.shiftDataIn(
+                    inputData,
+                    matcher.end() - matcher.start(),
+                    StreamedData.MarkerBehaviour.NOT_FILTERING);
             //System.out.println("ANSI esc seq = " + toHexString(ansiEscapeCode));
 
             // Save the remaining text to process
             //remainingInput = inputString.substring(m.end(), inputString.length());
 
             // Extract the numbers from the escape code
-            String[] numbers = extractNumbersAsArray(ansiEscapeCode);
+            String[] numbers = extractNumbersAsArray(ansiEscapeCode.getText());
 
             Map<String, Color> correctMapToUse;
             if(numbers.length == 1) {
@@ -116,7 +124,7 @@ public class AnsiECParser {
             } else {
                 // ANSI escape sequence is not supported. Remove it from input and continue
                 //throw new RuntimeException("Numbers not recognised!");
-                currPositionInString = m.end();
+                currShiftIndex = matcher.end();
                 continue;
             }
 
@@ -127,7 +135,7 @@ public class AnsiECParser {
                 System.out.println("Escape sequence was not supported!");
                 // The number in the escape sequence was not recognised. Update the current position in input string
                 // to skip over this escape sequence, and continue to next iteration of loop.
-                currPositionInString = m.end();
+                currShiftIndex = matcher.end();
                 continue;
             }
 
@@ -137,49 +145,14 @@ public class AnsiECParser {
 //            outputStreamedData.setColorToBeInsertedOnNextChar(color);
             outputStreamedData.getMarkers().add(new ColourMarker(outputStreamedData.getText().length(), color));
 
-            currPositionInString = m.end();
+            currShiftIndex = matcher.end();
 
-        }
+        } // while (matcher.find())
 
-        int firstCharAfterLastFullMatch = currPositionInString;
+        // ALL COMPLETE ANSI ESCAPE CODES FOUND!
 
-        // Look for index of partial match
-        int startIndexOfPartialMatch = -1;
-        while((startIndexOfPartialMatch == -1) && (currPositionInString <= (withheldCharsAndInputString.length() - 1))) {
-
-            m = p.matcher(withheldCharsAndInputString.substring(currPositionInString));
-            m.matches();
-            if(m.hitEnd()) {
-                startIndexOfPartialMatch = currPositionInString;
-            }
-
-            // Remove first character from input and try again
-           currPositionInString++;
-        }
-
-        // There might be remaining input after the last ANSI escpe code has been processed.
-        // This can all be put in the last text node, which should be by now set up correctly.
-        if (startIndexOfPartialMatch == -1) {
-
-            String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch);
-//            System.out.println("No partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedData, charsToAppend);
-            outputStreamedData.append(charsToAppend);
-            //numCharsAdded += charsToAppend.length();
-        } else if(startIndexOfPartialMatch > firstCharAfterLastFullMatch) {
-
-            String charsToAppend = withheldCharsAndInputString.substring(firstCharAfterLastFullMatch, startIndexOfPartialMatch);
-//            System.out.println("Partial match found. charsToAppend = " + Debugging.convertNonPrintable(charsToAppend));
-            //addTextToLastNode(outputStreamedData, charsToAppend);
-            outputStreamedData.append(charsToAppend);
-            //numCharsAdded += charsToAppend.length();
-        }
-
-        // Finally, save the partial match for the next run
-        if(startIndexOfPartialMatch != -1) {
-            withheldTextWithPartialMatch = withheldCharsAndInputString.substring(startIndexOfPartialMatch);
-//            System.out.println("Withholding text. withheldTextWithPartialMatch = " + Debugging.convertNonPrintable(withheldTextWithPartialMatch));
-        }
+        // Shift remaining characters from input to output
+        outputStreamedData.shiftCharsInUntilPartialMatch(inputData, pattern);
 
     }
 
