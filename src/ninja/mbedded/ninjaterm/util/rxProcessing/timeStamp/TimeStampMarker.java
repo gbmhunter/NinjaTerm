@@ -3,20 +3,19 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-11-23
- * @last-modified 2016-11-24
+ * @last-modified 2016-11-25
  */
 public class TimeStampMarker extends Marker {
 
     public LocalDateTime localDateTime;
 
     public TimeStampMarker(int charPos, LocalDateTime localDateTime) {
-        super(charPos, Association.CHAR_ON);
+        super(charPos, Association.CHAR_ON, 0);
 
         this.localDateTime = localDateTime;
     }
@@ -43,4 +42,5 @@ public class TimeStampMarker extends Marker {
         output.append("} ");
         return output.toString();
     }
+
 }

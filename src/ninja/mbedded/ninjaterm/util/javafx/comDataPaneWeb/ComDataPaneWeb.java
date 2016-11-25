@@ -13,7 +13,7 @@ import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.ColourMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
@@ -22,11 +22,9 @@ import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 
 /**
@@ -251,6 +249,10 @@ public class ComDataPaneWeb extends StackPane {
     public void addData(StreamedData data) {
 
         int currPos = 0;
+
+        // Sort markers
+        Collections.sort(data.getMarkers());
+
         for(Marker marker : data.getMarkers()) {
 
             // Add all text up to this marker
@@ -261,7 +263,7 @@ public class ComDataPaneWeb extends StackPane {
             } else if(marker instanceof NewLineMarker) {
                 appendText("\n");
             } else if(marker instanceof TimeStampMarker) {
-
+                appendTimeStamp(((TimeStampMarker) marker).localDateTime);
             } else
                 throw new RuntimeException("Marker sub-type not supported.");
 
@@ -435,6 +437,14 @@ public class ComDataPaneWeb extends StackPane {
         //logger.debug("js = " + js);
         //webEngine.executeScript(js);
         runScriptWhenReady(js);
+    }
+
+    private void appendTimeStamp(LocalDateTime localDateTime) {
+        // Convert time stamp object into string
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss.SSS: ");
+        String timeStamp = localDateTime.format(formatter);
+
+        runScriptWhenReady("appendTimeStamp(\"" + timeStamp + "\")");
     }
 
     private void scrollToBottom() {

@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;

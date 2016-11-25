@@ -2,6 +2,7 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.JavaFXThreadingRule;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

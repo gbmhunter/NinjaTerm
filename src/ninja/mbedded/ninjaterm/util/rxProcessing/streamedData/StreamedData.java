@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import org.slf4j.Logger;

@@ -61,7 +61,7 @@ public class RxDataEngine {
 
     private StreamedData bufferBetweenTimeStampParserAndFreezeParser = new StreamedData();
 
-    public SimpleBooleanProperty isTimeStampParserEnabled = timeStampParser.isEnabled;
+    public SimpleBooleanProperty isTimeStampParserEnabled = new SimpleBooleanProperty(false);
 
     //==============================================//
     //================ FREEZE PARSER ===============//
@@ -145,6 +145,10 @@ public class RxDataEngine {
     //================================================================================================//
 
     public RxDataEngine() {
+
+
+        isTimeStampParserEnabled.bindBidirectional(timeStampParser.isEnabled);
+
         // Bind the selDecodingOption variable to the copy inside the Decoder object
         // (selDecodingOption exposes the field inside the Decoder object)
         Bindings.bindBidirectional(selDecodingOption, decoder.decodingOption);

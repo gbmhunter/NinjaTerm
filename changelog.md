@@ -5,6 +5,7 @@ vX.X.X
 - Removed the instruction to run `mvn assembly:single` from README, as it is not needed, closes #175.
 - Improved the "About" dialogue, closes #172.
 - Added LICENSE.txt to repo, closes #176.
+- Added ability to prepend RX lines of data with the date/time, closes #126.
 
 v0.8.1
 ------

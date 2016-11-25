@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
+package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
@@ -12,7 +12,7 @@ public class ColourMarker extends Marker {
     public Color color;
 
     public ColourMarker(int charPos, Color color) {
-        super(charPos, Association.CHAR_ON);
+        super(charPos, Association.CHAR_ON, 2);
         //this.charPos = charPos;
         this.color = color;
     }

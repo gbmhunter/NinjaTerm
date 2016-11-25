@@ -2,7 +2,6 @@ package ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.paint.Color;
-import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 
 import java.util.HashMap;
