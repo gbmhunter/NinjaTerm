@@ -32,4 +32,15 @@ public class TimeStampMarker extends Marker {
     public Marker deepCopy() {
         return new TimeStampMarker(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuffer output = new StringBuffer();
+
+        output.append("{ ");
+        output.append("charPos: " + charPos + ", ");
+        output.append("localDateTime: " + localDateTime + ", ");
+        output.append("} ");
+        return output.toString();
+    }
 }

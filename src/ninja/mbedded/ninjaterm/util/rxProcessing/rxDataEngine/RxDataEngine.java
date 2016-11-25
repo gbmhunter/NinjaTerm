@@ -61,6 +61,8 @@ public class RxDataEngine {
 
     private StreamedData bufferBetweenTimeStampParserAndFreezeParser = new StreamedData();
 
+    public SimpleBooleanProperty isTimeStampParserEnabled = timeStampParser.isEnabled;
+
     //==============================================//
     //================ FREEZE PARSER ===============//
     //==============================================//

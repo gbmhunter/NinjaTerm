@@ -23,6 +23,11 @@ public class TimeStampTests {
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
+
+        // Enable the time stamp parser, as this is not
+        // enabled by default
+        rxDataEngine.isTimeStampParserEnabled.set(true);
+
         output = new StreamedData();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
@@ -31,10 +36,12 @@ public class TimeStampTests {
     }
 
     @Test
-    public void basicColoursNewLineFilterTest() throws Exception {
+    public void basicTest() throws Exception {
         rxDataEngine.newLinePattern.set("EOL");
         rxDataEngine.setFilterPattern("");
         rxDataEngine.parse("123EOL".getBytes());
+
+//        assertEquals(1, output.getTimeStampMarkers().size());
 
     }
 }

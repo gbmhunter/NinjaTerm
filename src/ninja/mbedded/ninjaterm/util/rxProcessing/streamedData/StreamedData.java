@@ -407,19 +407,13 @@ public class StreamedData {
 
         output += "text: \"" + text + "\", ";
         int i = 0;
-//        for (ColourMarker colourMarker : colourMarkers) {
-//            output += " textColor[" + i + "]: ," + colourMarker.toString();
-//            i++;
-//        }
-//
-//        output += "colorToBeInsertedOnNextChar: " + colorToBeInsertedOnNextChar;
 
         //==============================================//
-        //=============== NEW LINE MARKERS =============//
+        //==================== MARKERS =================//
         //==============================================//
-        output += ", newLineMarkers = {";
-        for (NewLineMarker newLineMarker : getNewLineMarkers()) {
-            output += " " + newLineMarker + ",";
+        output += ", markers = {";
+        for (Marker marker : markers) {
+            output += " " + marker + ",";
         }
         output += " }";
 
