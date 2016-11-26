@@ -1,3 +1,8 @@
+v0.8.3
+------
+
+- Fixed bug where "Scroll to bottom" functionality was being disabled automatically, closes #179.
+
 v0.8.2
 ------
 

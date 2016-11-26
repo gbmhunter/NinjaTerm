@@ -512,6 +512,18 @@ public class ComDataPaneWeb extends StackPane {
         return (Integer) webEngine.executeScript("getTextHeight()");
     }
 
+    @SuppressWarnings("unused")
+    public void upKeyOrMouseWheelUpOccurred() {
+
+        logger.debug("upKeyOrMouseWheelUpOccurred() called.");
+
+        // Since the user has now scrolled upwards (manually), disable the
+        // auto-scroll
+        scrollState.set(ScrollState.SMART_SCROLL);
+
+        //currScrollPos = scrollTop;
+    }
+
     //================================================================================================//
     //========================================== GRAVEYARD ===========================================//
     //================================================================================================//
