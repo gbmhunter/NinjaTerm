@@ -62,7 +62,7 @@ public class SingleCharTests {
         assertEquals("123\n456", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -79,8 +79,8 @@ public class SingleCharTests {
         assertEquals("123\n456\n789", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(2, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(8, outputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(4, outputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(8, outputStreamedData.getNewLineMarkers().get(1).charPos);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class SingleCharTests {
         assertEquals("\n", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -114,8 +114,8 @@ public class SingleCharTests {
         assertEquals("\n\n", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(2, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).intValue());
-        assertEquals(2, outputStreamedData.getNewLineMarkers().get(1).intValue());
+        assertEquals(1, outputStreamedData.getNewLineMarkers().get(0).charPos);
+        assertEquals(2, outputStreamedData.getNewLineMarkers().get(1).charPos);
     }
 
 }

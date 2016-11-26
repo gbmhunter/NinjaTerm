@@ -14,6 +14,7 @@ import ninja.mbedded.ninjaterm.util.rxProcessing.freezeParser.FreezeParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineParser;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamingFilter.StreamingFilter;
+import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampParser;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.slf4j.Logger;
 
@@ -25,7 +26,7 @@ import java.util.List;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-14
- * @last-modified 2016-10-27
+ * @last-modified 2016-11-23
  */
 public class RxDataEngine {
 
@@ -50,7 +51,17 @@ public class RxDataEngine {
      */
     public SimpleStringProperty rawRxData = new SimpleStringProperty("");
 
-    private StreamedData bufferBetweenDecoderAndFreezeParser = new StreamedData();
+    private StreamedData bufferBetweenDecoderAndTimeStampParser = new StreamedData();
+
+    //==============================================//
+    //============== TIME STAMP PARSER =============//
+    //==============================================//
+
+    private TimeStampParser timeStampParser = new TimeStampParser("\\n");
+
+    private StreamedData bufferBetweenTimeStampParserAndFreezeParser = new StreamedData();
+
+    public SimpleBooleanProperty isTimeStampParserEnabled = new SimpleBooleanProperty(false);
 
     //==============================================//
     //================ FREEZE PARSER ===============//
@@ -134,6 +145,10 @@ public class RxDataEngine {
     //================================================================================================//
 
     public RxDataEngine() {
+
+
+        isTimeStampParserEnabled.bindBidirectional(timeStampParser.isEnabled);
+
         // Bind the selDecodingOption variable to the copy inside the Decoder object
         // (selDecodingOption exposes the field inside the Decoder object)
         Bindings.bindBidirectional(selDecodingOption, decoder.decodingOption);
@@ -152,15 +167,23 @@ public class RxDataEngine {
         // the new line parser object correctly
         newLinePattern.addListener((observable, oldValue, newValue) -> {
 
-            if(newValue.equals(""))
+            if(newValue.equals("")) {
+                // Fully disable the new line parser if the new line pattern
+                // is empty
+                timeStampParser.isEnabled.set(false);
                 newLineParser.isEnabled.set(false);
-            else
+            }
+            else {
+                timeStampParser.isEnabled.set(true);
                 newLineParser.isEnabled.set(true);
+            }
 
             // Update the new line pattern in the new line parser
             // (note that this will only have any effect if the
             // new line parser is enabled)
+            timeStampParser.setNewLinePattern(newValue);
             newLineParser.setNewLinePattern(newValue);
+
 
             logger.debug("newLineParser.isEnabled set to \"" + newLineParser.isEnabled.get() + "\" and newLineParser.newLinePattern set to \"" + newLineParser.getNewLinePattern() + "\".");
 
@@ -172,7 +195,8 @@ public class RxDataEngine {
 
         // Bind the max buffer size to all of the "max num. chars" properties of all
         // StreamedData objects
-        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndFreezeParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenDecoderAndTimeStampParser.maxNumChars);
+        Bindings.bindBidirectional(maxBufferSize, bufferBetweenTimeStampParserAndFreezeParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenFreezeParserAndAnsiParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenAnsiParserAndNewLineParser.maxNumChars);
         Bindings.bindBidirectional(maxBufferSize, bufferBetweenNewLineParserAndFiltering.maxNumChars);
@@ -213,17 +237,23 @@ public class RxDataEngine {
      * Process:
      *  <p>
      *     1. Receive RX data as byte array.
-     *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters. This takes
-     *              in a string put outs a StreamedData object. It populates the textColours array with objects that
-     *              what colour and where colour changes occur.
-     *     3. Pass through new line detecter. This does not modify the textual data, but populates the
+     *     2. Pass data through decoder. This converts the raw bytes into a string via the selected decoding method
+     *              (e.g. ASCII or hex).
+     *     3. Pass through the freeze filter. The freeze filter is very simple, it lets data through when it is
+     *              unfrozen, but blocks data when it is frozen.
+     *     2. Pass through ANSI escape code parser. Escape code parser may hold back certain characters.
+     *              It populates the textColours array with objects that inform "what colour and where"
+     *              colour changes occur.
+     *     3. Pass through new line detector. This does not modify the textual data, but populates the
      *              <code>newLineMarkers</code> array with entries and where new lines are to be inserted. This may
      *              hold back data if a partial new line is detected.
      *     3. Pass through ASCII control code parser. This finds all ASCII control codes, and either converts
-     *              them to their visible unicode symbol equivalent, or removes them.
+     *              them to their visible unicode symbol equivalent, or removes them. This may hold back data if
+     *              it is a partial ASCII control code match. This does not affect new lines as they have already
+     *              been detected (and the new line markers array populated).
      *     4. Pass through filter. Filter only releases lines of text which match the provided pattern. Filter
      *              may hold back text which contains a partial match.
-     *     5. The resulting StreamedData object is outputted to any listeners (the RX pane on the GUI should be
+     *     5. The resulting {@link StreamedData} object is outputted to any listeners (the RX pane on the GUI should be
      *              listening to this).
      * </p>
      *
@@ -231,7 +261,7 @@ public class RxDataEngine {
      * but without any new data (can be useful to do this after making changes to some of the
      * properties, e.g. the filter pattern).
      *
-     * @param rxData    The received data from the COM port to process.
+     * @param rxData    The received data from the COM port to process. This may be empty.
      */
     public void parse(byte[] rxData) {
         /*logger.debug(getClass().getSimpleName() + ".addRxData() called with data = \"" + Debugging.convertNonPrintable(data) + "\".");*/
@@ -246,11 +276,23 @@ public class RxDataEngine {
         // to this property)
         rawRxData.set(rawRxData.get() + newDecodedData);
 
-        bufferBetweenDecoderAndFreezeParser.append(newDecodedData);
+        bufferBetweenDecoderAndTimeStampParser.append(newDecodedData);
 
         // This streamed data object is just to temporarily hold released output
         // from each parser, before it is shifted into the appropriate buffer
         StreamedData releasedData = new StreamedData();
+
+        //==============================================//
+        //=============== TIME STAMP PARSER ============//
+        //==============================================//
+
+        releasedData.clear();
+        timeStampParser.parse(bufferBetweenDecoderAndTimeStampParser, releasedData);
+
+        bufferBetweenTimeStampParserAndFreezeParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
 
         //==============================================//
@@ -258,9 +300,12 @@ public class RxDataEngine {
         //==============================================//
 
         releasedData.clear();
-        freezeParser.parse(bufferBetweenDecoderAndFreezeParser, releasedData);
+        freezeParser.parse(bufferBetweenTimeStampParserAndFreezeParser, releasedData);
 
-        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenFreezeParserAndAnsiParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //============== ANSI ESCAPE CODES =============//
@@ -271,24 +316,9 @@ public class RxDataEngine {
 
         logger.debug("releasedData = " + Debugging.convertNonPrintable(releasedData.toString()));
 
-        /*frozenAnsiParserOutput.shiftDataIn(releasedData, releasedData.getText().length());
-        if(isRxFrozen.get()) {
-            return;
-        }*/
-
-        // Fire ansiParserOutput event
-        /*for (StreamedDataListener streamedTextListener : ansiParserOutputListeners) {
-            // Create a new copy of the streamed text so that the listeners can't modify
-            // the contents by mistake
-            StreamedData streamedData = new StreamedData(frozenAnsiParserOutput);
-            streamedTextListener.run(streamedData);
-        }*/
-
         // Now add all the new ANSI parser output to any that was not used up by the
         // streaming filter from last time
-        bufferBetweenAnsiParserAndNewLineParser.shiftDataIn(releasedData, releasedData.getText().length());
-
-        //frozenAnsiParserOutput.clear();
+        bufferBetweenAnsiParserAndNewLineParser.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndNewLineParser = " + bufferBetweenAnsiParserAndNewLineParser);
 
@@ -305,10 +335,10 @@ public class RxDataEngine {
         // NOTE: We only want to append NEW data added to the ANSI parser output, since
         // there may still be characters in there from last time this method was called, and
         // we don't want to add them twice
-        totalNewLineParserOutput.copyCharsFrom(releasedData, releasedData.getText().length());
+        totalNewLineParserOutput.copyCharsFrom(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         // Add released text to buffer
-        bufferBetweenNewLineParserAndFiltering.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenNewLineParserAndFiltering.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //================== FILTERING =================//
@@ -319,7 +349,10 @@ public class RxDataEngine {
         streamingFilter.parse(bufferBetweenNewLineParserAndFiltering, releasedData);
 
         // Add the released text to buffer
-        bufferBetweenFilterAndControlCharParser.shiftDataIn(releasedData, releasedData.getText().length());
+        bufferBetweenFilterAndControlCharParser.shiftDataIn(
+                releasedData,
+                releasedData.getText().length(),
+                StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //==============================================//
         //=========== ASCII CONTROL CHAR PARSING =======//
@@ -337,7 +370,7 @@ public class RxDataEngine {
         if (totalNewLineParserOutput.getText().length() > maxBufferSize.get()) {
             logger.debug("Trimming totalNewLineParserOutput...");
             int numOfCharsToRemove = totalNewLineParserOutput.getText().length() - maxBufferSize.get();
-            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove);
+            totalNewLineParserOutput.removeCharsFromStart(numOfCharsToRemove, true);
         }
 
         // NOTE: UI buffer is trimmed in view controller
@@ -364,6 +397,10 @@ public class RxDataEngine {
         logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
+    /**
+     * Call this when the filter pattern has changed, to re-run the filter pattern
+     * on existing data and display new filtered data to the user.
+     */
     public void rerunFilterOnExistingData() {
         // Clear all filter output
         bufferBetweenFilterAndControlCharParser.clear();
@@ -402,7 +439,8 @@ public class RxDataEngine {
      * Clears data from all internal buffers.
      */
     public void clearAllData() {
-        bufferBetweenDecoderAndFreezeParser.clear();
+        bufferBetweenDecoderAndTimeStampParser.clear();
+        bufferBetweenTimeStampParserAndFreezeParser.clear();
         bufferBetweenFreezeParserAndAnsiParser.clear();
         bufferBetweenAnsiParserAndNewLineParser.clear();
         bufferBetweenNewLineParserAndFiltering.clear();

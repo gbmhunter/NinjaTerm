@@ -84,7 +84,12 @@ public class ComPort {
      * @return
      */
     public String[] scan() {
+
+        //com.fazecast.jSerialComm.SerialPort comPort = com.fazecast.jSerialComm.SerialPort.getCommPorts()[0];
+        //System.out.println(comPort.getDescriptivePortName());
+
         return SerialPortList.getPortNames();
+
     }
 
     public void setName(String name) {

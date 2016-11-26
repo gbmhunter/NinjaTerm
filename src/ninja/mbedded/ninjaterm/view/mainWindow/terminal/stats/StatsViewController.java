@@ -59,6 +59,12 @@ public class StatsViewController {
         this.terminal = terminal;
 
         //==============================================//
+        //========= TOTAL RAW CHAR COUNT SETUP ========//
+        //==============================================//
+
+        TooltipUtil.addDefaultTooltip(totalRawCharCountVBox, "The number of characters/bytes that have either been sent or received to/from the COM port. These are raw values, i.e. can differ from the number of displayed characters if things like ANSI escape codes have been parsed.");
+
+        //==============================================//
         //========= NUM. CHARS IN BUFFER SETUP =========//
         //==============================================//
 
@@ -76,11 +82,7 @@ public class StatsViewController {
         // Set default value
         numCharsInRxBufferLabel.textProperty().set(Integer.toString(terminal.stats.numCharsInRxDisplayBuffer.get()));
 
-        //==============================================//
-        //========= TOTAL RAW CHAR COUNT SETUP ========//
-        //==============================================//
 
-        TooltipUtil.addDefaultTooltip(totalRawCharCountVBox, "The number of characters/bytes that have either been sent or received to/from the COM port. These are raw values, i.e. can differ from the number of displayed characters if things like ANSI escape codes have been parsed.");
 
         //======================= TX ===================//
         totalRawCharCountTxLabel.setText(Integer.toString(terminal.stats.totalRawCharCountTx.getValue()));

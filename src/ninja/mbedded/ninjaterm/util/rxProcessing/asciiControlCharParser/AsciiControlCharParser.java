@@ -118,11 +118,11 @@ public class AsciiControlCharParser {
             }
 
             // Shift all characters before this match
-            releasedText.shiftDataIn(input, matcher.start() - currIndex);
+            releasedText.shiftDataIn(input, matcher.start() - currIndex, StreamedData.MarkerBehaviour.NOT_FILTERING);
 
             // Safely delete this char from the input
             // (it should now be the first character)
-            input.removeChar(0);
+            input.removeChar(0, false);
 
             currIndex = matcher.end();
 
@@ -141,7 +141,7 @@ public class AsciiControlCharParser {
         // No more matches have been found, but we still need to copy the last piece of
         // text across (if any)
         //output = output + input.substring(currIndex, input.length());
-        releasedText.shiftDataIn(input, input.getText().length());
+        releasedText.shiftDataIn(input, input.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
         //return output;
     }

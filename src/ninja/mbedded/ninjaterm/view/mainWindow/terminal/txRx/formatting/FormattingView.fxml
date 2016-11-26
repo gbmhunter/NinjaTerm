@@ -5,7 +5,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-09-26
-* @last-modified   2016-11-22
+* @last-modified   2016-11-25
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -54,6 +54,14 @@
         <Label styleClass="h3">TX Send Behaviour:</Label>
         <RadioButton fx:id="sendTxCharsImmediatelyRadioButton">Send TX chars immediately</RadioButton>
         <RadioButton fx:id="sendTxCharsOnEnterRadioButton">Send TX chars on enter</RadioButton>
+    </VBox>
+
+    <!-- ========================================= -->
+    <!-- ============= TIME STAMPING ============= -->
+    <!-- ========================================= -->
+
+    <VBox spacing="5" styleClass="border">
+        <CheckBox fx:id="timeStampCheckBox">Time stamp each new line</CheckBox>
     </VBox>
 
 </VBox>

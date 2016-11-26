@@ -1,6 +1,8 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  * Unit tests for the <code>copyCharsFrom()</code> method of <code>StreamedData</code> class.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-27
+ * @last-modified 2016-11-24
  * @since 2016-10-27
  */
 public class MaxNumCharsTests {
@@ -28,8 +30,9 @@ public class MaxNumCharsTests {
         streamedData.maxNumChars.set(2);
 
         streamedData.append("12");
-        streamedData.addColour(0, Color.RED);
-        streamedData.addNewLineMarkerAt(0);
+
+        streamedData.addMarker(new ColourMarker(0, Color.RED));
+        streamedData.addMarker(new NewLineMarker(0));
 
         // This should overwrite all the existing data
         streamedData.append("34");

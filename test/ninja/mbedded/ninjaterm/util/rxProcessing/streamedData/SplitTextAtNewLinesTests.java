@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +36,8 @@ public class SplitTextAtNewLinesTests {
     public void twoLineTest() throws Exception {
 
         streamedData.append("123456");
-        streamedData.addNewLineMarkerAt(3);
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
 
         String[] lines = streamedData.splitTextAtNewLines();
 
@@ -48,8 +50,10 @@ public class SplitTextAtNewLinesTests {
     public void threeLineTest() throws Exception {
 
         streamedData.append("123456789");
-        streamedData.addNewLineMarkerAt(3);
-        streamedData.addNewLineMarkerAt(6);
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
+//        streamedData.addNewLineMarkerAt(6);
+        streamedData.getMarkers().add(new NewLineMarker(6));
 
         String[] lines = streamedData.splitTextAtNewLines();
 
@@ -63,8 +67,10 @@ public class SplitTextAtNewLinesTests {
     public void twoLineMarkersOnSameCharTest() throws Exception {
 
         streamedData.append("123456");
-        streamedData.addNewLineMarkerAt(3);
-        streamedData.addNewLineMarkerAt(3);
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
+//        streamedData.addNewLineMarkerAt(3);
+        streamedData.getMarkers().add(new NewLineMarker(3));
 
         String[] lines = streamedData.splitTextAtNewLines();
 
@@ -78,7 +84,8 @@ public class SplitTextAtNewLinesTests {
     public void justANewLineTest() throws Exception {
 
         streamedData.append("");
-        streamedData.addNewLineMarkerAt(0);
+//        streamedData.addNewLineMarkerAt(0);
+        streamedData.getMarkers().add(new NewLineMarker(0));
 
         String[] lines = streamedData.splitTextAtNewLines();
 
@@ -93,8 +100,10 @@ public class SplitTextAtNewLinesTests {
     public void newLineAtEndTest() throws Exception {
 
         streamedData.append("abcEOLdefEOL");
-        streamedData.addNewLineMarkerAt(6);
-        streamedData.addNewLineMarkerAt(12);
+//        streamedData.addNewLineMarkerAt(6);
+        streamedData.getMarkers().add(new NewLineMarker(6));
+//        streamedData.addNewLineMarkerAt(12);
+        streamedData.getMarkers().add(new NewLineMarker(12));
 
         String[] lines = streamedData.splitTextAtNewLines();
 

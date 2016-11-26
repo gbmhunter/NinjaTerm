@@ -1,6 +1,7 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
 
 import javafx.scene.paint.Color;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class MultiCharTests {
         assertEquals("123EOL456", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -72,14 +73,15 @@ public class MultiCharTests {
         assertEquals("123EOL456", outputStreamedData.getText());
         assertEquals(0, outputStreamedData.getColourMarkers().size());
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
     public void withColoursTest() throws Exception {
 
         inputStreamedData.append("123EO");
-        inputStreamedData.addColour(2, Color.RED);
+//        inputStreamedData.addColour(2, Color.RED);
+        inputStreamedData.addMarker(new ColourMarker(2, Color.RED));
 
         newLineParser.parse(inputStreamedData, outputStreamedData);
 
@@ -90,13 +92,15 @@ public class MultiCharTests {
         assertEquals("123", outputStreamedData.getText());
 
         assertEquals(1, outputStreamedData.getColourMarkers().size());
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
 
         assertEquals(0, outputStreamedData.getNewLineMarkers().size());
 
         inputStreamedData.append("L456");
-        inputStreamedData.addColour(inputStreamedData.getText().length() - 4, Color.GREEN);
+//        inputStreamedData.addColour(inputStreamedData.getText().length() - 4, Color.GREEN);
+        inputStreamedData.addMarker(new ColourMarker(
+                inputStreamedData.getText().length() - 4, Color.GREEN));
 
         newLineParser.parse(inputStreamedData, outputStreamedData);
 
@@ -109,12 +113,12 @@ public class MultiCharTests {
 
         // There should be two text colour objects
         assertEquals(2, outputStreamedData.getColourMarkers().size());
-        assertEquals(2, outputStreamedData.getColourMarkers().get(0).position);
+        assertEquals(2, outputStreamedData.getColourMarkers().get(0).charPos);
         assertEquals(Color.RED, outputStreamedData.getColourMarkers().get(0).color);
-        assertEquals(5, outputStreamedData.getColourMarkers().get(1).position);
+        assertEquals(5, outputStreamedData.getColourMarkers().get(1).charPos);
         assertEquals(Color.GREEN, outputStreamedData.getColourMarkers().get(1).color);
 
         assertEquals(1, outputStreamedData.getNewLineMarkers().size());
-        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, outputStreamedData.getNewLineMarkers().get(0).charPos);
     }
 }

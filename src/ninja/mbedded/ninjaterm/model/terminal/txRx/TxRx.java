@@ -27,8 +27,8 @@ import java.util.List;
  * tab in the GUI.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-25
  * @since 2016-09-16
- * @last-modified 2016-10-27
  */
 public class TxRx {
 
@@ -42,7 +42,7 @@ public class TxRx {
 
     // CHILD MODELS
     public Display display = new Display();
-    public Formatting formatting = new Formatting();
+    public Formatting formatting;
     public Colouriser colouriser = new Colouriser();
     public Filters filters = new Filters();
     public MacroManager macroManager;
@@ -67,15 +67,25 @@ public class TxRx {
 
     /**
      * Constructor.
-     * @param model         The root object of the model.
-     * @param terminal      The ancestor "terminal" model for this TxRx model.
+     *
+     * @param model    The root object of the model.
+     * @param terminal The ancestor "terminal" model for this TxRx model.
      */
     public TxRx(Model model, Terminal terminal) {
 
         this.model = model;
         this.terminal = terminal;
 
+        //====================================//
+        //========= CHILD MODEL SETUP ========//
+        //====================================//
+
+        formatting = new Formatting(model, terminal);
+
         macroManager = new MacroManager(model, terminal);
+
+        // Bind the enabled boolean for the time stamping to the RX engine
+        rxDataEngine.isTimeStampParserEnabled.bindBidirectional(formatting.isTimeStampingEnabled);
 
         //====================================//
         //========= BUFFER-SIZE SETUP ========//
@@ -118,10 +128,10 @@ public class TxRx {
         //==============================================//
 
         // PASTE
-        if(keyEvent.isControlDown() && keyEvent.getCharacter().equals("\u0016")) {
+        if (keyEvent.isControlDown() && keyEvent.getCharacter().equals("\u0016")) {
             logger.debug("Detected paste command.");
 
-            if(!Clipboard.getSystemClipboard().hasContent(DataFormat.PLAIN_TEXT)) {
+            if (!Clipboard.getSystemClipboard().hasContent(DataFormat.PLAIN_TEXT)) {
                 model.status.addErr("Clipboard did not contain plain text. Can only paste plain text into TX.");
                 return;
             }
@@ -131,7 +141,7 @@ public class TxRx {
 
             terminal.txRx.addTxCharsToSend(contents.getBytes());
 
-            if(terminal.txRx.formatting.selTxCharSendingOption.get() ==
+            if (terminal.txRx.formatting.selTxCharSendingOption.get() ==
                     Formatting.TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY) {
                 terminal.txRx.sendBufferedTxDataToSerialPort();
             }
@@ -144,7 +154,7 @@ public class TxRx {
         //========= HANDLE STANDARD KEY PRESS ==========//
         //==============================================//
 
-        char asciiCodeForKey = (char)keyEvent.getCharacter().charAt(0);
+        char asciiCodeForKey = (char) keyEvent.getCharacter().charAt(0);
 
         // If to see if we are sending data on "enter", and the "backspace
         // deletes last typed char" checkbox is ticked, if so, remove last char rather than
@@ -180,7 +190,7 @@ public class TxRx {
         } else {
             // Key pressed was NOT enter,
             // so append the character to the end of the "to send" TX buffer
-            addTxCharsToSend(new byte[]{(byte)asciiCodeForKey});
+            addTxCharsToSend(new byte[]{(byte) asciiCodeForKey});
         }
 
         // Check so see what TX mode we are in
@@ -200,7 +210,7 @@ public class TxRx {
 
     /**
      * Send any data that is in the TX buffer to the COM port.
-     *
+     * <p>
      * This will return without sending if the COM port is not open.
      */
     public void sendBufferedTxDataToSerialPort() {
@@ -251,17 +261,17 @@ public class TxRx {
         logger.debug("addTxCharsToSend() called with data = " + Debugging.toString(data));
 
         // Add the data to the "to send" TX buffer
-        for(byte dataByte : data) {
+        for (byte dataByte : data) {
             toSendTxData.add(dataByte);
         }
 
         // Add to TX data that the user sees displayed in UI
         String dataAsString = "";
-        for(int i = 0; i < data.length; i++) {
-            dataAsString = dataAsString + (char)data[i];
+        for (int i = 0; i < data.length; i++) {
+            dataAsString = dataAsString + (char) data[i];
         }
 
-        for(StreamedDataListener streamedDataListener : txDataToDisplayListeners) {
+        for (StreamedDataListener streamedDataListener : txDataToDisplayListeners) {
             StreamedData txStreamedData = new StreamedData();
             txStreamedData.append(dataAsString);
             streamedDataListener.run(txStreamedData);

@@ -323,8 +323,8 @@ public class TxRxViewController {
         //==============================================//
 
         // Add a listener for the new ComDataPane object
-        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedText -> {
-            rxComDataPane.addData(streamedText);
+        terminal.txRx.rxDataEngine.newOutputListeners.add(streamedData -> {
+            rxComDataPane.addData(streamedData);
         });
 
         rxComDataPane.bufferSize.bind(terminal.txRx.display.bufferSizeChars);
