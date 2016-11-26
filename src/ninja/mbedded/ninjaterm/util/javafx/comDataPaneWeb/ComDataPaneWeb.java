@@ -429,7 +429,12 @@ public class ComDataPaneWeb extends StackPane {
 
         String js = "addText(\"" + text + "\")";
         logger.debug("js = " + js);
-        webEngine.executeScript(js);
+//        webEngine.executeScript(js);
+        runScriptWhenReady(js);
+
+        // Update the variable that keeps track of the number of displayed
+        // chars in the WebView rich text object.
+        currNumChars.set(currNumChars.get() + text.length());
     }
 
     private void appendColor(Color color) {
@@ -437,6 +442,9 @@ public class ComDataPaneWeb extends StackPane {
         //logger.debug("js = " + js);
         //webEngine.executeScript(js);
         runScriptWhenReady(js);
+
+        // Since appendColor() does not add any "text" to the WebView rich text object,
+        // we don't update currNumChars here
     }
 
     private void appendTimeStamp(LocalDateTime localDateTime) {
@@ -445,6 +453,10 @@ public class ComDataPaneWeb extends StackPane {
         String timeStamp = localDateTime.format(formatter);
 
         runScriptWhenReady("appendTimeStamp(\"" + timeStamp + "\")");
+
+        // Update the variable that keeps track of the number of displayed
+        // chars in the WebView rich text object.
+        currNumChars.set(currNumChars.get() + timeStamp.length());
     }
 
     private void scrollToBottom() {
