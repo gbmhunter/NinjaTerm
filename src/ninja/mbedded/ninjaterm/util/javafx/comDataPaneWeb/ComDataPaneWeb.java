@@ -512,6 +512,12 @@ public class ComDataPaneWeb extends StackPane {
         return (Integer) webEngine.executeScript("getTextHeight()");
     }
 
+    /**
+     * Gets called by the Javascript when either the up key is pressed or the mouse wheel is scrolled
+     * in the upwards direction (when the WebView has focus).
+     *
+     * Used for going from FIXED_TO_BOTTOM to the SMART_SCROLL state.
+     */
     @SuppressWarnings("unused")
     public void upKeyOrMouseWheelUpOccurred() {
 
