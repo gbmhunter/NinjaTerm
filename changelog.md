@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.2
 ------
 
 - Moved the "scroll to bottom" arrow slightly to the left so it does not block the scroll bar, closes #174.
