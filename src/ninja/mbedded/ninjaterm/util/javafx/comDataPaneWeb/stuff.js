@@ -1,18 +1,43 @@
 
-
+isCaretShown = false;
+currColor = '#FFFFFF';
 
 $( document ).ready(function() {
     console.log('doc ready');
 
-    $("#com-data-wrapper").scroll(function() {
-        //console.log("Scrolled!");
-        java.scrolled($("#com-data-wrapper").scrollTop());
-    });
+    /*$("#com-data-wrapper").on('scroll', handleScroll);*/
 
     $("#down-arrow").click(function(){
         java.downArrowClicked();
     });
+
+    $("#com-data-wrapper").bind('mousewheel', function(e) {
+        if(e.originalEvent.wheelDelta > 0) {
+            java.log('up');
+            java.upKeyOrMouseWheelUpOccurred();
+        } else {
+            java.log('down');
+        }
+    });
+
+    $(document).on('keydown', function(e) {
+        //java.log('key down occured');
+        if (e.keyCode === 38) {
+            //java.log('up key pressed');
+            java.upKeyOrMouseWheelUpOccurred();
+
+        } else if (e.keyCode === 40) {
+            //java.log('down key pressed');
+        }
+    });
+
+
 });
+
+function handleScroll() {
+    console.log("scroll() event handler called.");
+    java.scrolled($("#com-data-wrapper").scrollTop());
+}
 
 function addText(newText)
 {
@@ -81,10 +106,10 @@ function appendTimeStamp(timeStamp) {
 }
 
 function scrollToBottom() {
-    /*var objDiv = $("com-data");
-    objDiv.scrollTop = objDiv.scrollHeight;*/
 
+    //$("#com-data-wrapper").off('scroll', handleScroll);
     $("#com-data-wrapper").scrollTop($("#com-data").height()-$("#com-data-wrapper").height());
+    //$("#com-data-wrapper").on('scroll', handleScroll);
 
 //    $("#com-data-wrapper").animate({
 //       scrollTop: $("#com-data").height()-$("#com-data-wrapper").height()},
@@ -127,7 +152,12 @@ function setName(name) {
     $("#name-text").text(name);
 }
 
+//! @brief  Trims the oldest characters from the rich text object.
 function trim(numChars) {
+
+    // Disable scroll handler, as trimming can cause this to fire when
+    // we don't want it to
+    //$("#com-data-wrapper").off('scroll', handleScroll);
 
     numCharsToRemove = numChars;
 
@@ -157,6 +187,8 @@ function trim(numChars) {
 
     });
 
+    //$("#com-data-wrapper").on('scroll', handleScroll);
+
     if(numCharsToRemove > 0) {
         throw "trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove;
     }
@@ -185,7 +217,6 @@ function showCaret(trueFalse) {
     }
 }
 
-isCaretShown = false;
-currColor = '#FFFFFF';
+
 
 
