@@ -1,36 +1,38 @@
-package ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser;
+package ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.slf4j.Logger;
 
+import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Detects where to add new line markers in the input streamed text, and releases
- * text to the output when processing is finished.
+ * Parses a {@link StreamedData} object and adds time stamp markers.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-10-15
- * @last-modified 2016-10-18
- */
-public class NewLineParser {
+ * @since 2016-11-23
+ * @last-modified 2016-11-25
+ **/
+public class TimeStampParser {
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
     /**
-     * Use this to enable/disable the new line parser.
+     * Use this to enable/disable the time stamp parser.
      *
-     * If the new line parser is disables, <code>parse()</code> will just
+     * If the time stamp parser is disabled, <code>parse()</code> will just
      * pass all input to output, without adding any new line markers.
      */
     public SimpleBooleanProperty isEnabled = new SimpleBooleanProperty(true);
 
     private Pattern newLinePattern;
+
+    private boolean nextCharIsOnNewLine = true;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -38,7 +40,7 @@ public class NewLineParser {
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
-    public NewLineParser(String newLineString) {
+    public TimeStampParser(String newLineString) {
         //this.newLineString = newLineString;
         newLinePattern = Pattern.compile(newLineString);
     }
@@ -63,15 +65,15 @@ public class NewLineParser {
      */
     public void parse(StreamedData input, StreamedData output) {
 
-        // If the new line paser has been disabled, then just shift
-        // all input to the output, without adding any new line
+        // If the parser has been disabled, then just shift
+        // all input to the output, without adding any
         // markers
         if(!isEnabled.get()) {
             output.shiftDataIn(input, input.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
             return;
         }
 
-        // IF WE REACH HERE THEN THE NEW LINE PASER IS ENABLED
+        // IF WE REACH HERE THEN THE PARSER IS ENABLED
 
         Matcher matcher = newLinePattern.matcher(input.getText());
 
@@ -83,22 +85,32 @@ public class NewLineParser {
 
             // NEW LINE FOUND!
 
+            if(nextCharIsOnNewLine) {
+                output.getMarkers().add(new TimeStampMarker(output.getText().length(), LocalDateTime.now()));
+                nextCharIsOnNewLine = false;
+            }
 
-            // We want to add a new line marker at the position of the first character on the new line.
-            // This is the same as matcher.end(). We also want to shift all data from input to
-            // output up to this point
+
+            // Shift all data from input to last character of end of new line
+            // sequence into output
             output.shiftDataIn(input, matcher.end() - currShiftIndex, StreamedData.MarkerBehaviour.NOT_FILTERING);
 
-//            output.addNewLineMarkerAt(output.getText().length());
-            output.getMarkers().add(new NewLineMarker(output.getText().length()));
+            nextCharIsOnNewLine = true;
 
             currShiftIndex = matcher.end();
         }
 
         // ALL NEW LINES FOUND!
 
+        int beforeLength = output.getText().length();
+
         // Shift remaining characters from input to output
         output.shiftCharsInUntilPartialMatch(input, newLinePattern);
+
+        if(output.getText().length() > beforeLength && nextCharIsOnNewLine) {
+            output.getMarkers().add(new TimeStampMarker(beforeLength, LocalDateTime.now()));
+            nextCharIsOnNewLine = false;
+        }
 
 
     }

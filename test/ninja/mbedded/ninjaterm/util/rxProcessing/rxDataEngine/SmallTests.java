@@ -12,20 +12,21 @@ import static org.junit.Assert.assertEquals;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-27
- * @last-modified   2016-10-18
+ * @last-modified   2016-11-24
  */
 public class SmallTests {
 
     private RxDataEngine rxDataEngine;
 
-    private StreamedData output = new StreamedData();
+    private StreamedData output;
 
     @Before
     public void setUp() throws Exception {
         rxDataEngine = new RxDataEngine();
+        output = new StreamedData();
 
         rxDataEngine.newOutputListeners.add(streamedText -> {
-            output.shiftDataIn(streamedText, streamedText.getText().length());
+            output.shiftDataIn(streamedText, streamedText.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
         });
     }
 
@@ -65,7 +66,7 @@ public class SmallTests {
         assertEquals("456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -82,7 +83,7 @@ public class SmallTests {
         assertEquals("123", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
 
         //==============================================//
         //===================== RUN 2 ==================//
@@ -95,7 +96,7 @@ public class SmallTests {
         assertEquals("456", output.getText());
         assertEquals(0, output.getColourMarkers().size());
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(3, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(3, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -107,11 +108,11 @@ public class SmallTests {
         assertEquals("123456", output.getText());
 
         assertEquals(1, output.getColourMarkers().size());
-        assertEquals(3, output.getColourMarkers().get(0).position);
+        assertEquals(3, output.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(4, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(4, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -130,12 +131,13 @@ public class SmallTests {
 
         assertEquals("456EOL", output.getText());
 
+        // There should be a color marker at the first char position
         assertEquals(1, output.getColourMarkers().size());
-        assertEquals(0, output.getColourMarkers().get(0).position);
+        assertEquals(0, output.getColourMarkers().get(0).charPos);
         assertEquals(Color.rgb(0, 0, 0), output.getColourMarkers().get(0).color);
 
         assertEquals(1, output.getNewLineMarkers().size());
-        assertEquals(6, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(6, output.getNewLineMarkers().get(0).charPos);
     }
 
     @Test
@@ -147,7 +149,7 @@ public class SmallTests {
 
         assertEquals(1, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
+        assertEquals(7, output.getNewLineMarkers().get(0).charPos);
 
         // Now change the new line pattern
         rxDataEngine.newLinePattern.set("EOL2");
@@ -157,8 +159,8 @@ public class SmallTests {
 
         assertEquals(2, output.getNewLineMarkers().size());
 
-        assertEquals(7, output.getNewLineMarkers().get(0).intValue());
-        assertEquals(28, output.getNewLineMarkers().get(1).intValue());
+        assertEquals(7, output.getNewLineMarkers().get(0).charPos);
+        assertEquals(28, output.getNewLineMarkers().get(1).charPos);
 
     }
 }

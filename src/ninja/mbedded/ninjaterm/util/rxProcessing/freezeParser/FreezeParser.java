@@ -22,7 +22,7 @@ public class FreezeParser {
             return;
         else {
             // Release all data
-            releasedData.shiftDataIn(inputData, inputData.getText().length());
+            releasedData.shiftDataIn(inputData, inputData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
         }
 
     }

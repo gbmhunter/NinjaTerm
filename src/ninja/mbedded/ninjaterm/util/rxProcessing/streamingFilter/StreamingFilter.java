@@ -54,7 +54,7 @@ public class StreamingFilter {
             logger.debug("Filter text empty. Not performing any filtering.");
 
             // Shift all input to output
-            outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length());
+            outputStreamedData.shiftDataIn(inputStreamedData, inputStreamedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
             return;
         }
 
@@ -73,7 +73,7 @@ public class StreamingFilter {
             // to check for a match. This will occur if a match has already occurred on this line.
             if(releaseTextOnCurrLine) {
                 logger.debug("releaseTextOnCurrLine = true. Releasing text " + Debugging.convertNonPrintable(line));
-                outputStreamedData.shiftDataIn(inputStreamedData, line.length());
+                outputStreamedData.shiftDataIn(inputStreamedData, line.length(), StreamedData.MarkerBehaviour.FILTERING);
 
                 /*if(hasNewLineChar(line)) {
                     releaseTextOnCurrLine = false;
@@ -98,7 +98,7 @@ public class StreamingFilter {
                 // We can release all text/nodes up to the end of this line
                 int numCharsToRelease = line.length();
                 logger.debug("numCharsToRelease = " + numCharsToRelease);
-                outputStreamedData.shiftDataIn(inputStreamedData, numCharsToRelease);
+                outputStreamedData.shiftDataIn(inputStreamedData, numCharsToRelease, StreamedData.MarkerBehaviour.FILTERING);
 
                 // Check to see if this is the last line. If so, set the releaseTextOnCurrLine to true
                 // so that next time this function is called, any other text which is also on this line
@@ -116,7 +116,7 @@ public class StreamingFilter {
                 //if(hasNewLineChar(line)) {
                 if(line != lines[lines.length - 1]) {
                     logger.debug("Deleting line.");
-                    inputStreamedData.removeCharsFromStart(line.length());
+                    inputStreamedData.removeCharsFromStart(line.length(), true);
                 }
 
             }

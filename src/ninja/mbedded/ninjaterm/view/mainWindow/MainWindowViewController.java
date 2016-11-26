@@ -3,6 +3,8 @@ package ninja.mbedded.ninjaterm.view.mainWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
@@ -10,10 +12,14 @@ import javafx.scene.control.TabPane;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.view.mainWindow.aboutDialogue.AboutDialogueViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.statusBar.StatusBarViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.TerminalViewController;
 import org.controlsfx.glyphfont.FontAwesome;
@@ -114,22 +120,7 @@ public class MainWindowViewController {
             Platform.exit();
         });
 
-        helpAboutMenuItem.setOnAction(event -> {
-
-            String versionNumber = AppInfo.getVersionNumber();
-
-            // Sometimes the version number will be null, but this should only occur when running from IntelliJ
-            // in a development environment (install4j will add the appropriate .dll when a .exe is built)
-            if (versionNumber == null) {
-                versionNumber = "?.?.?";
-            }
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("About");
-            alert.setHeaderText(null);
-            alert.setContentText("NinjaTerm v" + versionNumber + "\r\rA free tool from www.mbedded.ninja.\r\rWritten by:\rGeoffrey Hunter");
-            alert.showAndWait();
-        });
+        helpAboutMenuItem.setOnAction(event -> handleAboutMenuItemClicked());
 
         //==============================================//
         //================ TERMINAL SETUP ==============//
@@ -256,5 +247,34 @@ public class MainWindowViewController {
         // If we get here, we didn't find the terminal!
         throw new RuntimeException("Terminal close request received, but could not find the requested terminal to close.");
 
+    }
+
+    public void handleAboutMenuItemClicked() {
+        String versionNumber = AppInfo.getVersionNumber();
+
+        // Sometimes the version number will be null, but this should only occur when running from IntelliJ
+        // in a development environment (install4j will add the appropriate .dll when a .exe is built)
+        if (versionNumber == null) {
+            versionNumber = "?.?.?";
+        }
+
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        //dialog.initOwner(primaryStage);
+        Parent parent;
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        try {
+            parent = fxmlLoader.load(getClass().getResource("aboutDialogue/AboutDialogueView.fxml").openStream());
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        AboutDialogueViewController aboutDialogueViewController = fxmlLoader.getController();
+
+        aboutDialogueViewController.init(model, glyphFont, dialog);
+
+        Scene dialogScene = new Scene(parent, 400, 300);
+        dialog.setScene(dialogScene);
+        dialog.show();
     }
 }

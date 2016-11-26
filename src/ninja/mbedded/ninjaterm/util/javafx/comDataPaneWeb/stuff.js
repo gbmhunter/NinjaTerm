@@ -62,6 +62,24 @@ function addColor(color) {
     currColor = color;
 }
 
+function appendTimeStamp(timeStamp) {
+    java.log("appendTimeStamp called with timeStamp = " + timeStamp);
+
+    html = "<span style='color: white;'>" + timeStamp + "</span>";
+
+    if(isCaretShown) {
+        // If the caret is shown, we have to insert this new color before
+        // the caret node
+        $(html).insertBefore("#caret")
+    } else {
+        $("#com-data").append(html);
+    }
+
+    // Go back to existing colour
+    addColor(currColor);
+
+}
+
 function scrollToBottom() {
     /*var objDiv = $("com-data");
     objDiv.scrollTop = objDiv.scrollHeight;*/

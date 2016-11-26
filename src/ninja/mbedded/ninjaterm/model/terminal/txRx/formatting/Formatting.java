@@ -1,12 +1,15 @@
 package ninja.mbedded.ninjaterm.model.terminal.txRx.formatting;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import ninja.mbedded.ninjaterm.model.Model;
+import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 
 /**
  * Model containing data and logic for the formatting of TX/RX data.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-21
+ * @last-modified 2016-11-25
  * @since 2016-09-26
  */
 public class Formatting {
@@ -38,5 +41,12 @@ public class Formatting {
     public SimpleObjectProperty<EnterKeyBehaviour> selEnterKeyBehaviour = new SimpleObjectProperty<>(EnterKeyBehaviour.NEW_LINE);
 
     public SimpleObjectProperty<TxCharSendingOptions> selTxCharSendingOption = new SimpleObjectProperty<>(TxCharSendingOptions.SEND_TX_CHARS_IMMEDIATELY);
+
+    public SimpleBooleanProperty isTimeStampingEnabled = new SimpleBooleanProperty(false);
+
+    public Formatting(Model model, Terminal terminal) {
+
+
+    }
 
 }

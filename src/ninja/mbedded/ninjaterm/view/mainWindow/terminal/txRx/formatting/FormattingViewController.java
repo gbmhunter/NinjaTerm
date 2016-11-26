@@ -2,13 +2,12 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.formatting;
 
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextField;
 import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.formatting.Formatting;
 import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
@@ -20,8 +19,8 @@ import org.slf4j.Logger;
  * Controller for the formatting pop-up window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-25
  * @since 2016-09-26
- * @last-modified 2016-10-18
  */
 public class FormattingViewController {
 
@@ -61,6 +60,13 @@ public class FormattingViewController {
 
     @FXML
     private RadioButton sendTxCharsOnEnterRadioButton;
+
+    //==============================================//
+    //================= TIME STAMPS ================//
+    //==============================================//
+
+    @FXML
+    private CheckBox timeStampCheckBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -136,6 +142,12 @@ public class FormattingViewController {
 
         TooltipUtil.addDefaultTooltip(sendTxCharsImmediatelyRadioButton, "TX characters will be sent as soon as they are typed.");
         TooltipUtil.addDefaultTooltip(sendTxCharsOnEnterRadioButton, "TX characters will only be sent when \"ENTER\" is pressed.");
+
+        //==============================================//
+        //=============== TIME STAMP SETUP =============//
+        //==============================================//
+
+        timeStampCheckBox.selectedProperty().bindBidirectional(terminal.txRx.formatting.isTimeStampingEnabled);
 
     }
 }

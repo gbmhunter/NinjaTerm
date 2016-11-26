@@ -288,194 +288,196 @@ public class ComDataPane extends StackPane {
 
     public int addData(StreamedData streamedData) {
 
-        logger.debug("addData() called with streamedData = " + streamedData);
+        throw new UnsupportedOperationException("addData() no longer supported.");
 
-        //==============================================//
-        //============= INPUT ARG CHECKS ===============//
-        //==============================================//
-
-//        if (existingTextNodes.size() == 0) {
-//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
+//        logger.debug("addData() called with streamedData = " + streamedData);
+//
+//        //==============================================//
+//        //============= INPUT ARG CHECKS ===============//
+//        //==============================================//
+//
+////        if (existingTextNodes.size() == 0) {
+////            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
+////        }
+////
+////        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
+////            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
+////        }
+//
+//        int numCharsAdded = 0;
+//
+//        // Remember the caret position before insertion of new text,
+//        // incase we need to use it for setting the scroll position
+//        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
+//        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
+//
+//        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
+//        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
+//
+//        //==============================================//
+//        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
+//        //==============================================//
+//
+//        //Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
+//
+//        // Copy all text before first ColourMarker entry into the first text node
+//
+//        int indexOfLastCharPlusOne;
+//        if (streamedData.getColourMarkers().size() == 0) {
+//            indexOfLastCharPlusOne = streamedData.getText().length();
+//        } else {
+//            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).position;
 //        }
 //
-//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
+//        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
+//
+//        // Create new line characters for all new line markers that point to text
+//        // shifted above
+//        int currNewLineMarkerIndex = 0;
+//        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
+//            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
+//                break;
+//
+//            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + i, "\n");
+//            currNewLineMarkerIndex++;
 //        }
-
-        int numCharsAdded = 0;
-
-        // Remember the caret position before insertion of new text,
-        // incase we need to use it for setting the scroll position
-        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
-        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
-
-        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
-        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
-
-        //==============================================//
-        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
-        //==============================================//
-
-        //Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
-
-        // Copy all text before first ColourMarker entry into the first text node
-
-        int indexOfLastCharPlusOne;
-        if (streamedData.getColourMarkers().size() == 0) {
-            indexOfLastCharPlusOne = streamedData.getText().length();
-        } else {
-            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).position;
-        }
-
-        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
-
-        // Create new line characters for all new line markers that point to text
-        // shifted above
-        int currNewLineMarkerIndex = 0;
-        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
-            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
-                break;
-
-            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + i, "\n");
-            currNewLineMarkerIndex++;
-        }
-
-        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-        int startIndex = styledTextArea.getLength();
-        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
-        int stopIndex = styledTextArea.getLength();
-
-        // If the previous StreamedText object had a colour to apply when the next character was received,
-        // add it now
-        if(colorToApplyToNextChar != null) {
-            /*styledTextArea.setStyle(
-                    startIndex,
-                    stopIndex,
-                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
-            /*styledTextArea.setStyle(
-                    startIndex,
-                    stopIndex,
-                    "-fx-font-size: 12;");*/
-            colorToApplyToNextChar = null;
-        }
-
-        // Update the number of chars added with what was added to the last existing text node
-        numCharsAdded += textToAppend.length();
-
-        // Create new text nodes and copy all text
-        // This loop won't run if there is no elements in the TextColors array
-        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
-        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
-            //Text newText = new Text();
-
-            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).position;
-
-            int indexOfLastCharInNodePlusOne;
-            if (x >= streamedData.getColourMarkers().size() - 1) {
-                indexOfLastCharInNodePlusOne = streamedData.getText().length();
-            } else {
-                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).position;
-            }
-
-            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-
-            // Create new line characters for all new line markers that point to text
-            // shifted above
-            int insertionCount = 0;
-            while (true) {
-                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
-                    break;
-
-                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
-                    break;
-
-                textToAppend.insert(
-                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
-                currNewLineMarkerIndex++;
-                insertionCount++;
-            }
-
-            //==============================================//
-            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
-            //==============================================//
-
-            int insertionStartIndex = styledTextArea.getLength();
-            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
-            int insertionStopIndex = styledTextArea.getLength();
-
-//            styledTextArea.setStyle(
-//                    insertionStartIndex,
-//                    insertionStopIndex,
-//                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(streamedData.getColourMarkers().get(x).color));
-
-            // Update the num. chars added with all the text added to this new Text node
-            numCharsAdded += textToAppend.length();
-
-            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
-
-            //currIndexToInsertNodeAt++;
-        }
-
-        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
-            // Add new node with no text
-            //Text text = new Text();
-            //text.setFill(colorToBeInsertedOnNextChar);
-            //existingTextNodes.add(currIndexToInsertNodeAt, text);
-            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
-            //colorToBeInsertedOnNextChar = null;
-        }
-
-        // Clear all text and the TextColor list
-        streamedData.clear();
-
-        //checkAllColoursAreInOrder();
-
-        //===================================================//
-        //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
-        //===================================================//
-
-        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
-        int charAtZeroTenBeforeRemoval;
-        if(optionalInt.isPresent())
-            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
-        else
-            charAtZeroTenBeforeRemoval = 0;
-
-
-        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
-
-        // Trim the text buffer if needed
-        // (this method will decide if required)
-        trimBufferIfRequired();
-
-        //==============================================//
-        //============== SCROLL POSITION ===============//
-        //==============================================//
-
-//        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
-//        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
-//        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
-
-        switch(scrollState.get()) {
-            case FIXED_TO_BOTTOM:
-                // This moves the caret to the end of the "document"
-                currCharPositionInText = styledTextArea.getLength();
-                styledTextArea.moveTo(currCharPositionInText);
-                break;
-
-            case SMART_SCROLL:
-
-                // Scroll so that the same text is displayed in the view port
-                // as before the text insertion/removalS
-                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
-                break;
-            default:
-                throw new RuntimeException("scrollState not recognised.");
-        }
-
-
-        return numCharsAdded;
+//
+//        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
+//        int startIndex = styledTextArea.getLength();
+//        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
+//        int stopIndex = styledTextArea.getLength();
+//
+//        // If the previous StreamedText object had a colour to apply when the next character was received,
+//        // add it now
+//        if(colorToApplyToNextChar != null) {
+//            /*styledTextArea.setStyle(
+//                    startIndex,
+//                    stopIndex,
+//                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
+//            /*styledTextArea.setStyle(
+//                    startIndex,
+//                    stopIndex,
+//                    "-fx-font-size: 12;");*/
+//            colorToApplyToNextChar = null;
+//        }
+//
+//        // Update the number of chars added with what was added to the last existing text node
+//        numCharsAdded += textToAppend.length();
+//
+//        // Create new text nodes and copy all text
+//        // This loop won't run if there is no elements in the TextColors array
+//        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
+//        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
+//            //Text newText = new Text();
+//
+//            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).position;
+//
+//            int indexOfLastCharInNodePlusOne;
+//            if (x >= streamedData.getColourMarkers().size() - 1) {
+//                indexOfLastCharInNodePlusOne = streamedData.getText().length();
+//            } else {
+//                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).position;
+//            }
+//
+//            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+//
+//            // Create new line characters for all new line markers that point to text
+//            // shifted above
+//            int insertionCount = 0;
+//            while (true) {
+//                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
+//                    break;
+//
+//                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
+//                    break;
+//
+//                textToAppend.insert(
+//                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
+//                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
+//                currNewLineMarkerIndex++;
+//                insertionCount++;
+//            }
+//
+//            //==============================================//
+//            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
+//            //==============================================//
+//
+//            int insertionStartIndex = styledTextArea.getLength();
+//            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
+//            int insertionStopIndex = styledTextArea.getLength();
+//
+////            styledTextArea.setStyle(
+////                    insertionStartIndex,
+////                    insertionStopIndex,
+////                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(streamedData.getColourMarkers().get(x).color));
+//
+//            // Update the num. chars added with all the text added to this new Text node
+//            numCharsAdded += textToAppend.length();
+//
+//            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
+//
+//            //currIndexToInsertNodeAt++;
+//        }
+//
+//        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
+//            // Add new node with no text
+//            //Text text = new Text();
+//            //text.setFill(colorToBeInsertedOnNextChar);
+//            //existingTextNodes.add(currIndexToInsertNodeAt, text);
+//            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
+//            //colorToBeInsertedOnNextChar = null;
+//        }
+//
+//        // Clear all text and the TextColor list
+//        streamedData.clear();
+//
+//        //checkAllColoursAreInOrder();
+//
+//        //===================================================//
+//        //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
+//        //===================================================//
+//
+//        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
+//        int charAtZeroTenBeforeRemoval;
+//        if(optionalInt.isPresent())
+//            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
+//        else
+//            charAtZeroTenBeforeRemoval = 0;
+//
+//
+//        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
+//
+//        // Trim the text buffer if needed
+//        // (this method will decide if required)
+//        trimBufferIfRequired();
+//
+//        //==============================================//
+//        //============== SCROLL POSITION ===============//
+//        //==============================================//
+//
+////        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
+////        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
+////        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
+//
+//        switch(scrollState.get()) {
+//            case FIXED_TO_BOTTOM:
+//                // This moves the caret to the end of the "document"
+//                currCharPositionInText = styledTextArea.getLength();
+//                styledTextArea.moveTo(currCharPositionInText);
+//                break;
+//
+//            case SMART_SCROLL:
+//
+//                // Scroll so that the same text is displayed in the view port
+//                // as before the text insertion/removalS
+//                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
+//                break;
+//            default:
+//                throw new RuntimeException("scrollState not recognised.");
+//        }
+//
+//
+//        return numCharsAdded;
 
     }
 

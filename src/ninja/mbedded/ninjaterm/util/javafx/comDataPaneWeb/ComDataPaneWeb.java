@@ -11,17 +11,20 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
+import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
 import java.net.URL;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData.NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 
 /**
@@ -241,115 +244,34 @@ public class ComDataPaneWeb extends StackPane {
         runScriptWhenReady("setName('" + name.get() + "')");
     }
 
-    public void addData(StreamedData streamedData) {
-
-        logger.debug("addData() called with streamedData = " + streamedData);
-
-        //==============================================//
-        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
-        //==============================================//
 
 
-        // Copy all text before first ColourMarker entry into the first text node
+    public void addData(StreamedData data) {
 
-        int indexOfLastCharPlusOne;
-        if (streamedData.getColourMarkers().size() == 0) {
-            indexOfLastCharPlusOne = streamedData.getText().length();
-        } else {
-            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).position;
+        int currPos = 0;
+
+        // Sort markers
+        Collections.sort(data.getMarkers());
+
+        for(Marker marker : data.getMarkers()) {
+
+            // Add all text up to this marker
+            appendText(data.getText().substring(currPos, marker.charPos));
+
+            if(marker instanceof ColourMarker) {
+                appendColor(((ColourMarker) marker).color);
+            } else if(marker instanceof NewLineMarker) {
+                appendText("\n");
+            } else if(marker instanceof TimeStampMarker) {
+                appendTimeStamp(((TimeStampMarker) marker).localDateTime);
+            } else
+                throw new RuntimeException("Marker sub-type not supported.");
+
+            currPos = marker.charPos;
         }
 
-        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
-
-        // Create new line characters for all new line markers that point to text
-        // shifted above
-        int currNewLineMarkerIndex = 0;
-        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
-            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
-                break;
-
-            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + i, "\n");
-            currNewLineMarkerIndex++;
-        }
-
-        // If the previous StreamedText object had a colour to apply when the next character was received,
-        // add it now
-        if (colorToApplyToNextChar != null) {
-            appendColor(colorToApplyToNextChar);
-            colorToApplyToNextChar = null;
-        }
-
-        String html;
-        html = textToAppend.toString();
-        //html = html.replace("\n", "<br>");
-
-        appendHtml(html);
-
-        // Update the number of chars added with what was added to the last existing text node
-        currNumChars.set(currNumChars.get() + textToAppend.toString().length());
-
-
-        // Create new text nodes and copy all text
-        // This loop won't run if there is no elements in the TextColors array
-        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
-        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
-            //Text newText = new Text();
-
-            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).position;
-
-            int indexOfLastCharInNodePlusOne;
-            if (x >= streamedData.getColourMarkers().size() - 1) {
-                indexOfLastCharInNodePlusOne = streamedData.getText().length();
-            } else {
-                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).position;
-            }
-
-            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-
-            // Create new line characters for all new line markers that point to text
-            // shifted above
-            int insertionCount = 0;
-            while (true) {
-                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
-                    break;
-
-                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
-                    break;
-
-                textToAppend.insert(
-                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
-                currNewLineMarkerIndex++;
-                insertionCount++;
-            }
-
-            //==============================================//
-            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
-            //==============================================//
-
-            appendColor(streamedData.getColourMarkers().get(x).color);
-
-            html = textToAppend.toString();
-            //html = html.replace("\n", "<br>");
-            appendHtml(html);
-
-            // Update the num. chars added with all the text added to this new Text node
-            currNumChars.set(currNumChars.get() + textToAppend.toString().length());
-        }
-
-        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
-            // Add new node with no text
-            //Text text = new Text();
-            //text.setFill(colorToBeInsertedOnNextChar);
-            //existingTextNodes.add(currIndexToInsertNodeAt, text);
-            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
-            //colorToBeInsertedOnNextChar = null;
-        }
-
-        // Clear all text and the TextColor list
-        streamedData.clear();
-
-        //checkAllColoursAreInOrder();
+        // Append all text after last marker
+        appendText(data.getText().substring(currPos, data.getText().length()));
 
         //===================================================//
         //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
@@ -486,21 +408,33 @@ public class ComDataPaneWeb extends StackPane {
         }
     }
 
-    private void appendHtml(String html) {
+    /**
+     * Appends the provided text to the rich text pane inside the WebView.
+     *
+     * Escapes all Java sequences.
+     *
+     * @param text
+     */
+    private void appendText(String text) {
 
         // Return if empty string
         // (JS will throw null error)
-        if (html.equals(""))
+        if (text.equals(""))
             return;
 
         // Escape new lines
-        logger.debug("Non-escaped HTML = " + html);
-        html = StringEscapeUtils.escapeJava(html);
-        logger.debug("Escaped HTML = " + html);
+        logger.debug("Non-escaped HTML = " + text);
+        text = StringEscapeUtils.escapeJava(text);
+        logger.debug("Escaped HTML = " + text);
 
-        String js = "addText(\"" + html + "\")";
+        String js = "addText(\"" + text + "\")";
         logger.debug("js = " + js);
-        webEngine.executeScript(js);
+//        webEngine.executeScript(js);
+        runScriptWhenReady(js);
+
+        // Update the variable that keeps track of the number of displayed
+        // chars in the WebView rich text object.
+        currNumChars.set(currNumChars.get() + text.length());
     }
 
     private void appendColor(Color color) {
@@ -508,6 +442,21 @@ public class ComDataPaneWeb extends StackPane {
         //logger.debug("js = " + js);
         //webEngine.executeScript(js);
         runScriptWhenReady(js);
+
+        // Since appendColor() does not add any "text" to the WebView rich text object,
+        // we don't update currNumChars here
+    }
+
+    private void appendTimeStamp(LocalDateTime localDateTime) {
+        // Convert time stamp object into string
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH-mm-ss.SSS: ");
+        String timeStamp = localDateTime.format(formatter);
+
+        runScriptWhenReady("appendTimeStamp(\"" + timeStamp + "\")");
+
+        // Update the variable that keeps track of the number of displayed
+        // chars in the WebView rich text object.
+        currNumChars.set(currNumChars.get() + timeStamp.length());
     }
 
     private void scrollToBottom() {
@@ -562,5 +511,168 @@ public class ComDataPaneWeb extends StackPane {
     private Integer getTextHeight() {
         return (Integer) webEngine.executeScript("getTextHeight()");
     }
+
+    //================================================================================================//
+    //========================================== GRAVEYARD ===========================================//
+    //================================================================================================//
+
+    //    public void addData(StreamedData streamedData) {
+//
+//        logger.debug("addData() called with streamedData = " + streamedData);
+//
+//        //==============================================//
+//        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
+//        //==============================================//
+//
+//
+//        // Copy all text before first ColourMarker entry into the first text node
+//
+//        int indexOfLastCharPlusOne;
+//        if (streamedData.getColourMarkers().size() == 0) {
+//            indexOfLastCharPlusOne = streamedData.getText().length();
+//        } else {
+//            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).charPos;
+//        }
+//
+//        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
+//
+//        // Create new line characters for all new line markers that point to text
+//        // shifted above
+//        int currNewLineMarkerIndex = 0;
+//        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
+//            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharPlusOne)
+//                break;
+//
+//            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + i, "\n");
+//            currNewLineMarkerIndex++;
+//        }
+//
+//        // If the previous StreamedText object had a colour to apply when the next character was received,
+//        // add it now
+//        if (colorToApplyToNextChar != null) {
+//            appendColor(colorToApplyToNextChar);
+//            colorToApplyToNextChar = null;
+//        }
+//
+//        String html;
+//        html = textToAppend.toString();
+//        //html = html.replace("\n", "<br>");
+//
+//        appendText(html);
+//
+//        // Update the number of chars added with what was added to the last existing text node
+//        currNumChars.set(currNumChars.get() + textToAppend.toString().length());
+//
+//
+//        // Create new text nodes and copy all text
+//        // This loop won't run if there is no elements in the TextColors array
+//        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
+//        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
+//            //Text newText = new Text();
+//
+//            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).charPos;
+//
+//            int indexOfLastCharInNodePlusOne;
+//            if (x >= streamedData.getColourMarkers().size() - 1) {
+//                indexOfLastCharInNodePlusOne = streamedData.getText().length();
+//            } else {
+//                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).charPos;
+//            }
+//
+//            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+//
+//            // Create new line characters for all new line markers that point to text
+//            // shifted above
+//            int insertionCount = 0;
+//            while (true) {
+//                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
+//                    break;
+//
+//                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharInNodePlusOne)
+//                    break;
+//
+//                textToAppend.insert(
+//                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + insertionCount - indexOfFirstCharInNode,
+//                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
+//                currNewLineMarkerIndex++;
+//                insertionCount++;
+//            }
+//
+//            //==============================================//
+//            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
+//            //==============================================//
+//
+//            appendColor(streamedData.getColourMarkers().get(x).color);
+//
+//            html = textToAppend.toString();
+//            //html = html.replace("\n", "<br>");
+//            appendText(html);
+//
+//            // Update the num. chars added with all the text added to this new Text node
+//            currNumChars.set(currNumChars.get() + textToAppend.toString().length());
+//        }
+//
+//        List<ColourMarker> colourMarkers = streamedData.getColourMarkers();
+//
+//        if(colourMarkers.size() != 0) {
+//            if(colourMarkers.get(colourMarkers.size() - 1).charPos == streamedData.getText().length()) {
+//
+//                colorToApplyToNextChar = colourMarkers.get(colourMarkers.size() - 1).color;
+//            }
+//        }
+//
+//
+//        // Clear all text and the TextColor list
+//        streamedData.clear();
+//
+//        //checkAllColoursAreInOrder();
+//
+//        //===================================================//
+//        //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
+//        //===================================================//
+//
+//
+//        Integer textHeightBeforeTrim = getTextHeight();
+//
+//        logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
+//
+//        trimIfRequired();
+//
+//        Integer textHeightAfterTrim = getTextHeight();
+//        logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
+//
+//
+//        //==============================================//
+//        //============== SCROLL POSITION ===============//
+//        //==============================================//
+//
+//        switch (scrollState.get()) {
+//            case FIXED_TO_BOTTOM:
+//                // Scroll to the bottom
+//                scrollToBottom();
+//                break;
+//
+//            case SMART_SCROLL:
+//
+//                Integer heightChange = textHeightBeforeTrim - textHeightAfterTrim;
+//                logger.debug("heightChange = " + heightChange);
+//
+//                // We need to shift the scroll up by the amount the height changed
+//                Integer oldScrollTop = getComDataWrapperScrollTop();
+//                logger.debug("oldScrollTop = " + oldScrollTop);
+//
+//                Integer newScrollTop = oldScrollTop - heightChange;
+//                if (newScrollTop < 0)
+//                    newScrollTop = 0;
+//                logger.debug("newScrollTop = " + newScrollTop);
+//
+//                setComDataWrapperScrollTop(newScrollTop);
+//
+//                break;
+//            default:
+//                throw new RuntimeException("scrollState not recognised.");
+//        }
+//
+//    }
 
 }
