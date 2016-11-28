@@ -119,8 +119,8 @@ public class LoggerUtils {
         logger.addAppender(consoleAppender);
         logger.addAppender(fileAppender);
 
-        logger.setLevel(Level.DEBUG);
-        logger.setAdditive(false); /* set to true if root should log too */
+//        logger.setLevel(Level.DEBUG);
+//        logger.setAdditive(false); /* set to true if root should log too */
 
         return logger;
     }
