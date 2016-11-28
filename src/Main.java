@@ -1,3 +1,5 @@
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -17,8 +19,10 @@ import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.apache.commons.cli.*;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 public class Main extends Application {
 
@@ -42,6 +46,19 @@ public class Main extends Application {
         //================ LOGGING SETUP ===============//
         //==============================================//
 
+        //===== LOAD LOGBACK CONFIG FILE =====//
+//        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+//        loggerContext.reset();
+//        JoranConfigurator configurator = new JoranConfigurator();
+//
+////        InputStream configStream = FileUtils.openInputStream();
+//        InputStream configStream = getClass().getResourceAsStream("/logback.xml");
+//
+//        configurator.setContext(loggerContext);
+//        configurator.doConfigure(configStream); // loads logback file
+//        configStream.close();
+
+        //===== START CONSOLE LOGGING =====//
         LoggerUtils.consoleLoggingEnabled.set(false);
         logger.debug("start() called.");
 
@@ -217,13 +234,13 @@ public class Main extends Application {
         }
     }
 
-
     /**
      * Entry point for application. This calls <code>launch(args)</code> which starts the JavaFX UI.
      *
      * @param args
      */
     public static void main(String[] args) {
+
 
         launch(args);
     }

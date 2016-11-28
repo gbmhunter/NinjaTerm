@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.rxProcessing.streamedData;
 
+import ch.qos.logback.classic.Level;
 import javafx.beans.property.SimpleIntegerProperty;
 import ninja.mbedded.ninjaterm.util.debugging.Debugging;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;

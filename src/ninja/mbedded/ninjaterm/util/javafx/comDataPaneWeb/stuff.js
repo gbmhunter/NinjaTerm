@@ -1,25 +1,48 @@
 
-
+isCaretShown = false;
+currColor = '#FFFFFF';
 
 $( document ).ready(function() {
     console.log('doc ready');
 
-    $("#com-data-wrapper").scroll(function() {
-        //console.log("Scrolled!");
-        java.scrolled($("#com-data-wrapper").scrollTop());
-    });
-
     $("#down-arrow").click(function(){
         java.downArrowClicked();
     });
+
+    // Notify the Java code if the mouse wheel is scrolled in
+    // the upwards direction.
+    $("#com-data-wrapper").bind('mousewheel', function(e) {
+        if(e.originalEvent.wheelDelta > 0) {
+            //java.log('up');
+            java.upKeyOrMouseWheelUpOccurred();
+        }
+    });
+
+    // Notify Java if the up key is pressed.
+    // Note that this event handler won't work if it is just bound to the
+    // $("#com-data-wrapper") node. For some reason it has to be applied the the
+    // whole document
+    $(document).on('keydown', function(e) {
+        if (e.keyCode === 38) {
+            //java.log('up key pressed');
+            java.upKeyOrMouseWheelUpOccurred();
+        }
+    });
+
+
 });
 
-function addText(newText)
-{
+/*function handleScroll() {
+    console.log("scroll() event handler called.");
+    java.scrolled($("#com-data-wrapper").scrollTop());
+}*/
+
+function addText(newText) {
     java.log("addText() called with newText = " + newText);
 
-    if(!newText)
+    if(!newText) {
         return;
+    }
 
     if(isCaretShown) {
         lastChild = $("#com-data").children().last().prev();
@@ -27,7 +50,7 @@ function addText(newText)
         lastChild = $("#com-data").children().last();
     }
 
-    java.log("lastChild = ")
+    java.log("lastChild = ");
     java.log(lastChild);
 
 
@@ -51,7 +74,7 @@ function addColor(color) {
     if(isCaretShown) {
         // If the caret is shown, we have to insert this new color before
         // the caret node
-        $(html).insertBefore("#caret")
+        $(html).insertBefore("#caret");
 
         // Set the caret color to be the same as the current text color
         $('#caret').css('color', color);
@@ -70,7 +93,7 @@ function appendTimeStamp(timeStamp) {
     if(isCaretShown) {
         // If the caret is shown, we have to insert this new color before
         // the caret node
-        $(html).insertBefore("#caret")
+        $(html).insertBefore("#caret");
     } else {
         $("#com-data").append(html);
     }
@@ -81,10 +104,10 @@ function appendTimeStamp(timeStamp) {
 }
 
 function scrollToBottom() {
-    /*var objDiv = $("com-data");
-    objDiv.scrollTop = objDiv.scrollHeight;*/
 
+    //$("#com-data-wrapper").off('scroll', handleScroll);
     $("#com-data-wrapper").scrollTop($("#com-data").height()-$("#com-data-wrapper").height());
+    //$("#com-data-wrapper").on('scroll', handleScroll);
 
 //    $("#com-data-wrapper").animate({
 //       scrollTop: $("#com-data").height()-$("#com-data-wrapper").height()},
@@ -127,13 +150,18 @@ function setName(name) {
     $("#name-text").text(name);
 }
 
+//! @brief  Trims the oldest characters from the rich text object.
 function trim(numChars) {
+
+    // Disable scroll handler, as trimming can cause this to fire when
+    // we don't want it to
+    //$("#com-data-wrapper").off('scroll', handleScroll);
 
     numCharsToRemove = numChars;
 
     $("#com-data").children().each(function(index, element) {
 
-        java.log("currChildNode = ")
+        java.log("currChildNode = ");
         java.log(JSON.stringify(element));
 
         text = $(element).text();
@@ -148,14 +176,17 @@ function trim(numChars) {
             return false;
         } else {
             java.log("element does not has enough text to satisfy trim() operation, removing and progressing through loop.");
-            numCharsToRemove -= text.length
+            numCharsToRemove -= text.length;
             $(element).remove();
 
-            if(numCharsToRemove == 0)
+            if(numCharsToRemove == 0) {
                 return false;
+            }
         }
 
     });
+
+    //$("#com-data-wrapper").on('scroll', handleScroll);
 
     if(numCharsToRemove > 0) {
         throw "trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove;
@@ -185,7 +216,6 @@ function showCaret(trueFalse) {
     }
 }
 
-isCaretShown = false;
-currColor = '#FFFFFF';
+
 
 

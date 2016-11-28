@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb;
 
+import ch.qos.logback.classic.Level;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -19,7 +20,6 @@ import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.richtext.StyledTextArea;
-import org.slf4j.Logger;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -53,6 +53,8 @@ public class ComDataPaneWeb extends StackPane {
     private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
+
+    private final Level DEFAULT_LOG_LEVEL = Level.OFF;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -101,13 +103,19 @@ public class ComDataPaneWeb extends StackPane {
 
     private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
 
-    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+    private ch.qos.logback.classic.Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
 
     public ComDataPaneWeb() {
+
+        //==============================================//
+        //================ LOGGER SETUP ================//
+        //==============================================//
+
+        logger.setLevel(Level.OFF);
 
         logger.debug("ComDataPaneWeb() called. Object = " + this);
 
@@ -510,6 +518,24 @@ public class ComDataPaneWeb extends StackPane {
 
     private Integer getTextHeight() {
         return (Integer) webEngine.executeScript("getTextHeight()");
+    }
+
+    /**
+     * Gets called by the Javascript when either the up key is pressed or the mouse wheel is scrolled
+     * in the upwards direction (when the WebView has focus).
+     *
+     * Used for going from FIXED_TO_BOTTOM to the SMART_SCROLL state.
+     */
+    @SuppressWarnings("unused")
+    public void upKeyOrMouseWheelUpOccurred() {
+
+        logger.debug("upKeyOrMouseWheelUpOccurred() called.");
+
+        // Since the user has now scrolled upwards (manually), disable the
+        // auto-scroll
+        scrollState.set(ScrollState.SMART_SCROLL);
+
+        //currScrollPos = scrollTop;
     }
 
     //================================================================================================//
