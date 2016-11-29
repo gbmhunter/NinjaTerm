@@ -6,6 +6,9 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
@@ -101,7 +104,16 @@ public class ComDataPaneWeb extends StackPane {
 
     private double currScrollPos = 0;
 
-    private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
+    /**
+     * This needs to be set by the parent object when it know that it is safe to call scripts
+     * within the WebView. This is when all WebView objects in the GUI have been loaded.
+     */
+    public SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
+
+    /**
+     * This will be set by this object when it's WebView has been loaded.
+     */
+    public SimpleBooleanProperty webViewLoaded = new SimpleBooleanProperty(false);
 
     private ch.qos.logback.classic.Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -114,8 +126,6 @@ public class ComDataPaneWeb extends StackPane {
         //==============================================//
         //================ LOGGER SETUP ================//
         //==============================================//
-
-        logger.setLevel(Level.OFF);
 
         logger.debug("ComDataPaneWeb() called. Object = " + this);
 
@@ -138,8 +148,21 @@ public class ComDataPaneWeb extends StackPane {
 
         webEngine.javaScriptEnabledProperty().set(true);
 
+        webEngine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+            @Override
+            public void changed(ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) {
+                logger.debug("changed() called with newValue = " + newValue.toString());
+                if (newValue != Worker.State.SUCCEEDED) {
+                    return;
+                }
+                logger.debug("WebView has transitioned to State.SUCCEEDED.");
+                webViewLoaded.set(true);
+            }
+        });
+
         webEngine.load(mapUrl.toExternalForm());
         //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
+
 
         if (safeToRunScripts.get()) {
             logger.debug("WebView has loaded page and is ready.");
@@ -213,19 +236,19 @@ public class ComDataPaneWeb extends StackPane {
         //========= "SAFE TO RUN SCRIPTS" SETUP ========//
         //==============================================//
 
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-                           @Override
-                           public void run() {
-                               Platform.runLater(() -> {
-                                   // This is hacky! This is just a simple timeout, and which point the webpage inside
-                                   // WebView should have fully loaded.
-                                   safeToRunScripts.set(true);
-                               });
-                           }
-                       },
-                // 1s seems to be enough to let the web page fully load
-                WEB_VIEW_LOAD_WAIT_TIME_MS);
+//        Timer timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//                           @Override
+//                           public void run() {
+//                               Platform.runLater(() -> {
+//                                   // This is hacky! This is just a simple timeout, and which point the webpage inside
+//                                   // WebView should have fully loaded.
+//                                   safeToRunScripts.set(true);
+//                               });
+//                           }
+//                       },
+//                // 1s seems to be enough to let the web page fully load
+//                WEB_VIEW_LOAD_WAIT_TIME_MS);
 
     }
 
