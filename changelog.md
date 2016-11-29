@@ -1,3 +1,9 @@
+v0.8.4
+------
+
+- Updated ANSI escape sequence support .gif on home page, closes #180.
+- Improved the way that WebView is found to be "ready", closes #182.
+
 v0.8.3
 ------
 

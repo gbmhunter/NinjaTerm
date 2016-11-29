@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="6.1.3" transformSequenceNumber="5">
   <directoryPresets config="target/NinjaTerm-${compiler:sys.version}-jar-with-dependencies.jar" />
-  <application name="NinjaTerm" distributionSourceDir="" applicationId="3655-3380-6749-0061" mediaDir="install/" mediaFilePattern="${compiler:sys.shortName}_v${compiler:sys.version}_${compiler:sys.platform}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="NinjaTerm" publisher="Geoffrey Hunter" publisherWeb="http://mbedded-ninja.github.io/NinjaTerm/" version="0.8.3" allPathsRelative="false" backupOnSave="false" autoSave="false" convertDotsToUnderscores="false" macSignature="????" macVolumeId="8b8be1286580b078" javaMinVersion="1.8" javaMaxVersion="" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
+  <application name="NinjaTerm" distributionSourceDir="" applicationId="3655-3380-6749-0061" mediaDir="install/" mediaFilePattern="${compiler:sys.shortName}_v${compiler:sys.version}_${compiler:sys.platform}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="NinjaTerm" publisher="Geoffrey Hunter" publisherWeb="http://mbedded-ninja.github.io/NinjaTerm/" version="0.8.4" allPathsRelative="false" backupOnSave="false" autoSave="false" convertDotsToUnderscores="false" macSignature="????" macVolumeId="8b8be1286580b078" javaMinVersion="1.8" javaMaxVersion="" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
       <principalLanguage id="en" customLocalizationFile="" />
       <additionalLanguages />
@@ -1255,6 +1255,22 @@ return true;</string>
       </autoUpdate>
       <topLevelFiles />
     </macos>
+    <unixInstaller name="Unix Installer" id="176" customizedId="" mediaFileName="" installDir="${compiler:sys.shortName}" overridePrincipalLanguage="false" jreBitType="all" runPostProcessor="false" postProcessor="" failOnPostProcessorError="false" useLegacyMediaFileIds="false" legacyMediaFileIds="" downloadURL="" includeAllDownloadableComponents="false" includedJRE="" manualJREEntry="false" bundleType="1" jreURL="" jreShared="false" directDownload="false" installOnlyIfNecessary="false" customInstallBaseDir="" contentFilesType="1">
+      <excludedComponents />
+      <includedDownloadableComponents />
+      <excludedLaunchers />
+      <excludedBeans />
+      <overriddenPrincipalLanguage id="en" customLocalizationFile="" />
+      <exclude />
+      <variables />
+      <autoUpdate useMinUpdatableVersion="false" minUpdatableVersion="" useMaxUpdatableVersion="false" maxUpdatableVersion="">
+        <commentFiles />
+        <customAttributes />
+      </autoUpdate>
+      <installerScript mode="1" file="">
+        <content />
+      </installerScript>
+    </unixInstaller>
   </mediaSets>
   <buildIds buildAll="true" />
   <buildOptions verbose="true" faster="false" disableSigning="false" disableJreBundling="false" debug="false" />

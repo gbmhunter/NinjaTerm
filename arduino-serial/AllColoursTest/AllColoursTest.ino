@@ -14,7 +14,7 @@ void setup() {
 
 void loop() {
 
-#define DISPLAY_PERIOD (50)
+#define DISPLAY_PERIOD (200)
   
   Serial.println("\x1B[30mnormal black");
   delay(DISPLAY_PERIOD);

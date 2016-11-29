@@ -1,5 +1,6 @@
 package ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx;
 
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -27,6 +28,8 @@ import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.Observable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Controller for a "terminal" tab. The user can create many terminal tabs, each which
@@ -127,6 +130,8 @@ public class TxRxViewController {
     private FormattingViewController formattingViewController;
     private ColouriserViewController colouriserViewController;
     private FiltersViewController filtersViewController;
+
+    private SimpleIntegerProperty webViewLoadCount = new SimpleIntegerProperty(0);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -322,6 +327,10 @@ public class TxRxViewController {
         //============== SETUP RX DATA PANE ============//
         //==============================================//
 
+        rxComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
+            handleWebViewLoaded();
+        });
+
         // Add a listener for the new ComDataPane object
         terminal.txRx.rxDataEngine.newOutputListeners.add(streamedData -> {
             rxComDataPane.addData(streamedData);
@@ -339,6 +348,10 @@ public class TxRxViewController {
         //==============================================//
         //============== SETUP TX DATA PANE ============//
         //==============================================//
+
+        txComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
+            handleWebViewLoaded();
+        });
 
         terminal.txRx.txDataToDisplayListeners.add(streamedData -> {
             txComDataPane.addData(streamedData);
@@ -405,6 +418,14 @@ public class TxRxViewController {
             resizeTxRxPanes();
         });
 
+    }
+
+    private void handleWebViewLoaded() {
+        if(rxComDataPane.webViewLoaded.get() && txComDataPane.webViewLoaded.get()) {
+            logger.debug("Both web views have loaded, it is safe to run scripts...");
+            rxComDataPane.safeToRunScripts.set(true);
+            txComDataPane.safeToRunScripts.set(true);
+        }
     }
 
     private void refreshFreezeRxButton() {
@@ -547,8 +568,6 @@ public class TxRxViewController {
             case SEPARATE_TX_RX:
 
                 // Show TX pane
-                //txTextFlow.setMinHeight(100.0);
-                //txTextFlow.setMaxHeight(100.0);
                 if (!dataContainerGridPane.getChildren().contains(txComDataPane)) {
                     dataContainerGridPane.getChildren().add(txComDataPane);
                 }
