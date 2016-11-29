@@ -102,8 +102,9 @@
 
         <ol>
             <li>Click the 'nix' download link above to download a '.sh' installer.</li>
-            <li>Run the installer with the command <code>sh NinjaTerm-vX.X.x-unix.sh</code>. This should also install <code>openjfx</code> if not already on your system.</li>
+            <li>Run the installer with the command <code>sudo sh NinjaTerm-vX.X.x-unix.sh</code>. This should also install <code>openjfx</code> if not already on your system.</li>
             <li>The installer will stop if you haven't got java v1.8 or greater installed. You can install this with <code>sudo apt-get install openjdk-8-jre</code>.</li>
+            <li>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run <code>sudo chmod 666 /dev/ttyACM0</code>.</li>
         </ol>
 
     <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
