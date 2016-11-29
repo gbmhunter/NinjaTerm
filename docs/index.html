@@ -53,81 +53,103 @@
 
 <section class="main-content">
 
-    <h1>Features</h1>
+    <div id="toc">
+        <h3>Table of Contents</h3>
+    </div>
+    <hr/>
 
-    <h2>ANSI Escape Sequence Support</h2>
+    <div id="contents">
 
-    <p>NinjaTerm supports ANSI escape sequences for changing the terminal text colour. Use this to colour debug text
-        from each module in your microcontroller's firmware a different colour, and/or colour all warning/error messages
-        red!</p>
+        <h1>Features</h1>
 
-    <img src="img/ansi-escape-sequences-in-ninjaterm.gif" style="width: 800px; display: block; margin: auto;"/>
+        <h2>ANSI Escape Sequence Support</h2>
 
-    <h2>Smart Filtering</h2>
+        <p>NinjaTerm supports ANSI escape sequences for changing the terminal text colour. Use this to colour debug text
+            from each module in your microcontroller's firmware a different colour, and/or colour all warning/error messages
+            red!</p>
 
-    <p>Hard to focus on just one issue when there is a deluge of debug messages coming from the microcontroller? Use
-        intelligent filtering which hides lines that don't match your search. Use it to focus on debug messages from
-        particular firmware modules, or to just show error messages!</p>
+        <img src="img/ansi-escape-sequences-in-ninjaterm.gif" style="width: 800px; display: block; margin: auto;"/>
 
-    <img src="img/ninjtaterm-filtering-with-micro-debug-info.gif" style="width: 800px; display: block; margin: auto;"/>
+        <h2>Smart Filtering</h2>
 
-    <h2>Multiple Port Support</h2>
+        <p>Hard to focus on just one issue when there is a deluge of debug messages coming from the microcontroller? Use
+            intelligent filtering which hides lines that don't match your search. Use it to focus on debug messages from
+            particular firmware modules, or to just show error messages!</p>
 
-    <p>Each instance of NinjaTerm is not limited to just one COM port. Open up multiple tabs, and have multiple
-        terminals/COM ports open at the same time!</p>
+        <img src="img/ninjtaterm-filtering-with-micro-debug-info.gif" style="width: 800px; display: block; margin: auto;"/>
 
-    <h2>Flexible Layout Options</h2>
+        <h2>Multiple Port Support</h2>
 
-    <p>Not all uses terminal software work well with the same layout. Sometimes you want a "bash shell" style terminal
-        window, sometimes you want separate panes for TX and RX data. NinjaTerm supports both, interchangeable at the
-        tick of a checkbox!</p>
+        <p>Each instance of NinjaTerm is not limited to just one COM port. Open up multiple tabs, and have multiple
+            terminals/COM ports open at the same time!</p>
 
-    <h2>Plus more handy stuff!</h2>
+        <h2>Flexible Layout Options</h2>
 
-    <ul>
-        <li>Smart Scrolling - The RX data pane can scroll as new data comes in, so the data you are viewing does not change as new data comes in.</li>
-    </ul>
+        <p>Not all uses terminal software work well with the same layout. Sometimes you want a "bash shell" style terminal
+            window, sometimes you want separate panes for TX and RX data. NinjaTerm supports both, interchangeable at the
+            tick of a checkbox!</p>
 
-    <h1>Installation</h1>
+        <h2>Plus more handy stuff!</h2>
 
-        <h2>Windows</h2>
+        <ul>
+            <li>Smart Scrolling - The RX data pane can scroll as new data comes in, so the data you are viewing does not change as new data comes in.</li>
+        </ul>
 
-        <ol>
-            <li>Click the 'Win' download link above to download a .exe installer.</li>
-            <li>Run the .exe, NinjaTerm should install.</li>
-            <li>All done!</li>
-        </ol>
+        <h1>Installation</h1>
 
-        <h2>Linux (e.g. Ubuntu)</h2>
+            <h2>Windows</h2>
 
-        <ol>
-            <li>Click the 'nix' download link above to download a '.sh' installer.</li>
-            <li>Run the installer with the command <code>sudo sh NinjaTerm-vX.X.x-unix.sh</code>. This should also install <code>openjfx</code> if not already on your system.</li>
-            <li>The installer will stop if you haven't got java v1.8 or greater installed. You can install this with <code>sudo apt-get install openjdk-8-jre</code>.</li>
-            <li>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run <code>sudo chmod 666 /dev/ttyACM0</code>.</li>
-        </ol>
+            <ol>
+                <li>Click the 'Win' download link above to download a .exe installer.</li>
+                <li>Run the .exe, NinjaTerm should install.</li>
+                <li>All done!</li>
+            </ol>
 
-    <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
+            <h2>Linux (e.g. Ubuntu)</h2>
 
-    <p>Please <a href="https://github.com/mbedded-ninja/NinjaTerm/issues/">create an issue in the GitHub repository</a>
-        if you want to log a bug, make a feature request, ask a question, e.t.c.</p>
+                <p>Note that the commands are tailored to Debian systems (i.e. <code>apt-get</code>). They will have to be modified for Redhat systems (i.e. using <code>yum/rpm</code>).</p>
+
+                <ol>
+                    <li>
+                        <p>Click the 'nix' download link above to download a '.sh' installer.</p>
+                    </li>
+                    <li>
+                        <p>Run the installer with the command:</p>
+                        <code>sudo sh NinjaTerm_vX.X.X_unix.sh</code>.
+                        <p>This should also install <code>openjfx</code> if not already on your system.</p>
+                    </li>
+                    <li>
+                        <p>The installer will stop if you haven't got <code>Java v1.8</code> or greater installed. You can install this with:</p>
+                        <code>sudo apt-get install openjdk-8-jre</code>
+                    </li>
+                    <li>
+                        <p>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run:</p>
+                        <code>sudo chmod 666 /dev/ttyACM0</code>
+                    </li>
+                </ol>
+
+        <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
+
+        <p>Please <a href="https://github.com/mbedded-ninja/NinjaTerm/issues/">create an issue in the GitHub repository</a>
+            if you want to log a bug, make a feature request, ask a question, e.t.c.</p>
 
 
-    <h1>Contributors</h1>
+        <h1>Contributors</h1>
 
-    <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
+        <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
 
-    <p>Thanks to the additional testing done by William Hunter.</p>
+        <p>Thanks to the additional testing done by William Hunter.</p>
 
-    <p>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI.</p>
+        <p>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI.</p>
 
-    <p>GIFs for this home page created with the amazing open-source <a href="https://screentogif.codeplex.com/">"Screen
-        To Gif" program</a>.
+        <p>GIFs for this home page created with the amazing open-source <a href="https://screentogif.codeplex.com/">"Screen
+            To Gif" program</a>.
 
-    <p>The team at <a href="https://www.ej-technologies.com/">ej-technologies</a> have graciously donated me an
-        open-source licensed version of <a href="http://www.ej-technologies.com/products/install4j/overview.html"><img
-                src="https://www.ej-technologies.com/images/product_banners/install4j_small.png"/>, the multi-platform
-            installer builder</a> for Java applications.</p>
+        <p>The team at <a href="https://www.ej-technologies.com/">ej-technologies</a> have graciously donated me an
+            open-source licensed version of <a href="http://www.ej-technologies.com/products/install4j/overview.html"><img
+                    src="https://www.ej-technologies.com/images/product_banners/install4j_small.png"/>, the multi-platform
+                installer builder</a> for Java applications.</p>
+    </div>
 
     <footer class="site-footer">
         <span class="site-footer-owner">NinjaTerm is developed and maintained by <a
@@ -147,4 +169,6 @@
 <script type="text/javascript" src="js/main.js"></script>
 
 <script type="text/javascript" src="js/version-replacement.js"></script>
+
+<script type="text/javascript" src="js/toc.js"></script>
 </html>
