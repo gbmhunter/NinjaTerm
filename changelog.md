@@ -1,6 +1,12 @@
 vX.X.X
 ------
 
+- Added script to install openjfx before main Linux installer runs, closes #186.
+- Added installation steps for all platforms, closes #184.
+
+v0.8.5
+------
+
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.
 - Added Linux build, closes #181.
 
