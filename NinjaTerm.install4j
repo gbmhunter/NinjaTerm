@@ -1267,8 +1267,8 @@ return true;</string>
         <commentFiles />
         <customAttributes />
       </autoUpdate>
-      <installerScript mode="1" file="">
-        <content />
+      <installerScript mode="3" file="">
+        <content>sudo apt-get install openjfx</content>
       </installerScript>
     </unixInstaller>
   </mediaSets>
