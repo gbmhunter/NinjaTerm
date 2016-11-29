@@ -327,9 +327,9 @@ public class TxRxViewController {
         //============== SETUP RX DATA PANE ============//
         //==============================================//
 
-        rxComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
-            handleWebViewLoaded();
-        });
+//        rxComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
+//            handleWebViewLoaded();
+//        });
 
         // Add a listener for the new ComDataPane object
         terminal.txRx.rxDataEngine.newOutputListeners.add(streamedData -> {
@@ -349,9 +349,9 @@ public class TxRxViewController {
         //============== SETUP TX DATA PANE ============//
         //==============================================//
 
-        txComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
-            handleWebViewLoaded();
-        });
+//        txComDataPane.webViewLoaded.addListener((observable, oldValue, newValue) -> {
+//            handleWebViewLoaded();
+//        });
 
         terminal.txRx.txDataToDisplayListeners.add(streamedData -> {
             txComDataPane.addData(streamedData);
@@ -420,13 +420,13 @@ public class TxRxViewController {
 
     }
 
-    private void handleWebViewLoaded() {
-        if(rxComDataPane.webViewLoaded.get() && txComDataPane.webViewLoaded.get()) {
-            logger.debug("Both web views have loaded, it is safe to run scripts...");
-            rxComDataPane.safeToRunScripts.set(true);
-            txComDataPane.safeToRunScripts.set(true);
-        }
-    }
+//    private void handleWebViewLoaded() {
+//        if(rxComDataPane.webViewLoaded.get() && txComDataPane.webViewLoaded.get()) {
+//            logger.debug("Both web views have loaded, it is safe to run scripts...");
+//            rxComDataPane.safeToRunScripts.set(true);
+//            txComDataPane.safeToRunScripts.set(true);
+//        }
+//    }
 
     private void refreshFreezeRxButton() {
         if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
