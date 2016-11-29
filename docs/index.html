@@ -103,18 +103,20 @@
             <p>Note that the commands are tailored to Debian systems (i.e. <code>apt-get</code>). They will have to be modified for Redhat systems (i.e. using <code>yum/rpm</code>).</p>
 
             <ol>
-                <li>Click the 'nix' download link above to download a '.sh' installer.</li>
+                <li>
+                    <p>Click the 'nix' download link above to download a '.sh' installer.</p>
+                </li>
                 <li>
                     <p>Run the installer with the command:</p>
                     <code>sudo sh NinjaTerm_vX.X.X_unix.sh</code>.
                     <p>This should also install <code>openjfx</code> if not already on your system.</p>
                 </li>
                 <li>
-                    The installer will stop if you haven't got <code>Java v1.8</code> or greater installed. You can install this with:
+                    <p>The installer will stop if you haven't got <code>Java v1.8</code> or greater installed. You can install this with:</p>
                     <code>sudo apt-get install openjdk-8-jre</code>
                 </li>
                 <li>
-                    All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run:
+                    <p>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run:</p>
                     <code>sudo chmod 666 /dev/ttyACM0</code>
                 </li>
             </ol>
