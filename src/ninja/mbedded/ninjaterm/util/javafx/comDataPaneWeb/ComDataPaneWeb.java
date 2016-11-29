@@ -104,8 +104,15 @@ public class ComDataPaneWeb extends StackPane {
 
     private double currScrollPos = 0;
 
+    /**
+     * This needs to be set by the parent object when it know that it is safe to call scripts
+     * within the WebView. This is when all WebView objects in the GUI have been loaded.
+     */
     public SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
 
+    /**
+     * This will be set by this object when it's WebView has been loaded.
+     */
     public SimpleBooleanProperty webViewLoaded = new SimpleBooleanProperty(false);
 
     private ch.qos.logback.classic.Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
