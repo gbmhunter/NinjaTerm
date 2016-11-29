@@ -4,7 +4,7 @@
   <artifactId>NinjaTerm</artifactId>
   <groupId>NinjaTerm</groupId>
   <packaging>jar</packaging>
-  <version>0.8.3</version>
+  <version>0.8.4</version>
   <name>NinjaTerm</name>
   <repositories>
     <repository>
@@ -98,6 +98,14 @@
       <artifactId>fontawesomefx</artifactId>
       <version>8.9</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.4</version>
+    </dependency>
+
 
     <!--<dependency>-->
       <!--<groupId>com.fazecast</groupId>-->

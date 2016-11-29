@@ -21,10 +21,15 @@ import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.richtext.StyledTextArea;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -56,8 +61,6 @@ public class ComDataPaneWeb extends StackPane {
     private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
-
-    private final Level DEFAULT_LOG_LEVEL = Level.OFF;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -113,7 +116,7 @@ public class ComDataPaneWeb extends StackPane {
     /**
      * This will be set by this object when it's WebView has been loaded.
      */
-    public SimpleBooleanProperty webViewLoaded = new SimpleBooleanProperty(false);
+//    public SimpleBooleanProperty webViewLoaded = new SimpleBooleanProperty(false);
 
     private ch.qos.logback.classic.Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -156,13 +159,28 @@ public class ComDataPaneWeb extends StackPane {
                     return;
                 }
                 logger.debug("WebView has transitioned to State.SUCCEEDED.");
-                webViewLoaded.set(true);
+
+                try {
+
+                    logger.debug("Loading javascript files...");
+
+                    byte[] encoded = IOUtils.toByteArray(getClass().getResourceAsStream("jquery-3.1.1.js"));
+                    String code = new String(encoded, Charset.defaultCharset());
+                    webEngine.executeScript(code);
+
+                    encoded = IOUtils.toByteArray(getClass().getResourceAsStream("stuff.js"));
+                    code = new String(encoded, Charset.defaultCharset());
+                    webEngine.executeScript(code);
+
+                    safeToRunScripts.set(true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
         });
 
         webEngine.load(mapUrl.toExternalForm());
-        //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
-
 
         if (safeToRunScripts.get()) {
             logger.debug("WebView has loaded page and is ready.");

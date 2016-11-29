@@ -8,8 +8,8 @@ NinjaTerm
 
 - Author: gbmhunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2016-11-28
-- Version: v0.8.3
+- Last Modified: 2016-11-29
+- Version: v0.8.4
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
