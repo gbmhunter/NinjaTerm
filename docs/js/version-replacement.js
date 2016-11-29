@@ -12,4 +12,8 @@ function updateVersionNumber(versionNumber) {
     macLink.innerHTML = macLink.innerHTML.replace(/vX\.X\.X/g, versionNumber);
     macLink.href = macLink.href.replace(/vX\.X\.X/g, versionNumber);
 
+    var nixLink = document.getElementById("nix-link");
+    nixLink.innerHTML = nixLink.innerHTML.replace(/vX\.X\.X/g, versionNumber);
+    nixLink.href = nixLink.href.replace(/vX\.X\.X/g, versionNumber);
+
 }
