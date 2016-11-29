@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Added script to install openjfx before main Linux installer runs, closes #186.
+
 v0.8.5
 ------
 
