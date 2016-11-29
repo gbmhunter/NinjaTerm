@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.5
 ------
 
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.

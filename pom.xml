@@ -4,7 +4,7 @@
   <artifactId>NinjaTerm</artifactId>
   <groupId>NinjaTerm</groupId>
   <packaging>jar</packaging>
-  <version>0.8.4</version>
+  <version>0.8.5</version>
   <name>NinjaTerm</name>
   <repositories>
     <repository>
