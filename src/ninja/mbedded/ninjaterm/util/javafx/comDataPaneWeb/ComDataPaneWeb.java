@@ -1,7 +1,5 @@
 package ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb;
 
-import ch.qos.logback.classic.Level;
-import javafx.application.Platform;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,18 +14,22 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Marker;
-import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.ansiECParser.ColourMarker;
+import ninja.mbedded.ninjaterm.util.rxProcessing.newLineParser.NewLineMarker;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import ninja.mbedded.ninjaterm.util.rxProcessing.timeStamp.TimeStampMarker;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.fxmisc.richtext.StyledTextArea;
+import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collections;
 
 
 /**
@@ -56,8 +58,6 @@ public class ComDataPaneWeb extends StackPane {
     private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
     private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
-
-    private final Level DEFAULT_LOG_LEVEL = Level.OFF;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -88,12 +88,6 @@ public class ComDataPaneWeb extends StackPane {
 
     public final WebView webView;
 
-    /**
-     * Variable to remember what colour to apply to the next character, since a <code>{@link StyledTextArea}</code>
-     * has no way of adding a colour style to text which does not exist yet.
-     */
-    private Color colorToApplyToNextChar = null;
-
     public SimpleIntegerProperty bufferSize;
 
     private SimpleObjectProperty<ScrollState> scrollState = new SimpleObjectProperty<>(ScrollState.FIXED_TO_BOTTOM);
@@ -105,17 +99,14 @@ public class ComDataPaneWeb extends StackPane {
     private double currScrollPos = 0;
 
     /**
-     * This needs to be set by the parent object when it know that it is safe to call scripts
-     * within the WebView. This is when all WebView objects in the GUI have been loaded.
+     * This is set by this object when all of the javascript files have been loaded into the WebView.
+     * For some reason, including the Javascript in the .html file via a <script> tag does not work, and
+     * "undefined is not a function" error can result due to loading time issues (Worker.State.SUCCEEDED did not
+     * seem to indicate that the javascript had fully loaded with more than one WebView in the UI).
      */
-    public SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
+    private SimpleBooleanProperty safeToRunScripts = new SimpleBooleanProperty(false);
 
-    /**
-     * This will be set by this object when it's WebView has been loaded.
-     */
-    public SimpleBooleanProperty webViewLoaded = new SimpleBooleanProperty(false);
-
-    private ch.qos.logback.classic.Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -156,13 +147,28 @@ public class ComDataPaneWeb extends StackPane {
                     return;
                 }
                 logger.debug("WebView has transitioned to State.SUCCEEDED.");
-                webViewLoaded.set(true);
+
+                try {
+
+                    logger.debug("Loading javascript files...");
+
+                    byte[] encoded = IOUtils.toByteArray(getClass().getResourceAsStream("jquery-3.1.1.js"));
+                    String code = new String(encoded, Charset.defaultCharset());
+                    webEngine.executeScript(code);
+
+                    encoded = IOUtils.toByteArray(getClass().getResourceAsStream("stuff.js"));
+                    code = new String(encoded, Charset.defaultCharset());
+                    webEngine.executeScript(code);
+
+                    safeToRunScripts.set(true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
         });
 
         webEngine.load(mapUrl.toExternalForm());
-        //webEngine.load("http://docs.oracle.com/javafx/2/get_started/animation.htm");
-
 
         if (safeToRunScripts.get()) {
             logger.debug("WebView has loaded page and is ready.");
@@ -276,7 +282,6 @@ public class ComDataPaneWeb extends StackPane {
     }
 
 
-
     public void addData(StreamedData data) {
 
         int currPos = 0;
@@ -284,16 +289,16 @@ public class ComDataPaneWeb extends StackPane {
         // Sort markers
         Collections.sort(data.getMarkers());
 
-        for(Marker marker : data.getMarkers()) {
+        for (Marker marker : data.getMarkers()) {
 
             // Add all text up to this marker
             appendText(data.getText().substring(currPos, marker.charPos));
 
-            if(marker instanceof ColourMarker) {
+            if (marker instanceof ColourMarker) {
                 appendColor(((ColourMarker) marker).color);
-            } else if(marker instanceof NewLineMarker) {
+            } else if (marker instanceof NewLineMarker) {
                 appendText("\n");
-            } else if(marker instanceof TimeStampMarker) {
+            } else if (marker instanceof TimeStampMarker) {
                 appendTimeStamp(((TimeStampMarker) marker).localDateTime);
             } else
                 throw new RuntimeException("Marker sub-type not supported.");
@@ -441,7 +446,7 @@ public class ComDataPaneWeb extends StackPane {
 
     /**
      * Appends the provided text to the rich text pane inside the WebView.
-     *
+     * <p>
      * Escapes all Java sequences.
      *
      * @param text
@@ -546,7 +551,7 @@ public class ComDataPaneWeb extends StackPane {
     /**
      * Gets called by the Javascript when either the up key is pressed or the mouse wheel is scrolled
      * in the upwards direction (when the WebView has focus).
-     *
+     * <p>
      * Used for going from FIXED_TO_BOTTOM to the SMART_SCROLL state.
      */
     @SuppressWarnings("unused")
