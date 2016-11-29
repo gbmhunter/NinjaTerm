@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.4
 ------
 
 - Updated ANSI escape sequence support .gif on home page, closes #180.
