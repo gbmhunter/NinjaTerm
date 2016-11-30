@@ -191,6 +191,20 @@ public class TxRxViewController {
             refreshOpenCloseButton();
         });
 
+        // Attach handler for when selected COM port changes. This is responsible for
+        // enabling/disabling the "Open" button as appropriate
+        terminal.comPortSettings.selComPortName.addListener(
+                (observable, oldValue, newValue) -> {
+
+                    // newValue will be null if a scan was done and no COM ports
+                    // were found
+                    if (newValue == null) {
+                        openCloseComPortButton.setDisable(true);
+                    } else {
+                        openCloseComPortButton.setDisable(false);
+                    }
+                });
+
         //==============================================//
         //========== CLEAR TEXT BUTTON SETUP ===========//
         //==============================================//
@@ -440,11 +454,11 @@ public class TxRxViewController {
     }
 
     /**
-     * This updates the styling of the Open/Close COM port button based on whether the currently
-     * selected terminal in the model has a open or closed COM port.
+     * This updates the styling of the Open/Close COM port button based on whether the
+     * terminal in the model has an open or closed COM port.
      */
     private void refreshOpenCloseButton() {
-        if (!model.selTerminal.get().isComPortOpen.get()) {
+        if (!terminal.isComPortOpen.get()) {
             openCloseComPortButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PLAY));
             openCloseComPortButton.setText("Open");
             openCloseComPortButton.getStyleClass().remove("failure");
