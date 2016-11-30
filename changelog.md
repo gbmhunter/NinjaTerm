@@ -4,6 +4,7 @@ vX.X.X
 - Added script to install openjfx before main Linux installer runs, closes #186.
 - Added installation steps for all platforms, closes #184.
 - Fixed bug where 'Open' button on TX/RX tab is enabled when no COM ports can be found, closes #185.
+- Removed manual buffer size limitations on totalNewLineParserOutput, closes #178.
 
 v0.8.5
 ------
