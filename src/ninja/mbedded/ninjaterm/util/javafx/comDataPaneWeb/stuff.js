@@ -130,14 +130,18 @@ function clearData() {
 }
 
 function showDownArrow(trueFalse) {
-    java.log("showDownArrow() called with trueFalse = " + trueFalse);
-    if(trueFalse) {
-        java.log("Showing down-arrow...");
-        $("#down-arrow").show();
-    } else {
-        java.log("Hiding down-arrow...");
-        $("#down-arrow").hide();
-    }
+    // Wrapped in jQuery ready() function because of weird asynchronicity bug
+    // with Java WebView
+    $(document).ready(function() {
+        java.log("showDownArrow() called with trueFalse = " + trueFalse);
+        if(trueFalse) {
+            java.log("Showing down-arrow...");
+            $("#down-arrow").show();
+        } else {
+            java.log("Hiding down-arrow...");
+            $("#down-arrow").hide();
+        }
+    });
 }
 
 function getTextHeight() {
@@ -146,8 +150,12 @@ function getTextHeight() {
 }
 
 function setName(name) {
-    java.log("setName() called with name = " + name);
-    $("#name-text").text(name);
+    // Wrapped in jQuery ready() function because of weird asynchronicity bug
+    // with Java WebView
+    $(document).ready(function() {
+        java.log("setName() called with name = " + name);
+        $("#name-text").text(name);
+    });
 }
 
 //! @brief  Trims the oldest characters from the rich text object.
@@ -195,25 +203,29 @@ function trim(numChars) {
 }
 
 function showCaret(trueFalse) {
-    if(trueFalse) {
-        // Create cursor
-        java.log("Displaying caret...");
+    // Wrapped in jQuery ready() function because of weird asynchronicity bug
+    // with Java WebView
+    $(document).ready(function() {
+        if(trueFalse) {
+            // Create cursor
+            java.log("Displaying caret...");
 
-//        java.log("$('#com-data') (before adding caret) = " + JSON.stringify($("#com-data")));
-        $("#com-data").append('<span id="caret">█</span>');
-//        java.log("$('#com-data') (after adding caret) = " + JSON.stringify($("#com-data")));
+    //        java.log("$('#com-data') (before adding caret) = " + JSON.stringify($("#com-data")));
+            $("#com-data").append('<span id="caret">█</span>');
+    //        java.log("$('#com-data') (after adding caret) = " + JSON.stringify($("#com-data")));
 
-        $('#caret').css('color', currColor);
+            $('#caret').css('color', currColor);
 
-        isCaretShown = true;
+            isCaretShown = true;
 
-    } else {
-        java.log("Hiding caret...");
+        } else {
+            java.log("Hiding caret...");
 
-        $("#caret").remove();
+            $("#caret").remove();
 
-        isCaretShown = false;
-    }
+            isCaretShown = false;
+        }
+    });
 }
 
 

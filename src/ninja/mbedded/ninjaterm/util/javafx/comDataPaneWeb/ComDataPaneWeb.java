@@ -160,11 +160,12 @@ public class ComDataPaneWeb extends StackPane {
                     code = new String(encoded, Charset.defaultCharset());
                     webEngine.executeScript(code);
 
+                    //Thread.sleep(2000);
+
                     safeToRunScripts.set(true);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-
             }
         });
 
@@ -435,6 +436,7 @@ public class ComDataPaneWeb extends StackPane {
         if (safeToRunScripts.get()) {
             webEngine.executeScript(script);
         } else {
+            logger.debug("Scheduling script to run when safeToRunScripts == true...");
             safeToRunScripts.addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
                     webEngine.executeScript(script);
