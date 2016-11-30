@@ -6,7 +6,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.comport.*;
+import ninja.mbedded.ninjaterm.util.comport.BaudRates;
+import ninja.mbedded.ninjaterm.util.comport.NumDataBits;
+import ninja.mbedded.ninjaterm.util.comport.NumStopBits;
+import ninja.mbedded.ninjaterm.util.comport.Parities;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
@@ -16,8 +19,8 @@ import org.slf4j.Logger;
  * Controller for the "COM Settings tab" which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2016-11-30
  * @since 2016-07-10
- * @last-modified 2016-10-28
  */
 public class ComSettingsViewController {
 
@@ -97,27 +100,14 @@ public class ComSettingsViewController {
         numStopBitsComboBox.getSelectionModel().select(NumStopBits.ONE);
         terminal.comPortSettings.selNumStopBits.bind(numStopBitsComboBox.getSelectionModel().selectedItemProperty());
 
-        // Attach handler for when selected COM port changes. This is responsible for
-        // enabling/disabling the "Open" button as appropriate
-        foundComPortsComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            logger.debug("ComboBox selected item changed.");
-
-            // newValue will be null if a scan was done and no COM ports
-            // were found
-            if (newValue == null) {
-                openCloseComPortButton.setDisable(true);
-            } else {
-                openCloseComPortButton.setDisable(false);
-            }
-        });
-
         //==============================================//
         //====== ATTACH LISTENERS TO COM PORT SCAN =====//
         //==============================================//
 
-        terminal.comPortSettings.scannedComPorts.addListener((ListChangeListener.Change<? extends String> c) -> {
-            handleComPortsScanned();
-        });
+        terminal.comPortSettings.scannedComPorts.addListener(
+                (ListChangeListener.Change<? extends String> c) -> {
+                    handleComPortsScanned();
+                });
 
         //==============================================//
         //=== ATTACH LISTENERS TO COM PORT OPEN/CLOSE ==//
@@ -132,6 +122,21 @@ public class ComSettingsViewController {
 
         // Set default style for OpenClose button
         setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
+
+        // Attach handler for when selected COM port changes. This is responsible for
+        // enabling/disabling the "Open" button as appropriate
+        terminal.comPortSettings.selComPortName.addListener(
+                (observable, oldValue, newValue) -> {
+                    logger.debug("Selected COM port name changed.");
+
+                    // newValue will be null if a scan was done and no COM ports
+                    // were found
+                    if (newValue == null) {
+                        openCloseComPortButton.setDisable(true);
+                    } else {
+                        openCloseComPortButton.setDisable(false);
+                    }
+                });
     }
 
     /**
