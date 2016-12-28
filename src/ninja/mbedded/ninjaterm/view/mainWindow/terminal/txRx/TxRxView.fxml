@@ -31,6 +31,9 @@
 
         <HBox VBox.vgrow="ALWAYS" spacing="10">
 
+            <!-- =========================================== -->
+            <!-- ========== LEFT-HAND PANE BUTTONS ========= -->
+            <!-- =========================================== -->
             <VBox minWidth="120" alignment="TOP_CENTER"
                   spacing="10"
                   style=
@@ -52,6 +55,7 @@
                 <Button fx:id="coloriserButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
                 <Button fx:id="filtersButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
                 <Button fx:id="freezeRxButton"      minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
+                <!--<ColorPicker />-->
             </VBox>
 
             <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
