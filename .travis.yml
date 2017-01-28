@@ -18,4 +18,6 @@ script:
  - export DISPLAY=:99
  
  # Build using Gradle
+ # gradle build also runs the tests (both unit tests
+ # and integration tests).
  - gradle build

@@ -70,3 +70,6 @@ build/*
 
 # Compiler files
 target/*
+
+# Gradle temp. files
+.gradle/
