@@ -1,3 +1,5 @@
+package ninja.mbedded.ninjaterm;
+
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import javafx.application.Application;
@@ -137,7 +139,7 @@ public class Main extends Application {
         this.splashScreenStage = primaryStage;
 
         // Load splashscreen FXML file and get controller
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/splashScreen/SplashScreenView.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("view/splashScreen/SplashScreenView.fxml"));
         try {
             Parent root = loader.load();
         } catch (IOException e) {
@@ -175,12 +177,12 @@ public class Main extends Application {
         // (this old method required the internet, new method uses local font in resources)
         //glyphFont = GlyphFontRegistry.font("FontAwesome");
         logger.debug("Loading font \"FontAwesome\"...");
-        glyphFont = new GlyphFont("FontAwesome", 12, "ninja/mbedded/ninjaterm/resources/fontawesome-webfont.ttf");
+        glyphFont = new GlyphFont("FontAwesome", 12, "resources/fontawesome-webfont.ttf");
 
         // Create application model (data/state)
         Model model = new Model(new ComPortFactory());
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ninja/mbedded/ninjaterm/view/mainWindow/MainWindowView.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainWindow/MainWindowView.fxml"));
         try {
             Parent root = loader.load();
         } catch (IOException e) {

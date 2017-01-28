@@ -22,8 +22,8 @@ public class StringFilterTest {
     @Test
     public void basicTest() throws Exception {
         String filterResult = StringFilter.filterByLine("A\rB\rC\r", "B");
-        //assertEquals("B\r", filterResult);
-        assertEquals("A\r", filterResult);
+        assertEquals("B\r", filterResult);
+        //assertEquals("A\r", filterResult);
     }
 
     @Test
