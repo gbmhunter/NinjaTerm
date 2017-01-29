@@ -5,7 +5,18 @@ apply plugin: 'maven'
 group = 'NinjaTerm'
 version = '0.8.5'
 
-description = """NinjaTerm"""
+// Project description, shown when
+// "gradle -q projects" is called
+description = """\
+A serial port terminal that's got your back.
+------------------------------------------
+Project version: ${version}
+Gradle version: ${gradle.gradleVersion}
+------------------------------------------
+"""
+
+// Path to class with main(). Required for application
+// plugin to make runnable jar
 mainClassName = "ninja.mbedded.ninjaterm.Main"
 
 sourceCompatibility = 1.8
@@ -25,33 +36,22 @@ sourceSets {
     }
 }
 
-task compile {
-    doLast {
-        println 'compiling source'
-    }
-}
-
-task compileTest(dependsOn: compile) {
-    doLast {
-        println 'compiling unit tests'
-    }
-}
-
 run {
 
-    /* Need to split the space-delimited value in the exec.args */
+    // myargs property is used to pass through arguments from gradle to Java app
+    // To pass in arguments, call like so:
+    // gradle run -Pmyargs="--nosplash,--logc"
     if (project.hasProperty('myargs')) {
         args(myargs.split(','))
     }
 }
 
 
-
 repositories {
-        
      maven { url "https://maven.atlassian.com/3rdparty/" }
      maven { url "http://repo.maven.apache.org/maven2" }
 }
+
 dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.7'
     compile group: 'org.scream3r', name: 'jssc', version:'2.8.0'
