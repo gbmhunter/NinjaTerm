@@ -21,3 +21,4 @@ script:
  # gradle build also runs the tests (both unit tests
  # and integration tests).
  - gradle build
+ - gradle fatJar

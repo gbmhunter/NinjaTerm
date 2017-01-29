@@ -46,6 +46,23 @@ run {
     }
 }
 
+// Create a single Jar with all dependencies (a.k.a fat jar)
+// The will put into build/libs
+task fatJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'NinjaTerm',
+                    'Implementation-Version': version,
+                    'Main-Class': 'ninja.mbedded.ninjaterm.Main'
+    }
+
+    // Manually specify filename. This has to be compatible
+    // with install4j
+    archiveName 'NinjaTerm.jar'
+
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
 
 repositories {
      maven { url "https://maven.atlassian.com/3rdparty/" }
