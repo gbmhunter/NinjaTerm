@@ -253,6 +253,9 @@ public class Main extends Application {
             // Write the exception to the logger, and also show pop-up
             ExceptionPopup.showAndWait(e);
         }
+
+        // After an unhandled exception occurs, exit
+        System.exit(1);
     }
 
     /**
