@@ -35,11 +35,11 @@ import java.util.Collections;
 /**
  * UI node which presents COM port data to the user (can be either TX, RX, or both).
  * <p>
- * Uses a third-party <code>{@link StyledTextArea}</code> to enabled rich-text formatting
- * functionality.
+ * Uses a WebView to implement rich-text formatting
+ * functionality (for ANSI escape code colours).
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-14-21
+ * @last-modified 2017-01-29
  * @since 2016-11-14
  */
 public class ComDataPaneWeb extends StackPane {
@@ -57,7 +57,7 @@ public class ComDataPaneWeb extends StackPane {
 
     private final Color DEFAULT_COLOR = new Color(0, 1, 0, 1);
 
-    private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
+    //private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -196,6 +196,8 @@ public class ComDataPaneWeb extends StackPane {
 
                     // Call to setup defaults
                     handleScrollStateChanged();
+
+
                 }
             });
         }
@@ -207,6 +209,8 @@ public class ComDataPaneWeb extends StackPane {
 
         bufferSize = new SimpleIntegerProperty(DEFAULT_BUFFER_SIZE);
         bufferSize.addListener((observable, oldValue, newValue) -> {
+
+            logger.debug("bufferSize listener called.");
             // If the buffer size is changed, we may need to trim the data
             // to fit the new size (if smaller)
             trimIfRequired();
@@ -239,6 +243,12 @@ public class ComDataPaneWeb extends StackPane {
         // This sets the current text color and the current caret color
         appendColor(DEFAULT_COLOR);
 
+        webEngine.setOnStatusChanged(event -> {
+            logger.debug("status changed, event.toString() = " + event.toString());
+        });
+
+
+        clearData();
         //==============================================//
         //========= "SAFE TO RUN SCRIPTS" SETUP ========//
         //==============================================//
@@ -317,12 +327,12 @@ public class ComDataPaneWeb extends StackPane {
 
         Integer textHeightBeforeTrim = getTextHeight();
 
-        logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
+        //logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
 
         trimIfRequired();
 
         Integer textHeightAfterTrim = getTextHeight();
-        logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
+        //logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
 
 
         //==============================================//
@@ -338,16 +348,16 @@ public class ComDataPaneWeb extends StackPane {
             case SMART_SCROLL:
 
                 Integer heightChange = textHeightBeforeTrim - textHeightAfterTrim;
-                logger.debug("heightChange = " + heightChange);
+                //logger.debug("heightChange = " + heightChange);
 
                 // We need to shift the scroll up by the amount the height changed
                 Integer oldScrollTop = getComDataWrapperScrollTop();
-                logger.debug("oldScrollTop = " + oldScrollTop);
+                //logger.debug("oldScrollTop = " + oldScrollTop);
 
                 Integer newScrollTop = oldScrollTop - heightChange;
                 if (newScrollTop < 0)
                     newScrollTop = 0;
-                logger.debug("newScrollTop = " + newScrollTop);
+                //logger.debug("newScrollTop = " + newScrollTop);
 
                 setComDataWrapperScrollTop(newScrollTop);
 
@@ -363,19 +373,20 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     private void setComDataWrapperScrollTop(Integer value) {
-        webEngine.executeScript("setComDataWrapperScrollTop(" + value + ")");
+        runScriptWhenReady("setComDataWrapperScrollTop(" + value + ")");
     }
 
     public void clearData() {
         // Remove all COM data
-        webEngine.executeScript("clearData()");
 
-        // Re-show the caret, if it is enabled
-        handleIsCaretEnabledChange();
+        runScriptWhenReady("clearData()");
 
         // Add new default span (since all existing ones have now
         // been deleted)
         appendColor(DEFAULT_COLOR);
+
+        // Re-show the caret, if it is enabled
+        handleIsCaretEnabledChange();
 
         // Reset scrolling
         setComDataWrapperScrollTop(0);
@@ -392,19 +403,21 @@ public class ComDataPaneWeb extends StackPane {
      */
     private void trimIfRequired() {
 
-        logger.debug("trimIfRequired() called.");
+        //logger.debug("trimIfRequired() called.");
 
         if (currNumChars.get() >= bufferSize.get()) {
 
-            int numCharsToRemove = currNumChars.get() - bufferSize.get();
-            logger.debug("Need to trimIfRequired display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
+            //logger.debug("Trimming data...");
 
-            webEngine.executeScript("trim(" + numCharsToRemove + ")");
+            int numCharsToRemove = currNumChars.get() - bufferSize.get();
+            //logger.debug("Need to trimIfRequired display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
+
+            runScriptWhenReady("trim(" + numCharsToRemove + ")");
 
             // Update the character count
             currNumChars.set(currNumChars.get() - numCharsToRemove);
 
-            logger.debug("currNumChars.get() = " + currNumChars.get());
+            //logger.debug("currNumChars.get() = " + currNumChars.get());
         }
     }
 
@@ -413,7 +426,7 @@ public class ComDataPaneWeb extends StackPane {
      * This should be called when <code>scrollState</code> changes.
      */
     private void handleScrollStateChanged() {
-        logger.debug("handleScrollStateChanged() called.");
+        //logger.debug("handleScrollStateChanged() called.");
         switch (scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 runScriptWhenReady("showDownArrow(false)");
@@ -431,14 +444,15 @@ public class ComDataPaneWeb extends StackPane {
      * @warning This is hacky! Relies on {@code safeToRunScripts}, which is set by a simple timeout.
      */
     private void runScriptWhenReady(String script) {
-        logger.debug("runScriptWhenReady() called with script = " + script);
+        //logger.debug("runScriptWhenReady() called with script = " + script);
 
         if (safeToRunScripts.get()) {
             webEngine.executeScript(script);
         } else {
-            logger.debug("Scheduling script to run when safeToRunScripts == true...");
+            //logger.debug("Scheduling script to run when safeToRunScripts == true...");
             safeToRunScripts.addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
+                    //logger.debug("Executing script = \"" + script + "\".");
                     webEngine.executeScript(script);
                 }
             });
@@ -455,24 +469,30 @@ public class ComDataPaneWeb extends StackPane {
      */
     private void appendText(String text) {
 
+        //logger.debug("appendText() called.");
+
         // Return if empty string
         // (JS will throw null error)
         if (text.equals(""))
             return;
 
+        // Update the variable that keeps track of the number of displayed
+        // chars in the WebView rich text object.
+        // Note: Keep track of number of chars BEFORE escaping new lines
+        currNumChars.set(currNumChars.get() + text.length());
+
         // Escape new lines
-        logger.debug("Non-escaped HTML = " + text);
+        //logger.debug("Non-escaped HTML = " + text);
         text = StringEscapeUtils.escapeJava(text);
-        logger.debug("Escaped HTML = " + text);
+        //logger.debug("Escaped HTML = " + text);
 
         String js = "addText(\"" + text + "\")";
-        logger.debug("js = " + js);
+        //logger.debug("js = " + js);
 //        webEngine.executeScript(js);
         runScriptWhenReady(js);
 
-        // Update the variable that keeps track of the number of displayed
-        // chars in the WebView rich text object.
-        currNumChars.set(currNumChars.get() + text.length());
+        //String js2 = "checkCharCount(" + currNumChars.get() + ")";
+        //runScriptWhenReady(js2);
     }
 
     private void appendColor(Color color) {
@@ -499,9 +519,13 @@ public class ComDataPaneWeb extends StackPane {
 
     private void scrollToBottom() {
 
-        webEngine.executeScript("scrollToBottom()");
+        runScriptWhenReady("scrollToBottom()");
     }
 
+    /**
+     * This is called from the Javascript in stuff.js.
+     * @param text
+     */
     public void log(String text) {
         // Since the JavaScript will be calling this, add "JS: " to the front of the
         // messages
@@ -516,7 +540,7 @@ public class ComDataPaneWeb extends StackPane {
     @SuppressWarnings("unused")
     public void scrolled(Double scrollTop) {
 
-        logger.debug("scrolled() called. scrollTop = " + scrollTop);
+        //logger.debug("scrolled() called. scrollTop = " + scrollTop);
 
         if (scrollTop >= currScrollPos) {
             currScrollPos = scrollTop;
@@ -528,7 +552,7 @@ public class ComDataPaneWeb extends StackPane {
         if (scrollState.get() == ScrollState.SMART_SCROLL)
             return;
 
-        logger.debug("User has scrolled upwards while in SCROLL_TO_BOTTOM mode, disabling SCROLL_TO_BOTTOM...");
+        //logger.debug("User has scrolled upwards while in SCROLL_TO_BOTTOM mode, disabling SCROLL_TO_BOTTOM...");
 
         // Since the user has now scrolled upwards (manually), disable the
         // auto-scroll
@@ -559,7 +583,7 @@ public class ComDataPaneWeb extends StackPane {
     @SuppressWarnings("unused")
     public void upKeyOrMouseWheelUpOccurred() {
 
-        logger.debug("upKeyOrMouseWheelUpOccurred() called.");
+        //logger.debug("upKeyOrMouseWheelUpOccurred() called.");
 
         // Since the user has now scrolled upwards (manually), disable the
         // auto-scroll

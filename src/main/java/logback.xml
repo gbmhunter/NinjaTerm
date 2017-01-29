@@ -20,6 +20,6 @@
 
     <logger name="ninja.mbedded.ninjaterm.model.terminal" level="OFF" />
     <logger name="ninja.mbedded.ninjaterm.util.rxProcessing" level="OFF" />
-    <logger name="ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb" level="OFF" />
+    <!--<logger name="ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb" level="OFF" />-->
 
 </configuration>
