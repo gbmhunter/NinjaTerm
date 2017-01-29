@@ -38,11 +38,11 @@ task compileTest(dependsOn: compile) {
 }
 
 run {
-    /* Can pass all the properties: */
-    systemProperties System.getProperties()
 
     /* Need to split the space-delimited value in the exec.args */
-    args System.getProperty("exec.args").split()
+    if (project.hasProperty('myargs')) {
+        args(myargs.split(','))
+    }
 }
 
 
