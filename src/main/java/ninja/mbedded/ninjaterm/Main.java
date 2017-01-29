@@ -34,6 +34,12 @@ public class Main extends Application {
 
     public boolean isDebugEnabled = false;
 
+    /**
+     * Set to true when the first unhandled exception occurs, as to
+     * stop spamming of multiple "Exception Occurred" message boxes.
+     */
+    private boolean hasUnhandledExceptionOccurred = false;
+
     private Stage splashScreenStage;
     private Stage mainStage;
 
@@ -220,12 +226,19 @@ public class Main extends Application {
 
     /**
      * This should only be called if an uncaught exception occurs in the
-     * UI thread.
+     * UI thread. Will not do anything the second+ time it is called.
      * @param t
      * @param e
      */
     private void showError(Thread t, Throwable e) {
 //        System.err.println("***Default exception handler***");
+
+        // Check if this method has already been called, and if so,
+        // don't do anything the second time around!
+        if(hasUnhandledExceptionOccurred)
+            return;
+
+        hasUnhandledExceptionOccurred = true;
 
         // Stop all threads except this one
         // @todo Improve the way that the other threads are stopped, the current way is dangerous and unpredictable. Should we try and disconnect from the serial port instead?
