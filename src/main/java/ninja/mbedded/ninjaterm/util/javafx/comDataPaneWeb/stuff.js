@@ -1,6 +1,16 @@
 
 isCaretShown = false;
 currColor = '#FFFFFF';
+var maxNumChars = 400;
+var currNumChars = 0;
+
+//! @brief      This enum should be identical to the same-named enum
+//!             in ComDataPaneWeb.java.
+var ScrollState = {
+    "FIXED_TO_BOTTOM":  0,
+    "SMART_SCROLL":     1 }
+
+var scrollState = ScrollState.FIXED_TO_BOTTOM;
 
 $( document ).ready(function() {
     console.log('doc ready');
@@ -32,10 +42,22 @@ $( document ).ready(function() {
 
 });
 
-/*function handleScroll() {
-    console.log("scroll() event handler called.");
-    java.scrolled($("#com-data-wrapper").scrollTop());
-}*/
+function setMaxNumChars(maxNumCharsIn) {
+
+    java.log("setMaxNumChars() called.");
+
+    maxNumChars = maxNumCharsIn;
+
+    // If the buffer size is changed, we may need to trim the data
+    // to fit the new size (if smaller)
+    trimAndScroll();
+}
+
+
+function setScrollState(scrollStateIn) {
+    scrollState = scrollStateIn;
+}
+
 
 function addText(newText) {
     //java.log("addText() called with newText = \"" + newText + "\".");
@@ -57,29 +79,62 @@ function addText(newText) {
         }
     }
 
-    //java.log("lastChild = \"" + JSON.stringify(lastChild) + "\".");
-    //java.log("lastChild (before 1) = \"" + lastChild.html() + "\".");
-
-    //if (typeof lastChild.html() == 'undefined'){
-    //    java.log("lastChild was 'undefined'");
-    //    lastChild.html("");
-    //}
-
-    //java.log("lastChild (before 2) = \"" + lastChild.html() + "\".");
-
-    //java.log("lastChild.html() (before add) = ");
-    //java.log(lastChild.html());
 
     // Add text to this last span element
     // The span element should only contain text and new line characters,
     // and NO child HTML elements
     lastChild.html(lastChild.html() + newText);
 
-    //java.log("lastChild (after) = " + lastChild.html());
+    currNumChars += newText.length;
 
-    //java.log("lastChild.html() (after add) = ");
-    //java.log(lastChild.html());
-    //java.log("addText() finished.");
+}
+
+function trimAndScroll() {
+
+    //java.log("trimIfRequired() called.");
+
+    var textHeightBeforeTrim = getTextHeight();
+
+    if (currNumChars >= maxNumChars) {
+
+        //logger.debug("Trimming data...");
+
+        var numCharsToRemove = currNumChars - maxNumChars;
+        //logger.debug("Need to trimIfRequired display text. currNumChars = " + currNumChars + ", numCharsToRemove = " + numCharsToRemove);
+
+        trim(numCharsToRemove);
+
+        // Update the character count
+        currNumChars = currNumChars - numCharsToRemove;
+
+        //logger.debug("currNumChars.get() = " + currNumChars.get());
+    }
+
+    var textHeightAfterTrim = getTextHeight();
+
+    if(scrollState == ScrollState.FIXED_TO_BOTTOM) {
+        scrollToBottom();
+    } else if(scrollState == ScrollState.SMART_SCROLL) {
+
+         var heightChange = textHeightBeforeTrim - textHeightAfterTrim;
+         //logger.debug("heightChange = " + heightChange);
+
+         // We need to shift the scroll up by the amount the height changed
+         var oldScrollTop = getComDataWrapperScrollTop();
+         //logger.debug("oldScrollTop = " + oldScrollTop);
+
+         var newScrollTop = oldScrollTop - heightChange;
+
+         // Scroll can't be less than 0
+         if (newScrollTop < 0)
+             newScrollTop = 0;
+         //logger.debug("newScrollTop = " + newScrollTop);
+
+         setComDataWrapperScrollTop(newScrollTop);
+    } else {
+        throw "scrollState enum value was not recognised.";
+    }
+
 }
 
 function addColor(color) {
