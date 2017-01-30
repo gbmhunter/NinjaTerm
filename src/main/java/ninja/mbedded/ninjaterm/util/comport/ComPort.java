@@ -63,7 +63,9 @@ public class ComPort {
         return numStopBits;
     }
 
-    public List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
+    public List<OnRxDataListener> onRxDataListeners;
+
+    private RxWorker rxWorker;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
@@ -72,6 +74,13 @@ public class ComPort {
     //================================================================================================//
 
     public ComPort() {
+
+        // Create an RX data worker (will run in a separate thread)
+        rxWorker = new RxWorker(this, serialPort);
+
+        // Expose the RxWorker's listener to the public
+        onRxDataListeners = rxWorker.onRxDataListeners;
+
     }
 
     public ComPort createNew() {
@@ -117,13 +126,19 @@ public class ComPort {
                 throw new RuntimeException(e);
         }
 
-        try {
+        /*try {
             serialPort.addEventListener(serialPortEvent -> {
                 onSerialPortEvent(serialPortEvent);
             });
         } catch (SerialPortException e) {
             throw new RuntimeException(e);
-        }
+        }*/
+
+        // Start RX thread (first give it the
+        // serial port object)
+        rxWorker.serialPort = serialPort;
+        Thread thread = new Thread(rxWorker);
+        thread.start();
 
         portOpen = true;
     }
@@ -286,7 +301,7 @@ public class ComPort {
      *
      * @param serialPortEvent
      */
-    public void onSerialPortEvent(SerialPortEvent serialPortEvent) {
+    /*public void onSerialPortEvent(SerialPortEvent serialPortEvent) {
 
         if (serialPortEvent.isRXCHAR()) {
             //System.out.println("Data received!");
@@ -307,7 +322,7 @@ public class ComPort {
                 onRxDataListener.run(rxData);
             }
         }
-    }
+    }*/
 
     public void close() throws ComPortException {
         if (serialPort == null) {
