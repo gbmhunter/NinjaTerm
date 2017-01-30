@@ -13,7 +13,7 @@ void setup() {
 
 void loop() {
   Serial.println("Hello, world!");
-  delay(5);
+  delay(2000);
 }
 
 

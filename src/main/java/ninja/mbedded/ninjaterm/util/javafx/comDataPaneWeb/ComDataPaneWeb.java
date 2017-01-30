@@ -59,8 +59,6 @@ public class ComDataPaneWeb extends StackPane {
 
     //private final int WEB_VIEW_LOAD_WAIT_TIME_MS = 2000;
 
-
-
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
     //================================================================================================//
@@ -71,20 +69,13 @@ public class ComDataPaneWeb extends StackPane {
          * Scroll pane is always scrolled to the bottom so that new data is displayed.
          * This is the default behaviour.
          */
-        FIXED_TO_BOTTOM(0),
+        FIXED_TO_BOTTOM,
 
         /**
          * The scroll amount will be modified as new data arrives and old data is removed, so that the user
          * is always looking at the same data, until the data is lost.
          */
-        SMART_SCROLL(1);
-
-
-        private int numVal;
-
-        ScrollState(int numVal) {
-            this.numVal = numVal;
-        }
+        SMART_SCROLL,
     }
 
     //================================================================================================//
@@ -220,8 +211,9 @@ public class ComDataPaneWeb extends StackPane {
         bufferSize.addListener((observable, oldValue, newValue) -> {
 
             logger.debug("bufferSize listener called.");
-
-            runScriptWhenReady("setMaxNumChars(" + newValue.intValue() + ")");
+            // If the buffer size is changed, we may need to trim the data
+            // to fit the new size (if smaller)
+            trimIfRequired();
         });
 
         //==============================================//
@@ -257,6 +249,23 @@ public class ComDataPaneWeb extends StackPane {
 
 
         clearData();
+        //==============================================//
+        //========= "SAFE TO RUN SCRIPTS" SETUP ========//
+        //==============================================//
+
+//        Timer timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//                           @Override
+//                           public void run() {
+//                               Platform.runLater(() -> {
+//                                   // This is hacky! This is just a simple timeout, and which point the webpage inside
+//                                   // WebView should have fully loaded.
+//                                   safeToRunScripts.set(true);
+//                               });
+//                           }
+//                       },
+//                // 1s seems to be enough to let the web page fully load
+//                WEB_VIEW_LOAD_WAIT_TIME_MS);
 
     }
 
@@ -311,20 +320,18 @@ public class ComDataPaneWeb extends StackPane {
         // Append all text after last marker
         appendText(data.getText().substring(currPos, data.getText().length()));
 
-        runScriptWhenReady("trimAndScroll()");
-
         //===================================================//
         //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
         //===================================================//
 
 
-        //Integer textHeightBeforeTrim = getTextHeight();
+        Integer textHeightBeforeTrim = getTextHeight();
 
         //logger.debug("textHeightBeforeTrim = " + textHeightBeforeTrim);
 
-        //trimIfRequired();
+        trimIfRequired();
 
-        //Integer textHeightAfterTrim = getTextHeight();
+        Integer textHeightAfterTrim = getTextHeight();
         //logger.debug("textHeightAfterTrim = " + textHeightAfterTrim);
 
 
@@ -332,32 +339,32 @@ public class ComDataPaneWeb extends StackPane {
         //============== SCROLL POSITION ===============//
         //==============================================//
 
-//        switch (scrollState.get()) {
-//            case FIXED_TO_BOTTOM:
-//                // Scroll to the bottom
-//                scrollToBottom();
-//                break;
-//
-//            case SMART_SCROLL:
-//
-//                Integer heightChange = textHeightBeforeTrim - textHeightAfterTrim;
-//                //logger.debug("heightChange = " + heightChange);
-//
-//                // We need to shift the scroll up by the amount the height changed
-//                Integer oldScrollTop = getComDataWrapperScrollTop();
-//                //logger.debug("oldScrollTop = " + oldScrollTop);
-//
-//                Integer newScrollTop = oldScrollTop - heightChange;
-//                if (newScrollTop < 0)
-//                    newScrollTop = 0;
-//                //logger.debug("newScrollTop = " + newScrollTop);
-//
-//                setComDataWrapperScrollTop(newScrollTop);
-//
-//                break;
-//            default:
-//                throw new RuntimeException("scrollState not recognised.");
-//        }
+        switch (scrollState.get()) {
+            case FIXED_TO_BOTTOM:
+                // Scroll to the bottom
+                scrollToBottom();
+                break;
+
+            case SMART_SCROLL:
+
+                Integer heightChange = textHeightBeforeTrim - textHeightAfterTrim;
+                //logger.debug("heightChange = " + heightChange);
+
+                // We need to shift the scroll up by the amount the height changed
+                Integer oldScrollTop = getComDataWrapperScrollTop();
+                //logger.debug("oldScrollTop = " + oldScrollTop);
+
+                Integer newScrollTop = oldScrollTop - heightChange;
+                if (newScrollTop < 0)
+                    newScrollTop = 0;
+                //logger.debug("newScrollTop = " + newScrollTop);
+
+                setComDataWrapperScrollTop(newScrollTop);
+
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
+        }
 
     }
 
@@ -420,7 +427,16 @@ public class ComDataPaneWeb extends StackPane {
      */
     private void handleScrollStateChanged() {
         //logger.debug("handleScrollStateChanged() called.");
-        runScriptWhenReady("setScrollState(" + scrollState.get().numVal + ")");
+        switch (scrollState.get()) {
+            case FIXED_TO_BOTTOM:
+                runScriptWhenReady("showDownArrow(false)");
+                break;
+            case SMART_SCROLL:
+                runScriptWhenReady("showDownArrow(true)");
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
+        }
     }
 
     /**
