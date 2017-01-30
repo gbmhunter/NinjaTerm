@@ -2,18 +2,18 @@
  * Code that tests the bandwidth capabilities of NinjaTerm.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since 2016-11-22
- * @last-modified 2017-01-30
+ * @since 2017-01-29
+ * @last-modified 2017-01-29
  */
 
+// the setup routine runs once when you press reset:
 void setup() {
-  // Initialize serial communication at 115200 bits per second
-  Serial.begin(57600);
+  // Initialize serial communication
+  Serial.begin(19200);
 }
 
 void loop() {
-
-  Serial.println("fast ");
+  Serial.println("fast");
   // Wait until data is sent
   Serial.flush();
 }
