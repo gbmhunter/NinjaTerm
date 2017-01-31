@@ -17,29 +17,47 @@ import java.util.List;
  * Using the event-based way with jssc didn't work as performance took a hit
  * (GUI stopped being responsive) when there was a high RX data throughput.
  *
+ * This worker can be stopped with stopRunning().
+ *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @last-modified 2017-01-30
  * @since 2017-01-30
  */
 public class RxWorker implements Runnable {
 
-    ComPort comPort;
+    /**
+     * The wait time (in milliseconds) between calls to read whatever
+     * is in the RX buffer. Lowering this increases response time of data
+     * from port to user but decreases performance of app.
+     */
+    public final int WAIT_TIME_BETWEEN_RX_READS_MS = 200;
+
+    /**
+     * WARNING: This must be set before run() is called.
+     */
     public jssc.SerialPort serialPort;
 
+    /**
+     * Listeners which will be called when RX data is received.
+     */
     public List<OnRxDataListener> onRxDataListeners = new ArrayList<>();
+
+    /**
+     * run() checks this to see when it should return. This needs to be volatile
+     * because it could be set to true by other threads.
+     */
+    private volatile boolean running = false;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
-    RxWorker(
-            ComPort comPort,
-            jssc.SerialPort serialPort) {
-        this.comPort = comPort;
-    }
+    RxWorker() {}
 
     @Override
     public void run() {
 
-        while(true) {
+        running = true;
+
+        while(running) {
             //logger.debug("run() called.");
 
             // Check for data
@@ -51,10 +69,11 @@ public class RxWorker implements Runnable {
             }
 
             // rxData will be null if there are no bytes in RX buffer
+            // (this is jssc behaviour)
             if(rxData != null) {
                 //logger.debug("Read " + rxData.length + " bytes of RX data.");
 
-                for (Iterator<OnRxDataListener> it = comPort.onRxDataListeners.iterator(); it.hasNext(); ) {
+                for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
                     OnRxDataListener onRxDataListener = it.next();
                     onRxDataListener.run(rxData);
                 }
@@ -62,11 +81,15 @@ public class RxWorker implements Runnable {
 
             //logger.debug("Sleeping...");
             try {
-                Thread.sleep(200);
+                Thread.sleep(WAIT_TIME_BETWEEN_RX_READS_MS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public void stopRunning() {
+        running = false;
     }
 
 }

@@ -65,6 +65,7 @@ public class ComPort {
 
     public List<OnRxDataListener> onRxDataListeners;
 
+    private Thread rxWorkerThread;
     private RxWorker rxWorker;
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
@@ -76,7 +77,9 @@ public class ComPort {
     public ComPort() {
 
         // Create an RX data worker (will run in a separate thread)
-        rxWorker = new RxWorker(this, serialPort);
+        // Serial port object is provided in open() method before thread
+        // is run.
+        rxWorker = new RxWorker();
 
         // Expose the RxWorker's listener to the public
         onRxDataListeners = rxWorker.onRxDataListeners;
@@ -137,8 +140,8 @@ public class ComPort {
         // Start RX thread (first give it the
         // serial port object)
         rxWorker.serialPort = serialPort;
-        Thread thread = new Thread(rxWorker);
-        thread.start();
+        rxWorkerThread = new Thread(rxWorker);
+        rxWorkerThread.start();
 
         portOpen = true;
     }
@@ -327,6 +330,14 @@ public class ComPort {
     public void close() throws ComPortException {
         if (serialPort == null) {
             return;
+        }
+
+        // Before the port is closed, we need to stop the RX worker thread
+        rxWorker.stopRunning();
+        try {
+            rxWorkerThread.join();
+        } catch(InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         try {
