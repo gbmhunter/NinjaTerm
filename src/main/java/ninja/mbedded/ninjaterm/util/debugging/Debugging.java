@@ -1,8 +1,6 @@
 package ninja.mbedded.ninjaterm.util.debugging;
 
-import sun.nio.cs.US_ASCII;
-
-import java.math.BigInteger;
+import java.nio.charset.Charset;
 
 /**
  * Various utility methods that help with debugging.
@@ -15,7 +13,7 @@ public class Debugging {
 
     public static String toHexString(String stringOfChars) {
 
-        byte[] bytes = stringOfChars.getBytes(US_ASCII.defaultCharset());
+        byte[] bytes = stringOfChars.getBytes(Charset.forName("UTF-8"));
 
         StringBuilder output = new StringBuilder();
         for(byte aByte : bytes) {
@@ -25,11 +23,23 @@ public class Debugging {
         return output.toString();
     }
 
+    /**
+     * Converts all non-printable characters (.e.g \r, \n, ...) in the provided string into
+     * "?".
+     * @param input     The input string to convert non-printable chars with.
+     * @return          The resultant string with all non-printable chars as "?".
+     */
     public static String convertNonPrintable(String input) {
-
+        // Regex pattern \\p{Cntrl} will match all non-printable chars
         return input.replaceAll("\\p{Cntrl}", "?");
     }
 
+    /**
+     * Converts a string array into a single comma-delimited string with
+     * curly braces at each end (similar to JSON).
+     * @param stringA
+     * @return
+     */
     public static String toString(String[] stringA) {
         StringBuilder output = new StringBuilder();
         output.append("{ ");
