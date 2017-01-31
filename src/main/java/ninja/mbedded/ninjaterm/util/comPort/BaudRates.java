@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.comport;
+package ninja.mbedded.ninjaterm.util.comPort;
 
 /**
  * Enumerates most of the popular baud rates. These will be shown by default

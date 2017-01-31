@@ -7,7 +7,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import ninja.mbedded.ninjaterm.util.comport.OnRxDataListener;
+import ninja.mbedded.ninjaterm.util.comPort.OnRxDataListener;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;

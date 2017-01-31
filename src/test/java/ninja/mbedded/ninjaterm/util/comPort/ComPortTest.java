@@ -1,6 +1,5 @@
 package ninja.mbedded.ninjaterm.util.comPort;
 
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
 import org.junit.Before;
 import org.junit.Test;
 

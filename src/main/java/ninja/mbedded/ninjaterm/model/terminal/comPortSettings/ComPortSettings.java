@@ -1,12 +1,11 @@
 package ninja.mbedded.ninjaterm.model.terminal.comPortSettings;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.comport.*;
+import ninja.mbedded.ninjaterm.util.comPort.*;
 
 /**
  * Model containing data and logic relating to the COM settings for a terminal.

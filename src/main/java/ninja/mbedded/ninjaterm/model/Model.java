@@ -7,17 +7,14 @@ import javafx.collections.ObservableList;
 import ninja.mbedded.ninjaterm.model.globalStats.GlobalStats;
 import ninja.mbedded.ninjaterm.model.status.Status;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.comport.ComPort;
-import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
+import ninja.mbedded.ninjaterm.util.comPort.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Model for the NinjaTerm application.

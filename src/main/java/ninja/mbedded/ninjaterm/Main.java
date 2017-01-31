@@ -1,7 +1,5 @@
 package ninja.mbedded.ninjaterm;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -12,7 +10,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import ninja.mbedded.ninjaterm.model.Model;
-import ninja.mbedded.ninjaterm.util.comport.ComPortFactory;
+import ninja.mbedded.ninjaterm.util.comPort.ComPortFactory;
 import ninja.mbedded.ninjaterm.util.javafx.exceptionPopup.ExceptionPopup;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.stringUtils.StringUtils;
@@ -21,10 +19,8 @@ import ninja.mbedded.ninjaterm.view.splashScreen.SplashScreenViewController;
 import org.apache.commons.cli.*;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 public class Main extends Application {
 

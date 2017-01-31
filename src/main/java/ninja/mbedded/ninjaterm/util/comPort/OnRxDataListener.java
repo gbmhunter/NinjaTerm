@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.comport;
+package ninja.mbedded.ninjaterm.util.comPort;
 
 
 /**

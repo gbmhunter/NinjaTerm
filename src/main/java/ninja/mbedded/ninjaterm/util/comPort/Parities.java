@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.comport;
+package ninja.mbedded.ninjaterm.util.comPort;
 
 /**
  * Enumerates the available parity options for a COM port. These will be shown by default

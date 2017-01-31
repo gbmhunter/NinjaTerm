@@ -1,4 +1,4 @@
-package ninja.mbedded.ninjaterm.util.comport;
+package ninja.mbedded.ninjaterm.util.comPort;
 
 /**
  * Created by gbmhu on 2016-10-28.

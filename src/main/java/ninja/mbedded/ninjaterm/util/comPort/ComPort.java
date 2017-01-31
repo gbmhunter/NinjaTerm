@@ -1,15 +1,12 @@
-package ninja.mbedded.ninjaterm.util.comport;
+package ninja.mbedded.ninjaterm.util.comPort;
 
 import jssc.SerialPort;
-import jssc.SerialPortEvent;
 import jssc.SerialPortException;
 import jssc.SerialPortList;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.Decoding.BytesToString;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
