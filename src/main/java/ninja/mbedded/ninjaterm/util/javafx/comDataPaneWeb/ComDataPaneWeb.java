@@ -135,6 +135,10 @@ public class ComDataPaneWeb extends StackPane {
 
         getChildren().add(webView);
 
+        // Disable the right-click menu on the WebView. All this menu shows
+        // is a "Reload page" button which causes errors if clicked
+        webView.setContextMenuEnabled(false);
+
         final URL mapUrl = this.getClass().getResource("richText.html");
 
         webEngine.javaScriptEnabledProperty().set(true);
