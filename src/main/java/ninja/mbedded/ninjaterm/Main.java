@@ -22,13 +22,17 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * Main class for application.
+ *
+ * Processes command-line arguments, displays splash-screen,
+ * and displays main NinjaTerm window.
+ */
 public class Main extends Application {
 
     private GlyphFont glyphFont;
 
     private boolean disableSplashScreen = false;
-
-    public boolean isDebugEnabled = false;
 
     /**
      * Set to true when the first unhandled exception occurs, as to
@@ -103,15 +107,6 @@ public class Main extends Application {
             System.exit(1);
             return;
         }
-
-//        logger.debug("Parsing command-line parameters. args = " + getParameters().getRaw());
-//        for (String arg : getParameters().getRaw()) {
-//            if (arg.equals("no-splash"))
-//                disableSplashScreen = true;
-//
-//            if (arg.equals("debug"))
-//                LoggerUtils.startDebuggingToFile();
-//        }
 
         if(cmd.hasOption(logc.getLongOpt())) {
             LoggerUtils.consoleLoggingEnabled.set(true);

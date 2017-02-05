@@ -6,13 +6,14 @@ import java.nio.charset.Charset;
  * Various utility methods that help with debugging.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-08
+ * @last-modified 2017-01-31
  * @since 2016-09-29
  */
 public class Debugging {
 
     public static String toHexString(String stringOfChars) {
 
+        // Uses UTF-8 charset
         byte[] bytes = stringOfChars.getBytes(Charset.forName("UTF-8"));
 
         StringBuilder output = new StringBuilder();
