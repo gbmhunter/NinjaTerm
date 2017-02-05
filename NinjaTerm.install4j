@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="6.1.3" transformSequenceNumber="5">
-  <directoryPresets config="target/NinjaTerm-${compiler:sys.version}-jar-with-dependencies.jar" />
+<install4j version="6.1.4" transformSequenceNumber="5">
+  <directoryPresets config="target/NinjaTerm.jar" />
   <application name="NinjaTerm" distributionSourceDir="" applicationId="3655-3380-6749-0061" mediaDir="install/" mediaFilePattern="${compiler:sys.shortName}_v${compiler:sys.version}_${compiler:sys.platform}" compression="6" lzmaCompression="false" pack200Compression="false" excludeSignedFromPacking="true" commonExternalFiles="false" createMd5Sums="true" shrinkRuntime="true" shortName="NinjaTerm" publisher="Geoffrey Hunter" publisherWeb="http://mbedded-ninja.github.io/NinjaTerm/" version="0.8.5" allPathsRelative="false" backupOnSave="false" autoSave="false" convertDotsToUnderscores="false" macSignature="????" macVolumeId="8b8be1286580b078" javaMinVersion="1.8" javaMaxVersion="" allowBetaVM="false" jdkMode="runtimeJre" jdkName="">
     <languages skipLanguageSelection="false" languageSelectionInPrincipalLanguage="false">
       <principalLanguage id="en" customLocalizationFile="" />
@@ -22,7 +22,7 @@
       <mountPoint id="25" root="" location="" mode="755" />
     </mountPoints>
     <entries>
-      <fileEntry mountPoint="25" file="target/NinjaTerm.jar" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" />
+      <fileEntry mountPoint="25" file="build/libs/NinjaTerm.jar" overwriteMode="4" shared="false" fileMode="644" uninstallMode="0" overrideFileMode="false" overrideOverwriteMode="false" overrideUninstallMode="false" />
     </entries>
     <components />
   </files>
@@ -37,7 +37,7 @@
           <versionLine x="341" y="484" text="version ${compiler:sys.version}" fontSize="12" fontColor="102,102,102" bold="false" />
         </text>
       </splashScreen>
-      <java mainClass="Main" vmParameters="" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
+      <java mainClass="ninja.mbedded.ninjaterm.Main" vmParameters="" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true">
         <classPath>
           <scanDirectory location="." failOnError="false" />
         </classPath>

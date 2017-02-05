@@ -17,5 +17,8 @@ script:
  - Xvfb :99 &>/dev/null &
  - export DISPLAY=:99
  
- # Run tests
- - mvn package assembly:single
+ # Build using Gradle
+ # gradle build also runs the tests (both unit tests
+ # and integration tests).
+ - gradle build
+ - gradle fatJar

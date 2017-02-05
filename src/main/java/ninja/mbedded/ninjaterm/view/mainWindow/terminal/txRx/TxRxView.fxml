@@ -1,0 +1,104 @@
+<!--
+* Inner content for the "terminalViewController" tab of NinjaTerm
+*
+* @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+* @since           2016-07-08
+* @last-modified   2016-11-16
+-->
+<!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<?import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane?>
+<?import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb?>
+<Tab
+        fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
+        xmlns:fx="http://javafx.com/fxml"
+        fx:id="rxTxTab" text="RX/TX" closable="false">
+    <VBox alignment="TOP_LEFT"
+          spacing="20"
+          prefHeight="500" prefWidth="800"
+          fillWidth="true" GridPane.vgrow="ALWAYS"
+          stylesheets="@../../../../resources/style.css">
+
+        <padding>
+            <Insets top="20" bottom="20" left="20" right="20"/>
+        </padding>
+
+        <HBox VBox.vgrow="ALWAYS" spacing="10">
+
+            <!-- =========================================== -->
+            <!-- ========== LEFT-HAND PANE BUTTONS ========= -->
+            <!-- =========================================== -->
+            <VBox minWidth="120" alignment="TOP_CENTER"
+                  spacing="10"
+                  style=
+                          "-fx-border-style: hidden solid hidden hidden;
+                            -fx-border-width: 0 1 0 0;
+                            -fx-border-color: silver;">
+                <!-- ========================================= -->
+                <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
+                <!-- ========================================= -->
+
+                <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="80" contentDisplay="TOP"/>
+
+                <!-- SPACER -->
+                <VBox minHeight="20"></VBox>
+
+                <Button fx:id="clearTextButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Clear Text</Button>
+                <Button fx:id="displayButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Display</Button>
+                <Button fx:id="formattingButton"    minWidth="80" minHeight="50" contentDisplay="TOP">Formatting</Button>
+                <Button fx:id="coloriserButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
+                <Button fx:id="filtersButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
+                <Button fx:id="freezeRxButton"      minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
+                <!--<ColorPicker />-->
+            </VBox>
+
+            <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
+
+                <rowConstraints>
+                    <RowConstraints vgrow="ALWAYS"/>
+                    <RowConstraints vgrow="NEVER"/>
+                    <RowConstraints vgrow="ALWAYS"/>
+                </rowConstraints>
+
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <!-- =========================================== -->
+                <!-- ================ RX DATA PANE ============= -->
+                <!-- =========================================== -->
+                <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+
+                <!-- =========================================== -->
+                <!-- ============== DRAGGABLE NODE ============= -->
+                <!-- =========================================== -->
+                <!-- This node is used to create a draggable element which the user can adjust to change
+                 the sizes of the TX and RX panes -->
+                <HBox fx:id="draggableHBox"
+                      GridPane.rowIndex="1" GridPane.columnIndex="0"
+                      minHeight="10"/>
+
+                <!-- =========================================== -->
+                <!-- ================ TX DATA PANE ============= -->
+                <!-- =========================================== -->
+                <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+
+            </GridPane>
+
+            <!-- =========================================== -->
+            <!-- =========== RIGHT-HAND SIDE PANE ========== -->
+            <!-- =========================================== -->
+            <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
+
+        </HBox>
+    </VBox>
+</Tab>
+
+
+
