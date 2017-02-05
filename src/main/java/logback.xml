@@ -1,0 +1,25 @@
+<!-- Appenders are setup with Java code in LoggerUtils.java.
+     This file is used only to enable/disable the logging of specific
+     classes/packages. -->
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!--<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">-->
+        <!--<encoder>-->
+            <!--<pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+        <!--</encoder>-->
+    <!--</appender>-->
+
+    <!--&lt;!&ndash; DEFAULT LOGGER (root) &ndash;&gt;-->
+    <!--<root level="DEBUG">-->
+        <!--<appender-ref ref="CONSOLE"/>-->
+    <!--</root>-->
+
+    <!-- ========================================================= -->
+    <!-- USE THIS SECTION TO DISABLE CLASSES/PACKAGES FROM LOGGING -->
+    <!-- ========================================================= -->
+
+    <logger name="ninja.mbedded.ninjaterm.model.terminal" level="OFF" />
+    <logger name="ninja.mbedded.ninjaterm.util.rxProcessing" level="OFF" />
+    <!--<logger name="ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb" level="OFF" />-->
+
+</configuration>

@@ -1,0 +1,88 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'maven'
+
+group = 'NinjaTerm'
+version = '0.8.6'
+
+// Project description, shown when
+// "gradle -q projects" is called
+description = """\
+A serial port terminal that's got your back.
+------------------------------------------
+Project version: ${version}
+Gradle version: ${gradle.gradleVersion}
+------------------------------------------
+"""
+
+// Path to class with main(). Required for application
+// plugin to make runnable jar
+mainClassName = "ninja.mbedded.ninjaterm.Main"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+sourceSets {
+    main {
+        resources {
+            // Add all .fxml files within source directories
+            // to resources (they are not in a separate directory)
+            srcDirs = ["src/main/java"]
+            includes = ["**/*.fxml", "**/*.png", "**/*.css", "**/*.html", "**/*.js", "**/*.xml"]
+        }
+    }
+}
+
+run {
+
+    // myargs property is used to pass through arguments from gradle to Java app
+    // To pass in arguments, call like so:
+    // gradle run -Pmyargs="--nosplash,--logc"
+    if (project.hasProperty('myargs')) {
+        args(myargs.split(','))
+    }
+}
+
+// Create a single Jar with all dependencies (a.k.a fat jar)
+// The will put into build/libs
+task fatJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'NinjaTerm',
+                    'Implementation-Version': version,
+                    'Main-Class': 'ninja.mbedded.ninjaterm.Main'
+    }
+
+    // Manually specify filename. This has to be compatible
+    // with install4j
+    archiveName 'NinjaTerm.jar'
+
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+repositories {
+     maven { url "https://maven.atlassian.com/3rdparty/" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.7'
+    compile group: 'org.scream3r', name: 'jssc', version:'2.8.0'
+    compile group: 'org.jfxtras', name: 'jfxtras-controls', version:'8.0-r5'
+    compile group: 'org.controlsfx', name: 'controlsfx', version:'8.40.11'
+    compile group: 'com.install4j', name: 'i4jruntime', version:'5.0.6'
+    compile group: 'org.mockito', name: 'mockito-all', version:'2.0.2-beta'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.0'
+    compile group: 'org.javatuples', name: 'javatuples', version:'1.2'
+    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version:'0.7-M2'
+    compile group: 'commons-cli', name: 'commons-cli', version:'1.3.1'
+    compile group: 'de.jensd', name: 'fontawesomefx', version:'8.9'
+    compile group: 'commons-io', name: 'commons-io', version:'2.4'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.testfx', name: 'testfx-core', version:'4.0.1-alpha'
+    testCompile group: 'org.testfx', name: 'testfx-junit', version:'4.0.1-alpha'
+}
