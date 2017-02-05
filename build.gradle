@@ -3,7 +3,7 @@ apply plugin: 'application'
 apply plugin: 'maven'
 
 group = 'NinjaTerm'
-version = '0.8.5'
+version = '0.8.6'
 
 // Project description, shown when
 // "gradle -q projects" is called
