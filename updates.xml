@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.5/">
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.5_unix.sh" newVersion="0.8.5" newMediaFileId="176" fileSize="8148163" bundledJre="" archive="false">
-    <comment language="en">v0.8.5&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.6/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.6_macos.dmg" newVersion="0.8.6" newMediaFileId="36" fileSize="8802439" bundledJre="" archive="false">
+    <comment language="en">v0.8.6&#xD;
+------&#xD;
+&#xD;
+- Added script to install openjfx before main Linux installer runs, closes #186.&#xD;
+- Added installation steps for all platforms, closes #184.&#xD;
+- Fixed bug where 'Open' button on TX/RX tab is enabled when no COM ports can be found, closes #185.&#xD;
+- Removed manual buffer size limitations on totalNewLineParserOutput, closes #178.&#xD;
+- Fixed bug where WebView data pane labels where not being setup correctly on start-up, closes #187.&#xD;
+- Build system changed from Maven to Gradle.&#xD;
+&#xD;
+v0.8.5&#xD;
 ------&#xD;
 &#xD;
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.&#xD;
@@ -188,8 +198,18 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.5_macos.dmg" newVersion="0.8.5" newMediaFileId="36" fileSize="8777863" bundledJre="" archive="false">
-    <comment language="en">v0.8.5&#xD;
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.6_unix.sh" newVersion="0.8.6" newMediaFileId="176" fileSize="8168737" bundledJre="" archive="false">
+    <comment language="en">v0.8.6&#xD;
+------&#xD;
+&#xD;
+- Added script to install openjfx before main Linux installer runs, closes #186.&#xD;
+- Added installation steps for all platforms, closes #184.&#xD;
+- Fixed bug where 'Open' button on TX/RX tab is enabled when no COM ports can be found, closes #185.&#xD;
+- Removed manual buffer size limitations on totalNewLineParserOutput, closes #178.&#xD;
+- Fixed bug where WebView data pane labels where not being setup correctly on start-up, closes #187.&#xD;
+- Build system changed from Maven to Gradle.&#xD;
+&#xD;
+v0.8.5&#xD;
 ------&#xD;
 &#xD;
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.&#xD;
@@ -376,8 +396,18 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.5_windows.exe" newVersion="0.8.5" newMediaFileId="23" fileSize="9331712" bundledJre="" archive="false">
-    <comment language="en">v0.8.5&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.6_windows.exe" newVersion="0.8.6" newMediaFileId="23" fileSize="9354240" bundledJre="" archive="false">
+    <comment language="en">v0.8.6&#xD;
+------&#xD;
+&#xD;
+- Added script to install openjfx before main Linux installer runs, closes #186.&#xD;
+- Added installation steps for all platforms, closes #184.&#xD;
+- Fixed bug where 'Open' button on TX/RX tab is enabled when no COM ports can be found, closes #185.&#xD;
+- Removed manual buffer size limitations on totalNewLineParserOutput, closes #178.&#xD;
+- Fixed bug where WebView data pane labels where not being setup correctly on start-up, closes #187.&#xD;
+- Build system changed from Maven to Gradle.&#xD;
+&#xD;
+v0.8.5&#xD;
 ------&#xD;
 &#xD;
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.&#xD;
