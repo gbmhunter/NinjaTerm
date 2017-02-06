@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Updated release information on README for new Gradle build system, closes #195.
+
 v0.8.6
 ------
 
