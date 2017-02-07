@@ -115,7 +115,7 @@ public class MacroRow {
         });
 
         // Create a scene and display the dialogue window
-        Scene dialogScene = new Scene(root, 600, 400);
+        Scene dialogScene = new Scene(root, 800, 600);
         stage.setScene(dialogScene);
         stage.setTitle("Macro Manager");
         stage.show();
