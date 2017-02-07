@@ -13,8 +13,6 @@
       alignment="TOP_CENTER"
       spacing="20"
       fillWidth="true"
-      minWidth="180"
-      maxWidth="180"
       stylesheets="/ninja/mbedded/ninjaterm/resources/style.css"
       styleClass="border">
     <!--style="-fx-background-color: red;" -->

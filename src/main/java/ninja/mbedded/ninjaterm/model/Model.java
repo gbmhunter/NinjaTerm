@@ -25,14 +25,17 @@ import static org.mockito.Mockito.mock;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-11-08
+ * @last-modified 2017-02-07
  */
 public class Model {
 
+    /**
+     * List holding all open terminal instances.
+     */
     public ObservableList<Terminal> terminals = FXCollections.observableArrayList();
 
     /**
-     * The currently selected terminal. This will be the same as one of the objects in <code>terminals</code>.
+     * The currently selected terminal. This will "point" to one of the objects in <code>terminals</code>.
      */
     public SimpleObjectProperty<Terminal> selTerminal = new SimpleObjectProperty<>();
 
@@ -50,6 +53,11 @@ public class Model {
      * modal windows are shown.
      */
     public SimpleBooleanProperty isPrimaryStageBlurred = new SimpleBooleanProperty();
+
+    /**
+     * Determines whether the entire app has "always on top" status within the OS.
+     */
+    public SimpleBooleanProperty alwaysOnTop = new SimpleBooleanProperty();
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

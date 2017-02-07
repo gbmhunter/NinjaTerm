@@ -49,52 +49,57 @@
                 <!-- SPACER -->
                 <VBox minHeight="20"></VBox>
 
-                <Button fx:id="clearTextButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Clear Text</Button>
-                <Button fx:id="displayButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Display</Button>
-                <Button fx:id="formattingButton"    minWidth="80" minHeight="50" contentDisplay="TOP">Formatting</Button>
-                <Button fx:id="coloriserButton"     minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
-                <Button fx:id="filtersButton"       minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
-                <Button fx:id="freezeRxButton"      minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
+                <Button fx:id="clearTextButton" minWidth="80" minHeight="50" contentDisplay="TOP">Clear Text</Button>
+                <Button fx:id="displayButton" minWidth="80" minHeight="50" contentDisplay="TOP">Display</Button>
+                <Button fx:id="formattingButton" minWidth="80" minHeight="50" contentDisplay="TOP">Formatting</Button>
+                <Button fx:id="coloriserButton" minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
+                <Button fx:id="filtersButton" minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
+                <Button fx:id="freezeRxButton" minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
                 <!--<ColorPicker />-->
             </VBox>
 
-            <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
+            <!-- Split plane holds the TX/RX data views (left), and the macro view (right)
+             0.8 seems to give a good starting-wdith to the macro view -->
+            <SplitPane HBox.hgrow="ALWAYS" orientation="HORIZONTAL" dividerPositions="0.8">
+                <GridPane fx:id="dataContainerGridPane">
 
-                <rowConstraints>
-                    <RowConstraints vgrow="ALWAYS"/>
-                    <RowConstraints vgrow="NEVER"/>
-                    <RowConstraints vgrow="ALWAYS"/>
-                </rowConstraints>
+                    <rowConstraints>
+                        <RowConstraints vgrow="ALWAYS"/>
+                        <RowConstraints vgrow="NEVER"/>
+                        <RowConstraints vgrow="ALWAYS"/>
+                    </rowConstraints>
 
-                <columnConstraints>
-                    <ColumnConstraints hgrow="ALWAYS"/>
-                </columnConstraints>
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <!-- =========================================== -->
+                    <!-- ================ RX DATA PANE ============= -->
+                    <!-- =========================================== -->
+                    <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+
+                    <!-- =========================================== -->
+                    <!-- ============== DRAGGABLE NODE ============= -->
+                    <!-- =========================================== -->
+                    <!-- This node is used to create a draggable element which the user can adjust to change
+                     the sizes of the TX and RX panes -->
+                    <HBox fx:id="draggableHBox"
+                          GridPane.rowIndex="1" GridPane.columnIndex="0"
+                          minHeight="10"/>
+
+                    <!-- =========================================== -->
+                    <!-- ================ TX DATA PANE ============= -->
+                    <!-- =========================================== -->
+                    <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+
+                </GridPane>
 
                 <!-- =========================================== -->
-                <!-- ================ RX DATA PANE ============= -->
+                <!-- =========== RIGHT-HAND SIDE PANE ========== -->
                 <!-- =========================================== -->
-                <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
 
-                <!-- =========================================== -->
-                <!-- ============== DRAGGABLE NODE ============= -->
-                <!-- =========================================== -->
-                <!-- This node is used to create a draggable element which the user can adjust to change
-                 the sizes of the TX and RX panes -->
-                <HBox fx:id="draggableHBox"
-                      GridPane.rowIndex="1" GridPane.columnIndex="0"
-                      minHeight="10"/>
-
-                <!-- =========================================== -->
-                <!-- ================ TX DATA PANE ============= -->
-                <!-- =========================================== -->
-                <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-
-            </GridPane>
-
-            <!-- =========================================== -->
-            <!-- =========== RIGHT-HAND SIDE PANE ========== -->
-            <!-- =========================================== -->
-            <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
+            </SplitPane>
 
         </HBox>
     </VBox>

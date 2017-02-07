@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-11-08
-* @last-modified   2016-11-08
+* @last-modified   2017-02-07
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
@@ -62,7 +62,12 @@
 
                 <TextFlow>
                     <Text style="-fx-font-weight: bold;" text="ASCII&#10;"/>
-                    <Text text="Non-printable characters can be used in the sequence. The standard C-style escapes are supported (e.g. new line = '\n', carriage return = '\r'). C-style unicode escapes for any ASCII characters are also supported in the form '\uXXXX' (e.g. escape character = '\u001B'."/>
+                    <Text text="Each character will send it's ASCII equivalent value as a single byte, e.g. the sequence 'ABC' will send { 0x65, 0x66, 0x67 }. Non-printable characters can be used in this format. The standard C-style escapes are supported (e.g. new line = '\n', carriage return = '\r'). C-style unicode escapes for any ASCII characters are also supported in the form '\uXXXX' (e.g. escape character = '\u001B'."/>
+                </TextFlow>
+
+                <TextFlow>
+                    <Text style="-fx-font-weight: bold;" text="Hex&#10;"/>
+                    <Text text="Only hex characters (0-9, A-F) are supported in this format. Each pair of characters will be interpreted as a single hex byte (0x00-0xFF), e.g. the sequence '1F0A' will send { 0x1F, 0x0A }. There must be an even number of characters (pad with 0 if necessary)."/>
                 </TextFlow>
             </VBox>
 

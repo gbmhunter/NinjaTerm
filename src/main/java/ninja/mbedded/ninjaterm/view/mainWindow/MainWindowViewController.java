@@ -47,11 +47,22 @@ public class MainWindowViewController {
     @FXML
     public VBox mainVBox;
 
+    //==============================================//
+    //================ MENU OBJECTS ================//
+    //==============================================//
+
+    //==================== FILE ====================//
+
     @FXML
     public MenuItem newTerminalMenuItem;
 
     @FXML
+    public MenuItem alwaysOnTopMenuItem;
+
+    @FXML
     public MenuItem exitMenuItem;
+
+    //==================== HELP ====================//
 
     @FXML
     public MenuItem helpAboutMenuItem;
@@ -75,6 +86,8 @@ public class MainWindowViewController {
 
     private Model model;
 
+    private Stage stage;
+
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
@@ -92,24 +105,37 @@ public class MainWindowViewController {
      * @param model
      * @param glyphFont
      */
-    public void init(Model model, GlyphFont glyphFont) {
+    public void init(Model model, GlyphFont glyphFont, Stage stage) {
 
         logger.debug("init() called.");
 
         this.model = model;
         this.glyphFont = glyphFont;
+        this.stage = stage;
 
         //==============================================//
         //=================== MENU SETUP ===============//
         //==============================================//
 
-        Glyph glyph = glyphFont.create(FontAwesome.Glyph.TERMINAL);
+        Glyph glyph;
+
+        //==================== FILE ====================//
+
+        glyph = glyphFont.create(FontAwesome.Glyph.TERMINAL);
         glyph.setColor(Color.BLACK);
         newTerminalMenuItem.setGraphic(glyph);
         newTerminalMenuItem.setOnAction(event -> {
             logger.debug("newTerminalMenuItem clicked.");
-            //addNewTerminal();
             model.createTerminal();
+        });
+
+        glyph = glyphFont.create(FontAwesome.Glyph.CHECK);
+        glyph.setColor(Color.BLACK);
+        alwaysOnTopMenuItem.setGraphic(glyph);
+        alwaysOnTopMenuItem.setOnAction(event -> {
+            logger.debug("alwaysOnTopMenuItem clicked.");
+            // Perform toggle
+            model.alwaysOnTop.set(!model.alwaysOnTop.get());
         });
 
         glyph = glyphFont.create(FontAwesome.Glyph.SIGN_OUT);
@@ -119,6 +145,8 @@ public class MainWindowViewController {
             // Quit the application
             Platform.exit();
         });
+
+        //==================== HELP ====================//
 
         helpAboutMenuItem.setOnAction(event -> handleAboutMenuItemClicked());
 
@@ -182,6 +210,29 @@ public class MainWindowViewController {
             }
         });
 
+        //==============================================//
+        //==== SETUP "ALWAYS ON TOP" FUNCTIONALITY =====//
+        //==============================================//
+
+        model.alwaysOnTop.addListener((observable, oldValue, newValue) -> {
+            alwaysOnTopListener();
+        });
+
+        // Configure default
+        alwaysOnTopListener();
+
+    }
+
+    public void alwaysOnTopListener() {
+        if(model.alwaysOnTop.getValue()) {
+            stage.setAlwaysOnTop(true);
+            alwaysOnTopMenuItem.getGraphic().setVisible(true);
+            model.status.addMsg("\"Always On Top\" mode enabled.");
+        } else {
+            stage.setAlwaysOnTop(false);
+            alwaysOnTopMenuItem.getGraphic().setVisible(false);
+            model.status.addMsg("\"Always On Top\" mode disabled.");
+        }
     }
 
     /**
