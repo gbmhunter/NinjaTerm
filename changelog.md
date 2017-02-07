@@ -6,6 +6,7 @@ vX.X.X
 - Added Java/JavaFX version check when app starts, closes #200.
 - Made the macro side-bar resizeable, closes #196.
 - Added info that if you have an existing version, you can just run it to update NinjaTerm, closes #192.
+- Added "always on top" feature to NinjaTerm application window, closes #143.
 
 v0.8.6
 ------

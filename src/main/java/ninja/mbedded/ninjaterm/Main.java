@@ -211,6 +211,9 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model(new ComPortFactory());
 
+        mainStage = new Stage();
+        mainStage.setTitle("NinjaTerm");
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainWindow/MainWindowView.fxml"));
         try {
             Parent root = loader.load();
@@ -220,14 +223,11 @@ public class Main extends Application {
         }
         MainWindowViewController mainWindowViewController = loader.getController();
 
-        mainWindowViewController.init(model, glyphFont);
+        mainWindowViewController.init(model, glyphFont, mainStage);
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if (!disableSplashScreen)
             splashScreenStage.close();
-
-        mainStage = new Stage();
-        mainStage.setTitle("NinjaTerm");
 
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
