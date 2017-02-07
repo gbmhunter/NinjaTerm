@@ -130,6 +130,14 @@ public class Main extends Application {
         //==============================================//
         //============= CHECK JAVA VERSION =============//
         //==============================================//
+
+        // The install4j-generated install process should also perform a version check before
+        // the user is allowed to install the app. However, it seemed that the installed allowed
+        // NinjaTerm to be installed even though Java was only at v1.6 on Mac OSX, hence this
+        // extra check at runtime (obviously some version of Java has to be present to get to this
+        // point, but it seems v1.6 will let this code run, but will produce exceptions at other
+        // points in the program, e.g. when the Macro Manager window is opened).
+
         double version = Double.parseDouble(System.getProperty("java.specification.version"));
         logger.debug("java.specification.version (as double) = " + version);
         if (version < 1.8) {
