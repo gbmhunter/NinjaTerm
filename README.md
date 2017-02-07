@@ -73,12 +73,12 @@ Releasing New Version
 File/Package Structure 
 ======================
 
-NinjaTerm uses a MVC-style architecture which is reflected in the folder/package structure.
+NinjaTerm uses the standard Maven/Gradle folder layout for Java projects. Inside the source code folders, MVC-style architecture is used which is reflected in the folder/package structure.
 
-src/
-----
+src/main/java/
+--------------
 
-Contains the source code. The code is further placed in the sub-directories `/ninja/mbedded/ninjaterm` as to follow standard Java practise.
+Contains the source code. The code is further placed in the sub-directories `/ninja/mbedded/ninjaterm` as to follow standard Java namespace practises.
 
 Then there are the following sub-directories:
 
@@ -90,6 +90,11 @@ Then there are the following sub-directories:
 | view         | Contains the .fxml files and their controllers which describe sections of the UI. For each .fxml file there is also one controller. The model is injected into the view controllers.  |
 
 `Interfaces` are not placed in their own directory, but rather placed in the same package/folder that contains the classes most relevant (for a `Interface` class that is being used to implement the Observer pattern, this would be in the same package as the class which fires the event).
+
+src/test/java/
+--------------
+
+Contains unit tests and integration tests. The sub-folders inside here follow the same layout as `src/main/java/`.
 
 Command-Line Arguments
 ======================
