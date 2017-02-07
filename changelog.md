@@ -4,6 +4,7 @@ vX.X.X
 - Updated release information on README for new Gradle build system, closes #195.
 - Added link to JProfiler on homepage, closes #199.
 - Added Java/JavaFX version check when app starts, closes #200.
+- Made the macro side-bar resizeable, closes #196.
 
 v0.8.6
 ------
