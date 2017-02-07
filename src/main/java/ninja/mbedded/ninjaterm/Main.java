@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -25,13 +26,17 @@ import java.io.IOException;
 /**
  * Main class for application.
  *
- * Processes command-line arguments, displays splash-screen,
- * and displays main NinjaTerm window.
+ * Processes command-line arguments, checks Java version,
+ * displays splash-screen, and displays main NinjaTerm window.
  */
 public class Main extends Application {
 
     private GlyphFont glyphFont;
 
+    /**
+     * This can be set true if the --nosplash command line argument is
+     * passed to the program.
+     */
     private boolean disableSplashScreen = false;
 
     /**
@@ -121,6 +126,25 @@ public class Main extends Application {
         }
 
         this.primaryStage = primaryStage;
+
+        //==============================================//
+        //============= CHECK JAVA VERSION =============//
+        //==============================================//
+        double version = Double.parseDouble(System.getProperty("java.specification.version"));
+        logger.debug("java.specification.version (as double) = " + version);
+        if (version < 1.8) {
+            // User's version of Java is not compatible with NinjaTerm, show error message and exit.
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Dialog");
+            alert.setHeaderText("Incorrect Java version!");
+            alert.setContentText(
+                    "NinjaCalc requires Java v1.8 (also known as Java 8) or higher to run.\n" +
+                    "\n" +
+                    "Your version of Java was v" + System.getProperty("java.specification.version"));
+
+            alert.showAndWait();
+            return;
+        }
 
         if (disableSplashScreen) {
             // Skip this function, and go straight to loading the main window.
