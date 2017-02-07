@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.7
 ------
 
 - Updated release information on README for new Gradle build system, closes #195.
