@@ -58,7 +58,7 @@ public class NinjaTermAppTest extends ApplicationTest {
         }
         mainWindowViewController = loader.getController();
 
-        mainWindowViewController.init(model, glyphFont);
+        mainWindowViewController.init(model, glyphFont, stage);
 
         //mainWindowViewController.addNewTerminal();
 

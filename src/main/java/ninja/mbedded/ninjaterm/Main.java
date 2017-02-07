@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -25,13 +26,17 @@ import java.io.IOException;
 /**
  * Main class for application.
  *
- * Processes command-line arguments, displays splash-screen,
- * and displays main NinjaTerm window.
+ * Processes command-line arguments, checks Java version,
+ * displays splash-screen, and displays main NinjaTerm window.
  */
 public class Main extends Application {
 
     private GlyphFont glyphFont;
 
+    /**
+     * This can be set true if the --nosplash command line argument is
+     * passed to the program.
+     */
     private boolean disableSplashScreen = false;
 
     /**
@@ -122,6 +127,33 @@ public class Main extends Application {
 
         this.primaryStage = primaryStage;
 
+        //==============================================//
+        //============= CHECK JAVA VERSION =============//
+        //==============================================//
+
+        // The install4j-generated install process should also perform a version check before
+        // the user is allowed to install the app. However, it seemed that the installed allowed
+        // NinjaTerm to be installed even though Java was only at v1.6 on Mac OSX, hence this
+        // extra check at runtime (obviously some version of Java has to be present to get to this
+        // point, but it seems v1.6 will let this code run, but will produce exceptions at other
+        // points in the program, e.g. when the Macro Manager window is opened).
+
+        double version = Double.parseDouble(System.getProperty("java.specification.version"));
+        logger.debug("java.specification.version (as double) = " + version);
+        if (version < 1.8) {
+            // User's version of Java is not compatible with NinjaTerm, show error message and exit.
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error Dialog");
+            alert.setHeaderText("Incorrect Java version!");
+            alert.setContentText(
+                    "NinjaCalc requires Java v1.8 (also known as Java 8) or higher to run.\n" +
+                    "\n" +
+                    "Your version of Java was v" + System.getProperty("java.specification.version"));
+
+            alert.showAndWait();
+            return;
+        }
+
         if (disableSplashScreen) {
             // Skip this function, and go straight to loading the main window.
             loadMainWindow();
@@ -179,6 +211,9 @@ public class Main extends Application {
         // Create application model (data/state)
         Model model = new Model(new ComPortFactory());
 
+        mainStage = new Stage();
+        mainStage.setTitle("NinjaTerm");
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("view/mainWindow/MainWindowView.fxml"));
         try {
             Parent root = loader.load();
@@ -188,14 +223,11 @@ public class Main extends Application {
         }
         MainWindowViewController mainWindowViewController = loader.getController();
 
-        mainWindowViewController.init(model, glyphFont);
+        mainWindowViewController.init(model, glyphFont, mainStage);
 
         // If the splashscreen was skipped, splashScreenStage will be null
         if (!disableSplashScreen)
             splashScreenStage.close();
-
-        mainStage = new Stage();
-        mainStage.setTitle("NinjaTerm");
 
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
         mainStage.setScene(scene);
