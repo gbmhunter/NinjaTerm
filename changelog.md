@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.
+
 v0.8.7
 ------
 
