@@ -68,7 +68,7 @@ task fatJar(type: Jar) {
 }
 
 
-task setVersion() {
+task updateVersion() {
 
     String filename
     String contents
@@ -110,7 +110,7 @@ buildscript {
 // INSTALL4J GLOBAL CONFIG BLOCK
 install4j {
     // This is where install4j is installed
-    installDir = file('C:\\Program Files\\install4j6')
+    installDir = file('C:/Program Files/install4j6')
 }
 
 // INSTALL4J INSTALLER BUILD TASK
