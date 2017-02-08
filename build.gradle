@@ -110,18 +110,21 @@ buildscript {
     }
 }
 
-
-String install4jHomeDir = "C:\\Program Files\\install4j6"
+// install4j home directory. This only needs to be correct if `gradle media` is run (which TravisCI doesn't).
+String install4jHomeDir = "default"
 
 // INSTALL4J INSTALLER BUILD TASK
 task media(type: com.install4j.gradle.Install4jTask) {
 
-    /*if (!hasProperty('install4jHomeDir')) {
-        File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
-        throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
+    /*if (hasProperty('install4jHomeDir')) {
+        //File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
+        //throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
+
     }*/
 
-    apply plugin: 'install4j'
+    install4jHomeDir = "C:\\Program Files\\install4j6"
+
+    apply plugin: 'install4j'                       // Apply install4j plugin (this is within task so it is only conditionally applied)
 
     // INSTALL4J GLOBAL CONFIG BLOCK
     install4j {
