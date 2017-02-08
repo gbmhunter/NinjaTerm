@@ -110,7 +110,12 @@ buildscript {
     }
 }
 
+/*if (!hasProperty('install4jHomeDir')) {
+    File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
+    throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
+}*/
 
+String install4jHomeDir = "blah"
 
 // INSTALL4J INSTALLER BUILD TASK
 task media(type: com.install4j.gradle.Install4jTask) {
@@ -120,7 +125,8 @@ task media(type: com.install4j.gradle.Install4jTask) {
     // INSTALL4J GLOBAL CONFIG BLOCK
     install4j {
         // This is where install4j is installed. Note spaces are not allowed in the path (replace with %20).
-        installDir = file('C:\\Program Files\\install4j6')
+
+        installDir = file(install4jHomeDir)
     }
 
     dependsOn 'fatJar'                              // The "fat" JAR has to be built, as this is what the installer packages up in the installer.
