@@ -1,7 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'maven'
-apply plugin: 'install4j'
 
 
 
@@ -111,14 +110,19 @@ buildscript {
     }
 }
 
-// INSTALL4J GLOBAL CONFIG BLOCK
-install4j {
-    // This is where install4j is installed. Note spaces are not allowed in the path (replace with %20).
-    installDir = file('C:/Program%20Files/install4j6')
-}
+
 
 // INSTALL4J INSTALLER BUILD TASK
 task media(type: com.install4j.gradle.Install4jTask) {
+
+    apply plugin: 'install4j'
+
+    // INSTALL4J GLOBAL CONFIG BLOCK
+    install4j {
+        // This is where install4j is installed. Note spaces are not allowed in the path (replace with %20).
+        installDir = file('C:\\Program Files\\install4j6')
+    }
+
     dependsOn 'fatJar'                              // The "fat" JAR has to be built, as this is what the installer packages up in the installer.
     projectFile = file('NinjaTerm.install4j')       // This has been configured by the install4j GUI.
     release = version                               // This is the correct way to set the version number, note that setting the "version" variable does NOT work.
