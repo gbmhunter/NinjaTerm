@@ -1,6 +1,12 @@
+plugins {
+    id "com.install4j.gradle" version "6.1.4"       // This is used to build installers
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'maven'
+
+
 
 group = 'NinjaTerm'
 version = '0.8.7'
@@ -62,6 +68,29 @@ task fatJar(type: Jar) {
     baseName = project.name + '-all'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+
+task setVersion() {
+
+    String filename
+    String contents
+
+    // Update version in README
+    filename = 'README.md'
+    contents = new File(filename).getText('UTF-8')
+    if(contents.find(/Version: v\d+\.\d+\.\d+/) == null)
+        throw new GradleException('Could not find \"Version: vX.X.X\" string in docs/index.html.')
+    contents = contents.replaceAll(/Version: v\d+\.\d+\.\d+/, 'Version: v' + "$v")
+    new File(filename).write(contents, 'UTF-8')
+
+    // Update version in index.html
+    filename = "docs/index.html"
+    contents = new File(filename).getText('UTF-8')
+    if(contents.find(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/) == null)
+        throw new GradleException('Could not find \"updateVersionNumber(X.X.X)\" string in docs/index.html.')
+    contents = contents.replaceAll(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/, /updateVersionNumber('v/ + /$v/ + /')/)
+    new File(filename).write(contents, 'UTF-8')
 }
 
 repositories {
