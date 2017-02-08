@@ -110,15 +110,16 @@ buildscript {
     }
 }
 
-/*if (!hasProperty('install4jHomeDir')) {
-    File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
-    throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
-}*/
 
-String install4jHomeDir = "blah"
+String install4jHomeDir = "C:\\Program Files\\install4j6"
 
 // INSTALL4J INSTALLER BUILD TASK
 task media(type: com.install4j.gradle.Install4jTask) {
+
+    /*if (!hasProperty('install4jHomeDir')) {
+        File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
+        throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
+    }*/
 
     apply plugin: 'install4j'
 
