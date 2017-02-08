@@ -1,15 +1,12 @@
-plugins {
-    id "com.install4j.gradle" version "6.1.4"       // This is used to build installers
-}
-
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'maven'
+apply plugin: 'install4j'
 
 
 
 group = 'NinjaTerm'
-version = '0.8.7'
+version = '0.8.8'
 
 // Project description, shown when
 // "gradle -q projects" is called
@@ -81,7 +78,7 @@ task setVersion() {
     contents = new File(filename).getText('UTF-8')
     if(contents.find(/Version: v\d+\.\d+\.\d+/) == null)
         throw new GradleException('Could not find \"Version: vX.X.X\" string in docs/index.html.')
-    contents = contents.replaceAll(/Version: v\d+\.\d+\.\d+/, 'Version: v' + "$v")
+    contents = contents.replaceAll(/Version: v\d+\.\d+\.\d+/, 'Version: v' + "$version")
     new File(filename).write(contents, 'UTF-8')
 
     // Update version in index.html
@@ -89,9 +86,43 @@ task setVersion() {
     contents = new File(filename).getText('UTF-8')
     if(contents.find(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/) == null)
         throw new GradleException('Could not find \"updateVersionNumber(X.X.X)\" string in docs/index.html.')
-    contents = contents.replaceAll(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/, /updateVersionNumber('v/ + /$v/ + /')/)
+    contents = contents.replaceAll(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/, /updateVersionNumber('v/ + /$version/ + /')/)
     new File(filename).write(contents, 'UTF-8')
 }
+
+//===============================================================================================//
+//============================ INSTALL4J CONFIG AND INSTALLER BUILD =============================//
+//===============================================================================================//
+
+buildscript {
+    repositories {
+        maven {
+            url 'http://maven.ej-technologies.com/repository'
+        }
+    }
+    dependencies {
+        classpath group: 'com.install4j',
+                name: 'gradle-plugin',
+                version: '6.0'
+    }
+}
+
+// INSTALL4J GLOBAL CONFIG BLOCK
+install4j {
+    // This is where install4j is installed
+    installDir = file('C:\\Program Files\\install4j6')
+}
+
+// INSTALL4J INSTALLER BUILD TASK
+task media(type: com.install4j.gradle.Install4jTask) {
+    dependsOn 'fatJar'                              // The "fat" JAR has to be built, as this is what the installer packages up in the installer.
+    projectFile = file('NinjaTerm.install4j')       // This has been configured by the install4j GUI.
+    release = version                               // This is the correct way to set the version number, note that setting the "version" variable does NOT work.
+}
+
+//===============================================================================================//
+//======================================= APP LIB DEPENDENCIES ==================================//
+//===============================================================================================//
 
 repositories {
      maven { url "https://maven.atlassian.com/3rdparty/" }

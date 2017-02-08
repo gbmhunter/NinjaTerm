@@ -3,6 +3,7 @@ vX.X.X
 
 - Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.
 - Added ability to update version number with gradle task, closes #202.
+- Install4j installers can now be built with Gradle script, closes #203.
 
 v0.8.7
 ------
