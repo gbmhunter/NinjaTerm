@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
+- Changed "nix" naming to "UNIX", closes #205.
 
 v0.8.8
 ------
