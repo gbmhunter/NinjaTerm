@@ -3,6 +3,10 @@ apply plugin: 'application'
 apply plugin: 'maven'
 
 group = 'NinjaTerm'
+
+// This version number is the master version number which needs to be updated
+// manually. This version number is used to automatically set the one in the README,
+// index.html, and also the one install4j uses (which in turn is the one the app uses at runtime).
 version = '0.8.7'
 
 // Project description, shown when
@@ -22,7 +26,15 @@ mainClassName = "ninja.mbedded.ninjaterm.Main"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+def onlyFor(task, config) {
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(task)) {
+            project.configure(project, config)
+        }
+    }
 }
 
 sourceSets {
@@ -50,9 +62,9 @@ run {
 // The will put into build/libs
 task fatJar(type: Jar) {
     manifest {
-        attributes  'Implementation-Title': 'NinjaTerm',
-                    'Implementation-Version': version,
-                    'Main-Class': 'ninja.mbedded.ninjaterm.Main'
+        attributes 'Implementation-Title': 'NinjaTerm',
+                'Implementation-Version': version,
+                'Main-Class': 'ninja.mbedded.ninjaterm.Main'
     }
 
     // Manually specify filename. This has to be compatible
@@ -64,25 +76,101 @@ task fatJar(type: Jar) {
     with jar
 }
 
+
+task updateVersion() {
+
+    String filename
+    String contents
+
+    // Update version in README
+    filename = 'README.md'
+    contents = new File(filename).getText('UTF-8')
+    if (contents.find(/Version: v\d+\.\d+\.\d+/) == null)
+        throw new GradleException('Could not find \"Version: vX.X.X\" string in docs/index.html.')
+    contents = contents.replaceAll(/Version: v\d+\.\d+\.\d+/, 'Version: v' + "$version")
+    new File(filename).write(contents, 'UTF-8')
+
+    // Update version in index.html
+    filename = "docs/index.html"
+    contents = new File(filename).getText('UTF-8')
+    if (contents.find(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/) == null)
+        throw new GradleException('Could not find \"updateVersionNumber(X.X.X)\" string in docs/index.html.')
+    contents = contents.replaceAll(/updateVersionNumber\('v\d+\.\d+\.\d+'\)/, /updateVersionNumber('v/ + /$version/ + /')/)
+    new File(filename).write(contents, 'UTF-8')
+}
+
+//===============================================================================================//
+//============================ INSTALL4J CONFIG AND INSTALLER BUILD =============================//
+//===============================================================================================//
+
+buildscript {
+    repositories {
+        maven {
+            url 'http://maven.ej-technologies.com/repository'
+        }
+    }
+    dependencies {
+        classpath group: 'com.install4j',
+                name: 'gradle-plugin',
+                version: '6.0'
+    }
+}
+
+// install4j home directory. This only needs to be correct if `gradle media` is run (which TravisCI doesn't).
+//String install4jHomeDir = "default"
+
+// INSTALL4J INSTALLER BUILD TASK
+task media(type: com.install4j.gradle.Install4jTask) {
+
+    if (project.hasProperty('install4jHomeDir')) {
+        def install4jHomeDir = project.properties['install4jHomeDir']
+        println('install4jHomeDir = ' + install4jHomeDir)
+    } else {
+        File propertiesFile = file("${System.getProperty('user.home')}/.gradle/gradle.properties")
+        throw new RuntimeException("Specify install4jHomeDir in $propertiesFile")
+    }
+
+
+    apply plugin: 'install4j'
+    // Apply install4j plugin (this is within task so it is only conditionally applied)
+
+    // INSTALL4J GLOBAL CONFIG BLOCK
+    install4j {
+        // This is where install4j is installed. Note spaces are not allowed in the path (replace with %20).
+        installDir = file(install4jHomeDir)
+    }
+
+
+    dependsOn 'fatJar'
+    // The "fat" JAR has to be built, as this is what the installer packages up in the installer.
+    projectFile = file('NinjaTerm.install4j')       // This has been configured by the install4j GUI.
+    release = version
+    // This is the correct way to set the version number, note that setting the "version" variable does NOT work.
+}
+
+//===============================================================================================//
+//======================================= APP LIB DEPENDENCIES ==================================//
+//===============================================================================================//
+
 repositories {
-     maven { url "https://maven.atlassian.com/3rdparty/" }
-     maven { url "http://repo.maven.apache.org/maven2" }
+    maven { url "https://maven.atlassian.com/3rdparty/" }
+    maven { url "http://repo.maven.apache.org/maven2" }
 }
 
 dependencies {
-    compile group: 'ch.qos.logback', name: 'logback-classic', version:'1.1.7'
-    compile group: 'org.scream3r', name: 'jssc', version:'2.8.0'
-    compile group: 'org.jfxtras', name: 'jfxtras-controls', version:'8.0-r5'
-    compile group: 'org.controlsfx', name: 'controlsfx', version:'8.40.11'
-    compile group: 'com.install4j', name: 'i4jruntime', version:'5.0.6'
-    compile group: 'org.mockito', name: 'mockito-all', version:'2.0.2-beta'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.0'
-    compile group: 'org.javatuples', name: 'javatuples', version:'1.2'
-    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version:'0.7-M2'
-    compile group: 'commons-cli', name: 'commons-cli', version:'1.3.1'
-    compile group: 'de.jensd', name: 'fontawesomefx', version:'8.9'
-    compile group: 'commons-io', name: 'commons-io', version:'2.4'
-    testCompile group: 'junit', name: 'junit', version:'4.12'
-    testCompile group: 'org.testfx', name: 'testfx-core', version:'4.0.1-alpha'
-    testCompile group: 'org.testfx', name: 'testfx-junit', version:'4.0.1-alpha'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+    compile group: 'org.scream3r', name: 'jssc', version: '2.8.0'
+    compile group: 'org.jfxtras', name: 'jfxtras-controls', version: '8.0-r5'
+    compile group: 'org.controlsfx', name: 'controlsfx', version: '8.40.11'
+    compile group: 'com.install4j', name: 'i4jruntime', version: '5.0.6'
+    compile group: 'org.mockito', name: 'mockito-all', version: '2.0.2-beta'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+    compile group: 'org.javatuples', name: 'javatuples', version: '1.2'
+    compile group: 'org.fxmisc.richtext', name: 'richtextfx', version: '0.7-M2'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.3.1'
+    compile group: 'de.jensd', name: 'fontawesomefx', version: '8.9'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.testfx', name: 'testfx-core', version: '4.0.1-alpha'
+    testCompile group: 'org.testfx', name: 'testfx-junit', version: '4.0.1-alpha'
 }

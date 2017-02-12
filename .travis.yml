@@ -16,6 +16,11 @@ script:
  - sudo apt-get install xvfb
  - Xvfb :99 &>/dev/null &
  - export DISPLAY=:99
+
+ # Create gradle config file, adding non-used install4j application
+ # path variable. This is used on developers computer.
+ - mkdir -p $HOME/.gradle
+ - echo 'install4jHomeDir=none' > $HOME/.gradle/gradle.properties
  
  # Build using Gradle
  # gradle build also runs the tests (both unit tests
