@@ -6,10 +6,10 @@ NinjaTerm
 
 [![Travis](https://img.shields.io/travis/mbedded-ninja/NinjaTerm.svg)](https://travis-ci.org/mbedded-ninja/NinjaTerm) [![Github All Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/) [![Github Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/latest/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/)
 
-- Author: gbmhunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
+- Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
 - Last Modified: 2017-02-07
-- Version: v0.8.7
+- Version: v0.8.8
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -48,15 +48,13 @@ Releasing New Version
 
 1. Make sure that you are on the `develop` branch, and that desired updates have been merged from the feature branches (this project uses the merge-merge workflow, not the rebase-merge workflow).
 1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
-1. Update README.md with the new version number and "last changed" date.
-1. Update the version number in `docs/index.html`. This is contained on the line `<body onload="updateVersionNumber('v0.4.0')">`.
 1. Update the version number near the top of the `build.gradle` file, e.g. `version = '0.4.0`.
+1. Run the command `gradle updateVersion` to update the version number in appropriate places in the repo. It will update the version number in `README.md` and `docs/index.html`.
 
 **PACKAGING**
 
 1. Package the source code into a .jar file with external dependencies AND then a "fat" .jar by running `gradle fatJar` from the command line. These should be placed in `build/libs`, with the fat jar having no version appended to it's filename.
-1. Open NinjaTerm.install4j in the install4j GUI. Update the version number on the "General Settings" tab.
-1. Click "Save Project" and then "Build Project".
+1. Build the installer with the command `gradle media`. This will invoke install4j and build installers for Windows, Linux and Mac OSX. Note that the install4j program must be available on your computer for this step to work.
 1. Once the installers have been created, overwrite the `updates.xml` in the repo root directory with the one from the install/ directory.
 1. Commit these changes on the `develop` branch (you should already be on this branch).
 

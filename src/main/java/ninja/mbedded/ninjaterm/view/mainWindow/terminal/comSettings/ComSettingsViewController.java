@@ -19,7 +19,7 @@ import org.slf4j.Logger;
  * Controller for the "COM Settings tab" which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-30
+ * @last-modified 2017-02-08
  * @since 2016-07-10
  */
 public class ComSettingsViewController {
@@ -114,10 +114,7 @@ public class ComSettingsViewController {
         //==============================================//
 
         terminal.isComPortOpen.addListener((observable, oldValue, newValue) -> {
-            if (!newValue)
-                setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
-            else
-                setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.CLOSE);
+            onIsComPortOpen();
         });
 
         // Set default style for OpenClose button
@@ -163,6 +160,32 @@ public class ComSettingsViewController {
             openCloseComPortButton.getStyleClass().add("failure");
         } else {
             throw new RuntimeException("openCloseButtonStyle not recognised.");
+        }
+    }
+
+    /**
+     * Handler that gets called when the terminal.isComPortOpen property
+     * changes value.
+     */
+    private void onIsComPortOpen() {
+        if(terminal.isComPortOpen.get()) {
+            setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.CLOSE);
+
+            reScanButton.setDisable(true);
+            foundComPortsComboBox.setDisable(true);
+            baudRateComboBox.setDisable(true);
+            numDataBitsComboBox.setDisable(true);
+            parityComboBox.setDisable(true);
+            numStopBitsComboBox.setDisable(true);
+        } else {
+            setOpenCloseComPortButtonStyle(OpenCloseButtonStyles.OPEN);
+
+            reScanButton.setDisable(false);
+            foundComPortsComboBox.setDisable(false);
+            baudRateComboBox.setDisable(false);
+            numDataBitsComboBox.setDisable(false);
+            parityComboBox.setDisable(false);
+            numStopBitsComboBox.setDisable(false);
         }
     }
 

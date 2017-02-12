@@ -60,7 +60,8 @@ public class ComPort {
         return numStopBits;
     }
 
-    public List<OnRxDataListener> onRxDataListeners;
+    private List<OnRxDataListener> onRxDataListeners;
+    public List<OnRxDataListener> getOnRxDataListeners() { return onRxDataListeners; }
 
     private Thread rxWorkerThread;
     private RxWorker rxWorker;
@@ -293,36 +294,6 @@ public class ComPort {
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * This will be called by jSSC when any "serial port event" occurs.
-     * This maybe because RX data has been received, or the state of the signalling
-     * wires (e.g. CTS, RTS) has changed.
-     *
-     * @param serialPortEvent
-     */
-    /*public void onSerialPortEvent(SerialPortEvent serialPortEvent) {
-
-        if (serialPortEvent.isRXCHAR()) {
-            //System.out.println("Data received!");
-
-            int numBytes = serialPortEvent.getEventValue();
-
-            byte[] rxData;
-            try {
-                rxData = serialPort.readBytes(numBytes);
-            } catch (SerialPortException e) {
-                throw new RuntimeException(e);
-            }
-
-            //System.out.println("rxData = " + Arrays.toString(rxData));
-
-            for (Iterator<OnRxDataListener> it = onRxDataListeners.iterator(); it.hasNext(); ) {
-                OnRxDataListener onRxDataListener = it.next();
-                onRxDataListener.run(rxData);
-            }
-        }
-    }*/
 
     public void close() throws ComPortException {
         if (serialPort == null) {

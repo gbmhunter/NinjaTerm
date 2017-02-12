@@ -24,6 +24,12 @@
     <Label styleClass="h2">Macros</Label>
 
     <GridPane fx:id="macroGridPane" hgap="5" vgap="5">
+        <columnConstraints>
+            <ColumnConstraints />
+            <!-- Make the "Sequence" field grow to take up the available space when the split pane the macro pane is
+            embedded in is resized -->
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Name</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="1">Sequence</Label>
         <Label GridPane.rowIndex="0" GridPane.columnIndex="2">Send</Label>

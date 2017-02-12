@@ -118,7 +118,7 @@ public class Terminal {
         );
 
         // Add a listener to run when RX data is received from the COM port
-        comPort.onRxDataListeners.add(onRxDataListener);
+        comPort.getOnRxDataListeners().add(onRxDataListener);
 
         model.status.addMsg(comPort.getName() + " opened." +
                 " Buad rate = " + comPort.getBaudRate() + "," +
@@ -158,7 +158,7 @@ public class Terminal {
     public void closeComPort() {
 
         // Remove the listener before actually closing the COM port
-        comPort.onRxDataListeners.remove(onRxDataListener);
+        comPort.getOnRxDataListeners().remove(onRxDataListener);
 
         try {
             comPort.close();
