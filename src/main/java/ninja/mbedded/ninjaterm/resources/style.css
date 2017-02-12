@@ -92,6 +92,13 @@ which are displaying dynamic content */
     -fx-text-fill: #4d94ff;
 }
 
+/* Colours the selected tab slightly darker than the rest,
+to indicate to the user this is the selected tab (the minimal
+tab design has no other form of indication) */
+.tab-pane .minimal .tab:selected:top {
+    -fx-background-color: #DDDDDD;
+}
+
 /* ============================================================================================= */
 /* ====================================== COM SETTINGS TAB STYLING ============================= */
 /* ============================================================================================= */

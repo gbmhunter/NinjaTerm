@@ -3,6 +3,7 @@ vX.X.X
 
 - Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
 - Changed "nix" naming to "UNIX", closes #205.
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.
 
 v0.8.8
 ------
