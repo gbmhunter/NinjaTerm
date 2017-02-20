@@ -230,6 +230,10 @@ public class Main extends Application {
             splashScreenStage.close();
 
         Scene scene = new Scene(mainWindowViewController.mainVBox, 1000, 800);
+
+        // Apply dark theme
+        //scene.getStylesheets().add("ninja/mbedded/ninjaterm/resources/dark.css");
+
         mainStage.setScene(scene);
 
         mainStage.initStyle(StageStyle.DECORATED);

@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-15
-* @last-modified   2016-08-23
+* @last-modified   2017-02-20
 **/
 
 /* ============================================================================================= */
@@ -15,11 +15,16 @@
 @font-face {
     font-family: 'Open Sans';
     src: url('fonts/OpenSans-Regular.ttf');
-}
+}*/
+
 .root {
-    -fx-font-family: "Open Sans";
+    /*-fx-font-family: "Open Sans";*/
+
+    /* Set the default font size to be quite small. This is a information-heavy app,
+    and font-size needs to be small to stop things getting over-crowded. */
+    -fx-font-size: 9pt;
 }
-*/
+
 
 * {
    -colour-about-link: #0095C9;
