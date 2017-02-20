@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * can open it's own COM port.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-22
+ * @last-modified 2017-02-20
  * @since 2016-07-16
  */
 public class TxRxViewController {
@@ -91,17 +91,17 @@ public class TxRxViewController {
     @FXML
     private Button clearTextButton;
 
-    @FXML
-    private Button displayButton;
+//    @FXML
+//    private Button displayButton;
 
-    @FXML
-    private Button formattingButton;
+//    @FXML
+//    private Button formattingButton;
 
-    @FXML
-    private Button coloriserButton;
+//    @FXML
+//    private Button coloriserButton;
 
-    @FXML
-    private Button filtersButton;
+//    @FXML
+//    private Button filtersButton;
 
     @FXML
     private Button freezeRxButton;
@@ -112,6 +112,18 @@ public class TxRxViewController {
 
     @FXML
     private MacrosViewController macrosViewController;
+
+    @FXML
+    private FiltersViewController filtersViewController;
+
+    @FXML
+    private DisplayViewController displayViewController;
+
+    @FXML
+    private FormattingViewController formattingViewController;
+
+    @FXML
+    private ColouriserViewController colouriserViewController;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -126,10 +138,10 @@ public class TxRxViewController {
      */
     private Terminal terminal;
 
-    private DisplayViewController displayViewController;
-    private FormattingViewController formattingViewController;
-    private ColouriserViewController colouriserViewController;
-    private FiltersViewController filtersViewController;
+//    private DisplayViewController displayViewController;
+//    private FormattingViewController formattingViewController;
+//    private ColouriserViewController colouriserViewController;
+//    private FiltersViewController filtersViewController;
 
     private SimpleIntegerProperty webViewLoadCount = new SimpleIntegerProperty(0);
 
@@ -228,73 +240,74 @@ public class TxRxViewController {
         //======= DISPLAY BUTTON/POP-OVER SETUP ========//
         //==============================================//
 
-        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
-        try {
-            loader.load();
-        } catch (IOException e) {
-            return;
-        }
-        displayViewController = loader.getController();
+//        displayButton.setGraphic(glyphFont.create(FontAwesome.Glyph.ARROWS));
+//
+//        FXMLLoader loader = new FXMLLoader(getClass().getResource("display/DisplayView.fxml"));
+//        try {
+//            loader.load();
+//        } catch (IOException e) {
+//            return;
+//        }
+//        displayViewController = loader.getController();
 
         displayViewController.init(model, terminal);
 
-        setupPopover(loader.getRoot(), "Display", displayButton);
+//        setupPopover(loader.getRoot(), "Display", displayButton);
 
         //==============================================//
         //===== FORMATTING BUTTON/POP-OVER SETUP =======//
         //==============================================//
 
-        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
+//        formattingButton.setGraphic(glyphFont.create(FontAwesome.Glyph.CUBES));
 
-        loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
-        try {
-            loader.load();
-        } catch (IOException e) {
-            return;
-        }
-        formattingViewController = loader.getController();
+        FXMLLoader loader;
+//        loader = new FXMLLoader(getClass().getResource("formatting/FormattingView.fxml"));
+//        try {
+//            loader.load();
+//        } catch (IOException e) {
+//            return;
+//        }
+//        formattingViewController = loader.getController();
 
         formattingViewController.init(model, terminal);
 
-        setupPopover(loader.getRoot(), "Formatting", formattingButton);
+//        setupPopover(loader.getRoot(), "Formatting", formattingButton);
 
         //==============================================//
         //========== COLOURISER BUTTON SETUP ===========//
         //==============================================//
 
-        coloriserButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PAINT_BRUSH));
-
-        loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
-        try {
-            loader.load();
-        } catch (IOException e) {
-            return;
-        }
-        colouriserViewController = loader.getController();
+//        coloriserButton.setGraphic(glyphFont.create(FontAwesome.Glyph.PAINT_BRUSH));
+//
+//        loader = new FXMLLoader(getClass().getResource("colouriser/ColouriserView.fxml"));
+//        try {
+//            loader.load();
+//        } catch (IOException e) {
+//            return;
+//        }
+//        colouriserViewController = loader.getController();
 
         colouriserViewController.init(model, terminal);
 
-        setupPopover(loader.getRoot(), "Colouriser", coloriserButton);
+//        setupPopover(loader.getRoot(), "Colouriser", coloriserButton);
 
         //==============================================//
         //============ FILTERS BUTTON SETUP ============//
         //==============================================//
 
-        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
+//        filtersButton.setGraphic(glyphFont.create(FontAwesome.Glyph.FILTER));
 
-        loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
-        try {
-            loader.load();
-        } catch (IOException e) {
-            return;
-        }
-        filtersViewController = loader.getController();
+//        loader = new FXMLLoader(getClass().getResource("filters/FiltersView.fxml"));
+//        try {
+//            loader.load();
+//        } catch (IOException e) {
+//            return;
+//        }
+//        filtersViewController = loader.getController();
 
         filtersViewController.init(model, terminal);
 
-        setupPopover(loader.getRoot(), "Filters", filtersButton);
+//        setupPopover(loader.getRoot(), "Filters", filtersButton);
 
         //==============================================//
         //=========== FREEZE RX BUTTON SETUP ===========//

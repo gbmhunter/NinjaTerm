@@ -14,7 +14,7 @@
 
 <!-- UPDATE THE VERSION ON THE LINE BELOW -->
 <!-- This will automatically all the vX.X.X's scattered through-out this page -->
-<body onload="updateVersionNumber('v0.8.8')">
+<body onload="updateVersionNumber('v0.8.9')">
 
 
 <section class="page-header">
@@ -86,6 +86,11 @@
         <p>Each instance of NinjaTerm is not limited to just one COM port. Open up multiple tabs, and have multiple
             terminals/COM ports open at the same time!</p>
 
+        <h2>Macros</h2>
+
+        <p>The powerful macro functionality allows you to input pre-defined sequences of data that can be sent at the press of a button (perfect to sending AT commands).
+        The data can be in either ASCII (escape sequences for non-printable chars supported!) or hex.</p>
+
         <h2>Flexible Layout Options</h2>
 
         <p>Not all uses terminal software work well with the same layout. Sometimes you want a "bash shell" style terminal
@@ -95,7 +100,12 @@
         <h2>Plus more handy stuff!</h2>
 
         <ul>
-            <li>Smart Scrolling - The RX data pane can scroll as new data comes in, so the data you are viewing does not change as new data comes in.</li>
+            <li><i>Smart Scrolling - </i>The RX data pane can scroll as new data comes in, so the data you are viewing does not shift as new data comes in.</li>
+            <li><i>Logging - </i>NinjaTerm supports either the logging of the RAW data (as ASCII characters), or the logging of the processed text that is displayed on screen.</li>
+            <li><i>Continuous 19200bit/s Decoding - </i>NinjaTerm can handle the decoding of continuous 19200bit/s data with serious performance issues (sporadic data at much higher data rates is supported).</li>
+            <li><i>RX Freeze - </i>The incoming RX data can be "frozen" (paused) without disconnecting from the COM port.</li>
+            <li><i>Adjustable Wrapping Width - </i>The number of characters per line on the TX/RX displays can be adjusted.</li>
+            <li><i>"Always On Top" Feature - </i>The NinjaTerm window stays on top of other windows, even if it loses focus.</li>
         </ul>
 
         <h1><a name="installation">Installation</a></h1>

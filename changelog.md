@@ -1,8 +1,11 @@
-vX.X.X
+v0.8.9
 ------
 
 - Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
 - Changed "nix" naming to "UNIX", closes #205.
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.
+- Converted buttons on TX/RX pane into accordion style UI, closes #206.
+- Enlarges on start-up to full-screen size, closes #207.
 
 v0.8.8
 ------

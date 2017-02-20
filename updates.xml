@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.8/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.8_macos.dmg" newVersion="0.8.8" newMediaFileId="36" fileSize="8802439" bundledJre="" archive="false">
-    <comment language="en">vX.X.X&#xD;
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.9/">
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.9_unix.sh" newVersion="0.8.9" newMediaFileId="176" fileSize="8170419" bundledJre="" archive="false">
+    <comment language="en">v0.8.9&#xD;
+------&#xD;
+&#xD;
+- Added short note to top of homepage about NinjaTerm requiring Java, closes #204.&#xD;
+- Changed "nix" naming to "UNIX", closes #205.&#xD;
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.&#xD;
+- Converted buttons on TX/RX pane into accordion style UI, closes #206.&#xD;
+- Enlarges on start-up to full-screen size, closes #207.&#xD;
+&#xD;
+v0.8.8&#xD;
 ------&#xD;
 &#xD;
 - Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.&#xD;
 - Added ability to update version number with gradle task, closes #202.&#xD;
 - Install4j installers can now be built with Gradle script, closes #203.&#xD;
+&#xD;
 &#xD;
 v0.8.7&#xD;
 ------&#xD;
@@ -215,13 +225,23 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.8_unix.sh" newVersion="0.8.8" newMediaFileId="176" fileSize="8170636" bundledJre="" archive="false">
-    <comment language="en">vX.X.X&#xD;
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.9_macos.dmg" newVersion="0.8.9" newMediaFileId="36" fileSize="8802439" bundledJre="" archive="false">
+    <comment language="en">v0.8.9&#xD;
+------&#xD;
+&#xD;
+- Added short note to top of homepage about NinjaTerm requiring Java, closes #204.&#xD;
+- Changed "nix" naming to "UNIX", closes #205.&#xD;
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.&#xD;
+- Converted buttons on TX/RX pane into accordion style UI, closes #206.&#xD;
+- Enlarges on start-up to full-screen size, closes #207.&#xD;
+&#xD;
+v0.8.8&#xD;
 ------&#xD;
 &#xD;
 - Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.&#xD;
 - Added ability to update version number with gradle task, closes #202.&#xD;
 - Install4j installers can now be built with Gradle script, closes #203.&#xD;
+&#xD;
 &#xD;
 v0.8.7&#xD;
 ------&#xD;
@@ -430,13 +450,23 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.8_windows.exe" newVersion="0.8.8" newMediaFileId="23" fileSize="9356288" bundledJre="" archive="false">
-    <comment language="en">vX.X.X&#xD;
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.9_windows.exe" newVersion="0.8.9" newMediaFileId="23" fileSize="9355776" bundledJre="" archive="false">
+    <comment language="en">v0.8.9&#xD;
+------&#xD;
+&#xD;
+- Added short note to top of homepage about NinjaTerm requiring Java, closes #204.&#xD;
+- Changed "nix" naming to "UNIX", closes #205.&#xD;
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.&#xD;
+- Converted buttons on TX/RX pane into accordion style UI, closes #206.&#xD;
+- Enlarges on start-up to full-screen size, closes #207.&#xD;
+&#xD;
+v0.8.8&#xD;
 ------&#xD;
 &#xD;
 - Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.&#xD;
 - Added ability to update version number with gradle task, closes #202.&#xD;
 - Install4j installers can now be built with Gradle script, closes #203.&#xD;
+&#xD;
 &#xD;
 v0.8.7&#xD;
 ------&#xD;
