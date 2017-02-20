@@ -32,74 +32,84 @@
         <HBox VBox.vgrow="ALWAYS" spacing="10">
 
             <!-- =========================================== -->
-            <!-- ========== LEFT-HAND PANE BUTTONS ========= -->
+            <!-- ============= LEFT-HAND PANE ============== -->
             <!-- =========================================== -->
-            <VBox minWidth="120" alignment="TOP_CENTER"
-                  spacing="10"
-                  style=
-                          "-fx-border-style: hidden solid hidden hidden;
-                            -fx-border-width: 0 1 0 0;
-                            -fx-border-color: silver;">
-                <!-- ========================================= -->
-                <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
-                <!-- ========================================= -->
+            <VBox minWidth="350" alignment="TOP_CENTER">
 
-                <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="80" contentDisplay="TOP"/>
+                <ScrollPane hbarPolicy="NEVER" fitToWidth="true" fitToHeight="true">
+                    <VBox fillWidth="true">
+                        <HBox alignment="CENTER">
+                            <!-- ========================================= -->
+                            <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
+                            <!-- ========================================= -->
 
-                <!-- SPACER -->
-                <VBox minHeight="20"></VBox>
+                            <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="60" contentDisplay="TOP"/>
 
-                <Button fx:id="clearTextButton" minWidth="80" minHeight="50" contentDisplay="TOP">Clear Text</Button>
-                <Button fx:id="displayButton" minWidth="80" minHeight="50" contentDisplay="TOP">Display</Button>
-                <Button fx:id="formattingButton" minWidth="80" minHeight="50" contentDisplay="TOP">Formatting</Button>
-                <Button fx:id="coloriserButton" minWidth="80" minHeight="50" contentDisplay="TOP">Colouriser</Button>
-                <Button fx:id="filtersButton" minWidth="80" minHeight="50" contentDisplay="TOP">Filters</Button>
-                <Button fx:id="freezeRxButton" minWidth="80" minHeight="50" contentDisplay="TOP">Freeze RX</Button>
-                <!--<ColorPicker />-->
+                            <!-- SPACER -->
+                            <HBox minWidth="20"></HBox>
+
+                            <Button fx:id="clearTextButton" minWidth="70" minHeight="60" contentDisplay="TOP">Clear
+                                Text
+                            </Button>
+                            <HBox minWidth="5"/>
+                            <Button fx:id="freezeRxButton" minWidth="70" minHeight="60" contentDisplay="TOP">Freeze RX
+                            </Button>
+                        </HBox>
+                        <VBox fillWidth="true" minHeight="10"/>
+                        <TitledPane text="Macros" expanded="true">
+                            <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
+                        </TitledPane>
+                        <TitledPane text="Filters" expanded="true">
+                            <fx:include fx:id="filtersView" source="filters/FiltersView.fxml"/>
+                        </TitledPane>
+                        <TitledPane text="Display" expanded="false">
+                            <fx:include fx:id="displayView" source="display/DisplayView.fxml"/>
+                        </TitledPane>
+                        <TitledPane text="Formatting" expanded="false">
+                            <fx:include fx:id="formattingView" source="formatting/FormattingView.fxml"/>
+                        </TitledPane>
+                        <TitledPane text="Colouriser" expanded="false">
+                            <fx:include fx:id="colouriserView" source="colouriser/ColouriserView.fxml"/>
+                        </TitledPane>
+                    </VBox>
+                </ScrollPane>
+
             </VBox>
 
-            <!-- Split plane holds the TX/RX data views (left), and the macro view (right)
-             0.8 seems to give a good starting-wdith to the macro view -->
-            <SplitPane HBox.hgrow="ALWAYS" orientation="HORIZONTAL" dividerPositions="0.8">
-                <GridPane fx:id="dataContainerGridPane">
 
-                    <rowConstraints>
-                        <RowConstraints vgrow="ALWAYS"/>
-                        <RowConstraints vgrow="NEVER"/>
-                        <RowConstraints vgrow="ALWAYS"/>
-                    </rowConstraints>
+            <GridPane fx:id="dataContainerGridPane" HBox.hgrow="ALWAYS">
 
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                    </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints vgrow="ALWAYS"/>
+                    <RowConstraints vgrow="NEVER"/>
+                    <RowConstraints vgrow="ALWAYS"/>
+                </rowConstraints>
 
-                    <!-- =========================================== -->
-                    <!-- ================ RX DATA PANE ============= -->
-                    <!-- =========================================== -->
-                    <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-
-                    <!-- =========================================== -->
-                    <!-- ============== DRAGGABLE NODE ============= -->
-                    <!-- =========================================== -->
-                    <!-- This node is used to create a draggable element which the user can adjust to change
-                     the sizes of the TX and RX panes -->
-                    <HBox fx:id="draggableHBox"
-                          GridPane.rowIndex="1" GridPane.columnIndex="0"
-                          minHeight="10"/>
-
-                    <!-- =========================================== -->
-                    <!-- ================ TX DATA PANE ============= -->
-                    <!-- =========================================== -->
-                    <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-
-                </GridPane>
+                <columnConstraints>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
 
                 <!-- =========================================== -->
-                <!-- =========== RIGHT-HAND SIDE PANE ========== -->
+                <!-- ================ RX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
+                <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
 
-            </SplitPane>
+                <!-- =========================================== -->
+                <!-- ============== DRAGGABLE NODE ============= -->
+                <!-- =========================================== -->
+                <!-- This node is used to create a draggable element which the user can adjust to change
+                 the sizes of the TX and RX panes -->
+                <HBox fx:id="draggableHBox"
+                      GridPane.rowIndex="1" GridPane.columnIndex="0"
+                      minHeight="10"/>
+
+                <!-- =========================================== -->
+                <!-- ================ TX DATA PANE ============= -->
+                <!-- =========================================== -->
+                <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+
+            </GridPane>
+
 
         </HBox>
     </VBox>

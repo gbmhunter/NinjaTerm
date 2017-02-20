@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-11-05
-* @last-modified   2016-11-14
+* @last-modified   2017-02-19
 -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
@@ -20,8 +20,6 @@
     <padding>
         <Insets top="10" bottom="10" left="10" right="10"/>
     </padding>
-
-    <Label styleClass="h2">Macros</Label>
 
     <GridPane fx:id="macroGridPane" hgap="5" vgap="5">
         <columnConstraints>
