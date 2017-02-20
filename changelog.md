@@ -1,4 +1,4 @@
-vX.X.X
+v0.8.9
 ------
 
 - Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
