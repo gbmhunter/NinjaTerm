@@ -14,7 +14,6 @@
       prefHeight="500" prefWidth="800"
       fillWidth="true" GridPane.vgrow="ALWAYS"
       stylesheets="@../../resources/style.css">
-    <!--style="-fx-background-color: red;" -->
 
     <MenuBar>
         <Menu text="File">
