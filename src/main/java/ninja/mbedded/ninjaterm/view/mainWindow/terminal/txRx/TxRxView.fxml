@@ -3,17 +3,12 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-08
-* @last-modified   2016-11-16
+* @last-modified   2017-02-20
 -->
 <!--<VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminalViewController.txRx.TxRxViewController-->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
-<?import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane?>
 <?import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb?>
 <Tab
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
@@ -37,25 +32,28 @@
             <VBox minWidth="350" alignment="TOP_CENTER">
 
                 <ScrollPane hbarPolicy="NEVER" fitToWidth="true" fitToHeight="true">
+
                     <VBox fillWidth="true">
+
+                        <!-- ========================================= -->
+                        <!-- ============ TX/RX PANE BUTTONS ========= -->
+                        <!-- ========================================= -->
                         <HBox alignment="CENTER">
-                            <!-- ========================================= -->
-                            <!-- ======= OPEN/CLOSE COM PORT BUTTON ====== -->
-                            <!-- ========================================= -->
-
                             <Button fx:id="openCloseComPortButton" minWidth="80" minHeight="60" contentDisplay="TOP"/>
-
                             <!-- SPACER -->
                             <HBox minWidth="20"></HBox>
-
-                            <Button fx:id="clearTextButton" minWidth="70" minHeight="60" contentDisplay="TOP">Clear
-                                Text
-                            </Button>
+                            <Button fx:id="clearTextButton" minWidth="70" minHeight="60" contentDisplay="TOP">Clear Text</Button>
+                            <!-- SPACER -->
                             <HBox minWidth="5"/>
-                            <Button fx:id="freezeRxButton" minWidth="70" minHeight="60" contentDisplay="TOP">Freeze RX
-                            </Button>
+                            <Button fx:id="freezeRxButton" minWidth="70" minHeight="60" contentDisplay="TOP">Freeze RX</Button>
                         </HBox>
+
+                        <!-- SPACER -->
                         <VBox fillWidth="true" minHeight="10"/>
+
+                        <!-- ========================================= -->
+                        <!-- ===== ACCORDIAN-STYLE TX/RX SETTINGS ==== -->
+                        <!-- ========================================= -->
                         <TitledPane text="Macros" expanded="true">
                             <fx:include fx:id="macrosView" source="macros/MacrosView.fxml"/>
                         </TitledPane>

@@ -236,6 +236,9 @@ public class Main extends Application {
         //mainStage.centerOnScreen();
         mainStage.show();
 
+        // Maximise (enlarge to full screen size)
+        mainStage.setMaximized(true);
+
         // Make sure the main stage has focus (is in front of all other windows)
         mainStage.toFront();
 
