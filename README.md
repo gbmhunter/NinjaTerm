@@ -56,7 +56,7 @@ Releasing New Version
 1. Package the source code into a .jar file with external dependencies AND then a "fat" .jar by running `gradle fatJar` from the command line. These should be placed in `build/libs`, with the fat jar having no version appended to it's filename.
 1. Build the installer with the command `gradle media`. This will invoke install4j and build installers for Windows, Linux and Mac OSX. Note that the install4j program must be available on your computer for this step to work.
 1. Once the installers have been created, overwrite the `updates.xml` in the repo root directory with the one from the install/ directory.
-1. Commit these changes on the `develop` branch (you should already be on this branch).
+1. Commit these changes on the `develop` branch (you should already be on this branch). There should be 5 files which have changed.
 
 **RELEASING TO MASTER AND GITHUB**
 
