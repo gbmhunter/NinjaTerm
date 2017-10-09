@@ -1,3 +1,8 @@
+v0.8.10
+-------
+
+- Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
+
 v0.8.9
 ------
 

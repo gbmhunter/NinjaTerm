@@ -96,8 +96,6 @@ public class Logging {
 //            String ansiParserOutputText = streamedText.convertToStringWithNewLines("\r\n");
 //            saveNewDataToLogFile(ansiParserOutputText);
         };
-
-
     }
 
     private String buildDefaultLogFilePath() {

@@ -39,7 +39,7 @@ import java.util.Collections;
  * functionality (for ANSI escape code colours).
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2017-01-29
+ * @last-modified 2017-10-08
  * @since 2016-11-14
  */
 public class ComDataPaneWeb extends StackPane {
@@ -297,6 +297,10 @@ public class ComDataPaneWeb extends StackPane {
     }
 
 
+    public void setName(String value) {
+        runScriptWhenReady("setName(\"" + value + "\")");
+    }
+
     public void addData(StreamedData data) {
 
         int currPos = 0;
@@ -381,8 +385,9 @@ public class ComDataPaneWeb extends StackPane {
     }
 
     public void clearData() {
-        // Remove all COM data
+        logger.debug("clearData() called.");
 
+        // Remove all COM data
         runScriptWhenReady("clearData()");
 
         // Add new default span (since all existing ones have now
@@ -451,9 +456,10 @@ public class ComDataPaneWeb extends StackPane {
         //logger.debug("runScriptWhenReady() called with script = " + script);
 
         if (safeToRunScripts.get()) {
+            logger.debug("Safe to run JS script immediately.");
             webEngine.executeScript(script);
         } else {
-            //logger.debug("Scheduling script to run when safeToRunScripts == true...");
+            logger.debug("Scheduling script to run when safeToRunScripts == true...");
             safeToRunScripts.addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
                     //logger.debug("Executing script = \"" + script + "\".");

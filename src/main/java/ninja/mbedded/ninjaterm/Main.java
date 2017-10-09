@@ -28,6 +28,10 @@ import java.io.IOException;
  *
  * Processes command-line arguments, checks Java version,
  * displays splash-screen, and displays main NinjaTerm window.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2017-10-08
+ * @since 2016-11-14
  */
 public class Main extends Application {
 
@@ -72,8 +76,10 @@ public class Main extends Application {
 //        configStream.close();
 
         //===== START CONSOLE LOGGING =====//
-        LoggerUtils.consoleLoggingEnabled.set(false);
-        logger.debug("start() called.");
+        // NOTE: We shouldn't need to enabled this anymore, it should be done
+        // by passing --logc to the app on the command line (or through Gradle)
+//        LoggerUtils.consoleLoggingEnabled.set(true);
+//        logger.debug("start() called.");
 
         //==============================================//
         //========== UN-CAUGHT EXCEPTION SETUP =========//
@@ -294,8 +300,6 @@ public class Main extends Application {
      * @param args
      */
     public static void main(String[] args) {
-
-
         launch(args);
     }
 }
