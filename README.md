@@ -8,8 +8,8 @@ NinjaTerm
 
 - Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2017-02-07
-- Version: v0.8.9
+- Last Modified: 2017-10-08
+- Version: v0.8.10
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -55,16 +55,16 @@ Releasing New Version
 
 1. Package the source code into a .jar file with external dependencies AND then a "fat" .jar by running `gradle fatJar` from the command line. These should be placed in `build/libs`, with the fat jar having no version appended to it's filename.
 1. Build the installer with the command `gradle media`. This will invoke install4j and build installers for Windows, Linux and Mac OSX. Note that the install4j program must be available on your computer for this step to work.
-1. Once the installers have been created, overwrite the `updates.xml` in the repo root directory with the one from the install/ directory.
+1. Once the installers have been created, overwrite the `updates.xml` in the repo root directory with the one from the install/ directory. This file informs NinjaTerm that a new version is ready when automatic update checking occurs on startup.
 1. Commit these changes on the `develop` branch (you should already be on this branch). There should be 5 files which have changed.
 
 **RELEASING TO MASTER AND GITHUB**
 
-1. Switch to the `master` branch and merge the `develop` branch into it. Make sure to create a new commit (click the "Create new commit even if fast forward possible" checkbox if using the SourceTree GUI).
+1. Switch to the `master` branch and merge the `develop` branch into it. Make sure to create a new commit (use the `git merge` option `--no-ff` from the command-line, or click the "Create new commit even if fast forward possible" checkbox if using the SourceTree GUI).
 1. Add a tag to this new commit on the `master` branch, tagging it with the version number (e.g. "v0.4.0").
 1. Go to the GitHub repo's main page and click "Releases".
 1. Click "Draft a new release". Create a new release, using "0.4.0" as both the tag and the title. Populate the description box with the same info that was added to changelog.md.
-1. Upload the installers that install4j has created in the "install/" directory.
+1. Upload the installers that install4j has created in the `install/` directory.
 1. Click "Create new release", and it is all done!
  
 
