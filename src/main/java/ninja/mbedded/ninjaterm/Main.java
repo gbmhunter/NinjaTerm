@@ -28,6 +28,10 @@ import java.io.IOException;
  *
  * Processes command-line arguments, checks Java version,
  * displays splash-screen, and displays main NinjaTerm window.
+ *
+ * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
+ * @last-modified 2017-10-08
+ * @since 2016-11-14
  */
 public class Main extends Application {
 

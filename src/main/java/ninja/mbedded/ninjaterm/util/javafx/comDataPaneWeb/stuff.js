@@ -1,6 +1,9 @@
+"use strict";
 
-isCaretShown = false;
-currColor = '#FFFFFF';
+/// \brief      name is used purely for debugging purposes.
+var name = "";
+var isCaretShown = false;
+var currColor = '#FFFFFF';
 
 $( document ).ready(function() {
     console.log('doc ready');
@@ -38,14 +41,18 @@ $( document ).ready(function() {
 }*/
 
 function addText(newText) {
-    //java.log("addText() called with newText = \"" + newText + "\".");
+    java.log("addText() called for \"" + name + "\" with newText = \"" + newText + "\".");
     //java.log("com-data = " + JSON.stringify($("#com-data")));
 
     if(!newText) {
         return;
     }
 
+    var lastChild;
+
     if(isCaretShown) {
+        // If caret is shown, the caret if the last element,
+        // the last textual data is the second-to-last element
         lastChild = $("#com-data").children().last().prev();
         if(!lastChild) {
             throw "Could not find child element to insert text into.";
@@ -57,8 +64,8 @@ function addText(newText) {
         }
     }
 
-    //java.log("lastChild = \"" + JSON.stringify(lastChild) + "\".");
-    //java.log("lastChild (before 1) = \"" + lastChild.html() + "\".");
+//    java.log("lastChild = \"" + JSON.stringify(lastChild) + "\".");
+    java.log("lastChild.html() = \"" + lastChild.html() + "\".");
 
     //if (typeof lastChild.html() == 'undefined'){
     //    java.log("lastChild was 'undefined'");
@@ -84,29 +91,36 @@ function addText(newText) {
 
 function addColor(color) {
 
-    //java.log("addColor() called with color = " + color);
+    java.log("addColor() called for \"" + name + "\" with color = " + color);
 
-    html = "<span style='color: " + color + ";'>";
-    java.log("html = " + html);
+    java.log("#com-data.html before addColor() = " + $("#com-data").html());
+
+    var html = "<span style='color: " + color + ";'></span>";
+    java.log("html to add = " + html);
+
+    java.log('isCaretShown = ' + isCaretShown);
 
     if(isCaretShown) {
         // If the caret is shown, we have to insert this new color before
         // the caret node
+        java.log('Inserting color span before caret...');
         $(html).insertBefore("#caret");
 
         // Set the caret color to be the same as the current text color
         $('#caret').css('color', color);
     } else {
+        java.log('Appending color span to end of com-data object...');
         $("#com-data").append(html);
     }
 
     currColor = color;
+    java.log("#com-data.html after addColor() = " + $("#com-data").html());
 }
 
 function appendTimeStamp(timeStamp) {
-    java.log("appendTimeStamp called with timeStamp = " + timeStamp);
+    java.log("appendTimeStamp called for \"" + name + "\" with timeStamp = " + timeStamp);
 
-    html = "<span style='color: white;'>" + timeStamp + "</span>";
+    var html = "<span style='color: white;'>" + timeStamp + "</span>";
 
     if(isCaretShown) {
         // If the caret is shown, we have to insert this new color before
@@ -144,8 +158,17 @@ function setComDataWrapperScrollTop(scrollTop) {
 }
 
 function clearData() {
-    java.log("clearData() called.")
-    $("#com-data").empty();
+    java.log("clearData() called for \"" + name + "\".")
+    java.log("#com-data.html before clearData() = " + $("#com-data").html());
+
+    if(isCaretShown) {
+        // Delete all child elements except for last (which is the caret)
+        $("#com-data").children().not(":last").remove()
+    } else {
+        $("#com-data").empty();
+    }
+
+    java.log("#com-data.html after clearData() = " + $("#com-data").html());
 }
 
 function showDownArrow(trueFalse) {
@@ -168,19 +191,20 @@ function getTextHeight() {
     return $("#com-data").height();
 }
 
-function setName(name) {
+function setName(value) {
     // Wrapped in jQuery ready() function because of weird asynchronicity bug
     // with Java WebView
     //$(document).ready(function() {
-        java.log("setName() called with name = " + name);
-        $("#name-text").text(name);
+        java.log("setName() called with value = " + value);
+        $("#name-text").text(value);
+        name = value;
     //});
 }
 
 //! @brief  Trims the oldest characters from the rich text object.
 function trim(numChars) {
 
-    //java.log("trim() called.");
+    java.log("trim() called for \"" + name + "\" with numChars = " + numChars);
 
     // Disable scroll handler, as trimming can cause this to fire when
     // we don't want it to
@@ -225,30 +249,35 @@ function trim(numChars) {
 }
 
 function showCaret(trueFalse) {
+
+    java.log("showCaret() called for \"" + name + "\" with trueFalse = " + trueFalse);
+
+    if(trueFalse == isCaretShown) {
+        java.log("caret visibility is already in desired state, returning...");
+        return;
+    }
+
     // Wrapped in jQuery ready() function because of weird asynchronicity bug
     // with Java WebView
-    $(document).ready(function() {
+    //$(document).ready(function() {
         if(trueFalse) {
             // Create cursor
             java.log("Displaying caret...");
-
             //java.log("$('#com-data') (before adding caret) = " + JSON.stringify($("#com-data")));
             // &#x2588; is the hex code for the unicode character 'FULL BLOCK' (looks like a caret)
             $("#com-data").append('<span id="caret">&#x2588;</span>');
             //java.log("$('#com-data') (after adding caret) = " + JSON.stringify($("#com-data")));
-
             $('#caret').css('color', currColor);
-
             isCaretShown = true;
+            java.log("#com-data.html = " + $("#com-data").html());
 
         } else {
             java.log("Hiding caret...");
-
             $("#caret").remove();
-
             isCaretShown = false;
+            java.log("#com-data.html = " + $("#com-data").html());
         }
-    });
+    //});
 }
 
 //! @brief      Checks the number of textual characters displayed as data is equal
