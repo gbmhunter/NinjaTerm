@@ -76,8 +76,10 @@ public class Main extends Application {
 //        configStream.close();
 
         //===== START CONSOLE LOGGING =====//
-        LoggerUtils.consoleLoggingEnabled.set(false);
-        logger.debug("start() called.");
+        // NOTE: We shouldn't need to enabled this anymore, it should be done
+        // by passing --logc to the app on the command line (or through Gradle)
+//        LoggerUtils.consoleLoggingEnabled.set(true);
+//        logger.debug("start() called.");
 
         //==============================================//
         //========== UN-CAUGHT EXCEPTION SETUP =========//
@@ -298,8 +300,6 @@ public class Main extends Application {
      * @param args
      */
     public static void main(String[] args) {
-
-
         launch(args);
     }
 }

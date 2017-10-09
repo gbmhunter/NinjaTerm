@@ -15,8 +15,11 @@ import java.util.regex.Pattern;
  *
  * Used for visualising control characters.
  *
+ * This needs to be run AFTER the new line parser has run, as this ASCII control char parser
+ * will remove the characters that typically represent a new line.
+ *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-10-13
+ * @last-modified 2017-10-08
  * @since 2016-10-17
  */
 public class AsciiControlCharParser {
@@ -41,7 +44,7 @@ public class AsciiControlCharParser {
             { "\u0006", "␆"},
             { "\u0007", "␇"},
             { "\u0008", "␈"},
-            { "\u0009", "␉"},
+            { "\u0009", "␉"}, // Horizontal tab (standard tab)
             { "\n", "␤"},
             { "\u000B", "␋"},
             { "\u000C", "␌"},

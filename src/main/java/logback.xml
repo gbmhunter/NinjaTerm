@@ -18,8 +18,8 @@
     <!-- USE THIS SECTION TO DISABLE CLASSES/PACKAGES FROM LOGGING -->
     <!-- ========================================================= -->
 
-    <logger name="ninja.mbedded.ninjaterm.model.terminal" level="OFF" />
-    <logger name="ninja.mbedded.ninjaterm.util.rxProcessing" level="OFF" />
+    <!--<logger name="ninja.mbedded.ninjaterm.model.terminal" level="OFF" />-->
+    <!--<logger name="ninja.mbedded.ninjaterm.util.rxProcessing" level="OFF" />-->
     <!--<logger name="ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb" level="OFF" />-->
 
 </configuration>

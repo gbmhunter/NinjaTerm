@@ -136,6 +136,7 @@ public class Terminal {
 
     private void handleOnRxData(byte[] rxData) {
         logger.debug("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
+        System.out.println("handleOnRxData() called with rxData = " + Debugging.convertNonPrintable(Arrays.toString(rxData)));
 
         //String rxText;
         //rxText = decoder.parse(rxData);

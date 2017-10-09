@@ -27,7 +27,7 @@ import java.util.List;
  * tab in the GUI.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2016-11-25
+ * @last-modified 2017-10-08
  * @since 2016-09-16
  */
 public class TxRx {
@@ -299,9 +299,8 @@ public class TxRx {
      * @param data
      */
     public void addRxData(byte[] data) {
-
+        logger.debug("addRxData() called with data = " + Debugging.toString(data));
         rxDataEngine.parse(data);
-
     }
 
     /**
