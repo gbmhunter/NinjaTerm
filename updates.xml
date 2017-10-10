@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.10/">
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.10_unix.sh" newVersion="0.8.10" newMediaFileId="176" fileSize="8169725" bundledJre="" archive="false">
-    <comment language="en">v0.8.10
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.8.11/">
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.11_unix.sh" newVersion="0.8.11" newMediaFileId="176" fileSize="8170332" bundledJre="" archive="false">
+    <comment language="en">v0.8.11
+-------
+
+- Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
+- Removed incorrect 'Downloads 0' image from README, closes #214.
+
+v0.8.10
 -------
 
 - Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
@@ -230,8 +236,14 @@ v0.1.0
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.10_macos.dmg" newVersion="0.8.10" newMediaFileId="36" fileSize="8802439" bundledJre="" archive="false">
-    <comment language="en">v0.8.10
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.11_macos.dmg" newVersion="0.8.11" newMediaFileId="36" fileSize="8802439" bundledJre="" archive="false">
+    <comment language="en">v0.8.11
+-------
+
+- Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
+- Removed incorrect 'Downloads 0' image from README, closes #214.
+
+v0.8.10
 -------
 
 - Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
@@ -460,8 +472,14 @@ v0.1.0
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.10_windows.exe" newVersion="0.8.10" newMediaFileId="23" fileSize="9355264" bundledJre="" archive="false">
-    <comment language="en">v0.8.10
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.8.11_windows.exe" newVersion="0.8.11" newMediaFileId="23" fileSize="9355776" bundledJre="" archive="false">
+    <comment language="en">v0.8.11
+-------
+
+- Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
+- Removed incorrect 'Downloads 0' image from README, closes #214.
+
+v0.8.10
 -------
 
 - Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
