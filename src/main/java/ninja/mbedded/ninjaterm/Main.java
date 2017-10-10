@@ -75,11 +75,11 @@ public class Main extends Application {
 //        configurator.doConfigure(configStream); // loads logback file
 //        configStream.close();
 
-        //===== START CONSOLE LOGGING =====//
+        //===== MANUAL LOGGING ENABLING =====//
         // NOTE: We shouldn't need to enabled this anymore, it should be done
         // by passing --logc to the app on the command line (or through Gradle)
 //        LoggerUtils.consoleLoggingEnabled.set(true);
-//        logger.debug("start() called.");
+//        LoggerUtils.fileLoggingEnabled.set(true);
 
         //==============================================//
         //========== UN-CAUGHT EXCEPTION SETUP =========//

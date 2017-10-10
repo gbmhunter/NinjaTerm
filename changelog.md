@@ -1,3 +1,9 @@
+v0.8.11
+-------
+
+- Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
+- Removed incorrect 'Downloads 0' image from README, closes #214.
+
 v0.8.10
 -------
 
