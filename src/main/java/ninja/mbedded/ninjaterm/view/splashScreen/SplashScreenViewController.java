@@ -13,13 +13,18 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.appInfo.AppInfo;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller for the splash screen.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-20
- * @last-modified 2016-10-11
+ * @last-modified 2017-10-09
  */
 public class SplashScreenViewController {
 
@@ -57,6 +62,8 @@ public class SplashScreenViewController {
     private int charIndex = 0;
 
     private String nameAndVersionString;
+
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     /**
      * The bogus "loading" messages displayed on the splash screen after the app name, version and basic
@@ -108,21 +115,16 @@ public class SplashScreenViewController {
     private double[] charIntervalsMs = new double[]{
             25,     //
             1500,   // N
-            75,    // i
-            50,    // n
+            75,     // i
+            50,     // n
             150,    // j
             100,    // a
             75,     // T
             100,    // e
-            50,    // r
-            75,    // m
+            50,     // r
+            75,     // m
             25,     //
-            300,    // v
-            75,    // X
-            150,    // .
-            75,     // X
-            50,    // .
-            125,    // X
+            300,    // v (NOTE: VERSION NUMBER DELAYS GET ADDED HERE AT RUNTIME, dependent on the number of chars in the version number)
             50,     // \r
             25,     // \r
             300,    // A
@@ -167,6 +169,7 @@ public class SplashScreenViewController {
     //================================================================================================//
 
     public SplashScreenViewController() {
+        logger.debug("SplashScreenViewController() called.");
     }
 
     public void init() {
@@ -225,7 +228,7 @@ public class SplashScreenViewController {
         // Add text object as second-to-lat child of TextFlow (flashing caret is last child)
         loadingMsgsTextFlow.getChildren().add(loadingMsgsTextFlow.getChildren().size() - 1, loadingMsgText);
 
-        // Get version
+        // Get version (does not have "v" at the start)
         String versionNumber = AppInfo.getVersionNumber();
 
         // The version can be null, but this should only occur in a development
@@ -235,6 +238,34 @@ public class SplashScreenViewController {
         }
 
         nameAndVersionString = " NinjaTerm v" + versionNumber + "\r\rA free tool by www.mbedded.ninja\r\r";
+
+        //==============================================//
+        //======== ADD DELAYS FOR VERSION NUMBER =======//
+        //==============================================//
+        List<Double> newCharIntervalsMs = new ArrayList<Double>();
+        // Copy first 12 elements (up to the "v" for the version number)
+        for(int i = 0; i < 12; i++) {
+            newCharIntervalsMs.add(charIntervalsMs[i]);
+        }
+
+        // Insert enough delays for the version
+        for(int i = 0; i < versionNumber.length(); i++) {
+            newCharIntervalsMs.add(50.0);
+        }
+
+        // Copy rest of array
+        for(int i = 12; i < charIntervalsMs.length; i++) {
+            newCharIntervalsMs.add(charIntervalsMs[i]);
+        }
+
+        charIntervalsMs = new double[newCharIntervalsMs.size()];
+        for(int i = 0; i < newCharIntervalsMs.size(); i++) {
+            charIntervalsMs[i] = newCharIntervalsMs.get(i);
+        }
+
+        // Check that there are enough char interval elements for the string we are going to display.
+        if(charIntervalsMs.length != nameAndVersionString.length())
+            throw new RuntimeException("The charIntervalsMs array does not have enough elements for the length of nameAndVersionString.");
 
         createNextKeyFrame();
     }

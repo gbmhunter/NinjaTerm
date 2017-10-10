@@ -4,7 +4,7 @@ NinjaTerm
 
 #### A serial port terminal that's got your back.
 
-[![Travis](https://img.shields.io/travis/mbedded-ninja/NinjaTerm.svg)](https://travis-ci.org/mbedded-ninja/NinjaTerm) [![Github All Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/) [![Github Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/latest/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/)
+[![Travis](https://img.shields.io/travis/mbedded-ninja/NinjaTerm.svg)](https://travis-ci.org/mbedded-ninja/NinjaTerm) [![Github All Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/)
 
 - Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
