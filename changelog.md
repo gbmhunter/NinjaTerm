@@ -1,3 +1,8 @@
+vX.X.X
+------
+
+- Fixed bug where exception 'ReferenceError: Can't find variable: numCharsToRemove' was being thrown when a large number of chars were sent to NinjaTerm, closes #215.
+
 v0.8.11
 -------
 

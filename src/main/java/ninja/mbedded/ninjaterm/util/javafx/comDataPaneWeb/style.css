@@ -33,6 +33,11 @@ body {
     font-size: 18px;
 
     white-space: pre-line;
+
+    /* Standard data/terminal behaviour is to break right
+     on the margin */
+    word-wrap: break-word;
+
 }
 
 #down-arrow {

@@ -32,6 +32,7 @@ $( document ).ready(function() {
         }
     });
 
+    $("#com-data").css("width", 200);
 
 });
 
