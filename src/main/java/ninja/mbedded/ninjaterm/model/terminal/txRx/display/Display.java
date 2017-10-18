@@ -97,7 +97,7 @@ public class Display {
     /**
      * If true wrapping is enabled, otherwise false.
      */
-    public SimpleBooleanProperty wrappingEnabled = new SimpleBooleanProperty(false);
+    public SimpleBooleanProperty wrappingEnabled = new SimpleBooleanProperty(true);
 
     /**
      * The wrapping width of text in the RX pane.
@@ -119,6 +119,10 @@ public class Display {
 
         wrappingWidth.addListener((observable, oldValue, newValue) -> {
             logger.debug("wrappingWidth set to \"" + Double.toString(newValue.doubleValue()) + "\".");
+        });
+
+        wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+            logger.debug("wrappingEnabled set to \"" + newValue.toString() + "\".");
         });
 
     }

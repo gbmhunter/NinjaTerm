@@ -140,8 +140,14 @@ public class DisplayViewController {
         //================ SETUP WRAPPING ==============//
         //==============================================//
 
+        // Set default value from model
+        wrappingCheckBox.selectedProperty().setValue(terminal.txRx.display.wrappingEnabled.get());
+        wrappingCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            terminal.txRx.display.wrappingEnabled.set(newValue);
+        });
+
         // Bind "wrapping enabled" checkbox to model
-        terminal.txRx.display.wrappingEnabled.bind(wrappingCheckBox.selectedProperty());
+//        terminal.txRx.display.wrappingEnabled.bind(wrappingCheckBox.selectedProperty());
 
         TooltipUtil.addDefaultTooltip(wrappingCheckBox, "Enable this to wrap at a certain pixel width (as defined below). If this is disabled, long lines of TX/RX text will cause horizontal scroll-bars to appear.");
 

@@ -5,6 +5,9 @@ var name = "";
 var isCaretShown = false;
 var currColor = '#FFFFFF';
 
+var wrappingEnabled = false;
+var wrappingWidthPx = 200.0;
+
 $( document ).ready(function() {
     console.log('doc ready');
 
@@ -31,8 +34,6 @@ $( document ).ready(function() {
             java.upKeyOrMouseWheelUpOccurred();
         }
     });
-
-
 });
 
 /*function handleScroll() {
@@ -153,6 +154,29 @@ function getComDataWrapperScrollTop() {
     return $("#com-data-wrapper").scrollTop();
 }
 
+function setWrappingEnabled(value) {
+    java.log("setWrappingEnabled() called with value = \"" + value + "\".");
+    if(value) {
+        java.log("Setting CSS property to enable wrapping...");
+        $("#com-data").css("width", wrappingWidthPx);
+        $("#com-data").css("white-space", "pre-line");
+    } else {
+        java.log("Setting CSS property to disable wrapping...");
+        $("#com-data").css("width", "100%");
+        $("#com-data").css("white-space", "nowrap");
+    }
+    wrappingEnabled = value;
+}
+
+function setWrappingWidthPx(width) {
+    java.log("setWrappingWidthPx() with width = \"" + width + "\".");
+    if(wrappingEnabled) {
+        $("#com-data").css("width", width);
+    }
+    // Save width to global so we can set width again if wrapping is enabled then disabled
+    wrappingWidthPx = width;
+}
+
 function setComDataWrapperScrollTop(scrollTop) {
     $("#com-data-wrapper").scrollTop(scrollTop);
 }
@@ -210,7 +234,7 @@ function trim(numChars) {
     // we don't want it to
     //$("#com-data-wrapper").off('scroll', handleScroll);
 
-    numCharsToRemove = numChars;
+    var numCharsToRemove = numChars;
 
     // #com-data is a div
     $("#com-data").children().each(function(index, element) {
@@ -218,7 +242,7 @@ function trim(numChars) {
         //java.log("currChildNode = ");
         //java.log(JSON.stringify(element));
 
-        text = $(element).text();
+        var text = $(element).text();
         //java.log("element.text() = ");
         //java.log(JSON.stringify(text));
 
@@ -245,7 +269,6 @@ function trim(numChars) {
     if(numCharsToRemove > 0) {
         throw "trim() was requested to remove too many chars. Remaining chars to remove = " + numCharsToRemove;
     }
-
 }
 
 function showCaret(trueFalse) {
@@ -285,7 +308,7 @@ function showCaret(trueFalse) {
 //!             quite processor intensive to run all the time.
 function checkCharCount(expectedCharCount) {
 
-    charCount = 0;
+    var charCount = 0;
     $("#com-data").children().each(function(index, element) {
         //java.log("html().length = " + $(element).html().length);
         charCount += $(element).html().length;
@@ -295,7 +318,6 @@ function checkCharCount(expectedCharCount) {
     if(charCount != expectedCharCount) {
         throw "Actual char count (" + charCount + ") did not match expected char count (" + expectedCharCount + ").";
     }
-
 }
 
 
