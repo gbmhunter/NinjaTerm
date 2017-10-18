@@ -5,6 +5,9 @@ var name = "";
 var isCaretShown = false;
 var currColor = '#FFFFFF';
 
+var wrappingEnabled = false;
+var wrappingWidthPx = 200.0;
+
 $( document ).ready(function() {
     console.log('doc ready');
 
@@ -31,9 +34,6 @@ $( document ).ready(function() {
             java.upKeyOrMouseWheelUpOccurred();
         }
     });
-
-    $("#com-data").css("width", 200);
-
 });
 
 /*function handleScroll() {
@@ -152,6 +152,29 @@ function scrollToBottom() {
 
 function getComDataWrapperScrollTop() {
     return $("#com-data-wrapper").scrollTop();
+}
+
+function setWrappingEnabled(value) {
+    java.log("setWrappingEnabled() called with value = \"" + value + "\".");
+    if(value) {
+        java.log("Setting CSS property to enable wrapping...");
+        $("#com-data").css("width", wrappingWidthPx);
+        $("#com-data").css("white-space", "pre-line");
+    } else {
+        java.log("Setting CSS property to disable wrapping...");
+        $("#com-data").css("width", "100%");
+        $("#com-data").css("white-space", "nowrap");
+    }
+    wrappingEnabled = value;
+}
+
+function setWrappingWidthPx(width) {
+    java.log("setWrappingWidthPx() with width = \"" + width + "\".");
+    if(wrappingEnabled) {
+        $("#com-data").css("width", width);
+    }
+    // Save width to global so we can set width again if wrapping is enabled then disabled
+    wrappingWidthPx = width;
 }
 
 function setComDataWrapperScrollTop(scrollTop) {

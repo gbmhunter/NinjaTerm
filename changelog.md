@@ -2,6 +2,7 @@ vX.X.X
 ------
 
 - Fixed bug where exception 'ReferenceError: Can't find variable: numCharsToRemove' was being thrown when a large number of chars were sent to NinjaTerm, closes #215.
+- Fixed bug where wrapping did not work in RX or TX frames, closes #216.
 
 v0.8.11
 -------

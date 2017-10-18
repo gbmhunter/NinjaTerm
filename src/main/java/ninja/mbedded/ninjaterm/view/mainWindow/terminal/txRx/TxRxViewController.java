@@ -371,6 +371,18 @@ public class TxRxViewController {
         });
         terminal.stats.numCharsInRxDisplayBuffer.set(rxComDataPane.currNumChars.intValue());
 
+        // WRAPPING ENABLED
+        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+            rxComDataPane.setWrappingEnabled(newValue);
+        });
+        rxComDataPane.setWrappingEnabled(terminal.txRx.display.wrappingEnabled.get());
+
+        // WRAPPING WIDTH
+        terminal.txRx.display.wrappingWidth.addListener((observable, oldValue, newValue) -> {
+            rxComDataPane.setWrappingWidthPx(newValue.doubleValue());
+        });
+        rxComDataPane.setWrappingWidthPx(terminal.txRx.display.wrappingWidth.doubleValue());
+
 
         //==============================================//
         //============== SETUP TX DATA PANE ============//
@@ -391,6 +403,18 @@ public class TxRxViewController {
             terminal.stats.numCharsInTxDisplayBuffer.set(newValue.intValue());
         });
         terminal.stats.numCharsInTxDisplayBuffer.set(txComDataPane.currNumChars.intValue());
+
+        // WRAPPING ENABLED
+        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+            txComDataPane.setWrappingEnabled(newValue);
+        });
+        txComDataPane.setWrappingEnabled(terminal.txRx.display.wrappingEnabled.get());
+
+        // WRAPPING WIDTH
+        terminal.txRx.display.wrappingWidth.addListener((observable, oldValue, newValue) -> {
+            txComDataPane.setWrappingWidthPx(newValue.doubleValue());
+        });
+        txComDataPane.setWrappingWidthPx(terminal.txRx.display.wrappingWidth.doubleValue());
 
         // Call this to update the display of the TX/RX pane into its default
         // state

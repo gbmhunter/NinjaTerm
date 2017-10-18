@@ -376,6 +376,16 @@ public class ComDataPaneWeb extends StackPane {
 
     }
 
+    public void setWrappingEnabled(Boolean value) {
+        logger.debug("setWrappingEnabled() called with value = " + value.toString());
+        runScriptWhenReady("setWrappingEnabled(" + value.toString() + ")");
+    }
+
+    public void setWrappingWidthPx(double width) {
+        logger.debug("setWrappingWidthPx() called with width = " + Double.toString(width));
+        runScriptWhenReady("setWrappingWidthPx(" + Double.toString(width) + ")");
+    }
+
     private Integer getComDataWrapperScrollTop() {
         return (Integer) webEngine.executeScript("getComDataWrapperScrollTop()");
     }
