@@ -1,3 +1,4 @@
+<p align="center"><img src="logo/logo.png" alt="NinjaTerm" height="200px"></p>
 
 NinjaTerm
 =========
