@@ -1,4 +1,4 @@
-<p align="center"><img src="img/logo/logotype.png" alt="QList" width="200px" height="200px"></p>
+<p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
 
 NinjaTerm
 =========
