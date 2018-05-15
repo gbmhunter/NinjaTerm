@@ -413,29 +413,25 @@ public class ComDataPane extends StackPane {
             //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
             //==============================================//
 
-            int insertionStartIndex = styledTextArea.getLength();
+            final int insertionStartIndex = styledTextArea.getLength();
             styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
-            int insertionStopIndex = styledTextArea.getLength();
+            final int insertionStopIndex = styledTextArea.getLength();
 
             logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
 
-            Color textColor = streamedData.getColourMarkers().get(x).color;
-            logger.debug("red = " + textColor.getRed());
-            logger.debug("green = " + textColor.getGreen());
-            logger.debug("blue = " + textColor.getBlue());
+            final Color textColor = streamedData.getColourMarkers().get(x).color;
 
-            Double red = textColor.getRed()*255.0;
-            Double green = textColor.getGreen()*255.0;
-            Double blue = textColor.getBlue()*255.0;
-            String textColorString = "rgb(" + red.intValue() + ", " + green.intValue() + ", " + blue.intValue() + ")";
+            final Double red = textColor.getRed()*255.0;
+            final Double green = textColor.getGreen()*255.0;
+            final Double blue = textColor.getBlue()*255.0;
+            final String textColorString = "rgb(" + red.intValue() + ", " + green.intValue() + ", " + blue.intValue() + ")";
 
             logger.debug("textColorString = " + textColorString);
 
             styledTextArea.setStyle(
                     insertionStartIndex,
                     insertionStopIndex,
-                    "-fx-fill: " + textColorString + ";");
-//                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(streamedData.getColourMarkers().get(x).color));
+                    "-fx-fill: " + textColorString + "; -fx-font-family: monospace; -fx-font-size: 12px;");
 
             // Update the num. chars added with all the text added to this new Text node
             numCharsAdded += textToAppend.length();
