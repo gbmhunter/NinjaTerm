@@ -581,10 +581,12 @@ public class ComDataPane extends StackPane {
 
     public void setWrappingEnabled(Boolean value) {
         logger.debug("setWrappingEnabled() called.");
+        styledTextArea.setWrapText(value);
     }
 
     public void setWrappingWidthPx(double value) {
         logger.debug("setWrappingWidthPx() called.");
+//        styledTextArea.setMaxWidth(value);
     }
 
 }
