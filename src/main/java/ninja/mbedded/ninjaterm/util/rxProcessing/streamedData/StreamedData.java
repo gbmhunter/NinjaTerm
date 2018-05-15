@@ -596,6 +596,10 @@ public class StreamedData {
         return output;
     }
 
+    /**
+     * Call to get a list of all the new line markers.
+     * @return A list of all the new line markers.
+     */
     public List<NewLineMarker> getNewLineMarkers() {
         //return newLineMarkers;
 

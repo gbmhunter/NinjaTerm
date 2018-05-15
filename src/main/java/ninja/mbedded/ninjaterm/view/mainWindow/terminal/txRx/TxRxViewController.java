@@ -16,6 +16,7 @@ import javafx.scene.layout.HBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb;
+import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController;
@@ -72,14 +73,20 @@ public class TxRxViewController {
     @FXML
     private GridPane dataContainerGridPane;
 
+//    @FXML
+//    private ComDataPaneWeb rxComDataPane;
+
     @FXML
-    private ComDataPaneWeb rxComDataPane;
+    private ComDataPane rxComDataPane;
 
     @FXML
     private HBox draggableHBox;
 
+//    @FXML
+//    private ComDataPaneWeb txComDataPane;
+
     @FXML
-    private ComDataPaneWeb txComDataPane;
+    private ComDataPane txComDataPane;
 
     //==============================================//
     //============ LEFT-HAND SIDE PANE =============//
