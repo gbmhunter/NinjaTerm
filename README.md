@@ -1,4 +1,4 @@
-<p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
+<p align="center"><img src="img/logo/logotype.png" alt="QList" width="200px" height="200px"></p>
 
 NinjaTerm
 =========
@@ -31,12 +31,13 @@ Developing
 ==========
 
 1. Fork repo, then download/clone this repository into a folder on your computer, and make a new `feature/xxx` or `bug/xxx` branch.
-2. Make sure you have a 32-bit version of the JDK installed (must be at least JDK 8).
-3. Download the community edition of Intellij IDEA (it's free!). Load the project using the provided IntelliJ files. Select the JDK installed on your computer.
-5. Make sure you are on the develop branch. Create a new branch from the head of the develop branch to create your new feature on.
-6. Write code!
-7. Build/run NinjaTerm by running the "run-dev" build config (this will start NinjaTerm without the splash screen, for quicker debugging).
-7. Commit and submit a pull-request when your feature is complete.
+1. Make sure you have a 32-bit version of the JDK installed (must be at least JDK 8).
+1. Download the community edition of Intellij IDEA (it's free!). Load the project using the provided IntelliJ files. Select the JDK installed on your computer.
+1. Download and install gradle. Create a file called `gradle.properties` at `<user home dir>/.gradle/`. Paste the following line into this file: `install4jHomeDir=none` (if creating installable executables, install Install4J and replace `none` with the actual install directory).
+1. Make sure you are on the develop branch. Create a new branch from the head of the develop branch to create your new feature on.
+1. Write code!
+1. Build/run NinjaTerm by running the "run-dev" build config (this will start NinjaTerm without the splash screen, for quicker debugging).
+1. Commit and submit a pull-request when your feature is complete.
 
 [Scene Builder](http://gluonhq.com/labs/scene-builder/) can be great tool to install alongside IntelliJ for faster development of the JavaFX UI.
 
