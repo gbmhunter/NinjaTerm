@@ -157,7 +157,7 @@ public class ComDataPane extends StackPane {
 //        styledTextArea.setStyle("-fx-fill: " + javaColorToCSS(defaultTextColor) + ";");
 
         // We don't want the user to be able to edit the data pane
-        styledTextArea.setEditable(true);
+        styledTextArea.setEditable(false);
 
         styledTextArea.heightProperty().addListener((observable, oldValue, newValue) -> {
             logger.debug("heightProperty listener called.");
