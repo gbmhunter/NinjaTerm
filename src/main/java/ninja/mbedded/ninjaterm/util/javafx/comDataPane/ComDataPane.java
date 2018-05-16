@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -23,7 +22,6 @@ import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.InlineCssTextArea;
-import org.fxmisc.richtext.InlineStyleTextArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
@@ -64,6 +62,12 @@ public class ComDataPane extends StackPane {
      * This needs to be more than when the mouse is not hovering on it.
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
+
+    /**
+     * The default text colour for COM data displayed in this pane. The text color can be changed
+     * with colour markers.
+     */
+    private static final Color defaultTextColor = Color.color(0.0, 1.0, 0.0);
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -119,6 +123,14 @@ public class ComDataPane extends StackPane {
 
     public SimpleIntegerProperty currNumChars = new SimpleIntegerProperty(0);
 
+    /**
+     * Starts as true. Switches to false as soon as the first colour marker is received and stays false
+     * for the rest of time! (well, until the app closes)
+     */
+    private Boolean defaultTextColorActive = true;
+
+    private double fontSizePx = 12.0;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -135,14 +147,14 @@ public class ComDataPane extends StackPane {
         //============ STYLED TEXT AREA SETUP ==========//
         //==============================================//
 
-//        styledTextArea = new StyledTextArea<>(
-//                ParStyle.EMPTY, ( paragraph, style) -> paragraph.setStyle(style.toCss()),
-//                TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(Color.GREEN),
-//                ( text, style) -> text.setStyle(style.toCss()));
+        // InlineCssTextArea is the simplest for of the RichTextFX UI
         styledTextArea = new InlineCssTextArea();
 
         // Set the background to black
         styledTextArea.setStyle("-fx-background-color: black;");
+
+        // Set default text colour
+//        styledTextArea.setStyle("-fx-fill: " + javaColorToCSS(defaultTextColor) + ";");
 
         // We don't want the user to be able to edit the data pane
         styledTextArea.setEditable(true);
@@ -350,9 +362,13 @@ public class ComDataPane extends StackPane {
         }
 
         //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-        int startIndex = styledTextArea.getLength();
+        final int startIndex = styledTextArea.getLength();
         styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
-        int stopIndex = styledTextArea.getLength();
+        final int stopIndex = styledTextArea.getLength();
+
+        if(defaultTextColorActive) {
+            styledTextArea.setStyle(startIndex, stopIndex, "-fx-fill: " + javaColorToCSS(defaultTextColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+        }
 
         // If the previous StreamedText object had a colour to apply when the next character was received,
         // add it now
@@ -375,6 +391,7 @@ public class ComDataPane extends StackPane {
         // This loop won't run if there is no elements in the TextColors array
         //int currIndexToInsertNodeAt = nodeIndexToStartShift;
         for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
+            defaultTextColorActive = false;
             //Text newText = new Text();
 
             int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).getCharPos();
@@ -421,17 +438,10 @@ public class ComDataPane extends StackPane {
 
             final Color textColor = streamedData.getColourMarkers().get(x).color;
 
-            final Double red = textColor.getRed()*255.0;
-            final Double green = textColor.getGreen()*255.0;
-            final Double blue = textColor.getBlue()*255.0;
-            final String textColorString = "rgb(" + red.intValue() + ", " + green.intValue() + ", " + blue.intValue() + ")";
-
-            logger.debug("textColorString = " + textColorString);
-
             styledTextArea.setStyle(
                     insertionStartIndex,
                     insertionStopIndex,
-                    "-fx-fill: " + textColorString + "; -fx-font-family: monospace; -fx-font-size: 12px;");
+                    "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
 
             // Update the num. chars added with all the text added to this new Text node
             numCharsAdded += textToAppend.length();
@@ -587,6 +597,19 @@ public class ComDataPane extends StackPane {
     public void setWrappingWidthPx(double value) {
         logger.debug("setWrappingWidthPx() called.");
 //        styledTextArea.setMaxWidth(value);
+    }
+
+    /**
+     * Converts from a Java Color object to a CSS rgb() string.
+     * @param color
+     */
+    private String javaColorToCSS(Color color) {
+        final Double red = color.getRed()*255.0;
+        final Double green = color.getGreen()*255.0;
+        final Double blue = color.getBlue()*255.0;
+        final String textColorString = "rgb(" + red.intValue() + ", " + green.intValue() + ", " + blue.intValue() + ")";
+
+        return textColorString;
     }
 
 }
