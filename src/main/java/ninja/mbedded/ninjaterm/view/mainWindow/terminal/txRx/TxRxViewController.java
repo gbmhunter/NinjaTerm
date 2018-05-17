@@ -98,18 +98,6 @@ public class TxRxViewController {
     @FXML
     private Button clearTextButton;
 
-//    @FXML
-//    private Button displayButton;
-
-//    @FXML
-//    private Button formattingButton;
-
-//    @FXML
-//    private Button coloriserButton;
-
-//    @FXML
-//    private Button filtersButton;
-
     @FXML
     private Button freezeRxButton;
 
@@ -144,11 +132,6 @@ public class TxRxViewController {
      * Stores the terminal model which drives this view (this is also stored in model, but it is in an array).
      */
     private Terminal terminal;
-
-//    private DisplayViewController displayViewController;
-//    private FormattingViewController formattingViewController;
-//    private ColouriserViewController colouriserViewController;
-//    private FiltersViewController filtersViewController;
 
     private SimpleIntegerProperty webViewLoadCount = new SimpleIntegerProperty(0);
 
@@ -478,14 +461,6 @@ public class TxRxViewController {
 
     }
 
-//    private void handleWebViewLoaded() {
-//        if(rxComDataPane.webViewLoaded.get() && txComDataPane.webViewLoaded.get()) {
-//            logger.debug("Both web views have loaded, it is safe to run scripts...");
-//            rxComDataPane.safeToRunScripts.set(true);
-//            txComDataPane.safeToRunScripts.set(true);
-//        }
-//    }
-
     private void refreshFreezeRxButton() {
         if (!terminal.txRx.rxDataEngine.isFrozen.get()) {
             freezeRxButton.setText("Freeze RX");
@@ -546,24 +521,6 @@ public class TxRxViewController {
         });
     }
 
-    /**
-     * Updates the text wrapping to the current user-selected settings.
-     * Called from both the checkbox and wrapping width textfield listeners.
-     */
-    /*private void updateTextWrapping() {
-
-        if (terminal.txRx.display.wrappingEnabled.get()) {
-            logger.debug("\"Wrapping\" checkbox is currently checked, applying wrapping value.");
-
-            // Set the width of the TextFlow UI object. This will set the wrapping width
-            // (there is no wrapping object)
-            rxDataTextFlow.setMaxWidth(terminal.txRx.display.wrappingWidth.get());
-
-        } else {
-            logger.debug("\"Wrapping\" checkbox is current unchecked, not apply wrapping value.");
-            rxDataTextFlow.setMaxWidth(Double.MAX_VALUE);
-        }
-    }*/
     public void showPopover(Button button, PopOver popOver) {
 
         logger.debug(".showPopover() called.");
@@ -604,10 +561,15 @@ public class TxRxViewController {
         switch (terminal.txRx.display.selLayoutOption.get()) {
             case SINGLE_PANE:
 
-                // Hide TX ComDataPane
+                // Hide TX ComDataPane (just use RX pane for both RX and TX)
                 if (dataContainerGridPane.getChildren().contains(txComDataPane)) {
                     dataContainerGridPane.getChildren().remove(txComDataPane);
                 }
+
+                // Remove the listener which adds TX data to the TX pane (TX pane
+                // no longer exists)
+                // TODO: This is rather hacky, clearing all listeners! Rather, we should check if particular listener exists, and if so, remove it
+                terminal.txRx.txDataToDisplayListeners.clear();
 
                 if (dataContainerGridPane.getChildren().contains(draggableHBox)) {
                     dataContainerGridPane.getChildren().remove(draggableHBox);
@@ -629,6 +591,13 @@ public class TxRxViewController {
                 if (!dataContainerGridPane.getChildren().contains(txComDataPane)) {
                     dataContainerGridPane.getChildren().add(txComDataPane);
                 }
+
+                // Add listener to add TX data to TX data pane
+                // TODO: This is rather hacky, clearing all listeners and then re-adding ours! Rather, we should check if particular listener exists, and if not, add it
+                terminal.txRx.txDataToDisplayListeners.clear();
+                terminal.txRx.txDataToDisplayListeners.add(streamedData -> {
+                    txComDataPane.addData(streamedData);
+                });
 
                 if (!dataContainerGridPane.getChildren().contains(draggableHBox)) {
                     dataContainerGridPane.getChildren().add(draggableHBox);

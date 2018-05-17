@@ -21,6 +21,7 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.CharacterHit;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
@@ -468,12 +469,16 @@ public class ComDataPane extends StackPane {
         //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
         //===================================================//
 
-        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
+        // These magic numbers of x=0, y=10 seem to be exactly what is needed to keep the same section of data
+        // visible after characters have been trimmed from the start
+        CharacterHit charHit = styledTextArea.hit(0, 10);
+        logger.debug("charHit = " + charHit.toString() + ", charHit.getInsertionIndex() = " + charHit.getInsertionIndex());
+        OptionalInt optionalInt = charHit.getCharacterIndex();
         int charAtZeroTenBeforeRemoval;
-        if(optionalInt.isPresent())
-            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
-        else
-            charAtZeroTenBeforeRemoval = 0;
+//        if(optionalInt.isPresent())
+//            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
+//        else
+        charAtZeroTenBeforeRemoval = charHit.getInsertionIndex();
 
 
         logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
@@ -490,6 +495,7 @@ public class ComDataPane extends StackPane {
 //        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
 //        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
 
+        logger.debug("Deciding where to scroll too...");
         switch(scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 // This moves the caret to the end of the "document"
@@ -507,9 +513,8 @@ public class ComDataPane extends StackPane {
                 throw new RuntimeException("scrollState not recognised.");
         }
 
-
+        logger.debug("addData() finished.");
         return numCharsAdded;
-
     }
 
     public void clearData() {
@@ -525,6 +530,7 @@ public class ComDataPane extends StackPane {
      *
      */
     private int trimBufferIfRequired() {
+        logger.debug("trimBufferIfRequired() called.");
 
         int numCharsToRemove = 0;
 
@@ -538,6 +544,7 @@ public class ComDataPane extends StackPane {
             styledTextArea.replaceText(0, numCharsToRemove, "");
 
         }
+        logger.debug("trimBufferIfRequired() finished.");
 
         return numCharsToRemove;
     }
