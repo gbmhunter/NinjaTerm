@@ -45,8 +45,8 @@ public class DisplayViewController {
     @FXML
     private CheckBox wrappingCheckBox;
 
-    @FXML
-    private ApplyTextField wrappingWidthTextField;
+//    @FXML
+//    private ApplyTextField wrappingWidthTextField;
 
     @FXML
     private ApplyTextField bufferSizeTextField;
@@ -153,39 +153,39 @@ public class DisplayViewController {
 
         // Upon pressing enter or loosing focus, try and convert the wrapping width value and
         // update the model
-        wrappingWidthTextField.onApply.addListener((observable, oldValue, newValue) -> {
-            // Convert wrapping width string into double, and then perform
-            // sanity checks
-            Double wrappingWidth;
-            try {
-                wrappingWidth = Double.parseDouble(newValue);
-            } catch (NumberFormatException e) {
-                model.status.addErr("Wrapping width was not a valid number.");
-                wrappingWidth = 0.0;
-            }
-
-            if (wrappingWidth <= 0.0) {
-                model.status.addErr("Wrapping width must be greater than 0.");
-                wrappingWidth = 0.0;
-            }
-
-            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
-        });
+//        wrappingWidthTextField.onApply.addListener((observable, oldValue, newValue) -> {
+//            // Convert wrapping width string into double, and then perform
+//            // sanity checks
+//            Double wrappingWidth;
+//            try {
+//                wrappingWidth = Double.parseDouble(newValue);
+//            } catch (NumberFormatException e) {
+//                model.status.addErr("Wrapping width was not a valid number.");
+//                wrappingWidth = 0.0;
+//            }
+//
+//            if (wrappingWidth <= 0.0) {
+//                model.status.addErr("Wrapping width must be greater than 0.");
+//                wrappingWidth = 0.0;
+//            }
+//
+//            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
+//        });
 
         // Set default value from model
         // (we assume the value in the model to be valid and no checking needed)
-        wrappingWidthTextField.textProperty().set(Double.toString(terminal.txRx.display.wrappingWidth.get()));
+//        wrappingWidthTextField.textProperty().set(Double.toString(terminal.txRx.display.wrappingWidth.get()));
 
 
-        // Disable the wrapping width textfield if wrapping is disabled.
-        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
-            wrappingWidthTextField.setDisable(!newValue);
-        });
-
-        // Set default state
-        wrappingWidthTextField.setDisable(!terminal.txRx.display.wrappingEnabled.get());
-
-        TooltipUtil.addDefaultTooltip(wrappingWidthTextField, "The width (in pixels) that you want TX/RX data to wrap at.");
+//        // Disable the wrapping width textfield if wrapping is disabled.
+//        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
+//            wrappingWidthTextField.setDisable(!newValue);
+//        });
+//
+//        // Set default state
+//        wrappingWidthTextField.setDisable(!terminal.txRx.display.wrappingEnabled.get());
+//
+//        TooltipUtil.addDefaultTooltip(wrappingWidthTextField, "The width (in pixels) that you want TX/RX data to wrap at.");
 
         //==============================================//
         //============== BUFFER-SIZE SETUP =============//

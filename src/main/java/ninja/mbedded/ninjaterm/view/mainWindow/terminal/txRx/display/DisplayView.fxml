@@ -42,11 +42,11 @@
     <VBox spacing="5" styleClass="border">
         <CheckBox fx:id="wrappingCheckBox">Wrapping</CheckBox>
 
-        <HBox alignment="CENTER_LEFT" spacing="10">
-            <Label>Wrapping Width:</Label>
-            <ApplyTextField fx:id="wrappingWidthTextField" prefWidth="60"></ApplyTextField>
-            <Label>px</Label>
-        </HBox>
+        <!--<HBox alignment="CENTER_LEFT" spacing="10">-->
+            <!--<Label>Wrapping Width:</Label>-->
+            <!--<ApplyTextField fx:id="wrappingWidthTextField" prefWidth="60"></ApplyTextField>-->
+            <!--<Label>px</Label>-->
+        <!--</HBox>-->
     </VBox>
 
     <!-- SCROLL BEHAVIOUR -->

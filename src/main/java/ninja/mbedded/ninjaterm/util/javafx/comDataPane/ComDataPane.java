@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -22,8 +21,8 @@ import javafx.util.Duration;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.util.rxProcessing.streamedData.StreamedData;
 import org.fxmisc.flowless.VirtualizedScrollPane;
+import org.fxmisc.richtext.CharacterHit;
 import org.fxmisc.richtext.InlineCssTextArea;
-import org.fxmisc.richtext.InlineStyleTextArea;
 import org.fxmisc.richtext.StyledTextArea;
 import org.slf4j.Logger;
 
@@ -64,6 +63,12 @@ public class ComDataPane extends StackPane {
      * This needs to be more than when the mouse is not hovering on it.
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
+
+    /**
+     * The default text colour for COM data displayed in this pane. The text color can be changed
+     * with colour markers.
+     */
+    private static final Color defaultTextColor = Color.color(0.0, 1.0, 0.0);
 
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
@@ -117,6 +122,16 @@ public class ComDataPane extends StackPane {
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
+    public SimpleIntegerProperty currNumChars = new SimpleIntegerProperty(0);
+
+    /**
+     * Starts as true. Switches to false as soon as the first colour marker is received and stays false
+     * for the rest of time! (well, until the app closes)
+     */
+    private Boolean defaultTextColorActive = true;
+
+    private double fontSizePx = 12.0;
+
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
     //================================================================================================//
@@ -133,17 +148,17 @@ public class ComDataPane extends StackPane {
         //============ STYLED TEXT AREA SETUP ==========//
         //==============================================//
 
-//        styledTextArea = new StyledTextArea<>(
-//                ParStyle.EMPTY, ( paragraph, style) -> paragraph.setStyle(style.toCss()),
-//                TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(Color.GREEN),
-//                ( text, style) -> text.setStyle(style.toCss()));
+        // InlineCssTextArea is the simplest for of the RichTextFX UI
         styledTextArea = new InlineCssTextArea();
 
         // Set the background to black
         styledTextArea.setStyle("-fx-background-color: black;");
 
+        // Set default text colour
+//        styledTextArea.setStyle("-fx-fill: " + javaColorToCSS(defaultTextColor) + ";");
+
         // We don't want the user to be able to edit the data pane
-        styledTextArea.setEditable(true);
+        styledTextArea.setEditable(false);
 
         styledTextArea.heightProperty().addListener((observable, oldValue, newValue) -> {
             logger.debug("heightProperty listener called.");
@@ -286,140 +301,158 @@ public class ComDataPane extends StackPane {
 
     }
 
+    /**
+     *
+     * @param streamedData The characters and assoicated markers to format into the COM data pane.
+     * @return The number of chars added to the COM data pane.
+     */
     public int addData(StreamedData streamedData) {
 
-        throw new UnsupportedOperationException("addData() no longer supported.");
+//        throw new UnsupportedOperationException("addData() no longer supported.");
 
-//        logger.debug("addData() called with streamedData = " + streamedData);
-//
-//        //==============================================//
-//        //============= INPUT ARG CHECKS ===============//
-//        //==============================================//
-//
-////        if (existingTextNodes.size() == 0) {
-////            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
-////        }
-////
-////        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-////            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
-////        }
-//
-//        int numCharsAdded = 0;
-//
-//        // Remember the caret position before insertion of new text,
-//        // incase we need to use it for setting the scroll position
-//        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
-//        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
-//
-//        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
-//        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
-//
-//        //==============================================//
-//        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
-//        //==============================================//
-//
-//        //Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
-//
-//        // Copy all text before first ColourMarker entry into the first text node
-//
-//        int indexOfLastCharPlusOne;
-//        if (streamedData.getColourMarkers().size() == 0) {
-//            indexOfLastCharPlusOne = streamedData.getText().length();
-//        } else {
-//            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).position;
+        logger.debug("addData() called with streamedData = " + streamedData);
+
+        //==============================================//
+        //============= INPUT ARG CHECKS ===============//
+        //==============================================//
+
+//        if (existingTextNodes.size() == 0) {
+//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
 //        }
 //
-//        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
-//
-//        // Create new line characters for all new line markers that point to text
-//        // shifted above
-//        int currNewLineMarkerIndex = 0;
-//        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
-//            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
-//                break;
-//
-//            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + i, "\n");
-//            currNewLineMarkerIndex++;
+//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
+//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
 //        }
-//
-//        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-//        int startIndex = styledTextArea.getLength();
-//        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
-//        int stopIndex = styledTextArea.getLength();
-//
-//        // If the previous StreamedText object had a colour to apply when the next character was received,
-//        // add it now
-//        if(colorToApplyToNextChar != null) {
-//            /*styledTextArea.setStyle(
-//                    startIndex,
-//                    stopIndex,
-//                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
-//            /*styledTextArea.setStyle(
-//                    startIndex,
-//                    stopIndex,
-//                    "-fx-font-size: 12;");*/
-//            colorToApplyToNextChar = null;
-//        }
-//
-//        // Update the number of chars added with what was added to the last existing text node
-//        numCharsAdded += textToAppend.length();
-//
-//        // Create new text nodes and copy all text
-//        // This loop won't run if there is no elements in the TextColors array
-//        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
-//        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
-//            //Text newText = new Text();
-//
-//            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).position;
-//
-//            int indexOfLastCharInNodePlusOne;
-//            if (x >= streamedData.getColourMarkers().size() - 1) {
-//                indexOfLastCharInNodePlusOne = streamedData.getText().length();
-//            } else {
-//                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).position;
-//            }
-//
-//            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-//
-//            // Create new line characters for all new line markers that point to text
-//            // shifted above
-//            int insertionCount = 0;
-//            while (true) {
-//                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
-//                    break;
-//
-//                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
-//                    break;
-//
-//                textToAppend.insert(
-//                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-//                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
-//                currNewLineMarkerIndex++;
-//                insertionCount++;
-//            }
-//
-//            //==============================================//
-//            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
-//            //==============================================//
-//
-//            int insertionStartIndex = styledTextArea.getLength();
-//            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
-//            int insertionStopIndex = styledTextArea.getLength();
-//
-////            styledTextArea.setStyle(
-////                    insertionStartIndex,
-////                    insertionStopIndex,
-////                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(streamedData.getColourMarkers().get(x).color));
-//
-//            // Update the num. chars added with all the text added to this new Text node
-//            numCharsAdded += textToAppend.length();
-//
-//            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
-//
-//            //currIndexToInsertNodeAt++;
-//        }
-//
-//        if (streamedData.getColorToBeInsertedOnNextChar() != null) {
+
+        int numCharsAdded = 0;
+
+        // Remember the caret position before insertion of new text,
+        // incase we need to use it for setting the scroll position
+        int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
+        double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
+
+        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
+        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
+
+        //==============================================//
+        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
+        //==============================================//
+
+        //Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
+
+        // Copy all text before first ColourMarker entry into the first text node
+
+        int indexOfLastCharPlusOne;
+        if (streamedData.getColourMarkers().size() == 0) {
+            indexOfLastCharPlusOne = streamedData.getText().length();
+        } else {
+            indexOfLastCharPlusOne = streamedData.getColourMarkers().get(0).getCharPos();
+        }
+
+        StringBuilder textToAppend = new StringBuilder(streamedData.getText().substring(0, indexOfLastCharPlusOne));
+
+        // Create new line characters for all new line markers that point to text
+        // shifted above
+        int currNewLineMarkerIndex = 0;
+        for (int i = 0; i < streamedData.getNewLineMarkers().size(); i++) {
+            if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).charPos > indexOfLastCharPlusOne)
+                break;
+
+            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).charPos + i, "\n");
+            currNewLineMarkerIndex++;
+        }
+
+        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
+        final int startIndex = styledTextArea.getLength();
+        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
+        final int stopIndex = styledTextArea.getLength();
+
+        if(defaultTextColorActive) {
+            styledTextArea.setStyle(startIndex, stopIndex, "-fx-fill: " + javaColorToCSS(defaultTextColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+        }
+
+        // If the previous StreamedText object had a colour to apply when the next character was received,
+        // add it now
+        if(colorToApplyToNextChar != null) {
+            /*styledTextArea.setStyle(
+                    startIndex,
+                    stopIndex,
+                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
+            /*styledTextArea.setStyle(
+                    startIndex,
+                    stopIndex,
+                    "-fx-font-size: 12;");*/
+            colorToApplyToNextChar = null;
+        }
+
+        // Update the number of chars added with what was added to the last existing text node
+        numCharsAdded += textToAppend.length();
+
+        // Create new text nodes and copy all text
+        // This loop won't run if there is no elements in the TextColors array
+        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
+        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
+            defaultTextColorActive = false;
+            //Text newText = new Text();
+
+            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).getCharPos();
+
+            int indexOfLastCharInNodePlusOne;
+            if (x >= streamedData.getColourMarkers().size() - 1) {
+                indexOfLastCharInNodePlusOne = streamedData.getText().length();
+            } else {
+                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).getCharPos();
+            }
+
+            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+
+            logger.debug("textToAppend (before new lines added) = " + textToAppend);
+
+            // Create new line characters for all new line markers that point to text
+            // shifted above
+            int insertionCount = 0;
+            while (true) {
+                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
+                    break;
+
+                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharInNodePlusOne)
+                    break;
+
+                textToAppend.insert(
+                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + insertionCount - indexOfFirstCharInNode,
+                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
+                currNewLineMarkerIndex++;
+                insertionCount++;
+            }
+
+            logger.debug("textToAppend (after new lines added) = " + textToAppend);
+
+            //==============================================//
+            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
+            //==============================================//
+
+            final int insertionStartIndex = styledTextArea.getLength();
+            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
+            final int insertionStopIndex = styledTextArea.getLength();
+
+            logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
+
+            final Color textColor = streamedData.getColourMarkers().get(x).color;
+
+            styledTextArea.setStyle(
+                    insertionStartIndex,
+                    insertionStopIndex,
+                    "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+
+            // Update the num. chars added with all the text added to this new Text node
+            numCharsAdded += textToAppend.length();
+
+            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
+
+            //currIndexToInsertNodeAt++;
+        }
+
+//        if (streamedData..getColorToBeInsertedOnNextChar() != null) {
 //            // Add new node with no text
 //            //Text text = new Text();
 //            //text.setFill(colorToBeInsertedOnNextChar);
@@ -427,58 +460,61 @@ public class ComDataPane extends StackPane {
 //            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
 //            //colorToBeInsertedOnNextChar = null;
 //        }
-//
-//        // Clear all text and the TextColor list
-//        streamedData.clear();
-//
-//        //checkAllColoursAreInOrder();
-//
-//        //===================================================//
-//        //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
-//        //===================================================//
-//
-//        OptionalInt optionalInt = styledTextArea.hit(0, 10).getCharacterIndex();
-//        int charAtZeroTenBeforeRemoval;
+
+        // Clear the streamed data object, as we have consumed all the information
+        // available in it
+        streamedData.clear();
+
+        //===================================================//
+        //= TRIM START OF DOCUMENT IF EXCEEDS BUFFER LENGTH =//
+        //===================================================//
+
+        // These magic numbers of x=0, y=10 seem to be exactly what is needed to keep the same section of data
+        // visible after characters have been trimmed from the start
+        CharacterHit charHit = styledTextArea.hit(0, 10);
+        logger.debug("charHit = " + charHit.toString() + ", charHit.getInsertionIndex() = " + charHit.getInsertionIndex());
+        OptionalInt optionalInt = charHit.getCharacterIndex();
+        int charAtZeroTenBeforeRemoval;
 //        if(optionalInt.isPresent())
 //            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
 //        else
-//            charAtZeroTenBeforeRemoval = 0;
-//
-//
-//        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
-//
-//        // Trim the text buffer if needed
-//        // (this method will decide if required)
-//        trimBufferIfRequired();
-//
-//        //==============================================//
-//        //============== SCROLL POSITION ===============//
-//        //==============================================//
-//
-////        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
-////        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
-////        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
-//
-//        switch(scrollState.get()) {
-//            case FIXED_TO_BOTTOM:
-//                // This moves the caret to the end of the "document"
-//                currCharPositionInText = styledTextArea.getLength();
-//                styledTextArea.moveTo(currCharPositionInText);
-//                break;
-//
-//            case SMART_SCROLL:
-//
-//                // Scroll so that the same text is displayed in the view port
-//                // as before the text insertion/removalS
-//                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
-//                break;
-//            default:
-//                throw new RuntimeException("scrollState not recognised.");
-//        }
-//
-//
-//        return numCharsAdded;
+        charAtZeroTenBeforeRemoval = charHit.getInsertionIndex();
 
+
+        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
+
+        // Trim the text buffer if needed
+        // (this method will decide if required)
+        trimBufferIfRequired();
+
+        //==============================================//
+        //============== SCROLL POSITION ===============//
+        //==============================================//
+
+//        logger.debug("currCharPositionInText (after data added) = " + currCharPositionInText);
+//        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
+//        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
+
+        logger.debug("Deciding where to scroll too...");
+        switch(scrollState.get()) {
+            case FIXED_TO_BOTTOM:
+                // This moves the caret to the end of the "document"
+                currCharPositionInText = styledTextArea.getLength();
+                styledTextArea.moveTo(currCharPositionInText);
+                break;
+
+            case SMART_SCROLL:
+
+                // Scroll so that the same text is displayed in the view port
+                // as before the text insertion/removalS
+                styledTextArea.moveTo(charAtZeroTenBeforeRemoval);
+                break;
+            default:
+                throw new RuntimeException("scrollState not recognised.");
+        }
+
+        logger.debug("addData() finished.");
+        return numCharsAdded;
     }
 
     public void clearData() {
@@ -494,6 +530,7 @@ public class ComDataPane extends StackPane {
      *
      */
     private int trimBufferIfRequired() {
+        logger.debug("trimBufferIfRequired() called.");
 
         int numCharsToRemove = 0;
 
@@ -507,6 +544,7 @@ public class ComDataPane extends StackPane {
             styledTextArea.replaceText(0, numCharsToRemove, "");
 
         }
+        logger.debug("trimBufferIfRequired() finished.");
 
         return numCharsToRemove;
     }
@@ -556,6 +594,29 @@ public class ComDataPane extends StackPane {
         // Since the user has now scrolled upwards (manually), disable the
         // auto-scroll
         scrollState.set(ScrollState.SMART_SCROLL);
+    }
+
+    public void setWrappingEnabled(Boolean value) {
+        logger.debug("setWrappingEnabled() called.");
+        styledTextArea.setWrapText(value);
+    }
+
+    public void setWrappingWidthPx(double value) {
+        logger.debug("setWrappingWidthPx() called.");
+//        styledTextArea.setMaxWidth(value);
+    }
+
+    /**
+     * Converts from a Java Color object to a CSS rgb() string.
+     * @param color
+     */
+    private String javaColorToCSS(Color color) {
+        final Double red = color.getRed()*255.0;
+        final Double green = color.getGreen()*255.0;
+        final Double blue = color.getBlue()*255.0;
+        final String textColorString = "rgb(" + red.intValue() + ", " + green.intValue() + ", " + blue.intValue() + ")";
+
+        return textColorString;
     }
 
 }

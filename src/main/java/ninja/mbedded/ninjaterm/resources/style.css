@@ -228,7 +228,7 @@ tab design has no other form of indication) */
 
 .styled-text-area .text{
 
-    -fx-fill: yellow;
+    /*-fx-fill: yellow;*/
 }
 
 /* =========================================== */

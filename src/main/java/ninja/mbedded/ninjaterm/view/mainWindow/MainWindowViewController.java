@@ -248,6 +248,7 @@ public class MainWindowViewController {
         try {
             terminalTab = (Tab) loader.load();
         } catch (IOException e) {
+            logger.debug("terminalTab failed to load.");
             throw new RuntimeException(e);
         }
 
@@ -274,6 +275,7 @@ public class MainWindowViewController {
 
         // Select this newly created terminal tab
         terminalTabPane.getSelectionModel().select(terminalTab);
+        logger.debug("handleTerminalCreated() finished.");
     }
 
     /**

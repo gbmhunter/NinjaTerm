@@ -10,6 +10,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb?>
+<?import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane?>
 <Tab
         fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.TxRxViewController"
         xmlns:fx="http://javafx.com/fxml"
@@ -90,7 +91,8 @@
                 <!-- =========================================== -->
                 <!-- ================ RX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <!--<ComDataPaneWeb fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+                <ComDataPane fx:id="rxComDataPane" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
 
                 <!-- =========================================== -->
                 <!-- ============== DRAGGABLE NODE ============= -->
@@ -104,7 +106,8 @@
                 <!-- =========================================== -->
                 <!-- ================ TX DATA PANE ============= -->
                 <!-- =========================================== -->
-                <ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <!--<ComDataPaneWeb fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>-->
+                <ComDataPane fx:id="txComDataPane" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
 
             </GridPane>
 

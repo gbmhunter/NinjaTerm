@@ -1,5 +1,16 @@
-v0.8.12
--------
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [v0.9.0] - 2018-05-17
+
+### Changed
+- COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.
+- Updated the NinjaTerm logo (thanks to utopian for creating the new one!).
+
+## [v0.8.12] - 2017-09-18
 
 - Fixed bug where exception 'ReferenceError: Can't find variable: numCharsToRemove' was being thrown when a large number of chars were sent to NinjaTerm, closes #215.
 - Fixed bug where wrapping did not work in RX or TX frames, closes #216.
