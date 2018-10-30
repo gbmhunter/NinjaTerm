@@ -19,7 +19,7 @@ import ninja.mbedded.ninjaterm.util.comPort.*;
 public class ComPortSettings {
 
     public SimpleObjectProperty<String> selComPortName = new SimpleObjectProperty<>("");
-    public SimpleObjectProperty<BaudRates> selBaudRate = new SimpleObjectProperty<>(BaudRates.BAUD_9600);
+    public SimpleObjectProperty<Double> selBaudRate = new SimpleObjectProperty<>(9600.0);
     public SimpleObjectProperty<NumDataBits> selNumDataBits = new SimpleObjectProperty<>(NumDataBits.EIGHT);
     public SimpleObjectProperty<Parities> selParity = new SimpleObjectProperty<>(Parities.NONE);
     public SimpleObjectProperty<NumStopBits> selNumStopBits = new SimpleObjectProperty<>(NumStopBits.ONE);

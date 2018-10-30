@@ -2,8 +2,13 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings;
 
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comPort.BaudRates;
@@ -11,9 +16,14 @@ import ninja.mbedded.ninjaterm.util.comPort.NumDataBits;
 import ninja.mbedded.ninjaterm.util.comPort.NumStopBits;
 import ninja.mbedded.ninjaterm.util.comPort.Parities;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
+
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Controller for the "COM Settings tab" which is part of the main window.
@@ -35,7 +45,7 @@ public class ComSettingsViewController {
     public ComboBox<String> foundComPortsComboBox;
 
     @FXML
-    public ComboBox<BaudRates> baudRateComboBox;
+    public ComboBox<String> baudRateComboBox;
 
     @FXML
     public ComboBox<NumDataBits> numDataBitsComboBox;
@@ -84,9 +94,16 @@ public class ComSettingsViewController {
 
         terminal.comPortSettings.selComPortName.bind(foundComPortsComboBox.getSelectionModel().selectedItemProperty());
 
-        baudRateComboBox.getItems().setAll(BaudRates.values());
-        baudRateComboBox.getSelectionModel().select(BaudRates.BAUD_9600);
-        terminal.comPortSettings.selBaudRate.bind(baudRateComboBox.getSelectionModel().selectedItemProperty());
+        List<String> test = new ArrayList<String>();
+        test.add("123");
+
+        baudRateComboBox.getItems().setAll(test);
+        baudRateComboBox.getSelectionModel().select("124");
+        // Don't add a listener to the combobox valueProperty(), as it is only called once the value is committed
+        // (i.e. enter is pressed). Instead, listen to the textProperty of the "editor" component of the combobox instead
+        baudRateComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            baudRateComboBoxChangeHandler(newValue);
+        });
 
         numDataBitsComboBox.getItems().setAll(NumDataBits.values());
         numDataBitsComboBox.getSelectionModel().select(NumDataBits.EIGHT);
@@ -134,6 +151,21 @@ public class ComSettingsViewController {
                         openCloseComPortButton.setDisable(false);
                     }
                 });
+    }
+
+    private void baudRateComboBoxChangeHandler(String newValue) {
+        // Convert baud rate from string to double
+        try {
+            Double baudRateDouble = Double.parseDouble(newValue);
+            terminal.comPortSettings.selBaudRate.set(baudRateDouble);
+            if (baudRateComboBox.getStyleClass().contains("error")) {
+                baudRateComboBox.getStyleClass().remove("error");
+            }
+        } catch (NumberFormatException e) {
+            model.status.addMsg("ERROR: Baud rate is not a valid number (must be convertable to double).");
+            TooltipUtil.addDefaultTooltip(baudRateComboBox, "Baud rate is not a valid number (must be convertable to double).");
+            baudRateComboBox.getStyleClass().add("error");
+        }
     }
 
     /**

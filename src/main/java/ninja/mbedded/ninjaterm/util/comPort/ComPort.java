@@ -145,12 +145,12 @@ public class ComPort {
     }
 
     public void setParams(
-            BaudRates baudRate,
+            Double baudRate,
             NumDataBits numDataBits,
             Parities parity,
             NumStopBits numStopBits) {
 
-        this.baudRate = baudRate;
+        this.baudRate = BaudRates.BAUD_300;
         this.numDataBits = numDataBits;
         this.parity = parity;
         this.numStopBits = numStopBits;
@@ -159,7 +159,7 @@ public class ComPort {
         //====== APP BAUD RATE -> jSSC BAUD RATE =======//
         //==============================================//
         int jsscBaudRate;
-        switch (baudRate) {
+        switch (this.baudRate) {
             case BAUD_110:
                 jsscBaudRate = 110;
                 break;

@@ -34,7 +34,7 @@
             <Label GridPane.rowIndex="0" GridPane.columnIndex="0">COM Port:</Label>
             <ComboBox GridPane.rowIndex="0" GridPane.columnIndex="1" fx:id="foundComPortsComboBox"></ComboBox>
             <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Baud Rate:</Label>
-            <ComboBox GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="baudRateComboBox"/>
+            <ComboBox GridPane.rowIndex="1" GridPane.columnIndex="1" fx:id="baudRateComboBox" editable="true"/>
             <Label GridPane.rowIndex="2" GridPane.columnIndex="0">Num. Data Bits:</Label>
             <ComboBox GridPane.rowIndex="2" GridPane.columnIndex="1" fx:id="numDataBitsComboBox"/>
             <Label GridPane.rowIndex="3" GridPane.columnIndex="0">Parity:</Label>
