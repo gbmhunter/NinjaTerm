@@ -9,8 +9,8 @@ NinjaTerm
 
 - Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2018-05-16
-- Version: v0.9.0
+- Last Modified: 2018-10-31
+- Version: v0.9.1
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
