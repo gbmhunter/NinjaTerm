@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-15
-* @last-modified   2017-02-20
+* @last-modified   2018-10-31
 **/
 
 /* ============================================================================================= */
@@ -110,7 +110,8 @@ tab design has no other form of indication) */
 
 /* Makes the width of the COM port parameter comboboxes all equal. */
 .comSettings .comPortParameters .combo-box {
-    -fx-min-width: 100px;
+    -fx-min-width: 150px;
+    -fx-max-width: 150px;
 }
 
 /* ============================================================================================= */
@@ -250,4 +251,18 @@ tab design has no other form of indication) */
 .about Hyperlink {
     -fx-fill: -colour-about-link;
     -glyph-size: 30;
+}
+
+// ============================================================================================= */
+// GENERAL COMBO-BOX STYLING
+// ============================================================================================= */
+
+/* text-input targets editable combo-boxes only (e.g. baud rate combo-box) */
+
+.combo-box.error .text-input {
+    -fx-background-color: #FFCCCC; /* Light red */
+}
+
+.combo-box.warning .text-input {
+    -fx-background-color: #FFCC99; /* Light orange */
 }

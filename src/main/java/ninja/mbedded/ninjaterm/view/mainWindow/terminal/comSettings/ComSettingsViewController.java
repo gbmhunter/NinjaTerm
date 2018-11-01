@@ -2,15 +2,23 @@ package ninja.mbedded.ninjaterm.view.mainWindow.terminal.comSettings;
 
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.util.comPort.BaudRates;
 import ninja.mbedded.ninjaterm.util.comPort.NumDataBits;
 import ninja.mbedded.ninjaterm.util.comPort.NumStopBits;
 import ninja.mbedded.ninjaterm.util.comPort.Parities;
+import ninja.mbedded.ninjaterm.util.javafx.CssTools;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
+import ninja.mbedded.ninjaterm.util.tooltip.TooltipUtil;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
@@ -19,7 +27,7 @@ import org.slf4j.Logger;
  * Controller for the "COM Settings tab" which is part of the main window.
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @last-modified 2017-02-08
+ * @last-modified 2018-10-31
  * @since 2016-07-10
  */
 public class ComSettingsViewController {
@@ -35,7 +43,7 @@ public class ComSettingsViewController {
     public ComboBox<String> foundComPortsComboBox;
 
     @FXML
-    public ComboBox<BaudRates> baudRateComboBox;
+    public ComboBox<String> baudRateComboBox;
 
     @FXML
     public ComboBox<NumDataBits> numDataBitsComboBox;
@@ -84,9 +92,16 @@ public class ComSettingsViewController {
 
         terminal.comPortSettings.selComPortName.bind(foundComPortsComboBox.getSelectionModel().selectedItemProperty());
 
-        baudRateComboBox.getItems().setAll(BaudRates.values());
-        baudRateComboBox.getSelectionModel().select(BaudRates.BAUD_9600);
-        terminal.comPortSettings.selBaudRate.bind(baudRateComboBox.getSelectionModel().selectedItemProperty());
+        for(Integer baudRate: BaudRates.baudRates) {
+            baudRateComboBox.getItems().add(baudRate.toString());
+        }
+
+        baudRateComboBox.getSelectionModel().select("9600");
+        // Don't add a listener to the combobox valueProperty(), as it is only called once the value is committed
+        // (i.e. enter is pressed). Instead, listen to the textProperty of the "editor" component of the combobox instead
+        baudRateComboBox.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            baudRateComboBoxChangeHandler(newValue);
+        });
 
         numDataBitsComboBox.getItems().setAll(NumDataBits.values());
         numDataBitsComboBox.getSelectionModel().select(NumDataBits.EIGHT);
@@ -134,6 +149,32 @@ public class ComSettingsViewController {
                         openCloseComPortButton.setDisable(false);
                     }
                 });
+    }
+
+    private void baudRateComboBoxChangeHandler(String newValue) {
+        // Convert baud rate from string to double
+        try {
+            Integer baudRateInt = Integer.parseInt(newValue);
+            terminal.comPortSettings.selBaudRate.set(baudRateInt);
+            CssTools.removeClass(baudRateComboBox,"error");
+            TooltipUtil.removeTooltip(baudRateComboBox);
+
+            if (!BaudRates.baudRates.contains(baudRateInt)) {
+                String msg = "WARNING: " + newValue + " is a non-standard baud rate. Some software/hardware may not support this baud rate.";
+                model.status.addMsg(msg);
+                TooltipUtil.addDefaultTooltip(baudRateComboBox, msg);
+                CssTools.addClass(baudRateComboBox, "warning");
+            } else {
+                CssTools.removeClass(baudRateComboBox, "warning");
+            }
+
+        } catch (NumberFormatException e) {
+            model.status.addMsg("ERROR: Baud rate (" + newValue + ") is not a valid number (must be convertable to integer).");
+            // We want the tooltip to update with each new incorrect value
+            TooltipUtil.addDefaultTooltip(baudRateComboBox, "Baud rate (" + newValue + ") is not a valid number (must be convertable to integer).");
+            CssTools.removeClass(baudRateComboBox, "warning");
+            CssTools.addClass(baudRateComboBox, "error");
+        }
     }
 
     /**

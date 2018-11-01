@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.9.0/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.0_macos.dmg" newVersion="0.9.0" newMediaFileId="36" fileSize="8806535" bundledJre="" archive="false">
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v0.9.1/">
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.1_unix.sh" newVersion="0.9.1" newMediaFileId="176" fileSize="8161771" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
-## [Unreleased]&#xD;
+## [v0.9.1] - 2018-10-31&#xD;
+&#xD;
+### Added&#xD;
+- NinjaTerm now supports custom (non-standard) baud rates (as long as the underlying OS/hardware also supports it), closes #222.&#xD;
+&#xD;
+## [v0.9.0] - 2018-05-17&#xD;
 &#xD;
 ### Changed&#xD;
 - COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.&#xD;
@@ -253,14 +258,19 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.0_unix.sh" newVersion="0.9.0" newMediaFileId="176" fileSize="8160828" bundledJre="" archive="false">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.1_macos.dmg" newVersion="0.9.1" newMediaFileId="36" fileSize="8806535" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
-## [Unreleased]&#xD;
+## [v0.9.1] - 2018-10-31&#xD;
+&#xD;
+### Added&#xD;
+- NinjaTerm now supports custom (non-standard) baud rates (as long as the underlying OS/hardware also supports it), closes #222.&#xD;
+&#xD;
+## [v0.9.0] - 2018-05-17&#xD;
 &#xD;
 ### Changed&#xD;
 - COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.&#xD;
@@ -506,14 +516,19 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.0_windows.exe" newVersion="0.9.0" newMediaFileId="23" fileSize="9516032" bundledJre="" archive="false">
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v0.9.1_windows.exe" newVersion="0.9.1" newMediaFileId="23" fileSize="9517056" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
-## [Unreleased]&#xD;
+## [v0.9.1] - 2018-10-31&#xD;
+&#xD;
+### Added&#xD;
+- NinjaTerm now supports custom (non-standard) baud rates (as long as the underlying OS/hardware also supports it), closes #222.&#xD;
+&#xD;
+## [v0.9.0] - 2018-05-17&#xD;
 &#xD;
 ### Changed&#xD;
 - COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.&#xD;
