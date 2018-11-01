@@ -40,9 +40,9 @@ public class ComPort {
      */
     private SerialPort serialPort;
 
-    private BaudRates baudRate;
+    private Integer baudRate;
 
-    public BaudRates getBaudRate() {
+    public Integer getBaudRate() {
         return baudRate;
     }
 
@@ -145,12 +145,12 @@ public class ComPort {
     }
 
     public void setParams(
-            Double baudRate,
+            Integer baudRate,
             NumDataBits numDataBits,
             Parities parity,
             NumStopBits numStopBits) {
 
-        this.baudRate = BaudRates.BAUD_300;
+        this.baudRate = baudRate;
         this.numDataBits = numDataBits;
         this.parity = parity;
         this.numStopBits = numStopBits;
@@ -158,53 +158,53 @@ public class ComPort {
         //==============================================//
         //====== APP BAUD RATE -> jSSC BAUD RATE =======//
         //==============================================//
-        int jsscBaudRate;
-        switch (this.baudRate) {
-            case BAUD_110:
-                jsscBaudRate = 110;
-                break;
-            case BAUD_300:
-                jsscBaudRate = 300;
-                break;
-            case BAUD_600:
-                jsscBaudRate = 600;
-                break;
-            case BAUD_1200:
-                jsscBaudRate = 1200;
-                break;
-            case BAUD_2400:
-                jsscBaudRate = 2400;
-                break;
-            case BAUD_4800:
-                jsscBaudRate = 4800;
-                break;
-            case BAUD_9600:
-                jsscBaudRate = 9600;
-                break;
-            case BAUD_14400:
-                jsscBaudRate = 14400;
-                break;
-            case BAUD_19200:
-                jsscBaudRate = 19200;
-                break;
-            case BAUD_38400:
-                jsscBaudRate = 38400;
-                break;
-            case BAUD_57600:
-                jsscBaudRate = 57600;
-                break;
-            case BAUD_115200:
-                jsscBaudRate = 115200;
-                break;
-            case BAUD_128000:
-                jsscBaudRate = 128000;
-                break;
-            case BAUD_256000:
-                jsscBaudRate = 256000;
-                break;
-            default:
-                throw new RuntimeException("Baud rate unrecognised!");
-        }
+//        int jsscBaudRate;
+//        switch (this.baudRate) {
+//            case BAUD_110:
+//                jsscBaudRate = 110;
+//                break;
+//            case BAUD_300:
+//                jsscBaudRate = 300;
+//                break;
+//            case BAUD_600:
+//                jsscBaudRate = 600;
+//                break;
+//            case BAUD_1200:
+//                jsscBaudRate = 1200;
+//                break;
+//            case BAUD_2400:
+//                jsscBaudRate = 2400;
+//                break;
+//            case BAUD_4800:
+//                jsscBaudRate = 4800;
+//                break;
+//            case BAUD_9600:
+//                jsscBaudRate = 9600;
+//                break;
+//            case BAUD_14400:
+//                jsscBaudRate = 14400;
+//                break;
+//            case BAUD_19200:
+//                jsscBaudRate = 19200;
+//                break;
+//            case BAUD_38400:
+//                jsscBaudRate = 38400;
+//                break;
+//            case BAUD_57600:
+//                jsscBaudRate = 57600;
+//                break;
+//            case BAUD_115200:
+//                jsscBaudRate = 115200;
+//                break;
+//            case BAUD_128000:
+//                jsscBaudRate = 128000;
+//                break;
+//            case BAUD_256000:
+//                jsscBaudRate = 256000;
+//                break;
+//            default:
+//                throw new RuntimeException("Baud rate unrecognised!");
+//        }
 
         //==============================================//
         //====== APP DATA BITS -> jSSC DATA BITS =======//
@@ -274,7 +274,7 @@ public class ComPort {
 
         try {
             serialPort.setParams(
-                    jsscBaudRate,
+                    baudRate,
                     jsscDataBits,
                     jsscNumStopBits,
                     jsscParity);

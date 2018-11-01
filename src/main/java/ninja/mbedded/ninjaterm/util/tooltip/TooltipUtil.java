@@ -37,7 +37,7 @@ public class TooltipUtil {
         }
     }
 
-    public static void addDefaultTooltip(Node node, String tooltipText) {
+    public static Tooltip addDefaultTooltip(Node node, String tooltipText) {
 
         /*Tooltip tooltip = new Tooltip();
         tooltip.setText(tooltipText);
@@ -69,6 +69,12 @@ public class TooltipUtil {
         hackStartTiming(tooltip, 100.0);
 
         Tooltip.install(node, tooltip);
+
+        return tooltip;
+    }
+
+    public static void removeTooltip(Node node) {
+        Tooltip.uninstall(node, null);
     }
 
 }

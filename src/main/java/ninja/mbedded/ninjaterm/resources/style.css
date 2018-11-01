@@ -3,7 +3,7 @@
 *
 * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
 * @since           2016-07-15
-* @last-modified   2017-02-20
+* @last-modified   2018-10-31
 **/
 
 /* ============================================================================================= */
@@ -258,6 +258,11 @@ tab design has no other form of indication) */
 // ============================================================================================= */
 
 /* text-input targets editable combo-boxes only (e.g. baud rate combo-box) */
+
 .combo-box.error .text-input {
-    -fx-background-color: #FFCCCC;
+    -fx-background-color: #FFCCCC; /* Light red */
+}
+
+.combo-box.warning .text-input {
+    -fx-background-color: #FFCC99; /* Light orange */
 }
