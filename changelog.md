@@ -5,10 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [v0.9.2] - xxx
+## [v0.9.2] - XXXX-XX-XX
 
 ### Fixed
-- Removed COM ports now dissappear on rescan (when there are no COM ports available).
+- Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
+- Fixed bug where tab characters were not being displayed correctly on screen, closes #211.
 
 ## [v0.9.1] - 2018-10-31
 
