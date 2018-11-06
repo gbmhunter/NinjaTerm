@@ -14,7 +14,7 @@ import ninja.mbedded.ninjaterm.util.comPort.*;
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-10-05
- * @last-modified   2016-10-28
+ * @last-modified   2018-11-05
  */
 public class ComPortSettings {
 
@@ -42,10 +42,9 @@ public class ComPortSettings {
 
         if (portNames.length == 0) {
             model.status.addMsg("No COM ports found on this computer.");
-            return;
+        } else {
+            model.status.addMsg("Searched for COM ports. " + portNames.length + " COM port(s) found.");
         }
-
-        model.status.addMsg("Searched for COM ports. " + portNames.length + " COM port(s) found.");
 
         // Update the variable which holds all the scanned and found
         // COM ports (the UI should be listening to changes on this variable)
