@@ -7,6 +7,10 @@ import javafx.beans.property.SimpleObjectProperty;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Model containing data and logic for the display components of the TX/RX data.
  *
@@ -39,20 +43,7 @@ public class Display {
         }
     }
 
-
-
-//    /**
-//     * The options for the RX pane scroll behaviour.
-//     */
-//    public enum ScrollBehaviour {
-//        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
-//         * the same lines of RX text in view. **/
-//        STANDARD,
-//
-//        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
-//         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
-//        SMART,
-//    }
+    public List<Double> textSizes = Arrays.asList(8.0, 9.0, 10.0);
 
     //================================================================================================//
     //========================================= CLASS CONSTANTS ======================================//
@@ -104,10 +95,7 @@ public class Display {
      */
     public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(DEFAULT_WRAPPING_WIDTH_PX);
 
-    /**
-     * The selected scroll behaviour. This is set by radio buttons in the UI.
-     */
-//    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
+    public SimpleDoubleProperty textSize = new SimpleDoubleProperty(10.0);
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 

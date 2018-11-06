@@ -49,12 +49,11 @@
         <!--</HBox>-->
     </VBox>
 
-    <!-- SCROLL BEHAVIOUR -->
-    <!--<VBox spacing="5" styleClass="border">
-        <Label>Scroll Behaviour</Label>
-        <RadioButton fx:id="scrollBehaviourStandardRadioButton">Standard</RadioButton>
-        <RadioButton fx:id="scrollBehaviourSmartRadioButton">Smart</RadioButton>
-    </VBox>-->
+    <!-- TEXT SIZE -->
+    <VBox spacing="5" styleClass="border">
+        <Label>Text Size</Label>
+        <ComboBox fx:id="textSizeComboBox" />
+    </VBox>
 
 </VBox>
 

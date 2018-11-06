@@ -25,12 +25,12 @@ import org.controlsfx.validation.Validator;
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-09-16
- * @last-modified 2016-11-22
+ * @last-modified 2018-11-05
  */
 public class DisplayViewController {
 
     //================================================================================================//
-    //========================================== FXML BINDINGS =======================================//
+    // FXML BINDINGS
     //================================================================================================//
 
     @FXML
@@ -45,21 +45,11 @@ public class DisplayViewController {
     @FXML
     private CheckBox wrappingCheckBox;
 
-//    @FXML
-//    private ApplyTextField wrappingWidthTextField;
-
     @FXML
     private ApplyTextField bufferSizeTextField;
 
-    //==============================================//
-    //=============== SCROLL BEHAVIOUR =============//
-    //==============================================//
-
-//    @FXML
-//    private RadioButton scrollBehaviourStandardRadioButton;
-//
-//    @FXML
-//    private RadioButton scrollBehaviourSmartRadioButton;
+    @FXML
+    private ComboBox<Double> textSizeComboBox;
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
@@ -151,41 +141,6 @@ public class DisplayViewController {
 
         TooltipUtil.addDefaultTooltip(wrappingCheckBox, "Enable this to wrap at a certain pixel width (as defined below). If this is disabled, long lines of TX/RX text will cause horizontal scroll-bars to appear.");
 
-        // Upon pressing enter or loosing focus, try and convert the wrapping width value and
-        // update the model
-//        wrappingWidthTextField.onApply.addListener((observable, oldValue, newValue) -> {
-//            // Convert wrapping width string into double, and then perform
-//            // sanity checks
-//            Double wrappingWidth;
-//            try {
-//                wrappingWidth = Double.parseDouble(newValue);
-//            } catch (NumberFormatException e) {
-//                model.status.addErr("Wrapping width was not a valid number.");
-//                wrappingWidth = 0.0;
-//            }
-//
-//            if (wrappingWidth <= 0.0) {
-//                model.status.addErr("Wrapping width must be greater than 0.");
-//                wrappingWidth = 0.0;
-//            }
-//
-//            terminal.txRx.display.wrappingWidth.set(wrappingWidth);
-//        });
-
-        // Set default value from model
-        // (we assume the value in the model to be valid and no checking needed)
-//        wrappingWidthTextField.textProperty().set(Double.toString(terminal.txRx.display.wrappingWidth.get()));
-
-
-//        // Disable the wrapping width textfield if wrapping is disabled.
-//        terminal.txRx.display.wrappingEnabled.addListener((observable, oldValue, newValue) -> {
-//            wrappingWidthTextField.setDisable(!newValue);
-//        });
-//
-//        // Set default state
-//        wrappingWidthTextField.setDisable(!terminal.txRx.display.wrappingEnabled.get());
-//
-//        TooltipUtil.addDefaultTooltip(wrappingWidthTextField, "The width (in pixels) that you want TX/RX data to wrap at.");
 
         //==============================================//
         //============== BUFFER-SIZE SETUP =============//
@@ -244,18 +199,16 @@ public class DisplayViewController {
 
         TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are removed from the UI (this does not affect logging).");
 
-        //==============================================//
-        //=========== SCROLL BEHAVIOUR SETUP ===========//
-        //==============================================//
+        //================================================================================================//
+        // TEXT SIZE SETUP
+        //================================================================================================//
 
-//        ToggleGroupValue<Display.ScrollBehaviour> scrollBehaviourToggleGroup = new ToggleGroupValue();
-//        scrollBehaviourToggleGroup.add(scrollBehaviourStandardRadioButton, Display.ScrollBehaviour.STANDARD);
-//        scrollBehaviourToggleGroup.add(scrollBehaviourSmartRadioButton, Display.ScrollBehaviour.SMART);
-//
-//        Bindings.bindBidirectional(scrollBehaviourToggleGroup.valueProperty(), terminal.txRx.display.scrollBehaviour);
-//
-//        TooltipUtil.addDefaultTooltip(scrollBehaviourStandardRadioButton, "When the RX buffer is full, the RX pane will not scroll automatically to keep the same lines of RX text in view.");
-//        TooltipUtil.addDefaultTooltip(scrollBehaviourSmartRadioButton, "When the RX buffer is full, the RX pane will scroll automatically to keep the same lines of RX text in view (only when scroll-to-bottom is not currently active).");
+        // Add listener to combobox
+        textSizeComboBox.setOnAction(event -> {
+            terminal.txRx.display.textSize.set(textSizeComboBox.getSelectionModel().getSelectedItem());
+        });
 
+        // Set default
+        textSizeComboBox.getSelectionModel().select(terminal.txRx.display.textSize.get());
     }
 }

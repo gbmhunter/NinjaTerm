@@ -606,6 +606,10 @@ public class ComDataPane extends StackPane {
 //        styledTextArea.setMaxWidth(value);
     }
 
+    public void setFontSize(double fontSize) {
+        this.fontSizePx = fontSize;
+    }
+
     /**
      * Converts from a Java Color object to a CSS rgb() string.
      * @param color
