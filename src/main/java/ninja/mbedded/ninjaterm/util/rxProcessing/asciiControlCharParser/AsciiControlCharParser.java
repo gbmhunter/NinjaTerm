@@ -104,28 +104,19 @@ public class AsciiControlCharParser {
         int currIndex = 0;
 
         while(matcher.find()) {
-            logger.debug("Found regex match = \"" + matcher.group(0) + "\".");
-            logger.debug("match start = " + matcher.start());
-            logger.debug("match end = " + matcher.end());
+//            logger.debug("Found regex match = \"" + matcher.group(0) + "\".");
+//            logger.debug("match start = " + matcher.start());
+//            logger.debug("match end = " + matcher.end());
 
             // Look for character in map
             String replacementChar = "";
 
             if(replaceWithVisibleSymbols.get()) {
                 replacementChar = controlCharToVisibleChar.get(matcher.group(0));
-
-                // If no replacement character was found for this control code, ignore it and continue onto next iteration of
-                // loop
-                if(replacementChar == "") {
-                    logger.debug("No replacement char found for this control code.");
-                } else {
-                    logger.debug("Replacement char = " + replacementChar);
-                }
             } else {
                 // If we are not replacing with single char representations, we still may want to keep the original
                 // character (this is true for tab chars, so they display in the UI!)
                 if (matcher.group(0).equals("\t")) {
-                    logger.debug("Found tab, not removing!");
                     replacementChar = "\t";
                 }
             }

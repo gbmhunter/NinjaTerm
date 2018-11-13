@@ -7,7 +7,7 @@ group = 'NinjaTerm'
 // This version number is the master version number which needs to be updated
 // manually. This version number is used to automatically set the one in the README,
 // index.html, and also the one install4j uses (which in turn is the one the app uses at runtime).
-version = '1.0.0'
+version = '1.1.0'
 
 // Project description, shown when
 // "gradle -q projects" is called

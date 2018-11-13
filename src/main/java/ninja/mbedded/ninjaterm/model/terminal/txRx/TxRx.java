@@ -299,7 +299,7 @@ public class TxRx {
      * @param data
      */
     public void addRxData(byte[] data) {
-        logger.debug("addRxData() called with data = " + Debugging.toString(data));
+//        logger.debug("addRxData() called with data = " + Debugging.toString(data));
         rxDataEngine.parse(data);
     }
 

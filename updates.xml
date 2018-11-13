@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v1.0.0/">
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.0.0_unix.sh" newVersion="1.0.0" newMediaFileId="176" fileSize="8163870" bundledJre="" archive="false">
+<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v1.1.0/">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_macos.dmg" newVersion="1.1.0" newMediaFileId="36" fileSize="8810631" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
+## [v1.1.0] - 2018-11-12&#xD;
+&#xD;
+### Added&#xD;
+- Process and system CPU load is now displayed at the bottom of the NinjaTerm UI (useful to know at faster baud rates).&#xD;
+&#xD;
+### Fixed&#xD;
+- Removed logger messages from CPU intensive data RX loop.&#xD;
 &#xD;
 ## [v1.0.0] - 2018-11-12&#xD;
 &#xD;
@@ -269,13 +276,20 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.0.0_macos.dmg" newVersion="1.0.0" newMediaFileId="36" fileSize="8810631" bundledJre="" archive="false">
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_unix.sh" newVersion="1.1.0" newMediaFileId="176" fileSize="8162986" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
+## [v1.1.0] - 2018-11-12&#xD;
+&#xD;
+### Added&#xD;
+- Process and system CPU load is now displayed at the bottom of the NinjaTerm UI (useful to know at faster baud rates).&#xD;
+&#xD;
+### Fixed&#xD;
+- Removed logger messages from CPU intensive data RX loop.&#xD;
 &#xD;
 ## [v1.0.0] - 2018-11-12&#xD;
 &#xD;
@@ -538,13 +552,20 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.0.0_windows.exe" newVersion="1.0.0" newMediaFileId="23" fileSize="9519104" bundledJre="" archive="false">
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_windows.exe" newVersion="1.1.0" newMediaFileId="23" fileSize="9518080" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
 &#xD;
+## [v1.1.0] - 2018-11-12&#xD;
+&#xD;
+### Added&#xD;
+- Process and system CPU load is now displayed at the bottom of the NinjaTerm UI (useful to know at faster baud rates).&#xD;
+&#xD;
+### Fixed&#xD;
+- Removed logger messages from CPU intensive data RX loop.&#xD;
 &#xD;
 ## [v1.0.0] - 2018-11-12&#xD;
 &#xD;

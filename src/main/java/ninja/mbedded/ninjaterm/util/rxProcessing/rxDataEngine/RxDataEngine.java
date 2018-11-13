@@ -222,9 +222,9 @@ public class RxDataEngine {
      * Trims the internal RX buffer according to the value set in maxBufferSize.
      */
     public void trimRawRxData() {
-        logger.debug(
-                "trimRawRxData() called. rawRxData.length() = " + rawRxData.length() +
-                        ", maxBufferSize = " + maxBufferSize.get() + ".");
+//        logger.debug(
+//                "trimRawRxData() called. rawRxData.length() = " + rawRxData.length() +
+//                        ", maxBufferSize = " + maxBufferSize.get() + ".");
         // Truncate if necessary
         if (rawRxData.get().length() > maxBufferSize.get()) {
             // Remove old characters from buffer
@@ -316,13 +316,13 @@ public class RxDataEngine {
         releasedData.clear();
         ansiECParser.parse(bufferBetweenFreezeParserAndAnsiParser, releasedData);
 
-        logger.debug("releasedData = " + Debugging.convertNonPrintable(releasedData.toString()));
+//        logger.debug("releasedData = " + Debugging.convertNonPrintable(releasedData.toString()));
 
         // Now add all the new ANSI parser output to any that was not used up by the
         // streaming filter from last time
         bufferBetweenAnsiParserAndNewLineParser.shiftDataIn(releasedData, releasedData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
 
-        logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndNewLineParser = " + bufferBetweenAnsiParserAndNewLineParser);
+//        logger.debug("Finished adding data to buffer between ANSI parser and filter. bufferBetweenAnsiParserAndNewLineParser = " + bufferBetweenAnsiParserAndNewLineParser);
 
         //==============================================//
         //============== NEW LINE DETECTION ============//
@@ -382,7 +382,7 @@ public class RxDataEngine {
         //==============================================//
 
         // Call any listeners that want the raw data (the logging class of the model might be listening)
-        logger.debug("Calling raw data listeners with data = \"" + Debugging.convertNonPrintable(newDecodedData) + "\".");
+//        logger.debug("Calling raw data listeners with data = \"" + Debugging.convertNonPrintable(newDecodedData) + "\".");
         for (RawDataReceivedListener rawDataReceivedListener : rawDataReceivedListeners) {
             rawDataReceivedListener.run(newDecodedData);
         }
@@ -396,7 +396,7 @@ public class RxDataEngine {
             newStreamedDataListener.run(copyOfFilterOutput);
         }
 
-        logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
+//        logger.debug(getClass().getSimpleName() + ".addRxData() finished.");
     }
 
     /**

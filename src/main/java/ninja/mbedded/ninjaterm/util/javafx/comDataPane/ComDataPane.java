@@ -309,7 +309,7 @@ public class ComDataPane extends StackPane {
      */
     public int addData(StreamedData streamedData) {
 
-        logger.debug("addData() called with streamedData = " + streamedData);
+//        logger.debug("addData() called with streamedData = " + streamedData);
 
         //==============================================//
         //============= INPUT ARG CHECKS ===============//
@@ -322,8 +322,8 @@ public class ComDataPane extends StackPane {
         int caretPosBeforeTextInsertion = styledTextArea.getCaretPosition();
         double estimatedScrollYBeforeTextInsertion = styledTextArea.getEstimatedScrollY();
 
-        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
-        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
+//        logger.debug("caretPosBeforeTextInsertion (before data added) = " + caretPosBeforeTextInsertion);
+//        logger.debug("estimatedScrollY (before data added) = " + estimatedScrollYBeforeTextInsertion);
 
         //==============================================//
         //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
@@ -397,7 +397,7 @@ public class ComDataPane extends StackPane {
 
             textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
 
-            logger.debug("textToAppend (before new lines added) = " + textToAppend);
+//            logger.debug("textToAppend (before new lines added) = " + textToAppend);
 
             // Create new line characters for all new line markers that point to text
             // shifted above
@@ -416,7 +416,7 @@ public class ComDataPane extends StackPane {
                 insertionCount++;
             }
 
-            logger.debug("textToAppend (after new lines added) = " + textToAppend);
+//            logger.debug("textToAppend (after new lines added) = " + textToAppend);
 
             //==============================================//
             //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
@@ -426,7 +426,7 @@ public class ComDataPane extends StackPane {
             styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
             final int insertionStopIndex = styledTextArea.getLength();
 
-            logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
+//            logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
 
             final Color textColor = streamedData.getColourMarkers().get(x).color;
 
@@ -437,20 +437,7 @@ public class ComDataPane extends StackPane {
 
             // Update the num. chars added with all the text added to this new Text node
             numCharsAdded += textToAppend.length();
-
-            //existingTextNodes.add(currIndexToInsertNodeAt, newText);
-
-            //currIndexToInsertNodeAt++;
         }
-
-//        if (streamedData..getColorToBeInsertedOnNextChar() != null) {
-//            // Add new node with no text
-//            //Text text = new Text();
-//            //text.setFill(colorToBeInsertedOnNextChar);
-//            //existingTextNodes.add(currIndexToInsertNodeAt, text);
-//            colorToApplyToNextChar = streamedData.getColorToBeInsertedOnNextChar();
-//            //colorToBeInsertedOnNextChar = null;
-//        }
 
         // Clear the streamed data object, as we have consumed all the information
         // available in it
@@ -463,16 +450,8 @@ public class ComDataPane extends StackPane {
         // These magic numbers of x=0, y=10 seem to be exactly what is needed to keep the same section of data
         // visible after characters have been trimmed from the start
         CharacterHit charHit = styledTextArea.hit(0, 10);
-        logger.debug("charHit = " + charHit.toString() + ", charHit.getInsertionIndex() = " + charHit.getInsertionIndex());
-        OptionalInt optionalInt = charHit.getCharacterIndex();
         int charAtZeroTenBeforeRemoval;
-//        if(optionalInt.isPresent())
-//            charAtZeroTenBeforeRemoval = optionalInt.getAsInt();
-//        else
         charAtZeroTenBeforeRemoval = charHit.getInsertionIndex();
-
-
-        logger.debug("charAtZeroTenBeforeRemoval = " + charAtZeroTenBeforeRemoval);
 
         // Trim the text buffer if needed
         // (this method will decide if required)
@@ -486,7 +465,7 @@ public class ComDataPane extends StackPane {
 //        logger.debug("caretPosition (after data added) = " + styledTextArea.getCaretPosition());
 //        logger.debug("estimatedScrollY (after data added) = " + styledTextArea.getEstimatedScrollY());
 
-        logger.debug("Deciding where to scroll too...");
+//        logger.debug("Deciding where to scroll too...");
         switch(scrollState.get()) {
             case FIXED_TO_BOTTOM:
                 // This moves the caret to the end of the "document"
@@ -504,7 +483,7 @@ public class ComDataPane extends StackPane {
                 throw new RuntimeException("scrollState not recognised.");
         }
 
-        logger.debug("addData() finished.");
+//        logger.debug("addData() finished.");
         return numCharsAdded;
     }
 
@@ -521,7 +500,7 @@ public class ComDataPane extends StackPane {
      *
      */
     private int trimBufferIfRequired() {
-        logger.debug("trimBufferIfRequired() called.");
+//        logger.debug("trimBufferIfRequired() called.");
 
         int numCharsToRemove = 0;
 
@@ -535,7 +514,7 @@ public class ComDataPane extends StackPane {
             styledTextArea.replaceText(0, numCharsToRemove, "");
 
         }
-        logger.debug("trimBufferIfRequired() finished.");
+//        logger.debug("trimBufferIfRequired() finished.");
 
         return numCharsToRemove;
     }

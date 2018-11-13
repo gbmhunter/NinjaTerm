@@ -360,7 +360,7 @@ public class StreamedData {
      * @param textToAppend
      */
     public void append(String textToAppend) {
-        logger.debug("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
+//        logger.debug("append() called with text = \"" + Debugging.convertNonPrintable(textToAppend) + "\".");
 
         // Passing in an empty string is not invalid, but we don't have to do anything,
         // so just return.
@@ -383,26 +383,6 @@ public class StreamedData {
         trimDataIfRequired();
     }
 
-//    public void addColour(int position, Color color) {
-//
-//        if (position < 0 || position > text.length() - 1)
-//            throw new IllegalArgumentException("position was either too small or too large.");
-//
-//        // Make sure all the TextColor objects in the list remain in order
-//        if (colourMarkers.size() != 0 && colourMarkers.get(colourMarkers.size() - 1).position > position)
-//            throw new IllegalArgumentException("position was not greater than all existing positions.");
-//
-//        // Check if we are overwriting the last TextColor object (if they apply to the same text position),
-//        // or we are needed to create a new TextColor object
-//        if (colourMarkers.size() != 0 && colourMarkers.get(colourMarkers.size() - 1).position == position) {
-//            colourMarkers.get(colourMarkers.size() - 1).color = color;
-//        } else {
-//            colourMarkers.add(new ColourMarker(position, color));
-//        }
-//
-//        checkAllColoursAreInOrder();
-//    }
-
     @Override
     public String toString() {
         String output = " { ";
@@ -423,127 +403,6 @@ public class StreamedData {
         output += " }";
         return output;
     }
-
-//    /**
-//     * Shifts all the text in this streamed text object into the provided list of text nodes, leaving
-//     * this streamed text object empty.
-//     *
-//     * @param existingTextNodes     (input) The existing Text nodes to add the streamed text to.
-//     * @param nodeIndexToStartShift (input) The index in the observable list at which you want the streaming text to
-//     *                              start being shifted to.
-//     * @param numCharsAdded         (output) The number of characters added to the Text nodes. Note that this is not the
-//     *                              same as getText(), as getText() does not take into account the new line chars which are
-//     *                              added.
-//     */
-//    public void shiftToTextNodes(
-//            ObservableList<Node> existingTextNodes,
-//            int nodeIndexToStartShift,
-//            MutableInteger numCharsAdded) {
-//
-//        //==============================================//
-//        //============= INPUT ARG CHECKS ===============//
-//        //==============================================//
-//
-//        if (existingTextNodes.size() == 0) {
-//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
-//        }
-//
-//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
-//        }
-//
-//        // Reset the mutable integer (we don't care about what it's last value was)
-//        numCharsAdded.set(0);
-//
-//        //==============================================//
-//        //======== ADD TEXT TO LAST EXISTING NODE ======//
-//        //==============================================//
-//
-//        Text lastTextNode = (Text) existingTextNodes.get(nodeIndexToStartShift - 1);
-//
-//        // Copy all text before first ColourMarker entry into the first text node
-//
-//        int indexOfLastCharPlusOne;
-//        if (getColourMarkers().size() == 0) {
-//            indexOfLastCharPlusOne = getText().length();
-//        } else {
-//            indexOfLastCharPlusOne = getColourMarkers().get(0).position;
-//        }
-//
-//        StringBuilder textToAppend = new StringBuilder(getText().substring(0, indexOfLastCharPlusOne));
-//
-//        // Create new line characters for all new line markers that point to text
-//        // shifted above
-//        int currNewLineMarkerIndex = 0;
-//        for (int i = 0; i < newLineMarkers.size(); i++) {
-//            if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharPlusOne)
-//                break;
-//
-//            textToAppend.insert(newLineMarkers.get(currNewLineMarkerIndex) + i, "\n");
-//            currNewLineMarkerIndex++;
-//        }
-//
-//        lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
-//        // Update the number of chars added with what was added to the last existing text node
-//        numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
-//
-//        // Create new text nodes and copy all text
-//        // This loop won't run if there is no elements in the TextColors array
-//        int currIndexToInsertNodeAt = nodeIndexToStartShift;
-//        for (int x = 0; x < getColourMarkers().size(); x++) {
-//            Text newText = new Text();
-//
-//            int indexOfFirstCharInNode = getColourMarkers().get(x).position;
-//
-//            int indexOfLastCharInNodePlusOne;
-//            if (x >= getColourMarkers().size() - 1) {
-//                indexOfLastCharInNodePlusOne = getText().length();
-//            } else {
-//                indexOfLastCharInNodePlusOne = getColourMarkers().get(x + 1).position;
-//            }
-//
-//            textToAppend = new StringBuilder(getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
-//
-//            // Create new line characters for all new line markers that point to text
-//            // shifted above
-//            int insertionCount = 0;
-//            while (true) {
-//                if (currNewLineMarkerIndex >= newLineMarkers.size())
-//                    break;
-//
-//                if (newLineMarkers.get(currNewLineMarkerIndex) > indexOfLastCharInNodePlusOne)
-//                    break;
-//
-//                textToAppend.insert(
-//                        newLineMarkers.get(currNewLineMarkerIndex) + insertionCount - indexOfFirstCharInNode,
-//                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
-//                currNewLineMarkerIndex++;
-//                insertionCount++;
-//            }
-//
-//            newText.setText(textToAppend.toString());
-//            newText.setFill(getColourMarkers().get(x).color);
-//            // Update the num. chars added with all the text added to this new Text node
-//            numCharsAdded.set(numCharsAdded.intValue() + textToAppend.length());
-//
-//            existingTextNodes.add(currIndexToInsertNodeAt, newText);
-//
-//            currIndexToInsertNodeAt++;
-//        }
-//
-//        if (colorToBeInsertedOnNextChar != null) {
-//            // Add new node with no text
-//            Text text = new Text();
-//            text.setFill(colorToBeInsertedOnNextChar);
-//            existingTextNodes.add(currIndexToInsertNodeAt, text);
-//            colorToBeInsertedOnNextChar = null;
-//        }
-//
-//        // Clear all text and the TextColor list
-//        clear();
-//
-//        checkAllColoursAreInOrder();
-//    }
 
     private void checkAllColoursAreInOrder() {
 
@@ -571,17 +430,6 @@ public class StreamedData {
         // If we make it here, no color at the specified index was found!
         return false;
     }
-
-//    public void addNewLineMarkerAt(int charIndex) {
-//
-//        // We can't check this, because some of the other methods in this class add the markers
-//        // before adding the text
-////        if(charIndex > getText().length()) {
-////            throw new RuntimeException("charIndex must be between 0 and the num. of chars (inclusive at both ends).");
-////        }
-//
-//        newLineMarkers.add(charIndex);
-//    }
 
     public List<ColourMarker> getColourMarkers() {
         //return newLineMarkers;
@@ -777,7 +625,7 @@ public class StreamedData {
      */
     private void trimDataIfRequired() {
 
-        logger.debug("trimDataIfRequired() called.");
+//        logger.debug("trimDataIfRequired() called.");
 
         // Check if -1, if so, we don't want to perform any trimming
         if (maxNumChars.get() == -1)
@@ -785,18 +633,10 @@ public class StreamedData {
 
         if (text.length() > maxNumChars.get()) {
             int numCharsToRemove = text.length() - maxNumChars.get();
-            logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
+//            logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
             removeCharsFromStart(numCharsToRemove, false);
         }
     }
-
-//    public void addTimeStampMarker(TimeStampMarker timeStampMarker) {
-//        timeStampMarkers.add(timeStampMarker);
-//    }
-
-//    public List<TimeStampMarker> getTimeStampMarkers() {
-//        return timeStampMarkers;
-//    }
 
     //================================================================================================//
     //=========================================== GRAVEYARD ==========================================//
