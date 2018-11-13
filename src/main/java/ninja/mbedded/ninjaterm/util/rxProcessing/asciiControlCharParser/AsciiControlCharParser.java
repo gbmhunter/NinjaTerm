@@ -28,6 +28,9 @@ public class AsciiControlCharParser {
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
+    /**
+     * When this is True, typically invisible ASCII control chars are converted into visible representations.
+     */
     public SimpleBooleanProperty replaceWithVisibleSymbols = new SimpleBooleanProperty(false);
 
     private Map<String, String> controlCharToVisibleChar = new HashMap<>();
@@ -44,11 +47,11 @@ public class AsciiControlCharParser {
             { "\u0006", "␆"},
             { "\u0007", "␇"},
             { "\u0008", "␈"},
-            { "\u0009", "␉"}, // Horizontal tab (standard tab)
-            { "\n", "␤"},
+            { "\u0009", "␉"},   // Horizontal tab (standard tab)
+            { "\n", "␤"},       // New-lines
             { "\u000B", "␋"},
             { "\u000C", "␌"},
-            { "\r", "↵"},
+            { "\r", "↵"},       // Carriage return
             { "\u000E", "␎"},
             { "\u000F", "␏"},
             { "\u0010", "␐"},
@@ -118,6 +121,13 @@ public class AsciiControlCharParser {
                 } else {
                     logger.debug("Replacement char = " + replacementChar);
                 }
+            } else {
+                // If we are not replacing with single char representations, we still may want to keep the original
+                // character (this is true for tab chars, so they display in the UI!)
+                if (matcher.group(0).equals("\t")) {
+                    logger.debug("Found tab, not removing!");
+                    replacementChar = "\t";
+                }
             }
 
             // Shift all characters before this match
@@ -133,19 +143,10 @@ public class AsciiControlCharParser {
                 releasedText.append(replacementChar);
             }
 
-            //output = output + beforeChars + replacementChar;
-
-            //input = matcher.replaceFirst(replacementChar);
-
-            //logger.debug("output = " + output);
-
         }
 
         // No more matches have been found, but we still need to copy the last piece of
         // text across (if any)
-        //output = output + input.substring(currIndex, input.length());
         releasedText.shiftDataIn(input, input.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
-
-        //return output;
     }
 }

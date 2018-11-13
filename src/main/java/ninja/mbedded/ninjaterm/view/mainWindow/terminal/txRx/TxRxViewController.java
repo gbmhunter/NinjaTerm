@@ -15,7 +15,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
-import ninja.mbedded.ninjaterm.util.javafx.comDataPaneWeb.ComDataPaneWeb;
 import ninja.mbedded.ninjaterm.util.javafx.comDataPane.ComDataPane;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.colouriser.ColouriserViewController;
@@ -27,10 +26,6 @@ import org.controlsfx.control.PopOver;
 import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 import org.slf4j.Logger;
-
-import java.io.IOException;
-import java.util.Observable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Controller for a "terminal" tab. The user can create many terminal tabs, each which
@@ -373,6 +368,21 @@ public class TxRxViewController {
         });
         rxComDataPane.setWrappingWidthPx(terminal.txRx.display.wrappingWidth.doubleValue());
 
+        // TEXT/BACKGROUND SIZE AND COLOR
+        terminal.txRx.display.textSizePx.addListener((observable, oldValue, newValue) -> {
+            rxComDataPane.setFontSizePx(newValue.doubleValue());
+        });
+        rxComDataPane.setFontSizePx(terminal.txRx.display.textSizePx.get());
+
+        terminal.txRx.display.textColor.addListener((observable, oldValue, newValue) -> {
+            rxComDataPane.setTextColor(newValue);
+        });
+        rxComDataPane.setTextColor(terminal.txRx.display.textColor.get());
+
+        terminal.txRx.display.backgroundColor.addListener((observable, oldValue, newValue) -> {
+            rxComDataPane.setBackgroundColor(newValue);
+        });
+        rxComDataPane.setBackgroundColor(terminal.txRx.display.backgroundColor.get());
 
         //==============================================//
         //============== SETUP TX DATA PANE ============//
@@ -405,6 +415,22 @@ public class TxRxViewController {
             txComDataPane.setWrappingWidthPx(newValue.doubleValue());
         });
         txComDataPane.setWrappingWidthPx(terminal.txRx.display.wrappingWidth.doubleValue());
+
+        // TEXT/BACKGROUND SIZE AND COLOR
+        terminal.txRx.display.textSizePx.addListener((observable, oldValue, newValue) -> {
+            txComDataPane.setFontSizePx(newValue.doubleValue());
+        });
+        txComDataPane.setFontSizePx(terminal.txRx.display.textSizePx.get());
+
+        terminal.txRx.display.textColor.addListener((observable, oldValue, newValue) -> {
+            txComDataPane.setTextColor(newValue);
+        });
+        txComDataPane.setTextColor(terminal.txRx.display.textColor.get());
+
+        terminal.txRx.display.backgroundColor.addListener((observable, oldValue, newValue) -> {
+            txComDataPane.setBackgroundColor(newValue);
+        });
+        txComDataPane.setBackgroundColor(terminal.txRx.display.backgroundColor.get());
 
         // Call this to update the display of the TX/RX pane into its default
         // state

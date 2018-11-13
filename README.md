@@ -9,8 +9,8 @@ NinjaTerm
 
 - Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
-- Last Modified: 2018-10-31
-- Version: v0.9.1
+- Last Modified: 2018-11-12
+- Version: v1.0.0
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -51,7 +51,7 @@ Releasing New Version
 1. Make sure that you are on the `develop` branch, and that desired updates have been merged from the feature branches (this project uses the merge-merge workflow, not the rebase-merge workflow).
 1. Update changelog.md with a list of all changes since the last version, under a heading that is the new version number (e.g. "v0.4.0").
 1. Update the version number near the top of the `build.gradle` file, e.g. `version = '0.4.0`.
-1. Run the command `gradle updateVersion` to update the version number in appropriate places in the repo. It will update the version number in `README.md` and `docs/index.html`.
+1. Run the command `gradle updateVersion` (you must have [Gradle](https://gradle.org/) installed and available on the command-line) to update the version number in appropriate places in the repo. It will update the version number in `README.md` and `docs/index.html`.
 
 **PACKAGING**
 

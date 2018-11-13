@@ -9,6 +9,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import ninja.mbedded.ninjaterm.util.javafx.applyTextField.ApplyTextField?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 <VBox fx:controller="ninja.mbedded.ninjaterm.view.mainWindow.terminal.txRx.display.DisplayViewController"
       xmlns:fx="http://javafx.com/fxml" alignment="CENTER"
       spacing="20"
@@ -49,12 +51,22 @@
         <!--</HBox>-->
     </VBox>
 
-    <!-- SCROLL BEHAVIOUR -->
-    <!--<VBox spacing="5" styleClass="border">
-        <Label>Scroll Behaviour</Label>
-        <RadioButton fx:id="scrollBehaviourStandardRadioButton">Standard</RadioButton>
-        <RadioButton fx:id="scrollBehaviourSmartRadioButton">Smart</RadioButton>
-    </VBox>-->
+    <!-- TEXT SIZE AND COLOUR -->
+    <VBox spacing="5" styleClass="border">
+        <HBox spacing="5" alignment="CENTER_LEFT">
+            <Label>COM Data Text Size (px):</Label>
+            <ComboBox fx:id="textSizeComboBox" />
+        </HBox>
+        <GridPane hgap="5" vgap="5">
+            <Label GridPane.rowIndex="0" GridPane.columnIndex="0">Text Colour: </Label>
+            <ColorPicker fx:id="textColorPicker" GridPane.rowIndex="0" GridPane.columnIndex="1" minHeight="30" />
+            <Label GridPane.rowIndex="1" GridPane.columnIndex="0">Background Colour: </Label>
+            <ColorPicker fx:id="backgroundColorPicker" GridPane.rowIndex="1" GridPane.columnIndex="1" minHeight="30" />
+        </GridPane>
+
+        <TextFlow maxWidth="300"><Text>The text color is not applicable if "Colourizer->Parse ANSI Escape Codes" is
+            enabled, and a "change text color command" has been received over the serial port.</Text></TextFlow>
+    </VBox>
 
 </VBox>
 

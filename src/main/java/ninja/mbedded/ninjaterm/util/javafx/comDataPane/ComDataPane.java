@@ -64,12 +64,6 @@ public class ComDataPane extends StackPane {
      */
     private static final double AUTO_SCROLL_BUTTON_OPACITY_HOVER = 1.0;
 
-    /**
-     * The default text colour for COM data displayed in this pane. The text color can be changed
-     * with colour markers.
-     */
-    private static final Color defaultTextColor = Color.color(0.0, 1.0, 0.0);
-
     //================================================================================================//
     //=========================================== ENUMS ==============================================//
     //================================================================================================//
@@ -131,6 +125,12 @@ public class ComDataPane extends StackPane {
     private Boolean defaultTextColorActive = true;
 
     private double fontSizePx = 12.0;
+    /**
+     * The text colour for COM data displayed in this pane, if no ASCII color codes are sent over the serial.
+     * The text color can be changed on the UI under the "Display" settings.
+     */
+    private Color textColor = Color.GREEN;
+    private Color backgroundColor = Color.RED;
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -152,7 +152,8 @@ public class ComDataPane extends StackPane {
         styledTextArea = new InlineCssTextArea();
 
         // Set the background to black
-        styledTextArea.setStyle("-fx-background-color: black;");
+//        styledTextArea.setStyle("-fx-background-color: " + backgroundColor.toString() + ";");
+        setBackgroundColor(backgroundColor);
 
         // Set default text colour
 //        styledTextArea.setStyle("-fx-fill: " + javaColorToCSS(defaultTextColor) + ";");
@@ -308,21 +309,11 @@ public class ComDataPane extends StackPane {
      */
     public int addData(StreamedData streamedData) {
 
-//        throw new UnsupportedOperationException("addData() no longer supported.");
-
         logger.debug("addData() called with streamedData = " + streamedData);
 
         //==============================================//
         //============= INPUT ARG CHECKS ===============//
         //==============================================//
-
-//        if (existingTextNodes.size() == 0) {
-//            throw new IllegalArgumentException("existingTextNodes must have at least one text node already present.");
-//        }
-//
-//        if (nodeIndexToStartShift < 0 || nodeIndexToStartShift > existingTextNodes.size()) {
-//            throw new IllegalArgumentException("nodeIndexToStartShift must be greater than 0 and less than the size() of existingTextNodes.");
-//        }
 
         int numCharsAdded = 0;
 
@@ -368,7 +359,7 @@ public class ComDataPane extends StackPane {
         final int stopIndex = styledTextArea.getLength();
 
         if(defaultTextColorActive) {
-            styledTextArea.setStyle(startIndex, stopIndex, "-fx-fill: " + javaColorToCSS(defaultTextColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+            styledTextArea.setStyle(startIndex, stopIndex, "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
         }
 
         // If the previous StreamedText object had a colour to apply when the next character was received,
@@ -604,6 +595,27 @@ public class ComDataPane extends StackPane {
     public void setWrappingWidthPx(double value) {
         logger.debug("setWrappingWidthPx() called.");
 //        styledTextArea.setMaxWidth(value);
+    }
+
+    /**
+     * Sets a new font size for data displayed in the COM pane. Only affects new data (existing data already displayed
+     * will not change size).
+     * @param fontSizePx The new font size, in units of pixels.
+     */
+    public void setFontSizePx(double fontSizePx) {
+        logger.debug("setFontSizePx() called with fontSizePx = " + fontSizePx);
+        this.fontSizePx = fontSizePx;
+    }
+
+    public void setTextColor(Color color) {
+        logger.debug("setTextColor() called with color = " + color.toString());
+        this.textColor = color;
+    }
+
+    public void setBackgroundColor(Color color) {
+        logger.debug("setBackgroundColor() called with color = " + color.toString());
+        this.backgroundColor = color;
+        styledTextArea.setStyle("-fx-background-color: " + javaColorToCSS(color) + ";");
     }
 
     /**

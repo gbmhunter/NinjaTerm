@@ -4,8 +4,15 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.paint.Color;
 import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Model containing data and logic for the display components of the TX/RX data.
@@ -39,20 +46,11 @@ public class Display {
         }
     }
 
-
-
-//    /**
-//     * The options for the RX pane scroll behaviour.
-//     */
-//    public enum ScrollBehaviour {
-//        /** "When the RX buffer is full, the RX pane will not scroll automatically to keep
-//         * the same lines of RX text in view. **/
-//        STANDARD,
-//
-//        /** When the RX buffer is full, the RX pane will scroll automatically to keep the same
-//         * lines of RX text in view (only when scroll-to-bottom is not currently active). **/
-//        SMART,
-//    }
+    /**
+     * A list of the default font sizes provided to the user for the TX/RX COM data panes.
+     */
+    public ObservableList<Double> textSizes = FXCollections.observableArrayList(
+            8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 25.0, 30.0, 35.0, 40.0, 50.0);
 
     //================================================================================================//
     //========================================= CLASS CONSTANTS ======================================//
@@ -105,9 +103,14 @@ public class Display {
     public SimpleDoubleProperty wrappingWidth = new SimpleDoubleProperty(DEFAULT_WRAPPING_WIDTH_PX);
 
     /**
-     * The selected scroll behaviour. This is set by radio buttons in the UI.
+     * The selected font size for new data which is displayed in the COM data panes. Applies to both RX and TX
+     * panes.
      */
-//    public SimpleObjectProperty<ScrollBehaviour> scrollBehaviour = new SimpleObjectProperty<>(ScrollBehaviour.SMART);
+    public SimpleDoubleProperty textSizePx = new SimpleDoubleProperty(16.0);
+
+    public SimpleObjectProperty<Color> textColor = new SimpleObjectProperty<>(Color.web("0x21ff00"));
+
+    public SimpleObjectProperty<Color> backgroundColor = new SimpleObjectProperty<>(Color.web("0x1a1a1a"));
 
     private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
