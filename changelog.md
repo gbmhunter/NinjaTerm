@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Added font-size and text/background colour pickers to style the TX/RX data, closes #163.
+- Updated example .gif files on home page.
 
 ### Fixed
 - Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
