@@ -4,11 +4,10 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
-import javafx.scene.control.RadioButton;
 import javafx.util.converter.NumberStringConverter;
-import jfxtras.scene.control.ToggleGroupValue;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.model.terminal.Terminal;
 import ninja.mbedded.ninjaterm.model.terminal.txRx.display.Display;
@@ -19,7 +18,8 @@ import org.controlsfx.validation.Severity;
 import org.controlsfx.validation.ValidationResult;
 import org.controlsfx.validation.ValidationSupport;
 import org.controlsfx.validation.Validator;
-
+import org.slf4j.Logger;
+import ninja.mbedded.ninjaterm.util.loggerUtils.LoggerUtils;
 /**
  * View controller for the "display" settings pop-up window.
  *
@@ -51,10 +51,17 @@ public class DisplayViewController {
     @FXML
     private ComboBox<Double> textSizeComboBox;
 
+    @FXML
+    private ColorPicker textColorPicker;
+
+    @FXML
+    private ColorPicker backgroundColorPicker;
+
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//
     //================================================================================================//
 
+    private Logger logger = LoggerUtils.createLoggerFor(getClass().getName());
 
     //================================================================================================//
     //========================================== CLASS METHODS =======================================//
@@ -200,15 +207,31 @@ public class DisplayViewController {
         TooltipUtil.addDefaultTooltip(bufferSizeTextField, "The max. number of characters to store in the TX and RX panes. Once the num. of characters exceeds this limit, the oldest characters are removed from the UI (this does not affect logging).");
 
         //================================================================================================//
-        // TEXT SIZE SETUP
+        // TEXT SIZE/COLOR SETUP
         //================================================================================================//
 
         // Add listener to combobox
         textSizeComboBox.setOnAction(event -> {
-            terminal.txRx.display.textSize.set(textSizeComboBox.getSelectionModel().getSelectedItem());
+            terminal.txRx.display.textSizePx.set(textSizeComboBox.getSelectionModel().getSelectedItem());
         });
 
+        textSizeComboBox.setItems(terminal.txRx.display.textSizes);
+
         // Set default
-        textSizeComboBox.getSelectionModel().select(terminal.txRx.display.textSize.get());
+        textSizeComboBox.getSelectionModel().select(terminal.txRx.display.textSizePx.get());
+
+        // TEXT COLOR
+        textColorPicker.setValue(terminal.txRx.display.textColor.get());
+        textColorPicker.setOnAction(event -> {
+            logger.debug("Text color chooser action fired. Color = " + textColorPicker.getValue().toString());
+            terminal.txRx.display.textColor.set(textColorPicker.getValue());
+        });
+
+        // BACKGROUND COLOR
+        backgroundColorPicker.setValue(terminal.txRx.display.backgroundColor.get());
+        backgroundColorPicker.setOnAction(event -> {
+            logger.debug("Background color chooser action fired. Color = " + backgroundColorPicker.getValue().toString());
+            terminal.txRx.display.backgroundColor.set(backgroundColorPicker.getValue());
+        });
     }
 }

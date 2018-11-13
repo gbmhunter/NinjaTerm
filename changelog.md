@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v0.9.2] - XXXX-XX-XX
 
+### Added
+- Added font-size and text/background colour pickers to style the TX/RX data, closes #163.
+
 ### Fixed
 - Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
 - Fixed bug where tab characters were not being displayed correctly on screen, closes #211.
