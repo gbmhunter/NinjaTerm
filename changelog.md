@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [v0.9.2] - XXXX-XX-XX
+## [v1.0.0] - 2018-11-12
 
 ### Added
 - Added font-size and text/background colour pickers to style the TX/RX data, closes #163.
