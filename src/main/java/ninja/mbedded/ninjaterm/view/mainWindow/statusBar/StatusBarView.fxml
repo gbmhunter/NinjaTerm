@@ -58,7 +58,7 @@
         <!-- ========================================= -->
         <!-- =============== BYTE COUNT ============== -->
         <!-- ========================================= -->
-        <Label style="-fx-font-weight: bold;">Byte Count</Label>
+        <Label style="-fx-font-weight: bold;">BYTE COUNT</Label>
         <VBox minWidth="10"/>
 
         <Label>TX:</Label>
@@ -74,9 +74,9 @@
         <VBox minWidth="10"/>
 
         <!-- ========================================= -->
-        <!-- =============== DATA RATE =============== -->
+        <!-- DATA RATE                                 -->
         <!-- ========================================= -->
-        <Label style="-fx-font-weight: bold;">Data Rate (bytes/sec)</Label>
+        <Label style="-fx-font-weight: bold;">DATA RATE (bytes/sec)</Label>
         <VBox minWidth="10"/>
 
         <Label>TX:</Label>
@@ -86,6 +86,24 @@
         <Label>RX:</Label>
         <VBox minWidth="5"/>
         <Label fx:id="totalBytesPerSecRx" minWidth="50">0.0</Label>
+
+        <VBox minWidth="10"/>
+        <Label>|</Label>
+        <VBox minWidth="10"/>
+
+        <!-- ========================================= -->
+        <!-- CPU LOADS                                 -->
+        <!-- ========================================= -->
+        <Label style="-fx-font-weight: bold;">LOAD</Label>
+        <VBox minWidth="10"/>
+
+        <Label>Process:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="processCpuLoadPerc" minWidth="50">0.0</Label>
+
+        <Label>System:</Label>
+        <VBox minWidth="5"/>
+        <Label fx:id="systemCpuLoadPerc" minWidth="50">0.0</Label>
     </HBox>
 
 </VBox>

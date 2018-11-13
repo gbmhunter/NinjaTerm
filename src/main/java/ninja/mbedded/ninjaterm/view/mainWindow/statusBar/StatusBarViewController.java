@@ -6,13 +6,11 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.text.TextFlow;
 import ninja.mbedded.ninjaterm.model.Model;
 import ninja.mbedded.ninjaterm.util.javafx.led.Led;
-import org.controlsfx.glyphfont.FontAwesome;
 import org.controlsfx.glyphfont.GlyphFont;
 
 /**
@@ -55,6 +53,12 @@ public class StatusBarViewController {
 
     @FXML
     private Label totalBytesPerSecRx;
+
+    @FXML
+    private Label processCpuLoadPerc;
+
+    @FXML
+    private Label systemCpuLoadPerc;
 
 
     private Model model;
@@ -132,6 +136,19 @@ public class StatusBarViewController {
 
         // Set default (giving bogus data as it is not used)
         totalBytesPerSecRxChangeListener.changed(new SimpleDoubleProperty(), 0.0, 0.0);
+
+        // CPU LOAD SETUP
+
+        model.globalStats.processCpuLoad.addListener((observable, oldValue, newValue) -> {
+            processCpuLoadPerc.setText(String.format("%.0f", newValue.doubleValue()*100.0) + "%");
+        });
+        processCpuLoadPerc.setText(String.format("%.0f", model.globalStats.processCpuLoad.get()*100.0) + "%");
+
+        model.globalStats.systemCpuLoad.addListener((observable, oldValue, newValue) -> {
+            systemCpuLoadPerc.setText(String.format("%.0f", newValue.doubleValue()*100.0) + "%");
+        });
+        systemCpuLoadPerc.setText(String.format("%.0f", model.globalStats.systemCpuLoad.get()*100.0) + "%");
+
     }
 
 }

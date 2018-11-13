@@ -80,8 +80,8 @@ public class TimeStampParser {
         int currShiftIndex = 0;
 
         while(matcher.find()) {
-            logger.debug("Match found. match = \"" + matcher.group(0) + "\"." +
-                    " Start index = " + matcher.start() + ", end index = " + matcher.end());
+//            logger.debug("Match found. match = \"" + matcher.group(0) + "\"." +
+//                    " Start index = " + matcher.start() + ", end index = " + matcher.end());
 
             // NEW LINE FOUND!
 
