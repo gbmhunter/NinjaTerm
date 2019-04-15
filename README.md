@@ -5,12 +5,12 @@ NinjaTerm
 
 #### A serial port terminal that's got your back.
 
-[![Travis](https://img.shields.io/travis/mbedded-ninja/NinjaTerm.svg)](https://travis-ci.org/mbedded-ninja/NinjaTerm) [![Github All Releases](https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/total.svg)](http://mbedded-ninja.github.io/NinjaTerm/)
+[![Travis](https://img.shields.io/travis/gbmhunter/NinjaTerm.svg)](https://travis-ci.org/gbmhunter/NinjaTerm) [![Github All Releases](https://img.shields.io/github/downloads/gbmhunter/NinjaTerm/total.svg)](http://gbmhunter.github.io/NinjaTerm/)
 
 - Maintainer/Primary Author: Geoffrey Hunter <gbmhunter@gmail.com> (http://www.mbedded.ninja)
 - Created: 2015-07-15
 - Last Modified: 2018-11-12
-- Version: v1.1.0
+- Version: v1.1.1
 - Company: mbedded.ninja
 - Project: NinjaTerm
 - Language: Java, JavaFX
@@ -25,13 +25,13 @@ NinjaTerm
 Installation
 ============
 
-See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).
+See the [NinjaTerm homepage](http://gbmhunter.github.io/NinjaTerm/).
 
 Developing
 ==========
 
 1. Fork repo, then download/clone this repository into a folder on your computer, and make a new `feature/xxx` or `bug/xxx` branch.
-1. Make sure you have a 32-bit version of the JDK installed (must be at least JDK 8).
+1. Make sure you have a 32-bit version of JDK 9 installed (must be JDK 8 asJDK 9, 11 or 12 are not supported).
 1. Download the community edition of Intellij IDEA (it's free!). Load the project using the provided IntelliJ files. Select the JDK installed on your computer.
 1. Download and install gradle. Create a file called `gradle.properties` at `<user home dir>/.gradle/`. Paste the following line into this file: `install4jHomeDir=none` (if creating installable executables, install Install4J and replace `none` with the actual install directory, so it will look something like `install4jHomeDir=C:\\Program Files\\install4j6`).
 1. Make sure you are on the develop branch. Create a new branch from the head of the develop branch to create your new feature on.
@@ -119,4 +119,4 @@ See changelog.md.
 Contributors
 ============
 
-See the [NinjaTerm homepage](http://mbedded-ninja.github.io/NinjaTerm/).
+See the [NinjaTerm homepage](http://gbmhunter.github.io/NinjaTerm/).
