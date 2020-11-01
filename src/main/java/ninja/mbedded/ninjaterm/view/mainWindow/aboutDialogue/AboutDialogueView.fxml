@@ -29,7 +29,7 @@
     </VBox>
 
     <VBox spacing="5">
-        <Hyperlink fx:id="websiteHyperlink" text="http://mbedded-ninja.github.io/NinjaTerm/"/>
+        <Hyperlink fx:id="websiteHyperlink" text="http://gbmhunter.github.io/NinjaTerm/"/>
         <Hyperlink fx:id="githubHyperlink" text="https://github.com/mbedded-ninja/NinjaTerm"/>
     </VBox>
 
