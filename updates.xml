@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<updateDescriptor baseUrl="https://github.com/mbedded-ninja/NinjaTerm/releases/download/v1.1.0/">
-  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_macos.dmg" newVersion="1.1.0" newMediaFileId="36" fileSize="8810631" bundledJre="" archive="false">
+<updateDescriptor baseUrl="https://github.com/gbmhunter/NinjaTerm/releases/download/v1.1.2/">
+  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.2_unix.sh" newVersion="1.1.2" newMediaFileId="176" fileSize="8162920" bundledJre="" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
+&#xD;
+## [v1.1.2] - 2020-11-01&#xD;
+&#xD;
+### Fixed&#xD;
+- Fixed the 404 not found error with the link on the About page.&#xD;
+&#xD;
+## [v1.1.1] - 2019-04-14&#xD;
+&#xD;
+### Added&#xD;
+- Java is now bundled with the Windows and Mac installers.&#xD;
+&#xD;
+### Fixed&#xD;
+- Broken URLs on homepage.&#xD;
 &#xD;
 ## [v1.1.0] - 2018-11-12&#xD;
 &#xD;
@@ -276,12 +289,25 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="176" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_unix.sh" newVersion="1.1.0" newMediaFileId="176" fileSize="8162986" bundledJre="" archive="false">
+  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.2_windows.exe" newVersion="1.1.2" newMediaFileId="23" fileSize="53489664" bundledJre="windows-x86-1.8.0_202" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
+&#xD;
+## [v1.1.2] - 2020-11-01&#xD;
+&#xD;
+### Fixed&#xD;
+- Fixed the 404 not found error with the link on the About page.&#xD;
+&#xD;
+## [v1.1.1] - 2019-04-14&#xD;
+&#xD;
+### Added&#xD;
+- Java is now bundled with the Windows and Mac installers.&#xD;
+&#xD;
+### Fixed&#xD;
+- Broken URLs on homepage.&#xD;
 &#xD;
 ## [v1.1.0] - 2018-11-12&#xD;
 &#xD;
@@ -552,12 +578,25 @@ v0.1.0&#xD;
 - Added auto-scroll to TX pane, closes #89.&#xD;
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.</comment>
   </entry>
-  <entry targetMediaFileId="23" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.0_windows.exe" newVersion="1.1.0" newMediaFileId="23" fileSize="9518080" bundledJre="" archive="false">
+  <entry targetMediaFileId="36" updatableVersionMin="" updatableVersionMax="" fileName="NinjaTerm_v1.1.2_macos.dmg" newVersion="1.1.2" newMediaFileId="36" fileSize="59428999" bundledJre="macosx-amd64-1.8.0_202" archive="false">
     <comment language="en"># Changelog&#xD;
 All notable changes to this project will be documented in this file.&#xD;
 &#xD;
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)&#xD;
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).&#xD;
+&#xD;
+## [v1.1.2] - 2020-11-01&#xD;
+&#xD;
+### Fixed&#xD;
+- Fixed the 404 not found error with the link on the About page.&#xD;
+&#xD;
+## [v1.1.1] - 2019-04-14&#xD;
+&#xD;
+### Added&#xD;
+- Java is now bundled with the Windows and Mac installers.&#xD;
+&#xD;
+### Fixed&#xD;
+- Broken URLs on homepage.&#xD;
 &#xD;
 ## [v1.1.0] - 2018-11-12&#xD;
 &#xD;
