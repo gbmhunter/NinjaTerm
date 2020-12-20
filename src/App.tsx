@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import SerialPort from 'serialport';
-import icon from '../assets/icon.svg';
 
 interface IProps {}
 
@@ -45,12 +44,10 @@ class Hello extends React.Component<IProps, HelloState> {
 
     return (
       <div>
-        <div className="Hello">
-          <img width="200px" alt="icon" src={icon} />
-        </div>
-        <h1>electron-react-boilerplate</h1>
-        <div className="Hello">
-          <table>
+        <h1>NinjaTerm</h1>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3>COM Ports</h3>
+          <table className="left-align">
             <thead>
               <tr>
                 <th>Path</th>
@@ -60,6 +57,9 @@ class Hello extends React.Component<IProps, HelloState> {
             </thead>
             <tbody>{serialPortInfoRows}</tbody>
           </table>
+          <button type="button" style={{ width: '200px' }}>
+            Open
+          </button>
         </div>
       </div>
     );
