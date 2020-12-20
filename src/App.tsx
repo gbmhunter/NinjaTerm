@@ -1,8 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import SerialPort from 'serialport';
 import icon from '../assets/icon.svg';
 
 const Hello = () => {
+  console.log(SerialPort);
   return (
     <div>
       <div className="Hello">
