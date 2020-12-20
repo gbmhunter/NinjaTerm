@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Button } from 'semantic-ui-react';
 import SerialPort from 'serialport';
 
 interface IProps {}
@@ -30,6 +31,10 @@ class Hello extends React.Component<IProps, HelloState> {
       });
   }
 
+  openClicked = () => {
+
+  }
+
   render() {
     const { serialPortInfos } = this.state;
     const serialPortInfoRows = serialPortInfos.map((serialPortInfo) => {
@@ -57,9 +62,9 @@ class Hello extends React.Component<IProps, HelloState> {
             </thead>
             <tbody>{serialPortInfoRows}</tbody>
           </table>
-          <button type="button" style={{ width: '200px' }}>
+          <Button onClick={this.openClicked} style={{ width: '200px' }}>
             Open
-          </button>
+          </Button>
         </div>
       </div>
     );
