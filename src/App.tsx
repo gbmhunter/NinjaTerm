@@ -31,9 +31,7 @@ class Hello extends React.Component<IProps, HelloState> {
       });
   }
 
-  openClicked = () => {
-
-  }
+  openClicked = () => {};
 
   render() {
     const { serialPortInfos } = this.state;
