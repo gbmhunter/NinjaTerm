@@ -185,6 +185,7 @@
     "@types/react-dom": "^16.9.9",
     "@types/react-router-dom": "^5.1.6",
     "@types/react-test-renderer": "^16.9.3",
+    "@types/serialport": "^8.0.1",
     "@types/webpack-env": "^1.15.2",
     "@typescript-eslint/eslint-plugin": "^4.8.1",
     "@typescript-eslint/parser": "^4.8.1",
