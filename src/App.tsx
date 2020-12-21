@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { Button } from 'semantic-ui-react';
+import { Dropdown, Button } from 'semantic-ui-react';
 import SerialPort from 'serialport';
 
 interface IProps {}
@@ -8,6 +8,12 @@ interface IProps {}
 interface HelloState {
   serialPortInfos: SerialPort.PortInfo[];
 }
+
+const baudRates = [9600, 57600];
+
+const baudRateOptions = baudRates.map((baudRate) => {
+  return { key: baudRate, value: baudRate, text: 'test' };
+});
 
 class Hello extends React.Component<IProps, HelloState> {
   constructor(props: IProps) {
@@ -46,7 +52,7 @@ class Hello extends React.Component<IProps, HelloState> {
     });
     if (serialPortInfoRows.length === 0) {
       serialPortInfoRows.push(
-        <tr>
+        <tr key="no-com-ports-found">
           <td colSpan={3} style={{ fontStyle: 'italic' }}>
             No COM ports found.
           </td>
@@ -69,6 +75,7 @@ class Hello extends React.Component<IProps, HelloState> {
             </thead>
             <tbody>{serialPortInfoRows}</tbody>
           </table>
+          <Dropdown placeholder="Select baud rate" options={baudRateOptions} />
           <Button onClick={this.openClicked} style={{ width: '200px' }}>
             Open
           </Button>
