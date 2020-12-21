@@ -44,6 +44,15 @@ class Hello extends React.Component<IProps, HelloState> {
         </tr>
       );
     });
+    if (serialPortInfoRows.length === 0) {
+      serialPortInfoRows.push(
+        <tr>
+          <td colSpan="3" style={{ fontStyle: 'italic' }}>
+            No COM ports found.
+          </td>
+        </tr>
+      );
+    }
 
     return (
       <div>
