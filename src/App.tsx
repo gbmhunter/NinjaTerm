@@ -225,7 +225,8 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
       <div>
         {/* <Settings /> */}
         <h1>NinjaTerm</h1>
-        <p>{this.props.count}</p>
+        <p>{this.props.count.value}</p>
+        <Button onClick={() => this.props.dispatch(increment())}>Test</Button>
 
         <div>
           <textarea value={rxData} style={{ width: '500px', height: '300px' }} readOnly/>
@@ -250,19 +251,45 @@ const HelloWrapped = connect(
 import { Provider } from 'react-redux'
 import { configureStore, createStore } from '@reduxjs/toolkit'
 
-export const countReducer = function (state = 0, action) {
-  switch (action.type) {
-    case "INCREMENT":
-      return state + 1;
-    case "DECREMENT":
-      return state - 1;
-    default:
-      return state;
+import { createSlice } from '@reduxjs/toolkit'
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState: {
+    value: 0
+  },
+  reducers: {
+    increment: state => {
+      // Redux Toolkit allows us to write "mutating" logic in reducers. It
+      // doesn't actually mutate the state because it uses the immer library,
+      // which detects changes to a "draft state" and produces a brand new
+      // immutable state based off those changes
+      state.value += 1
+    },
+    decrement: state => {
+      state.value -= 1
+    },
+    incrementByAmount: (state, action) => {
+      state.value += action.payload
+    }
   }
-};
+})
+
+const { increment, decrement, incrementByAmount } = counterSlice.actions
+
+// export const countReducer = function (state = 0, action) {
+//   switch (action.type) {
+//     case "INCREMENT":
+//       return state + 1;
+//     case "DECREMENT":
+//       return state - 1;
+//     default:
+//       return state;
+//   }
+// };
 
 const store = configureStore({
-  reducer: countReducer
+  reducer: counterSlice.reducer
 })
 
 export default function App() {
