@@ -1,9 +1,11 @@
 import React from 'react';
+import { connect } from 'react-redux'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
 import SerialPort from 'serialport';
 
 const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
+import Settings from './Settings'
 
 interface IProps {}
 
@@ -17,34 +19,6 @@ interface HelloState {
   serialPortState: string;
   rxData: string;
 }
-
-const baudRates = [9600, 57600];
-
-// Create structure for combobox
-const baudRateOptions = baudRates.map((baudRate) => {
-  return { key: baudRate, value: baudRate, text: baudRate.toString() };
-});
-
-const numDataBitsA = [5, 6, 7, 8, 9];
-
-// Create structure for combobox
-const numDataBitsAOptions = numDataBitsA.map((numDataBits) => {
-  return { key: numDataBits, value: numDataBits, text: numDataBits.toString() };
-});
-
-const parities = ['none', 'even', 'mark', 'odd', 'space'];
-
-// Create structure for combobox
-const parityOptions = parities.map((parity) => {
-  return { key: parity, value: parity, text: parity };
-});
-
-const numStopBitsA = [1, 2];
-
-// Create structure for combobox
-const numStopBitsAOptions = numStopBitsA.map((numStopBits) => {
-  return { key: numStopBits, value: numStopBits, text: numStopBits.toString() };
-});
 
 interface IHello extends React.Component<IProps, HelloState> {
   serialPortObj: SerialPort | null;
@@ -244,90 +218,15 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
       })
     }
 
+    console.log('this.props.count=')
+    console.log(this.props.count)
+
     return (
       <div>
+        {/* <Settings /> */}
         <h1>NinjaTerm</h1>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h3>Settings</h3>
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Serial Port: </span>
-            <Dropdown
-              selection
-              options={serialPortInfoRows}
-              value={selSerialPort}
-              onChange={this.selSerialPortChanged}
-              disabled={serialPortState !== 'Closed'}
-              style={{ width: '600px' }} // Make this wide as it displays much serial port info
-            />
-          </div>
-          <div style={{ height: '10px' }} />
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }} />
-            <Button
-              onClick={this.rescan}
-              disabled={serialPortState !== 'Closed'}
-            >Rescan</Button>
-          </div>
-          <div style={{ height: '10px' }} />
+        <p>{this.props.count}</p>
 
-          {/* BAUD RATE */}
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Baud rate: </span>
-            <Dropdown
-              selection
-              placeholder="Select baud rate"
-              options={baudRateOptions}
-              value={selBaudRate}
-              disabled={serialPortState !== 'Closed'}
-              onChange={this.selBaudRateChanged}
-            />
-          </div>
-          <div style={{ height: '10px' }} />
-
-          {/* NUM. DATA BITS */}
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Num. Data Bits:</span>
-            <Dropdown
-              selection
-              options={numDataBitsAOptions}
-              value={selNumDataBits}
-              disabled={serialPortState !== 'Closed'}
-              onChange={this.selNumDataBitsChanged}
-            />
-          </div>
-          <div style={{ height: '10px' }} />
-
-          {/* PARITY */}
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Parity:</span>
-            <Dropdown
-              selection
-              options={parityOptions}
-              value={selParity}
-              disabled={serialPortState !== 'Closed'}
-              onChange={this.selParityChanged}
-            />
-          </div>
-          <div style={{ height: '10px' }} />
-
-          {/* NUM. STOP BITS */}
-          <div className={styles.serialPortParamRow}>
-            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Num. Stop Bits:</span>
-            <Dropdown
-              selection
-              options={numStopBitsAOptions}
-              value={selNumStopBits}
-              disabled={serialPortState !== 'Closed'}
-              onChange={this.selNumStopBitsChanged}
-            />
-          </div>
-          <div style={{ height: '10px' }} />
-
-          {/* OPEN SERIAL PORT */}
-          <Button onClick={this.openCloseButtonClicked} style={{ width: '200px' }}>
-            { serialPortState === 'Closed' ? 'Open' : 'Close' }
-          </Button>
-        </div>
         <div>
           <textarea value={rxData} style={{ width: '500px', height: '300px' }} readOnly/>
         </div>
@@ -336,11 +235,43 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
   }
 }
 
+const mapStateToProps = (state, ownProps) => {
+  // ... computed data from state and optionally ownProps
+  return {
+    count: state,
+  }
+}
+
+const HelloWrapped = connect(
+  mapStateToProps,
+  null,
+)(Hello)
+
+import { Provider } from 'react-redux'
+import { configureStore, createStore } from '@reduxjs/toolkit'
+
+export const countReducer = function (state = 0, action) {
+  switch (action.type) {
+    case "INCREMENT":
+      return state + 1;
+    case "DECREMENT":
+      return state - 1;
+    default:
+      return state;
+  }
+};
+
+const store = configureStore({
+  reducer: countReducer
+})
+
 export default function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/" component={Hello} />
+        <Provider store={store}>
+          <Route path="/" component={HelloWrapped} />
+        </Provider>
       </Switch>
     </Router>
   );
