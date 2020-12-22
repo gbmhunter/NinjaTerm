@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
 import SerialPort from 'serialport';
 
-import styles from './App.css';
+const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
 interface IProps {}
 
 interface HelloState {
   serialPortInfos: SerialPort.PortInfo[];
-  selSerialPort: string,
+  selSerialPort: string;
   selBaudRate: number;
   selNumDataBits: number;
   selParity: string;
@@ -88,14 +88,17 @@ class Hello extends React.Component<IProps, HelloState> {
       console.log(selSerialPort)
 
       const { selBaudRate, selNumDataBits, selParity, selNumStopBits } = this.state
-      this.serialPortObj = new SerialPort(
+      const serialPortObj = new SerialPort(
         selSerialPort,
         {
           baudRate: selBaudRate,
           dataBits: selNumDataBits,
           parity: selParity,
           stopBits: selNumStopBits,
-        })
+        }
+      )
+
+      this.serialPortObj = serialPortObj
     }
 
   };
@@ -106,9 +109,14 @@ class Hello extends React.Component<IProps, HelloState> {
   ) => {
     console.log('selSerialPortChanged() called. data.key=')
     console.log(data)
-    this.setState({
-      selSerialPort: data.value,
-    });
+    const selSerialPort = data.value
+    if(typeof selSerialPort === 'string') {
+      this.setState({
+        selSerialPort,
+      });
+    } else {
+      throw Error('selSerialPort was not a string.')
+    }
   };
 
   selBaudRateChanged = (
