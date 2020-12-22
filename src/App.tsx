@@ -14,6 +14,8 @@ interface HelloState {
   selNumDataBits: number;
   selParity: string;
   selNumStopBits: number;
+  serialPortState: string;
+  rxData: string;
 }
 
 const baudRates = [9600, 57600];
@@ -61,6 +63,8 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
       selNumDataBits: 8,
       selParity: 'none',
       selNumStopBits: 1,
+      serialPortState: 'Closed',
+      rxData: '',
     };
     this.serialPortObj = null
   }
@@ -101,8 +105,21 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
           dataBits: selNumDataBits,
           parity: selParity,
           stopBits: selNumStopBits,
+          autoOpen: false,
         } as SerialPort.OpenOptions
       )
+
+      serialPortObj.on('open', this.onSerialPortOpened)
+      // Switches the port into "flowing mode"
+      serialPortObj.on('data', (data) => {
+        this.onSerialPortReceivedData(data)
+      })
+
+      serialPortObj.open()
+
+      this.setState({
+        serialPortState: 'Open',
+      })
 
       this.serialPortObj = serialPortObj
     }
@@ -161,6 +178,18 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
     });
   };
 
+  onSerialPortOpened = () => {
+    console.log('Serial port opened!')
+  }
+
+  onSerialPortReceivedData = (data: any) => {
+    // console.log('Data:', data)
+    const { rxData } = this.state
+    this.setState({
+      rxData: rxData + data.toString()
+    })
+  }
+
   render() {
     const parameterNameWidth = 100;
 
@@ -170,7 +199,9 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
       selBaudRate,
       selNumDataBits,
       selParity,
-      selNumStopBits
+      selNumStopBits,
+      serialPortState,
+      rxData,
     } = this.state;
 
     const serialPortInfoRows = serialPortInfos.map((serialPortInfo) => {
@@ -273,8 +304,11 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
 
           {/* OPEN SERIAL PORT */}
           <Button onClick={this.openClicked} style={{ width: '200px' }}>
-            Open
+            { serialPortState === 'Closed' ? 'Open' : 'Close' }
           </Button>
+        </div>
+        <div>
+          <textarea value={rxData} style={{ width: '500px', height: '300px' }} />
         </div>
       </div>
     );
