@@ -44,7 +44,14 @@ const numStopBitsAOptions = numStopBitsA.map((numStopBits) => {
   return { key: numStopBits, value: numStopBits, text: numStopBits.toString() };
 });
 
-class Hello extends React.Component<IProps, HelloState> {
+interface IHello extends React.Component<IProps, HelloState> {
+  serialPortObj: SerialPort | null;
+}
+
+class Hello extends React.Component<IProps, HelloState> implements IHello {
+
+  serialPortObj: SerialPort | null;
+
   constructor(props: IProps) {
     super(props);
     this.state = {
@@ -55,8 +62,7 @@ class Hello extends React.Component<IProps, HelloState> {
       selParity: 'none',
       selNumStopBits: 1,
     };
-
-    this.serialPortObj = null;
+    this.serialPortObj = null
   }
 
   componentDidMount() {
@@ -95,7 +101,7 @@ class Hello extends React.Component<IProps, HelloState> {
           dataBits: selNumDataBits,
           parity: selParity,
           stopBits: selNumStopBits,
-        }
+        } as SerialPort.OpenOptions
       )
 
       this.serialPortObj = serialPortObj
@@ -104,7 +110,7 @@ class Hello extends React.Component<IProps, HelloState> {
   };
 
   selSerialPortChanged = (
-    event: React.SyntheticEvent<HTMLElement, Event>,
+    _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
   ) => {
     console.log('selSerialPortChanged() called. data.key=')
@@ -120,7 +126,7 @@ class Hello extends React.Component<IProps, HelloState> {
   };
 
   selBaudRateChanged = (
-    event: React.SyntheticEvent<HTMLElement, Event>,
+    _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
   ) => {
     this.setState({
@@ -129,7 +135,7 @@ class Hello extends React.Component<IProps, HelloState> {
   };
 
   selNumDataBitsChanged = (
-    event: React.SyntheticEvent<HTMLElement, Event>,
+    _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
   ) => {
     this.setState({
@@ -138,7 +144,7 @@ class Hello extends React.Component<IProps, HelloState> {
   };
 
   selParityChanged = (
-    event: React.SyntheticEvent<HTMLElement, Event>,
+    _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
   ) => {
     this.setState({
@@ -147,7 +153,7 @@ class Hello extends React.Component<IProps, HelloState> {
   };
 
   selNumStopBitsChanged = (
-    event: React.SyntheticEvent<HTMLElement, Event>,
+    _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
   ) => {
     this.setState({
