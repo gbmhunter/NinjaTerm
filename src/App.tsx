@@ -9,6 +9,7 @@ interface IProps {}
 
 interface HelloState {
   serialPortInfos: SerialPort.PortInfo[];
+  selSerialPort: string,
   selBaudRate: number;
   selNumDataBits: number;
   selParity: string;
@@ -29,7 +30,7 @@ const numDataBitsAOptions = numDataBitsA.map((numDataBits) => {
   return { key: numDataBits, value: numDataBits, text: numDataBits.toString() };
 });
 
-const parities = ['No', 'Yes'];
+const parities = ['none', 'even', 'mark', 'odd', 'space'];
 
 // Create structure for combobox
 const parityOptions = parities.map((parity) => {
@@ -48,28 +49,67 @@ class Hello extends React.Component<IProps, HelloState> {
     super(props);
     this.state = {
       serialPortInfos: [],
+      selSerialPort: '', // Empty string used for "null"
       selBaudRate: 9600,
       selNumDataBits: 8,
-      selParity: 'No',
+      selParity: 'none',
       selNumStopBits: 1,
     };
+
+    this.serialPortObj = null;
   }
 
   componentDidMount() {
-    console.log(SerialPort);
-    SerialPort.list()
-      .then((portInfo) => {
-        this.setState({
-          serialPortInfos: portInfo,
-        });
-        return true;
-      })
-      .catch((reason) => {
-        throw Error(`ERROR: ${reason}`);
-      });
+    // console.log(SerialPort);
+    this.rescan()
   }
 
-  openClicked = () => {};
+  rescan = () => {
+    console.log('Rescanning for serial ports...')
+    SerialPort.list()
+    .then((portInfo) => {
+      this.setState({
+        serialPortInfos: portInfo,
+      });
+      return true;
+    })
+    .catch((reason) => {
+      throw Error(`ERROR: ${reason}`);
+    });
+  }
+
+  openClicked = () => {
+    console.log('openClicked() called.')
+    const { selSerialPort } = this.state
+    if(selSerialPort === '')
+      throw Error('Selected serial port is null.')
+    else {
+      console.log('selSerialPort=')
+      console.log(selSerialPort)
+
+      const { selBaudRate, selNumDataBits, selParity, selNumStopBits } = this.state
+      this.serialPortObj = new SerialPort(
+        selSerialPort,
+        {
+          baudRate: selBaudRate,
+          dataBits: selNumDataBits,
+          parity: selParity,
+          stopBits: selNumStopBits,
+        })
+    }
+
+  };
+
+  selSerialPortChanged = (
+    event: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    console.log('selSerialPortChanged() called. data.key=')
+    console.log(data)
+    this.setState({
+      selSerialPort: data.value,
+    });
+  };
 
   selBaudRateChanged = (
     event: React.SyntheticEvent<HTMLElement, Event>,
@@ -112,6 +152,7 @@ class Hello extends React.Component<IProps, HelloState> {
 
     const {
       serialPortInfos,
+      selSerialPort,
       selBaudRate,
       selNumDataBits,
       selParity,
@@ -119,39 +160,55 @@ class Hello extends React.Component<IProps, HelloState> {
     } = this.state;
 
     const serialPortInfoRows = serialPortInfos.map((serialPortInfo) => {
-      return (
-        <tr key={serialPortInfo.path}>
-          <td>{serialPortInfo.path}</td>
-          <td>{serialPortInfo.manufacturer}</td>
-          <td>{serialPortInfo.locationId}</td>
-        </tr>
-      );
+      return {
+        key: serialPortInfo.path,
+        text: serialPortInfo.path,
+        value: serialPortInfo.path,
+        content: (
+          <div>
+            <span style={{ display: 'inline-block', width: '70px' }}>{serialPortInfo.path}</span>
+            <span style={{ display: 'inline-block', width: '150px' }}>{serialPortInfo.manufacturer}</span>
+            <span style={{ display: 'inline-block', width: '150px' }}>{serialPortInfo.locationId}</span>
+          </div>
+        )
+      };
     });
     if (serialPortInfoRows.length === 0) {
-      serialPortInfoRows.push(
-        <tr key="no-com-ports-found">
-          <td colSpan={3} style={{ fontStyle: 'italic' }}>
-            No COM ports found.
-          </td>
-        </tr>
-      );
+      serialPortInfoRows.push({
+        key: '',
+        text: 'none',
+        value: 'none',
+        content: (
+          <div>
+            <span>No serial ports found</span>
+          </div>
+        )
+      })
     }
 
     return (
       <div>
         <h1>NinjaTerm</h1>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h3>COM Ports</h3>
-          <table className="left-align">
-            <thead>
-              <tr>
-                <th>Path</th>
-                <th>Manufacturer</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>{serialPortInfoRows}</tbody>
-          </table>
+          <h3>Settings</h3>
+          <div className={styles.serialPortParamRow}>
+            <span style={{ display: 'inline-block', width: parameterNameWidth }}>Serial Port: </span>
+            <Dropdown
+              selection
+              options={serialPortInfoRows}
+              value={selSerialPort}
+              onChange={this.selSerialPortChanged}
+              style={{ width: '600px' }} // Make this wide as it displays much serial port info
+            />
+          </div>
+          <div style={{ height: '10px' }} />
+          <div className={styles.serialPortParamRow}>
+            <span style={{ display: 'inline-block', width: parameterNameWidth }} />
+            <Button onClick={this.rescan}>Rescan</Button>
+          </div>
+          <div style={{ height: '10px' }} />
+
+          {/* BAUD RATE */}
           <div className={styles.serialPortParamRow}>
             <span style={{ display: 'inline-block', width: parameterNameWidth }}>Baud rate: </span>
             <Dropdown
@@ -163,6 +220,8 @@ class Hello extends React.Component<IProps, HelloState> {
             />
           </div>
           <div style={{ height: '10px' }} />
+
+          {/* NUM. DATA BITS */}
           <div className={styles.serialPortParamRow}>
             <span style={{ display: 'inline-block', width: parameterNameWidth }}>Num. Data Bits:</span>
             <Dropdown
@@ -173,6 +232,8 @@ class Hello extends React.Component<IProps, HelloState> {
             />
           </div>
           <div style={{ height: '10px' }} />
+
+          {/* PARITY */}
           <div className={styles.serialPortParamRow}>
             <span style={{ display: 'inline-block', width: parameterNameWidth }}>Parity:</span>
             <Dropdown
@@ -183,6 +244,8 @@ class Hello extends React.Component<IProps, HelloState> {
             />
           </div>
           <div style={{ height: '10px' }} />
+
+          {/* NUM. STOP BITS */}
           <div className={styles.serialPortParamRow}>
             <span style={{ display: 'inline-block', width: parameterNameWidth }}>Num. Stop Bits:</span>
             <Dropdown
@@ -193,6 +256,8 @@ class Hello extends React.Component<IProps, HelloState> {
             />
           </div>
           <div style={{ height: '10px' }} />
+
+          {/* OPEN SERIAL PORT */}
           <Button onClick={this.openClicked} style={{ width: '200px' }}>
             Open
           </Button>
