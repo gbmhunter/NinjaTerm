@@ -88,44 +88,6 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
     });
   }
 
-  openClicked = () => {
-    console.log('openClicked() called.')
-    const { selSerialPort } = this.state
-    if(selSerialPort === '')
-      throw Error('Selected serial port is null.')
-    else {
-      console.log('selSerialPort=')
-      console.log(selSerialPort)
-
-      const { selBaudRate, selNumDataBits, selParity, selNumStopBits } = this.state
-      const serialPortObj = new SerialPort(
-        selSerialPort,
-        {
-          baudRate: selBaudRate,
-          dataBits: selNumDataBits,
-          parity: selParity,
-          stopBits: selNumStopBits,
-          autoOpen: false,
-        } as SerialPort.OpenOptions
-      )
-
-      serialPortObj.on('open', this.onSerialPortOpened)
-      // Switches the port into "flowing mode"
-      serialPortObj.on('data', (data) => {
-        this.onSerialPortReceivedData(data)
-      })
-
-      serialPortObj.open()
-
-      this.setState({
-        serialPortState: 'Open',
-      })
-
-      this.serialPortObj = serialPortObj
-    }
-
-  };
-
   selSerialPortChanged = (
     _0: React.SyntheticEvent<HTMLElement, Event>,
     data: DropdownProps
@@ -177,6 +139,57 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
       selNumStopBits: data.key,
     });
   };
+
+  openCloseButtonClicked = () => {
+    console.log('openCloseButtonClicked() called.')
+    const { serialPortState } = this.state
+    if(serialPortState === 'Closed') {
+
+      const { selSerialPort } = this.state
+      if(selSerialPort === '')
+        throw Error('Selected serial port is null.')
+      else {
+        console.log('selSerialPort=')
+        console.log(selSerialPort)
+
+        const { selBaudRate, selNumDataBits, selParity, selNumStopBits } = this.state
+        const serialPortObj = new SerialPort(
+          selSerialPort,
+          {
+            baudRate: selBaudRate,
+            dataBits: selNumDataBits,
+            parity: selParity,
+            stopBits: selNumStopBits,
+            autoOpen: false,
+          } as SerialPort.OpenOptions
+        )
+
+        serialPortObj.on('open', this.onSerialPortOpened)
+        // Switches the port into "flowing mode"
+        serialPortObj.on('data', (data) => {
+          this.onSerialPortReceivedData(data)
+        })
+
+        serialPortObj.open()
+
+        this.setState({
+          serialPortState: 'Open',
+        })
+
+        this.serialPortObj = serialPortObj
+      }
+    } else if (serialPortState === 'Open') {
+      if(this.serialPortObj === null)
+        throw Error('Serial port object was null.')
+      this.serialPortObj.close()
+      this.setState({
+        serialPortState: 'Closed',
+      })
+      this.serialPortObj = null
+    }
+
+  }
+
 
   onSerialPortOpened = () => {
     console.log('Serial port opened!')
@@ -243,13 +256,17 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
               options={serialPortInfoRows}
               value={selSerialPort}
               onChange={this.selSerialPortChanged}
+              disabled={serialPortState !== 'Closed'}
               style={{ width: '600px' }} // Make this wide as it displays much serial port info
             />
           </div>
           <div style={{ height: '10px' }} />
           <div className={styles.serialPortParamRow}>
             <span style={{ display: 'inline-block', width: parameterNameWidth }} />
-            <Button onClick={this.rescan}>Rescan</Button>
+            <Button
+              onClick={this.rescan}
+              disabled={serialPortState !== 'Closed'}
+            >Rescan</Button>
           </div>
           <div style={{ height: '10px' }} />
 
@@ -261,6 +278,7 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
               placeholder="Select baud rate"
               options={baudRateOptions}
               value={selBaudRate}
+              disabled={serialPortState !== 'Closed'}
               onChange={this.selBaudRateChanged}
             />
           </div>
@@ -273,6 +291,7 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
               selection
               options={numDataBitsAOptions}
               value={selNumDataBits}
+              disabled={serialPortState !== 'Closed'}
               onChange={this.selNumDataBitsChanged}
             />
           </div>
@@ -285,6 +304,7 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
               selection
               options={parityOptions}
               value={selParity}
+              disabled={serialPortState !== 'Closed'}
               onChange={this.selParityChanged}
             />
           </div>
@@ -297,18 +317,19 @@ class Hello extends React.Component<IProps, HelloState> implements IHello {
               selection
               options={numStopBitsAOptions}
               value={selNumStopBits}
+              disabled={serialPortState !== 'Closed'}
               onChange={this.selNumStopBitsChanged}
             />
           </div>
           <div style={{ height: '10px' }} />
 
           {/* OPEN SERIAL PORT */}
-          <Button onClick={this.openClicked} style={{ width: '200px' }}>
+          <Button onClick={this.openCloseButtonClicked} style={{ width: '200px' }}>
             { serialPortState === 'Closed' ? 'Open' : 'Close' }
           </Button>
         </div>
         <div>
-          <textarea value={rxData} style={{ width: '500px', height: '300px' }} />
+          <textarea value={rxData} style={{ width: '500px', height: '300px' }} readOnly/>
         </div>
       </div>
     );
