@@ -43,7 +43,11 @@ const MainView = observer(() => {
           <div style={{ width: '10px' }} />
           <Checkbox label='Auto-scroll' checked={app.autoScroll} onChange={handleAutoScrollChanged} />
         </div>
-        <textarea ref={textArea} value={app.rxData} style={{ width: '100%', height: '100%' }} readOnly/>
+        <textarea ref={textArea} value={app.rxData} style={{ width: '100%', height: '100%', fontFamily: 'monospace' }} readOnly/>
+        <div style={{ height: '10px' }}/>
+        <div id="status-bar" style={{ height: '50px' }}>
+          <textarea value={app.statusData} style={{ width: '100%', height: '100%' }}></textarea>
+        </div>
       </div>
     </div>
   )

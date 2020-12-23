@@ -35,6 +35,9 @@ export default class AppState {
 
   rxData = ''
 
+  /** Contains the text data for the status textarea. */
+  statusData = ''
+
   /** If true, the RX textarea will always be kept scrolled to the bottom. If false, scroll position keeps
    * current received data in view.
    */
