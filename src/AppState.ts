@@ -4,8 +4,13 @@ import SerialPort, { PortInfo } from 'serialport'
 
 const electron = require('electron')
 
+// These are mocked for jest in __mocks__/electron.js
 const { remote } = electron
 const { Menu, MenuItem } = remote
+
+function areWeTestingWithJest() {
+  return process.env.JEST_WORKER_ID !== undefined;
+}
 
 // Model the application state.
 export default class AppState {
@@ -33,14 +38,17 @@ export default class AppState {
   constructor() {
       makeAutoObservable(this)
 
-      // Setup the application menu
-      const menu = new Menu()
-      const fileSubMenu = new Menu()
-      fileSubMenu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
-      const fileMenu = new MenuItem({ label: 'File', submenu: fileSubMenu })
-      menu.append(fileMenu)
-      menu.append(new MenuItem({ type: 'separator' }))
-      Menu.setApplicationMenu(menu)
+      // Setup the application menu. Electron doesn't seem to run in the render process
+      // when invoked by jest, so we don't run this code when doing testing
+      if(!areWeTestingWithJest()) {
+        const menu = new Menu()
+        const fileSubMenu = new Menu()
+        fileSubMenu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
+        const fileMenu = new MenuItem({ label: 'File', submenu: fileSubMenu })
+        menu.append(fileMenu)
+        menu.append(new MenuItem({ type: 'separator' }))
+        Menu.setApplicationMenu(menu)
+      }
 
       // Do initial scan for serial ports
       this.rescan()
