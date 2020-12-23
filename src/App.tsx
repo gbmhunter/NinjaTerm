@@ -21,7 +21,12 @@ const MainView = observer(() => {
       {/* SettingsView is only displayed when settingsShown==true. Modal. */}
       <SettingsView app={app} />
 
-      <div style={{ width: '100%', height: '100%', padding: '20px' }}><textarea value={app.rxData} style={{ width: '100%', height: '100%' }} readOnly/></div>
+      <div style={{ width: '100%', height: '100%', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+        <div id="top-bar" style={{ height: '50px' }}>
+          <Button onClick={app.openCloseButtonClicked} disabled={app.selSerialPort === 'none'} >{ app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }</Button>
+        </div>
+        <textarea value={app.rxData} style={{ width: '100%', height: '100%' }} readOnly/>
+      </div>
     </div>
   )
 })

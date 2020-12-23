@@ -11,7 +11,7 @@ export default class AppState {
   settingsShown: boolean = false
 
   serialPortInfos: PortInfo[] = []
-  selSerialPort = '' // Empty string used to represent no serial port
+  selSerialPort = 'none' // Empty string used to represent no serial port
   serialPortObj: SerialPort | null = null
   selBaudRate = 9600
   selNumDataBits = 8
@@ -25,7 +25,10 @@ export default class AppState {
 
       // Setup the application menu
       const menu = new Menu()
-      menu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
+      const fileSubMenu = new Menu()
+      fileSubMenu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
+      const fileMenu = new MenuItem({ label: 'File', submenu: fileSubMenu })
+      menu.append(fileMenu)
       menu.append(new MenuItem({ type: 'separator' }))
       Menu.setApplicationMenu(menu)
 
@@ -44,6 +47,11 @@ export default class AppState {
     SerialPort.list()
     .then((portInfo) => {
       this.serialPortInfos = portInfo
+      if(this.serialPortInfos.length > 0) {
+        this.selSerialPort = this.serialPortInfos[0].path
+      } else {
+        this.selSerialPort = 'none'
+      }
       return true;
     })
     .catch((reason) => {
@@ -135,16 +143,12 @@ export default class AppState {
     }
   }
 
-
   onSerialPortOpened = () => {
     console.log('Serial port opened!')
   }
 
   onSerialPortReceivedData = (data: any) => {
     // console.log('Data:', data)
-    const { rxData } = this.state
-    this.setState({
-      rxData: rxData + data.toString()
-    })
+    this.rxData = this.rxData + data.toString()
   }
 }

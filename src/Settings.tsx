@@ -67,6 +67,8 @@ const SettingsView = observer((props) => {
       )
     })
   }
+
+  console.log('app.selSerialPort=' + app.selSerialPort)
   return (
     <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: app.settingsShown === true ? 'flex' : 'none', justifyContent: 'center', alignItems: 'center' }}>
     <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white', padding: '20px' }}>
