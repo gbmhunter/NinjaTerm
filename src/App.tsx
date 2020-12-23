@@ -5,10 +5,10 @@ import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
 import SerialPort from 'serialport';
 import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react"
-import {createContext, useContext} from "react"
+import { createContext, useContext } from "react"
 
 const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
-import Settings from './Settings'
+import SettingsView from './Settings'
 
 interface IProps {}
 
@@ -60,179 +60,11 @@ const HelloView = observer(
       this.rescan()
     }
 
-    rescan = () => {
-      console.log('Rescanning for serial ports...')
-      SerialPort.list()
-      .then((portInfo) => {
-        this.setState({
-          serialPortInfos: portInfo,
-        });
-        return true;
-      })
-      .catch((reason) => {
-        throw Error(`ERROR: ${reason}`);
-      });
-    }
 
-    selSerialPortChanged = (
-      _0: React.SyntheticEvent<HTMLElement, Event>,
-      data: DropdownProps
-    ) => {
-      console.log('selSerialPortChanged() called. data.key=')
-      console.log(data)
-      const selSerialPort = data.value
-      if(typeof selSerialPort === 'string') {
-        this.setState({
-          selSerialPort,
-        });
-      } else {
-        throw Error('selSerialPort was not a string.')
-      }
-    };
-
-    selBaudRateChanged = (
-      _0: React.SyntheticEvent<HTMLElement, Event>,
-      data: DropdownProps
-    ) => {
-      this.setState({
-        selBaudRate: data.key,
-      });
-    };
-
-    selNumDataBitsChanged = (
-      _0: React.SyntheticEvent<HTMLElement, Event>,
-      data: DropdownProps
-    ) => {
-      this.setState({
-        selNumDataBits: data.key,
-      });
-    };
-
-    selParityChanged = (
-      _0: React.SyntheticEvent<HTMLElement, Event>,
-      data: DropdownProps
-    ) => {
-      this.setState({
-        selParity: data.key,
-      });
-    };
-
-    selNumStopBitsChanged = (
-      _0: React.SyntheticEvent<HTMLElement, Event>,
-      data: DropdownProps
-    ) => {
-      this.setState({
-        selNumStopBits: data.key,
-      });
-    };
-
-    openCloseButtonClicked = () => {
-      console.log('openCloseButtonClicked() called.')
-      const { serialPortState } = this.state
-      if(serialPortState === 'Closed') {
-
-        const { selSerialPort } = this.state
-        if(selSerialPort === '')
-          throw Error('Selected serial port is null.')
-        else {
-          console.log('selSerialPort=')
-          console.log(selSerialPort)
-
-          const { selBaudRate, selNumDataBits, selParity, selNumStopBits } = this.state
-          const serialPortObj = new SerialPort(
-            selSerialPort,
-            {
-              baudRate: selBaudRate,
-              dataBits: selNumDataBits,
-              parity: selParity,
-              stopBits: selNumStopBits,
-              autoOpen: false,
-            } as SerialPort.OpenOptions
-          )
-
-          serialPortObj.on('open', this.onSerialPortOpened)
-          // Switches the port into "flowing mode"
-          serialPortObj.on('data', (data) => {
-            this.onSerialPortReceivedData(data)
-          })
-
-          serialPortObj.open()
-
-          this.setState({
-            serialPortState: 'Open',
-          })
-
-          this.serialPortObj = serialPortObj
-        }
-      } else if (serialPortState === 'Open') {
-        if(this.serialPortObj === null)
-          throw Error('Serial port object was null.')
-        this.serialPortObj.close()
-        this.setState({
-          serialPortState: 'Closed',
-        })
-        this.serialPortObj = null
-      }
-
-    }
-
-
-    onSerialPortOpened = () => {
-      console.log('Serial port opened!')
-    }
-
-    onSerialPortReceivedData = (data: any) => {
-      // console.log('Data:', data)
-      const { rxData } = this.state
-      this.setState({
-        rxData: rxData + data.toString()
-      })
-    }
 
     render() {
-      const parameterNameWidth = 100;
-
-      const {
-        serialPortInfos,
-        selSerialPort,
-        selBaudRate,
-        selNumDataBits,
-        selParity,
-        selNumStopBits,
-        serialPortState,
-        rxData,
-      } = this.state;
-
-      const serialPortInfoRows = serialPortInfos.map((serialPortInfo) => {
-        return {
-          key: serialPortInfo.path,
-          text: serialPortInfo.path,
-          value: serialPortInfo.path,
-          content: (
-            <div>
-              <span style={{ display: 'inline-block', width: '70px' }}>{serialPortInfo.path}</span>
-              <span style={{ display: 'inline-block', width: '150px' }}>{serialPortInfo.manufacturer}</span>
-              <span style={{ display: 'inline-block', width: '150px' }}>{serialPortInfo.locationId}</span>
-            </div>
-          )
-        };
-      });
-      if (serialPortInfoRows.length === 0) {
-        serialPortInfoRows.push({
-          key: '',
-          text: 'none',
-          value: 'none',
-          content: (
-            <div>
-              <span>No serial ports found</span>
-            </div>
-          )
-        })
-      }
-
       return (
         <div>
-          {/* <Settings /> */}
           <h1>NinjaTerm</h1>
 
           <div>
@@ -304,7 +136,14 @@ const HelloView = observer(
 
 // Model the application state.
 class Timer {
+  serialPortInfos = []
   secondsPassed = 0
+  selSerialPort = '' // Empty string used to represent no serial port
+  selBaudRate = 9600
+  selNumDataBits = 8
+  selParity = 'none'
+  selNumStopBits = 1
+  serialPortState = 'Closed'
 
   constructor() {
       makeAutoObservable(this)
@@ -317,7 +156,117 @@ class Timer {
   reset() {
       this.secondsPassed = 0
   }
+
+  rescan = () => {
+    console.log('Rescanning for serial ports...')
+    SerialPort.list()
+    .then((portInfo) => {
+      this.serialPortInfos = portInfo
+      return true;
+    })
+    .catch((reason) => {
+      throw Error(`ERROR: ${reason}`);
+    });
+  }
+
+  selSerialPortChanged = (
+    _0: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    console.log('selSerialPortChanged() called. data.key=')
+    console.log(data)
+    const selSerialPort = data.value
+    if(typeof selSerialPort === 'string') {
+      this.selSerialPort = selSerialPort
+    } else {
+      throw Error('selSerialPort was not a string.')
+    }
+  };
+
+  selBaudRateChanged = (
+    _0: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    this.selBaudRate = data.key
+  };
+
+  selNumDataBitsChanged = (
+    _0: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    this.selNumDataBits = data.key
+  };
+
+  selParityChanged = (
+    _0: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    this.selParity = data.key
+  };
+
+  selNumStopBitsChanged = (
+    _0: React.SyntheticEvent<HTMLElement, Event>,
+    data: DropdownProps
+  ) => {
+    this.selNumStopBits = data.key
+  };
+
+  openCloseButtonClicked = () => {
+    console.log('openCloseButtonClicked() called.')
+    if(this.serialPortState === 'Closed') {
+
+      if(this.selSerialPort === '')
+        throw Error('Selected serial port is null.')
+      else {
+        console.log('selSerialPort=')
+        console.log(this.selSerialPort)
+
+        const serialPortObj = new SerialPort(
+          this.selSerialPort,
+          {
+            baudRate: this.selBaudRate,
+            dataBits: this.selNumDataBits,
+            parity: this.selParity,
+            stopBits: this.selNumStopBits,
+            autoOpen: false,
+          } as SerialPort.OpenOptions
+        )
+
+        serialPortObj.on('open', this.onSerialPortOpened)
+        // Switches the port into "flowing mode"
+        serialPortObj.on('data', (data) => {
+          this.onSerialPortReceivedData(data)
+        })
+
+        serialPortObj.open()
+
+        this.serialPortState = 'Open'
+
+        this.serialPortObj = serialPortObj
+      }
+    } else if (this.serialPortState === 'Open') {
+      if(this.serialPortObj === null)
+        throw Error('Serial port object was null.')
+      this.serialPortObj.close()
+      this.serialPortState = 'Closed'
+      this.serialPortObj = null
+    }
+  }
+
+
+  onSerialPortOpened = () => {
+    console.log('Serial port opened!')
+  }
+
+  onSerialPortReceivedData = (data: any) => {
+    // console.log('Data:', data)
+    const { rxData } = this.state
+    this.setState({
+      rxData: rxData + data.toString()
+    })
+  }
 }
+
 
 const TimerContext = createContext<Timer>()
 
@@ -325,7 +274,10 @@ const TimerView = observer(() => {
   // Grab the timer from the context.
   const timer = useContext(TimerContext) // See the Timer definition above.
   return (
+      <div>
+                  <SettingsView app={timer} />
       <span>Seconds passed: {timer.secondsPassed}</span>
+      </div>
   )
 })
 
