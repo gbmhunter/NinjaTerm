@@ -68,7 +68,7 @@ const SettingsView = observer((props) => {
     })
   }
   return (
-    <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: app.settingsShown === true ? 'flex' : 'none', justifyContent: 'center', alignItems: 'center' }}>
     <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white', padding: '20px' }}>
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -149,8 +149,11 @@ const SettingsView = observer((props) => {
 
         {/* OPEN SERIAL PORT */}
         <Button onClick={app.openCloseButtonClicked} disabled={app.selSerialPort === 'none'} style={{ width: '200px' }}>
-          { app.serialPortState === 'Closed' ? 'Open' : 'Close' }
+          { app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }
         </Button>
+        <div style={{ height: '30px' }} />
+
+        <Button onClick={() => { app.setSettingsShown(false)}}>Close Settings</Button>
       </div>
     </div>
   </div>

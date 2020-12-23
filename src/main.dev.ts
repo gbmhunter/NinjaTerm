@@ -76,6 +76,7 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     webPreferences: {
       nodeIntegration: true,
+      enableRemoteModule: true, // Allows us to configure the menu via the renderer process
     },
   });
 

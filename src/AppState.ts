@@ -1,9 +1,18 @@
 import { makeAutoObservable } from "mobx"
+const electron=require('electron');
+const { ipcRenderer, shell, remote } = electron;
+console.log(electron)
+console.log(remote)
+const {Menu,MenuItem}=remote;
+
+
 
 // Model the application state.
 export default class AppState {
+
+  settingsShown: boolean = false
+
   serialPortInfos = []
-  secondsPassed = 0
   selSerialPort = '' // Empty string used to represent no serial port
   selBaudRate = 9600
   selNumDataBits = 8
@@ -14,14 +23,18 @@ export default class AppState {
 
   constructor() {
       makeAutoObservable(this)
+
+      // Setup the application menu
+      const menu = new Menu()
+      menu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
+      menu.append(new MenuItem({ type: 'separator' }))
+      Menu.setApplicationMenu(menu)
   }
 
-  increase() {
-      this.secondsPassed += 1
-  }
-
-  reset() {
-      this.secondsPassed = 0
+  setSettingsShown = (trueFalse: boolean) => {
+    console.log('setSettingsShown() called with trueFalse=')
+    console.log(trueFalse)
+    this.settingsShown = trueFalse
   }
 
   rescan = () => {

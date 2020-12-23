@@ -11,6 +11,8 @@ const styles = require('./App.css'); // Use require here to dodge "cannot find m
 import AppState from './AppState'
 import SettingsView from './Settings'
 
+
+
 // interface IProps {}
 
 // interface HelloState {
@@ -140,7 +142,6 @@ const MainView = observer(() => {
   return (
     <div>
       <SettingsView app={app} />
-      <span>Seconds passed: {app.secondsPassed}</span>
       <div>
         <textarea value={app.rxData} style={{ width: '500px', height: '300px' }} readOnly/>
       </div>
@@ -149,11 +150,6 @@ const MainView = observer(() => {
 })
 
 const appState = new AppState()
-
-setInterval(() => {
-  appState.increase()
-}, 1000)
-
 
 export default function App() {
   return (
