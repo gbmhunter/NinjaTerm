@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react"
 import { createContext, useContext } from "react"
 import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
-
+import AppState from './AppState'
 
 const styles = require('./Settings.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
@@ -35,12 +35,12 @@ const numStopBitsAOptions = numStopBitsA.map((numStopBits) => {
   return { key: numStopBits, value: numStopBits, text: numStopBits.toString() };
 });
 
-const SettingsView = observer(({ app }) => {
+const SettingsView = observer((props) => {
+
+  const app: AppState = props.app
 
   const parameterNameWidth = 100;
 
-  console.log('app=')
-  console.log(app)
   const serialPortInfoRows = app.serialPortInfos.map((serialPortInfo) => {
     return {
       key: serialPortInfo.path,
@@ -57,8 +57,8 @@ const SettingsView = observer(({ app }) => {
   });
   if (serialPortInfoRows.length === 0) {
     serialPortInfoRows.push({
-      key: '',
-      text: 'none',
+      key: 'none',
+      text: 'No serial ports found',
       value: 'none',
       content: (
         <div>
@@ -69,7 +69,7 @@ const SettingsView = observer(({ app }) => {
   }
   return (
     <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-    <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white' }}>
+    <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white', padding: '20px' }}>
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <h3>Settings</h3>
@@ -148,7 +148,7 @@ const SettingsView = observer(({ app }) => {
         <div style={{ height: '10px' }} />
 
         {/* OPEN SERIAL PORT */}
-        <Button onClick={app.openCloseButtonClicked} style={{ width: '200px' }}>
+        <Button onClick={app.openCloseButtonClicked} disabled={app.selSerialPort === 'none'} style={{ width: '200px' }}>
           { app.serialPortState === 'Closed' ? 'Open' : 'Close' }
         </Button>
       </div>

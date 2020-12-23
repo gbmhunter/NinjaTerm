@@ -8,73 +8,72 @@ import { observer } from "mobx-react"
 import { createContext, useContext } from "react"
 
 const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
+import AppState from './AppState'
 import SettingsView from './Settings'
 
-interface IProps {}
+// interface IProps {}
 
-interface HelloState {
-  serialPortInfos: SerialPort.PortInfo[];
-  selSerialPort: string;
-  selBaudRate: number;
-  selNumDataBits: number;
-  selParity: string;
-  selNumStopBits: number;
-  serialPortState: string;
-  rxData: string;
-}
+// interface HelloState {
+//   serialPortInfos: SerialPort.PortInfo[];
+//   selSerialPort: string;
+//   selBaudRate: number;
+//   selNumDataBits: number;
+//   selParity: string;
+//   selNumStopBits: number;
+//   serialPortState: string;
+//   rxData: string;
+// }
 
-interface IHello extends React.Component<IProps, HelloState> {
-  serialPortObj: SerialPort | null;
-}
-
-
-
-const HelloView = observer(
-  class Hello extends React.Component<IProps, HelloState> implements IHello {
-
-    serialPortObj: SerialPort | null;
-
-    constructor(props: IProps) {
-      super(props);
-      console.log('this.props=')
-      console.log(this.props)
-      const timer = this.props.timer
-      console.log(timer)
-
-
-      this.state = {
-        serialPortInfos: [],
-        selSerialPort: '', // Empty string used for "null"
-        selBaudRate: 9600,
-        selNumDataBits: 8,
-        selParity: 'none',
-        selNumStopBits: 1,
-        serialPortState: 'Closed',
-        rxData: '',
-      };
-      this.serialPortObj = null
-    }
-
-    componentDidMount() {
-      // console.log(SerialPort);
-      this.rescan()
-    }
+// interface IHello extends React.Component<IProps, HelloState> {
+//   serialPortObj: SerialPort | null;
+// }
 
 
 
-    render() {
-      return (
-        <div>
-          <h1>NinjaTerm</h1>
+// const HelloView = observer(
+//   class Hello extends React.Component<IProps, HelloState> implements IHello {
 
-          <div>
-            <textarea value={rxData} style={{ width: '500px', height: '300px' }} readOnly/>
-          </div>
-        </div>
-      );
-    }
-  }
-)
+//     serialPortObj: SerialPort | null;
+
+//     constructor(props: IProps) {
+//       super(props);
+//       console.log('this.props=')
+//       console.log(this.props)
+//       const timer = this.props.timer
+//       console.log(timer)
+
+
+//       this.state = {
+//         serialPortInfos: [],
+//         selSerialPort: '', // Empty string used for "null"
+//         selBaudRate: 9600,
+//         selNumDataBits: 8,
+//         selParity: 'none',
+//         selNumStopBits: 1,
+//         serialPortState: 'Closed',
+//         rxData: '',
+//       };
+//       this.serialPortObj = null
+//     }
+
+//     componentDidMount() {
+//       // console.log(SerialPort);
+//       this.rescan()
+//     }
+
+
+
+//     render() {
+//       return (
+//         <div>
+//           <h1>NinjaTerm</h1>
+
+
+//         </div>
+//       );
+//     }
+//   }
+// )
 
 // const mapStateToProps = (state, ownProps) => {
 //   // ... computed data from state and optionally ownProps
@@ -133,158 +132,26 @@ const HelloView = observer(
 // })
 
 
+const AppContext = createContext<AppState>()
 
-// Model the application state.
-class Timer {
-  serialPortInfos = []
-  secondsPassed = 0
-  selSerialPort = '' // Empty string used to represent no serial port
-  selBaudRate = 9600
-  selNumDataBits = 8
-  selParity = 'none'
-  selNumStopBits = 1
-  serialPortState = 'Closed'
-
-  constructor() {
-      makeAutoObservable(this)
-  }
-
-  increase() {
-      this.secondsPassed += 1
-  }
-
-  reset() {
-      this.secondsPassed = 0
-  }
-
-  rescan = () => {
-    console.log('Rescanning for serial ports...')
-    SerialPort.list()
-    .then((portInfo) => {
-      this.serialPortInfos = portInfo
-      return true;
-    })
-    .catch((reason) => {
-      throw Error(`ERROR: ${reason}`);
-    });
-  }
-
-  selSerialPortChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) => {
-    console.log('selSerialPortChanged() called. data.key=')
-    console.log(data)
-    const selSerialPort = data.value
-    if(typeof selSerialPort === 'string') {
-      this.selSerialPort = selSerialPort
-    } else {
-      throw Error('selSerialPort was not a string.')
-    }
-  };
-
-  selBaudRateChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) => {
-    this.selBaudRate = data.key
-  };
-
-  selNumDataBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) => {
-    this.selNumDataBits = data.key
-  };
-
-  selParityChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) => {
-    this.selParity = data.key
-  };
-
-  selNumStopBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
-  ) => {
-    this.selNumStopBits = data.key
-  };
-
-  openCloseButtonClicked = () => {
-    console.log('openCloseButtonClicked() called.')
-    if(this.serialPortState === 'Closed') {
-
-      if(this.selSerialPort === '')
-        throw Error('Selected serial port is null.')
-      else {
-        console.log('selSerialPort=')
-        console.log(this.selSerialPort)
-
-        const serialPortObj = new SerialPort(
-          this.selSerialPort,
-          {
-            baudRate: this.selBaudRate,
-            dataBits: this.selNumDataBits,
-            parity: this.selParity,
-            stopBits: this.selNumStopBits,
-            autoOpen: false,
-          } as SerialPort.OpenOptions
-        )
-
-        serialPortObj.on('open', this.onSerialPortOpened)
-        // Switches the port into "flowing mode"
-        serialPortObj.on('data', (data) => {
-          this.onSerialPortReceivedData(data)
-        })
-
-        serialPortObj.open()
-
-        this.serialPortState = 'Open'
-
-        this.serialPortObj = serialPortObj
-      }
-    } else if (this.serialPortState === 'Open') {
-      if(this.serialPortObj === null)
-        throw Error('Serial port object was null.')
-      this.serialPortObj.close()
-      this.serialPortState = 'Closed'
-      this.serialPortObj = null
-    }
-  }
-
-
-  onSerialPortOpened = () => {
-    console.log('Serial port opened!')
-  }
-
-  onSerialPortReceivedData = (data: any) => {
-    // console.log('Data:', data)
-    const { rxData } = this.state
-    this.setState({
-      rxData: rxData + data.toString()
-    })
-  }
-}
-
-
-const TimerContext = createContext<Timer>()
-
-const TimerView = observer(() => {
+const MainView = observer(() => {
   // Grab the timer from the context.
-  const timer = useContext(TimerContext) // See the Timer definition above.
+  const app = useContext(AppContext) // See the Timer definition above.
   return (
+    <div>
+      <SettingsView app={app} />
+      <span>Seconds passed: {app.secondsPassed}</span>
       <div>
-                  <SettingsView app={timer} />
-      <span>Seconds passed: {timer.secondsPassed}</span>
+        <textarea value={app.rxData} style={{ width: '500px', height: '300px' }} readOnly/>
       </div>
+    </div>
   )
 })
 
-const myTimer = new Timer()
+const appState = new AppState()
 
 setInterval(() => {
-  myTimer.increase()
+  appState.increase()
 }, 1000)
 
 
@@ -295,9 +162,9 @@ export default function App() {
         {/* <Provider store={store}>
           <Route path="/" component={HelloWrapped} />
         </Provider> */}
-        <TimerContext.Provider value={myTimer}>
-          <Route path="/" component={TimerView} />
-        </TimerContext.Provider>
+        <AppContext.Provider value={appState}>
+          <Route path="/" component={MainView} />
+        </AppContext.Provider>
       </Switch>
     </Router>
   );
