@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx"
+import { action, makeAutoObservable } from "mobx"
 const electron = require('electron')
 const { remote } = electron
 import SerialPort, { PortInfo } from 'serialport'
@@ -44,16 +44,17 @@ export default class AppState {
 
   rescan = () => {
     console.log('Rescanning for serial ports...')
-    SerialPort.list()
-    .then((portInfo) => {
-      this.serialPortInfos = portInfo
-      if(this.serialPortInfos.length > 0) {
-        this.selSerialPort = this.serialPortInfos[0].path
-      } else {
-        this.selSerialPort = 'none'
-      }
-      return true;
-    })
+    SerialPort.list().then(
+      action("listPortSuccess", (portInfo: SerialPort.PortInfo[]) => {
+        this.serialPortInfos = portInfo
+        if(this.serialPortInfos.length > 0) {
+          this.selSerialPort = this.serialPortInfos[0].path
+        } else {
+          this.selSerialPort = 'none'
+        }
+        return true;
+      })
+    )
     .catch((reason) => {
       throw Error(`ERROR: ${reason}`);
     });
@@ -119,20 +120,26 @@ export default class AppState {
             parity: this.selParity,
             stopBits: this.selNumStopBits,
             autoOpen: false,
-          } as SerialPort.OpenOptions
+          } as SerialPort.OpenOptions,
+          (err) => { console.log('Error:!!! ', err.message) }
         )
+
+        this.serialPortObj = serialPortObj
 
         serialPortObj.on('open', this.onSerialPortOpened)
         // Switches the port into "flowing mode"
         serialPortObj.on('data', (data) => {
           this.onSerialPortReceivedData(data)
         })
+        // Open errors will be emitted as an error event
+        serialPortObj.on('error', function(err) {
+          console.log('Error: ', err.message)
+        })
 
-        serialPortObj.open()
+        serialPortObj.open(
+          (err) => { console.log('Error: ', err.message) }
+        )
 
-        this.serialPortState = 'Open'
-
-        this.serialPortObj = serialPortObj
       }
     } else if (this.serialPortState === 'Open') {
       if(this.serialPortObj === null)
@@ -145,6 +152,7 @@ export default class AppState {
 
   onSerialPortOpened = () => {
     console.log('Serial port opened!')
+    this.serialPortState = 'Open'
   }
 
   onSerialPortReceivedData = (data: any) => {
