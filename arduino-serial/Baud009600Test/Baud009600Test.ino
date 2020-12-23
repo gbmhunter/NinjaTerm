@@ -16,5 +16,5 @@ void loop() {
   Serial.println("Hello, world.");
   
   Serial.flush();
-  delay(1000);
+  delay(100);
 }

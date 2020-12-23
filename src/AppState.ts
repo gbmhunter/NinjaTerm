@@ -35,6 +35,11 @@ export default class AppState {
 
   rxData = ''
 
+  /** If true, the RX textarea will always be kept scrolled to the bottom. If false, scroll position keeps
+   * current received data in view.
+   */
+  autoScroll = true
+
   constructor() {
       makeAutoObservable(this)
 
@@ -173,5 +178,9 @@ export default class AppState {
   onSerialPortReceivedData = (data: any) => {
     // console.log('Data:', data)
     this.rxData += data.toString()
+  }
+
+  setAutoScroll = (trueFalse: boolean) => {
+    this.autoScroll = trueFalse
   }
 }
