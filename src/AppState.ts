@@ -1,19 +1,18 @@
 import { makeAutoObservable } from "mobx"
-const electron=require('electron');
-const { ipcRenderer, shell, remote } = electron;
-console.log(electron)
-console.log(remote)
-const {Menu,MenuItem}=remote;
+const electron = require('electron')
+const { remote } = electron
+import SerialPort, { PortInfo } from 'serialport'
 
-
+const {Menu,MenuItem}=remote
 
 // Model the application state.
 export default class AppState {
 
   settingsShown: boolean = false
 
-  serialPortInfos = []
+  serialPortInfos: PortInfo[] = []
   selSerialPort = '' // Empty string used to represent no serial port
+  serialPortObj: SerialPort | null = null
   selBaudRate = 9600
   selNumDataBits = 8
   selParity = 'none'
@@ -29,6 +28,9 @@ export default class AppState {
       menu.append(new MenuItem({ label: 'Settings', click: () => { this.setSettingsShown(true) } }))
       menu.append(new MenuItem({ type: 'separator' }))
       Menu.setApplicationMenu(menu)
+
+      // Do initial scan for serial ports
+      this.rescan()
   }
 
   setSettingsShown = (trueFalse: boolean) => {

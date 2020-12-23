@@ -53,3 +53,8 @@ table.left-align td,
 th {
   text-align: left;
 }
+
+#root {
+  width: 100%;
+  height: 100%
+}
