@@ -2,7 +2,6 @@
 
 <br>
 
-
 <br>
 
 <div align="center">
@@ -22,16 +21,28 @@
 ## Install
 
 ```bash
-git clone 
+git clone
 yarn
 ```
 
-## Starting Development
+## Development
 
 Start the app in the `dev` environment:
 
 ```bash
 yarn start
+```
+
+**Running Lint Checks**
+
+```bash
+yarn lint
+```
+
+**Running Typescript Checks**
+
+```bash
+yarn tsc
 ```
 
 ## Packaging for Production
@@ -47,7 +58,6 @@ Packages are created in the `release` directory. Because the native module `seri
 ## Docs
 
 See our [docs and guides here](https://electron-react-boilerplate.js.org/docs/installation)
-
 
 ## Maintainers
 

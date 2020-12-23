@@ -1,8 +1,6 @@
-import React from 'react';
-import { makeAutoObservable } from "mobx"
+import React from 'react'
 import { observer } from "mobx-react"
-import { createContext, useContext } from "react"
-import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
+import { Dropdown, Button } from 'semantic-ui-react';
 import AppState from './AppState'
 
 const styles = require('./Settings.css'); // Use require here to dodge "cannot find module" errors in VS Code
@@ -35,9 +33,13 @@ const numStopBitsAOptions = numStopBitsA.map((numStopBits) => {
   return { key: numStopBits, value: numStopBits, text: numStopBits.toString() };
 });
 
-const SettingsView = observer((props) => {
+interface IProps {
+  app: AppState;
+}
 
-  const app: AppState = props.app
+const SettingsView = observer((props: IProps) => {
+
+  const { app } = props
 
   const parameterNameWidth = 100;
 
@@ -68,7 +70,7 @@ const SettingsView = observer((props) => {
     })
   }
 
-  console.log('app.selSerialPort=' + app.selSerialPort)
+  console.log('app.selSerialPort=', app.selSerialPort)
   return (
     <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: app.settingsShown === true ? 'flex' : 'none', justifyContent: 'center', alignItems: 'center' }}>
     <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white', padding: '20px' }}>
@@ -88,7 +90,7 @@ const SettingsView = observer((props) => {
               disabled={app.serialPortState !== 'Closed'}
               style={{ width: '500px' }} // Make this wide as it displays much serial port info
             />
-            <div style={{ width: '10px' }}></div>
+            <div style={{ width: '10px' }} />
             <Button
               onClick={app.rescan}
               disabled={app.serialPortState !== 'Closed'}>

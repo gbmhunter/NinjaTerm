@@ -1,23 +1,33 @@
 import { action, makeAutoObservable } from "mobx"
-const electron = require('electron')
-const { remote } = electron
+import { DropdownProps } from 'semantic-ui-react'
 import SerialPort, { PortInfo } from 'serialport'
 
-const {Menu,MenuItem}=remote
+const electron = require('electron')
+
+const { remote } = electron
+const { Menu, MenuItem } = remote
 
 // Model the application state.
 export default class AppState {
 
-  settingsShown: boolean = false
+  settingsShown = false
 
   serialPortInfos: PortInfo[] = []
+
   selSerialPort = 'none' // Empty string used to represent no serial port
+
   serialPortObj: SerialPort | null = null
+
   selBaudRate = 9600
+
   selNumDataBits = 8
+
   selParity = 'none'
+
   selNumStopBits = 1
+
   serialPortState = 'Closed'
+
   rxData = ''
 
   constructor() {
@@ -121,7 +131,6 @@ export default class AppState {
             stopBits: this.selNumStopBits,
             autoOpen: false,
           } as SerialPort.OpenOptions,
-          (err) => { console.log('Error:!!! ', err.message) }
         )
 
         this.serialPortObj = serialPortObj
@@ -155,6 +164,6 @@ export default class AppState {
 
   onSerialPortReceivedData = (data: any) => {
     // console.log('Data:', data)
-    this.rxData = this.rxData + data.toString()
+    this.rxData += data.toString()
   }
 }

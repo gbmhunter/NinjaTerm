@@ -1,19 +1,19 @@
 import React from 'react'
-import { createContext, useContext } from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-import { Dropdown, DropdownProps, Button } from 'semantic-ui-react'
-
+import { Button } from 'semantic-ui-react'
 import { observer } from 'mobx-react'
 
-const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 import AppState from './AppState'
 import SettingsView from './Settings'
 
-const AppContext = createContext<AppState>()
+// const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
+
+const appState = new AppState()
+const AppContext = React.createContext<AppState>(appState) // This default context 'appState' should never be used, but keeps lint happy
 
 const MainView = observer(() => {
   // Grab the timer from the context.
-  const app = useContext(AppContext) // See the Timer definition above.
+  const app = React.useContext(AppContext) // See the Timer definition above.
   return (
     <div id="main-view" style={{ width: '100%', height: '100%' }}>
       {/* SettingsView is only displayed when settingsShown==true. Modal. */}
@@ -29,7 +29,7 @@ const MainView = observer(() => {
   )
 })
 
-const appState = new AppState()
+
 
 export default function App() {
   return (
