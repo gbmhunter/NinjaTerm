@@ -136,9 +136,7 @@ export default class AppState {
           console.log('Error: ', err.message)
         })
 
-        serialPortObj.open(
-          (err) => { console.log('Error: ', err.message) }
-        )
+        serialPortObj.open()
 
       }
     } else if (this.serialPortState === 'Open') {
