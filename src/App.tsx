@@ -1,11 +1,9 @@
-import React from 'react';
-import { connect } from 'react-redux'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { Dropdown, DropdownProps, Button } from 'semantic-ui-react';
+import React from 'react'
+import { createContext, useContext } from 'react'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import { Dropdown, DropdownProps, Button } from 'semantic-ui-react'
 
-import { makeAutoObservable } from "mobx"
-import { observer } from "mobx-react"
-import { createContext, useContext } from "react"
+import { observer } from 'mobx-react'
 
 const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 import AppState from './AppState'

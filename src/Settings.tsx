@@ -75,24 +75,31 @@ const SettingsView = observer((props) => {
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <h3>Settings</h3>
-        <div className={styles.serialPortParamRow}>
+
+        {/* SERIAL PORT SELECTION */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           <span style={{ display: 'inline-block', width: parameterNameWidth }}>Serial Port: </span>
-          <Dropdown
-            selection
-            options={serialPortInfoRows}
-            value={app.selSerialPort}
-            onChange={app.selSerialPortChanged}
-            disabled={app.serialPortState !== 'Closed'}
-            style={{ width: '600px' }} // Make this wide as it displays much serial port info
-          />
+          <div style={{ display: 'flex' }}>
+            <Dropdown
+              selection
+              options={serialPortInfoRows}
+              value={app.selSerialPort}
+              onChange={app.selSerialPortChanged}
+              disabled={app.serialPortState !== 'Closed'}
+              style={{ width: '500px' }} // Make this wide as it displays much serial port info
+            />
+            <div style={{ width: '10px' }}></div>
+            <Button
+              onClick={app.rescan}
+              disabled={app.serialPortState !== 'Closed'}>
+                Rescan
+            </Button>
+          </div>
         </div>
         <div style={{ height: '10px' }} />
         <div className={styles.serialPortParamRow}>
           <span style={{ display: 'inline-block', width: parameterNameWidth }} />
-          <Button
-            onClick={app.rescan}
-            disabled={app.serialPortState !== 'Closed'}
-          >Rescan</Button>
+
         </div>
         <div style={{ height: '10px' }} />
 
@@ -155,7 +162,9 @@ const SettingsView = observer((props) => {
         </Button>
         <div style={{ height: '30px' }} />
 
-        <Button onClick={() => { app.setSettingsShown(false)}}>Close Settings</Button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button onClick={() => { app.setSettingsShown(false)}} style={{ width: '200px' }}>Close Settings</Button>
+        </div>
       </div>
     </div>
   </div>
