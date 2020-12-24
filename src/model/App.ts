@@ -187,6 +187,6 @@ export default class AppState {
    * @param msg Message to output to the status bar. Message should include new line character.
    */
   addStatusBarMsg = (msg: string, severity: string) => {
-    this.statusMsgs.push(new StatusMsg(msg, severity))
+    this.statusMsgs.push(new StatusMsg(this.statusMsgs.length, msg, severity))
   }
 }

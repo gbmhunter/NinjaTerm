@@ -159,7 +159,11 @@ const SettingsView = observer((props: IProps) => {
         <div style={{ height: '10px' }} />
 
         {/* OPEN SERIAL PORT */}
-        <Button onClick={app.openCloseButtonClicked} disabled={app.selSerialPort === 'none'} style={{ width: '200px' }}>
+        <Button
+          onClick={app.openCloseButtonClicked}
+          disabled={app.selSerialPort === 'none'}
+          color={ app.serialPortState === 'Closed' ? 'green' : 'red' }
+          style={{ width: '200px' }}>
           { app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }
         </Button>
         <div style={{ height: '30px' }} />

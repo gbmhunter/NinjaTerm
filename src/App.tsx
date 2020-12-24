@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-import { Button, Checkbox, CheckboxProps } from 'semantic-ui-react'
+import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
 import { observer } from 'mobx-react'
 
 import AppState from './model/App'
@@ -38,10 +38,10 @@ const MainView = observer(() => {
 
   const statusMsgsView = app.statusMsgs.map((statusMsg) => {
     if(statusMsg.severity === 'ok') {
-      return (<span style={{ display: 'block' }}>{statusMsg.msg}</span>)
+      return (<span key={statusMsg.id} style={{ display: 'block' }}>{statusMsg.msg}</span>)
     }
     if(statusMsg.severity === 'error') {
-      return (<span style={{ display: 'block', color: 'red' }}>ERROR: {statusMsg.msg}</span>)
+      return (<span key={statusMsg.id} style={{ display: 'block', color: 'red' }}>ERROR: {statusMsg.msg}</span>)
     }
 
     throw Error('statusMsg.severity not recognized.')
@@ -53,12 +53,24 @@ const MainView = observer(() => {
       <SettingsView app={app} />
 
       <div style={{ width: '100%', height: '100%', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+
+        {/* TOP BAR */}
         <div id="top-bar" style={{ height: '50px', display: 'flex', alignItems: 'center' }}>
-          <Button onClick={app.openCloseButtonClicked} disabled={app.selSerialPort === 'none'} style={{ height: '40px' }} >{ app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }</Button>
+          <Button icon onClick={() => {app.setSettingsShown(true)}}>
+            <Icon name='settings' size='large' />
+          </Button>
+          <div style={{ minWidth: '10px' }} />
+          <Button
+            onClick={app.openCloseButtonClicked}
+            disabled={app.selSerialPort === 'none'}
+            color={ app.serialPortState === 'Closed' ? 'green' : 'red' }
+            style={{ height: '40px' }} >{ app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }</Button>
           <div style={{ minWidth: '10px' }} />
           <Checkbox label='Auto-scroll' checked={app.autoScroll} onChange={handleAutoScrollChanged} />
         </div>
         <div style={{ minHeight: '10px' }}/>
+
+
         <textarea ref={textArea} value={app.rxData} style={{ width: '100%', height: '100%', fontFamily: 'monospace' }} readOnly/>
         <div style={{ minHeight: '10px' }}/>
         <div id="status-bar" style={{ minHeight: '80px', maxHeight: '80px', borderStyle: 'solid', borderWidth: 'thin' }}>
