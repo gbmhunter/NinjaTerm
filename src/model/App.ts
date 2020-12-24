@@ -2,6 +2,8 @@ import { action, makeAutoObservable } from "mobx"
 import { DropdownProps } from 'semantic-ui-react'
 import SerialPort, { PortInfo } from 'serialport'
 
+import StatusMsg from './StatusMsg'
+
 const electron = require('electron')
 
 // These are mocked for jest in __mocks__/electron.js
@@ -36,7 +38,7 @@ export default class AppState {
   rxData = ''
 
   /** Contains the text data for the status textarea. */
-  statusData = ''
+  statusMsgs: StatusMsg[] = []
 
   /** If true, the RX textarea will always be kept scrolled to the bottom. If false, scroll position keeps
    * current received data in view.
@@ -71,7 +73,7 @@ export default class AppState {
   rescan = () => {
     console.log('Rescanning for serial ports...')
     SerialPort.list().then(
-      action("listPortSuccess", (portInfo: SerialPort.PortInfo[]) => {
+      action('listPortSuccess', (portInfo: SerialPort.PortInfo[]) => {
         this.serialPortInfos = portInfo
         if(this.serialPortInfos.length > 0) {
           this.selSerialPort = this.serialPortInfos[0].path
@@ -87,11 +89,8 @@ export default class AppState {
   }
 
   selSerialPortChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
+    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
-    console.log('selSerialPortChanged() called. data.key=')
-    console.log(data)
     const selSerialPort = data.value
     if(typeof selSerialPort === 'string') {
       this.selSerialPort = selSerialPort
@@ -101,29 +100,25 @@ export default class AppState {
   };
 
   selBaudRateChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
+    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
     this.selBaudRate = data.key
   };
 
   selNumDataBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
+    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
     this.selNumDataBits = data.key
   };
 
   selParityChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
+    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
     this.selParity = data.key
   };
 
   selNumStopBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>,
-    data: DropdownProps
+    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
     this.selNumStopBits = data.key
   };
@@ -135,9 +130,6 @@ export default class AppState {
       if(this.selSerialPort === '')
         throw Error('Selected serial port is null.')
       else {
-        console.log('selSerialPort=')
-        console.log(this.selSerialPort)
-
         const serialPortObj = new SerialPort(
           this.selSerialPort,
           {
@@ -156,9 +148,10 @@ export default class AppState {
         serialPortObj.on('data', (data) => {
           this.onSerialPortReceivedData(data)
         })
-        // Open errors will be emitted as an error event
-        serialPortObj.on('error', function(err) {
+        // All errors (incl. open errors) will be emitted as an error event
+        serialPortObj.on('error', (err) => {
           console.log('Error: ', err.message)
+          this.addStatusBarMsg(err.message, 'error')
         })
 
         serialPortObj.open()
@@ -170,11 +163,12 @@ export default class AppState {
       this.serialPortObj.close()
       this.serialPortState = 'Closed'
       this.serialPortObj = null
+      this.addStatusBarMsg(`Serial port "${this.selSerialPort}" closed.\n`, 'ok')
     }
   }
 
   onSerialPortOpened = () => {
-    console.log('Serial port opened!')
+    this.addStatusBarMsg(`Serial port "${this.selSerialPort}" opened.\n`, 'ok')
     this.serialPortState = 'Open'
   }
 
@@ -185,5 +179,14 @@ export default class AppState {
 
   setAutoScroll = (trueFalse: boolean) => {
     this.autoScroll = trueFalse
+  }
+
+  /**
+   * Call this to add a message to the status bar at the bottom of the main view.
+   *
+   * @param msg Message to output to the status bar. Message should include new line character.
+   */
+  addStatusBarMsg = (msg: string, severity: string) => {
+    this.statusMsgs.push(new StatusMsg(msg, severity))
   }
 }

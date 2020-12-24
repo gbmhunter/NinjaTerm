@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from "mobx-react"
 import { Dropdown, Button } from 'semantic-ui-react';
-import AppState from './AppState'
+import AppState from './model/App'
 
 const styles = require('./Settings.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
