@@ -15,14 +15,14 @@ const MainView = observer(() => {
   // Grab the timer from the context.
   const app = React.useContext(AppContext) // See the Timer definition above.
 
-  const textArea = React.useRef<HTMLTextAreaElement>(null);
-  const statusContentDiv = React.useRef<HTMLDivElement>(null);
+  const rxDataDiv = React.useRef<HTMLDivElement>(null)
+  const statusContentDiv = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
     // Keep the textarea scrolled to the bottom as data comes in if the checkbox is ticked
     if(app.autoScroll) {
-      if(textArea.current !== null) {
-        textArea.current.scrollTop = textArea.current.scrollHeight
+      if(rxDataDiv.current !== null) {
+        rxDataDiv.current.scrollTop = rxDataDiv.current.scrollHeight
       }
     }
     if(statusContentDiv.current !== null) {
@@ -31,10 +31,12 @@ const MainView = observer(() => {
   });
 
   function handleAutoScrollChanged(_1: React.FormEvent<HTMLInputElement>, data: CheckboxProps) {
-    if(data.checked) {
+    console.log(data)
+    if(typeof data.checked === 'boolean')
       app.setAutoScroll(data.checked)
-    }
   }
+
+  const rxDataView = (<div><span style={{ whiteSpace: 'pre' }}>{app.rxData}</span><span id="cursor">█</span></div>)
 
   const statusMsgsView = app.statusMsgs.map((statusMsg) => {
     if(statusMsg.severity === 'ok') {
@@ -70,11 +72,17 @@ const MainView = observer(() => {
         </div>
         <div style={{ minHeight: '10px' }}/>
 
-
-        <textarea ref={textArea} value={app.rxData} style={{ width: '100%', height: '100%', fontFamily: 'monospace' }} readOnly/>
+        {/* RX DATA */}
+        <div id="rx-data"
+          ref={rxDataDiv}
+          style={{ width: '100%', height: '100%', padding: '10px', fontFamily: 'monospace', borderStyle: 'solid', borderWidth: 'thin', overflowY: 'scroll' }}>
+          {rxDataView}
+        </div>
         <div style={{ minHeight: '10px' }}/>
+
+        {/* STATUS BAR */}
         <div id="status-bar" style={{ minHeight: '80px', maxHeight: '80px', borderStyle: 'solid', borderWidth: 'thin' }}>
-          <div ref={statusContentDiv} style={{ width: '100%', height: '100%', overflowY: 'scroll' }}>
+          <div ref={statusContentDiv} style={{ width: '100%', height: '100%', padding: '10px', overflowY: 'scroll' }}>
             {statusMsgsView}
           </div>
         </div>
