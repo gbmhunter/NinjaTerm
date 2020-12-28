@@ -45,7 +45,7 @@ const SettingsView = observer((props: IProps) => {
 
   const parameterNameWidth = 100;
 
-  const serialPortInfoRows = app.serialPortInfos.map((serialPortInfo) => {
+  const serialPortInfoRows = app.settings.serialPortInfos.map((serialPortInfo) => {
     return {
       key: serialPortInfo.path,
       text: serialPortInfo.path,
@@ -72,7 +72,7 @@ const SettingsView = observer((props: IProps) => {
     })
   }
 
-  console.log('app.selSerialPort=', app.selSerialPort)
+  console.log('app.selSerialPort=', app.settings.selSerialPort)
   return (
     <div id="settings-outer-container" style={{ backgroundColor: '#10101050', top: 0, bottom: 0, left: 0, right: 0, position: 'fixed', zIndex: 100, display: app.settingsShown === true ? 'flex' : 'none', justifyContent: 'center', alignItems: 'center' }}>
     <div id="settings-inner-container" style={{ width: '80%', height: '80%', backgroundColor: 'white', padding: '20px' }}>
@@ -91,14 +91,14 @@ const SettingsView = observer((props: IProps) => {
                 <Dropdown
                   selection
                   options={serialPortInfoRows}
-                  value={app.selSerialPort}
-                  onChange={app.selSerialPortChanged}
+                  value={app.settings.selSerialPort}
+                  onChange={app.settings.selSerialPortChanged}
                   disabled={app.serialPortState !== 'Closed'}
                   style={{ width: '500px' }} // Make this wide as it displays much serial port info
                 />
                 <div style={{ width: '10px' }} />
                 <Button
-                  onClick={app.rescan}
+                  onClick={app.settings.rescan}
                   disabled={app.serialPortState !== 'Closed'}>
                     Rescan
                 </Button>
@@ -118,9 +118,9 @@ const SettingsView = observer((props: IProps) => {
                 selection
                 placeholder="Select baud rate"
                 options={baudRateOptions}
-                value={app.selBaudRate}
+                value={app.settings.selBaudRate}
                 disabled={app.serialPortState !== 'Closed'}
-                onChange={app.selBaudRateChanged}
+                onChange={app.settings.selBaudRateChanged}
               />
             </div>
             <div style={{ height: '10px' }} />
@@ -131,9 +131,9 @@ const SettingsView = observer((props: IProps) => {
               <Dropdown
                 selection
                 options={numDataBitsAOptions}
-                value={app.selNumDataBits}
+                value={app.settings.selNumDataBits}
                 disabled={app.serialPortState !== 'Closed'}
-                onChange={app.selNumDataBitsChanged}
+                onChange={app.settings.selNumDataBitsChanged}
               />
             </div>
             <div style={{ height: '10px' }} />
@@ -144,9 +144,9 @@ const SettingsView = observer((props: IProps) => {
               <Dropdown
                 selection
                 options={parityOptions}
-                value={app.selParity}
+                value={app.settings.selParity}
                 disabled={app.serialPortState !== 'Closed'}
-                onChange={app.selParityChanged}
+                onChange={app.settings.selParityChanged}
               />
             </div>
             <div style={{ height: '10px' }} />
@@ -157,9 +157,9 @@ const SettingsView = observer((props: IProps) => {
               <Dropdown
                 selection
                 options={numStopBitsAOptions}
-                value={app.selNumStopBits}
+                value={app.settings.selNumStopBits}
                 disabled={app.serialPortState !== 'Closed'}
-                onChange={app.selNumStopBitsChanged}
+                onChange={app.settings.selNumStopBitsChanged}
               />
             </div>
             <div style={{ height: '10px' }} />
@@ -167,7 +167,7 @@ const SettingsView = observer((props: IProps) => {
             {/* OPEN SERIAL PORT */}
             <Button
               onClick={app.openCloseButtonClicked}
-              disabled={app.selSerialPort === 'none'}
+              disabled={app.settings.selSerialPort === 'none'}
               color={ app.serialPortState === 'Closed' ? 'green' : 'red' }
               style={{ width: '200px' }}>
               { app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }

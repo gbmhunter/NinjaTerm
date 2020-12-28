@@ -3,13 +3,13 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
 import { observer } from 'mobx-react'
 
-import AppState from '../model/App'
+import App from '../model/App'
 import SettingsView from './SettingsView'
 
 // const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
-const appState = new AppState()
-const AppContext = React.createContext<AppState>(appState) // This default context 'appState' should never be used, but keeps lint happy
+const appState = new App()
+const AppContext = React.createContext<App>(appState) // This default context 'appState' should never be used, but keeps lint happy
 
 const MainView = observer(() => {
   const app = React.useContext(AppContext)
@@ -90,7 +90,7 @@ const MainView = observer(() => {
   )
 })
 
-export default function App() {
+export default function AppView() {
   return (
     <Router>
       <Switch>

@@ -1,5 +1,4 @@
 import { action, makeAutoObservable } from "mobx"
-import { DropdownProps } from 'semantic-ui-react'
 import SerialPort, { PortInfo } from 'serialport'
 
 import StatusMsg from './StatusMsg'
@@ -16,25 +15,13 @@ function areWeTestingWithJest() {
 }
 
 // Model the application state.
-export default class AppState {
+export default class App {
 
   settingsShown = false
 
-  serialPortInfos: PortInfo[] = []
-
-  selSerialPort = 'none' // Empty string used to represent no serial port
+  serialPortState = 'Closed'
 
   serialPortObj: SerialPort | null = null
-
-  selBaudRate = 9600
-
-  selNumDataBits = 8
-
-  selParity = 'none'
-
-  selNumStopBits = 1
-
-  serialPortState = 'Closed'
 
   rxData = ''
 
@@ -46,7 +33,7 @@ export default class AppState {
    */
   autoScroll = true
 
-  settings = new Settings()
+  settings = new Settings(this)
 
   constructor() {
       makeAutoObservable(this)
@@ -64,7 +51,7 @@ export default class AppState {
       }
 
       // Do initial scan for serial ports
-      this.rescan()
+      this.settings.rescan()
   }
 
   setSettingsShown = (trueFalse: boolean) => {
@@ -73,76 +60,22 @@ export default class AppState {
     this.settingsShown = trueFalse
   }
 
-  rescan = () => {
-    console.log('Rescanning for serial ports...')
-    this.addStatusBarMsg('Rescanning for serial ports...', 'ok')
-    SerialPort.list().then(
-      action('listPortSuccess', (portInfo: SerialPort.PortInfo[]) => {
-        this.serialPortInfos = portInfo
-        if(this.serialPortInfos.length > 0) {
-          this.selSerialPort = this.serialPortInfos[0].path
-          this.addStatusBarMsg(`Found ${this.serialPortInfos.length} serial ports.`, 'ok')
-        } else {
-          this.selSerialPort = 'none'
-          this.addStatusBarMsg(`Found no serial ports.`, 'ok')
-        }
-        return true;
-      })
-    )
-    .catch((reason) => {
-      throw Error(`ERROR: ${reason}`);
-    });
-  }
 
-  selSerialPortChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    const selSerialPort = data.value
-    if(typeof selSerialPort === 'string') {
-      this.selSerialPort = selSerialPort
-    } else {
-      throw Error('selSerialPort was not a string.')
-    }
-  };
-
-  selBaudRateChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selBaudRate = data.key
-  };
-
-  selNumDataBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selNumDataBits = data.key
-  };
-
-  selParityChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selParity = data.key
-  };
-
-  selNumStopBitsChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selNumStopBits = data.key
-  };
 
   openCloseButtonClicked = () => {
     console.log('openCloseButtonClicked() called.')
     if(this.serialPortState === 'Closed') {
 
-      if(this.selSerialPort === '')
+      if(this.settings.selSerialPort === '')
         throw Error('Selected serial port is null.')
       else {
         const serialPortObj = new SerialPort(
-          this.selSerialPort,
+          this.settings.selSerialPort,
           {
-            baudRate: this.selBaudRate,
-            dataBits: this.selNumDataBits,
-            parity: this.selParity,
-            stopBits: this.selNumStopBits,
+            baudRate: this.settings.selBaudRate,
+            dataBits: this.settings.selNumDataBits,
+            parity: this.settings.selParity,
+            stopBits: this.settings.selNumStopBits,
             autoOpen: false,
           } as SerialPort.OpenOptions,
         )
@@ -169,12 +102,12 @@ export default class AppState {
       this.serialPortObj.close()
       this.serialPortState = 'Closed'
       this.serialPortObj = null
-      this.addStatusBarMsg(`Serial port "${this.selSerialPort}" closed.\n`, 'ok')
+      this.addStatusBarMsg(`Serial port "${this.settings.selSerialPort}" closed.\n`, 'ok')
     }
   }
 
   onSerialPortOpened = () => {
-    this.addStatusBarMsg(`Serial port "${this.selSerialPort}" opened.\n`, 'ok')
+    this.addStatusBarMsg(`Serial port "${this.settings.selSerialPort}" opened.\n`, 'ok')
     this.serialPortState = 'Open'
   }
 
