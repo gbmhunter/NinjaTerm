@@ -4,7 +4,7 @@ import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
 import { observer } from 'mobx-react'
 
 import AppState from './model/App'
-import SettingsView from './Settings'
+import SettingsView from './views/Settings'
 
 // const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 

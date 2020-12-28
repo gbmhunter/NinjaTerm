@@ -72,13 +72,16 @@ export default class AppState {
 
   rescan = () => {
     console.log('Rescanning for serial ports...')
+    this.addStatusBarMsg('Rescanning for serial ports...', 'ok')
     SerialPort.list().then(
       action('listPortSuccess', (portInfo: SerialPort.PortInfo[]) => {
         this.serialPortInfos = portInfo
         if(this.serialPortInfos.length > 0) {
           this.selSerialPort = this.serialPortInfos[0].path
+          this.addStatusBarMsg(`Found ${this.serialPortInfos.length} serial ports.`, 'ok')
         } else {
           this.selSerialPort = 'none'
+          this.addStatusBarMsg(`Found no serial ports.`, 'ok')
         }
         return true;
       })
