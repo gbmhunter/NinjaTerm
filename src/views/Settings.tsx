@@ -1,6 +1,6 @@
 import React from 'react'
-import { observer } from "mobx-react"
-import { Dropdown, Button, Menu } from 'semantic-ui-react';
+import { observer } from 'mobx-react'
+import { Dropdown, Button, Menu } from 'semantic-ui-react'
 import AppState from '../model/App'
 
 import SettingsMenu from './SettingsMenu'
@@ -81,9 +81,9 @@ const SettingsView = observer((props: IProps) => {
         <h3>Settings</h3>
         <div className="hbox">
 
-          <SettingsMenu />
+          <SettingsMenu app={app} />
           <div style={{ width: '20px' }}/>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div id="serial-port-config" style={{ display: app.settings.activeSettingsItem === 'serial-port-config' ? 'flex' : 'none', flexDirection: 'column' }}>
             {/* SERIAL PORT SELECTION */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ display: 'inline-block', width: parameterNameWidth }}>Serial Port: </span>

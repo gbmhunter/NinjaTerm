@@ -12,8 +12,7 @@ const appState = new AppState()
 const AppContext = React.createContext<AppState>(appState) // This default context 'appState' should never be used, but keeps lint happy
 
 const MainView = observer(() => {
-  // Grab the timer from the context.
-  const app = React.useContext(AppContext) // See the Timer definition above.
+  const app = React.useContext(AppContext)
 
   const rxDataDiv = React.useRef<HTMLDivElement>(null)
   const statusContentDiv = React.useRef<HTMLDivElement>(null)

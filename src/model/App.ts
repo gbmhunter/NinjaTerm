@@ -3,6 +3,7 @@ import { DropdownProps } from 'semantic-ui-react'
 import SerialPort, { PortInfo } from 'serialport'
 
 import StatusMsg from './StatusMsg'
+import Settings from './Settings'
 
 const electron = require('electron')
 
@@ -44,6 +45,8 @@ export default class AppState {
    * current received data in view.
    */
   autoScroll = true
+
+  settings = new Settings()
 
   constructor() {
       makeAutoObservable(this)
