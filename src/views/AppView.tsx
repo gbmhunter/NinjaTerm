@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
 import { observer } from 'mobx-react'
 
-import AppState from './model/App'
-import SettingsView from './views/Settings'
+import AppState from '../model/App'
+import SettingsView from './SettingsView'
 
 // const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
 

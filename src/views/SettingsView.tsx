@@ -1,11 +1,11 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Dropdown, Button, Menu } from 'semantic-ui-react'
-import AppState from '../model/App'
+import { Dropdown, Button } from 'semantic-ui-react'
+import App from '../model/App'
 
 import SettingsMenu from './SettingsMenu'
 
-const styles = require('./Settings.css'); // Use require here to dodge "cannot find module" errors in VS Code
+const styles = require('./SettingsView.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
 const baudRates = [9600, 57600];
 
@@ -36,7 +36,7 @@ const numStopBitsAOptions = numStopBitsA.map((numStopBits) => {
 });
 
 interface IProps {
-  app: AppState;
+  app: App;
 }
 
 const SettingsView = observer((props: IProps) => {
