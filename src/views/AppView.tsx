@@ -63,7 +63,7 @@ const MainView = observer(() => {
           <div style={{ minWidth: '10px' }} />
           <Button
             onClick={app.openCloseButtonClicked}
-            disabled={app.selSerialPort === 'none'}
+            disabled={app.settings.selSerialPort === 'none'}
             color={ app.serialPortState === 'Closed' ? 'green' : 'red' }
             style={{ height: '40px' }} >{ app.serialPortState === 'Closed' ? 'Open Port' : 'Close Port' }</Button>
           <div style={{ minWidth: '10px' }} />

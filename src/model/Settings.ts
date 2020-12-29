@@ -20,6 +20,9 @@ export default class Settings {
 
   selNumStopBits = 1
 
+  // Width that the terminal data is displayed in. Units depend on ...
+  terminalWidth = 80
+
   app: App
 
   constructor(app: App) {
@@ -85,5 +88,9 @@ export default class Settings {
     _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
   ) => {
     this.selNumStopBits = data.key
-  };
+  }
+
+  setTerminalWidth = (value: string) => {
+    this.terminalWidth = Number.parseInt(value)
+  }
 }
