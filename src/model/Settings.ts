@@ -91,6 +91,6 @@ export default class Settings {
   }
 
   setTerminalWidth = (value: string) => {
-    this.terminalWidth = Number.parseInt(value)
+    this.terminalWidth = Number.parseInt(value, 10)
   }
 }
