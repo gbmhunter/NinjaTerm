@@ -90,7 +90,8 @@ export default class Settings {
     this.selNumStopBits = data.key
   }
 
-  setTerminalWidth = (value: string) => {
-    this.terminalWidth = Number.parseInt(value, 10)
+  setTerminalWidth = (value: number) => {
+    this.terminalWidth = value
+    this.app.addStatusBarMsg(`Set terminal width to ${value}.`, 'ok')
   }
 }

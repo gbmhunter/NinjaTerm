@@ -1,5 +1,5 @@
-import { action, makeAutoObservable } from "mobx"
-import SerialPort, { PortInfo } from 'serialport'
+import { makeAutoObservable } from "mobx"
+import SerialPort from 'serialport'
 
 import StatusMsg from './StatusMsg'
 import Settings from './Settings'
