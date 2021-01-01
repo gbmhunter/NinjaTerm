@@ -1,6 +1,8 @@
 import React from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
+// Another attempt at importing semantic CSS, didn't work, see App.global.css for more info
+// import 'semantic-ui-css/semantic.min.css'
 import { observer } from 'mobx-react'
 
 import App from '../model/App'

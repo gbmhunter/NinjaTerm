@@ -2,8 +2,16 @@
  * @NOTE: Prepend a `~` to css file paths that are in your node_modules
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
+
+/* TODO: Remove these web-based dependencies, use webpack to bundle them up with the
+app instead, so user does not have to have internet connection */
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap');
-@import url('~semantic-ui-css/semantic.min.css');
+
+/* Issues with using @import url('~semantic-ui-css/semantic.min.css'); when building production version of app,
+so using CDN for now */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.6/semantic.min.css');
+/* @import url('~semantic-ui-css/semantic.min.css'); */
 /* @import url('~semantic-ui-css/components/icon.min.css'); */
 /* @import url('../assets/semantic-ui/semantic.min.css'); */
 

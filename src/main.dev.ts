@@ -100,6 +100,9 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
+  // Enable the next line to show dev tools in production build
+  // mainWindow.webContents.openDevTools()
+
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
