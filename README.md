@@ -13,6 +13,12 @@
 
 ## Install
 
+Dependencies:
+
+1. `npm`
+1. `yarn`
+1. `git`
+
 ```bash
 git clone
 yarn
