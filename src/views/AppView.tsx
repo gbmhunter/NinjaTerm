@@ -35,7 +35,12 @@ const MainView = observer(() => {
       app.setAutoScroll(data.checked)
   }
 
-  const rxDataView = (<div><span style={{ whiteSpace: 'pre' }}>{app.rxData}</span><span id="cursor">█</span></div>)
+  // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
+  // 1) White space preserved
+  // 2) \n to create a new line
+  // 3) Text to wrap once it hits the maximum terminal width
+  // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
+  const rxDataView = (<div style={{ width: `${app.settings.terminalWidth}.1ch` }}><span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{app.rxData}</span><span id="cursor">█</span></div>)
 
   const statusMsgsView = app.statusMsgs.map((statusMsg) => {
     if(statusMsg.severity === 'ok') {

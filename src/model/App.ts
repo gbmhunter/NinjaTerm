@@ -51,6 +51,7 @@ export default class App {
       }
 
       // Do initial scan for serial ports
+      this.addStatusBarMsg('NinjaTerm started.', 'ok')
       this.settings.rescan()
   }
 
@@ -126,6 +127,7 @@ export default class App {
    * @param msg Message to output to the status bar. Message should include new line character.
    */
   addStatusBarMsg = (msg: string, severity: string) => {
-    this.statusMsgs.push(new StatusMsg(this.statusMsgs.length, msg, severity))
+    const currDate = new Date()
+    this.statusMsgs.push(new StatusMsg(this.statusMsgs.length, `${currDate.toISOString()}: ${msg}`, severity))
   }
 }
