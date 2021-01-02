@@ -87,12 +87,12 @@
     "publish": {
       "provider": "github",
       "owner": "gbmhunter",
-      "repo": "ninjaterm-electron"
+      "repo": "ninjaterm"
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gbmhunter/ninjaterm-electon.git"
+    "url": "git+https://github.com/gbmhunter/ninjaterm.git"
   },
   "author": {
     "name": "Electron React Boilerplate Maintainers",

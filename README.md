@@ -68,6 +68,6 @@ Version number is contained within the "inner" `package.json` at `src/package.js
 
 MIT © [gbmhunter](https://github.com/gbmhunter)
 
-[github-actions-status]: https://github.com/gbmhunter/ninjaterm-electron/workflows/Test/badge.svg
-[github-actions-url]: https://github.com/gbmhunter/ninjaterm-electron/actions
-[github-tag-url]: https://github.com/gbmhunter/ninjaterm-electron/releases/latest
+[github-actions-status]: https://github.com/gbmhunter/ninjaterm/workflows/Test/badge.svg
+[github-actions-url]: https://github.com/gbmhunter/ninjaterm/actions
+[github-tag-url]: https://github.com/gbmhunter/ninjaterm/releases/latest

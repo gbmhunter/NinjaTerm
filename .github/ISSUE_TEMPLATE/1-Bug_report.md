@@ -11,7 +11,7 @@ labels: 'bug'
 <!-- If the following boxes are not ALL checked, your issue is likely to be closed -->
 
 - [ ] Using yarn
-- [ ] Using an up-to-date [`master` branch](https://github.com/gbmhunter/ninjaterm-electron/tree/master)
+- [ ] Using an up-to-date [`master` branch](https://github.com/gbmhunter/ninjaterm/tree/master)
 - [ ] For issue in production release, add devtools output of `DEBUG_PROD=true yarn build && yarn start`
 
 ## Expected Behavior
