@@ -1,5 +1,9 @@
 <p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
 
+# NinjaTerm
+
+#### A serial port terminal that's got your back.
+
 <br>
 
 <br>
@@ -13,11 +17,13 @@
 
 ## Install
 
-Dependencies:
+Required dependencies before install:
 
 1. `npm`
 1. `yarn`
 1. `git`
+
+Then just run:
 
 ```bash
 git clone
