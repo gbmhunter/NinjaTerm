@@ -67,6 +67,10 @@ Packaging is performed by the `electron-builder` library. The config for this is
 
 Version number is contained within the "inner" `package.json` at `src/package.json`.
 
+## CICD
+
+GitHib Actions are used for running automated tests and creating releases (which include built and packaged executables for all supported platforms).
+
 ## Maintainers
 
 - [Geoffrey Hunter](https://github.com/gbmhunter)
