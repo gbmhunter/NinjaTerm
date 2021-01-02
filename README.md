@@ -34,6 +34,13 @@ yarn start
 
 Note: Icon in development will default to Electron icon even though NinjaTerm icon will be used when packaging for releases, see [https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/1710#issuecomment-414199480](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/1710#issuecomment-414199480).
 
+**Running Tests**
+
+```bash
+yarn build # Only needed if app has not been built via other means yet
+yarn test
+```
+
 **Running Lint Checks**
 
 ```bash
