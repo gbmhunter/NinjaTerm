@@ -30,8 +30,8 @@
     ]
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "NinjaTerm",
+    "appId": "org.gbmhunter.ninjaterm",
     "files": [
       "dist/",
       "node_modules/",
@@ -86,8 +86,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "gbmhunter",
+      "repo": "ninjaterm-electron"
     }
   },
   "repository": {
