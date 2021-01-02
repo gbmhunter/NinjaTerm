@@ -28,7 +28,7 @@ jobs:
           yarn install
 
       - name: Publish releases (windows-latest)
-        if: {{ matrix.config.os == 'windows-latest' }}
+        if: ${{ matrix.config.os == 'windows-latest' }}
         env:
           # These values are used for auto updates signing
           # APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -46,7 +46,7 @@ jobs:
           yarn postinstall && yarn build && yarn electron-builder --publish always --win
 
       - name: Publish releases (ubuntu-latest)
-        if: {{ matrix.config.os == 'ubuntu-latest' }}
+        if: ${{ matrix.config.os == 'ubuntu-latest' }}
         env:
           # These values are used for auto updates signing
           # APPLE_ID: ${{ secrets.APPLE_ID }}
