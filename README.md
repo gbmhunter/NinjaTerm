@@ -56,6 +56,8 @@ yarn package
 
 Packages are created in the `release` directory. Because the native module `serialport` is used, each package has to be built on it's respective platform.
 
+Packaging is performed by the `electron-builder` library. The config for this is contained within the top-level `package.json` under `"build"`.
+
 ## Maintainers
 
 - [Geoffrey Hunter](https://github.com/gbmhunter)
