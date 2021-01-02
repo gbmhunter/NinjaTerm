@@ -75,6 +75,10 @@ GitHib Actions are used for running automated tests and creating releases (which
 
 - [Geoffrey Hunter](https://github.com/gbmhunter)
 
+## History
+
+Electron version based of the electron-react-boilerplate repo, at `v1.4.0`.
+
 ## License
 
 MIT © [gbmhunter](https://github.com/gbmhunter)

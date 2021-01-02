@@ -1,499 +1,277 @@
-# 1.4.0
+# Changelog
 
-- Migrate to `eslint-config-erb@2`
-- Rename `dev` npm script to `start`
-- GitHub Actions: only publish GitHub releases when on master branch
-
-# 1.3.1
-
-- Fix sass building bug ([#2540](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2540))
-- Fix CI bug related to E2E tests and network timeouts
-- Move automated dependency PRs to `next` ([#2554](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2554))
-- Bump dependencies to patch semver
+All notable changes to this project will be documented in this file.
 
-# 1.3.0
-
-- Fixes E2E tests ([#2516](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2516))
-- Fixes preload entrypoint ([#2503](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2503))
-- Downgrade to `electron@8`
-- Bump dependencies to latest semver
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-# 1.2.0
+## [v2.0.0] - 2021-01-02
 
-- Migrate to redux toolkit
-- Lazy load routes with react suspense
-- Drop support for azure-pipelines and use only github actions
-- Bump all deps to latest semver
-- Remove `test-e2e` script from tests (blocked on release of https://github.com/DevExpress/testcafe-browser-provider-electron/pull/65)
-- Swap `typed-css-modules-webpack-plugin` for `typings-for-css-modules-loader`
-- Use latest version of `eslint-config-erb`
-- Remove unnecessary file extensions from ts exclude
-- Add experimental support for vscode debugging
-- Revert https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2365 as default for users, provide as opt in option
+- Application now built with Electron/Javascript/React rather than Java/JavaFX.
+- Windows executable available.
+- GitHub actions is used for CICD instead of TravisCI.
+- GitHub actions runs both tests and builds production images (which are released automatically to GitHub).
+- Basic serial port functionality has been ported across from the Java app.
 
-# 1.1.0
+## [v1.1.2] - 2020-11-01
 
-- Fix #2402
-- Simplify configs (https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2406)
+### Fixed
 
-# 1.0.0
+- Fixed the 404 not found error with the link on the About page.
 
-- Migrate to TypeScript from Flow ([#2363](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2363))
-- Use browserslist for `@babel/preset-env` targets ([#2368](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2368))
-- Use preload script, disable `nodeIntegration` in renderer process for [improved security](https://www.electronjs.org/docs/tutorial/security#2-do-not-enable-nodejs-integration-for-remote-content) ([#2365](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2365))
-- Add support for azure pipelines ([#2369](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2369))
-- Disable sourcemaps in production
+## [v1.1.1] - 2019-04-14
 
-# 0.18.1 (2019.12.12)
+### Added
 
-- Fix HMR env bug ([#2343](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2343))
-- Bump all deps to latest semver
-- Bump to `electron@7`
+- Java is now bundled with the Windows and Mac installers.
 
-# 0.18.0 (2019.11.19)
+### Fixed
 
-- Bump electron to `electron@6` (`electron@7` introduces breaking changes to testcafe end to end tests)
-- Revert back to [two `package.json` structure](https://www.electron.build/tutorials/two-package-structure)
-- Bump all deps to latest semver
+- Broken URLs on homepage.
 
-# 0.17.1 (2018.11.20)
+## [v1.1.0] - 2018-11-12
 
-- Fix `yarn test-e2e` and testcafe for single package.json structure
-- Fixes incorrect path in `yarn start` script
-- Bumped deps
-- Bump g++ in travis
-- Change clone arguments to clone only master
-- Change babel config to target current electron version
+### Added
 
-For full change list, see https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/2021
+- Process and system CPU load is now displayed at the bottom of the NinjaTerm UI (useful to know at faster baud rates).
 
-# 0.17.0 (2018.10.30)
+### Fixed
 
-- upgraded to `babel@7` (thanks to @vikr01 🎉🎉🎉)
-- migrated from [two `package.json` structure](https://www.electron.build/tutorials/two-package-structure) (thanks to @HyperSprite!)
-- initial auto update support (experimental)
-- migrate from greenkeeper to [renovate](https://renovatebot.com)
-- added issue template
-- use `babel-preset-env` to target current electron version
-- add [opencollective](https://opencollective.com/electron-react-boilerplate-594) banner message display in postinstall script (help support ERB 🙏)
-- fix failing ci issues
+- Removed logger messages from CPU intensive data RX loop.
 
-# 0.16.0 (2018.10.3)
+## [v1.0.0] - 2018-11-12
 
-- removed unused dependencies
-- migrate from `react-redux-router` to `connect-react-router`
-- move webpack configs to `./webpack` dir
-- use `g++` on travis when testing linux
-- migrate from `spectron` to `testcafe` for e2e tests
-- add linting support for config styles
-- changed stylelint config
-- temporarily disabled flow in appveyor to make ci pass
-- added necessary infra to publish releases from ci
+### Added
 
-# 0.15.0 (2018.8.25)
+- Added font-size and text/background colour pickers to style the TX/RX data, closes #163.
+- Updated example .gif files on home page.
 
-- Performance: cache webpack uglify results
-- Feature: add start minimized feature
-- Feature: lint and fix styles with prettier and stylelint
-- Feature: add greenkeeper support
+### Fixed
 
-# 0.14.0 (2018.5.24)
+- Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
+- Fixed bug where tab characters were not being displayed correctly on screen, closes #211.
 
-- Improved CI timings
-- Migrated README commands to yarn from npm
-- Improved vscode config
-- Updated all dependencies to latest semver
-- Fix `electron-rebuild` script bug
-- Migrated to `mini-css-extract-plugin` from `extract-text-plugin`
-- Added `optimize-css-assets-webpack-plugin`
-- Run `prettier` on json, css, scss, and more filetypes
+## [v0.9.1] - 2018-10-31
 
-# 0.13.3 (2018.5.24)
+### Added
 
-- Add git precommit hook, when git commit will use `prettier` to format git add code
-- Add format code function in `lint-fix` npm script which can use `prettier` to format project js code
+- NinjaTerm now supports custom (non-standard) baud rates (as long as the underlying OS/hardware also supports it), closes #222.
 
-# 0.13.2 (2018.1.31)
+## [v0.9.0] - 2018-05-17
 
-- Hot Module Reload (HMR) fixes
-- Bumped all dependencies to latest semver
-- Prevent error propagation of `CheckNativeDeps` script
+### Changed
 
-# 0.13.1 (2018.1.13)
+- COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.
+- Updated the NinjaTerm logo (thanks to utopian for creating the new one!).
 
-- Hot Module Reload (HMR) fixes
-- Bumped all dependencies to latest semver
-- Fixed electron-rebuild script
-- Fixed tests scripts to run on all platforms
-- Skip redux logs in console in test ENV
+## [v0.8.12] - 2017-09-18
 
-# 0.13.0 (2018.1.6)
+- Fixed bug where exception 'ReferenceError: Can't find variable: numCharsToRemove' was being thrown when a large number of chars were sent to NinjaTerm, closes #215.
+- Fixed bug where wrapping did not work in RX or TX frames, closes #216.
 
-#### Additions
+## v0.8.11
 
-- Add native dependencies check on postinstall
-- Updated all dependencies to latest semver
+- Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
+- Removed incorrect 'Downloads 0' image from README, closes #214.
 
-# 0.12.0 (2017.7.8)
+## v0.8.10
 
-#### Misc
+- Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
 
-- Removed `babel-polyfill`
-- Renamed and alphabetized npm scripts
+## v0.8.9
 
-#### Breaking
+- Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
+- Changed "nix" naming to "UNIX", closes #205.
+- The currently selected sub-tab headers now indicate which tab is selected, closes #98.
+- Converted buttons on TX/RX pane into accordion style UI, closes #206.
+- Enlarges on start-up to full-screen size, closes #207.
 
-- Changed node dev `__dirname` and `__filename` to node built in fn's (https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/1035)
-- Renamed `src/bundle.js` to `src/renderer.prod.js` for consistency
-- Renamed `dll/vendor.js` to `dll/renderer.dev.dll.js` for consistency
+## v0.8.8
 
-#### Additions
+- Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.
+- Added ability to update version number with gradle task, closes #202.
+- Install4j installers can now be built with Gradle script, closes #203.
 
-- Enable node_modules cache on CI
+## v0.8.7
 
-# 0.11.2 (2017.5.1)
+- Updated release information on README for new Gradle build system, closes #195.
+- Added link to JProfiler on homepage, closes #199.
+- Added Java/JavaFX version check when app starts, closes #200.
+- Made the macro side-bar resizeable, closes #196.
+- Added info that if you have an existing version, you can just run it to update NinjaTerm, closes #192.
+- Added "always on top" feature to NinjaTerm application window, closes #143.
+
+## v0.8.6
 
-Yay! Another patch release. This release mostly includes refactorings and router bug fixes. Huge thanks to @anthonyraymond!
+- Added script to install openjfx before main Linux installer runs, closes #186.
+- Added installation steps for all platforms, closes #184.
+- Fixed bug where 'Open' button on TX/RX tab is enabled when no COM ports can be found, closes #185.
+- Removed manual buffer size limitations on totalNewLineParserOutput, closes #178.
+- Fixed bug where WebView data pane labels where not being setup correctly on start-up, closes #187.
+- Build system changed from Maven to Gradle.
+
+## v0.8.5
+
+- Javascript is loaded via the `WebView.executeScript()` method, closes #183.
+- Added Linux build, closes #181.
+
+## v0.8.4
+
+- Updated ANSI escape sequence support .gif on home page, closes #180.
+- Improved the way that WebView is found to be "ready", closes #182.
+
+## v0.8.3
+
+- Fixed bug where "Scroll to bottom" functionality was being disabled automatically, closes #179.
+
+## v0.8.2
+
+- Moved the "scroll to bottom" arrow slightly to the left so it does not block the scroll bar, closes #174.
+- Removed the instruction to run `mvn assembly:single` from README, as it is not needed, closes #175.
+- Improved the "About" dialogue, closes #172.
+- Added LICENSE.txt to repo, closes #176.
+- Added ability to prepend RX lines of data with the date/time, closes #126.
+
+## v0.8.1
 
-⚠️ Windows electron builds are failing because of [this issue](https://github.com/electron/electron/issues/9321). This is not an issue with the boilerplate ⚠️
+- Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.
+- Brightened the default data colour, closes #162.
+- Fixed bug where when the clear buffer button was pressed, text colour did not reset to the default, closes #166.
+- Made "clear" remove both RX and TX data (previously only removed RX data), closes #161.
+- Fixed bug where TX pane was being populated with data when COM port was closed, closes #167.
+- Removed scroll behaviour options from "Display" pop-up (no longer needed), closes #168.
+- Moved the "send" options from display pop-up to the formatting pop-up, closes #154.
+- Renamed "Buffer Sizes" to "Screen Buffer Sizes", closes #169.
+- Fixed bug where screen buffer size stats where not being updated, closes #170.
+- Added a proper command-line argument parsing tool, closes #173.
 
-#### Breaking
+## v0.8.0
 
-- **Renamed `./src/main.development.js` => `./src/main.{dev,prod}.js`:** [#963](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/963)
+- Added blurb on smart scrolling to homepage, closes #148.
+- Added first application test, closes #149.
+- Created a "ComPortFactory" which returns mocked "ComPort" objects, which are then injected into the model, closes #151.
+- Made the division of space for TX and RX modifiable (e.g. through a drag mechanism), closes #150.
+- Added the ability to the user to specify text sequences to send to the COM port (macros), closes #155.
+- Converted the "Macro Settings" window into a "Macro Manager" window, closes #157.
+- Macro name is automatically generated when a new macro is added, closes #158.
+- Fixed bug where macro manager left-hand side list text did not update when the macro name was updated, closes #160.
+- Fixed bug where macro pane got squashed when TX/RX text extended of the end of the text view, closes #159.
+- Added basic copy/paste support, closes #133.
 
-#### Fixes
+## v0.7.2
 
-- **Fixed reloading when not on `/` path:** [#958](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/958) [#949](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/949)
+- The "fat" .jar now retains the same name (NinjaTerm.jar) between different versions, and is the same name as before the maven integration, closes #147.
 
-#### Additions
+## v0.7.1
 
-- **Added support for stylefmt:** [#960](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/960)
+- An empty new line pattern textfield now results in no new line markers being added, closes #139.
+- All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.
+- Added the GlythFont (FontAwesome) as a resource so that NinjaTerm does not need an internet connection to display the glyths, closes #138.
+- When the buffer is full, TX/RX panes scroll so that the "viewing window" does not change, closes #141.
+- Added scroll behaviour options to the "Display" pop-over (either smart scroll or standard scroll), closes #142.
+- Added "build passing" and other stickers to the README and homepage, closes #145.
+- Set max. char limits on all buffers, closes #146.
+- Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.
 
-# 0.11.1 (2017.4.23)
+## v0.7.0
 
-You can now debug the production build with devtools like so:
-
-```
-DEBUG_PROD=true npm run package
-```
-
-🎉🎉🎉
-
-#### Additions
-
-- **Added support for debugging production build:** [#fab245a](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/941/commits/fab245a077d02a09630f74270806c0c534a4ff95)
-
-#### Bug Fixes
-
-- **Fixed bug related to importing native dependencies:** [#933](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/933)
-
-#### Improvements
-
-- **Updated all deps to latest semver**
-
-# 0.11.0 (2017.4.19)
-
-Here's the most notable changes since `v0.10.0`. Its been about a year since a release has been pushed. Expect a new release to be published every 3-4 weeks.
-
-#### Breaking Changes
-
-- **Dropped support for node < 6**
-- **Refactored webpack config files**
-- **Migrate to two-package.json project structure**
-- **Updated all devDeps to latest semver**
-- **Migrated to Jest:** [#768](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/768)
-- **Migrated to `react-router@4`**
-- **Migrated to `electron-builder@4`**
-- **Migrated to `webpack@2`**
-- **Migrated to `react-hot-loader@3`**
-- **Changed default live reload server PORT to `1212` from `3000`**
-
-#### Additions
-
-- **Added support for Yarn:** [#451](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/451)
-- **Added support for Flow:** [#425](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/425)
-- **Added support for stylelint:** [#911](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/911)
-- **Added support for electron-builder:** [#876](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/876)
-- **Added optional support for SASS:** [#880](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/880)
-- **Added support for eslint-plugin-flowtype:** [#911](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/911)
-- **Added support for appveyor:** [#280](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/280)
-- **Added support for webpack dlls:** [#860](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/860)
-- **Route based code splitting:** [#884](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/884)
-- **Added support for Webpack Bundle Analyzer:** [#922](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/922)
-
-#### Improvements
-
-- **Parallelize renderer and main build processes when running `npm run build`**
-- **Dynamically generate electron app menu**
-- **Improved vscode integration:** [#856](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/856)
-
-#### Bug Fixes
-
-- **Fixed hot module replacement race condition bug:** [#917](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/917) [#920](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/920)
-
-# 0.10.0 (2016.4.18)
-
-#### Improvements
-
-- **Use Babel in main process with Webpack build:** [#201](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/201)
-- **Change targets to built-in support by webpack:** [#197](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/197)
-- **use es2015 syntax for webpack configs:** [#195](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/195)
-- **Open application when webcontent is loaded:** [#192](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/192)
-- **Upgraded dependencies**
-
-#### Bug fixed
-
-- **Fix `npm list electron-prebuilt` in package.js:** [#188](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/188)
-
-# 0.9.0 (2016.3.23)
-
-#### Improvements
-
-- **Added [redux-logger](https://github.com/fcomb/redux-logger)**
-- **Upgraded [react-router-redux](https://github.com/reactjs/react-router-redux) to v4**
-- **Upgraded dependencies**
-- **Added `npm run dev` command:** [#162](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/162)
-- **electron to v0.37.2**
-
-#### Breaking Changes
-
-- **css module as default:** [#154](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/154).
-- **set default NODE_ENV to production:** [#140](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/140)
-
-# 0.8.0 (2016.2.17)
-
-#### Bug fixed
-
-- **Fix lint errors**
-- **Fix Webpack publicPath for production builds**: [#119](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/119).
-- **package script now chooses correct OS icon extension**
-
-#### Improvements
-
-- **babel 6**
-- **Upgrade Dependencies**
-- **Enable CSS source maps**
-- **Add json-loader**: [#128](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/128).
-- **react-router 2.0 and react-router-redux 3.0**
-
-# 0.7.1 (2015.12.27)
-
-#### Bug fixed
-
-- **Fixed npm script on windows 10:** [#103](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/103).
-- **history and react-router version bump**: [#109](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/109), [#110](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/110).
-
-#### Improvements
-
-- **electron 0.36**
-
-# 0.7.0 (2015.12.16)
-
-#### Bug fixed
-
-- **Fixed process.env.NODE_ENV variable in webpack:** [#74](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/74).
-- **add missing object-assign**: [#76](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/76).
-- **packaging in npm@3:** [#77](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/77).
-- **compatibility in windows:** [#100](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/100).
-- **disable chrome debugger in production env:** [#102](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/102).
-
-#### Improvements
-
-- **redux**
-- **css-modules**
-- **upgrade to react-router 1.x**
-- **unit tests**
-- **e2e tests**
-- **travis-ci**
-- **upgrade to electron 0.35.x**
-- **use es2015**
-- **check dev engine for node and npm**
-
-# 0.6.5 (2015.11.7)
-
-#### Improvements
-
-- **Bump style-loader to 0.13**
-- **Bump css-loader to 0.22**
-
-# 0.6.4 (2015.10.27)
-
-#### Improvements
-
-- **Bump electron-debug to 0.3**
-
-# 0.6.3 (2015.10.26)
-
-#### Improvements
-
-- **Initialize ExtractTextPlugin once:** [#64](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/64).
-
-# 0.6.2 (2015.10.18)
-
-#### Bug fixed
-
-- **Babel plugins production env not be set properly:** [#57](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/57).
-
-# 0.6.1 (2015.10.17)
-
-#### Improvements
-
-- **Bump electron to v0.34.0**
-
-# 0.6.0 (2015.10.16)
-
-#### Breaking Changes
-
-- **From react-hot-loader to react-transform**
-
-# 0.5.2 (2015.10.15)
-
-#### Improvements
-
-- **Run tests with babel-register:** [#29](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/29).
-
-# 0.5.1 (2015.10.12)
-
-#### Bug fixed
-
-- **Fix #51:** use `path.join(__dirname` instead of `./`.
-
-# 0.5.0 (2015.10.11)
-
-#### Improvements
-
-- **Simplify webpack config** see [#50](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/50).
-
-#### Breaking Changes
-
-- **webpack configs**
-- **port changed:** changed default port from 2992 to 3000.
-- **npm scripts:** remove `start-dev` and `dev-server`. rename `hot-dev-server` to `hot-server`.
-
-# 0.4.3 (2015.9.22)
-
-#### Bug fixed
-
-- **Fix #45 zeromq crash:** bump version of `electron-prebuilt`.
-
-# 0.4.2 (2015.9.15)
-
-#### Bug fixed
-
-- **run start-hot breaks chrome refresh(CTRL+R) (#42)**: bump `electron-debug` to `0.2.1`
-
-# 0.4.1 (2015.9.11)
-
-#### Improvements
-
-- **use electron-prebuilt version for packaging (#33)**
-
-# 0.4.0 (2015.9.5)
-
-#### Improvements
-
-- **update dependencies**
-
-# 0.3.0 (2015.8.31)
-
-#### Improvements
-
-- **eslint-config-airbnb**
-
-# 0.2.10 (2015.8.27)
-
-#### Features
-
-- **custom placeholder icon**
-
-#### Improvements
-
-- **electron-renderer as target:** via [webpack-target-electron-renderer](https://github.com/chentsulin/webpack-target-electron-renderer)
-
-# 0.2.9 (2015.8.18)
-
-#### Bug fixed
-
-- **Fix hot-reload**
-
-# 0.2.8 (2015.8.13)
-
-#### Improvements
-
-- **bump electron-debug**
-- **babelrc**
-- **organize webpack scripts**
-
-# 0.2.7 (2015.7.9)
-
-#### Bug fixed
-
-- **defaultProps:** fix typos.
-
-# 0.2.6 (2015.7.3)
-
-#### Features
-
-- **menu**
-
-#### Bug fixed
-
-- **package.js:** include webpack build.
-
-# 0.2.5 (2015.7.1)
-
-#### Features
-
-- **NPM Script:** support multi-platform
-- **package:** `--all` option
-
-# 0.2.4 (2015.6.9)
-
-#### Bug fixed
-
-- **Eslint:** typo, [#17](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/17) and improve `.eslintrc`
-
-# 0.2.3 (2015.6.3)
-
-#### Features
-
-- **Package Version:** use latest release electron version as default
-- **Ignore Large peerDependencies**
-
-#### Bug fixed
-
-- **Npm Script:** typo, [#6](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/6)
-- **Missing css:** [#7](https://github.com/electron-react-boilerplate/electron-react-boilerplate/pull/7)
-
-# 0.2.2 (2015.6.2)
-
-#### Features
-
-- **electron-debug**
-
-#### Bug fixed
-
-- **Webpack:** add `.json` and `.node` to extensions for imitating node require.
-- **Webpack:** set `node_modules` to externals for native module support.
-
-# 0.2.1 (2015.5.30)
-
-#### Bug fixed
-
-- **Webpack:** #1, change build target to `atom`.
-
-# 0.2.0 (2015.5.30)
-
-#### Features
-
-- **Ignore:** `test`, `tools`, `release` folder and devDependencies in `package.json`.
-- **Support asar**
-- **Support icon**
-
-# 0.1.0 (2015.5.27)
-
-#### Features
-
-- **Webpack:** babel, react-hot, ...
-- **Flux:** actions, api, components, containers, stores..
-- **Package:** darwin (osx), linux and win32 (windows) platform.
+- Added shortcut key to speed up splash screen (spacebar), closes #127.
+- Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.
+- Added a "Freeze RX" option to the TX/RX sub-tab, closes #132.
+- Fixed bug where freeze RX data functionality did not work correctly with filtering, closes #136.
+- Added ability to display non-printable characters on TX/RX panes (e.g. using special font), closes #134.
+
+## v0.6.4
+
+- When the "Clear Text" button is pressed, the RX text now retains the previous formatting colour, closes #131.
+
+## v0.6.3
+
+- Moved decoding options to formatting popover, closes #116.
+- Added icon to colouriser button, closes #115.
+- "Parse ANSI escape sequences" checkbox is now only enabled when decoding mode is ASCII, closes #117.
+- Fixed bug where ANSI escape codes were not disabled when it's checkbox is deselected, closes #119.
+- Added bits/second metrics to the "Stats" sub-tab, closes #120.
+- Added bottom bar to the status pane which displays the total TX/RX bytes per second rates, closes #122.
+- Moved interface files from "interfaces/" and into the package/folder that they have most relevance with, closes #121.
+- Added total TX/RX byte counts to the bottom status bar, closes #123.
+- Added maximum flash rate functionality to the LED indicators, closes #118.
+- Added ability for logging engine to "swallow" ANSI escape codes, closes #125.
+- Added better debug logging facilities, closes #129.
+- Added ability to log debug data to file via "debug" flag, closes #130.
+
+## v0.6.2
+
+- Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
+- Instruction step to update version number on website added to readme, closes #111.
+- Fixed bug where in "1-pane" mode, the caret does not remain at the end of the data when new data is received, closes #110.
+- Fixed bug where "Local TX echo" does not work, closes #112.
+- Added a "New Tab" button/tab to the end of row of tab headers, closes #104.
+- Fixed bug where COM port was not closed if terminal tab was closed, closes #113.
+- Fixed bug where COM port and it's thread were not closed if COM port was open when the application exits, closes #114.
+
+## v0.6.1
+
+- Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.
+- Removed the unneeded "StatusBarController" variable from being passed into view controller constructors, closes #107.
+- Added "Close" option to tab header context menu, closes #105.
+- Refactored serial port open/close code and made sure disconnection cases are handled correctly, closes #108.
+
+## v0.6.0
+
+- Added ability to select between "overwrite" and "append" logging methods, closes #99.
+- Added option for user to choose termination character(s), closes #82.
+- Added support for ANSI escape sequences (in particular, the colour codes), closes #100.
+- Fixed bug where buffer limit was not being obeyed for the RX data when stored in ObservableList of Nodes, closes #101.
+- Fixed bug where app crashes if com's is stopped and restarted with ASCII escape sequences due to unsupported escape sequences not being handled, closes #102.
+- Improved filtering logic so it works alongside ANSI escape codes, closes #103.
+
+## v0.5.1
+
+- Fixed bug where NinjaTerm would lock up on splash screen.
+
+## v0.5.0
+
+- Added filter field in TX/RX sub-tab, closes #84.
+- Fixed incorrect link to GitHub on homepage, closes #94.
+- Fixed incorrect web page title on homepage, closes #93.
+- TX and RX buffer sizes are now shown on stats sub-tab, closes #95.
+- Fixed bug where build configurations were not being included in repo, closes #85.
+- Added logging sub-tab and basic logging functionality, closes #96.
+- Greyed out textfield and browse button on logging tab when logging is active, closes #97.
+
+## v0.4.1
+
+- Fixed bug where splash-screen was disabled.
+
+## v0.4.0
+
+- Added ability to rename terminal tabs, closes #92.
+
+## v0.3.0
+
+- Added indicators to label the RX and TX panes, closes #91.
+
+## v0.2.0
+
+- Changes to auto-update functionality.
+
+## v0.1.0
+
+- Automatic scan for COM ports performed on startup of app, closes #72.
+- Added ability to have multiple terminals open within the same NinjaTerm application window, closes #73.
+- "Busy COM port" error is now handled correctly, closes #74.
+- Added flashing caret to end of terminal text.
+- Added "Exit" item to "File" menu, closes #75.
+- Changed colour of open/close button so that it is green/red, and added play/stop icons, closes #76.
+- Added ability to send characters to COM port, closes #77.
+- Added local echo option for TX characters, closes #78.
+- Added statistics sub-tab, closes #79.
+- Added flashing TX/RX activity indicators, closes #80.
+- Added layout options for RX/TX tab, closes #81.
+- Changed the "UTF-8" decoding option to "ASCII", closes #83.
+- Added buffer limit for TX and RX data, closes #86.
+- Added auto-scroll to status message pane, closes #87.
+- Wrapping width textfield is greyed out when wrapping is disabled, closes #88.
+- Added auto-scroll to TX pane, closes #89.
+- Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
