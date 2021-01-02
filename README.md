@@ -59,6 +59,14 @@ yarn lint
 yarn tsc
 ```
 
+**Skip Husky Pre-commit Checks**
+
+Use the `--no-verify` flag as shown:
+
+```bash
+git commit --no-verify -m "Message goes here."
+```
+
 ## Packaging for Production
 
 To package apps for the local platform:
