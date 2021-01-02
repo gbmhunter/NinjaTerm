@@ -58,6 +58,8 @@ Packages are created in the `release` directory. Because the native module `seri
 
 Packaging is performed by the `electron-builder` library. The config for this is contained within the top-level `package.json` under `"build"`.
 
+Version number is contained within the "inner" `package.json` at `src/package.json`.
+
 ## Maintainers
 
 - [Geoffrey Hunter](https://github.com/gbmhunter)
