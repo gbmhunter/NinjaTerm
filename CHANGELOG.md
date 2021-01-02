@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v2.1.0] - 2021-01-03
+
+- NinjaTerm is now built for Linux.
+- GitHub actions configured to build both Windows and Linux application images and release them to GitHub.
+
 ## [v2.0.0] - 2021-01-02
 
 - Application now built with Electron/Javascript/React rather than Java/JavaFX.

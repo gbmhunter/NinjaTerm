@@ -25,5 +25,5 @@
     "yarn.lock": true,
     "*.{css,sass,scss}.d.ts": true
   },
-  "cSpell.words": ["eslintignore"]
+  "cSpell.words": ["eslintignore", "ninjaterm"]
 }
