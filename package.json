@@ -92,7 +92,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/gbmhunter/ninjaterm-electon.git"
   },
   "author": {
     "name": "Electron React Boilerplate Maintainers",
