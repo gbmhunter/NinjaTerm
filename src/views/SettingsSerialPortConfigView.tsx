@@ -1,13 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { observer } from 'mobx-react'
-import { Dropdown, Button, Input, Radio, DropdownProps, InputOnChangeData } from 'semantic-ui-react'
+import { Dropdown, Button, Radio, DropdownProps, InputOnChangeData, Form } from 'semantic-ui-react'
 import App from '../model/App'
 
-// const styles = require('./SettingsSerialPortConfigView.css'); // Use require here to dodge "cannot find module" errors in VS Code
-
-import styles from './SettingsSerialPortConfigView.css'
-
-
+import styles from './SettingsSerialPortConfigView.scss'
 
 const numDataBitsA = [5, 6, 7, 8, 9];
 
@@ -135,15 +131,21 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
           onChange={() => { app.settings.setSelBaudRateStyle('custom') }}
           style={{ width: parameterNameWidth, paddingLeft: '10px' }}
         />
-        <Input
+        <Form>
+        <Form.Input
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={app.settings.selBaudRateCustom}
+          value={app.settings.selBaudRateCustom.value}
           disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'custom'}
           onChange={(_0: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
             app.settings.setSelBaudRateCustom(data.value)
           }}
+          error={ !app.settings.selBaudRateCustom.error ? null : {
+            content: app.settings.selBaudRateCustom.error,
+            pointing: 'below',
+          }}
         />
+        </Form>
       </div>
       <div style={{ height: '10px' }} />
 

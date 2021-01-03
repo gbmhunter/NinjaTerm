@@ -23,7 +23,10 @@ export default class Settings {
 
   selBaudRateStandard = 9600
 
-  selBaudRateCustom = '12345'
+  selBaudRateCustom = {
+    value: '12345',
+    error: null as null | string,
+  }
 
   selNumDataBits = 8
 
@@ -46,7 +49,6 @@ export default class Settings {
   }
 
   rescan = () => {
-    console.log('Rescanning for serial ports...')
     this.app.addStatusBarMsg('Rescanning for serial ports...', 'ok')
     SerialPort.list().then(
       action('listPortSuccess', (portInfo: SerialPort.PortInfo[]) => {
@@ -86,7 +88,7 @@ export default class Settings {
   }
 
   setSelBaudRateCustom = (baudRate: string) => {
-    this.selBaudRateCustom = baudRate
+    this.selBaudRateCustom.value = baudRate
   }
 
   selNumDataBitsChanged = (

@@ -1,7 +1,7 @@
 {
   "name": "ninjaterm",
   "productName": "NinjaTerm",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "A serial port terminal that's got your back.",
   "main": "./main.prod.js",
   "author": {
