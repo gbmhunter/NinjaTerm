@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { Dropdown, Button, Input, Radio, DropdownProps, InputOnChangeData } from 'semantic-ui-react'
 import App from '../model/App'
@@ -37,6 +37,9 @@ interface IProps {
 const SettingsSerialPortConfigView = observer((props: IProps) => {
 
   const { app } = props
+
+  const [selBaudRateStandard, setSelBaudRateStandard] = useState(app.settings.selBaudRate);
+  const [selBaudRateCustom, setSelBaudRateCustom] = useState('12345');
 
   const parameterNameWidth = 100;
 
@@ -118,10 +121,10 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
           selection
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={app.settings.selBaudRate}
+          value={selBaudRateStandard}
           disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'standard'}
           onChange={(_0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
-            app.settings.setSelBaudRate(data.key)
+            setSelBaudRateStandard(data.key)
           }}
         />
       </div>
@@ -136,13 +139,12 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
           style={{ width: parameterNameWidth, paddingLeft: '10px' }}
         />
         <Input
-          selection
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={app.settings.selBaudRate}
+          value={selBaudRateCustom}
           disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'custom'}
           onChange={(_0: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
-            app.settings.setSelBaudRate(Number.parseInt(data.value, 10))
+            setSelBaudRateCustom(data.value)
           }}
         />
       </div>
