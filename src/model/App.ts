@@ -14,6 +14,17 @@ function areWeTestingWithJest() {
   return process.env.JEST_WORKER_ID !== undefined;
 }
 
+/**
+ * Use this to validate that a string is exactly a positive integer.
+ *
+ * @param str The string to check if integer.
+ * @returns Returns true only if provided string is exactly a positive integer, with no leading whitespace, else returns false.
+ */
+function isNormalPositiveInteger(str : string) {
+  const n = Math.floor(Number(str))
+  return n !== Infinity && String(n) === str && n >= 0
+}
+
 // Model the application state.
 export default class App {
 
@@ -56,24 +67,39 @@ export default class App {
   }
 
   setSettingsShown = (trueFalse: boolean) => {
-    console.log('setSettingsShown() called with trueFalse=')
-    console.log(trueFalse)
     this.settingsShown = trueFalse
   }
 
-
-
   openCloseButtonClicked = () => {
-    console.log('openCloseButtonClicked() called.')
     if(this.serialPortState === 'Closed') {
 
       if(this.settings.selSerialPort === '')
         throw Error('Selected serial port is null.')
       else {
+
+        // Determine baud rate based on whether user has selected
+        // 'standard' or 'custom'
+        let selBaudRate = null
+        if(this.settings.selBaudRateStyle === 'standard')
+          selBaudRate = this.settings.selBaudRateStandard
+        else if(this.settings.selBaudRateStyle === 'custom') {
+          // Validate user entered custom baud rate
+          if(!isNormalPositiveInteger(this.settings.selBaudRateCustom.value)) {
+            this.settings.selBaudRateCustom.error = 'Value must be a positive integer.'
+            return
+          }
+          // If we get here, custom baud rate passed validation checks
+          const convertedBaudRate = Number.parseInt(this.settings.selBaudRateCustom.value, 10)
+          this.settings.selBaudRateCustom.error = null
+          selBaudRate = convertedBaudRate
+        }
+        else
+          throw Error('selBaudRateStyle unrecognized.')
+
         const serialPortObj = new SerialPort(
           this.settings.selSerialPort,
           {
-            baudRate: this.settings.selBaudRate,
+            baudRate: selBaudRate,
             dataBits: this.settings.selNumDataBits,
             parity: this.settings.selParity,
             stopBits: this.settings.selNumStopBits,
@@ -90,7 +116,6 @@ export default class App {
         })
         // All errors (incl. open errors) will be emitted as an error event
         serialPortObj.on('error', (err) => {
-          console.log('Error: ', err.message)
           this.addStatusBarMsg(err.message, 'error')
         })
 

@@ -1,16 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Dropdown, Button } from 'semantic-ui-react'
+import { Dropdown, Button, Radio, DropdownProps, InputOnChangeData, Form } from 'semantic-ui-react'
 import App from '../model/App'
 
-const styles = require('./SettingsSerialPortConfigView.css'); // Use require here to dodge "cannot find module" errors in VS Code
-
-const baudRates = [9600, 57600];
-
-// Create structure for combobox
-const baudRateOptions = baudRates.map((baudRate) => {
-  return { key: baudRate, value: baudRate, text: baudRate.toString() };
-});
+import styles from './SettingsSerialPortConfigView.scss'
 
 const numDataBitsA = [5, 6, 7, 8, 9];
 
@@ -41,7 +34,7 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
 
   const { app } = props
 
-  const parameterNameWidth = 100;
+  const parameterNameWidth = 100
 
   const serialPortInfoRows = app.settings.serialPortInfos.map((serialPortInfo) => {
     return {
@@ -69,6 +62,11 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
       )
     })
   }
+
+  // Create structure for combobox
+  const baudRateOptions = app.settings.baudRates.map((baudRate) => {
+    return { key: baudRate, value: baudRate, text: baudRate.toString() };
+  });
 
   return (
     <div id="serial-port-config" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -102,14 +100,52 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
       {/* BAUD RATE */}
       <div className={styles.serialPortParamRow}>
         <span style={{ display: 'inline-block', width: parameterNameWidth }}>Baud rate: </span>
+      </div>
+      <div className={styles.serialPortParamRow}>
+        <Radio
+          label='Standard'
+          name='radioGroup'
+          value='this'
+          checked={app.settings.selBaudRateStyle === 'standard'}
+          onChange={() => { app.settings.setSelBaudRateStyle('standard') }}
+          style={{ width: parameterNameWidth, paddingLeft: '10px' }}
+        />
         <Dropdown
           selection
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={app.settings.selBaudRate}
-          disabled={app.serialPortState !== 'Closed'}
-          onChange={app.settings.selBaudRateChanged}
+          value={app.settings.selBaudRateStandard}
+          disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'standard'}
+          onChange={(_0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
+            app.settings.setSelBaudRateStandard(data.key)
+          }}
         />
+      </div>
+      <div style={{ height: '5px' }} />
+      <div className={styles.serialPortParamRow}>
+        <Radio
+          label='Custom'
+          name='radioGroup'
+          value='this'
+          checked={app.settings.selBaudRateStyle === 'custom'}
+          onChange={() => { app.settings.setSelBaudRateStyle('custom') }}
+          style={{ width: parameterNameWidth, paddingLeft: '10px' }}
+        />
+        <Form>
+        <Form.Input
+          placeholder="Select baud rate"
+          options={baudRateOptions}
+          value={app.settings.selBaudRateCustom.value}
+          disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'custom'}
+          onChange={(_0: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
+            app.settings.setSelBaudRateCustom(data.value)
+          }}
+          error={ !app.settings.selBaudRateCustom.error ? null : {
+            content: app.settings.selBaudRateCustom.error,
+            pointing: 'below',
+          }}
+        />
+        </Form>
       </div>
       <div style={{ height: '10px' }} />
 

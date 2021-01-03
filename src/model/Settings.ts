@@ -4,6 +4,8 @@ import SerialPort, { PortInfo } from 'serialport'
 
 import App from './App'
 
+
+
 export default class Settings {
 
   activeSettingsItem = 'serial-port-config'
@@ -12,7 +14,19 @@ export default class Settings {
 
   selSerialPort = 'none' // Empty string used to represent no serial port
 
-  selBaudRate = 9600
+  baudRateStyles = [ 'standard', 'custom' ]
+
+  selBaudRateStyle = 'standard'
+
+  // Commonly-available baud rates as mentioned at https://serialport.io/docs/api-stream/
+  baudRates = [110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200 ]
+
+  selBaudRateStandard = 9600
+
+  selBaudRateCustom = {
+    value: '12345',
+    error: null as null | string,
+  }
 
   selNumDataBits = 8
 
@@ -35,7 +49,6 @@ export default class Settings {
   }
 
   rescan = () => {
-    console.log('Rescanning for serial ports...')
     this.app.addStatusBarMsg('Rescanning for serial ports...', 'ok')
     SerialPort.list().then(
       action('listPortSuccess', (portInfo: SerialPort.PortInfo[]) => {
@@ -66,11 +79,17 @@ export default class Settings {
     }
   };
 
-  selBaudRateChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selBaudRate = data.key
-  };
+  setSelBaudRateStyle = (baudRateStyle: string) => {
+    this.selBaudRateStyle = baudRateStyle
+  }
+
+  setSelBaudRateStandard = (baudRate: number) => {
+    this.selBaudRateStandard = baudRate
+  }
+
+  setSelBaudRateCustom = (baudRate: string) => {
+    this.selBaudRateCustom.value = baudRate
+  }
 
   selNumDataBitsChanged = (
     _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps

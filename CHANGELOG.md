@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v2.2.0] - 2021-01-04
+
+- Added support for all common baud rates.
+- Added support and validation for custom baud rates.
+- Typescript compiler now recognizes imports of CSS/SCSS files into `.tsx` files.
+
 ## [v2.1.0] - 2021-01-03
 
 - NinjaTerm is now built for Linux.
