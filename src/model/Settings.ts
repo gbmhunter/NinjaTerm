@@ -21,7 +21,9 @@ export default class Settings {
   // Commonly-available baud rates as mentioned at https://serialport.io/docs/api-stream/
   baudRates = [110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200 ]
 
-  selBaudRate = 9600
+  selBaudRateStandard = 9600
+
+  selBaudRateCustom = '12345'
 
   selNumDataBits = 8
 
@@ -79,8 +81,12 @@ export default class Settings {
     this.selBaudRateStyle = baudRateStyle
   }
 
-  setSelBaudRate = (baudRate: number) => {
-    this.selBaudRate = baudRate
+  setSelBaudRateStandard = (baudRate: number) => {
+    this.selBaudRateStandard = baudRate
+  }
+
+  setSelBaudRateCustom = (baudRate: string) => {
+    this.selBaudRateCustom = baudRate
   }
 
   selNumDataBitsChanged = (

@@ -3,9 +3,9 @@ import { observer } from 'mobx-react'
 import { Dropdown, Button, Input, Radio, DropdownProps, InputOnChangeData } from 'semantic-ui-react'
 import App from '../model/App'
 
-const styles = require('./SettingsSerialPortConfigView.css'); // Use require here to dodge "cannot find module" errors in VS Code
+// const styles = require('./SettingsSerialPortConfigView.css'); // Use require here to dodge "cannot find module" errors in VS Code
 
-
+import styles from './SettingsSerialPortConfigView.css'
 
 
 
@@ -38,10 +38,7 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
 
   const { app } = props
 
-  const [selBaudRateStandard, setSelBaudRateStandard] = useState(app.settings.selBaudRate);
-  const [selBaudRateCustom, setSelBaudRateCustom] = useState('12345');
-
-  const parameterNameWidth = 100;
+  const parameterNameWidth = 100
 
   const serialPortInfoRows = app.settings.serialPortInfos.map((serialPortInfo) => {
     return {
@@ -121,10 +118,10 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
           selection
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={selBaudRateStandard}
+          value={app.settings.selBaudRateStandard}
           disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'standard'}
           onChange={(_0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps) => {
-            setSelBaudRateStandard(data.key)
+            app.settings.setSelBaudRateStandard(data.key)
           }}
         />
       </div>
@@ -141,10 +138,10 @@ const SettingsSerialPortConfigView = observer((props: IProps) => {
         <Input
           placeholder="Select baud rate"
           options={baudRateOptions}
-          value={selBaudRateCustom}
+          value={app.settings.selBaudRateCustom}
           disabled={app.serialPortState !== 'Closed' || app.settings.selBaudRateStyle !== 'custom'}
           onChange={(_0: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
-            setSelBaudRateCustom(data.value)
+            app.settings.setSelBaudRateCustom(data.value)
           }}
         />
       </div>

@@ -70,10 +70,21 @@ export default class App {
       if(this.settings.selSerialPort === '')
         throw Error('Selected serial port is null.')
       else {
+
+        // Determine baud rate based on whether user has selected
+        // 'standard' or 'custom'
+        let selBaudRate = null
+        if(this.settings.selBaudRateStyle == 'standard')
+          selBaudRate = this.settings.selBaudRateStandard
+        else if(this.settings.selBaudRateStyle == 'custom')
+          selBaudRate = Number.parseInt(this.settings.selBaudRateCustom, 10)
+        else
+          throw Error('selBaudRateStyle unrecognized.')
+
         const serialPortObj = new SerialPort(
           this.settings.selSerialPort,
           {
-            baudRate: this.settings.selBaudRate,
+            baudRate: selBaudRate,
             dataBits: this.settings.selNumDataBits,
             parity: this.settings.selParity,
             stopBits: this.settings.selNumStopBits,
