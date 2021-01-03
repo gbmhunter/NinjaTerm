@@ -4,6 +4,8 @@ import SerialPort, { PortInfo } from 'serialport'
 
 import App from './App'
 
+
+
 export default class Settings {
 
   activeSettingsItem = 'serial-port-config'
@@ -11,6 +13,13 @@ export default class Settings {
   serialPortInfos: PortInfo[] = []
 
   selSerialPort = 'none' // Empty string used to represent no serial port
+
+  baudRateStyles = [ 'standard', 'custom' ]
+
+  selBaudRateStyle = 'standard'
+
+  // Commonly-available baud rates as mentioned at https://serialport.io/docs/api-stream/
+  baudRates = [110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200 ]
 
   selBaudRate = 9600
 
@@ -66,11 +75,13 @@ export default class Settings {
     }
   };
 
-  selBaudRateChanged = (
-    _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
-  ) => {
-    this.selBaudRate = data.key
-  };
+  setSelBaudRateStyle = (baudRateStyle: string) => {
+    this.selBaudRateStyle = baudRateStyle
+  }
+
+  setSelBaudRate = (baudRate: number) => {
+    this.selBaudRate = baudRate
+  }
 
   selNumDataBitsChanged = (
     _0: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps
