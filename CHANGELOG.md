@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- Updated the feature request text shown in GitHub.
+
 ## [v2.2.0] - 2021-01-04
 
 - Added support for all common baud rates.
