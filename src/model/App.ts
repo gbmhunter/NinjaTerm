@@ -1,8 +1,10 @@
+import { SyntheticEvent } from "react"
 import { makeAutoObservable } from "mobx"
 import SerialPort from 'serialport'
 
 import StatusMsg from './StatusMsg'
 import Settings from './Settings'
+
 
 const electron = require('electron')
 
@@ -30,6 +32,7 @@ export default class App {
 
   settingsShown = false
 
+  /** One of 'Open' or 'Closed' */
   serialPortState = 'Closed'
 
   serialPortObj: SerialPort | null = null
@@ -154,5 +157,14 @@ export default class App {
   addStatusBarMsg = (msg: string, severity: string) => {
     const currDate = new Date()
     this.statusMsgs.push(new StatusMsg(this.statusMsgs.length, `${currDate.toISOString()}: ${msg}`, severity))
+  }
+
+  handleKeyPress = (event: KeyboardEvent) => {
+    console.log('keypress detected. event=')
+    console.log(event)
+    if(this.serialPortState === 'Open') {
+      // Send keypress to serial port
+      this.serialPortObj?.write([event.keyCode])
+    }
   }
 }

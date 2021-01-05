@@ -29,7 +29,23 @@ const MainView = observer(() => {
     if(statusContentDiv.current !== null) {
       statusContentDiv.current.scrollTop = statusContentDiv.current.scrollHeight
     }
-  });
+  })
+
+  // MONITOR KEYPRESSES, SEND TO SERIAL PORT IF PORT OPEN
+  // We should use the 'keypress' event and not 'keydown', as 'keypress'
+  // automatically handles control keys like shift/ctrl/alt while with 'keydown'
+  // you get a separate event for pressing control keys
+  const escFunction = React.useCallback((event) => {
+    app.handleKeyPress(event)
+  }, [])
+
+  React.useEffect(() => {
+    document.addEventListener("keypress", escFunction, false);
+
+    return () => {
+      document.removeEventListener("keypress", escFunction, false);
+    };
+  }, [])
 
   function handleAutoScrollChanged(_1: React.FormEvent<HTMLInputElement>, data: CheckboxProps) {
     console.log(data)
