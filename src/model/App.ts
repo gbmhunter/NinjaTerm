@@ -1,4 +1,3 @@
-import { SyntheticEvent } from "react"
 import { makeAutoObservable } from "mobx"
 import SerialPort from 'serialport'
 
