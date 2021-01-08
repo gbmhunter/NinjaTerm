@@ -1,5 +1,5 @@
 import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants'
-import Marker from './Marker'
+import Marker, { Association } from './Marker'
 
 declare global {
   interface RegExp {
@@ -178,7 +178,7 @@ public enum CopyOrShift {
   SHIFT,
 }
 
-public enum MarkerBehaviour {
+export enum MarkerBehaviour {
   FILTERING,
   NOT_FILTERING
 }
@@ -192,7 +192,7 @@ public enum MarkerBehaviour {
  * @last-modified 2016-10-27
  * @since 2016-09-28
  */
-public class StreamedData {
+export default class StreamedData {
 
     //================================================================================================//
     //======================================== CLASS CONSTANTS =======================================//
@@ -687,10 +687,10 @@ public class StreamedData {
         for (let i = 0; i < numOfLines; i++) {
 
             if (i == numOfLines - 1) {
-                lines[i] = this.getText().substring(startIndex, this.getText().length());
+                lines[i] = this.getText().substring(startIndex, this.getText().length)
             } else {
                 lines[i] = this.getText().substring(startIndex, this.getNewLineMarkers()[i].getCharPos())
-                startIndex = this.getNewLineMarkers()[i].getCharPos();
+                startIndex = this.getNewLineMarkers()[i].getCharPos()
             }
 
         }
@@ -706,42 +706,45 @@ public class StreamedData {
      *
      * @param charIndex The 0-based index of the character in the StreamedText object that you wish to remove.
      */
-    public removeChar(int charIndex, boolean deleteNewLines) {
+    public removeChar(charIndex: number, deleteNewLines: boolean) {
 
-        if (charIndex >= getText().length()) {
-            throw new IllegalArgumentException("charIndex pointed outside of length of text.");
+        if (charIndex >= this.getText().length) {
+            throw Error("charIndex pointed outside of length of text.")
         }
 
         // Remove the character from the text
-        String oldText = text;
+        let oldText = this.text;
 
-        text = oldText.substring(0, charIndex) + oldText.substring(charIndex + 1, oldText.length());
+        this.text = oldText.substring(0, charIndex) + oldText.substring(charIndex + 1, oldText.length)
 
         //==============================================//
         //============ DELETE/SHIFT MARKERS ============//
         //==============================================//
 
         // Shift all new line markers from the deleted char onwards
-        for (ListIterator<Marker> iter = markers.listIterator(); iter.hasNext(); ) {
-            Marker element = iter.next();
+        let length = this.markers.length
+        for (let i = 0; i < length; i++) {
+            let element = this.markers[i]
 
             if(deleteNewLines) {
                 if(element.charPos == charIndex + 1 && element instanceof NewLineMarker) {
-                    iter.remove();
-                    continue;
+                    this.markers.splice(i, 1)
+                    i--
                 }
             }
 
-            if (element.charPos == charIndex && element.association == Marker.Association.CHAR_ON) {
+            if (element.charPos == charIndex && element.association == Association.CHAR_ON) {
                 // Remove this marker
-                iter.remove();
+                this.markers.splice(i, 1)
+                i--
             } /*else if (element.charPos == charIndex + 1 && element.association == Marker.Association.SPACE_BEFORE) {
                 // Remove marker that points to the space between deleted char and the one after it
                 iter.remove();
-            }*/ else if (charIndex == 0 && element.charPos == 0 && element.association == Marker.Association.SPACE_BEFORE) {
+            }*/ else if (charIndex == 0 && element.charPos == 0 && element.association == Association.SPACE_BEFORE) {
                 // If we are removing the first char, and the marker is something like a
                 // new line, delete it
-                iter.remove();
+                this.markers.splice(i, 1)
+                i--
             } else if (element.getCharPos() != 0 && element.getCharPos() >= charIndex) {
                 element.setCharPos(element.getCharPos() - 1);
             }
@@ -778,18 +781,18 @@ public class StreamedData {
      * Trims this StreamedData object as necessary to keep the number of chars no greater than
      * <code>maxNumChars</code>.
      */
-    private void trimDataIfRequired() {
+    private trimDataIfRequired() {
 
 //        logger.debug("trimDataIfRequired() called.");
 
         // Check if -1, if so, we don't want to perform any trimming
-        if (maxNumChars.get() == -1)
-            return;
+        if (this.maxNumChars == -1)
+            return
 
-        if (text.length() > maxNumChars.get()) {
-            int numCharsToRemove = text.length() - maxNumChars.get();
+        if (this.text.length() > this.maxNumChars {
+            let numCharsToRemove = this.text.length - this.maxNumChars;
 //            logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
-            removeCharsFromStart(numCharsToRemove, false);
+            this.removeCharsFromStart(numCharsToRemove, false)
         }
     }
 

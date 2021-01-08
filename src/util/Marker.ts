@@ -1,5 +1,5 @@
 
-class Association {
+export class Association {
   /** Marker is associated with the space before the character position (charPos).
    * e.g. new line markers **/
   SPACE_BEFORE = 0
