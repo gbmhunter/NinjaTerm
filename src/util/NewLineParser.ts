@@ -1,4 +1,4 @@
-import StreamedData, { MarkerBehaviour } from './StreamedData'
+import StreamedData, { MarkerBehaviour } from './StreamedData/StreamedData'
 
 /**
  * Detects where to add new line markers in the input streamed text, and releases
@@ -8,7 +8,7 @@ import StreamedData, { MarkerBehaviour } from './StreamedData'
  * @since 2016-10-15
  * @last-modified 2016-10-18
  */
-public class NewLineParser {
+export default class NewLineParser {
 
     //================================================================================================//
     //=========================================== CLASS FIELDS =======================================//

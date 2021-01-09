@@ -1,11 +1,11 @@
 
-export class Association {
+export enum Association {
   /** Marker is associated with the space before the character position (charPos).
    * e.g. new line markers **/
-  SPACE_BEFORE = 0
+  SPACE_BEFORE = 0,
   /** Marker is associated with the char as specified by the charPos.
    * e.g. colour markers, time stamp markers **/
-  CHAR_ON = 1
+  CHAR_ON = 1,
 }
 
 /**
