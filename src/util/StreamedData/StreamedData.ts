@@ -556,14 +556,13 @@ export default class StreamedData {
   }
 
   private checkAllColoursAreInOrder() {
-    console.log('WARNING: Not yet implemented.')
-    // let charIndex = -1
-    // for (let colourMarker of this.getColourMarkers()) {
-    //     if (colourMarker.charPos <= charIndex)
-    //         throw Error("Colours were not in order!")
+    let charIndex = -1
+    for (let colourMarker of this.getColourMarkers()) {
+      if (colourMarker.charPos <= charIndex)
+        throw Error("Colours were not in order!")
 
-    //     charIndex = colourMarker.charPos
-    // }
+      charIndex = colourMarker.charPos
+    }
   }
 
   /**
@@ -636,20 +635,23 @@ export default class StreamedData {
     let firstCharAfterLastFullMatch = 0
     let currPositionInString = 0;
 
+    // Add a start-of-string anchor to make sure we only get a match starting at the start of the data
+    let anchoredPattern = new RegExp('^' + pattern.source)
+
     // Look for index of partial match
     let startIndexOfPartialMatch = -1;
     while ((startIndexOfPartialMatch == -1) && (currPositionInString <= (input.getText().length - 1))) {
 
       // Matcher matcher = pattern.matcher(input.getText().substring(currPositionInString));
       // input.getText().substring(currPositionInString).test(pattern)
-      throw Error('Needs implementing/testing!')
-      let partialMatchRegex = pattern.toPartialMatchRegex()
-      let result = partialMatchRegex.exec(input.getText().substring(currPositionInString))
+      let completeMatchresult = anchoredPattern.exec(input.getText().substring(currPositionInString))
+      let partialMatchRegex = anchoredPattern.toPartialMatchRegex()
+      let partialMatchresult = partialMatchRegex.exec(input.getText().substring(currPositionInString))
 
       // matcher.matches();
-      // if (matcher.hitEnd()) {
-      //     startIndexOfPartialMatch = currPositionInString;
-      // }
+      if (!completeMatchresult && partialMatchresult) {
+        startIndexOfPartialMatch = currPositionInString
+      }
 
       // Remove first character from input and try again
       currPositionInString++;
