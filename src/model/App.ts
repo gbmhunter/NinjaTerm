@@ -3,6 +3,8 @@ import SerialPort from 'serialport'
 
 import StatusMsg from './StatusMsg'
 import Settings from './Settings'
+import NewLineParser from "../util/NewLineParser/NewLineParser"
+import StreamedData from "../util/StreamedData/StreamedData"
 
 
 const electron = require('electron')
@@ -26,6 +28,18 @@ function isNormalPositiveInteger(str : string) {
   return n !== Infinity && String(n) === str && n >= 0
 }
 
+class TextSegment {
+  text: string = ''
+  color: string = ''
+  key: number
+  constructor(text: string, color: string, key: number) {
+    makeAutoObservable(this)
+    this.text = text
+    this.color = color
+    this.key = key
+  }
+}
+
 // Model the application state.
 export default class App {
 
@@ -37,6 +51,14 @@ export default class App {
   serialPortObj: SerialPort | null = null
 
   rxData = ''
+
+  input: StreamedData
+
+  newLineParser: NewLineParser
+
+  output: StreamedData
+
+  rxSegments: TextSegment[] = []
 
   /** Contains the text data for the status textarea. */
   statusMsgs: StatusMsg[] = []
@@ -62,6 +84,12 @@ export default class App {
         menu.append(new MenuItem({ type: 'separator' }))
         Menu.setApplicationMenu(menu)
       }
+
+      this.input = new StreamedData()
+      this.newLineParser = new NewLineParser('\n')
+      this.output = new StreamedData()
+
+      this.rxSegments.push(new TextSegment('', '#000000', 0))
 
       // Do initial scan for serial ports
       this.addStatusBarMsg('NinjaTerm started.', 'ok')
@@ -140,9 +168,21 @@ export default class App {
   }
 
   onSerialPortReceivedData = (data: any) => {
-    // console.log('Data:', data)
+    console.log('Received data from serial port. Data:', data)
     this.rxData += data.toString()
+
+    this.input.append(data.toString())
+    this.newLineParser.parse(this.input, this.output)
+    // this.output contains the new data needed to be add to the RX terminal window
+
+    const lastRxSegment = this.rxSegments[this.rxSegments.length - 1]
+    lastRxSegment.text += this.output.text
+    lastRxSegment.key += 1
+
+    this.output.clear()
+
   }
+
 
   setAutoScroll = (trueFalse: boolean) => {
     this.autoScroll = trueFalse

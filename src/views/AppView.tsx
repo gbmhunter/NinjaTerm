@@ -58,7 +58,15 @@ const MainView = observer(() => {
   // 2) \n to create a new line
   // 3) Text to wrap once it hits the maximum terminal width
   // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
-  const rxDataView = (<div style={{ width: `${app.settings.terminalWidth}.1ch` }}><span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{app.rxData}</span><span id="cursor">█</span></div>)
+  const rxSpans = app.rxSegments.map((segment) => {
+    return <span key={segment.key}>{segment.text}</span>
+  })
+  const rxDataView = (
+    <div style={{ width: `${app.settings.terminalWidth}.1ch` }}>
+      {/* <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{app.rxData}</span> */}
+      {rxSpans}
+      <span id="cursor">█</span>
+    </div>)
 
   const statusMsgsView = app.statusMsgs.map((statusMsg) => {
     if(statusMsg.severity === 'ok') {
