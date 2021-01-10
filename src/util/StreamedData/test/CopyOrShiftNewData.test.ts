@@ -6,7 +6,7 @@
  * @last-modified   2021-01-09
  */
 import StreamedData, { CopyOrShift, MarkerBehaviour } from '../StreamedData'
-import NewLineMarker from '../../NewLineMarker'
+import NewLineMarker from '../../NewLineParser/NewLineMarker'
 
 let inputStreamedData: StreamedData
 let outputStreamedData: StreamedData

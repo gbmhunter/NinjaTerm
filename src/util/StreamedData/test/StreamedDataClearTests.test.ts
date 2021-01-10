@@ -1,5 +1,5 @@
 import StreamedData from '../StreamedData'
-import NewLineMarker from '../../NewLineMarker'
+import NewLineMarker from '../../NewLineParser/NewLineMarker'
 
 describe('StreamedDataClearTests', () => {
   it('should clear', () => {

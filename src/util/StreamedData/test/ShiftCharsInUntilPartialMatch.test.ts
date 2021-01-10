@@ -34,7 +34,6 @@ describe('ShiftCharsInUntilPartialMatchTests', () => {
 
     it('matchComesOnSecondCallTest', () => {
         input.append("123EO")
-        debugger
         output.shiftCharsInUntilPartialMatch(input, pattern)
 
         expect(input.getText()).toEqual('EO')

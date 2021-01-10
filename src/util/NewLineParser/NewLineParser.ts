@@ -1,4 +1,5 @@
-import StreamedData, { MarkerBehaviour } from './StreamedData/StreamedData'
+import StreamedData, { MarkerBehaviour } from '../StreamedData/StreamedData'
+import NewLineMarker from './NewLineMarker'
 
 /**
  * Detects where to add new line markers in the input streamed text, and releases
@@ -6,7 +7,7 @@ import StreamedData, { MarkerBehaviour } from './StreamedData/StreamedData'
  *
  * @author Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since 2016-10-15
- * @last-modified 2016-10-18
+ * @last-modified 2021-01-10
  */
 export default class NewLineParser {
 
@@ -65,8 +66,6 @@ export default class NewLineParser {
 
         // Matcher matcher = newLinePattern.matcher(input.getText());
 
-        let currShiftIndex = 0
-
         input.getText().search(this.newLinePattern)
 
         while(this.newLinePattern.test(input.getText())) {
@@ -76,7 +75,7 @@ export default class NewLineParser {
 
           // let firstMatch = match[0]
           let start = match.index
-          let end = start + match[0].length - 1;
+          let end = start + match[0].length;
 //            logger.debug("Match found. match = \"" + matcher.group(0) + "\"." +
 //                    " Start index = " + matcher.start() + ", end index = " + matcher.end());
 
@@ -86,20 +85,15 @@ export default class NewLineParser {
             // We want to add a new line marker at the position of the first character on the new line.
             // This is the same as matcher.end(). We also want to shift all data from input to
             // output up to this point
-            output.shiftDataIn(input, end - currShiftIndex, MarkerBehaviour.NOT_FILTERING);
+            output.shiftDataIn(input, end, MarkerBehaviour.NOT_FILTERING);
 
 //            output.addNewLineMarkerAt(output.getText().length());
             output.getMarkers().push(new NewLineMarker(output.getText().length))
-
-            currShiftIndex = end
         }
 
         // ALL NEW LINES FOUND!
 
         // Shift remaining characters from input to output
-        output.shiftCharsInUntilPartialMatch(input, newLinePattern)
-
-
+        output.shiftCharsInUntilPartialMatch(input, this.newLinePattern)
     }
-
 }

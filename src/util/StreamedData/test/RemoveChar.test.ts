@@ -8,7 +8,7 @@
 
 import StreamedData from '../StreamedData'
 import ColourMarker from '../ColorMarker'
-import NewLineMarker from '../../NewLineMarker'
+import NewLineMarker from '../../NewLineParser/NewLineMarker'
 
 let streamedData: StreamedData
 

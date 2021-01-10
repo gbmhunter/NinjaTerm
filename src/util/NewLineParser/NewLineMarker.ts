@@ -1,4 +1,4 @@
-import Marker, { Association } from './Marker'
+import Marker, { Association } from '../Marker'
 
 /**
  * Created by gbmhu on 2016-11-24.

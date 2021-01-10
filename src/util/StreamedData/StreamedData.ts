@@ -1,6 +1,6 @@
 
 import Marker, { Association } from '../Marker'
-import NewLineMarker from '../NewLineMarker'
+import NewLineMarker from '../NewLineParser/NewLineMarker'
 import ColourMarker from './ColorMarker'
 
 declare global {
