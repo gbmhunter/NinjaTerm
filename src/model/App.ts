@@ -5,6 +5,7 @@ import StatusMsg from './StatusMsg'
 import Settings from './Settings'
 import NewLineParser from "../util/NewLineParser/NewLineParser"
 import StreamedData from "../util/StreamedData/StreamedData"
+import { number } from "yup/lib/locale"
 
 
 const electron = require('electron')
@@ -27,6 +28,20 @@ function isNormalPositiveInteger(str : string) {
   const n = Math.floor(Number(str))
   return n !== Infinity && String(n) === str && n >= 0
 }
+
+declare global {
+  interface String {
+    insert(index: number, string: string): string;
+  }
+}
+
+String.prototype.insert = function(index, string) {
+  if (index > 0) {
+    return this.substring(0, index) + string + this.substr(index);
+  }
+
+  return string + this;
+};
 
 class TextSegment {
   text: string = ''
@@ -180,6 +195,132 @@ export default class App {
     lastRxSegment.key += 1
 
     this.output.clear()
+
+
+    //==============================================//
+    //============= INPUT ARG CHECKS ===============//
+    //==============================================//
+
+    numCharsAdded = 0;
+
+
+        //==============================================//
+        //=== ADD ALL TEXT BEFORE FIRST COLOUR CHANGE ==//
+        //==============================================//
+
+        // Copy all text before first ColourMarker entry into the first text node
+
+        let indexOfLastCharPlusOne: number;
+        if (this.output.getColourMarkers().length == 0) {
+            indexOfLastCharPlusOne = this.output.getText().length
+        } else {
+            indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos()
+        }
+
+        let textToAppend = this.output.getText().substring(0, indexOfLastCharPlusOne)
+
+        // Create new line characters for all new line markers that point to text
+        // shifted above
+        let currNewLineMarkerIndex = 0;
+        for (let i = 0; i < this.output.getNewLineMarkers().length; i++) {
+            if (this.output.getNewLineMarkers().get(currNewLineMarkerIndex).charPos > indexOfLastCharPlusOne)
+                break
+
+            textToAppend.insert(streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).charPos + i, "\n");
+            currNewLineMarkerIndex++;
+        }
+
+        //lastTextNode.setText(lastTextNode.getText() + textToAppend.toString());
+        final int startIndex = styledTextArea.getLength();
+        styledTextArea.replaceText(styledTextArea.getLength(), styledTextArea.getLength(), textToAppend.toString());
+        final int stopIndex = styledTextArea.getLength();
+
+        if(defaultTextColorActive) {
+            styledTextArea.setStyle(startIndex, stopIndex, "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+        }
+
+        // If the previous StreamedText object had a colour to apply when the next character was received,
+        // add it now
+        if(colorToApplyToNextChar != null) {
+            /*styledTextArea.setStyle(
+                    startIndex,
+                    stopIndex,
+                    TextStyle.EMPTY.updateFontSize(12).updateFontFamily("monospace").updateTextColor(colorToApplyToNextChar));*/
+            /*styledTextArea.setStyle(
+                    startIndex,
+                    stopIndex,
+                    "-fx-font-size: 12;");*/
+            colorToApplyToNextChar = null;
+        }
+
+        // Update the number of chars added with what was added to the last existing text node
+        numCharsAdded += textToAppend.length();
+
+        // Create new text nodes and copy all text
+        // This loop won't run if there is no elements in the TextColors array
+        //int currIndexToInsertNodeAt = nodeIndexToStartShift;
+        for (int x = 0; x < streamedData.getColourMarkers().size(); x++) {
+            defaultTextColorActive = false;
+            //Text newText = new Text();
+
+            int indexOfFirstCharInNode = streamedData.getColourMarkers().get(x).getCharPos();
+
+            int indexOfLastCharInNodePlusOne;
+            if (x >= streamedData.getColourMarkers().size() - 1) {
+                indexOfLastCharInNodePlusOne = streamedData.getText().length();
+            } else {
+                indexOfLastCharInNodePlusOne = streamedData.getColourMarkers().get(x + 1).getCharPos();
+            }
+
+            textToAppend = new StringBuilder(streamedData.getText().substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne));
+
+//            logger.debug("textToAppend (before new lines added) = " + textToAppend);
+
+            // Create new line characters for all new line markers that point to text
+            // shifted above
+            int insertionCount = 0;
+            while (true) {
+                if (currNewLineMarkerIndex >= streamedData.getNewLineMarkers().size())
+                    break;
+
+                if (streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() > indexOfLastCharInNodePlusOne)
+                    break;
+
+                textToAppend.insert(
+                        streamedData.getNewLineMarkers().get(currNewLineMarkerIndex).getCharPos() + insertionCount - indexOfFirstCharInNode,
+                        NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW);
+                currNewLineMarkerIndex++;
+                insertionCount++;
+            }
+
+//            logger.debug("textToAppend (after new lines added) = " + textToAppend);
+
+            //==============================================//
+            //==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
+            //==============================================//
+
+            final int insertionStartIndex = styledTextArea.getLength();
+            styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
+            final int insertionStopIndex = styledTextArea.getLength();
+
+//            logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
+
+            final Color textColor = streamedData.getColourMarkers().get(x).color;
+
+            styledTextArea.setStyle(
+                    insertionStartIndex,
+                    insertionStopIndex,
+                    "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+
+            // Update the num. chars added with all the text added to this new Text node
+            numCharsAdded += textToAppend.length();
+        }
+
+        // Clear the streamed data object, as we have consumed all the information
+        // available in it
+        streamedData.clear();
+
+
 
   }
 
