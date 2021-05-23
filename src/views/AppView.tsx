@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import { Button, Checkbox, CheckboxProps, Icon } from 'semantic-ui-react'
 // Another attempt at importing semantic CSS, didn't work, see App.global.css for more info
 // import 'semantic-ui-css/semantic.min.css'
-import { observer } from 'mobx-react'
 
 import App from '../model/App'
+import StatusMsg from '../model/StatusMsg'
 import SettingsView from './SettingsView'
 
 // const styles = require('./App.css'); // Use require here to dodge "cannot find module" errors in VS Code
@@ -86,7 +86,7 @@ class MainView extends React.Component<IProps> {
         <span id="cursor">█</span>
       </div>)
 
-    const statusMsgsView = app.statusMsgs.map((statusMsg) => {
+    const statusMsgsView = app.statusMsgs.map((statusMsg: StatusMsg) => {
       if(statusMsg.severity === 'ok') {
         return (<span key={statusMsg.id} style={{ display: 'block' }}>{statusMsg.msg}</span>)
       }

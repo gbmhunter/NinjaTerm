@@ -11,6 +11,7 @@ export default class NewLineMarker extends Marker {
 
     static fromCopy(newLineMarker: NewLineMarker) {
       let newMarker = new NewLineMarker(newLineMarker.charPos)
+      return newMarker
     }
 
     deepCopy() : Marker {

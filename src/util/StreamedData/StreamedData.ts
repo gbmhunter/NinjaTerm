@@ -631,8 +631,6 @@ export default class StreamedData {
    * @param pattern The regex pattern that defines a match.
    */
   public shiftCharsInUntilPartialMatch(input: StreamedData, pattern: RegExp) {
-
-    let firstCharAfterLastFullMatch = 0
     let currPositionInString = 0;
 
     // Add a start-of-string anchor to make sure we only get a match starting at the start of the data

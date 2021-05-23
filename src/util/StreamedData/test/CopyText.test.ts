@@ -5,7 +5,7 @@
  * @since           2016-09-27
  * @last-modified   2021-01-09
  */
-import StreamedData, { CopyOrShift, MarkerBehaviour } from '../StreamedData'
+import StreamedData, { MarkerBehaviour } from '../StreamedData'
 import ColourMarker from '../ColorMarker'
 
 let inputStreamedData: StreamedData

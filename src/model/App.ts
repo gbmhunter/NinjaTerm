@@ -5,8 +5,6 @@ import StatusMsg from './StatusMsg'
 import Settings from './Settings'
 import NewLineParser from "../util/NewLineParser/NewLineParser"
 import StreamedData from "../util/StreamedData/StreamedData"
-import { number } from "yup/lib/locale"
-
 
 const electron = require('electron')
 
