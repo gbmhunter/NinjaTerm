@@ -10,8 +10,11 @@
 
 <div align="center">
 
-[![Build Status][github-actions-status]][github-actions-url]
-[![Github Tag][github-tag-image]][github-tag-url]
+Tests Status: ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gbmhunter/NinjaTerm/Test)
+
+Publish Status: ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gbmhunter/NinjaTerm/Publish)
+
+Latest Release: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/gbmhunter/NinjaTerm)
 
 </div>
 
