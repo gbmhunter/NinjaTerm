@@ -35,6 +35,10 @@ Start the app in the `dev` environment:
 npm start
 ```
 
+## Testing
+
+Arduino sketches in `arduino-serial` allow you to program different applications onto an Arduino for testing the serial port with.
+
 ## Packaging for Production
 
 To package apps for the local platform:
@@ -43,11 +47,15 @@ To package apps for the local platform:
 npm run package
 ```
 
+Packages are automatically created for Windows, Linux and MacOS in the GitHub action when new commits are pushed to `master`.
+
 ## Native Libraries
 
 The `serialport` library is a native library because it needs to interface with the OS serial port API. Because of this, it has be listed as a dependency in both `package.json` and `release/app/package.json`. A number of configuration lines were also changed to support native libraries, as per https://electron-react-boilerplate.js.org/docs/native-modules.
 
 ## Code Architecture
+
+`electron-react-boilerplate` was used as a starting point for development.
 
 MobX is used to store the application state. The application model is under `src/model/`.
 
