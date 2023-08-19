@@ -1,7 +1,5 @@
 <p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
 
-# NinjaTerm
-
 #### A serial port terminal that's got your back.
 
 <br>
@@ -12,22 +10,22 @@
 
 [![Build Status][github-actions-status]][github-actions-url]
 [![Github Tag][github-tag-image]][github-tag-url]
-[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/Fjy3vfgy5q)
-
 
 </div>
 
 ## Install
 
-Clone the repo and install dependencies:
+See the [NinjaTerm homepage](http://gbmhunter.github.io/NinjaTerm/) for Windows, Linux and MacOS executables if you want to install the application.
+
+You can also access older versions of NinjaTerm at [GitHub Releases](https://github.com/gbmhunter/NinjaTerm/releases).
+
+## Development
+
+Clone this repo. Then run `npm install` to install dependencies:
 
 ```bash
-git clone --depth 1 --branch main https://github.com/electron-react-boilerplate/electron-react-boilerplate.git your-project-name
-cd your-project-name
 npm install
 ```
-
-## Starting Development
 
 Start the app in the `dev` environment:
 
@@ -69,7 +67,6 @@ The `docs/` folder contains the source code for the NinjaTerm homepage, hosted b
 ## Extensions
 
 * Prettier ESLint: Provides formatting of .tsx files.
-
 
 [github-actions-status]: https://github.com/gbmhunter/NinjaTerm/workflows/Test/badge.svg
 [github-actions-url]: https://github.com/gbmhunter/NinjaTerm/actions
