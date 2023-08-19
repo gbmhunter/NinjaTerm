@@ -3,64 +3,46 @@ name: Publish
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   publish:
+    # To enable auto publishing to github, update your electron publisher
+    # config in package.json > "build" and remove the conditional below
+    # if: ${{ github.repository_owner == 'electron-react-boilerplate' }}
+
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         # os: [macos-latest]
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest]
 
     steps:
       - name: Checkout git repo
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
-      - name: Install Node, NPM and Yarn
-        uses: actions/setup-node@v1
+      - name: Install Node and NPM
+        uses: actions/setup-node@v3
         with:
-          node-version: 15
+          node-version: 18
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install and build
         run: |
-          yarn install
+          npm install
+          npm run postinstall
+          npm run build
 
-      - name: Publish releases (windows-latest)
-        if: ${{ runner.os == 'Windows' }}
+      - name: Publish releases
         env:
           # These values are used for auto updates signing
           # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
           # CSC_LINK: ${{ secrets.CSC_LINK }}
           # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           # This is used for uploading release assets to github
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          # Disable code signing
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-        # run: |
-        #   yarn postinstall && yarn build && yarn electron-builder --publish always --win --mac --linux
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn postinstall && yarn build && yarn electron-builder --publish always --win
-
-      - name: Publish releases (ubuntu-latest)
-        if: ${{ runner.os == 'Linux' }}
-        env:
-          # These values are used for auto updates signing
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
-          # CSC_LINK: ${{ secrets.CSC_LINK }}
-          # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # This is used for uploading release assets to github
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-          # Disable code signing
-          CSC_IDENTITY_AUTO_DISCOVERY: false
-        # run: |
-        #   yarn postinstall && yarn build && yarn electron-builder --publish always --win --mac --linux
-        run: |
-          yarn postinstall && yarn build && yarn electron-builder --publish always --linux
-
-
+          # npm exec electron-builder -- --publish always --win --mac --linux
+          npm exec electron-builder -- --publish always --win

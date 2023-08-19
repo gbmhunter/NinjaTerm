@@ -1,10 +1,16 @@
 {
   "files.associations": {
-    ".babelrc": "jsonc",
     ".eslintrc": "jsonc",
     ".prettierrc": "jsonc",
     ".eslintignore": "ignore"
   },
+  
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "html",
+    "typescriptreact"
+  ],
 
   "javascript.validate.enable": false,
   "javascript.format.enable": false,
@@ -13,17 +19,12 @@
   "search.exclude": {
     ".git": true,
     ".eslintcache": true,
-    "src/dist": true,
-    "src/main.prod.js": true,
-    "src/main.prod.js.map": true,
-    "bower_components": true,
-    "dll": true,
-    "release": true,
+    ".erb/dll": true,
+    "release/{build,app/dist}": true,
     "node_modules": true,
     "npm-debug.log.*": true,
     "test/**/__snapshots__": true,
-    "yarn.lock": true,
+    "package-lock.json": true,
     "*.{css,sass,scss}.d.ts": true
-  },
-  "cSpell.words": ["eslintignore", "ninjaterm"]
+  }
 }

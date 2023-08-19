@@ -1,73 +1,41 @@
-<p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
-
-# NinjaTerm
-
-#### A serial port terminal that's got your back.
+<img src=".erb/img/erb-banner.svg" width="100%" />
 
 <br>
+
+<p>
+  Electron React Boilerplate uses <a href="https://electron.atom.io/">Electron</a>, <a href="https://facebook.github.io/react/">React</a>, <a href="https://github.com/reactjs/react-router">React Router</a>, <a href="https://webpack.js.org/">Webpack</a> and <a href="https://www.npmjs.com/package/react-refresh">React Fast Refresh</a>.
+</p>
 
 <br>
 
 <div align="center">
 
-Tests Status: ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gbmhunter/NinjaTerm/Test)
+[![Build Status][github-actions-status]][github-actions-url]
+[![Github Tag][github-tag-image]][github-tag-url]
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label)](https://discord.gg/Fjy3vfgy5q)
 
-Publish Status: ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gbmhunter/NinjaTerm/Publish)
-
-Latest Release: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/gbmhunter/NinjaTerm)
+[![OpenCollective](https://opencollective.com/electron-react-boilerplate-594/backers/badge.svg)](#backers)
+[![OpenCollective](https://opencollective.com/electron-react-boilerplate-594/sponsors/badge.svg)](#sponsors)
+[![StackOverflow][stackoverflow-img]][stackoverflow-url]
 
 </div>
 
 ## Install
 
-Required dependencies before install:
-
-1. `npm`
-1. `yarn`
-1. `git`
-
-Then just run:
+Clone the repo and install dependencies:
 
 ```bash
-git clone
-yarn
+git clone --depth 1 --branch main https://github.com/electron-react-boilerplate/electron-react-boilerplate.git your-project-name
+cd your-project-name
+npm install
 ```
 
-## Development
+## Starting Development
 
 Start the app in the `dev` environment:
 
 ```bash
-yarn start
-```
-
-Note: Icon in development will default to Electron icon even though NinjaTerm icon will be used when packaging for releases, see [https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/1710#issuecomment-414199480](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/1710#issuecomment-414199480).
-
-**Running Tests**
-
-```bash
-yarn build # Only needed if app has not been built via other means yet
-yarn test
-```
-
-**Running Lint Checks**
-
-```bash
-yarn lint
-```
-
-**Running Typescript Checks**
-
-```bash
-yarn tsc
-```
-
-**Skip Husky Pre-commit Checks**
-
-Use the `--no-verify` flag as shown:
-
-```bash
-git commit --no-verify -m "Message goes here."
+npm start
 ```
 
 ## Packaging for Production
@@ -75,31 +43,26 @@ git commit --no-verify -m "Message goes here."
 To package apps for the local platform:
 
 ```bash
-yarn package
+npm run package
 ```
 
-Packages are created in the `release` directory. Because the native module `serialport` is used, each package has to be built on it's respective platform.
+## Native Libraries
 
-Packaging is performed by the `electron-builder` library. The config for this is contained within the top-level `package.json` under `"build"`.
+The `serialport` library is a native library because it needs to interface with the OS serial port API. Because of this, it has be listed as a dependency in both `package.json` and `release/app/package.json`. A number of configuration lines were also changed to support native libraries, as per https://electron-react-boilerplate.js.org/docs/native-modules.
 
-Version number is contained within the "inner" `package.json` at `src/package.json`.
+## Code Architecture
 
-## CICD
+MobX is used to store the application state. The application model is under `src/model/`.
 
-GitHib Actions are used for running automated tests and creating releases (which include built and packaged executables for all supported platforms).
+## Extensions
 
-## Maintainers
+* Prettier ESLint: Provides formatting of .tsx files.
 
-- [Geoffrey Hunter](https://github.com/gbmhunter)
 
-## History
 
-Electron version based of the electron-react-boilerplate repo, at `v1.4.0`.
-
-## License
-
-MIT © [gbmhunter](https://github.com/gbmhunter)
-
-[github-actions-status]: https://github.com/gbmhunter/ninjaterm/workflows/Test/badge.svg
-[github-actions-url]: https://github.com/gbmhunter/ninjaterm/actions
-[github-tag-url]: https://github.com/gbmhunter/ninjaterm/releases/latest
+[github-actions-status]: https://github.com/electron-react-boilerplate/electron-react-boilerplate/workflows/Test/badge.svg
+[github-actions-url]: https://github.com/electron-react-boilerplate/electron-react-boilerplate/actions
+[github-tag-image]: https://img.shields.io/github/tag/electron-react-boilerplate/electron-react-boilerplate.svg?label=version
+[github-tag-url]: https://github.com/electron-react-boilerplate/electron-react-boilerplate/releases/latest
+[stackoverflow-img]: https://img.shields.io/badge/stackoverflow-electron_react_boilerplate-blue.svg
+[stackoverflow-url]: https://stackoverflow.com/questions/tagged/electron-react-boilerplate

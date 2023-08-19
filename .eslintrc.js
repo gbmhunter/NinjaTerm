@@ -1,14 +1,18 @@
 module.exports = {
   extends: 'erb',
+  plugins: ['@typescript-eslint'],
   rules: {
     // A temporary hack related to IDE not resolving correct package.json
     'import/no-extraneous-dependencies': 'off',
-    '@typescript-eslint/no-empty-interface': 'off',
-    'prettier/prettier': 'off', // Disable all the prettier rules, these are a pain in the butt
-     // The application model relies on circular imports, i.e. App uses Settings and Settings uses App.
-     // I should probably fix this in the future but at the moment the type awareness of the circular
-     // imports is useful
-    'import/no-cycle': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react/jsx-filename-extension': 'off',
+    'import/extensions': 'off',
+    'import/no-unresolved': 'off',
+    'import/no-import-module-exports': 'off',
+    'no-shadow': 'off',
+    '@typescript-eslint/no-shadow': 'error',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
   },
   parserOptions: {
     ecmaVersion: 2020,
@@ -22,8 +26,9 @@ module.exports = {
       // See https://github.com/benmosher/eslint-plugin-import/issues/1396#issuecomment-575727774 for line below
       node: {},
       webpack: {
-        config: require.resolve('./.erb/configs/webpack.config.eslint.js'),
+        config: require.resolve('./.erb/configs/webpack.config.eslint.ts'),
       },
+      typescript: {},
     },
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts', '.tsx'],

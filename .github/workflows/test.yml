@@ -3,33 +3,32 @@ name: Test
 on: [push, pull_request]
 
 jobs:
-  release:
+  test:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
-        # TODO: Re-enable Windows once Jest can find the tests again
-        # os: [macos-latest, windows-latest, ubuntu-latest]
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+      - name: Install Node.js and NPM
+        uses: actions/setup-node@v3
         with:
-          node-version: 15
+          node-version: 18
+          cache: npm
 
-      - name: yarn install
+      - name: npm install
         run: |
-          yarn install --frozen-lockfile --network-timeout 300000
+          npm install
 
-      - name: yarn test
+      - name: npm test
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn package
-          yarn lint
-          yarn tsc
-          yarn test
+          npm run package
+          npm run lint
+          npm exec tsc
+          npm test

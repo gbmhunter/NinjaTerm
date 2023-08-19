@@ -1,0 +1,33 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+/* This means paddings doesn't ruin child divs which have their height set
+to 100% */
+ * {
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+
+  /* Dark theme */
+  background-color: #262626;
+  color: white;
+
+  /* width: 100vw; */
+  height: 100vh;
+
+  margin: 0;
+  font-family: sans-serif;
+  /* overflow-y: hidden; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
