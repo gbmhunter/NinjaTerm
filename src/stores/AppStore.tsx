@@ -64,6 +64,25 @@ export class AppStore {
   constructor() {
     makeAutoObservable(this);
 
+    this.log('Started NinjaTerm.');
+  }
+
+  setSettingsDialogOpen(trueFalse: boolean) {
+    this.settingsDialogOpen = trueFalse;
+    // If opening the settings dialog, also scan for ports
+    if (trueFalse) {
+      this.scanForPorts();
+    }
+  }
+
+  setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
+    this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
+  }
+
+  /**
+   * Scans the computer for available serial ports, and updates availablePortInfos.
+   */
+  scanForPorts() {
     SerialPort.list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
@@ -72,21 +91,19 @@ export class AppStore {
         if (ports.length > 0) {
           this.settings.setSelectedPortPath(ports[0].path);
         }
+        this.setPortStatusMsg({
+          text: `Port scan complete. Found ${ports.length} ports.`,
+          type: PortStatusMsgType.OK,
+        });
         return 0;
       })
       .catch((error) => {
         console.log(error);
+        this.setPortStatusMsg({
+          text: `${error}`,
+          type: PortStatusMsgType.ERROR,
+        });
       });
-
-    this.log('Started NinjaTerm.');
-  }
-
-  setSettingsDialogOpen(trueFalse: boolean) {
-    this.settingsDialogOpen = trueFalse;
-  }
-
-  setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
-    this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
   }
 
   openPort() {

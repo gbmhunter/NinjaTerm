@@ -55,6 +55,14 @@ function SettingsDialog(props: Props) {
     <Dialog open={appStore.settingsDialogOpen} fullWidth maxWidth="lg">
       <DialogTitle>Settings</DialogTitle>
       <DialogContent>
+        {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
+        <Button
+          onClick={() => {
+            appStore.scanForPorts();
+          }}
+        >
+          Scan For Ports
+        </Button>
         <DialogContentText>Select serial port to open:</DialogContentText>
         {/* ====================== Table showing the serial ports and their properties ============================== */}
         <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
