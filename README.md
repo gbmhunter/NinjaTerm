@@ -47,7 +47,10 @@ To package apps for the local platform:
 npm run package
 ```
 
-Packages are automatically created for Windows, Linux and MacOS in the GitHub action when new commits are pushed to `master`.
+Packages are automatically created for Windows, Linux and MacOS in the GitHub action when new commits are pushed to `main`. Before pushing to `main`, make sure:
+
+1. Version number has been updated correctly in `release/app/package.json`.
+1. CHANGELOG has been updated.
 
 ## Native Libraries
 
@@ -58,6 +61,10 @@ The `serialport` library is a native library because it needs to interface with 
 `electron-react-boilerplate` was used as a starting point for development.
 
 MobX is used to store the application state. The application model is under `src/model/`.
+
+## GitHub Pages
+
+The `docs/` folder contains the source code for the NinjaTerm homepage, hosted by GitHub Pages. This is automatically build and deployed with new commits pushed to `main`.
 
 ## Extensions
 

@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-- Updated the feature request text shown in GitHub.
-- Basic TX supported added.
+- Upgraded electron-react-boilerplate code to latest version.
+- Changed NinjaTerm to a dark theme.
+- Added GitHub Action for generating release artifacts and creating GitHub release.
+- The serial port settings dialog now shows more information about each serial port.
 
 ## [v2.2.0] - 2021-01-04
 
