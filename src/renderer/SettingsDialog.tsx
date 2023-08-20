@@ -28,7 +28,7 @@ import { observer } from 'mobx-react-lite';
 
 import { AppStore, portStateToButtonProps, PortState } from 'stores/AppStore';
 import { StopBits } from 'stores/SettingsStore';
-import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
+import { StatusMsgSeverity } from 'stores/StatusMsg';
 
 interface Props {
   appStore: AppStore;
