@@ -1,21 +1,12 @@
 import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
+import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { SettingsStore } from './SettingsStore';
 
 export enum PortState {
   CLOSED,
   OPENED,
-}
-
-export enum PortStatusMsgType {
-  OK,
-  ERROR,
-}
-
-export interface PortStatusMsg {
-  text: string;
-  type: PortStatusMsgType;
 }
 
 export type PortStateToButtonPropsItem = {
@@ -44,26 +35,51 @@ export class AppStore {
   // If true, the settings dialog will be automatically closed on port open or close
   closeSettingsDialogOnPortOpenOrClose = true;
 
-  logText = '';
+  /** Contains the text data for the status textarea. */
+  statusMsgs: StatusMsg[] = [];
+
+  /** The one status message is display in the port settings dialog */
+  portSettingsMsg: StatusMsg = new StatusMsg(
+    0,
+    '',
+    StatusMsgSeverity.INFO,
+    true
+  );
 
   serialPort: null | SerialPort = null;
 
   portState = PortState.CLOSED;
 
-  // Displayed on the port settings dialog box
-  portStatusMsg: PortStatusMsg = {
-    text: 'Port Closed',
-    type: PortStatusMsgType.OK,
-  };
-
   txRxText = '';
 
   // If true, the TX/RX panel scroll will be locked at the bottom
-  txRxTextScrollBottom = true;
+  txRxTextScrollLock = true;
+
+  // If true, the status msg panel scroll will be locked at the bottom
+  statusMsgScrollLock = true;
 
   constructor() {
     makeAutoObservable(this);
 
+    this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
+  }
+
+  setSettingsDialogOpen(trueFalse: boolean) {
+    this.settingsDialogOpen = trueFalse;
+    // If opening the settings dialog, also scan for ports
+    if (trueFalse) {
+      this.scanForPorts();
+    }
+  }
+
+  setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
+    this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
+  }
+
+  /**
+   * Scans the computer for available serial ports, and updates availablePortInfos.
+   */
+  scanForPorts() {
     SerialPort.list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
@@ -72,29 +88,25 @@ export class AppStore {
         if (ports.length > 0) {
           this.settings.setSelectedPortPath(ports[0].path);
         }
+        // this.setPortStatusMsg({
+        //   text: `Port scan complete. Found ${ports.length} ports.`,
+        //   type: PortStatusMsgType.OK,
+        // });
+        this.addStatusBarMsg(
+          `Port scan complete. Found ${ports.length} ports.`,
+          StatusMsgSeverity.INFO,
+          true
+        );
         return 0;
       })
       .catch((error) => {
         console.log(error);
+        this.addStatusBarMsg(`${error}`, StatusMsgSeverity.ERROR, true);
       });
-
-    this.log('Started NinjaTerm.');
-  }
-
-  setSettingsDialogOpen(trueFalse: boolean) {
-    this.settingsDialogOpen = trueFalse;
-  }
-
-  setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
-    this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
   }
 
   openPort() {
-    this.log('Attempting to open port....');
-    this.setPortStatusMsg({
-      text: 'Opening port...',
-      type: PortStatusMsgType.OK,
-    });
+    this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
     this.serialPort = new SerialPort({
       path: this.settings.selectedPortPath,
       baudRate: this.settings.selectedBaudRate,
@@ -113,16 +125,16 @@ export class AppStore {
     this.serialPort.on('open', () => {
       // open logic
       this.setPortState(PortState.OPENED);
-      this.setPortStatusMsg({
-        text: 'Port opened successfully.',
-        type: PortStatusMsgType.OK,
-      });
+      this.addStatusBarMsg(
+        'Port opened successfully.',
+        StatusMsgSeverity.OK,
+        true
+      );
       // This will automatically close the settings window if the user is currently in it,
       // clicks "Open" and the port opens successfully.
       if (this.closeSettingsDialogOnPortOpenOrClose) {
         this.setSettingsDialogOpen(false);
       }
-      this.log('Serial port opened successfully.');
     });
 
     if (this.serialPort.isOpen) {
@@ -131,12 +143,8 @@ export class AppStore {
     this.serialPort.open((error) => {
       if (error) {
         console.log(error);
-        this.log('Error occurred.');
         // Error already says "Error" at the start
-        this.setPortStatusMsg({
-          text: `${error}`,
-          type: PortStatusMsgType.ERROR,
-        });
+        this.addStatusBarMsg(`${error}`, StatusMsgSeverity.ERROR, true);
       }
     });
 
@@ -148,7 +156,7 @@ export class AppStore {
 
   closePort() {
     if (!this.serialPort?.isOpen) {
-      this.log('closePort() called but port was not open.');
+      console.log('closePort() called but port was not open.');
       return;
     }
     this.serialPort?.close(() => {
@@ -158,11 +166,11 @@ export class AppStore {
       if (this.closeSettingsDialogOnPortOpenOrClose) {
         this.setSettingsDialogOpen(false);
       }
-      this.log('Serial port successfully closed.');
-      this.setPortStatusMsg({
-        text: 'Port closed.',
-        type: PortStatusMsgType.OK,
-      });
+      this.addStatusBarMsg(
+        'Port successfully closed.',
+        StatusMsgSeverity.OK,
+        true
+      );
     });
   }
 
@@ -170,23 +178,49 @@ export class AppStore {
     this.portState = newPortState;
   }
 
-  setPortStatusMsg(portStatusMsg: PortStatusMsg) {
-    this.portStatusMsg = portStatusMsg;
-  }
-
-  log(msg: string) {
-    // Insert new line unless it's the first line ever
-    if (this.logText.length === 0) {
-      this.logText = `${this.logText}${msg}`;
-    } else {
-      this.logText = `${this.logText}\n${msg}`;
+  /**
+   * Call this to add a message to the status bar at the bottom of the main view.
+   *
+   * @param msg Message to output to the status bar. Message should include new line character.
+   */
+  addStatusBarMsg = (
+    msg: string,
+    severity: StatusMsgSeverity,
+    showInPortSettings: boolean = false
+  ) => {
+    const currDate = new Date();
+    this.statusMsgs.push(
+      new StatusMsg(
+        this.statusMsgs.length,
+        `${currDate.toISOString()}: ${msg}`,
+        severity,
+        showInPortSettings
+      )
+    );
+    // If showInPortSettings is true, replace the port settings message
+    if (showInPortSettings) {
+      this.portSettingsMsg = new StatusMsg(
+        0, // Doesn't actually matter
+        msg,
+        severity,
+        true // Doesn't actually matter
+      );
     }
-  }
+  };
 
   /**
    * Adds newly received data to the received data buffer for displaying.
    */
   addNewRxData(rxData: Buffer) {
     this.txRxText += rxData;
+  }
+
+  setTxRxScrollLock(trueFalse: boolean) {
+    this.txRxTextScrollLock = trueFalse;
+  }
+
+  setStatusMsgScrollLock(trueFalse: boolean) {
+    this.statusMsgScrollLock = trueFalse;
+    console.log('statusMsgScrollLock=', this.statusMsgScrollLock);
   }
 }

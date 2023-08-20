@@ -26,13 +26,9 @@ import { OverridableStringUnion } from '@mui/types';
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import {
-  AppStore,
-  portStateToButtonProps,
-  PortState,
-  PortStatusMsgType,
-} from 'stores/AppStore';
+import { AppStore, portStateToButtonProps, PortState } from 'stores/AppStore';
 import { StopBits } from 'stores/SettingsStore';
+import { StatusMsgSeverity } from 'stores/StatusMsg';
 
 interface Props {
   appStore: AppStore;
@@ -46,15 +42,25 @@ function SettingsDialog(props: Props) {
     textColor = 'rgba(255, 255, 255, 0.5)';
   }
 
-  const portStatusTextTypeToColor = {
-    [PortStatusMsgType.OK]: '#66bb6a',
-    [PortStatusMsgType.ERROR]: '#f44336',
+  const statusTextTypeToColor: { [key in StatusMsgSeverity]: string } = {
+    [StatusMsgSeverity.INFO]: '#fff',
+    [StatusMsgSeverity.OK]: '#66bb6a',
+    [StatusMsgSeverity.WARNING]: '#66bb6a',
+    [StatusMsgSeverity.ERROR]: '#f44336',
   };
 
   return (
     <Dialog open={appStore.settingsDialogOpen} fullWidth maxWidth="lg">
       <DialogTitle>Settings</DialogTitle>
       <DialogContent>
+        {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
+        <Button
+          onClick={() => {
+            appStore.scanForPorts();
+          }}
+        >
+          Scan For Ports
+        </Button>
         <DialogContentText>Select serial port to open:</DialogContentText>
         {/* ====================== Table showing the serial ports and their properties ============================== */}
         <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
@@ -247,6 +253,7 @@ function SettingsDialog(props: Props) {
                 throw Error('Invalid port state.');
               }
             }}
+            disabled={appStore.settings.selectedPortPath === ''}
           >
             {portStateToButtonProps[appStore.portState].text}
           </Button>
@@ -270,9 +277,11 @@ function SettingsDialog(props: Props) {
         </Box>
         {/*  ====================== PORT STATUS MSG ============================= */}
         <Typography
-          sx={{ color: portStatusTextTypeToColor[appStore.portStatusMsg.type] }}
+          sx={{
+            color: statusTextTypeToColor[appStore.portSettingsMsg.severity],
+          }}
         >
-          Status: {appStore.portStatusMsg.text}
+          Status: {appStore.portSettingsMsg.msg}
         </Typography>
       </DialogContent>
       <DialogActions>
