@@ -33,6 +33,8 @@ jobs:
           npm install
           npm run postinstall
           npm run build
+          # Use the following line instead if you want developer tools in the production app
+          # npx cross-env DEBUG_PROD=true npm run build
 
       - name: Publish releases
         env:
