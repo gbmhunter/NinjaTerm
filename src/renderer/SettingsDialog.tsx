@@ -49,11 +49,6 @@ function SettingsDialog(props: Props) {
     [StatusMsgSeverity.ERROR]: '#f44336',
   };
 
-  let statusMsg = new StatusMsg(0, '', StatusMsgSeverity.INFO);
-  if (appStore.statusMsgs[appStore.statusMsgs.length - 1].showInPortSettings) {
-    statusMsg = appStore.statusMsgs[appStore.statusMsgs.length - 1];
-  }
-
   return (
     <Dialog open={appStore.settingsDialogOpen} fullWidth maxWidth="lg">
       <DialogTitle>Settings</DialogTitle>
@@ -280,8 +275,12 @@ function SettingsDialog(props: Props) {
           />
         </Box>
         {/*  ====================== PORT STATUS MSG ============================= */}
-        <Typography sx={{ color: statusTextTypeToColor[statusMsg.severity] }}>
-          Status: {statusMsg.msg}
+        <Typography
+          sx={{
+            color: statusTextTypeToColor[appStore.portSettingsMsg.severity],
+          }}
+        >
+          Status: {appStore.portSettingsMsg.msg}
         </Typography>
       </DialogContent>
       <DialogActions>

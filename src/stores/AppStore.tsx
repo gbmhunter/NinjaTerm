@@ -38,6 +38,14 @@ export class AppStore {
   /** Contains the text data for the status textarea. */
   statusMsgs: StatusMsg[] = [];
 
+  /** The one status message is display in the port settings dialog */
+  portSettingsMsg: StatusMsg = new StatusMsg(
+    0,
+    '',
+    StatusMsgSeverity.INFO,
+    true
+  );
+
   serialPort: null | SerialPort = null;
 
   portState = PortState.CLOSED;
@@ -186,6 +194,15 @@ export class AppStore {
         showInPortSettings
       )
     );
+    // If showInPortSettings is true, replace the port settings message
+    if (showInPortSettings) {
+      this.portSettingsMsg = new StatusMsg(
+        0, // Doesn't actually matter
+        msg,
+        severity,
+        true // Doesn't actually matter
+      );
+    }
   };
 
   /**

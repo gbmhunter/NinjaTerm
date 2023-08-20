@@ -1,6 +1,6 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { useEffect, useRef } from 'react';
-import { Button, ButtonPropsColorOverrides, Typography } from '@mui/material';
+import { Box, Button, ButtonPropsColorOverrides, Typography } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
@@ -157,12 +157,20 @@ const MainRoute = observer((props: Props) => {
               <Typography>{statusMsgs}</Typography>
             </div>
           </div>
-          <div id="bottom-status-bar" style={{ height: '20px' }}>
+          {/* ================== BOTTOM TOOLBAR BAR ==================== */}
+          <Box
+            id="bottom-status-bar"
+            sx={{ display: 'flex', flexDirection: 'row-reverse' }}
+            style={{ height: '20px' }}
+          >
             <Typography>
-              Port: {appStore.settings.selectedPortPath} | Port Status:{' '}
+              Port:{' '}
+              {appStore.settings.selectedPortPath !== ''
+                ? appStore.settings.selectedPortPath
+                : 'n/a'}{' '}
               {PortState[appStore.portState]}
             </Typography>
-          </div>
+          </Box>
         </div>
       </div>
     </ThemeProvider>
