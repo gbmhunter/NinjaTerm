@@ -253,6 +253,7 @@ function SettingsDialog(props: Props) {
                 throw Error('Invalid port state.');
               }
             }}
+            disabled={appStore.settings.selectedPortPath === ''}
           >
             {portStateToButtonProps[appStore.portState].text}
           </Button>

@@ -53,7 +53,10 @@ export class AppStore {
   txRxText = '';
 
   // If true, the TX/RX panel scroll will be locked at the bottom
-  txRxTextScrollBottom = true;
+  txRxTextScrollLock = true;
+
+  // If true, the status msg panel scroll will be locked at the bottom
+  statusMsgScrollLock = true;
 
   constructor() {
     makeAutoObservable(this);
@@ -210,5 +213,14 @@ export class AppStore {
    */
   addNewRxData(rxData: Buffer) {
     this.txRxText += rxData;
+  }
+
+  setTxRxScrollLock(trueFalse: boolean) {
+    this.txRxTextScrollLock = trueFalse;
+  }
+
+  setStatusMsgScrollLock(trueFalse: boolean) {
+    this.statusMsgScrollLock = trueFalse;
+    console.log('statusMsgScrollLock=', this.statusMsgScrollLock);
   }
 }

@@ -1,8 +1,15 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { useEffect, useRef } from 'react';
-import { Box, Button, ButtonPropsColorOverrides, Typography } from '@mui/material';
+import React, { useEffect, useRef, WheelEvent } from 'react';
+import {
+  Box,
+  Button,
+  ButtonPropsColorOverrides,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
@@ -28,17 +35,18 @@ const MainRoute = observer((props: Props) => {
   const txRxRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     // Only scroll to bottom if enabled in app model
-    if (txRxRef.current && appStore.txRxTextScrollBottom) {
+    if (txRxRef.current && appStore.txRxTextScrollLock) {
       txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
     }
-  }, [appStore.txRxText, appStore.txRxTextScrollBottom]);
+  }, [appStore.txRxText, appStore.txRxTextScrollLock]);
 
   const messageRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (messageRef.current) {
+    if (messageRef.current && appStore.statusMsgScrollLock) {
+      console.log('Scrolling...');
       messageRef.current.scrollTop = messageRef.current.scrollHeight;
     }
-  }, [appStore.statusMsgs]);
+  }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
 
   // Generate UI showing the status messages
   const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
@@ -120,6 +128,7 @@ const MainRoute = observer((props: Props) => {
                   );
                 }
               }}
+              disabled={appStore.settings.selectedPortPath === ''}
             >
               {portStateToButtonProps[appStore.portState].text}
             </Button>
@@ -127,34 +136,111 @@ const MainRoute = observer((props: Props) => {
           {/* ================== TX/RX TEXT ==================== */}
           <div
             id="input-output-text"
-            ref={txRxRef}
+            onWheel={(e: WheelEvent<HTMLDivElement>) => {
+              // Disable scroll lock if enabled and the scroll direction was
+              // up (negative deltaY)
+              if (e.deltaY < 0 && appStore.txRxTextScrollLock) {
+                appStore.setTxRxScrollLock(false);
+              }
+            }}
             style={{
               flexGrow: '1',
               backgroundColor: '#161616',
               fontFamily: 'monospace',
               whiteSpace: 'pre-wrap', // This allows \n to create new lines
-              overflowY: 'scroll',
-              padding: '10px',
+              // overflowY: 'scroll',
+              // padding: '10px',
               marginBottom: '10px',
+              position: 'relative', // This is so we can use position: absolute for the down icon
             }}
           >
-            {appStore.txRxText}
+            <div
+              ref={txRxRef}
+              style={{
+                height: '100%',
+                width: '100%',
+                position: 'absolute',
+                overflowY: 'scroll',
+                padding: '10px',
+              }}
+            >
+              {appStore.txRxText}
+            </div>
+            {/* ================== SCROLL LOCK ARROW ==================== */}
+            <IconButton
+              onClick={() => {
+                appStore.setTxRxScrollLock(true);
+              }}
+              sx={{
+                display: appStore.txRxTextScrollLock ? 'none' : 'block',
+                position: 'absolute', // Fix it to the bottom right of the TX/RX view port
+                bottom: '20px',
+                right: '30px',
+                color: 'rgba(255, 255, 255, 0.4)',
+              }}
+            >
+              <ArrowDownwardIcon
+                sx={{
+                  width: '40px',
+                  height: '40px',
+                }}
+              />
+            </IconButton>
           </div>
           <div id="footer">
             <div
               id="log-text"
-              ref={messageRef}
+              onWheel={(e: WheelEvent<HTMLDivElement>) => {
+                // Disable scroll lock if enabled and the scroll direction was
+                // up (negative deltaY)
+                if (e.deltaY < 0 && appStore.statusMsgScrollLock) {
+                  appStore.setStatusMsgScrollLock(false);
+                }
+              }}
               style={{
                 height: '200px',
                 backgroundColor: '#161616',
                 whiteSpace: 'pre-wrap', // This allows \n to create new lines
-                overflowY: 'scroll',
+                // overflowY: 'scroll',
 
-                padding: '10px',
+                // padding: '10px',
                 marginBottom: '10px',
+
+                position: 'relative',
               }}
             >
-              <Typography>{statusMsgs}</Typography>
+              <div
+                ref={messageRef}
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  position: 'absolute',
+                  overflowY: 'scroll',
+                  padding: '10px',
+                }}
+              >
+                <Typography>{statusMsgs}</Typography>
+              </div>
+              {/* ================== SCROLL LOCK ARROW ==================== */}
+              <IconButton
+                onClick={() => {
+                  appStore.setStatusMsgScrollLock(true);
+                }}
+                sx={{
+                  display: appStore.statusMsgScrollLock ? 'none' : 'block',
+                  position: 'absolute', // Fix it to the bottom right of the TX/RX view port
+                  bottom: '20px',
+                  right: '30px',
+                  color: 'rgba(255, 255, 255, 0.4)',
+                }}
+              >
+                <ArrowDownwardIcon
+                  sx={{
+                    width: '40px',
+                    height: '40px',
+                  }}
+                />
+              </IconButton>
             </div>
           </div>
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
