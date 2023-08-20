@@ -5,15 +5,15 @@ function updateVersionNumber(versionNumber) {
     // for all platforms
 
     var windowsLink = document.getElementById("windows-link");
-    windowsLink.innerHTML = windowsLink.innerHTML.replace(/vX\.X\.X/g, versionNumber);
-    windowsLink.href = windowsLink.href.replace(/vX\.X\.X/g, versionNumber);
+    windowsLink.innerHTML = windowsLink.innerHTML.replace(/X\.X\.X/g, versionNumber);
+    windowsLink.href = windowsLink.href.replace(/X\.X\.X/g, versionNumber);
 
     var macLink = document.getElementById("mac-link");
-    macLink.innerHTML = macLink.innerHTML.replace(/vX\.X\.X/g, versionNumber);
-    macLink.href = macLink.href.replace(/vX\.X\.X/g, versionNumber);
+    macLink.innerHTML = macLink.innerHTML.replace(/X\.X\.X/g, versionNumber);
+    macLink.href = macLink.href.replace(/X\.X\.X/g, versionNumber);
 
     var nixLink = document.getElementById("nix-link");
     nixLink.innerHTML = nixLink.innerHTML.replace(/vX\.X\.X/g, versionNumber);
-    nixLink.href = nixLink.href.replace(/vX\.X\.X/g, versionNumber);
+    nixLink.href = nixLink.href.replace(/X\.X\.X/g, versionNumber);
 
 }
