@@ -14,7 +14,7 @@
 
 <!-- UPDATE THE VERSION ON THE LINE BELOW -->
 <!-- This will automatically all the vX.X.X's scattered through-out this page -->
-<body onload="updateVersionNumber('v2.2.0')">
+<body onload="updateVersionNumber('v3.0.0')">
 
 
 <section class="page-header">
@@ -31,18 +31,6 @@
                class="btn">vX.X.X (UNIX)</a>
             <a href="https://github.com/gbmhunter/NinjaTerm" class="btn">View on GitHub</a>
             <p>NinjaTerm has been downloaded <span id="total-download-count"></span> times.</p>
-            <!--<p>
-                <a href="https://travis-ci.org/mbedded-ninja/NinjaTerm">
-                    <img alt="Travis"
-                         src="https://img.shields.io/travis/mbedded-ninja/NinjaTerm.svg"/>
-                </a>
-
-                <a href="http://gbmhunter.github.io/NinjaTerm/">
-                    <img alt="Github All Releases"
-                         src="https://img.shields.io/github/downloads/mbedded-ninja/NinjaTerm/total.svg"/>
-                </a>
-
-            </p>-->
         </div>
     </div>
     <!--<a href="#" class="btn">Download .tar.gz</a>-->
@@ -109,8 +97,6 @@
 
             <blockquote>TIME SAVER – If you already have NinjaTerm installed, just run it and the auto-updater should ask you if you wish to download and update your version of NinjaTerm.</blockquote>
 
-            <p style="font-style: italic;">Java run-time environment (JRE) v1.8 (a.k.a. Java 8) or higher is required on any platform. <a href="https://java.com/en/download/">Download the Java JRE here.</a></p>
-
             <h2>Windows</h2>
 
                 <ol>
@@ -126,21 +112,6 @@
                 <ol>
                     <li>
                         <p>Click the 'nix' download link above to download a '.sh' installer.</p>
-                    </li>
-                    <li>
-                        <p>Give the current user executable permissions for the file:</p>
-                        <code>chmod +x NinjaTerm_vX.X.X_unix.sh</code>
-                        <p></p>
-                    </li>
-                    <li>
-                        <p>Run the installer with the command:</p>
-                        <code>sh NinjaTerm_vX.X.X_unix.sh</code>.
-                        <p>This should also install <code>openjfx</code> if not already on your system.</p>
-                    </li>
-                    <li>
-                        <p>The installer will stop if you haven't got <code>Java v1.8</code> or greater installed. You can install this with:</p>
-                        <code>sudo apt-get install openjdk-8-jre</code>
-                        <p></p>
                     </li>
                     <li>
                         <p>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run:</p>
@@ -165,12 +136,6 @@
         <p>GIFs for this home page created with the amazing open-source <a href="https://screentogif.codeplex.com/">"Screen
             To Gif" program</a>.
 
-        <p>The team at <a href="https://www.ej-technologies.com/">ej-technologies</a> have graciously donated me an
-            open-source licensed version of <a href="http://www.ej-technologies.com/products/install4j/overview.html"><img
-                    src="https://www.ej-technologies.com/images/product_banners/install4j_small.png"/>, the multi-platform
-                installer builder</a> for Java applications. They have also provided <a href="http://www.ej-technologies.com/products/jprofiler/overview.html"><img
-                src="https://www.ej-technologies.com/images/product_banners/jprofiler_small.png"/>, a top-notch Java profiler.</a></p>
-
         <p>Big ups to "utopian" to creating the NinjaTerm logo!</p>
     </div>
 
@@ -190,6 +155,5 @@
 <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <!-- The following script provides the total number of downloads -->
 <script type="text/javascript" src="js/main.js"></script>
-
 <script type="text/javascript" src="js/version-replacement.js"></script>
 </html>
