@@ -26,13 +26,9 @@ import { OverridableStringUnion } from '@mui/types';
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import {
-  AppStore,
-  portStateToButtonProps,
-  PortState,
-  PortStatusMsgType,
-} from 'stores/AppStore';
+import { AppStore, portStateToButtonProps, PortState } from 'stores/AppStore';
 import { StopBits } from 'stores/SettingsStore';
+import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 
 interface Props {
   appStore: AppStore;
@@ -46,10 +42,17 @@ function SettingsDialog(props: Props) {
     textColor = 'rgba(255, 255, 255, 0.5)';
   }
 
-  const portStatusTextTypeToColor = {
-    [PortStatusMsgType.OK]: '#66bb6a',
-    [PortStatusMsgType.ERROR]: '#f44336',
+  const statusTextTypeToColor: { [key in StatusMsgSeverity]: string } = {
+    [StatusMsgSeverity.INFO]: '#fff',
+    [StatusMsgSeverity.OK]: '#66bb6a',
+    [StatusMsgSeverity.WARNING]: '#66bb6a',
+    [StatusMsgSeverity.ERROR]: '#f44336',
   };
+
+  let statusMsg = new StatusMsg(0, '', StatusMsgSeverity.INFO);
+  if (appStore.statusMsgs[appStore.statusMsgs.length - 1].showInPortSettings) {
+    statusMsg = appStore.statusMsgs[appStore.statusMsgs.length - 1];
+  }
 
   return (
     <Dialog open={appStore.settingsDialogOpen} fullWidth maxWidth="lg">
@@ -277,10 +280,8 @@ function SettingsDialog(props: Props) {
           />
         </Box>
         {/*  ====================== PORT STATUS MSG ============================= */}
-        <Typography
-          sx={{ color: portStatusTextTypeToColor[appStore.portStatusMsg.type] }}
-        >
-          Status: {appStore.portStatusMsg.text}
+        <Typography sx={{ color: statusTextTypeToColor[statusMsg.severity] }}>
+          Status: {statusMsg.msg}
         </Typography>
       </DialogContent>
       <DialogActions>

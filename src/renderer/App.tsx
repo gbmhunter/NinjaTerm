@@ -5,11 +5,8 @@ import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { observer } from 'mobx-react-lite';
 
-import {
-  AppStore,
-  PortState,
-  portStateToButtonProps,
-} from '../stores/AppStore';
+import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
+import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
 import SettingsDialog from './SettingsDialog';
 
@@ -41,7 +38,34 @@ const MainRoute = observer((props: Props) => {
     if (messageRef.current) {
       messageRef.current.scrollTop = messageRef.current.scrollHeight;
     }
-  }, [appStore.logText]);
+  }, [appStore.statusMsgs]);
+
+  // Generate UI showing the status messages
+  const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
+    if (statusMsg.severity === StatusMsgSeverity.INFO) {
+      return (
+        <span key={statusMsg.id} style={{ display: 'block' }}>
+          {statusMsg.msg}
+        </span>
+      );
+      // eslint-disable-next-line no-else-return
+    } else if (statusMsg.severity === StatusMsgSeverity.OK) {
+      return (
+        <span key={statusMsg.id} style={{ display: 'block', color: 'green' }}>
+          {statusMsg.msg}
+        </span>
+      );
+      // eslint-disable-next-line no-else-return
+    } else if (statusMsg.severity === StatusMsgSeverity.ERROR) {
+      return (
+        <span key={statusMsg.id} style={{ display: 'block', color: 'red' }}>
+          ERROR: {statusMsg.msg}
+        </span>
+      );
+    } else {
+      throw Error('Unrecognized severity.');
+    }
+  });
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
@@ -130,7 +154,7 @@ const MainRoute = observer((props: Props) => {
                 marginBottom: '10px',
               }}
             >
-              <Typography>{appStore.logText}</Typography>
+              <Typography>{statusMsgs}</Typography>
             </div>
           </div>
           <div id="bottom-status-bar" style={{ height: '20px' }}>
