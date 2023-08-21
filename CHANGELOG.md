@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
 ## [v3.0.0] - 2023-08-21
 
 - Upgraded electron-react-boilerplate code to latest version.
@@ -47,7 +49,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Broken URLs on homepage.
 
-## [v1.1.0] - 2018-11-12
+## [1.1.0] - 2018-11-12
 
 ### Added
 
@@ -57,7 +59,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Removed logger messages from CPU intensive data RX loop.
 
-## [v1.0.0] - 2018-11-12
+## [1.0.0] - 2018-11-12
 
 ### Added
 
@@ -274,7 +276,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Changes to auto-update functionality.
 
-## v0.1.0
+## 0.1.0
 
 - Automatic scan for COM ports performed on startup of app, closes #72.
 - Added ability to have multiple terminals open within the same NinjaTerm application window, closes #73.
@@ -293,3 +295,41 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Wrapping width textfield is greyed out when wrapping is disabled, closes #88.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
+
+[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.1...HEAD
+[3.0.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[2.2.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[2.1.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[2.0.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[1.1.2]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[1.1.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[1.0.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.9.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.9.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.12]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.11]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.10]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.9]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.8]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.7]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.6]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.5]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.4]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.3]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.2]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.8.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...v1.1.1
+[0.7.2]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.0.0...v1.1.0
+[0.7.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.3.0...v1.0.0
+[0.7.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...v0.3.0
+[0.6.4]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.1.0...v0.2.0
+[0.6.3]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.8...v0.1.0
+[0.6.2]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.7...v0.0.8
+[0.6.1]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.6...v0.0.7
+[0.6.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.5...v0.0.6
+[0.5.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.4...v0.0.5
+[0.4.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.0.3...v0.0.4
+[0.3.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/olivierlacan/keep-a-changelog/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/v0.1.0
