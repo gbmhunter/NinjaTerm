@@ -268,15 +268,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added ability to rename terminal tabs, closes #92.
 
-## v0.3.0
+## [0.3.0]
 
 - Added indicators to label the RX and TX panes, closes #91.
 
-## v0.2.0
+## [0.2.0]
 
 - Changes to auto-update functionality.
 
-## 0.1.0
+## [0.1.0]
 
 - Automatic scan for COM ports performed on startup of app, closes #72.
 - Added ability to have multiple terminals open within the same NinjaTerm application window, closes #73.
