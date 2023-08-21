@@ -7,25 +7,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-## [v3.0.0] - 2023-08-21
+- Fixed broken links to GitHub tags in this CHANGELOG.
+- Created `staging` branch which the GitHub publish action runs from.
+
+## [3.0.0] - 2023-08-21
 
 - Upgraded electron-react-boilerplate code to latest version.
 - Changed NinjaTerm to a dark theme.
 - Added GitHub Action for generating release artifacts and creating GitHub release.
 - The serial port settings dialog now shows more information about each serial port.
 
-## [v2.2.0] - 2021-01-04
+## [2.2.0] - 2021-01-04
 
 - Added support for all common baud rates.
 - Added support and validation for custom baud rates.
 - Typescript compiler now recognizes imports of CSS/SCSS files into `.tsx` files.
 
-## [v2.1.0] - 2021-01-03
+## [2.1.0] - 2021-01-03
 
 - NinjaTerm is now built for Linux.
 - GitHub actions configured to build both Windows and Linux application images and release them to GitHub.
 
-## [v2.0.0] - 2021-01-02
+## [2.0.0] - 2021-01-02
 
 - Application now built with Electron/Javascript/React rather than Java/JavaFX.
 - Windows executable available.
@@ -33,13 +36,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - GitHub actions runs both tests and builds production images (which are released automatically to GitHub).
 - Basic serial port functionality has been ported across from the Java app.
 
-## [v1.1.2] - 2020-11-01
+## [1.1.2] - 2020-11-01
 
 ### Fixed
 
 - Fixed the 404 not found error with the link on the About page.
 
-## [v1.1.1] - 2019-04-14
+## [1.1.1] - 2019-04-14
 
 ### Added
 
@@ -71,34 +74,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
 - Fixed bug where tab characters were not being displayed correctly on screen, closes #211.
 
-## [v0.9.1] - 2018-10-31
+## [0.9.1] - 2018-10-31
 
 ### Added
 
 - NinjaTerm now supports custom (non-standard) baud rates (as long as the underlying OS/hardware also supports it), closes #222.
 
-## [v0.9.0] - 2018-05-17
+## [0.9.0] - 2018-05-17
 
 ### Changed
 
 - COM data panes are now rendered using a RichTextFX element, rather than a web renderer, which was causing issues on Linux systems.
 - Updated the NinjaTerm logo (thanks to utopian for creating the new one!).
 
-## [v0.8.12] - 2017-09-18
+## [0.8.12] - 2017-10-12
 
 - Fixed bug where exception 'ReferenceError: Can't find variable: numCharsToRemove' was being thrown when a large number of chars were sent to NinjaTerm, closes #215.
 - Fixed bug where wrapping did not work in RX or TX frames, closes #216.
 
-## v0.8.11
+## [0.8.11] - 2017-10-10
 
 - Fixed bug where NinjaTerm freezes on splash screen when running .exe in Windows, closes #212.
 - Removed incorrect 'Downloads 0' image from README, closes #214.
 
-## v0.8.10
+## [0.8.10] - 2017-10-09
 
 - Fixed bug where clicking the 'Clear Text' button then stopped TX text from being displayed, closes #210.
 
-## v0.8.9
+## [0.8.9] - 2017-02-21
 
 - Added short note to top of homepage about NinjaTerm requiring Java, closes #204.
 - Changed "nix" naming to "UNIX", closes #205.
@@ -106,13 +109,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Converted buttons on TX/RX pane into accordion style UI, closes #206.
 - Enlarges on start-up to full-screen size, closes #207.
 
-## v0.8.8
+## [0.8.8] - 2017-02-12
 
 - Fixed bug where COM port settings where not being disabled once COM port was opened, closes #201.
 - Added ability to update version number with gradle task, closes #202.
 - Install4j installers can now be built with Gradle script, closes #203.
 
-## v0.8.7
+## [0.8.7] - 2017-02-08
 
 - Updated release information on README for new Gradle build system, closes #195.
 - Added link to JProfiler on homepage, closes #199.
@@ -121,7 +124,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added info that if you have an existing version, you can just run it to update NinjaTerm, closes #192.
 - Added "always on top" feature to NinjaTerm application window, closes #143.
 
-## v0.8.6
+## [0.8.6] - 2017-02-06
 
 - Added script to install openjfx before main Linux installer runs, closes #186.
 - Added installation steps for all platforms, closes #184.
@@ -130,21 +133,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where WebView data pane labels where not being setup correctly on start-up, closes #187.
 - Build system changed from Maven to Gradle.
 
-## v0.8.5
+## [0.8.5] - 2016-11-30
 
 - Javascript is loaded via the `WebView.executeScript()` method, closes #183.
 - Added Linux build, closes #181.
 
-## v0.8.4
+## [0.8.4] - 2016-11-30
 
 - Updated ANSI escape sequence support .gif on home page, closes #180.
 - Improved the way that WebView is found to be "ready", closes #182.
 
-## v0.8.3
+## [0.8.3] - 2016-11-29
 
 - Fixed bug where "Scroll to bottom" functionality was being disabled automatically, closes #179.
 
-## v0.8.2
+## [0.8.2] - 2016-11-27
 
 - Moved the "scroll to bottom" arrow slightly to the left so it does not block the scroll bar, closes #174.
 - Removed the instruction to run `mvn assembly:single` from README, as it is not needed, closes #175.
@@ -152,7 +155,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added LICENSE.txt to repo, closes #176.
 - Added ability to prepend RX lines of data with the date/time, closes #126.
 
-## v0.8.1
+## [0.8.1] - 2016-11-24
 
 - Fixed bug where default colour setting for ComDataPaneWeb was not working, closes #165.
 - Brightened the default data colour, closes #162.
@@ -165,7 +168,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where screen buffer size stats where not being updated, closes #170.
 - Added a proper command-line argument parsing tool, closes #173.
 
-## v0.8.0
+## [0.8.0] - 2016-11-22
 
 - Added blurb on smart scrolling to homepage, closes #148.
 - Added first application test, closes #149.
@@ -178,11 +181,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where macro pane got squashed when TX/RX text extended of the end of the text view, closes #159.
 - Added basic copy/paste support, closes #133.
 
-## v0.7.2
+## [0.7.2] - 2016-10-28
 
 - The "fat" .jar now retains the same name (NinjaTerm.jar) between different versions, and is the same name as before the maven integration, closes #147.
 
-## v0.7.1
+## [0.7.1] - 2016-10-28
 
 - An empty new line pattern textfield now results in no new line markers being added, closes #139.
 - All previously uncaught exceptions are caught in "main()" and a "Exception Occurred" pop-up is displayed to the user, closes #140.
@@ -193,7 +196,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Set max. char limits on all buffers, closes #146.
 - Fixed bug where "Clear Text" button is not flushing all buffers, closes #144.
 
-## v0.7.0
+## [0.7.0] - 2016-10-18
 
 - Added shortcut key to speed up splash screen (spacebar), closes #127.
 - Moved "Open/Close" COM port button into area of UI which is accessible from any sub-tab, closes #135.
@@ -201,11 +204,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where freeze RX data functionality did not work correctly with filtering, closes #136.
 - Added ability to display non-printable characters on TX/RX panes (e.g. using special font), closes #134.
 
-## v0.6.4
+## [0.6.4] - 2016-10-12
 
 - When the "Clear Text" button is pressed, the RX text now retains the previous formatting colour, closes #131.
 
-## v0.6.3
+## [0.6.3] - 2016-10-12
 
 - Moved decoding options to formatting popover, closes #116.
 - Added icon to colouriser button, closes #115.
@@ -220,7 +223,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added better debug logging facilities, closes #129.
 - Added ability to log debug data to file via "debug" flag, closes #130.
 
-## v0.6.2
+## [0.6.2] - 2016-10-07
 
 - Created separate build configuration in IntelliJ to run without splash screen, so the boolean flag does not have to be changed on every release, closes #109.
 - Instruction step to update version number on website added to readme, closes #111.
@@ -230,14 +233,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where COM port was not closed if terminal tab was closed, closes #113.
 - Fixed bug where COM port and it's thread were not closed if COM port was open when the application exits, closes #114.
 
-## v0.6.1
+## [0.6.1] - 2016-10-06
 
 - Tab headers are now auto-renamed from COM? to COM1 (or equivalent) when COM port is opened, closes #106.
 - Removed the unneeded "StatusBarController" variable from being passed into view controller constructors, closes #107.
 - Added "Close" option to tab header context menu, closes #105.
 - Refactored serial port open/close code and made sure disconnection cases are handled correctly, closes #108.
 
-## v0.6.0
+## [0.6.0] - 2016-10-04
 
 - Added ability to select between "overwrite" and "append" logging methods, closes #99.
 - Added option for user to choose termination character(s), closes #82.
@@ -246,11 +249,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed bug where app crashes if com's is stopped and restarted with ASCII escape sequences due to unsupported escape sequences not being handled, closes #102.
 - Improved filtering logic so it works alongside ANSI escape codes, closes #103.
 
-## v0.5.1
+## [0.5.1] - 2016-09-23
 
 - Fixed bug where NinjaTerm would lock up on splash screen.
 
-## v0.5.0
+## [0.5.0] - 2016-09-23
 
 - Added filter field in TX/RX sub-tab, closes #84.
 - Fixed incorrect link to GitHub on homepage, closes #94.
@@ -260,23 +263,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added logging sub-tab and basic logging functionality, closes #96.
 - Greyed out textfield and browse button on logging tab when logging is active, closes #97.
 
-## v0.4.1
+## [0.4.1] - 2016-09-22
 
 - Fixed bug where splash-screen was disabled.
 
-## v0.4.0
+## [0.4.0] - 2016-09-22
 
 - Added ability to rename terminal tabs, closes #92.
 
-## [0.3.0]
+## [0.3.0] - 2016-09-22
 
 - Added indicators to label the RX and TX panes, closes #91.
 
-## [0.2.0]
+## [0.2.0] - 2016-09-21
 
 - Changes to auto-update functionality.
 
-## [0.1.0]
+## [0.1.0] - 2016-09-21
 
 - Automatic scan for COM ports performed on startup of app, closes #72.
 - Added ability to have multiple terminals open within the same NinjaTerm application window, closes #73.
