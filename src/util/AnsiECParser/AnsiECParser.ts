@@ -1,3 +1,6 @@
+import StreamedData, { MarkerBehaviour } from "util/StreamedData/StreamedData";
+import ColourMarker from 'util/StreamedData/ColorMarker';
+
 /**
  * Utility class that decodes ANSI escape sequences.
  *
@@ -12,6 +15,7 @@ export class AnsiECParser {
   codeToBoldColourMap:  { [key: string]: string } = {};
 
   // private Pattern pattern;
+  pattern: RegExp;
 
   /**
    * Partial matches and the end of provided input strings to <code>parse()</code> are
@@ -19,112 +23,116 @@ export class AnsiECParser {
    */
 //    private String withheldTextWithPartialMatch = "";
 
-  public SimpleBooleanProperty isEnabled = new SimpleBooleanProperty(true);
+  isEnabled = true;
 
-  public AnsiECParser() {
+  constructor () {
       // Populate the map with data
-      codeToNormalColourMap.put("30", Color.rgb(0, 0, 0));
-      codeToNormalColourMap.put("31", Color.rgb(170, 0, 0));
-      codeToNormalColourMap.put("32", Color.rgb(0, 170, 0));
-      codeToNormalColourMap.put("33", Color.rgb(170, 85, 0));
-      codeToNormalColourMap.put("34", Color.rgb(0, 0, 170));
-      codeToNormalColourMap.put("35", Color.rgb(170, 0, 170));
-      codeToNormalColourMap.put("36", Color.rgb(0, 170, 170));
-      codeToNormalColourMap.put("37", Color.rgb(170, 170, 170));
+      this.codeToNormalColourMap["30"] = 'rgb(0, 0, 0)';
+      this.codeToNormalColourMap['31'] = 'rgb(170, 0, 0)';
+      this.codeToNormalColourMap['32'] = 'rgb(0, 170, 0)';
+      this.codeToNormalColourMap['33'] = 'rgb(170, 85, 0)';
+      this.codeToNormalColourMap['34'] = 'rgb(0, 0, 170)';
+      this.codeToNormalColourMap['35'] = 'rgb(170, 0, 170)';
+      this.codeToNormalColourMap['36'] = 'rgb(0, 170, 170)';
+      this.codeToNormalColourMap['37'] = 'rgb(170, 170, 170)';
 
-      codeToBoldColourMap.put("30", Color.rgb(85, 85, 85));
-      codeToBoldColourMap.put("31", Color.rgb(255, 85, 85));
-      codeToBoldColourMap.put("32", Color.rgb(85, 255, 85));
-      codeToBoldColourMap.put("33", Color.rgb(255, 255, 85));
-      codeToBoldColourMap.put("34", Color.rgb(85, 85, 225));
-      codeToBoldColourMap.put("35", Color.rgb(255, 85, 255));
-      codeToBoldColourMap.put("36", Color.rgb(85, 255, 255));
-      codeToBoldColourMap.put("37", Color.rgb(255, 255, 255));
+      this.codeToBoldColourMap['30'] = 'rgb(85, 85, 85)';
+      this.codeToBoldColourMap['31'] = 'rgb(255, 85, 85)';
+      this.codeToBoldColourMap['32'] = 'rgb(85, 255, 85)';
+      this.codeToBoldColourMap['33'] = 'rgb(255, 255, 85)';
+      this.codeToBoldColourMap['34'] = 'rgb(85, 85, 225)';
+      this.codeToBoldColourMap['35'] = 'rgb(255, 85, 255)';
+      this.codeToBoldColourMap['36'] = 'rgb(85, 255, 255)';
+      this.codeToBoldColourMap['37'] = 'rgb(255, 255, 255)';
 
       // This pattern matches an ANSI escape code. It matches an arbitrary number of
       // numbers after the "[ESC][", separated by a ";" and then prefixed by a "m".
-      pattern = Pattern.compile("\u001B\\[[;\\d]*m");
+      this.pattern = /\u001B\[[;\d]*m/g;
   }
 
   /**
    *
-   * Runs the ANSI escape code parser on the input streaming text, and produces and output StreamedData object.
+   * Runs the ANSI escape code parser on the input streaming text, and produces the output StreamedData object.
    *
    * @param inputData           The input string which can contain display text and ANSI escape codes.
    * @param outputStreamedData    Contains streamed text that has been release from this parser.
    */
-  public void parse(StreamedData inputData, StreamedData outputStreamedData) {
+  parse(inputData: StreamedData, outputStreamedData: StreamedData) {
 
-//        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
+    //        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
 
-      // Prepend withheld text onto the start of the input string
-      // @// TODO: 2016-10-17 Remove the internal withheld data variable, and just keep the data in the inputData object until it is ready to be release. These next two lines are a hacky work around
-//        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
-//        inputData.clear();
+          // Prepend withheld text onto the start of the input string
+          // @// TODO: 2016-10-17 Remove the internal withheld data variable, and just keep the data in the inputData object until it is ready to be release. These next two lines are a hacky work around
+    //        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
+    //        inputData.clear();
 
-//        withheldTextWithPartialMatch = "";
+    //        withheldTextWithPartialMatch = "";
 
-      if(!isEnabled.get()) {
-          // ASCII escape codes are disabled, so just return all the input plus any withheld text
-//            outputStreamedData.append(withheldCharsAndInputString);
-          outputStreamedData.shiftDataIn(inputData, inputData.getText().length(), StreamedData.MarkerBehaviour.NOT_FILTERING);
-          return;
-      }
+    if(!this.isEnabled) {
+      // ASCII escape codes are disabled, so just return all the input plus any withheld text
+      //            outputStreamedData.append(withheldCharsAndInputString);
+      outputStreamedData.shiftDataIn(inputData, inputData.getText().length, MarkerBehaviour.NOT_FILTERING);
+      return;
+    }
 
       // IF WE REACH HERE ASCII ESCAPE CODE PARSING IS ENABLED
 
-      Matcher matcher = pattern.matcher(inputData.getText());
-
+      // Matcher matcher = this.pattern.matcher(inputData.getText());
+      let matches = inputData.getText().matchAll(this.pattern);
       //String remainingInput = "";
-      int currShiftIndex = 0;
+      let currShiftIndex = 0;
 
       //m.reset();
-      while (matcher.find()) {
+      // while (matcher.find()) {
+      for (const match of matches) {
 //            System.out.println("find() is true. m.start() = " + m.start() + ", m.end() = " + m.end() + ".");
+        if (match.index === undefined) throw Error('match.index is undefined.');
+        const matchStart = match.index;
+        const matchEnd = match.index + match[0].length;
 
           // Everything up to the first matched character can be added to the last existing text node
 //            String preText = withheldCharsAndInputString.substring(currPositionInString, matcher.start());
 //            outputStreamedData.append(preText);
-          outputStreamedData.shiftDataIn(
-                  inputData,
-                  matcher.start() - currShiftIndex,
-                  StreamedData.MarkerBehaviour.NOT_FILTERING);
+        outputStreamedData.shiftDataIn(
+                inputData,
+                matchStart - currShiftIndex,
+                MarkerBehaviour.NOT_FILTERING);
 
 
           // Now extract the ANSI escape code
-          StreamedData ansiEscapeCode = new StreamedData();
+          let ansiEscapeCode = new StreamedData();
           ansiEscapeCode.shiftDataIn(
                   inputData,
-                  matcher.end() - matcher.start(),
-                  StreamedData.MarkerBehaviour.NOT_FILTERING);
+                  matchEnd - matchStart,
+                  MarkerBehaviour.NOT_FILTERING);
           //System.out.println("ANSI esc seq = " + toHexString(ansiEscapeCode));
 
           // Save the remaining text to process
           //remainingInput = inputString.substring(m.end(), inputString.length());
 
           // Extract the numbers from the escape code
-          String[] numbers = extractNumbersAsArray(ansiEscapeCode.getText());
+          const numbers = this.extractNumbersAsArray(ansiEscapeCode.getText());
 
-          Map<String, Color> correctMapToUse;
+          let correctMapToUse: { [key: string]: string };
           if(numbers.length == 1) {
-              correctMapToUse = codeToNormalColourMap;
-          } else if(numbers.length == 2 && numbers[1].equals("1")) {
-              correctMapToUse = codeToBoldColourMap;
+              correctMapToUse = this.codeToNormalColourMap;
+          } else if(numbers.length == 2 && numbers[1] === "1") {
+              correctMapToUse = this.codeToBoldColourMap;
           } else {
               // ANSI escape sequence is not supported. Remove it from input and continue
               //throw new RuntimeException("Numbers not recognised!");
-              currShiftIndex = matcher.end();
+              currShiftIndex = matchEnd;
               continue;
           }
 
           // Get the colour associated with this code
-          Color color = correctMapToUse.get(numbers[0]);
+          const color = correctMapToUse[numbers[0]];
 
           if(color == null) {
-              System.out.println("Escape sequence was not supported!");
+              console.log("Escape sequence was not supported!");
               // The number in the escape sequence was not recognised. Update the current position in input string
               // to skip over this escape sequence, and continue to next iteration of loop.
-              currShiftIndex = matcher.end();
+              currShiftIndex = matchEnd;
               continue;
           }
 
@@ -132,35 +140,34 @@ export class AnsiECParser {
 
           // Create new Text object with this new color, and add to the text nodes
 //            outputStreamedData.setColorToBeInsertedOnNextChar(color);
-          outputStreamedData.getMarkers().add(new ColourMarker(outputStreamedData.getText().length(), color));
+          outputStreamedData.getMarkers().push(new ColourMarker(outputStreamedData.getText().length, color));
 
-          currShiftIndex = matcher.end();
+          currShiftIndex = matchEnd;
 
       } // while (matcher.find())
 
       // ALL COMPLETE ANSI ESCAPE CODES FOUND!
 
       // Shift remaining characters from input to output
-      outputStreamedData.shiftCharsInUntilPartialMatch(inputData, pattern);
+      outputStreamedData.shiftCharsInUntilPartialMatch(inputData, this.pattern);
 
   }
 
-  private String[] extractNumbersAsArray(String ansiEscapeCode) {
+  extractNumbersAsArray(ansiEscapeCode: string) {
+    // Input should be in the form
+    // (ESC)[xx;xx;...xxm
+    // We want to extract the x's
 
-      // Input should be in the form
-      // (ESC)[xx;xx;...xxm
-      // We want to extract the x's
+    // Trim of the (ESC) and [ chars from the start, and the m from the end
+    let trimmedString = ansiEscapeCode.substring(2, ansiEscapeCode.length - 1);
 
-      // Trim of the (ESC) and [ chars from the start, and the m from the end
-      String trimmedString = ansiEscapeCode.substring(2, ansiEscapeCode.length() - 1);
+    //System.out.println("trimmedString = " + trimmedString);
 
-      //System.out.println("trimmedString = " + trimmedString);
+    let numbers = trimmedString.split(";");
 
-      String[] numbers = trimmedString.split(";");
+    //System.out.println("numbers = " + toString(numbers));
 
-      //System.out.println("numbers = " + toString(numbers));
-
-      return numbers;
+    return numbers;
   }
 
 }
