@@ -34,3 +34,7 @@ npm-debug.log.*
 
 # Ingore documentation directory
 docs/
+
+# Just for now
+# TODO: Remove this ignore.
+src/util/

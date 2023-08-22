@@ -38,7 +38,7 @@ const MainRoute = observer((props: Props) => {
     if (txRxRef.current && appStore.txRxTextScrollLock) {
       txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
     }
-  }, [appStore.txRxText, appStore.txRxTextScrollLock]);
+  }, [appStore.rxSegments, appStore.txRxTextScrollLock]);
 
   const messageRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -47,6 +47,22 @@ const MainRoute = observer((props: Props) => {
       messageRef.current.scrollTop = messageRef.current.scrollHeight;
     }
   }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
+
+  // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
+  // 1) White space preserved
+  // 2) \n to create a new line
+  // 3) Text to wrap once it hits the maximum terminal width
+  // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
+  const rxSpans = appStore.rxSegments.map((segment) => {
+    return <span key={segment.key}>{segment.text}</span>;
+  });
+  // const rxDataView = (
+  //   <div>
+  //     {/* <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{app.rxData}</span> */}
+  //     {rxSpans}
+  //     <span id="cursor">█</span>
+  //   </div>
+  // );
 
   // Generate UI showing the status messages
   const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
@@ -164,7 +180,9 @@ const MainRoute = observer((props: Props) => {
                 padding: '10px',
               }}
             >
-              {appStore.txRxText}
+              {rxSpans}
+              {/* Blinking cursor at end of data */}
+              <span id="cursor">█</span>
             </div>
             {/* ================== SCROLL LOCK ARROW ==================== */}
             <IconButton
