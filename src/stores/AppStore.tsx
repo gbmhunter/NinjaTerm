@@ -2,6 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
+import { AnsiECParser } from 'util/AnsiECParser/AnsiECParser';
 import StreamedData from 'util/StreamedData/StreamedData';
 import TextSegment from './TextSegmentStore';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
@@ -74,6 +75,10 @@ export class AppStore {
 
   newLineParser: NewLineParser;
 
+  buffer1: StreamedData;
+
+  ansiECParser: AnsiECParser;
+
   output: StreamedData;
 
   rxSegments: TextSegment[] = [];
@@ -88,8 +93,8 @@ export class AppStore {
     makeAutoObservable(this);
 
     this.input = new StreamedData();
-    // this.ansiECParser = new AnsiECParser();
-    // this.buffer1 = new StreamedData();
+    this.ansiECParser = new AnsiECParser();
+    this.buffer1 = new StreamedData();
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
@@ -251,7 +256,8 @@ export class AppStore {
     this.rxData += data.toString();
 
     this.input.append(data.toString());
-    this.newLineParser.parse(this.input, this.output);
+    this.newLineParser.parse(this.input, this.buffer1);
+    this.ansiECParser.parse(this.buffer1, this.output);
     // this.output contains the new data needed to be add to the RX terminal window
 
     // const lastRxSegment = this.rxSegments[this.rxSegments.length - 1];

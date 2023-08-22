@@ -3,7 +3,6 @@
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
  * @since           2016-09-26
- * @last-modified   2016-10-17
  */
 
 import StreamedData from "util/StreamedData/StreamedData";
@@ -21,38 +20,29 @@ describe('AnsiECParserTests', () => {
     outputStreamedData = new StreamedData()
   })
 
-
   it('oneSeqTest', () => {
+    inputStreamedData.append("default\u001B[31mred");
+    ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-      inputStreamedData.append("default\u001B[31mred");
-      ansiECParser.parse(inputStreamedData, outputStreamedData);
-
-      console.log('output=', outputStreamedData.getText())
-      // console.
-      expect(outputStreamedData.getText()).toEqual('defaultred');
-
-      expect(outputStreamedData.getColourMarkers().length).toEqual(1);
-
-      expect(outputStreamedData.getColourMarkers()[0].charPos).toEqual(7);
-      expect(outputStreamedData.getColourMarkers()[0].color).toEqual('rgb(170, 0, 0)');
+    expect(outputStreamedData.getText()).toEqual('defaultred');
+    expect(outputStreamedData.getColourMarkers().length).toEqual(1);
+    expect(outputStreamedData.getColourMarkers()[0].charPos).toEqual(7);
+    expect(outputStreamedData.getColourMarkers()[0].color).toEqual('rgb(170, 0, 0)');
   })
 
-    // @Test
-    // public void twoSeqTest() throws Exception {
+  it('twoSeqTest', () => {
+    inputStreamedData.append("default\u001B[31mred\u001B[32mgreen");
+    ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     inputData.append("default\u001B[31mred\u001B[32mgreen");
-    //     ansiECParser.parse(inputData, releasedData);
+    expect(outputStreamedData.getText()).toEqual('defaultredgreen');
+    expect(outputStreamedData.getColourMarkers().length).toEqual(2);
 
-    //     assertEquals("defaultredgreen", releasedData.getText());
+    expect(outputStreamedData.getColourMarkers()[0].charPos).toEqual(7);
+    expect(outputStreamedData.getColourMarkers()[0].color).toEqual('rgb(170, 0, 0)');
 
-    //     assertEquals(2, releasedData.getColourMarkers().size());
-
-    //     assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
-    //     assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
-
-    //     assertEquals(10, releasedData.getColourMarkers().get(1).charPos);
-    //     assertEquals(Color.rgb(0, 170, 0), releasedData.getColourMarkers().get(1).color);
-    // }
+    expect(outputStreamedData.getColourMarkers()[1].charPos).toEqual(10);
+    expect(outputStreamedData.getColourMarkers()[1].color).toEqual('rgb(0, 170, 0)');
+  })
 
     // @Test
     // public void boldRedColourTest() throws Exception {

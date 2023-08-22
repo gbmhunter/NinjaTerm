@@ -43,7 +43,6 @@ const MainRoute = observer((props: Props) => {
   const messageRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (messageRef.current && appStore.statusMsgScrollLock) {
-      console.log('Scrolling...');
       messageRef.current.scrollTop = messageRef.current.scrollHeight;
     }
   }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
@@ -54,15 +53,12 @@ const MainRoute = observer((props: Props) => {
   // 3) Text to wrap once it hits the maximum terminal width
   // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
   const rxSpans = appStore.rxSegments.map((segment) => {
-    return <span key={segment.key}>{segment.text}</span>;
+    return (
+      <span key={segment.key} style={{ color: segment.color }}>
+        {segment.text}
+      </span>
+    );
   });
-  // const rxDataView = (
-  //   <div>
-  //     {/* <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{app.rxData}</span> */}
-  //     {rxSpans}
-  //     <span id="cursor">█</span>
-  //   </div>
-  // );
 
   // Generate UI showing the status messages
   const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
