@@ -44,84 +44,81 @@ describe('AnsiECParserTests', () => {
     expect(outputStreamedData.getColourMarkers()[1].color).toEqual('rgb(0, 170, 0)');
   })
 
-    // @Test
-    // public void boldRedColourTest() throws Exception {
+  it('boldRedColourTest', () => {
+    inputStreamedData.append("default\u001B[31;1mred");
+    ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     inputData.append("default\u001B[31;1mred");
-    //     ansiECParser.parse(inputData, releasedData);
+    expect(outputStreamedData.getText()).toEqual('defaultred');
 
-    //     assertEquals("defaultred", releasedData.getText());
+    expect(outputStreamedData.getColourMarkers().length).toEqual(1);
 
-    //     assertEquals(1, releasedData.getColourMarkers().size());
+    expect(outputStreamedData.getColourMarkers()[0].charPos).toEqual(7);
+    expect(outputStreamedData.getColourMarkers()[0].color).toEqual('rgb(255, 85, 85)');
+  })
 
-    //     assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
-    //     assertEquals(Color.rgb(255, 85, 85), releasedData.getColourMarkers().get(0).color);
-    // }
+  it('partialSeqTest', () => {
 
-    // @Test
-    // public void partialSeqTest() throws Exception {
+    inputStreamedData.append("default\u{001B}");
+    ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     inputData.append("default\u001B");
-    //     ansiECParser.parse(inputData, releasedData);
+    expect(outputStreamedData.getText()).toEqual('default');
+    expect(outputStreamedData.getColourMarkers().length).toEqual(0);
 
-    //     assertEquals("default", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    inputStreamedData.append("[31mred");
+    ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     inputData.append("[31mred");
-    //     ansiECParser.parse(inputData, releasedData);
+    expect(outputStreamedData.getText()).toEqual('defaultred');
 
-    //     assertEquals("defaultred", releasedData.getText());
+    expect(outputStreamedData.getColourMarkers().length).toEqual(1);
 
-    //     assertEquals(1, releasedData.getColourMarkers().size());
-
-    //     assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
-    //     assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
-    // }
+    expect(outputStreamedData.getColourMarkers()[0].charPos).toEqual(7);
+    expect(outputStreamedData.getColourMarkers()[0].color).toEqual('rgb(170, 0, 0)');
+  })
 
     // @Test
     // public void partialSeqTest2() throws Exception {
 
-    //     inputData.append("default\u001B");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("default\u001B");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("default", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("default", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
 
-    //     inputData.append("[");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("[");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("default", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("default", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
 
-    //     inputData.append("31mred");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("31mred");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("defaultred", releasedData.getText());
+    //     assertEquals("defaultred", outputStreamedData.getText());
 
-    //     assertEquals(1, releasedData.getColourMarkers().size());
-    //     assertEquals(7, releasedData.getColourMarkers().get(0).charPos);
-    //     assertEquals(Color.rgb(170, 0, 0), releasedData.getColourMarkers().get(0).color);
+    //     assertEquals(1, outputStreamedData.getColourMarkers().size());
+    //     assertEquals(7, outputStreamedData.getColourMarkers().get(0).charPos);
+    //     assertEquals(Color.rgb(170, 0, 0), outputStreamedData.getColourMarkers().get(0).color);
     // }
 
     // @Test
     // public void unsupportedEscapeSequenceTest() throws Exception {
 
-    //     inputData.append("abc\u001B[20mdef");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[20mdef");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abcdef", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abcdef", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 
     // @Test
     // public void unsupportedEscapeSequence2Test() throws Exception {
 
     //     // Use a bogus first and second number
-    //     inputData.append("abc\u001B[20;5mdef");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[20;5mdef");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abcdef", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abcdef", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 
     // @Test
@@ -129,11 +126,11 @@ describe('AnsiECParserTests', () => {
 
     //     // Provide escape sequence which has been truncated. Since it is not a valid escape
     //     // sequence, it should be displayed in the output
-    //     inputData.append("abc\u001B[20def");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[20def");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc\u001B[20def", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc\u001B[20def", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 
     // @Test
@@ -141,42 +138,42 @@ describe('AnsiECParserTests', () => {
 
     //     // Provide escape sequence which has been truncated. Since it is not a valid escape
     //     // sequence, it should be displayed in the output
-    //     inputData.append("abc\u001B[def");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[def");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc\u001B[def", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc\u001B[def", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 
     // @Test
     // public void truncatedEscapeSequenceTest3() throws Exception {
 
-    //     inputData.append("abc\u001B[");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
 
-    //     inputData.append("def");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("def");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc\u001B[def", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc\u001B[def", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 
     // @Test
     // public void truncatedEscapeSequenceTest4() throws Exception {
 
-    //     inputData.append("abc\u001B[");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("abc\u001B[");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
 
-    //     inputData.append("12;\u001B[def");
-    //     ansiECParser.parse(inputData, releasedData);
+    //     inputStreamedData.append("12;\u001B[def");
+    //     ansiECParser.parse(inputStreamedData, outputStreamedData);
 
-    //     assertEquals("abc\u001B[12;\u001B[def", releasedData.getText());
-    //     assertEquals(0, releasedData.getColourMarkers().size());
+    //     assertEquals("abc\u001B[12;\u001B[def", outputStreamedData.getText());
+    //     assertEquals(0, outputStreamedData.getColourMarkers().size());
     // }
 })

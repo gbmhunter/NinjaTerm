@@ -74,4 +74,16 @@ describe('ShiftCharsInUntilPartialMatchTests', () => {
         expect(output.getText()).toEqual('123EOL456EOL789')
         expect(output.getColourMarkers().length).toEqual(0)
     })
+
+    it('can handle unicode', () => {
+      pattern = /\u{001B}\[31m/
+      input.append("123\u{001B}")
+      output.shiftCharsInUntilPartialMatch(input, pattern)
+
+      expect(input.getText()).toEqual('\u{001B}')
+      expect(input.getColourMarkers().length).toEqual(0)
+
+      expect(output.getText()).toEqual('123')
+      expect(output.getColourMarkers().length).toEqual(0)
+  })
 })

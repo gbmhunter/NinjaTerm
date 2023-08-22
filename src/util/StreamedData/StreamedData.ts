@@ -634,7 +634,9 @@ export default class StreamedData {
     let currPositionInString = 0;
 
     // Add a start-of-string anchor to make sure we only get a match starting at the start of the data
-    let anchoredPattern = new RegExp('^' + pattern.source)
+    // Add 'u' flag in so unicode support is enabled, the toPartialMatchRegex() needs this to work
+    // correctly
+    let anchoredPattern = new RegExp('^' + pattern.source, 'u')
 
     // Look for index of partial match
     let startIndexOfPartialMatch = -1;
