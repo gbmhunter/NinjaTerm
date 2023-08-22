@@ -7,6 +7,21 @@ import TextSegment from './TextSegmentStore';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { SettingsStore } from './SettingsStore';
 
+declare global {
+  interface String {
+    insert(index: number, string: string): string;
+  }
+}
+
+// eslint-disable-next-line no-extend-native, func-names
+String.prototype.insert = function (index, string) {
+  if (index > 0) {
+    return this.substring(0, index) + string + this.substr(index);
+  }
+
+  return string + this;
+};
+
 export enum PortState {
   CLOSED,
   OPENED,
@@ -73,6 +88,8 @@ export class AppStore {
     makeAutoObservable(this);
 
     this.input = new StreamedData();
+    // this.ansiECParser = new AnsiECParser();
+    // this.buffer1 = new StreamedData();
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
@@ -237,9 +254,125 @@ export class AppStore {
     this.newLineParser.parse(this.input, this.output);
     // this.output contains the new data needed to be add to the RX terminal window
 
+    // const lastRxSegment = this.rxSegments[this.rxSegments.length - 1];
+    // lastRxSegment.text += this.output.text;
+    // lastRxSegment.key += 1;
+
+    // Copy all text before first ColourMarker entry into the first text node
+
+    let indexOfLastCharPlusOne: number;
+    if (this.output.getColourMarkers().length === 0) {
+      indexOfLastCharPlusOne = this.output.getText().length;
+    } else {
+      indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos();
+    }
+
+    let textToAppend = this.output
+      .getText()
+      .substring(0, indexOfLastCharPlusOne);
+
+    // Create new line characters for all new line markers that point to text
+    // shifted above
+    let currNewLineMarkerIndex = 0;
+    for (let i = 0; i < this.output.getNewLineMarkers().length; i += 1) {
+      if (
+        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos >
+        indexOfLastCharPlusOne
+      )
+        break;
+
+      textToAppend.insert(
+        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos + i,
+        '\n' // New line character
+      );
+      currNewLineMarkerIndex += 1;
+    }
+
+    // Add this remaining text to the last existing element in the RX segments
     const lastRxSegment = this.rxSegments[this.rxSegments.length - 1];
-    lastRxSegment.text += this.output.text;
-    lastRxSegment.key += 1;
+    lastRxSegment.text += textToAppend;
+
+    // Create new text nodes and copy all text
+    // This loop won't run if there is no elements in the TextColors array
+    // int currIndexToInsertNodeAt = nodeIndexToStartShift;
+    for (let x = 0; x < this.output.getColourMarkers().length; x += 1) {
+      // defaultTextColorActive = false;
+      // Text newText = new Text();
+
+      const indexOfFirstCharInNode = this.output
+        .getColourMarkers()
+        [x].getCharPos();
+
+      let indexOfLastCharInNodePlusOne = 0;
+      if (x >= this.output.getColourMarkers().length - 1) {
+        indexOfLastCharInNodePlusOne = this.output.getText().length;
+      } else {
+        indexOfLastCharInNodePlusOne = this.output
+          .getColourMarkers()
+          [x + 1].getCharPos();
+      }
+
+      textToAppend = this.output
+        .getText()
+        .substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne);
+
+      //            logger.debug("textToAppend (before new lines added) = " + textToAppend);
+
+      // Create new line characters for all new line markers that point to text
+      // shifted above
+      let insertionCount = 0;
+      while (true) {
+        if (currNewLineMarkerIndex >= this.output.getNewLineMarkers().length)
+          break;
+
+        if (
+          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() >
+          indexOfLastCharInNodePlusOne
+        )
+          break;
+
+        textToAppend.insert(
+          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() +
+            insertionCount -
+            indexOfFirstCharInNode,
+          '\n'
+        ); // New line char
+        currNewLineMarkerIndex += 1;
+        insertionCount += 1;
+      }
+
+      // Add this remaining text to the last existing element in the RX segments
+      const textColor = this.output.getColourMarkers()[x].color;
+      const newTextSegment = new TextSegment(
+        textToAppend.toString(),
+        textColor,
+        this.rxSegments.length
+      );
+
+      this.rxSegments.push(newTextSegment);
+
+      //            logger.debug("textToAppend (after new lines added) = " + textToAppend);
+
+      // ==============================================//
+      // ==== ADD TEXT TO STYLEDTEXTAREA AND COLOUR ===//
+      // ==============================================//
+
+      //         final int insertionStartIndex = styledTextArea.getLength();
+      //         styledTextArea.replaceText(insertionStartIndex, insertionStartIndex, textToAppend.toString());
+      //         final int insertionStopIndex = styledTextArea.getLength();
+
+      // //            logger.debug("insertionStartIndex = " + insertionStartIndex + ", insertionStopIndex = " + insertionStopIndex);
+
+      //         final Color textColor = streamedData.getColourMarkers().get(x).color;
+
+      //         styledTextArea.setStyle(
+      //                 insertionStartIndex,
+      //                 insertionStopIndex,
+      //                 "-fx-fill: " + javaColorToCSS(textColor) + "; -fx-font-family: monospace; -fx-font-size: " + fontSizePx + "px;");
+
+      //         // Update the num. chars added with all the text added to this new Text node
+      //         numCharsAdded += textToAppend.length();
+    }
 
     this.output.clear();
 
