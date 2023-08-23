@@ -33,17 +33,20 @@ const MainRoute = observer((props: Props) => {
   const { appStore } = props;
 
   const txRxRef = useRef<HTMLInputElement>(null);
+
+  // Run this after every render, as it's too computationally expensive to
+  // do a deep compare of the text segments
   useEffect(() => {
     // Only scroll to bottom if enabled in app model
     if (txRxRef.current && appStore.txRxTextScrollLock) {
       txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
     }
-  }, [appStore.rxSegments, appStore.txRxTextScrollLock]);
+  });
 
-  const messageRef = useRef<HTMLInputElement>(null);
+  const statusMsgDivRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (messageRef.current && appStore.statusMsgScrollLock) {
-      messageRef.current.scrollTop = messageRef.current.scrollHeight;
+    if (statusMsgDivRef.current && appStore.statusMsgScrollLock) {
+      statusMsgDivRef.current.scrollTop = statusMsgDivRef.current.scrollHeight;
     }
   }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
 
@@ -224,7 +227,7 @@ const MainRoute = observer((props: Props) => {
               }}
             >
               <div
-                ref={messageRef}
+                ref={statusMsgDivRef}
                 style={{
                   height: '100%',
                   width: '100%',

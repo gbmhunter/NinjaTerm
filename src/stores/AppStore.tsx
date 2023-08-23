@@ -46,6 +46,8 @@ export const portStateToButtonProps: {
   },
 };
 
+const defaultTxRxColor = 'rgb(255, 255, 255)';
+
 export class AppStore {
   settings = new SettingsStore();
 
@@ -98,7 +100,9 @@ export class AppStore {
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
-    this.rxSegments.push(new TextSegment('', '#000000', 0));
+    // Create a default segment for data to go into. If no ANSI escape codes
+    // are received, this will the one and only text segment
+    this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
   }

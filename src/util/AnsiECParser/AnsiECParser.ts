@@ -59,15 +59,6 @@ export class AnsiECParser {
    */
   parse(inputData: StreamedData, outputStreamedData: StreamedData) {
 
-    //        System.out.println(getClass().getSimpleName() + ".parse() called with inputString = " + Debugging.convertNonPrintable(inputString));
-
-          // Prepend withheld text onto the start of the input string
-          // @// TODO: 2016-10-17 Remove the internal withheld data variable, and just keep the data in the inputData object until it is ready to be release. These next two lines are a hacky work around
-    //        String withheldCharsAndInputString = withheldTextWithPartialMatch + inputData.getText();
-    //        inputData.clear();
-
-    //        withheldTextWithPartialMatch = "";
-
     if(!this.isEnabled) {
       // ASCII escape codes are disabled, so just return all the input plus any withheld text
       //            outputStreamedData.append(withheldCharsAndInputString);
