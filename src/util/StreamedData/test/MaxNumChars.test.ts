@@ -6,52 +6,50 @@
  * @since 2016-10-27
  */
 
-import StreamedData from '../StreamedData'
-import ColourMarker from '../ColorMarker'
-import NewLineMarker from '../../NewLineParser/NewLineMarker'
+import StreamedData from '../StreamedData';
+import ColourMarker from '../ColorMarker';
+import NewLineMarker from '../../NewLineParser/NewLineMarker';
 
-let streamedData: StreamedData
+let streamedData: StreamedData;
 
 describe('StreamedDataMaxNumCharsTests', () => {
-
   beforeEach(() => {
-    streamedData = new StreamedData()
-  })
+    streamedData = new StreamedData();
+  });
 
-  it('twoCharsTest', () =>  {
-        streamedData.maxNumChars = 2
+  it('twoCharsTest', () => {
+    streamedData.maxNumChars = 2;
 
-        streamedData.append("12")
+    streamedData.append('12');
 
-        streamedData.addMarker(new ColourMarker(0, '#ff0000'))
-        streamedData.addMarker(new NewLineMarker(0))
+    streamedData.addMarker(new ColourMarker(0, '#ff0000'));
+    streamedData.addMarker(new NewLineMarker(0));
 
-        // This should overwrite all the existing data
-        streamedData.append("34")
+    // This should overwrite all the existing data
+    streamedData.append('34');
 
-        expect(streamedData.getText()).toEqual('34')
-        expect(streamedData.getColourMarkers().length).toEqual(0)
-        expect(streamedData.getNewLineMarkers().length).toEqual(0)
-    })
+    expect(streamedData.getText()).toEqual('34');
+    expect(streamedData.getColourMarkers().length).toEqual(0);
+    expect(streamedData.getNewLineMarkers().length).toEqual(0);
+  });
 
-    it('zeroCharsTest', () => {
-        streamedData.maxNumChars = 0
+  it('zeroCharsTest', () => {
+    streamedData.maxNumChars = 0;
 
-        streamedData.append("12")
+    streamedData.append('12');
 
-        expect(streamedData.getText()).toEqual('')
-        expect(streamedData.getColourMarkers().length).toEqual(0)
-        expect(streamedData.getNewLineMarkers().length).toEqual(0)
-    })
+    expect(streamedData.getText()).toEqual('');
+    expect(streamedData.getColourMarkers().length).toEqual(0);
+    expect(streamedData.getNewLineMarkers().length).toEqual(0);
+  });
 
-    it('infiniteCharsTest', () => {
-        // Set the max. chars to "no limit"
-        streamedData.maxNumChars = -1
+  it('infiniteCharsTest', () => {
+    // Set the max. chars to "no limit"
+    streamedData.maxNumChars = -1;
 
-        // Add heaps of data
-        for (let i = 0; i < 1000; i++)
-            streamedData.append("0123456789")
+    // Add heaps of data
+    for (let i = 0; i < 1000; i += 1) streamedData.append('0123456789');
 
-        expect(streamedData.getText().length).toEqual(10000)
-    })
-})
+    expect(streamedData.getText().length).toEqual(10000);
+  });
+});

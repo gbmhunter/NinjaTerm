@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
-import { AnsiECParser } from 'util/AnsiECParser/AnsiECParser';
+import AnsiECParser from 'util/AnsiECParser/AnsiECParser';
 import StreamedData from 'util/StreamedData/StreamedData';
 import TextSegment from './TextSegmentStore';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';

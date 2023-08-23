@@ -1,7 +1,6 @@
-
-import Marker, { Association } from '../Marker'
-import NewLineMarker from '../NewLineParser/NewLineMarker'
-import ColourMarker from './ColorMarker'
+import Marker, { Association } from '../Marker';
+import NewLineMarker from '../NewLineParser/NewLineMarker';
+import ColourMarker from './ColorMarker';
 
 declare global {
   interface RegExp {
@@ -9,43 +8,45 @@ declare global {
   }
 }
 
-RegExp.prototype.toPartialMatchRegex = function () {
-  "use strict";
+// eslint-disable-next-line no-extend-native
+RegExp.prototype.toPartialMatchRegex = function _() {
+  // 'use strict';
 
-  var re = this,
-    source = this.source,
-    i = 0;
+  const re = this;
+  // const source = this.source;
+  const { source } = this;
+  let i = 0;
 
   function process() {
-    var result = "",
-      tmp;
+    let result = '';
+    let tmp;
 
     function appendRaw(nbChars: number) {
       result += source.substr(i, nbChars);
       i += nbChars;
-    };
+    }
 
     function appendOptional(nbChars: number) {
-      result += "(?:" + source.substr(i, nbChars) + "|$)";
+      result += `(?:${source.substr(i, nbChars)}|$)`;
       i += nbChars;
-    };
+    }
 
     while (i < source.length) {
       switch (source[i]) {
-        case "\\":
+        case '\\':
           switch (source[i + 1]) {
-            case "c":
+            case 'c':
               appendOptional(3);
               break;
 
-            case "x":
+            case 'x':
               appendOptional(4);
               break;
 
-            case "u":
+            case 'u':
               if (re.unicode) {
-                if (source[i + 2] === "{") {
-                  appendOptional(source.indexOf("}", i) - i + 1);
+                if (source[i + 2] === '{') {
+                  appendOptional(source.indexOf('}', i) - i + 1);
                 } else {
                   appendOptional(6);
                 }
@@ -54,17 +55,17 @@ RegExp.prototype.toPartialMatchRegex = function () {
               }
               break;
 
-            case "p":
-            case "P":
+            case 'p':
+            case 'P':
               if (re.unicode) {
-                appendOptional(source.indexOf("}", i) - i + 1);
+                appendOptional(source.indexOf('}', i) - i + 1);
               } else {
                 appendOptional(2);
               }
               break;
 
-            case "k":
-              appendOptional(source.indexOf(">", i) - i + 1);
+            case 'k':
+              appendOptional(source.indexOf('>', i) - i + 1);
               break;
 
             default:
@@ -73,25 +74,24 @@ RegExp.prototype.toPartialMatchRegex = function () {
           }
           break;
 
-        case "[":
+        case '[':
           tmp = /\[(?:\\.|.)*?\]/g;
           tmp.lastIndex = i;
-          tmp = tmp.exec(source)
-          if (!tmp)
-            throw Error('tmp should not be null.')
-          appendOptional(tmp[0].length)
+          tmp = tmp.exec(source);
+          if (!tmp) throw Error('tmp should not be null.');
+          appendOptional(tmp[0].length);
           break;
 
-        case "|":
-        case "^":
-        case "$":
-        case "*":
-        case "+":
-        case "?":
+        case '|':
+        case '^':
+        case '$':
+        case '*':
+        case '+':
+        case '?':
           appendRaw(1);
           break;
 
-        case "{":
+        case '{':
           tmp = /\{\d+,?\d*\}/g;
           tmp.lastIndex = i;
           tmp = tmp.exec(source);
@@ -102,32 +102,32 @@ RegExp.prototype.toPartialMatchRegex = function () {
           }
           break;
 
-        case "(":
-          if (source[i + 1] == "?") {
+        case '(':
+          if (source[i + 1] === '?') {
             switch (source[i + 2]) {
-              case ":":
-                result += "(?:";
+              case ':':
+                result += '(?:';
                 i += 3;
-                result += process() + "|$)";
+                result += `${process()}|$)`;
                 break;
 
-              case "=":
-                result += "(?=";
+              case '=':
+                result += '(?=';
                 i += 3;
-                result += process() + ")";
+                result += `${process()})`;
                 break;
 
-              case "!":
+              case '!':
                 tmp = i;
                 i += 3;
                 process();
                 result += source.substr(tmp, i - tmp);
                 break;
 
-              case "<":
+              case '<':
                 switch (source[i + 3]) {
-                  case "=":
-                  case "!":
+                  case '=':
+                  case '!':
                     tmp = i;
                     i += 4;
                     process();
@@ -135,20 +135,26 @@ RegExp.prototype.toPartialMatchRegex = function () {
                     break;
 
                   default:
-                    appendRaw(source.indexOf(">", i) - i + 1);
-                    result += process() + "|$)";
+                    appendRaw(source.indexOf('>', i) - i + 1);
+                    result += `${process()}|$)`;
                     break;
                 }
                 break;
+
+              default:
+                throw Error(
+                  'default case called. Not sure if this should be allowed.'
+                );
             }
           } else {
             appendRaw(1);
-            result += process() + "|$)";
+            result += `${process()}|$)`;
           }
           break;
 
-        case ")":
-          ++i;
+        case ')':
+          // ++i;
+          i += 1;
           return result;
 
         default:
@@ -163,10 +169,7 @@ RegExp.prototype.toPartialMatchRegex = function () {
   return new RegExp(process(), this.flags);
 };
 
-
-
 export enum CopyOrShift {
-
   /**
    * Copies data and does not alter the "copied from" object.
    */
@@ -180,7 +183,7 @@ export enum CopyOrShift {
 
 export enum MarkerBehaviour {
   FILTERING,
-  NOT_FILTERING
+  NOT_FILTERING,
 }
 
 /**
@@ -193,30 +196,25 @@ export enum MarkerBehaviour {
  * @since 2016-09-28
  */
 export default class StreamedData {
-
-  //================================================================================================//
-  //======================================== CLASS CONSTANTS =======================================//
-  //================================================================================================//
+  //= ===============================================================================================//
+  //= ======================================= CLASS CONSTANTS =======================================//
+  //= ===============================================================================================//
 
   /**
    * The character sequence which causes a new line to be inserted into a TextFlow
    * UI object in JavaFX. This is needed for the <code>shiftToTextNodes()</code> method.
    */
-  NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW = '\n'
+  NEW_LINE_CHAR_SEQUENCE_FOR_TEXT_FLOW = '\n';
 
-  //================================================================================================//
-  //=========================================== ENUMS ==============================================//
-  //================================================================================================//
+  //= ===============================================================================================//
+  //= ========================================== ENUMS ==============================================//
+  //= ===============================================================================================//
 
+  //= ===============================================================================================//
+  //= ========================================== CLASS FIELDS =======================================//
+  //= ===============================================================================================//
 
-
-
-
-  //================================================================================================//
-  //=========================================== CLASS FIELDS =======================================//
-  //================================================================================================//
-
-  text = ""
+  text = '';
   //    private List<ColourMarker> colourMarkers = new ArrayList<>();
   //    private Color colorToBeInsertedOnNextChar = null;
 
@@ -231,7 +229,7 @@ export default class StreamedData {
 
   //    private List<TimeStampMarker> timeStampMarkers = new ArrayList<>();
 
-  markers: Marker[] = []
+  markers: Marker[] = [];
 
   /**
    * The maximum number of chars this StreamedData object will contain, before it starts trimming the
@@ -240,28 +238,27 @@ export default class StreamedData {
    * If <code>maxNumChars</code> = -1, then the StreamedData object does not have a limit and
    * will never delete old data.
    */
-  _maxNumChars = -1
+  maxNumCharsProp = -1;
 
   set maxNumChars(value: number) {
-    this._maxNumChars = value
+    this.maxNumCharsProp = value;
     // Add a listener so that if the maxNumChars property is changed, we trim as
     // required
-    this.trimDataIfRequired()
+    this.trimDataIfRequired();
   }
 
   get maxNumChars() {
-    return this._maxNumChars
+    return this.maxNumCharsProp;
   }
 
-  //================================================================================================//
-  //========================================== CLASS METHODS =======================================//
-  //================================================================================================//
+  //= ===============================================================================================//
+  //= ========================================= CLASS METHODS =======================================//
+  //= ===============================================================================================//
 
   /**
    * Default constructor.
    */
-  constructor() {
-  }
+  // constructor() {}
 
   /**
    * Copy constructor. Uses the <code>copyCharsFrom()</code> to do the actual copying.
@@ -271,35 +268,24 @@ export default class StreamedData {
    * @param streamedData
    */
   public StreamedData(streamedData: StreamedData) {
-
     // Call default constructor
-    this.copyCharsFrom(streamedData, streamedData.getText().length, MarkerBehaviour.NOT_FILTERING);
+    this.copyCharsFrom(
+      streamedData,
+      streamedData.getText().length,
+      MarkerBehaviour.NOT_FILTERING
+    );
   }
-
 
   getText() {
-    return this.text
+    return this.text;
   }
 
-  //    public List<ColourMarker> getColourMarkers() {
-  //        return colourMarkers;
-  //    }
-
-  //    public Color getColorToBeInsertedOnNextChar() {
-  //        return colorToBeInsertedOnNextChar;
-  //    }
-
-  //    public void setColorToBeInsertedOnNextChar(Color color) {
-  //        logger.debug("setColorToBeInsertedOnNextChar() called with color = " + color);
-  //        this.colorToBeInsertedOnNextChar = color;
-  //    }
-
   public getMarkers() {
-    return this.markers
+    return this.markers;
   }
 
   public addMarker(marker: Marker) {
-    this.markers.push(marker)
+    this.markers.push(marker);
   }
 
   /**
@@ -313,8 +299,17 @@ export default class StreamedData {
    * @param numChars
    * @return
    */
-  public shiftDataIn(inputStreamedData: StreamedData, numChars: number, markerBehaviour: MarkerBehaviour) {
-    this.copyOrShiftCharsFrom(inputStreamedData, numChars, CopyOrShift.SHIFT, markerBehaviour);
+  public shiftDataIn(
+    inputStreamedData: StreamedData,
+    numChars: number,
+    markerBehaviour: MarkerBehaviour
+  ) {
+    this.copyOrShiftCharsFrom(
+      inputStreamedData,
+      numChars,
+      CopyOrShift.SHIFT,
+      markerBehaviour
+    );
   }
 
   /**
@@ -324,12 +319,12 @@ export default class StreamedData {
    */
   public clear() {
     // "Reset" this object
-    this.text = ""
+    this.text = '';
     //        getColourMarkers().clear();
     //        colorToBeInsertedOnNextChar = null;
 
-    //getNewLineMarkers().clear();
-    this.markers = []
+    // getNewLineMarkers().clear();
+    this.markers = [];
   }
 
   /**
@@ -338,11 +333,11 @@ export default class StreamedData {
    * @param numChars The number of characters to remove.
    */
   public removeCharsFromStart(numChars: number, deleteNewLines: boolean) {
-    //StreamedData dummyStreamedData = new StreamedData();
-    //dummyStreamedData.shiftDataIn(this, numChars);
-    //checkAllColoursAreInOrder();
+    // StreamedData dummyStreamedData = new StreamedData();
+    // dummyStreamedData.shiftDataIn(this, numChars);
+    // checkAllColoursAreInOrder();
 
-    for (let i = 0; i < numChars; i++) {
+    for (let i = 0; i < numChars; i += 1) {
       this.removeChar(0, deleteNewLines);
     }
   }
@@ -362,13 +357,20 @@ export default class StreamedData {
     inputStreamedData: StreamedData,
     numChars: number,
     copyOrShift: CopyOrShift,
-    markerBehaviour: MarkerBehaviour) {
-
+    markerBehaviour: MarkerBehaviour
+  ) {
     if (numChars > inputStreamedData.getText().length)
-      throw Error("numChars is greater than the number of characters in inputStreamedData.")
+      throw Error(
+        'numChars is greater than the number of characters in inputStreamedData.'
+      );
 
     // Copy/shift the markers first
-    this.copyOrShiftMarkers(inputStreamedData, numChars, copyOrShift, markerBehaviour);
+    this.copyOrShiftMarkers(
+      inputStreamedData,
+      numChars,
+      copyOrShift,
+      markerBehaviour
+    );
 
     //        // Apply the colour to be inserted on next char, if at least one char is
     //        // going to be placed into this StreamedData object
@@ -416,12 +418,14 @@ export default class StreamedData {
     //            }
     //        }
 
-    this.text = this.text + inputStreamedData.text.substring(0, numChars);
+    this.text += inputStreamedData.text.substring(0, numChars);
 
-    if (copyOrShift == CopyOrShift.SHIFT) {
-      inputStreamedData.text = inputStreamedData.text.substring(numChars, inputStreamedData.text.length)
+    if (copyOrShift === CopyOrShift.SHIFT) {
+      inputStreamedData.text = inputStreamedData.text.substring(
+        numChars,
+        inputStreamedData.text.length
+      );
     }
-
 
     // Transfer the "color to be inserted on next char", if one exists in input
     // This could overwrite an existing "color to be inserted on next char" in the output, if
@@ -441,7 +445,6 @@ export default class StreamedData {
     this.trimDataIfRequired();
   }
 
-
   /**
    * This method expects the chars to be copied/shifted after this
    * method is finished (otherwise the input and output StreamedData
@@ -455,27 +458,23 @@ export default class StreamedData {
     input: StreamedData,
     numChars: number,
     copyOrShift: CopyOrShift,
-    markerBehaviour: MarkerBehaviour) {
-
+    markerBehaviour: MarkerBehaviour
+  ) {
     // Copy/shift markers within range
-    //for (ListIterator<Marker> iter = input.getMarkers().listIterator(); iter.hasNext(); ) {
-    for (let i = 0; i < input.getMarkers().length; i++) {
-      let element = input.getMarkers()[i]
+    for (let i = 0; i < input.getMarkers().length; i += 1) {
+      const element = input.getMarkers()[i];
 
       if (
-        (element.charPos < numChars)
-        ||
-        (element.charPos == numChars && markerBehaviour == MarkerBehaviour.NOT_FILTERING)
-        ||
-        (element.charPos == numChars && element instanceof NewLineMarker)
+        element.charPos < numChars ||
+        (element.charPos === numChars &&
+          markerBehaviour === MarkerBehaviour.NOT_FILTERING) ||
+        (element.charPos === numChars && element instanceof NewLineMarker)
       ) {
-
-
         // Make a copy of this marker in the output
         //                addNewLineMarkerAt(getText().length() + element);
-        let newMarker: Marker = element.deepCopy()
-        newMarker.setCharPos(this.getText().length + element.getCharPos())
-        this.markers.push(newMarker)
+        const newMarker: Marker = element.deepCopy();
+        newMarker.setCharPos(this.getText().length + element.getCharPos());
+        this.markers.push(newMarker);
 
         switch (copyOrShift) {
           case CopyOrShift.COPY:
@@ -483,28 +482,35 @@ export default class StreamedData {
             break;
           case CopyOrShift.SHIFT:
             // Remove the marker from the input
-            input.getMarkers().splice(i, 1)
-            i--;
+            input.getMarkers().splice(i, 1);
+            i -= 1;
             break;
           default:
-            throw Error("CopyOrShift enum unrecognised.");
+            throw Error('CopyOrShift enum unrecognised.');
         }
-
       } else {
         // We have copied/shifted all markers within range,
         // we just need to adjust the marker values for the remaining
         // markers in the input
-        if (copyOrShift == CopyOrShift.SHIFT) {
-          //                    iter.set(element - numChars);
+        // eslint-disable-next-line no-lonely-if
+        if (copyOrShift === CopyOrShift.SHIFT) {
           element.setCharPos(element.getCharPos() - numChars);
         }
       }
     }
   }
 
-
-  public copyCharsFrom(inputStreamedData: StreamedData, numChars: number, markerBehaviour: MarkerBehaviour) {
-    this.copyOrShiftCharsFrom(inputStreamedData, numChars, CopyOrShift.COPY, markerBehaviour);
+  public copyCharsFrom(
+    inputStreamedData: StreamedData,
+    numChars: number,
+    markerBehaviour: MarkerBehaviour
+  ) {
+    this.copyOrShiftCharsFrom(
+      inputStreamedData,
+      numChars,
+      CopyOrShift.COPY,
+      markerBehaviour
+    );
   }
 
   /**
@@ -517,10 +523,9 @@ export default class StreamedData {
 
     // Passing in an empty string is not invalid, but we don't have to do anything,
     // so just return.
-    if (textToAppend === "")
-      return
+    if (textToAppend === '') return;
 
-    this.text = this.text + textToAppend;
+    this.text += textToAppend;
 
     // Apply the "color to be inserted on next char" if there is one to apply.
     // This will never be applied if no chars are inserted because of the return above
@@ -529,39 +534,41 @@ export default class StreamedData {
     //            colorToBeInsertedOnNextChar = null;
     //        }
 
-    this.checkAllColoursAreInOrder()
+    this.checkAllColoursAreInOrder();
 
     // The last thing we do before returning is trim the data
     // if now there is too much in this object
-    this.trimDataIfRequired()
+    this.trimDataIfRequired();
   }
 
   public toString() {
-    let output = " { ";
+    let output = ' { ';
 
-    output += "text: \"" + this.text + "\", "
+    output += `text: "${this.text}", `;
 
-    //==============================================//
-    //==================== MARKERS =================//
-    //==============================================//
-    output += ", markers = {";
+    //= =============================================//
+    //= =================== MARKERS =================//
+    //= =============================================//
+    output += ', markers = {';
+    // eslint-disable-next-line no-restricted-syntax
     for (const marker of this.markers) {
-      output += " " + marker + ","
+      output += ` ${marker},`;
     }
-    output += " }"
+    output += ' }';
 
     // Terminating bracket
-    output += " }"
-    return output
+    output += ' }';
+    return output;
   }
 
   private checkAllColoursAreInOrder() {
-    let charIndex = -1
-    for (let colourMarker of this.getColourMarkers()) {
+    let charIndex = -1;
+    // eslint-disable-next-line no-restricted-syntax
+    for (const colourMarker of this.getColourMarkers()) {
       if (colourMarker.charPos <= charIndex)
-        throw Error("Colours were not in order!")
+        throw Error('Colours were not in order!');
 
-      charIndex = colourMarker.charPos
+      charIndex = colourMarker.charPos;
     }
   }
 
@@ -572,23 +579,24 @@ export default class StreamedData {
    * @return
    */
   public isColorAt(charIndex: number) {
-    for (let colourMarker of this.getColourMarkers()) {
-      if (colourMarker.charPos === charIndex)
-        return true
+    // eslint-disable-next-line no-restricted-syntax
+    for (const colourMarker of this.getColourMarkers()) {
+      if (colourMarker.charPos === charIndex) return true;
     }
 
     // If we make it here, no color at the specified index was found!
-    return false
+    return false;
   }
 
   getColourMarkers() {
-    let output: ColourMarker[] = []
-    for (let marker of this.markers) {
+    const output: ColourMarker[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const marker of this.markers) {
       if (marker instanceof ColourMarker) {
-        output.push(marker)
+        output.push(marker);
       }
     }
-    return output
+    return output;
   }
 
   /**
@@ -596,27 +604,17 @@ export default class StreamedData {
    * @return A list of all the new line markers.
    */
   public getNewLineMarkers() {
-    //return newLineMarkers;
+    // return newLineMarkers;
 
     // Extract new line markers
-    let output: NewLineMarker[] = []
-    for (let marker of this.markers) {
+    const output: NewLineMarker[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const marker of this.markers) {
       if (marker instanceof NewLineMarker) {
-        output.push(marker)
+        output.push(marker);
       }
     }
-    return output
-  }
-
-  public getTimeStampMarkers() {
-    throw Error('Not yet implemented.')
-    // let output: TimeStampMarker[] = []
-    // for (let marker of markers) {
-    //     if (marker instanceof TimeStampMarker) {
-    //         output.push(marker)
-    //     }
-    // }
-    // return output
+    return output;
   }
 
   /**
@@ -636,34 +634,48 @@ export default class StreamedData {
     // Add a start-of-string anchor to make sure we only get a match starting at the start of the data
     // Add 'u' flag in so unicode support is enabled, the toPartialMatchRegex() needs this to work
     // correctly
-    let anchoredPattern = new RegExp('^' + pattern.source, 'u')
+    const anchoredPattern = new RegExp(`^${pattern.source}`, 'u');
 
     // Look for index of partial match
     let startIndexOfPartialMatch = -1;
-    while ((startIndexOfPartialMatch == -1) && (currPositionInString <= (input.getText().length - 1))) {
-
+    while (
+      startIndexOfPartialMatch === -1 &&
+      currPositionInString <= input.getText().length - 1
+    ) {
       // Matcher matcher = pattern.matcher(input.getText().substring(currPositionInString));
       // input.getText().substring(currPositionInString).test(pattern)
-      let completeMatchresult = anchoredPattern.exec(input.getText().substring(currPositionInString))
-      let partialMatchRegex = anchoredPattern.toPartialMatchRegex()
-      let partialMatchresult = partialMatchRegex.exec(input.getText().substring(currPositionInString))
+      const completeMatchresult = anchoredPattern.exec(
+        input.getText().substring(currPositionInString)
+      );
+      const partialMatchRegex = anchoredPattern.toPartialMatchRegex();
+      const partialMatchresult = partialMatchRegex.exec(
+        input.getText().substring(currPositionInString)
+      );
 
       // matcher.matches();
       if (!completeMatchresult && partialMatchresult) {
-        startIndexOfPartialMatch = currPositionInString
+        startIndexOfPartialMatch = currPositionInString;
       }
 
       // Remove first character from input and try again
-      currPositionInString++;
+      currPositionInString += 1;
     }
 
     // There might be remaining input after the last ANSI escpe code has been processed.
     // This can all be put in the last text node, which should be by now set up correctly.
-    if (startIndexOfPartialMatch == -1) {
+    if (startIndexOfPartialMatch === -1) {
       // let charsToAppend = input.getText().substring(firstCharAfterLastFullMatch);
-      this.shiftDataIn(input, input.getText().length, MarkerBehaviour.NOT_FILTERING);
+      this.shiftDataIn(
+        input,
+        input.getText().length,
+        MarkerBehaviour.NOT_FILTERING
+      );
     } else {
-      this.shiftDataIn(input, startIndexOfPartialMatch, MarkerBehaviour.NOT_FILTERING);
+      this.shiftDataIn(
+        input,
+        startIndexOfPartialMatch,
+        MarkerBehaviour.NOT_FILTERING
+      );
     }
   }
 
@@ -675,25 +687,25 @@ export default class StreamedData {
    * @return
    */
   public splitTextAtNewLines() {
-
     // Work out how many strings there will be
-    let numOfLines = this.getNewLineMarkers().length + 1
+    const numOfLines = this.getNewLineMarkers().length + 1;
 
-    let lines: string[] = Array(numOfLines)
+    const lines: string[] = Array(numOfLines);
 
     let startIndex = 0;
-    for (let i = 0; i < numOfLines; i++) {
-
-      if (i == numOfLines - 1) {
-        lines[i] = this.getText().substring(startIndex, this.getText().length)
+    for (let i = 0; i < numOfLines; i += 1) {
+      if (i === numOfLines - 1) {
+        lines[i] = this.getText().substring(startIndex, this.getText().length);
       } else {
-        lines[i] = this.getText().substring(startIndex, this.getNewLineMarkers()[i].getCharPos())
-        startIndex = this.getNewLineMarkers()[i].getCharPos()
+        lines[i] = this.getText().substring(
+          startIndex,
+          this.getNewLineMarkers()[i].getCharPos()
+        );
+        startIndex = this.getNewLineMarkers()[i].getCharPos();
       }
-
     }
 
-    return lines
+    return lines;
   }
 
   /**
@@ -705,117 +717,77 @@ export default class StreamedData {
    * @param charIndex The 0-based index of the character in the StreamedText object that you wish to remove.
    */
   public removeChar(charIndex: number, deleteNewLines: boolean) {
-
     if (charIndex >= this.getText().length) {
-      throw Error("charIndex pointed outside of length of text.")
+      throw Error('charIndex pointed outside of length of text.');
     }
 
     // Remove the character from the text
-    let oldText = this.text;
+    const oldText = this.text;
 
-    this.text = oldText.substring(0, charIndex) + oldText.substring(charIndex + 1, oldText.length)
+    this.text =
+      oldText.substring(0, charIndex) +
+      oldText.substring(charIndex + 1, oldText.length);
 
-    //==============================================//
-    //============ DELETE/SHIFT MARKERS ============//
-    //==============================================//
+    //= =============================================//
+    //= =========== DELETE/SHIFT MARKERS ============//
+    //= =============================================//
 
     // Shift all new line markers from the deleted char onwards
-    for (let i = 0; i < this.markers.length; i++) {
-      let element = this.markers[i]
+    for (let i = 0; i < this.markers.length; i += 1) {
+      const element = this.markers[i];
 
       if (deleteNewLines) {
-        if (element.charPos == charIndex + 1 && element instanceof NewLineMarker) {
-          this.markers.splice(i, 1)
-          i--
+        if (
+          element.charPos === charIndex + 1 &&
+          element instanceof NewLineMarker
+        ) {
+          this.markers.splice(i, 1);
+          i -= 1;
         }
       }
 
-      if (element.charPos == charIndex && element.association == Association.CHAR_ON) {
+      if (
+        element.charPos === charIndex &&
+        element.association === Association.CHAR_ON
+      ) {
         // Remove this marker
-        this.markers.splice(i, 1)
-        i--
-      } /*else if (element.charPos == charIndex + 1 && element.association == Marker.Association.SPACE_BEFORE) {
+        this.markers.splice(i, 1);
+        i -= 1;
+      } /* else if (element.charPos == charIndex + 1 && element.association == Marker.Association.SPACE_BEFORE) {
                 // Remove marker that points to the space between deleted char and the one after it
                 iter.remove();
-            }*/ else if (charIndex == 0 && element.charPos == 0 && element.association == Association.SPACE_BEFORE) {
+            } */ else if (
+        charIndex === 0 &&
+        element.charPos === 0 &&
+        element.association === Association.SPACE_BEFORE
+      ) {
         // If we are removing the first char, and the marker is something like a
         // new line, delete it
-        this.markers.splice(i, 1)
-        i--
-      } else if (element.getCharPos() != 0 && element.getCharPos() >= charIndex) {
+        this.markers.splice(i, 1);
+        i -= 1;
+      } else if (
+        element.getCharPos() !== 0 &&
+        element.getCharPos() >= charIndex
+      ) {
         element.setCharPos(element.getCharPos() - 1);
       }
     }
-
   }
-
-  //    /**
-  //     * Converts a Streamed object into a string with the provided new line character sequence
-  //     * inserted at the appropriate places as determined by the new line markers.
-  //     * <p>
-  //     * On a windows system, the typical new line sequence for logging to a file is "\r\n".
-  //     * <p>
-  //     * Does not modify <code>input</code>.
-  //     *
-  //     * @return
-  //     */
-  //    public String convertToStringWithNewLines(String newLineCharSeq) {
-  //
-  //        StringBuilder output = new StringBuilder();
-  //
-  //        output.append(getText());
-  //
-  //        int numOfInsertedChars = 0;
-  //        for (Integer newLineMarker : getNewLineMarkers()) {
-  //            output.insert(newLineMarker + numOfInsertedChars, newLineCharSeq);
-  //            numOfInsertedChars += newLineCharSeq.length();
-  //        }
-  //
-  //        return output.toString();
-  //    }
 
   /**
    * Trims this StreamedData object as necessary to keep the number of chars no greater than
    * <code>maxNumChars</code>.
    */
   private trimDataIfRequired() {
-
     //        logger.debug("trimDataIfRequired() called.");
 
     // Check if -1, if so, we don't want to perform any trimming
-    if (this.maxNumChars == -1)
-      return
+    if (this.maxNumChars === -1) return;
 
     if (this.text.length > this.maxNumChars) {
-      let numCharsToRemove = this.text.length - this.maxNumChars;
+      const numCharsToRemove = this.text.length - this.maxNumChars;
       //            logger.debug("Trimming first" + numCharsToRemove + " characters from StreamedData object.");
-      this.removeCharsFromStart(numCharsToRemove, false)
+      this.removeCharsFromStart(numCharsToRemove, false);
     }
   }
-
-  //================================================================================================//
-  //=========================================== GRAVEYARD ==========================================//
-  //================================================================================================//
-
-  /*public boolean checkAllNewLinesHaveColors() {
-
-      // Check all characters but the last one (since there can't
-      // be any char after this new line to have a color attached to it)
-      for(int x = 0; x < text.length() - 1; x++) {
-
-          if (text.charAt(x) != '\n') {
-              continue;
-          }
-
-          // Look for entry in color array
-          if (!isColorAt(x + 1)) {
-              logger.debug("The was no color on the line starting at position " + Integer.toString(x + 1) + ".");
-              return false;
-          }
-      }
-
-      // If we make it here, all new lines must of had colors
-      return true;
-  }*/
-
 }
