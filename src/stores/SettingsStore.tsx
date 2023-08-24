@@ -4,7 +4,15 @@ import { makeAutoObservable } from 'mobx';
 
 export type StopBits = 1 | 1.5 | 2;
 
+export enum SettingsCategories {
+  PORT_CONFIGURATION,
+  DATA_PROCESSING,
+}
+
 export class SettingsStore {
+  activeSettingsCategory: SettingsCategories =
+    SettingsCategories.PORT_CONFIGURATION;
+
   selectedPortPath = '';
 
   availablePortInfos: PortInfo.PortInfo[] = [];
@@ -30,6 +38,10 @@ export class SettingsStore {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  setActiveSettingsCategory(settingsCategory: SettingsCategories) {
+    this.activeSettingsCategory = settingsCategory;
   }
 
   setSelectedPortPath(selectedPortPath: string) {

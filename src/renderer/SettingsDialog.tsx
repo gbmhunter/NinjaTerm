@@ -80,6 +80,7 @@ function SettingsDialog(props: Props) {
               </List>
             </nav>
           </Box>
+          {/* PORT CONFIGURATION */}
           <Box>
             {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
             <Button
