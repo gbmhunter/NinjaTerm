@@ -13,9 +13,10 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore } from 'stores/AppStore';
-import { SettingsCategories } from 'stores/SettingsStore';
+import { SettingsCategories } from 'stores/Settings/Settings';
 
 import PortConfiguration from './PortConfiguration';
+import DataProcessing from './DataProcessing';
 
 interface Props {
   appStore: AppStore;
@@ -28,7 +29,9 @@ function SettingsDialog(props: Props) {
     [SettingsCategories.PORT_CONFIGURATION]: (
       <PortConfiguration appStore={appStore} />
     ),
-    [SettingsCategories.DATA_PROCESSING]: <div />,
+    [SettingsCategories.DATA_PROCESSING]: (
+      <DataProcessing appStore={appStore} />
+    ),
   };
 
   return (
@@ -44,7 +47,7 @@ function SettingsDialog(props: Props) {
       }}
     >
       <DialogTitle>Settings</DialogTitle>
-      <DialogContent sx={{ height: '100%' }}>
+      <DialogContent sx={{ height: '100%', display: 'flex' }}>
         {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width
         colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from
         top to bottom */}

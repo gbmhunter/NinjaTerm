@@ -2,6 +2,8 @@ import PortInfo from '@serialport/bindings-interface';
 
 import { makeAutoObservable } from 'mobx';
 
+import DataProcessingSettings from './DataProcessingSettings';
+
 export type StopBits = 1 | 1.5 | 2;
 
 export enum SettingsCategories {
@@ -12,6 +14,8 @@ export enum SettingsCategories {
 export class SettingsStore {
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
+
+  dataProcessingSettings: DataProcessingSettings;
 
   selectedPortPath = '';
 
@@ -37,6 +41,7 @@ export class SettingsStore {
   selectedStopBits: StopBits = 1;
 
   constructor() {
+    this.dataProcessingSettings = new DataProcessingSettings();
     makeAutoObservable(this);
   }
 

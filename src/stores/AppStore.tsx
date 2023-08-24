@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { SerialPort } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
@@ -9,7 +9,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StreamedData from 'util/StreamedData/StreamedData';
 import TextSegment from './TextSegmentStore';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
-import { SettingsStore } from './SettingsStore';
+import { SettingsStore } from './Settings/Settings';
 
 declare global {
   interface String {
@@ -106,7 +106,26 @@ export class AppStore {
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
+    // This also sets up the default 1st text segment
     this.clearRxData();
+
+    // reaction(
+    //   () => this.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled,
+    //   (ansiEscapeCodeParsingEnabled) => {
+    //     this.ansiECParser.isEnabled = ansiEscapeCodeParsingEnabled;
+    //     if (this.ansiECParser.isEnabled) {
+    //       this.addStatusBarMsg(
+    //         'ANSI escape code parsing enabled.',
+    //         StatusMsgSeverity.INFO
+    //       );
+    //     } else {
+    //       this.addStatusBarMsg(
+    //         'ANSI escape code parsing disabled.',
+    //         StatusMsgSeverity.INFO
+    //       );
+    //     }
+    //   }
+    // );
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
   }
