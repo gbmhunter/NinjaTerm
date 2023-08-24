@@ -6,6 +6,7 @@
  * @last-modified   2021-01-09
  */
 import StreamedData, { CopyOrShift, MarkerBehaviour } from '../StreamedData';
+import ColourMarker from '../ColorMarker';
 import NewLineMarker from '../../NewLineParser/NewLineMarker';
 
 let inputStreamedData: StreamedData;
@@ -17,20 +18,17 @@ describe('StreamedDataCopyOrShiftNewDataTests', () => {
     outputStreamedData = new StreamedData();
   });
 
-  it('should clear', () => {
+  it('clear() should remove all text and markers', () => {
     const streamedData = new StreamedData();
 
     streamedData.append('1234');
-    console.log('TODO: Need to re-enable tests.');
-    //        streamedData.addColour(0, Color.RED);
-    // streamedData.addMarker(new ColourMarker(0, Color.RED));
-    //        streamedData.addNewLineMarkerAt(0);
+    streamedData.addMarker(new ColourMarker(0, 'rgb(0, 0, 0)'));
     streamedData.getMarkers().push(new NewLineMarker(0));
 
     streamedData.clear();
 
     expect(streamedData.getText()).toEqual('');
-    // expect(streamedData.getColourMarkers().size()).toEqual(0)
+    expect(streamedData.getColourMarkers().length).toEqual(0);
     expect(streamedData.getNewLineMarkers().length).toEqual(0);
   });
 
@@ -55,11 +53,9 @@ describe('StreamedDataCopyOrShiftNewDataTests', () => {
     expect(outputStreamedData.getNewLineMarkers()[0].charPos).toEqual(2);
   });
 
-  it('twoMarkerShiftTest', () => {
+  it('two markers should shift correctly', () => {
     inputStreamedData.append('123456');
-    //        inputStreamedData.addNewLineMarkerAt(3);
     inputStreamedData.getMarkers().push(new NewLineMarker(3));
-    //        inputStreamedData.addNewLineMarkerAt(6);
     inputStreamedData.getMarkers().push(new NewLineMarker(6));
 
     outputStreamedData.copyOrShiftMarkers(
@@ -78,11 +74,9 @@ describe('StreamedDataCopyOrShiftNewDataTests', () => {
     expect(outputStreamedData.getNewLineMarkers()[0].getCharPos()).toEqual(3);
   });
 
-  it('twoMarkerCopyTest', () => {
+  it('two markers should copy correctly', () => {
     inputStreamedData.append('123456');
-    //        inputStreamedData.addNewLineMarkerAt(2);
     inputStreamedData.getMarkers().push(new NewLineMarker(2));
-    //        inputStreamedData.addNewLineMarkerAt(4);
     inputStreamedData.getMarkers().push(new NewLineMarker(4));
 
     outputStreamedData.copyOrShiftMarkers(
