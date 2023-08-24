@@ -14,6 +14,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { StyledEngineProvider } from '@mui/material/styles';
 
 import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
