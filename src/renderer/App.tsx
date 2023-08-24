@@ -10,6 +10,7 @@ import {
 import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ClearIcon from '@mui/icons-material/Clear';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
@@ -107,10 +108,20 @@ const MainRoute = observer((props: Props) => {
             // padding: '30px',
           }}
         >
-          {/* =============== TOP MENU BAR ================ */}
-          <div id="menu" style={{ height: '50px' }}>
+          {/* =============================================================== */}
+          {/* ========================== TOP MENU BAR ======================= */}
+          {/* =============================================================== */}
+          <Box
+            id="menu"
+            sx={{
+              display: 'flex',
+              height: '40px',
+              gap: '10px',
+              marginBottom: '10px',
+            }}
+          >
             <Button
-              variant="text"
+              variant="outlined"
               onClick={() => {
                 appStore.setSettingsDialogOpen(true);
               }}
@@ -118,7 +129,7 @@ const MainRoute = observer((props: Props) => {
               Settings
             </Button>
             <Button
-              variant="text"
+              variant="outlined"
               color={
                 portStateToButtonProps[appStore.portState]
                   .color as OverridableStringUnion<
@@ -147,7 +158,16 @@ const MainRoute = observer((props: Props) => {
             >
               {portStateToButtonProps[appStore.portState].text}
             </Button>
-          </div>
+            <Button
+              variant="outlined"
+              startIcon={<ClearIcon />}
+              onClick={() => {
+                appStore.clearRxData();
+              }}
+            >
+              Clear Data
+            </Button>
+          </Box>
           {/* ================== TX/RX TEXT ==================== */}
           <div
             id="input-output-text"

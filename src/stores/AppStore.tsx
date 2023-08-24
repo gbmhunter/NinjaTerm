@@ -100,9 +100,7 @@ export class AppStore {
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
-    // Create a default segment for data to go into. If no ANSI escape codes
-    // are received, this will the one and only text segment
-    this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
+    this.clearRxData();
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
   }
@@ -507,6 +505,14 @@ export class AppStore {
     //         // Clear the streamed data object, as we have consumed all the information
     //         // available in it
     //         streamedData.clear();
+  }
+
+  clearRxData() {
+    // Clear any existing segments
+    this.rxSegments = [];
+    // Create a default segment for data to go into. If no ANSI escape codes
+    // are received, this will the one and only text segment
+    this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
   }
 
   setTxRxScrollLock(trueFalse: boolean) {
