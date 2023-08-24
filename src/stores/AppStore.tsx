@@ -3,6 +3,9 @@ import { SerialPort } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
 import AnsiECParser from 'util/AnsiECParser/AnsiECParser';
+import StopIcon from '@mui/icons-material/Stop';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+
 import StreamedData from 'util/StreamedData/StreamedData';
 import TextSegment from './TextSegmentStore';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
@@ -31,6 +34,7 @@ export enum PortState {
 export type PortStateToButtonPropsItem = {
   text: string;
   color: string;
+  icon: any;
 };
 
 export const portStateToButtonProps: {
@@ -39,10 +43,12 @@ export const portStateToButtonProps: {
   [PortState.CLOSED]: {
     text: 'Open Port',
     color: 'success',
+    icon: <PlayArrowIcon />,
   },
   [PortState.OPENED]: {
     text: 'Close Port',
     color: 'error',
+    icon: <StopIcon />,
   },
 };
 

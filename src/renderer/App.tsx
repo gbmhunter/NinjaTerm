@@ -1,5 +1,7 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { useEffect, useRef, WheelEvent } from 'react';
+import { observer } from 'mobx-react-lite';
+
 import {
   Box,
   Button,
@@ -11,7 +13,7 @@ import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
-import { observer } from 'mobx-react-lite';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
@@ -125,6 +127,7 @@ const MainRoute = observer((props: Props) => {
               onClick={() => {
                 appStore.setSettingsDialogOpen(true);
               }}
+              startIcon={<SettingsIcon />}
             >
               Settings
             </Button>
@@ -154,6 +157,7 @@ const MainRoute = observer((props: Props) => {
                   );
                 }
               }}
+              startIcon={portStateToButtonProps[appStore.portState].icon}
               disabled={appStore.settings.selectedPortPath === ''}
             >
               {portStateToButtonProps[appStore.portState].text}
