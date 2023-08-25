@@ -15,7 +15,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 
-import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
+import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
@@ -25,13 +25,17 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
   },
+  typography: {
+    // Make all fonts slightly smaller by default for a dense layout
+    fontSize: 13,
+  },
 });
 
 interface Props {
   appStore: AppStore;
 }
 
-const MainRoute = observer((props: Props) => {
+const AppView = observer((props: Props) => {
   // const appModel = useContext(AppStoreContext);
   const { appStore } = props;
 
@@ -229,6 +233,7 @@ const MainRoute = observer((props: Props) => {
             </IconButton>
           </div>
           <div id="footer">
+            {/* ================== STATUS MESSAGES ==================== */}
             <div
               id="log-text"
               onWheel={(e: WheelEvent<HTMLDivElement>) => {
@@ -242,11 +247,7 @@ const MainRoute = observer((props: Props) => {
                 height: '200px',
                 backgroundColor: '#161616',
                 whiteSpace: 'pre-wrap', // This allows \n to create new lines
-                // overflowY: 'scroll',
-
-                // padding: '10px',
                 marginBottom: '10px',
-
                 position: 'relative',
               }}
             >
@@ -260,7 +261,9 @@ const MainRoute = observer((props: Props) => {
                   padding: '10px',
                 }}
               >
-                <Typography>{statusMsgs}</Typography>
+                <Typography sx={{ fontSize: '0.9rem' }}>
+                  {statusMsgs}
+                </Typography>
               </div>
               {/* ================== SCROLL LOCK ARROW ==================== */}
               <IconButton
@@ -287,7 +290,11 @@ const MainRoute = observer((props: Props) => {
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"
-            sx={{ display: 'flex', flexDirection: 'row-reverse' }}
+            sx={{
+              display: 'flex',
+              flexDirection: 'row-reverse',
+              fontSize: '0.9rem',
+            }}
             style={{ height: '20px' }}
           >
             <Typography>
@@ -309,7 +316,7 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<MainRoute appStore={appStore} />} />
+        <Route path="/" element={<AppView appStore={appStore} />} />
       </Routes>
     </Router>
   );

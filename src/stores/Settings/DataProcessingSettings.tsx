@@ -1,7 +1,9 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
+// eslint-disable-next-line import/no-cycle
+import { AppStore } from 'stores/App';
 
-class DataProcessingSettingsData {
+class Data {
   form = {
     fields: {
       ansiEscapeCodeParsingEnabled: {
@@ -20,16 +22,27 @@ class DataProcessingSettingsData {
       error: null,
     },
   };
+
+  constructor() {
+    makeAutoObservable(this);
+  }
 }
 
 export default class DataProcessingSettings {
+  appStore: AppStore;
+
   // The data which is visible to the user, may or may not be valid
-  visibleData = new DataProcessingSettingsData();
+  visibleData = new Data();
 
   // The valid data which is committed once "Apply" is clicked
-  appliedData = new DataProcessingSettingsData();
+  appliedData = new Data();
 
-  constructor() {
+  // Set to true if the visible data has been changed from the applied
+  // data by the user AND data is valid (this is used to enable the "Apply" button)
+  isApplyable = false;
+
+  constructor(app: AppStore) {
+    this.appStore = app;
     makeAutoObservable(this);
   }
 
@@ -43,5 +56,15 @@ export default class DataProcessingSettings {
     // )
     // this.form.meta.isValid = validation.passes();
     // this.form.fields[field].error = validation.errors.first(field);
+
+    this.isApplyable = true;
+  };
+
+  applyChanges = () => {
+    // Deep-copy visible data to applied data
+    this.appliedData = JSON.parse(JSON.stringify(this.visibleData));
+    this.appStore.ansiECParser.isEnabled =
+      this.appliedData.form.fields.ansiEscapeCodeParsingEnabled.value;
+    this.isApplyable = false;
   };
 }

@@ -7,8 +7,9 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import StreamedData from 'util/StreamedData/StreamedData';
-import TextSegment from './TextSegmentStore';
+import TextSegment from './TextSegment';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
+// eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
 
 declare global {
@@ -55,7 +56,7 @@ export const portStateToButtonProps: {
 const defaultTxRxColor = 'rgb(255, 255, 255)';
 
 export class AppStore {
-  settings = new SettingsStore();
+  settings: SettingsStore;
 
   settingsDialogOpen = false;
 
@@ -98,6 +99,7 @@ export class AppStore {
   statusMsgScrollLock = true;
 
   constructor() {
+    this.settings = new SettingsStore(this);
     makeAutoObservable(this);
 
     this.input = new StreamedData();

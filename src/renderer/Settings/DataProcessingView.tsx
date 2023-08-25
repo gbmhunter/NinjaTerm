@@ -1,7 +1,7 @@
 import { Box, Button, Checkbox, FormControlLabel } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore } from 'stores/AppStore';
+import { AppStore } from 'stores/App';
 
 interface Props {
   appStore: AppStore;
@@ -30,7 +30,16 @@ function DataProcessingView(props: Props) {
         }
         label="ANSI Escape Code Parsing"
       />
-      <Button variant="contained" color="success">
+      {/* ============================ APPLY BUTTON =========================== */}
+      <Button
+        variant="contained"
+        color="success"
+        disabled={!appStore.settings.dataProcessing.isApplyable}
+        onClick={() => {
+          appStore.settings.dataProcessing.applyChanges();
+        }}
+        sx={{ marginTop: '10px' }}
+      >
         Apply
       </Button>
     </Box>

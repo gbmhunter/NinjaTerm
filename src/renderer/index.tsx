@@ -5,7 +5,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import App from './App';
+import App from './AppView';
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);

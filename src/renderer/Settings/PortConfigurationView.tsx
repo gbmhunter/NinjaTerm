@@ -19,10 +19,9 @@ import {
   Typography,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore, portStateToButtonProps, PortState } from 'stores/AppStore';
+import { AppStore, portStateToButtonProps, PortState } from 'stores/App';
 import { StopBits } from 'stores/Settings/Settings';
 import { StatusMsgSeverity } from 'stores/StatusMsg';
 
@@ -30,7 +29,7 @@ interface Props {
   appStore: AppStore;
 }
 
-function PortConfiguration(props: Props) {
+function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
   let textColor = '#fff';
@@ -278,4 +277,4 @@ function PortConfiguration(props: Props) {
   );
 }
 
-export default observer(PortConfiguration);
+export default observer(PortConfigurationView);

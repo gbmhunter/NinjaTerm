@@ -2,6 +2,8 @@ import PortInfo from '@serialport/bindings-interface';
 
 import { makeAutoObservable } from 'mobx';
 
+// eslint-disable-next-line import/no-cycle
+import { AppStore } from 'stores/App';
 import DataProcessingSettings from './DataProcessingSettings';
 
 export type StopBits = 1 | 1.5 | 2;
@@ -12,6 +14,8 @@ export enum SettingsCategories {
 }
 
 export class SettingsStore {
+  app: AppStore;
+
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
@@ -40,8 +44,9 @@ export class SettingsStore {
 
   selectedStopBits: StopBits = 1;
 
-  constructor() {
-    this.dataProcessing = new DataProcessingSettings();
+  constructor(app: AppStore) {
+    this.app = app;
+    this.dataProcessing = new DataProcessingSettings(app);
     makeAutoObservable(this);
   }
 
