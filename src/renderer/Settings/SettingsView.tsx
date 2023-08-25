@@ -16,7 +16,7 @@ import { AppStore } from 'stores/AppStore';
 import { SettingsCategories } from 'stores/Settings/Settings';
 
 import PortConfiguration from './PortConfiguration';
-import DataProcessing from './DataProcessing';
+import DataProcessingView from './DataProcessingView';
 
 interface Props {
   appStore: AppStore;
@@ -30,7 +30,7 @@ function SettingsDialog(props: Props) {
       <PortConfiguration appStore={appStore} />
     ),
     [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessing appStore={appStore} />
+      <DataProcessingView appStore={appStore} />
     ),
   };
 
@@ -84,7 +84,14 @@ function SettingsDialog(props: Props) {
               </List>
             </nav>
           </Box>
-          {displayedSettingsCategory[appStore.settings.activeSettingsCategory]}
+          {/* Container to wrap scrollable content in right-hand side pane */}
+          <Box sx={{ overflowY: 'auto' }}>
+            {
+              displayedSettingsCategory[
+                appStore.settings.activeSettingsCategory
+              ]
+            }
+          </Box>
         </Box>
       </DialogContent>
       <DialogActions>

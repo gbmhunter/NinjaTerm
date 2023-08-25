@@ -7,7 +7,7 @@ interface Props {
   appStore: AppStore;
 }
 
-function DataProcessing(props: Props) {
+function DataProcessingView(props: Props) {
   const { appStore } = props;
   // console.log('appStore.settings.dataProcessingSettings=', appStore.settings.dataProcessingSettings);
   return (
@@ -17,11 +17,11 @@ function DataProcessing(props: Props) {
           <Checkbox
             name="ansiEscapeCodeParsingEnabled"
             checked={
-              appStore.settings.dataProcessingSettings.form.fields
+              appStore.settings.dataProcessing.visibleData.form.fields
                 .ansiEscapeCodeParsingEnabled.value
             }
             onChange={(e) => {
-              appStore.settings.dataProcessingSettings.onFieldChange(
+              appStore.settings.dataProcessing.onFieldChange(
                 e.target.name,
                 e.target.checked
               );
@@ -30,9 +30,11 @@ function DataProcessing(props: Props) {
         }
         label="ANSI Escape Code Parsing"
       />
-      <Button variant="contained" color="success">Apply</Button>
+      <Button variant="contained" color="success">
+        Apply
+      </Button>
     </Box>
   );
 }
 
-export default observer(DataProcessing);
+export default observer(DataProcessingView);

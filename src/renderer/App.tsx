@@ -18,7 +18,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { AppStore, PortState, portStateToButtonProps } from 'stores/AppStore';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
-import SettingsDialog from './Settings/SettingsDialog';
+import SettingsDialog from './Settings/SettingsView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({

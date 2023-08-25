@@ -15,7 +15,7 @@ export class SettingsStore {
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
-  dataProcessingSettings: DataProcessingSettings;
+  dataProcessing: DataProcessingSettings;
 
   selectedPortPath = '';
 
@@ -41,7 +41,7 @@ export class SettingsStore {
   selectedStopBits: StopBits = 1;
 
   constructor() {
-    this.dataProcessingSettings = new DataProcessingSettings();
+    this.dataProcessing = new DataProcessingSettings();
     makeAutoObservable(this);
   }
 

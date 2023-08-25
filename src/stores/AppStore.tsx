@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';

@@ -1,6 +1,7 @@
+// eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 
-export default class DataProcessingSettings {
+class DataProcessingSettingsData {
   form = {
     fields: {
       ansiEscapeCodeParsingEnabled: {
@@ -19,13 +20,22 @@ export default class DataProcessingSettings {
       error: null,
     },
   };
+}
+
+export default class DataProcessingSettings {
+  // The data which is visible to the user, may or may not be valid
+  visibleData = new DataProcessingSettingsData();
+
+  // The valid data which is committed once "Apply" is clicked
+  appliedData = new DataProcessingSettingsData();
 
   constructor() {
     makeAutoObservable(this);
   }
 
   onFieldChange = (field: any, value: any) => {
-    this.form.fields[field].value = value;
+    // Hacky cast to any to prevent typescript warnings
+    (this.visibleData.form.fields as any)[field].value = value;
     // let {email, password} = this.form.fields
     // var validation = new Validator(
     //   {email: email.value, password: password.value},
@@ -34,5 +44,4 @@ export default class DataProcessingSettings {
     // this.form.meta.isValid = validation.passes();
     // this.form.fields[field].error = validation.errors.first(field);
   };
-
 }
