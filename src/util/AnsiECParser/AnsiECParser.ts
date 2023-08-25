@@ -37,6 +37,7 @@ export default class AnsiECParser {
 
   constructor() {
     // Populate the map with data
+    // TODO: Add support for [ESC][0m
     this.codeToNormalColourMap['30'] = 'rgb(0, 0, 0)';
     this.codeToNormalColourMap['31'] = 'rgb(170, 0, 0)';
     this.codeToNormalColourMap['32'] = 'rgb(0, 170, 0)';
@@ -130,7 +131,10 @@ export default class AnsiECParser {
       const color = correctMapToUse[numbers[0]];
 
       if (color == null) {
-        console.log('Escape sequence was not supported!');
+        console.log(
+          'Escape sequence was not supported! escape code=',
+          ansiEscapeCode.getText()
+        );
         // The number in the escape sequence was not recognised. Update the current position in input string
         // to skip over this escape sequence, and continue to next iteration of loop.
         currShiftIndex = matchEnd;
