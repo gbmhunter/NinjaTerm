@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, FormControlLabel } from '@mui/material';
+import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore } from 'stores/App';
@@ -29,6 +29,18 @@ function DataProcessingView(props: Props) {
           />
         }
         label="ANSI Escape Code Parsing"
+        sx={{ marginBottom: '10px' }}
+      />
+      {/* ============================ DATA WIDTH =========================== */}
+      <TextField
+        id="outlined-basic"
+        label="Data Width"
+        variant="outlined"
+        size="small"
+        InputProps={{
+          endAdornment: <InputAdornment position="start">chars</InputAdornment>,
+        }}
+        sx={{ marginBottom: '20px' }}
       />
       {/* ============================ APPLY BUTTON =========================== */}
       <Button
@@ -38,7 +50,6 @@ function DataProcessingView(props: Props) {
         onClick={() => {
           appStore.settings.dataProcessing.applyChanges();
         }}
-        sx={{ marginTop: '10px' }}
       >
         Apply
       </Button>
