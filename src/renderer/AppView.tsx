@@ -1,5 +1,5 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { useEffect, useRef, WheelEvent } from 'react';
+import React, { CSSProperties, useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -28,6 +28,17 @@ const darkTheme = createTheme({
   typography: {
     // Make all fonts slightly smaller by default for a dense layout
     fontSize: 13,
+  },
+  components: {
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          // Override default font size for all tool-tips, as default is a little
+          // to small
+          fontSize: '0.8rem',
+        },
+      },
+    },
   },
 });
 
@@ -96,6 +107,22 @@ const AppView = observer((props: Props) => {
       throw Error('Unrecognized severity.');
     }
   });
+
+  // If the width in chars is set to anything but 0, set the width in "ch" units and make
+  // sure text will break on anything. Otherwise if width is set to 0, make pane 100% wide and don't
+  // break
+  let dataPaneWidth = '';
+  let dataPaneWordBreak: CSSProperties['wordBreak'];
+  if (
+    appStore.settings.dataProcessing.appliedData.fields.dataWidth_chars.value >
+    0
+  ) {
+    dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.dataWidth_chars.value}ch`;
+    dataPaneWordBreak = 'break-all';
+  } else {
+    dataPaneWidth = '100%';
+    dataPaneWordBreak = 'normal';
+  }
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
@@ -207,9 +234,14 @@ const AppView = observer((props: Props) => {
                 padding: '10px',
               }}
             >
-              {rxSpans}
-              {/* Blinking cursor at end of data */}
-              <span id="cursor">█</span>
+              <div
+                id="limiting-text-width"
+                style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
+              >
+                {rxSpans}
+                {/* Blinking cursor at end of data */}
+                <span id="cursor">█</span>
+              </div>
             </div>
             {/* ================== SCROLL LOCK ARROW ==================== */}
             <IconButton

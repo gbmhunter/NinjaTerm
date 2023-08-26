@@ -6,6 +6,7 @@ import {
   FormControlLabel,
   InputAdornment,
   TextField,
+  Tooltip,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
@@ -40,35 +41,39 @@ function DataProcessingView(props: Props) {
         sx={{ marginBottom: '10px' }}
       />
       {/* ============================ DATA WIDTH =========================== */}
-      <TextField
-        id="outlined-basic"
-        name="dataWidth_chars"
-        label="Data Width"
-        variant="outlined"
-        size="small"
-        InputProps={{
-          endAdornment: <InputAdornment position="start">chars</InputAdornment>,
-        }}
-        value={
-          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-            .value
-        }
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          appStore.settings.dataProcessing.onFieldChange(
-            event.target.name,
-            event.target.value
-          );
-        }}
-        error={
-          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-            .hasError
-        }
-        helperText={
-          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-            .errorMsg
-        }
-        sx={{ marginBottom: '20px' }}
-      />
+      <Tooltip title="The max. number of characters to display per line of data before wrapping to the next line. Must be a positive integer. Set to 0 to have infinite width (only new line characters will cause text to jump to the next line).">
+        <TextField
+          id="outlined-basic"
+          name="dataWidth_chars"
+          label="Data Width"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">chars</InputAdornment>
+            ),
+          }}
+          value={
+            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+              .value
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            appStore.settings.dataProcessing.onFieldChange(
+              event.target.name,
+              event.target.value
+            );
+          }}
+          error={
+            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+              .hasError
+          }
+          helperText={
+            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+              .errorMsg
+          }
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
       {/* ============================ APPLY BUTTON =========================== */}
       <Button
         variant="contained"

@@ -56,7 +56,8 @@ export default class DataProcessingSettings {
       ([paramName, paramData]) => {
         validatorValues[paramName] = paramData.value;
         validatorRules[paramName] = paramData.rule;
-    });
+      }
+    );
 
     const validation = new Validator(validatorValues, validatorRules);
     // Calling passes() is needed to run the validation logic. This also assigns the result
@@ -77,8 +78,6 @@ export default class DataProcessingSettings {
         }
       }
     );
-
-
   };
 
   applyChanges = () => {
