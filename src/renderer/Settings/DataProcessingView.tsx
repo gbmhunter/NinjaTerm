@@ -1,4 +1,12 @@
-import { Box, Button, Checkbox, FormControlLabel, InputAdornment, TextField } from '@mui/material';
+import React from 'react';
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  InputAdornment,
+  TextField,
+} from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore } from 'stores/App';
@@ -17,7 +25,7 @@ function DataProcessingView(props: Props) {
           <Checkbox
             name="ansiEscapeCodeParsingEnabled"
             checked={
-              appStore.settings.dataProcessing.visibleData.form.fields
+              appStore.settings.dataProcessing.visibleData.fields
                 .ansiEscapeCodeParsingEnabled.value
             }
             onChange={(e) => {
@@ -34,12 +42,31 @@ function DataProcessingView(props: Props) {
       {/* ============================ DATA WIDTH =========================== */}
       <TextField
         id="outlined-basic"
+        name="dataWidth_chars"
         label="Data Width"
         variant="outlined"
         size="small"
         InputProps={{
           endAdornment: <InputAdornment position="start">chars</InputAdornment>,
         }}
+        value={
+          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+            .value
+        }
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          appStore.settings.dataProcessing.onFieldChange(
+            event.target.name,
+            event.target.value
+          );
+        }}
+        error={
+          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+            .hasError
+        }
+        helperText={
+          appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
+            .errorMsg
+        }
         sx={{ marginBottom: '20px' }}
       />
       {/* ============================ APPLY BUTTON =========================== */}

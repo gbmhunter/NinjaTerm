@@ -109,7 +109,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
-    "serialport": "^11.0.1"
+    "serialport": "^11.0.1",
+    "validatorjs": "^3.22.1"
   },
   "devDependencies": {
     "@electron/notarize": "^1.2.3",

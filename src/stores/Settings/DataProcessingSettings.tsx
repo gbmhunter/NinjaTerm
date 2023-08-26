@@ -1,25 +1,23 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
+import * as Validator from 'validatorjs';
+
 // eslint-disable-next-line import/no-cycle
 import { AppStore } from 'stores/App';
 
 class Data {
-  form = {
-    fields: {
-      ansiEscapeCodeParsingEnabled: {
-        value: true,
-        error: null,
-        rule: 'required|email',
-      },
-      password: {
-        value: '',
-        error: null,
-        rule: 'required',
-      },
+  fields = {
+    ansiEscapeCodeParsingEnabled: {
+      value: true,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required',
     },
-    meta: {
-      isValid: true,
-      error: null,
+    dataWidth_chars: {
+      value: 80,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required|integer',
     },
   };
 
@@ -48,23 +46,46 @@ export default class DataProcessingSettings {
 
   onFieldChange = (field: any, value: any) => {
     // Hacky cast to any to prevent typescript warnings
-    (this.visibleData.form.fields as any)[field].value = value;
-    // let {email, password} = this.form.fields
-    // var validation = new Validator(
-    //   {email: email.value, password: password.value},
-    //   {email: email.rule, password: password.rule},
-    // )
-    // this.form.meta.isValid = validation.passes();
-    // this.form.fields[field].error = validation.errors.first(field);
+    console.log('onFieldChange() called. field=', field, ', value=', value);
+    (this.visibleData.fields as any)[field].value = value;
 
-    this.isApplyable = true;
+    // Massage data into the form the validator library expects...
+    const validatorValues: { [key: string]: any } = {};
+    const validatorRules: { [key: string]: string } = {};
+    Object.entries(this.visibleData.fields).forEach(
+      ([paramName, paramData]) => {
+        validatorValues[paramName] = paramData.value;
+        validatorRules[paramName] = paramData.rule;
+    });
+
+    const validation = new Validator(validatorValues, validatorRules);
+    // Calling passes() is needed to run the validation logic. This also assigns the result
+    // to enable/disable the apply button
+    this.isApplyable = validation.passes();
+
+    // Iterate over key/value pairs in data
+    Object.entries(this.visibleData.fields).forEach(
+      ([paramName, paramData]) => {
+        const hasError = validation.errors.has(paramName);
+        // Convert to any type so we can assign to it
+        const paramDataAny = paramData as any;
+        paramDataAny.hasError = hasError;
+        if (hasError) {
+          paramDataAny.errorMsg = validation.errors.first('dataWidth_chars'); // validation.errors.first('dataWidth_chars');
+        } else {
+          paramDataAny.errorMsg = '';
+        }
+      }
+    );
+
+
   };
 
   applyChanges = () => {
     // Deep-copy visible data to applied data
     this.appliedData = JSON.parse(JSON.stringify(this.visibleData));
     this.appStore.ansiECParser.isEnabled =
-      this.appliedData.form.fields.ansiEscapeCodeParsingEnabled.value;
+      this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
     this.isApplyable = false;
   };
 }
