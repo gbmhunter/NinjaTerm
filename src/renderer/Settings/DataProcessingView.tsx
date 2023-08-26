@@ -74,6 +74,39 @@ function DataProcessingView(props: Props) {
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
+      {/* ============================ SCROLLBACK SIZE =========================== */}
+      <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage.">
+        <TextField
+          name="scrollbackSize_chars"
+          label="Scrollback Size"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">chars</InputAdornment>
+            ),
+          }}
+          value={
+            appStore.settings.dataProcessing.visibleData.fields
+              .scrollbackSize_chars.value
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            appStore.settings.dataProcessing.onFieldChange(
+              event.target.name,
+              event.target.value
+            );
+          }}
+          error={
+            appStore.settings.dataProcessing.visibleData.fields
+              .scrollbackSize_chars.hasError
+          }
+          helperText={
+            appStore.settings.dataProcessing.visibleData.fields
+              .scrollbackSize_chars.errorMsg
+          }
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
       {/* ============================ APPLY BUTTON =========================== */}
       <Button
         variant="contained"

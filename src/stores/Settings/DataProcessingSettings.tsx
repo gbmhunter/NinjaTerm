@@ -14,7 +14,13 @@ class Data {
       rule: 'required',
     },
     dataWidth_chars: {
-      value: 80,
+      value: 200,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required|integer',
+    },
+    scrollbackSize_chars: {
+      value: 10000,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer',
