@@ -271,6 +271,10 @@ export class AppStore {
     }
   };
 
+  handleKeyPress(event: KeyboardEvent) {
+    console.log('handleKeyPress() called. event=', event, this);
+  }
+
   /**
    * Processes newly received serial data through the various parsing streams, all the way
    * to output data which is displayed to the user.

@@ -125,18 +125,17 @@ const AppView = observer((props: Props) => {
     );
   }
 
+  // Attach listener to catch key presses over entire app
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      console.log(event);
-      if (event.key === 'Escape') {
-        console.log('Close');
-      }
+      appStore.handleKeyPress(event);
     };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
