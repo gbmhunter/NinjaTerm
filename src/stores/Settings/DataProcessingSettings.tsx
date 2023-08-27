@@ -13,13 +13,13 @@ class Data {
       errorMsg: '',
       rule: 'required',
     },
-    dataWidth_chars: {
-      value: 200,
+    wrappingWidthChars: {
+      value: 120, // 120 is a good default
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
-    scrollbackSize_chars: {
+    scrollbackBufferSizeChars: {
       value: 10000,
       hasError: false,
       errorMsg: '',
@@ -78,7 +78,7 @@ export default class DataProcessingSettings {
         const paramDataAny = paramData as any;
         paramDataAny.hasError = hasError;
         if (hasError) {
-          paramDataAny.errorMsg = validation.errors.first('dataWidth_chars'); // validation.errors.first('dataWidth_chars');
+          paramDataAny.errorMsg = validation.errors.first('wrappingWidthChars'); // validation.errors.first('wrappingWidthChars');
         } else {
           paramDataAny.errorMsg = '';
         }

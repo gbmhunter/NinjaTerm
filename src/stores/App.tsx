@@ -370,7 +370,7 @@ export class AppStore {
     // ================ TRIM SCROLLBACK BUFFER ===============//
     // Trim RX segments if total amount of text exceeds scrollback buffer size
     const scrollbackSizeChars =
-      this.settings.dataProcessing.appliedData.fields.scrollbackSize_chars
+      this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
         .value;
     while (this.numCharsInRxPane > scrollbackSizeChars) {
       const numCharsToRemove = this.numCharsInRxPane - scrollbackSizeChars;

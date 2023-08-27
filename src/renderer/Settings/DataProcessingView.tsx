@@ -44,7 +44,7 @@ function DataProcessingView(props: Props) {
       <Tooltip title="The max. number of characters to display per line of data before wrapping to the next line. Must be a positive integer. Set to 0 to have infinite width (only new line characters will cause text to jump to the next line).">
         <TextField
           id="outlined-basic"
-          name="dataWidth_chars"
+          name="wrappingWidthChars"
           label="Wrapping Width"
           variant="outlined"
           size="small"
@@ -54,8 +54,8 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-              .value
+            appStore.settings.dataProcessing.visibleData.fields
+              .wrappingWidthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -64,12 +64,12 @@ function DataProcessingView(props: Props) {
             );
           }}
           error={
-            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-              .hasError
+            appStore.settings.dataProcessing.visibleData.fields
+              .wrappingWidthChars.hasError
           }
           helperText={
-            appStore.settings.dataProcessing.visibleData.fields.dataWidth_chars
-              .errorMsg
+            appStore.settings.dataProcessing.visibleData.fields
+              .wrappingWidthChars.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
@@ -77,7 +77,7 @@ function DataProcessingView(props: Props) {
       {/* ============================ SCROLLBACK SIZE =========================== */}
       <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage. Must be a positive non-zero integer.">
         <TextField
-          name="scrollbackSize_chars"
+          name="scrollbackBufferSizeChars"
           label="Scrollback Buffer Size"
           variant="outlined"
           size="small"
@@ -88,7 +88,7 @@ function DataProcessingView(props: Props) {
           }}
           value={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackSize_chars.value
+              .scrollbackBufferSizeChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -98,11 +98,11 @@ function DataProcessingView(props: Props) {
           }}
           error={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackSize_chars.hasError
+              .scrollbackBufferSizeChars.hasError
           }
           helperText={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackSize_chars.errorMsg
+              .scrollbackBufferSizeChars.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
