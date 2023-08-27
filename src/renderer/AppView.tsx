@@ -87,6 +87,7 @@ const AppView = observer((props: Props) => {
     }
   });
 
+  // Create data panes based on configuration
   let pane1;
   let pane2;
   if (
@@ -123,7 +124,20 @@ const AppView = observer((props: Props) => {
       `Unsupported data view configuration. dataViewConfiguration=${appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
     );
   }
-  console.log('dataViewConfig=', appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      console.log(event);
+      if (event.key === 'Escape') {
+        console.log('Close');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
