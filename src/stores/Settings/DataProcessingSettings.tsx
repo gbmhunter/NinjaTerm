@@ -5,6 +5,16 @@ import * as Validator from 'validatorjs';
 // eslint-disable-next-line import/no-cycle
 import { AppStore } from 'stores/App';
 
+/** Enumerates the different possible ways the TX and RX data
+ * can be displayed.
+ */
+export enum DataViewConfiguration {
+  COMBINED_TX_RX_PANE,
+  SEPARATE_TX_RX_PANES,
+}
+
+/** This class represents all the data which is stored in the data processing setting category.
+ * One instance is created for the visible data, and another for the applied (and validated) data */
 class Data {
   fields = {
     ansiEscapeCodeParsingEnabled: {
@@ -24,6 +34,12 @@ class Data {
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
+    },
+    dataViewConfiguration: {
+      value: DataViewConfiguration.COMBINED_TX_RX_PANE,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required',
     },
   };
 

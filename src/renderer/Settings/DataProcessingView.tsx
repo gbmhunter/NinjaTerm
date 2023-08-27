@@ -5,12 +5,15 @@ import {
   Checkbox,
   FormControlLabel,
   InputAdornment,
+  MenuItem,
+  Select,
   TextField,
   Tooltip,
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { AppStore } from 'stores/App';
+import { DataViewConfiguration } from 'stores/Settings/DataProcessingSettings';
 
 interface Props {
   appStore: AppStore;
@@ -18,6 +21,15 @@ interface Props {
 
 function DataProcessingView(props: Props) {
   const { appStore } = props;
+
+  // Maps the enums to human-readable names for display
+  const dataViewConfigEnumToDisplayName: {
+    [key: string]: string;
+  } = {
+    [DataViewConfiguration.COMBINED_TX_RX_PANE]: 'Combined TX/RX pane',
+    [DataViewConfiguration.SEPARATE_TX_RX_PANES]: 'Separate TX/RX panes',
+  };
+
   // console.log('appStore.settings.dataProcessingSettings=', appStore.settings.dataProcessingSettings);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -104,9 +116,36 @@ function DataProcessingView(props: Props) {
             appStore.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeChars.errorMsg
           }
-          sx={{ marginBottom: '20px' }}
+          sx={{ marginBottom: '10px' }}
         />
       </Tooltip>
+      {/* ============================ DATA VIEW CONFIGURATION =========================== */}
+      {/* <Tooltip title="Single pane used for both RX and TX."> */}
+      <Select
+        name="dataViewConfiguration"
+        value={
+          appStore.settings.dataProcessing.visibleData.fields
+            .dataViewConfiguration.value
+        }
+        onChange={(e) => {
+          appStore.settings.dataProcessing.onFieldChange(
+            e.target.name,
+            e.target.value as number
+          );
+        }}
+        sx={{ marginBottom: '20px' }}
+      >
+        {Object.keys(DataViewConfiguration)
+          .filter((key) => !Number.isNaN(Number(key)))
+          .map((key) => {
+            return (
+              <MenuItem key={key} value={key}>
+                {dataViewConfigEnumToDisplayName[key]}
+              </MenuItem>
+            );
+          })}
+      </Select>
+      {/* </Tooltip> */}
       {/* ============================ APPLY BUTTON =========================== */}
       <Button
         variant="contained"

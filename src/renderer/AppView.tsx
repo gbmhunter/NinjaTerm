@@ -1,5 +1,5 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { CSSProperties, useEffect, useRef, WheelEvent } from 'react';
+import React, { useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -14,13 +14,13 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
+import CssBaseline from '@mui/material/CssBaseline';
 
 import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
 import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
-// import { app } from 'electron';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -52,36 +52,12 @@ const AppView = observer((props: Props) => {
   // const appModel = useContext(AppStoreContext);
   const { appStore } = props;
 
-  const txRxRef = useRef<HTMLInputElement>(null);
-
-  // Run this after every render, as it's too computationally expensive to
-  // do a deep compare of the text segments
-  useEffect(() => {
-    // Only scroll to bottom if enabled in app model
-    if (txRxRef.current && appStore.txRxTextScrollLock) {
-      txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
-    }
-  });
-
   const statusMsgDivRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (statusMsgDivRef.current && appStore.statusMsgScrollLock) {
       statusMsgDivRef.current.scrollTop = statusMsgDivRef.current.scrollHeight;
     }
   }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
-
-  // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
-  // 1) White space preserved
-  // 2) \n to create a new line
-  // 3) Text to wrap once it hits the maximum terminal width
-  // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
-  const rxSpans = appStore.rxSegments.map((segment) => {
-    return (
-      <span key={segment.key} style={{ color: segment.color }}>
-        {segment.text}
-      </span>
-    );
-  });
 
   // Generate UI showing the status messages
   const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
@@ -110,25 +86,10 @@ const AppView = observer((props: Props) => {
     }
   });
 
-  // If the width in chars is set to anything but 0, set the width in "ch" units and make
-  // sure text will break on anything. Otherwise if width is set to 0, make pane 100% wide and don't
-  // break
-  let dataPaneWidth = '';
-  let dataPaneWordBreak: CSSProperties['wordBreak'];
-  if (
-    appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars
-      .value > 0
-  ) {
-    dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars.value}ch`;
-    dataPaneWordBreak = 'break-all';
-  } else {
-    dataPaneWidth = '100%';
-    dataPaneWordBreak = 'normal';
-  }
-
   return (
     /* ThemeProvider sets theme for all MUI elements */
     <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <div id="outer-border" style={{ height: '100%', padding: '10px' }}>
         {/* SettingsDialog is a modal */}
         <SettingsDialog appStore={appStore} />
