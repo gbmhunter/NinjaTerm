@@ -18,7 +18,9 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
+import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
+// import { app } from 'electron';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -114,8 +116,8 @@ const AppView = observer((props: Props) => {
   let dataPaneWidth = '';
   let dataPaneWordBreak: CSSProperties['wordBreak'];
   if (
-    appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars.value >
-    0
+    appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars
+      .value > 0
   ) {
     dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars.value}ch`;
     dataPaneWordBreak = 'break-all';
@@ -203,67 +205,12 @@ const AppView = observer((props: Props) => {
               Clear Data
             </Button>
           </Box>
-          {/* ================== TX/RX TEXT ==================== */}
-          <div
-            id="input-output-text"
-            onWheel={(e: WheelEvent<HTMLDivElement>) => {
-              // Disable scroll lock if enabled and the scroll direction was
-              // up (negative deltaY)
-              if (e.deltaY < 0 && appStore.txRxTextScrollLock) {
-                appStore.setTxRxScrollLock(false);
-              }
-            }}
-            style={{
-              flexGrow: '1',
-              backgroundColor: '#161616',
-              fontFamily: 'monospace',
-              whiteSpace: 'pre-wrap', // This allows \n to create new lines
-              // overflowY: 'scroll',
-              // padding: '10px',
-              marginBottom: '10px',
-              position: 'relative', // This is so we can use position: absolute for the down icon
-            }}
-          >
-            <div
-              ref={txRxRef}
-              style={{
-                height: '100%',
-                width: '100%',
-                position: 'absolute',
-                overflowY: 'scroll',
-                padding: '10px',
-              }}
-            >
-              <div
-                id="limiting-text-width"
-                style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
-              >
-                {rxSpans}
-                {/* Blinking cursor at end of data */}
-                <span id="cursor">█</span>
-              </div>
-            </div>
-            {/* ================== SCROLL LOCK ARROW ==================== */}
-            <IconButton
-              onClick={() => {
-                appStore.setTxRxScrollLock(true);
-              }}
-              sx={{
-                display: appStore.txRxTextScrollLock ? 'none' : 'block',
-                position: 'absolute', // Fix it to the bottom right of the TX/RX view port
-                bottom: '20px',
-                right: '30px',
-                color: 'rgba(255, 255, 255, 0.4)',
-              }}
-            >
-              <ArrowDownwardIcon
-                sx={{
-                  width: '40px',
-                  height: '40px',
-                }}
-              />
-            </IconButton>
-          </div>
+          {/* ================== DATA PANE 1 ==================== */}
+          <DataPaneView
+            appStore={appStore}
+            dataPane={appStore.dataPane1}
+            textSegments={appStore.rxSegments}
+          />
           <div id="footer">
             {/* ================== STATUS MESSAGES ==================== */}
             <div

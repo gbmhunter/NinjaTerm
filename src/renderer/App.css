@@ -10,6 +10,8 @@ to 100% */
 }
 
 :root {
+  /* Most elements are controlled by the dark theme set in MUI, but this is needed for the scrollbars to adapt the
+  dark theme */
   color-scheme: dark;
 }
 

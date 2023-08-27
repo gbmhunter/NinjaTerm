@@ -8,6 +8,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import StreamedData from 'util/StreamedData/StreamedData';
 import TextSegment from './TextSegment';
+import DataPane from './DataPane';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
@@ -78,6 +79,10 @@ export class AppStore {
 
   portState = PortState.CLOSED;
 
+  dataPane1: DataPane;
+
+  dataPane2: DataPane;
+
   rxData = '';
 
   // Keeps track of how many characters have been inserted into
@@ -106,6 +111,9 @@ export class AppStore {
   constructor() {
     this.settings = new SettingsStore(this);
     makeAutoObservable(this);
+
+    this.dataPane1 = new DataPane();
+    this.dataPane2 = new DataPane();
 
     this.input = new StreamedData();
     this.ansiECParser = new AnsiECParser();
