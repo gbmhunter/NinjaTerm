@@ -30,7 +30,7 @@ class Data {
       rule: 'required|integer|min:1',
     },
     scrollbackBufferSizeChars: {
-      value: 10000,
+      value: 100000,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',

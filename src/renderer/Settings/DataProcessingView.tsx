@@ -3,8 +3,10 @@ import {
   Box,
   Button,
   Checkbox,
+  FormControl,
   FormControlLabel,
   InputAdornment,
+  InputLabel,
   MenuItem,
   Select,
   TextField,
@@ -116,36 +118,42 @@ function DataProcessingView(props: Props) {
             appStore.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeChars.errorMsg
           }
-          sx={{ marginBottom: '10px' }}
+          sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
       {/* ============================ DATA VIEW CONFIGURATION =========================== */}
-      {/* <Tooltip title="Single pane used for both RX and TX."> */}
-      <Select
-        name="dataViewConfiguration"
-        value={
-          appStore.settings.dataProcessing.visibleData.fields
-            .dataViewConfiguration.value
-        }
-        onChange={(e) => {
-          appStore.settings.dataProcessing.onFieldChange(
-            e.target.name,
-            e.target.value as number
-          );
-        }}
-        sx={{ marginBottom: '20px' }}
+      <Tooltip
+        title="Control whether 1 or 2 data panes are used to display the data."
+        placement="top"
       >
-        {Object.keys(DataViewConfiguration)
-          .filter((key) => !Number.isNaN(Number(key)))
-          .map((key) => {
-            return (
-              <MenuItem key={key} value={key}>
-                {dataViewConfigEnumToDisplayName[key]}
-              </MenuItem>
-            );
-          })}
-      </Select>
-      {/* </Tooltip> */}
+        <FormControl size="small">
+          <InputLabel>Data View Configuration</InputLabel>
+          <Select
+            name="dataViewConfiguration"
+            value={
+              appStore.settings.dataProcessing.visibleData.fields
+                .dataViewConfiguration.value
+            }
+            onChange={(e) => {
+              appStore.settings.dataProcessing.onFieldChange(
+                e.target.name,
+                e.target.value as number
+              );
+            }}
+            sx={{ marginBottom: '20px' }}
+          >
+            {Object.keys(DataViewConfiguration)
+              .filter((key) => !Number.isNaN(Number(key)))
+              .map((key) => {
+                return (
+                  <MenuItem key={key} value={key}>
+                    {dataViewConfigEnumToDisplayName[key]}
+                  </MenuItem>
+                );
+              })}
+          </Select>
+        </FormControl>
+      </Tooltip>
       {/* ============================ APPLY BUTTON =========================== */}
       <Button
         variant="contained"
