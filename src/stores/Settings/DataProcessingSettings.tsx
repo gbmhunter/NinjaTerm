@@ -17,13 +17,13 @@ class Data {
       value: 200,
       hasError: false,
       errorMsg: '',
-      rule: 'required|integer',
+      rule: 'required|integer|min:1',
     },
     scrollbackSize_chars: {
-      value: 10,
+      value: 10000,
       hasError: false,
       errorMsg: '',
-      rule: 'required|integer',
+      rule: 'required|integer|min:1',
     },
   };
 

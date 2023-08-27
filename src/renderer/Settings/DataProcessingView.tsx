@@ -45,7 +45,7 @@ function DataProcessingView(props: Props) {
         <TextField
           id="outlined-basic"
           name="dataWidth_chars"
-          label="Data Width"
+          label="Wrapping Width"
           variant="outlined"
           size="small"
           InputProps={{
@@ -75,10 +75,10 @@ function DataProcessingView(props: Props) {
         />
       </Tooltip>
       {/* ============================ SCROLLBACK SIZE =========================== */}
-      <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage.">
+      <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage. Must be a positive non-zero integer.">
         <TextField
           name="scrollbackSize_chars"
-          label="Scrollback Size"
+          label="Scrollback Buffer Size"
           variant="outlined"
           size="small"
           InputProps={{
