@@ -353,7 +353,7 @@ export class AppStore {
         insertionCount += 1;
       }
 
-      // Add this remaining text to the last existing element in the RX segments
+      // Add this remaining text to a new text segment
       const textColor = this.output.getColourMarkers()[x].color;
       const newTextSegment = new TextSegment(
         textToAppend.toString(),
@@ -395,7 +395,10 @@ export class AppStore {
     this.rxSegments = [];
     // Create a default segment for data to go into. If no ANSI escape codes
     // are received, this will the one and only text segment
+    // debugger;
     this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
+    // Reset char count also
+    this.numCharsInRxPane = 0;
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

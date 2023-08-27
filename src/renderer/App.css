@@ -9,6 +9,10 @@ to 100% */
   box-sizing: border-box;
 }
 
+:root {
+  color-scheme: dark;
+}
+
 body {
   position: relative;
 
