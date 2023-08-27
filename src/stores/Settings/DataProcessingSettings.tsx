@@ -20,7 +20,7 @@ class Data {
       rule: 'required|integer',
     },
     scrollbackSize_chars: {
-      value: 10000,
+      value: 10,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer',

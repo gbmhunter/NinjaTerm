@@ -358,7 +358,7 @@ export class AppStore {
       const newTextSegment = new TextSegment(
         textToAppend.toString(),
         textColor,
-        this.rxSegments.length
+        this.rxSegments[this.rxSegments.length - 1].key + 1 // Increment key by 1
       );
 
       this.rxSegments.push(newTextSegment);
@@ -369,6 +369,28 @@ export class AppStore {
 
     // Trim RX segments if total amount of text exceeds scrollback buffer size
     // TODO: Add here.
+    const scrollbackSizeChars =
+      this.settings.dataProcessing.appliedData.fields.scrollbackSize_chars
+        .value;
+    while (this.numCharsInRxPane > scrollbackSizeChars) {
+      console.log('Removing chars. numCharsInRxPane=', this.numCharsInRxPane, 'scrollbackSizeChars=', scrollbackSizeChars);
+      const numCharsToRemove = this.numCharsInRxPane - scrollbackSizeChars;
+      // Remove chars from the oldest text segment first
+      const numCharsInOldestSegment = this.rxSegments[0].text.length;
+      if (numCharsToRemove >= numCharsInOldestSegment) {
+        // We can remove the whole text segment, unless it's only one.
+        console.log('Removing entire text segment');
+        this.rxSegments.shift();
+        this.numCharsInRxPane -= numCharsInOldestSegment;
+      } else {
+        // The oldest text segment has more chars than what we need to remove,
+        // so just trim
+        console.log('Trimming text segment.');
+        this.rxSegments[0].text =
+          this.rxSegments[0].text.slice(numCharsToRemove);
+        this.numCharsInRxPane -= numCharsToRemove;
+      }
+    }
   }
 
   clearRxData() {
