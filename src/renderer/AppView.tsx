@@ -19,6 +19,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
+import { DataViewConfiguration } from 'stores/Settings/DataProcessingSettings';
 import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
 
@@ -85,6 +86,44 @@ const AppView = observer((props: Props) => {
       throw Error('Unrecognized severity.');
     }
   });
+
+  let pane1;
+  let pane2;
+  if (
+    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
+      .value === DataViewConfiguration.COMBINED_TX_RX_PANE
+  ) {
+    pane1 = (
+      <DataPaneView
+        appStore={appStore}
+        dataPane={appStore.dataPane1}
+        textSegments={appStore.rxSegments}
+      />
+    );
+  } else if (
+    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
+      .value === DataViewConfiguration.SEPARATE_TX_RX_PANES
+  ) {
+    pane1 = (
+      <DataPaneView
+        appStore={appStore}
+        dataPane={appStore.dataPane1}
+        textSegments={appStore.rxSegments}
+      />
+    );
+    pane2 = (
+      <DataPaneView
+        appStore={appStore}
+        dataPane={appStore.dataPane1}
+        textSegments={appStore.rxSegments}
+      />
+    );
+  } else {
+    throw Error(
+      `Unsupported data view configuration. dataViewConfiguration=${appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
+    );
+  }
+  console.log('dataViewConfig=', appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value);
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
@@ -167,11 +206,8 @@ const AppView = observer((props: Props) => {
             </Button>
           </Box>
           {/* ================== DATA PANE 1 ==================== */}
-          <DataPaneView
-            appStore={appStore}
-            dataPane={appStore.dataPane1}
-            textSegments={appStore.rxSegments}
-          />
+          {pane1}
+          {pane2}
           <div id="footer">
             {/* ================== STATUS MESSAGES ==================== */}
             <div

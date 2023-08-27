@@ -137,7 +137,7 @@ function DataProcessingView(props: Props) {
             onChange={(e) => {
               appStore.settings.dataProcessing.onFieldChange(
                 e.target.name,
-                e.target.value as number
+                Number(e.target.value)
               );
             }}
             sx={{ marginBottom: '20px' }}
