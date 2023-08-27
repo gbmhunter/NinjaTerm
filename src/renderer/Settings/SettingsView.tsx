@@ -69,6 +69,10 @@ function SettingsDialog(props: Props) {
                       SettingsCategories.PORT_CONFIGURATION
                     );
                   }}
+                  selected={
+                    appStore.settings.activeSettingsCategory ===
+                    SettingsCategories.PORT_CONFIGURATION
+                  }
                 >
                   <ListItemText>Port Configuration</ListItemText>
                 </ListItemButton>
@@ -78,6 +82,10 @@ function SettingsDialog(props: Props) {
                       SettingsCategories.DATA_PROCESSING
                     );
                   }}
+                  selected={
+                    appStore.settings.activeSettingsCategory ===
+                    SettingsCategories.DATA_PROCESSING
+                  }
                 >
                   <ListItemText>Data Processing</ListItemText>
                 </ListItemButton>

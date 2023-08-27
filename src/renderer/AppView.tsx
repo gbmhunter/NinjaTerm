@@ -324,18 +324,20 @@ const AppView = observer((props: Props) => {
             id="bottom-status-bar"
             sx={{
               display: 'flex',
-              flexDirection: 'row-reverse',
+              flexDirection: 'row',
+              justifyContent: 'end',
               fontSize: '0.9rem',
+              gap: '20px',
             }}
             style={{ height: '20px' }}
           >
-            <Typography>
+            <Box>
               Port:{' '}
               {appStore.settings.selectedPortPath !== ''
                 ? appStore.settings.selectedPortPath
                 : 'n/a'}{' '}
-              {PortState[appStore.portState]}
-            </Typography>
+            </Box>
+            <Box>{PortState[appStore.portState]}</Box>
           </Box>
         </div>
       </div>
