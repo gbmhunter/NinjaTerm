@@ -107,7 +107,7 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={appStore}
         dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments}
+        textSegments={appStore.rxSegments.textSegments}
       />
     );
   } else if (
@@ -119,7 +119,7 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={appStore}
         dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments}
+        textSegments={appStore.txRxSegments.textSegments}
       />
     );
   } else if (
@@ -131,14 +131,14 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={appStore}
         dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments}
+        textSegments={appStore.rxSegments.textSegments}
       />
     );
     pane2 = (
       <DataPaneView
         appStore={appStore}
         dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments}
+        textSegments={appStore.rxSegments.textSegments}
       />
     );
   } else {
@@ -236,8 +236,9 @@ const AppView = observer((props: Props) => {
               variant="outlined"
               startIcon={<ClearIcon />}
               onClick={() => {
-                appStore.clearTxData();
-                appStore.clearRxData();
+                appStore.txSegments.clear();
+                appStore.rxSegments.clear();
+                appStore.txRxSegments.clear();
               }}
             >
               Clear Data

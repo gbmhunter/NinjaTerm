@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+// eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
@@ -57,6 +58,67 @@ export const portStateToButtonProps: {
 
 const defaultTxRxColor = 'rgb(255, 255, 255)';
 
+class TextSegmentController {
+  textSegments: TextSegment[];
+
+  numCharsInSegments: number;
+
+  constructor() {
+    this.textSegments = [];
+    this.numCharsInSegments = 0;
+    // This sets up the text segment array with a default segment
+    this.clear();
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
+
+  appendText(text: string) {
+    const lastSegment = this.textSegments[this.textSegments.length - 1];
+    lastSegment.text += text;
+    this.numCharsInSegments += text.length;
+  }
+
+  addNewSegment(text: string, colour: string) {
+    const newRxTextSegment = new TextSegment(
+      text,
+      colour,
+      this.textSegments[this.textSegments.length - 1].key + 1 // Increment key by 1
+    );
+    this.numCharsInSegments += newRxTextSegment.text.length;
+    this.textSegments.push(newRxTextSegment);
+  }
+
+  trimSegments(maxCharSize: number) {
+    // Trim RX segments if total amount of text exceeds scrollback buffer size
+    while (this.numCharsInSegments > maxCharSize) {
+      const numCharsToRemove = this.numCharsInSegments - maxCharSize;
+      // Remove chars from the oldest text segment first
+      const numCharsInOldestSegment = this.textSegments[0].text.length;
+      if (numCharsToRemove >= numCharsInOldestSegment) {
+        // We can remove the whole text segment, unless it's only one.
+        this.textSegments.shift();
+        this.numCharsInSegments -= numCharsInOldestSegment;
+      } else {
+        // The oldest text segment has more chars than what we need to remove,
+        // so just trim
+        this.textSegments[0].text =
+          this.textSegments[0].text.slice(numCharsToRemove);
+        this.numCharsInSegments -= numCharsToRemove;
+      }
+    }
+  }
+
+  clear() {
+    // Clear any existing segments
+    this.textSegments = [];
+    // Create a default segment for data to go into. If no ANSI escape codes
+    // are received, this will the one and only text segment
+    // debugger;
+    this.textSegments.push(new TextSegment('', defaultTxRxColor, 0));
+    // Reset char count also
+    this.numCharsInSegments = 0;
+  }
+}
+
 export class AppStore {
   settings: SettingsStore;
 
@@ -86,13 +148,6 @@ export class AppStore {
 
   rxData = '';
 
-  // Keeps track of how many characters have been inserted into
-  // the RX pane. Used for working out when the oldest data needs
-  // to be removed because it has exceeded the scrollback limit.
-  numCharsInTxPane = 0;
-
-  numCharsInRxPane = 0;
-
   input: StreamedData;
 
   newLineParser: NewLineParser;
@@ -103,9 +158,11 @@ export class AppStore {
 
   output: StreamedData;
 
-  txSegments: TextSegment[];
+  txSegments: TextSegmentController;
 
-  rxSegments: TextSegment[];
+  rxSegments: TextSegmentController;
+
+  txRxSegments: TextSegmentController;
 
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
@@ -125,11 +182,11 @@ export class AppStore {
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
-    this.txSegments = [];
-    this.rxSegments = [];
-    // clear...() also sets up the default 1st text segment
-    this.clearTxData();
-    this.clearRxData();
+    this.txSegments = new TextSegmentController();
+    this.rxSegments = new TextSegmentController();
+    // A mix of both TX and RX data. Displayed when the "COMBINED_TX_RX_PANE"
+    // view configuration is selected.
+    this.txRxSegments = new TextSegmentController();
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -313,10 +370,9 @@ export class AppStore {
           );
         } else {
           // Sending was successful, increment TX count and insert sent data
-          // into TX segments for showing in pane(s)
-          this.numCharsInTxPane += bytesToWrite.length;
-          this.txSegments[this.txSegments.length - 1].text +=
-            String.fromCharCode(...bytesToWrite);
+          // into TX and TXRX segments for showing in pane(s)
+          this.txSegments.appendText(String.fromCharCode(...bytesToWrite));
+          this.txRxSegments.appendText(String.fromCharCode(...bytesToWrite));
         }
       });
     }
@@ -365,9 +421,8 @@ export class AppStore {
     }
 
     // Add this remaining text to the last existing element in the RX segments
-    const lastRxSegment = this.rxSegments[this.rxSegments.length - 1];
-    lastRxSegment.text += textToAppend;
-    this.numCharsInRxPane += textToAppend.length;
+    this.rxSegments.appendText(textToAppend);
+    this.txRxSegments.appendText(textToAppend);
 
     // Create new text nodes and copy all text
     // This loop won't run if there is no elements in the TextColors array
@@ -415,63 +470,18 @@ export class AppStore {
 
       // Add this remaining text to a new text segment
       const textColor = this.output.getColourMarkers()[x].color;
-      const newTextSegment = new TextSegment(
-        textToAppend.toString(),
-        textColor,
-        this.rxSegments[this.rxSegments.length - 1].key + 1 // Increment key by 1
-      );
-
-      this.rxSegments.push(newTextSegment);
-      this.numCharsInRxPane += newTextSegment.text.length;
+      this.rxSegments.addNewSegment(textToAppend.toString(), textColor);
+      this.txRxSegments.addNewSegment(textToAppend.toString(), textColor);
     }
 
     this.output.clear();
 
     // ================ TRIM SCROLLBACK BUFFER ===============//
-    // Trim RX segments if total amount of text exceeds scrollback buffer size
     const scrollbackSizeChars =
       this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
         .value;
-    while (this.numCharsInRxPane > scrollbackSizeChars) {
-      const numCharsToRemove = this.numCharsInRxPane - scrollbackSizeChars;
-      // Remove chars from the oldest text segment first
-      const numCharsInOldestSegment = this.rxSegments[0].text.length;
-      if (numCharsToRemove >= numCharsInOldestSegment) {
-        // We can remove the whole text segment, unless it's only one.
-        this.rxSegments.shift();
-        this.numCharsInRxPane -= numCharsInOldestSegment;
-      } else {
-        // The oldest text segment has more chars than what we need to remove,
-        // so just trim
-        this.rxSegments[0].text =
-          this.rxSegments[0].text.slice(numCharsToRemove);
-        this.numCharsInRxPane -= numCharsToRemove;
-      }
-    }
-  }
-
-  clearTxData() {
-    // Clear any existing segments
-    this.txSegments = [];
-    // Create a default segment for data to go into. If no ANSI escape codes
-    // are received, this will the one and only text segment
-    // debugger;
-    this.txSegments.push(new TextSegment('', defaultTxRxColor, 0));
-    // Reset char count also
-    this.numCharsInTxPane = 0;
-    console.log('this.txSegments=', this.txSegments);
-  }
-
-  clearRxData() {
-    // Clear any existing segments
-    this.rxSegments = [];
-    // Create a default segment for data to go into. If no ANSI escape codes
-    // are received, this will the one and only text segment
-    // debugger;
-    this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
-    // Reset char count also
-    this.numCharsInRxPane = 0;
-    console.log('this.rxSegments=', this.rxSegments);
+    this.rxSegments.trimSegments(scrollbackSizeChars);
+    this.txRxSegments.trimSegments(scrollbackSizeChars);
   }
 
   setTxRxScrollLock(trueFalse: boolean) {
