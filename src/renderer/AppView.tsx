@@ -131,13 +131,13 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={appStore}
         dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments.textSegments}
+        textSegments={appStore.txSegments.textSegments}
       />
     );
     pane2 = (
       <DataPaneView
         appStore={appStore}
-        dataPane={appStore.dataPane1}
+        dataPane={appStore.dataPane2}
         textSegments={appStore.rxSegments.textSegments}
       />
     );
@@ -246,7 +246,7 @@ const AppView = observer((props: Props) => {
             </Button>
             {/* ============================ DATA VIEW CONFIGURATION =========================== */}
             <Tooltip
-              title="Control whether 1 or 2 data panes are used to display the data."
+              title="Controls how to display the TX and RX data. Different use cases required different view configurations."
               placement="left"
             >
               <FormControl size="small">
@@ -296,7 +296,7 @@ const AppView = observer((props: Props) => {
                 }
               }}
               style={{
-                height: '200px',
+                height: '100px',
                 backgroundColor: '#161616',
                 whiteSpace: 'pre-wrap', // This allows \n to create new lines
                 marginBottom: '10px',
