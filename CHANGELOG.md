@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [3.1.0] - 2023-08-28
+
 - Fixed broken links to GitHub tags in this CHANGELOG.
 - Created `staging` branch which the GitHub publish action runs from.
 - The ANSI escape code parsing and text colouring is now working again.
@@ -301,7 +303,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.0.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.2.0...v3.0.0
 [2.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.0.0...v2.1.0
