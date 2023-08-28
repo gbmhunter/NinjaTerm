@@ -89,6 +89,8 @@ export class AppStore {
   // Keeps track of how many characters have been inserted into
   // the RX pane. Used for working out when the oldest data needs
   // to be removed because it has exceeded the scrollback limit.
+  numCharsInTxPane = 0;
+
   numCharsInRxPane = 0;
 
   input: StreamedData;
@@ -101,7 +103,9 @@ export class AppStore {
 
   output: StreamedData;
 
-  rxSegments: TextSegment[] = [];
+  txSegments: TextSegment[];
+
+  rxSegments: TextSegment[];
 
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
@@ -111,7 +115,6 @@ export class AppStore {
 
   constructor() {
     this.settings = new SettingsStore(this);
-    makeAutoObservable(this);
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
@@ -122,10 +125,14 @@ export class AppStore {
     this.newLineParser = new NewLineParser('\n');
     this.output = new StreamedData();
 
-    // This also sets up the default 1st text segment
+    this.txSegments = [];
+    this.rxSegments = [];
+    // clear...() also sets up the default 1st text segment
+    this.clearTxData();
     this.clearRxData();
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -152,10 +159,6 @@ export class AppStore {
         if (ports.length > 0) {
           this.settings.setSelectedPortPath(ports[0].path);
         }
-        // this.setPortStatusMsg({
-        //   text: `Port scan complete. Found ${ports.length} ports.`,
-        //   type: PortStatusMsgType.OK,
-        // });
         this.addStatusBarMsg(
           `Port scan complete. Found ${ports.length} ports.`,
           StatusMsgSeverity.INFO,
@@ -280,7 +283,7 @@ export class AppStore {
 
       // Convert event.key to required ASCII number. This would be easier if we could
       // use keyCode, but this method is deprecated!
-      const bytesToWrite: Number[] = [];
+      const bytesToWrite: number[] = [];
       const isLetter =
         (event.key >= 'a' && event.key <= 'z') ||
         (event.key >= 'A' && event.key <= 'Z');
@@ -308,6 +311,12 @@ export class AppStore {
             `Could not write data to serial port. data=${event.key}, error=${error}.`,
             StatusMsgSeverity.ERROR
           );
+        } else {
+          // Sending was successful, increment TX count and insert sent data
+          // into TX segments for showing in pane(s)
+          this.numCharsInTxPane += bytesToWrite.length;
+          this.txSegments[this.txSegments.length - 1].text +=
+            String.fromCharCode(...bytesToWrite);
         }
       });
     }
@@ -318,6 +327,7 @@ export class AppStore {
    * to output data which is displayed to the user.
    */
   addNewRxData(data: Buffer) {
+    console.log('addNewRxData() called. data=', data);
     this.rxData += data.toString();
 
     this.input.append(data.toString());
@@ -440,6 +450,18 @@ export class AppStore {
     }
   }
 
+  clearTxData() {
+    // Clear any existing segments
+    this.txSegments = [];
+    // Create a default segment for data to go into. If no ANSI escape codes
+    // are received, this will the one and only text segment
+    // debugger;
+    this.txSegments.push(new TextSegment('', defaultTxRxColor, 0));
+    // Reset char count also
+    this.numCharsInTxPane = 0;
+    console.log('this.txSegments=', this.txSegments);
+  }
+
   clearRxData() {
     // Clear any existing segments
     this.rxSegments = [];
@@ -449,6 +471,7 @@ export class AppStore {
     this.rxSegments.push(new TextSegment('', defaultTxRxColor, 0));
     // Reset char count also
     this.numCharsInRxPane = 0;
+    console.log('this.rxSegments=', this.rxSegments);
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

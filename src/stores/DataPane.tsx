@@ -5,7 +5,7 @@ export default class DataPane {
   scrollLock = true;
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   setScrollLock(trueFalse: boolean) {

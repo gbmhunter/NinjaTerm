@@ -8,9 +8,9 @@ export default class TextSegment {
   key: number;
 
   constructor(text: string, color: string, key: number) {
-    makeAutoObservable(this);
     this.text = text;
     this.color = color;
     this.key = key;
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 }

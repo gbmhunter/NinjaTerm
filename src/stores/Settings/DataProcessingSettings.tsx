@@ -6,12 +6,22 @@ import * as Validator from 'validatorjs';
 import { AppStore } from 'stores/App';
 
 /** Enumerates the different possible ways the TX and RX data
- * can be displayed.
+ * can be displayed. One of these may be active at any one time.
  */
 export enum DataViewConfiguration {
-  COMBINED_TX_RX_PANE,
+  RX_PANE, // No TX echo
+  COMBINED_TX_RX_PANE, // TX echo
   SEPARATE_TX_RX_PANES,
 }
+
+// Maps the enums to human-readable names for display
+export const dataViewConfigEnumToDisplayName: {
+  [key: string]: string;
+} = {
+  [DataViewConfiguration.RX_PANE]: 'RX pane (no TX echo)',
+  [DataViewConfiguration.COMBINED_TX_RX_PANE]: 'Combined TX/RX pane (TX echo)',
+  [DataViewConfiguration.SEPARATE_TX_RX_PANES]: 'Separate TX/RX panes',
+};
 
 /** This class represents all the data which is stored in the data processing setting category.
  * One instance is created for the visible data, and another for the applied (and validated) data */
@@ -63,7 +73,7 @@ export default class DataProcessingSettings {
 
   constructor(app: AppStore) {
     this.appStore = app;
-    makeAutoObservable(this);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   onFieldChange = (field: any, value: any) => {

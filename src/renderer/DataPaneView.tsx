@@ -15,6 +15,7 @@ interface Props {
 
 export default observer((props: Props) => {
   const { appStore, dataPane, textSegments } = props;
+  console.log('DataPaneView rendering. textSegments=', textSegments);
 
   // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
   // 1) White space preserved

@@ -15,7 +15,10 @@ import {
 import { observer } from 'mobx-react-lite';
 
 import { AppStore } from 'stores/App';
-import { DataViewConfiguration } from 'stores/Settings/DataProcessingSettings';
+import {
+  DataViewConfiguration,
+  dataViewConfigEnumToDisplayName,
+} from 'stores/Settings/DataProcessingSettings';
 
 interface Props {
   appStore: AppStore;
@@ -24,15 +27,6 @@ interface Props {
 function DataProcessingView(props: Props) {
   const { appStore } = props;
 
-  // Maps the enums to human-readable names for display
-  const dataViewConfigEnumToDisplayName: {
-    [key: string]: string;
-  } = {
-    [DataViewConfiguration.COMBINED_TX_RX_PANE]: 'Combined TX/RX pane',
-    [DataViewConfiguration.SEPARATE_TX_RX_PANES]: 'Separate TX/RX panes',
-  };
-
-  // console.log('appStore.settings.dataProcessingSettings=', appStore.settings.dataProcessingSettings);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <FormControlLabel

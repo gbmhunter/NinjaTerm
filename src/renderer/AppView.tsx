@@ -6,7 +6,12 @@ import {
   Box,
   Button,
   ButtonPropsColorOverrides,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
@@ -19,7 +24,10 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
 import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
 import './App.css';
-import { DataViewConfiguration } from 'stores/Settings/DataProcessingSettings';
+import {
+  DataViewConfiguration,
+  dataViewConfigEnumToDisplayName,
+} from 'stores/Settings/DataProcessingSettings';
 import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
 
@@ -87,13 +95,26 @@ const AppView = observer((props: Props) => {
     }
   });
 
-  // Create data panes based on configuration
+  // Create data panes based on selected configuration
   let pane1;
   let pane2;
   if (
     appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
+      .value === DataViewConfiguration.RX_PANE
+  ) {
+    // Show only 1 pane, which only contains RX data
+    pane1 = (
+      <DataPaneView
+        appStore={appStore}
+        dataPane={appStore.dataPane1}
+        textSegments={appStore.rxSegments}
+      />
+    );
+  } else if (
+    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
       .value === DataViewConfiguration.COMBINED_TX_RX_PANE
   ) {
+    // Show only 1 pane, but contains both TX and RX pane
     pane1 = (
       <DataPaneView
         appStore={appStore}
@@ -105,6 +126,7 @@ const AppView = observer((props: Props) => {
     appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
       .value === DataViewConfiguration.SEPARATE_TX_RX_PANES
   ) {
+    // Shows 2 panes, 1 for TX data and 1 for RX data
     pane1 = (
       <DataPaneView
         appStore={appStore}
@@ -209,15 +231,53 @@ const AppView = observer((props: Props) => {
             >
               {portStateToButtonProps[appStore.portState].text}
             </Button>
+            {/* ================== CLEAR DATA BUTTON ==================== */}
             <Button
               variant="outlined"
               startIcon={<ClearIcon />}
               onClick={() => {
+                appStore.clearTxData();
                 appStore.clearRxData();
               }}
             >
               Clear Data
             </Button>
+            {/* ============================ DATA VIEW CONFIGURATION =========================== */}
+            <Tooltip
+              title="Control whether 1 or 2 data panes are used to display the data."
+              placement="left"
+            >
+              <FormControl size="small">
+                <InputLabel>Data View Configuration</InputLabel>
+                <Select
+                  name="dataViewConfiguration"
+                  value={
+                    appStore.settings.dataProcessing.visibleData.fields
+                      .dataViewConfiguration.value
+                  }
+                  onChange={(e) => {
+                    appStore.settings.dataProcessing.onFieldChange(
+                      e.target.name,
+                      Number(e.target.value)
+                    );
+                    // In the settings dialog, this same setting is under the influence of
+                    // an Apply button. But on the main screen, lets just apply changes automatically
+                    appStore.settings.dataProcessing.applyChanges();
+                  }}
+                  sx={{ marginBottom: '20px', fontSize: '1.0rem' }}
+                >
+                  {Object.keys(DataViewConfiguration)
+                    .filter((key) => !Number.isNaN(Number(key)))
+                    .map((key) => {
+                      return (
+                        <MenuItem key={key} value={key}>
+                          {dataViewConfigEnumToDisplayName[key]}
+                        </MenuItem>
+                      );
+                    })}
+                </Select>
+              </FormControl>
+            </Tooltip>
           </Box>
           {/* ================== DATA PANE 1 ==================== */}
           {pane1}

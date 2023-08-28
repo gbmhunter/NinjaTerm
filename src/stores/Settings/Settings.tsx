@@ -47,7 +47,7 @@ export class SettingsStore {
   constructor(app: AppStore) {
     this.app = app;
     this.dataProcessing = new DataProcessingSettings(app);
-    makeAutoObservable(this);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   setActiveSettingsCategory(settingsCategory: SettingsCategories) {
