@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed broken links to GitHub tags in this CHANGELOG.
 - Created `staging` branch which the GitHub publish action runs from.
 - The ANSI escape code parsing and text colouring is now working again.
-- Added new settings sub-category for data processing settings, which includes data display width and scrollback buffer size settings.
+- Added new settings sub-category for data processing settings, which includes data display width and scroll-back buffer size settings.
+- Added 3 separate view configurations to choose from (including combined and split TX/RX views).
 
 ## [3.0.0] - 2023-08-21
 

@@ -45,10 +45,13 @@ To package apps for the local platform:
 npm run package
 ```
 
-Packages are automatically created for Windows, Linux and MacOS in the GitHub action when new commits are pushed to `main`. Before pushing to `main`, make sure:
+Packages are automatically created for Windows, Linux and MacOS in the GitHub action when new commits are pushed to `staging`. Before pushing to `staging`, make sure:
 
-1. Version number has been updated correctly in `release/app/package.json`.
+1. Version number has been updated in `release/app/package.json`.
+1. Version number has been updated in `docs/index.html`.
 1. CHANGELOG has been updated.
+
+Once the build on staging has been successfully run, merge the `staging` branch into `main`.
 
 ## Native Libraries
 
