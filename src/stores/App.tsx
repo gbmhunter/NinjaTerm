@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
 
@@ -273,6 +274,43 @@ export class AppStore {
 
   handleKeyPress(event: KeyboardEvent) {
     console.log('handleKeyPress() called. event=', event, this);
+    if (this.portState === PortState.OPENED) {
+      // Serial port is open, let's send it to the serial
+      // port
+
+      // Convert event.key to required ASCII number. This would be easier if we could
+      // use keyCode, but this method is deprecated!
+      const bytesToWrite: Number[] = [];
+      const isLetter =
+        (event.key >= 'a' && event.key <= 'z') ||
+        (event.key >= 'A' && event.key <= 'Z');
+      const isNumber = event.key >= '0' && event.key <= '9';
+      // List of allowed symbols
+      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?';
+      const isSymbol = symbols.includes(event.key);
+      if (event.ctrlKey) {
+        // Don't send anything if a control key was held down
+        return;
+      }
+
+      if (event.key === 'Enter') {
+        bytesToWrite.push(13);
+        bytesToWrite.push(10);
+      } else if (isLetter || isNumber || isSymbol) {
+        bytesToWrite.push(event.key.charCodeAt(0));
+      } else {
+        console.log('Unsupported char!');
+      }
+      console.log('Writing to serial port. bytesToWrite=', bytesToWrite);
+      this.serialPort?.write(bytesToWrite, (error) => {
+        if (error) {
+          this.addStatusBarMsg(
+            `Could not write data to serial port. data=${event.key}, error=${error}.`,
+            StatusMsgSeverity.ERROR
+          );
+        }
+      });
+    }
   }
 
   /**
