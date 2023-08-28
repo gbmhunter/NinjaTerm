@@ -2,9 +2,25 @@ import PortInfo from '@serialport/bindings-interface';
 
 import { makeAutoObservable } from 'mobx';
 
+// eslint-disable-next-line import/no-cycle
+import { AppStore } from 'stores/App';
+import DataProcessingSettings from './DataProcessingSettings';
+
 export type StopBits = 1 | 1.5 | 2;
 
+export enum SettingsCategories {
+  PORT_CONFIGURATION,
+  DATA_PROCESSING,
+}
+
 export class SettingsStore {
+  app: AppStore;
+
+  activeSettingsCategory: SettingsCategories =
+    SettingsCategories.PORT_CONFIGURATION;
+
+  dataProcessing: DataProcessingSettings;
+
   selectedPortPath = '';
 
   availablePortInfos: PortInfo.PortInfo[] = [];
@@ -28,8 +44,14 @@ export class SettingsStore {
 
   selectedStopBits: StopBits = 1;
 
-  constructor() {
-    makeAutoObservable(this);
+  constructor(app: AppStore) {
+    this.app = app;
+    this.dataProcessing = new DataProcessingSettings(app);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
+
+  setActiveSettingsCategory(settingsCategory: SettingsCategories) {
+    this.activeSettingsCategory = settingsCategory;
   }
 
   setSelectedPortPath(selectedPortPath: string) {

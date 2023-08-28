@@ -15,7 +15,12 @@ void setup() {
 void loop() {
 
   if (Serial.available()) {
-    Serial.write(Serial.read());
+    uint8_t rxChar = Serial.read();
+    switch(rxChar) {
+      case '1':
+        Serial.write("Hello");
+        break;
+    }
   }
 
 }

@@ -9,12 +9,12 @@
 // the setup routine runs once when you press reset:
 void setup() {
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
 void loop() {
 
-#define DISPLAY_PERIOD (100)
+#define DISPLAY_PERIOD (10)
 
   Serial.print("\x1B[31mtest1");
   delay(DISPLAY_PERIOD);

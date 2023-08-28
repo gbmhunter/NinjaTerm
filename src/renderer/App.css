@@ -9,6 +9,12 @@ to 100% */
   box-sizing: border-box;
 }
 
+:root {
+  /* Most elements are controlled by the dark theme set in MUI, but this is needed for the scrollbars to adapt the
+  dark theme */
+  color-scheme: dark;
+}
+
 body {
   position: relative;
 
@@ -30,4 +36,25 @@ body {
 #root {
   width: 100%;
   height: 100%;
+}
+
+#cursor {
+  /* line-height: 17px; */
+  /* margin-left: 3px; */
+  -webkit-animation: blink 0.8s infinite;
+  animation: blink 0.8s infinite;
+  /* width: 7px; */
+  /* height: 15px; */
+}
+
+@keyframes blink {
+  0% {
+    color: #222;
+  }
+  50% {
+    color: white;
+  }
+  100% {
+    color: #222;
+  }
 }
