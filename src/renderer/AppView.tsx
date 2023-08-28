@@ -186,6 +186,7 @@ const AppView = observer((props: Props) => {
             id="menu"
             sx={{
               display: 'flex',
+              alignItems: 'center',
               height: '40px',
               gap: '10px',
               marginBottom: '10px',
@@ -265,7 +266,7 @@ const AppView = observer((props: Props) => {
                     // an Apply button. But on the main screen, lets just apply changes automatically
                     appStore.settings.dataProcessing.applyChanges();
                   }}
-                  sx={{ marginBottom: '20px', fontSize: '1.0rem' }}
+                  sx={{ fontSize: '0.8rem' }}
                 >
                   {Object.keys(DataViewConfiguration)
                     .filter((key) => !Number.isNaN(Number(key)))
