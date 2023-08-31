@@ -3,7 +3,7 @@ import PortInfo from '@serialport/bindings-interface';
 import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
-import { AppStore } from 'stores/App';
+import { AppStore } from 'model/App';
 import DataProcessingSettings from './DataProcessingSettings';
 
 export type StopBits = 1 | 1.5 | 2;

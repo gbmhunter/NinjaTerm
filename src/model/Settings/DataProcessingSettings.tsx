@@ -3,7 +3,7 @@ import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
 
 // eslint-disable-next-line import/no-cycle
-import { AppStore } from 'stores/App';
+import { AppStore } from 'model/App';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.

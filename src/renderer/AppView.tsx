@@ -21,13 +21,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
 
-import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
-import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
+import { AppStore, PortState, portStateToButtonProps } from 'model/App';
+import { StatusMsg, StatusMsgSeverity } from 'model/StatusMsg';
 import './App.css';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'stores/Settings/DataProcessingSettings';
+} from 'model/Settings/DataProcessingSettings';
 import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
 

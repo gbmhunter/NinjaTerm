@@ -21,9 +21,9 @@ import {
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore, portStateToButtonProps, PortState } from 'stores/App';
-import { StopBits } from 'stores/Settings/Settings';
-import { StatusMsgSeverity } from 'stores/StatusMsg';
+import { AppStore, portStateToButtonProps, PortState } from 'model/App';
+import { StopBits } from 'model/Settings/Settings';
+import { StatusMsgSeverity } from 'model/StatusMsg';
 
 interface Props {
   appStore: AppStore;

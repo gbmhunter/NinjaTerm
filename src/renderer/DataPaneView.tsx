@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-import { AppStore } from 'stores/App';
-import TextSegment from 'stores/TextSegment';
-import DataPane from 'stores/DataPane';
+import { AppStore } from 'model/App';
+import TextSegment from 'model/TextSegment';
+import DataPane from 'model/DataPane';
 
 interface Props {
   appStore: AppStore;
