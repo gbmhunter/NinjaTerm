@@ -119,7 +119,7 @@ class TextSegmentController {
   }
 }
 
-export class AppStore {
+export class App {
   settings: SettingsStore;
 
   settingsDialogOpen = false;

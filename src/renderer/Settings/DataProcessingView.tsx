@@ -14,14 +14,14 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore } from 'model/App';
+import { App } from 'model/App';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'model/Settings/DataProcessingSettings';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
 }
 
 function DataProcessingView(props: Props) {

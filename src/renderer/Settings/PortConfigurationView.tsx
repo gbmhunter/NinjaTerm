@@ -21,12 +21,12 @@ import {
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore, portStateToButtonProps, PortState } from 'model/App';
+import { App, portStateToButtonProps, PortState } from 'model/App';
 import { StopBits } from 'model/Settings/Settings';
 import { StatusMsgSeverity } from 'model/StatusMsg';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
 }
 
 function PortConfigurationView(props: Props) {

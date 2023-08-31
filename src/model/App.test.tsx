@@ -5,11 +5,11 @@
  * @since           2016-09-26
  */
 
-import { AppStore } from './App';
+import { App } from './App';
 
 describe('App tests', () => {
   it('can parse single sequence', () => {
-    const app = new AppStore();
+    const app = new App();
     expect(true).toEqual(true);
   });
 });

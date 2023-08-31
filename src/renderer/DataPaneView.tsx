@@ -3,12 +3,12 @@ import { observer } from 'mobx-react-lite';
 import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-import { AppStore } from 'model/App';
+import { App } from 'model/App';
 import TextSegment from 'model/TextSegment';
 import DataPane from 'model/DataPane';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
   dataPane: DataPane;
   textSegments: TextSegment[];
 }

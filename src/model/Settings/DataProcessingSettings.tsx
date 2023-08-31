@@ -3,7 +3,7 @@ import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
 
 // eslint-disable-next-line import/no-cycle
-import { AppStore } from 'model/App';
+import { App } from 'model/App';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -59,7 +59,7 @@ class Data {
 }
 
 export default class DataProcessingSettings {
-  appStore: AppStore;
+  appStore: App;
 
   // The data which is visible to the user, may or may not be valid
   visibleData = new Data();
@@ -71,7 +71,7 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
-  constructor(app: AppStore) {
+  constructor(app: App) {
     this.appStore = app;
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
