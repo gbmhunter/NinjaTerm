@@ -6,7 +6,6 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { App } from 'model/App';
 import DataPane from 'model/DataPane';
 import TextSegmentController from 'model/TextSegmentController';
-import { text } from 'stream/consumers';
 
 interface Props {
   appStore: App;
