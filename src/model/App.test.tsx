@@ -13,6 +13,7 @@ describe('App tests', () => {
     app.addNewRxData(Buffer.from('Hello, world', 'utf-8'));
 
     expect(app.rxSegments.textSegments.length).toEqual(1);
-    expect(app.rxSegments.textSegments[0].text).toEqual('Hello, world');
+    // Have to expect a space at the end too! (for the cursor)
+    expect(app.rxSegments.textSegments[0].text).toEqual('Hello, world ');
   });
 });
