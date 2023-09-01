@@ -26,15 +26,13 @@ export default class TextSegmentController {
 
   appendText(text: string) {
     const lastSegment = this.textSegments[this.textSegments.length - 1];
-    console.log('A');
     if (
       this.cursorLocation[0] === this.textSegments.length - 1 &&
       this.cursorLocation[1] === lastSegment.text.length - 1
     ) {
-      // Cursor is at end of entire text segments, make sure to increase cursor position
-      console.log('B');
+      // Cursor is at end of entire text, make sure to increase cursor position
+      // to keep it at the end (i.e. stay at end)
       this.cursorLocation[1] += text.length;
-      console.log('cursorLocation=', this.cursorLocation);
     }
     // Insert the text almost at the end, but before the whitespace char so
     // that is is always last (for when the cursor needs to appear at the end)
@@ -46,11 +44,25 @@ export default class TextSegmentController {
   }
 
   addNewSegment(text: string, colour: string) {
+    const lastSegment = this.textSegments[this.textSegments.length - 1];
+    if (
+      this.cursorLocation[0] === this.textSegments.length - 1 &&
+      this.cursorLocation[1] === lastSegment.text.length - 1
+    ) {
+      // Cursor is at end of entire text, make sure to increase cursor position
+      // to keep it at the end (i.e. stay at end)
+      this.cursorLocation[0] += 1; // Since the new segment is about to be added we need to bump this by one
+      this.cursorLocation[1] = text.length;
+    }
+
+    // Remove whitespace char from end of existing last segment
+    lastSegment.text = lastSegment.text.slice(0, lastSegment.text.length - 1);
     const newRxTextSegment = new TextSegment(
-      text,
+      text.concat(' '), // Add whitespace to end of new last segment
       colour,
       this.textSegments[this.textSegments.length - 1].key + 1 // Increment key by 1
     );
+
     this.numCharsInSegments += newRxTextSegment.text.length;
     this.textSegments.push(newRxTextSegment);
   }
