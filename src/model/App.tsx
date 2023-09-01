@@ -9,8 +9,8 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import StreamedData from 'util/StreamedData/StreamedData';
-import TextSegment from './TextSegment';
 import DataPane from './DataPane';
+import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
@@ -55,69 +55,6 @@ export const portStateToButtonProps: {
     icon: <StopIcon />,
   },
 };
-
-const defaultTxRxColor = 'rgb(255, 255, 255)';
-
-class TextSegmentController {
-  textSegments: TextSegment[];
-
-  numCharsInSegments: number;
-
-  constructor() {
-    this.textSegments = [];
-    this.numCharsInSegments = 0;
-    // This sets up the text segment array with a default segment
-    this.clear();
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
-
-  appendText(text: string) {
-    const lastSegment = this.textSegments[this.textSegments.length - 1];
-    lastSegment.text += text;
-    this.numCharsInSegments += text.length;
-  }
-
-  addNewSegment(text: string, colour: string) {
-    const newRxTextSegment = new TextSegment(
-      text,
-      colour,
-      this.textSegments[this.textSegments.length - 1].key + 1 // Increment key by 1
-    );
-    this.numCharsInSegments += newRxTextSegment.text.length;
-    this.textSegments.push(newRxTextSegment);
-  }
-
-  trimSegments(maxCharSize: number) {
-    // Trim RX segments if total amount of text exceeds scrollback buffer size
-    while (this.numCharsInSegments > maxCharSize) {
-      const numCharsToRemove = this.numCharsInSegments - maxCharSize;
-      // Remove chars from the oldest text segment first
-      const numCharsInOldestSegment = this.textSegments[0].text.length;
-      if (numCharsToRemove >= numCharsInOldestSegment) {
-        // We can remove the whole text segment, unless it's only one.
-        this.textSegments.shift();
-        this.numCharsInSegments -= numCharsInOldestSegment;
-      } else {
-        // The oldest text segment has more chars than what we need to remove,
-        // so just trim
-        this.textSegments[0].text =
-          this.textSegments[0].text.slice(numCharsToRemove);
-        this.numCharsInSegments -= numCharsToRemove;
-      }
-    }
-  }
-
-  clear() {
-    // Clear any existing segments
-    this.textSegments = [];
-    // Create a default segment for data to go into. If no ANSI escape codes
-    // are received, this will the one and only text segment
-    // debugger;
-    this.textSegments.push(new TextSegment('', defaultTxRxColor, 0));
-    // Reset char count also
-    this.numCharsInSegments = 0;
-  }
-}
 
 export class App {
   settings: SettingsStore;

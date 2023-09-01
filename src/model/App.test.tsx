@@ -1,15 +1,18 @@
 /**
- * Unit tests for the AnsiECParser class.
+ * Unit tests for the App model.
  *
  * @author          Geoffrey Hunter <gbmhunter@gmail.com> (www.mbedded.ninja)
- * @since           2016-09-26
+ * @since           2023-08-31
  */
 
 import { App } from './App';
 
 describe('App tests', () => {
-  it('can parse single sequence', () => {
+  it('can parse basic text', () => {
     const app = new App();
-    expect(true).toEqual(true);
+    app.addNewRxData(Buffer.from('Hello, world', 'utf-8'));
+
+    expect(app.rxSegments.textSegments.length).toEqual(1);
+    expect(app.rxSegments.textSegments[0].text).toEqual('Hello, world');
   });
 });

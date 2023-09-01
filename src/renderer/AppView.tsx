@@ -106,7 +106,7 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={app}
         dataPane={app.dataPane1}
-        textSegments={app.rxSegments.textSegments}
+        textSegmentController={app.rxSegments}
       />
     );
   } else if (
@@ -118,7 +118,7 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={app}
         dataPane={app.dataPane1}
-        textSegments={app.txRxSegments.textSegments}
+        textSegmentController={app.txRxSegments}
       />
     );
   } else if (
@@ -130,14 +130,14 @@ const AppView = observer((props: Props) => {
       <DataPaneView
         appStore={app}
         dataPane={app.dataPane1}
-        textSegments={app.txSegments.textSegments}
+        textSegmentController={app.txSegments}
       />
     );
     pane2 = (
       <DataPaneView
         appStore={app}
         dataPane={app.dataPane2}
-        textSegments={app.rxSegments.textSegments}
+        textSegmentController={app.rxSegments}
       />
     );
   } else {
@@ -280,7 +280,7 @@ const AppView = observer((props: Props) => {
               </FormControl>
             </Tooltip>
           </Box>
-          {/* ================== DATA PANE 1 ==================== */}
+          {/* ================== DATA PANES ==================== */}
           {pane1}
           {pane2}
           <div id="footer">
