@@ -31,7 +31,9 @@ export default observer((props: Props) => {
       interiorHtml = (
         <span>
           {segment.text.slice(0, cursorPosition[1])}
+          {/* CSS in App.css animates the element with id=cursor to make it blink */}
           <span
+            id="cursor"
             style={{ backgroundColor: 'hsla(1, 1%, 100%, 1)', color: '#000' }}
           >
             {segment.text[cursorPosition[1]]}

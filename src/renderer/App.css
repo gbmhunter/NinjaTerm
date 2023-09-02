@@ -49,12 +49,12 @@ body {
 
 @keyframes blink {
   0% {
-    color: #222;
+    background-color: #222;
   }
   50% {
-    color: white;
+    background-color: white;
   }
   100% {
-    color: #222;
+    background-color: #222;
   }
 }
