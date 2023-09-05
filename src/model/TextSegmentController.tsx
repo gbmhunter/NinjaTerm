@@ -7,6 +7,8 @@ const defaultTxRxColor = 'rgb(255, 255, 255)';
 export default class TextSegmentController {
   textSegments: TextSegment[];
 
+  data: Element[] = [];
+
   // Keeps track of the total number of characters in all segments, excluding
   // the whitespace at the end
   numCharsInSegments: number;

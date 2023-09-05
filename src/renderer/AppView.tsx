@@ -30,6 +30,7 @@ import {
 } from 'model/Settings/DataProcessingSettings';
 import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
+import TerminalView from './TerminalView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -114,13 +115,7 @@ const AppView = observer((props: Props) => {
       .value === DataViewConfiguration.COMBINED_TX_RX_PANE
   ) {
     // Show only 1 pane, but contains both TX and RX pane
-    pane1 = (
-      <DataPaneView
-        appStore={app}
-        dataPane={app.dataPane1}
-        textSegmentController={app.txRxSegments}
-      />
-    );
+    pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
   } else if (
     app.settings.dataProcessing.appliedData.fields.dataViewConfiguration
       .value === DataViewConfiguration.SEPARATE_TX_RX_PANES

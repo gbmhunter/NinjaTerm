@@ -14,6 +14,8 @@ import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
+import RxDataParser from './RxDataParser';
+import Terminal from './Terminal';
 
 declare global {
   interface String {
@@ -101,6 +103,12 @@ export class App {
 
   txRxSegments: TextSegmentController;
 
+  // NEW
+
+  txRxTerminal: Terminal;
+
+  rxDataParser: RxDataParser;
+
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
 
@@ -124,6 +132,10 @@ export class App {
     // A mix of both TX and RX data. Displayed when the "COMBINED_TX_RX_PANE"
     // view configuration is selected.
     this.txRxSegments = new TextSegmentController();
+
+    // New stuff
+    this.txRxTerminal = new Terminal();
+    this.rxDataParser = new RxDataParser(this.txRxTerminal);
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -320,7 +332,10 @@ export class App {
    * to output data which is displayed to the user.
    */
   addNewRxData(data: Buffer) {
-    console.log('addNewRxData() called. data=', data);
+    // console.log('addNewRxData() called. data=', data);
+    this.rxDataParser.parseData(data);
+    return;
+
     this.rxData += data.toString();
 
     this.input.append(data.toString());
