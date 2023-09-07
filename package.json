@@ -110,6 +110,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
     "serialport": "^11.0.1",
+    "@serialport/bindings-cpp": "^11.0.1",
     "validatorjs": "^3.22.1"
   },
   "devDependencies": {

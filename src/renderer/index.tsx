@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { autoDetect } from '@serialport/bindings-cpp';
 
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -10,7 +11,10 @@ import AppView from './AppView';
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
-const app = new App();
+// Create serial interface bindings appropriate for system we
+// are running on
+const Bindings = autoDetect();
+const app = new App(Bindings);
 root.render(<AppView app={app} />);
 
 // calling IPC exposed from preload script

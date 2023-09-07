@@ -2,6 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import { SerialPort } from 'serialport';
+import { AutoDetectTypes } from '@serialport/bindings-cpp';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
 import AnsiECParser from 'util/AnsiECParser/AnsiECParser';
@@ -59,6 +60,8 @@ export const portStateToButtonProps: {
 };
 
 export class App {
+  serialPortBinding: AutoDetectTypes;
+
   settings: SettingsStore;
 
   settingsDialogOpen = false;
@@ -115,7 +118,10 @@ export class App {
   // If true, the status msg panel scroll will be locked at the bottom
   statusMsgScrollLock = true;
 
-  constructor() {
+  constructor(serialPortBinding: AutoDetectTypes) {
+    this.serialPortBinding = serialPortBinding;
+    // const Binding = autoDetect();
+
     this.settings = new SettingsStore(this);
 
     this.dataPane1 = new DataPane();
@@ -157,7 +163,8 @@ export class App {
    * Scans the computer for available serial ports, and updates availablePortInfos.
    */
   scanForPorts() {
-    SerialPort.list()
+    this.serialPortBinding
+      .list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
         // Set the selected port, this doesn't fire automatically if setting
@@ -178,7 +185,7 @@ export class App {
       });
   }
 
-  openPort() {
+  async openPort() {
     this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
     this.serialPort = new SerialPort({
       path: this.settings.selectedPortPath,
