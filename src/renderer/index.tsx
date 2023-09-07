@@ -5,11 +5,13 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
-import App from './AppView';
+import { App } from 'model/App';
+import AppView from './AppView';
 
 const container = document.getElementById('root') as HTMLElement;
 const root = createRoot(container);
-root.render(<App />);
+const app = new App();
+root.render(<AppView app={app} />);
 
 // calling IPC exposed from preload script
 // window.electron.ipcRenderer.once('ipc-example', (arg) => {

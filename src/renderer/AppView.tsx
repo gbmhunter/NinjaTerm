@@ -360,8 +360,8 @@ const AppView = observer((props: Props) => {
   );
 });
 
-const app = new App();
-export default function AppWrapped() {
+export default function AppWrapped(props: Props) {
+  const { app } = props;
   return (
     <Router>
       <Routes>
