@@ -192,6 +192,7 @@ const AppView = observer((props: Props) => {
                 app.setSettingsDialogOpen(true);
               }}
               startIcon={<SettingsIcon />}
+              data-testid="settings-button"
             >
               Settings
             </Button>
