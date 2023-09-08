@@ -1,5 +1,12 @@
+// import TextDecoder from 'util';
 import { makeAutoObservable } from 'mobx';
+import { TextEncoder, TextDecoder } from 'util';
+
 import Terminal from './Terminal';
+
+// Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
+// https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
+Object.assign(global, { TextDecoder, TextEncoder });
 
 export default class RxDataParser {
   txRxTerminal: Terminal;

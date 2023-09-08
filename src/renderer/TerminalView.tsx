@@ -67,6 +67,7 @@ export default observer((props: Props) => {
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
       }}
+      data-testid="tx-rx-terminal-view"
     >
       <div
         ref={txRxRef}

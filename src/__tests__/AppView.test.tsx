@@ -7,9 +7,11 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { SerialPortMock } from 'serialport';
+import { SerialPortStream } from '@serialport/stream';
 
 import { App } from 'model/App';
 import AppView from '../renderer/AppView';
+import assert from 'assert';
 
 describe('App', () => {
   it('should render', async () => {
@@ -57,6 +59,37 @@ describe('App', () => {
     await waitFor(() => {
       const settingsDialog = screen.queryByRole('dialog');
       expect(settingsDialog).not.toBeInTheDocument();
+    });
+
+    // Connect to port
+    // const port = new SerialPortStream({
+    //   binding: SerialPortMock.binding,
+    //   path: 'COM99',
+    //   baudRate: 115200,
+    // });
+    // wait for port to open...
+    const port = app.serialPort;
+    assert(port !== null);
+    assert(port instanceof SerialPortMock);
+    port.on('open', () => {
+      if (port.port === undefined) {
+        return;
+      }
+      // ...then test by simulating incoming data
+      port.port.emitData('Hello, world!\n');
+    });
+    if (port.port === undefined) {
+      return;
+    }
+    port.port.emitData('Hello, world!\n');
+    const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
+    screen.debug(txRxTerminalView);
+
+    // Wait for settings dialog to disappear
+    await waitFor(() => {
+      const text = within(txRxTerminalView).queryByText('H');
+      expect(text).toBeTruthy();
+      screen.debug(screen.getByTestId('tx-rx-terminal-view'));
     });
   });
 });

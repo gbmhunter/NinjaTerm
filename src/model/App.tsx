@@ -118,9 +118,6 @@ export class App {
   statusMsgScrollLock = true;
 
   constructor(SerialPortType: typeof SerialPort | typeof SerialPortMock) {
-    console.log(SerialPortType);
-    // const Binding = autoDetect();
-
     this.settings = new SettingsStore(this);
 
     this.dataPane1 = new DataPane();
@@ -165,7 +162,6 @@ export class App {
    * Scans the computer for available serial ports, and updates availablePortInfos.
    */
   scanForPorts() {
-    console.log(this.SerialPortType);
     this.SerialPortType.list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
@@ -232,6 +228,7 @@ export class App {
 
     // Switches the port into "flowing mode"
     this.serialPort.on('data', (data) => {
+      console.log('ASB:', data);
       this.addNewRxData(data);
     });
   }
