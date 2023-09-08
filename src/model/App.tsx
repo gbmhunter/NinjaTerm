@@ -442,6 +442,10 @@ export class App {
     // this.txRxSegments.trimSegments(scrollbackSizeChars);
   }
 
+  clearAllData() {
+    this.txRxTerminal.clearData();
+  }
+
   setTxRxScrollLock(trueFalse: boolean) {
     this.txRxTextScrollLock = trueFalse;
   }

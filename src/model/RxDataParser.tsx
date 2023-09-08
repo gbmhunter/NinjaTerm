@@ -26,7 +26,7 @@ export default class RxDataParser {
       if (char === '\x1B') {
         console.log('Start of escape sequence found!');
       }
-      this.txRxTerminal.addText(char);
+      this.txRxTerminal.addChar(char);
     }
   }
 }

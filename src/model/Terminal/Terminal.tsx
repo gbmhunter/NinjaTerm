@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
 
@@ -18,23 +19,41 @@ export default class Terminal {
   constructor() {
     this.txRxHtml = [];
 
+    // This is just to keep typescript happy, they
+    // are all set in clearData() anyway.
+    this.currentStyle = {
+      color: '#ffffff',
+    };
+    this.txRxHtml = [];
+    this.cursorPosition = [0, 0];
+    this.clearData();
+
+    makeAutoObservable(this);
+  }
+
+  addChar(char: string) {
+    assert(char.length === 1);
+    const spanToInsertInto = this.txRxHtml[this.cursorPosition[0]];
+    const existingText = spanToInsertInto.props.children as string;
+    console.log(`existingText="${existingText}"`);
+    const newText =
+      existingText.slice(0, this.cursorPosition[1]) +
+      char +
+      existingText.slice(this.cursorPosition[1]);
+    console.log(`newText="${newText}"`);
+    this.txRxHtml[this.cursorPosition[0]] = <span>{newText}</span>;
+    // Increment cursor
+    this.cursorPosition[1] += 1;
+  }
+
+  clearData() {
     this.currentStyle = {
       color: '#ffffff',
     };
 
+    this.txRxHtml = [];
     this.txRxHtml.push(<span> </span>);
     this.cursorPosition = [0, 0];
-    makeAutoObservable(this);
-  }
-
-  addText(text: string) {
-    const spanToInsertInto = this.txRxHtml[this.cursorPosition[0]];
-    const existingText = spanToInsertInto.props.children as string;
-    const newText =
-      existingText.slice(0, this.cursorPosition[1]) +
-      text +
-      existingText.slice(this.cursorPosition[1]);
-    this.txRxHtml[this.cursorPosition[0]] = <span>{newText}</span>;
   }
 
   setScrollLock(trueFalse: boolean) {

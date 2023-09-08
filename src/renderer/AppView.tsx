@@ -232,9 +232,7 @@ const AppView = observer((props: Props) => {
               variant="outlined"
               startIcon={<ClearIcon />}
               onClick={() => {
-                app.txSegments.clear();
-                app.rxSegments.clear();
-                app.txRxSegments.clear();
+                app.clearAllData();
               }}
             >
               Clear Data
