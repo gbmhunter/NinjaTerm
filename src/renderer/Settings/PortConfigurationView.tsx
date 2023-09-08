@@ -59,7 +59,12 @@ function PortConfigurationView(props: Props) {
       <DialogContentText>Select serial port to open:</DialogContentText>
       {/* ====================== Table showing the serial ports and their properties ============================== */}
       <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+        <Table
+          sx={{ minWidth: 650 }}
+          size="small"
+          aria-label="a dense table"
+          data-testid="found-serial-ports-table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Selected</TableCell>

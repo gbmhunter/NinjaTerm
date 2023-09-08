@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
-import { SerialPort } from 'serialport';
-import { AutoDetectTypes } from '@serialport/bindings-cpp';
+import { SerialPort, SerialPortMock } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
 import AnsiECParser from 'util/AnsiECParser/AnsiECParser';
@@ -60,7 +59,7 @@ export const portStateToButtonProps: {
 };
 
 export class App {
-  serialPortBinding: AutoDetectTypes;
+  serialPortType: typeof SerialPort | typeof SerialPortMock;
 
   settings: SettingsStore;
 
@@ -118,8 +117,8 @@ export class App {
   // If true, the status msg panel scroll will be locked at the bottom
   statusMsgScrollLock = true;
 
-  constructor(serialPortBinding: AutoDetectTypes) {
-    this.serialPortBinding = serialPortBinding;
+  constructor(SerialPortType: typeof SerialPort | typeof SerialPortMock) {
+    console.log(SerialPortType);
     // const Binding = autoDetect();
 
     this.settings = new SettingsStore(this);
@@ -144,7 +143,10 @@ export class App {
     this.rxDataParser = new RxDataParser(this.txRxTerminal);
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
+    makeAutoObservable(this); // Make sure this near the end
+
+    // WARNING: Make sure this is after makeAutoObservable()!!!
+    this.serialPortType = SerialPortType;
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -163,7 +165,8 @@ export class App {
    * Scans the computer for available serial ports, and updates availablePortInfos.
    */
   scanForPorts() {
-    this.serialPortBinding
+    console.log(this.serialPortType);
+    this.serialPortType
       .list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
@@ -341,106 +344,106 @@ export class App {
   addNewRxData(data: Buffer) {
     // console.log('addNewRxData() called. data=', data);
     this.rxDataParser.parseData(data);
-    return;
+    // return;
 
-    this.rxData += data.toString();
+    // this.rxData += data.toString();
 
-    this.input.append(data.toString());
-    this.newLineParser.parse(this.input, this.buffer1);
-    this.ansiECParser.parse(this.buffer1, this.output);
-    // this.output contains the new data needed to be add to the RX terminal window
+    // this.input.append(data.toString());
+    // this.newLineParser.parse(this.input, this.buffer1);
+    // this.ansiECParser.parse(this.buffer1, this.output);
+    // // this.output contains the new data needed to be add to the RX terminal window
 
-    // Copy all text before first ColourMarker entry into the first text node
-    let indexOfLastCharPlusOne: number;
-    if (this.output.getColourMarkers().length === 0) {
-      indexOfLastCharPlusOne = this.output.getText().length;
-    } else {
-      indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos();
-    }
+    // // Copy all text before first ColourMarker entry into the first text node
+    // let indexOfLastCharPlusOne: number;
+    // if (this.output.getColourMarkers().length === 0) {
+    //   indexOfLastCharPlusOne = this.output.getText().length;
+    // } else {
+    //   indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos();
+    // }
 
-    let textToAppend = this.output
-      .getText()
-      .substring(0, indexOfLastCharPlusOne);
+    // let textToAppend = this.output
+    //   .getText()
+    //   .substring(0, indexOfLastCharPlusOne);
 
-    // Create new line characters for all new line markers that point to text
-    // shifted above
-    let currNewLineMarkerIndex = 0;
-    for (let i = 0; i < this.output.getNewLineMarkers().length; i += 1) {
-      if (
-        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos >
-        indexOfLastCharPlusOne
-      )
-        break;
+    // // Create new line characters for all new line markers that point to text
+    // // shifted above
+    // let currNewLineMarkerIndex = 0;
+    // for (let i = 0; i < this.output.getNewLineMarkers().length; i += 1) {
+    //   if (
+    //     this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos >
+    //     indexOfLastCharPlusOne
+    //   )
+    //     break;
 
-      textToAppend.insert(
-        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos + i,
-        '\n' // New line character
-      );
-      currNewLineMarkerIndex += 1;
-    }
+    //   textToAppend.insert(
+    //     this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos + i,
+    //     '\n' // New line character
+    //   );
+    //   currNewLineMarkerIndex += 1;
+    // }
 
-    // Add this remaining text to the last existing element in the RX segments
-    this.rxSegments.appendText(textToAppend);
-    this.txRxSegments.appendText(textToAppend);
+    // // Add this remaining text to the last existing element in the RX segments
+    // this.rxSegments.appendText(textToAppend);
+    // this.txRxSegments.appendText(textToAppend);
 
-    // Create new text nodes and copy all text
-    // This loop won't run if there is no elements in the TextColors array
-    for (let x = 0; x < this.output.getColourMarkers().length; x += 1) {
-      // defaultTextColorActive = false;
-      const indexOfFirstCharInNode = this.output
-        .getColourMarkers()
-        [x].getCharPos();
+    // // Create new text nodes and copy all text
+    // // This loop won't run if there is no elements in the TextColors array
+    // for (let x = 0; x < this.output.getColourMarkers().length; x += 1) {
+    //   // defaultTextColorActive = false;
+    //   const indexOfFirstCharInNode = this.output
+    //     .getColourMarkers()
+    //     [x].getCharPos();
 
-      let indexOfLastCharInNodePlusOne = 0;
-      if (x >= this.output.getColourMarkers().length - 1) {
-        indexOfLastCharInNodePlusOne = this.output.getText().length;
-      } else {
-        indexOfLastCharInNodePlusOne = this.output
-          .getColourMarkers()
-          [x + 1].getCharPos();
-      }
+    //   let indexOfLastCharInNodePlusOne = 0;
+    //   if (x >= this.output.getColourMarkers().length - 1) {
+    //     indexOfLastCharInNodePlusOne = this.output.getText().length;
+    //   } else {
+    //     indexOfLastCharInNodePlusOne = this.output
+    //       .getColourMarkers()
+    //       [x + 1].getCharPos();
+    //   }
 
-      textToAppend = this.output
-        .getText()
-        .substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne);
+    //   textToAppend = this.output
+    //     .getText()
+    //     .substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne);
 
-      // Create new line characters for all new line markers that point to text
-      // shifted above
-      let insertionCount = 0;
-      while (true) {
-        if (currNewLineMarkerIndex >= this.output.getNewLineMarkers().length)
-          break;
+    //   // Create new line characters for all new line markers that point to text
+    //   // shifted above
+    //   let insertionCount = 0;
+    //   while (true) {
+    //     if (currNewLineMarkerIndex >= this.output.getNewLineMarkers().length)
+    //       break;
 
-        if (
-          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() >
-          indexOfLastCharInNodePlusOne
-        )
-          break;
+    //     if (
+    //       this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() >
+    //       indexOfLastCharInNodePlusOne
+    //     )
+    //       break;
 
-        textToAppend.insert(
-          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() +
-            insertionCount -
-            indexOfFirstCharInNode,
-          '\n'
-        ); // New line char
-        currNewLineMarkerIndex += 1;
-        insertionCount += 1;
-      }
+    //     textToAppend.insert(
+    //       this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() +
+    //         insertionCount -
+    //         indexOfFirstCharInNode,
+    //       '\n'
+    //     ); // New line char
+    //     currNewLineMarkerIndex += 1;
+    //     insertionCount += 1;
+    //   }
 
-      // Add this remaining text to a new text segment
-      const textColor = this.output.getColourMarkers()[x].color;
-      this.rxSegments.addNewSegment(textToAppend.toString(), textColor);
-      this.txRxSegments.addNewSegment(textToAppend.toString(), textColor);
-    }
+    //   // Add this remaining text to a new text segment
+    //   const textColor = this.output.getColourMarkers()[x].color;
+    //   this.rxSegments.addNewSegment(textToAppend.toString(), textColor);
+    //   this.txRxSegments.addNewSegment(textToAppend.toString(), textColor);
+    // }
 
-    this.output.clear();
+    // this.output.clear();
 
-    // ================ TRIM SCROLLBACK BUFFER ===============//
-    const scrollbackSizeChars =
-      this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
-        .value;
-    this.rxSegments.trimSegments(scrollbackSizeChars);
-    this.txRxSegments.trimSegments(scrollbackSizeChars);
+    // // ================ TRIM SCROLLBACK BUFFER ===============//
+    // const scrollbackSizeChars =
+    //   this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
+    //     .value;
+    // this.rxSegments.trimSegments(scrollbackSizeChars);
+    // this.txRxSegments.trimSegments(scrollbackSizeChars);
   }
 
   setTxRxScrollLock(trueFalse: boolean) {
