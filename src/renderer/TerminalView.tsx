@@ -4,7 +4,7 @@ import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import { App } from 'model/App';
-import Terminal from 'model/Terminal';
+import Terminal from 'model/Terminal/Terminal';
 
 interface Props {
   appStore: App;
@@ -67,7 +67,6 @@ export default observer((props: Props) => {
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
       }}
-      data-testid="tx-rx-terminal-view"
     >
       <div
         ref={txRxRef}
@@ -82,6 +81,7 @@ export default observer((props: Props) => {
         <div
           id="limiting-text-width"
           style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
+          data-testid="tx-rx-terminal-view"
         >
           {terminal.txRxHtml}
         </div>

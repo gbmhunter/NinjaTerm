@@ -15,7 +15,7 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
 import RxDataParser from './RxDataParser';
-import Terminal from './Terminal';
+import Terminal from './Terminal/Terminal';
 
 declare global {
   interface String {

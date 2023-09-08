@@ -2,7 +2,7 @@
 import { makeAutoObservable } from 'mobx';
 import { TextEncoder, TextDecoder } from 'util';
 
-import Terminal from './Terminal';
+import Terminal from './Terminal/Terminal';
 
 // Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
 // https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
@@ -26,8 +26,7 @@ export default class RxDataParser {
       if (char === '\x1B') {
         console.log('Start of escape sequence found!');
       }
-      this.txRxTerminal.txRxHtml.push(<span key={this.count}>{char}</span>);
-      this.count += 1;
+      this.txRxTerminal.addText(char);
     }
   }
 }
