@@ -7,11 +7,10 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { SerialPortMock } from 'serialport';
-import { SerialPortStream } from '@serialport/stream';
+import assert from 'assert';
 
 import { App } from 'model/App';
 import AppView from '../renderer/AppView';
-import assert from 'assert';
 
 describe('App', () => {
   it('should render', async () => {
