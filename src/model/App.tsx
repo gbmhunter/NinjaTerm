@@ -228,7 +228,6 @@ export class App {
 
     // Switches the port into "flowing mode"
     this.serialPort.on('data', (data) => {
-      console.log('ASB:', data);
       this.addNewRxData(data);
     });
   }

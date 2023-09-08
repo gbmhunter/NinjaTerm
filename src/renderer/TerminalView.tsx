@@ -83,7 +83,7 @@ export default observer((props: Props) => {
           style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
           data-testid="tx-rx-terminal-view"
         >
-          {terminal.txRxHtml}
+          {terminal.outputHtml}
         </div>
       </div>
       {/* ================== SCROLL LOCK ARROW ==================== */}

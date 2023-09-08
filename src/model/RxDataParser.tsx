@@ -11,10 +11,22 @@ Object.assign(global, { TextDecoder, TextEncoder });
 export default class RxDataParser {
   txRxTerminal: Terminal;
 
+  // True if we have received the escape code start char and are currently waiting
+  // for more data to complete the sequence
+  inAnsiEscapeCode: boolean;
+
+  // True is we have received part of a CSI sequence ("ESC[")
+  inCSISequence: boolean;
+
+  partialEscapeCode: string;
+
   count = 0;
 
   constructor(txRxTerminal: Terminal) {
     this.txRxTerminal = txRxTerminal;
+    this.inAnsiEscapeCode = false;
+    this.partialEscapeCode = '';
+    this.inCSISequence = false;
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -23,10 +35,44 @@ export default class RxDataParser {
     const dataAsStr = new TextDecoder().decode(data);
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
+      // console.log('char=', char);
       if (char === '\x1B') {
-        console.log('Start of escape sequence found!');
+        // console.log('Start of escape sequence found!');
+        this.resetEscapeCodeParserState();
+        this.inAnsiEscapeCode = true;
       }
-      this.txRxTerminal.addChar(char);
+      // If we are not currently processing an escape code
+      // character is to be displayed
+      if (this.inAnsiEscapeCode) {
+        // Add received char to partial escape code
+        this.partialEscapeCode += char;
+        // console.log('partialEscapeCode=', this.partialEscapeCode);
+        if (this.partialEscapeCode === '\x1B[') {
+          this.inCSISequence = true;
+        }
+
+        if (this.inCSISequence) {
+          // console.log('In CSI sequence');
+          // Wait for alphabetic character to end CSI sequence
+          if (char.toUpperCase() !== char.toLowerCase()) {
+            console.log(
+              'Received terminating letter of CSI sequence! Escape code = ',
+              this.partialEscapeCode
+            );
+            this.resetEscapeCodeParserState();
+          }
+        }
+      } else {
+        // Not currently receiving ANSI escape code,
+        // so send character to terminal(s)
+        this.txRxTerminal.addText(char);
+      }
     }
+  }
+
+  resetEscapeCodeParserState() {
+    this.inAnsiEscapeCode = false;
+    this.partialEscapeCode = '';
+    this.inCSISequence = false;
   }
 }

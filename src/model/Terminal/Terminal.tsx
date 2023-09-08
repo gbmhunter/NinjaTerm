@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
 
@@ -6,7 +5,7 @@ import { ReactElement } from 'react';
  * Represents a single terminal-style user interface.
  */
 export default class Terminal {
-  txRxHtml: ReactElement[];
+  outputHtml: ReactElement[];
 
   // This represents the current style active on the terminal
   currentStyle: {};
@@ -17,33 +16,34 @@ export default class Terminal {
   scrollLock = true;
 
   constructor() {
-    this.txRxHtml = [];
+    this.outputHtml = [];
 
     // This is just to keep typescript happy, they
     // are all set in clearData() anyway.
     this.currentStyle = {
       color: '#ffffff',
     };
-    this.txRxHtml = [];
+    this.outputHtml = [];
     this.cursorPosition = [0, 0];
     this.clearData();
 
     makeAutoObservable(this);
   }
 
-  addChar(char: string) {
-    assert(char.length === 1);
-    const spanToInsertInto = this.txRxHtml[this.cursorPosition[0]];
+  addText(text: string) {
+    const spanToInsertInto = this.outputHtml[this.cursorPosition[0]];
     const existingText = spanToInsertInto.props.children as string;
     console.log(`existingText="${existingText}"`);
     const newText =
       existingText.slice(0, this.cursorPosition[1]) +
-      char +
+      text +
       existingText.slice(this.cursorPosition[1]);
     console.log(`newText="${newText}"`);
-    this.txRxHtml[this.cursorPosition[0]] = <span>{newText}</span>;
+    this.outputHtml[this.cursorPosition[0]] = (
+      <span key={this.cursorPosition[0]}>{newText}</span>
+    );
     // Increment cursor
-    this.cursorPosition[1] += 1;
+    this.cursorPosition[1] += text.length;
   }
 
   clearData() {
@@ -51,8 +51,8 @@ export default class Terminal {
       color: '#ffffff',
     };
 
-    this.txRxHtml = [];
-    this.txRxHtml.push(<span> </span>);
+    this.outputHtml = [];
+    this.outputHtml.push(<span key={this.cursorPosition[0]}> </span>);
     this.cursorPosition = [0, 0];
   }
 
