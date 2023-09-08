@@ -59,7 +59,7 @@ export const portStateToButtonProps: {
 };
 
 export class App {
-  serialPortType: typeof SerialPort | typeof SerialPortMock;
+  SerialPortType: typeof SerialPort | typeof SerialPortMock;
 
   settings: SettingsStore;
 
@@ -79,7 +79,7 @@ export class App {
     true
   );
 
-  serialPort: null | SerialPort = null;
+  serialPort: null | SerialPort | SerialPortMock = null;
 
   portState = PortState.CLOSED;
 
@@ -146,7 +146,7 @@ export class App {
     makeAutoObservable(this); // Make sure this near the end
 
     // WARNING: Make sure this is after makeAutoObservable()!!!
-    this.serialPortType = SerialPortType;
+    this.SerialPortType = SerialPortType;
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -165,9 +165,8 @@ export class App {
    * Scans the computer for available serial ports, and updates availablePortInfos.
    */
   scanForPorts() {
-    console.log(this.serialPortType);
-    this.serialPortType
-      .list()
+    console.log(this.SerialPortType);
+    this.SerialPortType.list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
         // Set the selected port, this doesn't fire automatically if setting
@@ -190,7 +189,7 @@ export class App {
 
   async openPort() {
     this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
-    this.serialPort = new SerialPort({
+    this.serialPort = new this.SerialPortType({
       path: this.settings.selectedPortPath,
       baudRate: this.settings.selectedBaudRate,
       dataBits: this.settings.selectedNumDataBits as 5 | 6 | 7 | 8,

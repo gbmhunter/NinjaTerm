@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom';
-import { render, fireEvent, within } from '@testing-library/react';
+import {
+  render,
+  fireEvent,
+  within,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { SerialPortMock } from 'serialport';
 
 import { App } from 'model/App';
@@ -11,12 +17,21 @@ describe('App', () => {
     SerialPortMock.binding.createPort('COM99');
     // Create model
     const app = new App(SerialPortMock);
-    const { getByTestId, findByTestId } = render(<AppView app={app} />);
-    expect(getByTestId).toBeTruthy();
-    const button = await findByTestId('settings-button');
+    render(<AppView app={app} />);
+
+    // Make sure dialog window is not open by default
+    let dialogWindow = screen.queryByRole('dialog');
+    expect(dialogWindow).toBeNull();
+
+    // Click button to open settings dialog window
+    const button = await screen.findByTestId('settings-button');
     fireEvent.click(button);
 
-    const foundSerialPortsTable = await findByTestId(
+    dialogWindow = screen.getByRole('dialog');
+    // Dialog window should now be in the DOM and visible
+    expect(dialogWindow).toBeVisible();
+
+    const foundSerialPortsTable = await screen.findByTestId(
       'found-serial-ports-table'
     );
 
@@ -25,5 +40,23 @@ describe('App', () => {
       .getAllByRole('row')
       .find((row) => within(row).queryByText('COM99') !== null);
     expect(com99Row).toBeDefined();
+    // Keep typescript happy
+    if (com99Row === undefined) {
+      throw Error('jfjf');
+    }
+
+    // Click the row to select it
+    fireEvent.click(com99Row);
+
+    // Now click the "Open Port" button
+    const openPortButton = within(dialogWindow).getByText('Open Port');
+    expect(openPortButton).toBeEnabled(); // It should be enabled
+    fireEvent.click(openPortButton);
+
+    // Wait for settings dialog to disappear
+    await waitFor(() => {
+      const settingsDialog = screen.queryByRole('dialog');
+      expect(settingsDialog).not.toBeInTheDocument();
+    });
   });
 });
