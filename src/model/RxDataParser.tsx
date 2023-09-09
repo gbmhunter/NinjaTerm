@@ -20,6 +20,8 @@ export default class RxDataParser {
 
   partialEscapeCode: string;
 
+  codeToNormalColourMap: { [key: string]: string } = {};
+
   count = 0;
 
   constructor(txRxTerminal: Terminal) {
@@ -27,6 +29,18 @@ export default class RxDataParser {
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = '';
     this.inCSISequence = false;
+
+    // Populate the map with data
+    // TODO: Add support for [ESC][0m
+    this.codeToNormalColourMap['30'] = 'rgb(0, 0, 0)';
+    this.codeToNormalColourMap['31'] = 'rgb(170, 0, 0)';
+    this.codeToNormalColourMap['32'] = 'rgb(0, 170, 0)';
+    this.codeToNormalColourMap['33'] = 'rgb(170, 85, 0)';
+    this.codeToNormalColourMap['34'] = 'rgb(0, 0, 170)';
+    this.codeToNormalColourMap['35'] = 'rgb(170, 0, 170)';
+    this.codeToNormalColourMap['36'] = 'rgb(0, 170, 170)';
+    this.codeToNormalColourMap['37'] = 'rgb(170, 170, 170)';
+
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -35,9 +49,9 @@ export default class RxDataParser {
     const dataAsStr = new TextDecoder().decode(data);
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
-      // console.log('char=', char);
+      console.log('char=', char);
       if (char === '\x1B') {
-        // console.log('Start of escape sequence found!');
+        console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
       }
@@ -46,19 +60,20 @@ export default class RxDataParser {
       if (this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += char;
-        // console.log('partialEscapeCode=', this.partialEscapeCode);
+        console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
         if (this.inCSISequence) {
-          // console.log('In CSI sequence');
+          console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
           if (char.toUpperCase() !== char.toLowerCase()) {
             console.log(
               'Received terminating letter of CSI sequence! Escape code = ',
               this.partialEscapeCode
             );
+            this.parseCSISequence(this.partialEscapeCode);
             this.resetEscapeCodeParserState();
           }
         }
@@ -66,6 +81,35 @@ export default class RxDataParser {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
         this.txRxTerminal.addText(char);
+      }
+    }
+  }
+
+  static isNumber(char: string) {
+    return /^\d$/.test(char);
+  }
+
+  parseCSISequence(ansiEscapeCode: string) {
+    const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
+    if (lastChar === 'm') {
+      console.log('Found m, select graphic rendition code');
+      let firstNumber = '';
+      // ESC[<first number>
+      let currIdx = 2;
+      while (
+        RxDataParser.isNumber(ansiEscapeCode[currIdx]) &&
+        currIdx < ansiEscapeCode.length
+      ) {
+        console.log('Found number');
+        firstNumber += ansiEscapeCode[currIdx];
+        currIdx += 1;
+      }
+      console.log('Finished first number. firstNumber=', firstNumber);
+      if (currIdx === ansiEscapeCode.length - 1) {
+        // A SGR code with just one number in the form ESC[<number>m
+        console.log('Reached end of escape code.');
+        const color = this.codeToNormalColourMap[Number(firstNumber)];
+        console.log('color=', color);
       }
     }
   }

@@ -1,4 +1,5 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, makeObservable, toJS } from 'mobx';
+import { observer } from 'mobx-react-lite';
 import { ReactElement } from 'react';
 
 /**
@@ -17,16 +18,14 @@ export default class Terminal {
 
   constructor() {
     this.outputHtml = [];
+    this.cursorPosition = [0, 0];
 
     // This is just to keep typescript happy, they
     // are all set in clearData() anyway.
     this.currentStyle = {
       color: '#ffffff',
     };
-    this.outputHtml = [];
-    this.cursorPosition = [0, 0];
     this.clearData();
-
     makeAutoObservable(this);
   }
 
@@ -39,8 +38,13 @@ export default class Terminal {
       text +
       existingText.slice(this.cursorPosition[1]);
     console.log(`newText="${newText}"`);
-    this.outputHtml[this.cursorPosition[0]] = (
-      <span key={this.cursorPosition[0]}>{newText}</span>
+    const style = makeAutoObservable({
+      color: '#456789',
+    });
+    this.outputHtml[this.cursorPosition[0]] = toJS(
+      <span key={this.cursorPosition[0]} style={style}>
+        {newText}
+      </span>
     );
     // Increment cursor
     this.cursorPosition[1] += text.length;
@@ -54,6 +58,10 @@ export default class Terminal {
     this.outputHtml = [];
     this.outputHtml.push(<span key={this.cursorPosition[0]}> </span>);
     this.cursorPosition = [0, 0];
+  }
+
+  setStyle(style: {}) {
+    this.currentStyle = style;
   }
 
   setScrollLock(trueFalse: boolean) {
