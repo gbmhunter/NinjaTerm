@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { WheelEvent, useRef, useEffect, ReactElement, useState } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
+// import AutoSizer from 'react-virtualized-auto-sizer';
 // import { AutoSizer } from 'react-virtualized';
 
 import { App } from 'model/App';
@@ -62,23 +62,23 @@ export default observer((props: Props) => {
     }
   });
 
-  const elRef = useRef();
+  const inputOutputTextDiv = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    if (!elRef?.current?.clientHeight) {
+    if (!inputOutputTextDiv?.current?.clientHeight) {
       return;
     }
-    setHeight(elRef?.current?.clientHeight);
-  }, [elRef?.current?.clientHeight]);
+    setHeight(inputOutputTextDiv?.current?.clientHeight);
+  }, [inputOutputTextDiv?.current?.clientHeight]);
 
   useEffect(() => {
-    if (!elRef?.current?.clientWidth) {
+    if (!inputOutputTextDiv?.current?.clientWidth) {
       return;
     }
-    setWidth(elRef?.current?.clientWidth);
-  }, [elRef?.current?.clientWidth]);
+    setWidth(inputOutputTextDiv?.current?.clientWidth);
+  }, [inputOutputTextDiv?.current?.clientWidth]);
 
   return (
     <div
@@ -90,13 +90,13 @@ export default observer((props: Props) => {
           terminal.setScrollLock(false);
         }
       }}
-      ref={elRef}
+      ref={inputOutputTextDiv}
       style={{
         flexGrow: '1',
         backgroundColor: '#161616',
         fontFamily: 'monospace',
         whiteSpace: 'pre-wrap', // This allows \n to create new lines
-        overflowY: 'scroll',
+        // overflowY: 'scroll',
         // padding: '10px',
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
@@ -120,17 +120,17 @@ export default observer((props: Props) => {
           {terminal.outputHtml}
         </div> */}
       {/* <AutoSizer> */}
-        {/* {({ height, width }) => ( */}
-          <FixedSizeList
-            height={height}
-            itemCount={appStore.txRxTerminal.terminalRows.length}
-            itemSize={20}
-            width={width}
-            itemData={appStore.txRxTerminal.terminalRows}
-          >
-            {Row}
-          </FixedSizeList>
-        {/* )} */}
+      {/* {({ height, width }) => ( */}
+      <FixedSizeList
+        height={height}
+        itemCount={appStore.txRxTerminal.terminalRows.length}
+        itemSize={20}
+        width={width}
+        itemData={appStore.txRxTerminal.terminalRows}
+      >
+        {Row}
+      </FixedSizeList>
+      {/* )} */}
       {/* </AutoSizer> */}
       {/* </div> */}
       {/* ================== SCROLL LOCK ARROW ==================== */}
