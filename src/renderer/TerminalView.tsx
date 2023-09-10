@@ -24,7 +24,7 @@ interface RowProps {
 export default observer((props: Props) => {
   const { appStore, terminal } = props;
 
-  const txRxRef = useRef<HTMLInputElement>(null);
+  const reactWindowRef = useRef<FixedSizeList>(null);
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
@@ -57,8 +57,10 @@ export default observer((props: Props) => {
   // do a deep compare of the text segments
   useEffect(() => {
     // Only scroll to bottom if enabled in app model
-    if (txRxRef.current && terminal.scrollLock) {
-      txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
+    if (reactWindowRef.current && terminal.scrollLock) {
+      reactWindowRef.current.scrollToItem(
+        appStore.txRxTerminal.terminalRows.length - 1
+      );
     }
   });
 
@@ -122,6 +124,7 @@ export default observer((props: Props) => {
       {/* <AutoSizer> */}
       {/* {({ height, width }) => ( */}
       <FixedSizeList
+        ref={reactWindowRef}
         height={height}
         itemCount={appStore.txRxTerminal.terminalRows.length}
         itemSize={20}
