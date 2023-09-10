@@ -2,6 +2,7 @@ import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { FixedSizeList } from 'react-window';
 
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
@@ -10,6 +11,17 @@ interface Props {
   appStore: App;
   terminal: Terminal;
 }
+
+const Row = observer(({ data, index, style }) => {
+  console.log('Row() called.');
+  const terminalRow = data[index];
+  let text = '';
+  for (let idx = 0; idx < terminalRow.terminalChars.length; idx += 1) {
+    console.log('rendering', terminalRow.terminalChars[idx].char);
+    text += terminalRow.terminalChars[idx].char;
+  }
+  return <div style={style}>{text}</div>;
+});
 
 export default observer((props: Props) => {
   const { appStore, terminal } = props;
@@ -78,13 +90,22 @@ export default observer((props: Props) => {
           padding: '10px',
         }}
       >
-        <div
+        {/* <div
           id="limiting-text-width"
           style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
           data-testid="tx-rx-terminal-view"
         >
           {terminal.outputHtml}
-        </div>
+        </div> */}
+        <FixedSizeList
+          height={300}
+          itemCount={appStore.txRxTerminal.terminalRows.length}
+          itemSize={15}
+          width={400}
+          itemData={appStore.txRxTerminal.terminalRows}
+        >
+          {Row}
+        </FixedSizeList>
       </div>
       {/* ================== SCROLL LOCK ARROW ==================== */}
       <IconButton
