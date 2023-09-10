@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
+
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
 
@@ -92,5 +93,27 @@ export default class Terminal {
 
   setScrollLock(trueFalse: boolean) {
     this.scrollLock = trueFalse;
+  }
+
+  moveToNewLine() {
+    // If we are currently not on the last row, we just need to move to the start of the next line
+    if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
+      console.log('Not on last line.');
+      this.cursorPosition[0] += 1;
+      this.cursorPosition[1] = 0;
+    } else {
+      console.log('Cursor on last line!');
+      const terminalRow = new TerminalRow();
+      this.terminalRows.push(terminalRow);
+      this.cursorPosition[0] += 1;
+      this.cursorPosition[1] = 0;
+    }
+    // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
+    const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
+    if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
+      const terminalChar = new TerminalChar();
+      terminalChar.char = ' ';
+      rowCursorIsNowOn.terminalChars.push(terminalChar);
+    }
   }
 }

@@ -50,6 +50,14 @@ export default class RxDataParser {
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
       console.log('char=', char);
+
+      if (char === '\n') {
+        console.log('Found new line char');
+        this.txRxTerminal.moveToNewLine();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
       if (char === '\x1B') {
         console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();

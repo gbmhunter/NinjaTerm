@@ -1,54 +1,57 @@
 import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
+import { WheelEvent, useRef, useEffect, ReactElement, useState } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
+// import { AutoSizer } from 'react-virtualized';
 
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
+import TerminalRow from 'model/Terminal/TerminalRow';
 
 interface Props {
   appStore: App;
   terminal: Terminal;
 }
 
-const Row = observer(({ data, index, style }) => {
-  console.log('Row() called.');
-  const terminalRow = data[index];
-  let text = '';
-  for (let idx = 0; idx < terminalRow.terminalChars.length; idx += 1) {
-    console.log('rendering', terminalRow.terminalChars[idx].char);
-    text += terminalRow.terminalChars[idx].char;
-  }
-  return <div style={style}>{text}</div>;
-});
+interface RowProps {
+  data: TerminalRow[];
+  index: number;
+  style: {};
+}
 
 export default observer((props: Props) => {
   const { appStore, terminal } = props;
 
-  // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
-  // 1) White space preserved
-  // 2) \n to create a new line
-  // 3) Text to wrap once it hits the maximum terminal width
-  // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
-
-  // If the width in chars is set to anything but 0, set the width in "ch" units and make
-  // sure text will break on anything. Otherwise if width is set to 0, make pane 100% wide and don't
-  // break
-  let dataPaneWidth = '';
-  let dataPaneWordBreak: CSSProperties['wordBreak'];
-  if (
-    appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars
-      .value > 0
-  ) {
-    dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars.value}ch`;
-    dataPaneWordBreak = 'break-all';
-  } else {
-    dataPaneWidth = '100%';
-    dataPaneWordBreak = 'normal';
-  }
-
   const txRxRef = useRef<HTMLInputElement>(null);
+
+  const Row = observer((rowProps: RowProps) => {
+    const { data, index, style } = rowProps;
+    console.log('Row() called.');
+    const terminalRow = data[index];
+    const spans: ReactElement[] = [];
+    for (
+      let colIdx = 0;
+      colIdx < terminalRow.terminalChars.length;
+      colIdx += 1
+    ) {
+      console.log('rendering', terminalRow.terminalChars[colIdx].char);
+      let id = '';
+      if (
+        index === terminal.cursorPosition[0] &&
+        colIdx === terminal.cursorPosition[1]
+      ) {
+        id = 'cursor';
+      }
+      spans.push(<span id={id}>{terminalRow.terminalChars[colIdx].char}</span>);
+    }
+    // console.log(txRxRef);
+    // if (txRxRef.current !== null) {
+    //   txRxRef.current._onResize();
+    // }
+    return <div style={style}>{spans}</div>;
+  });
 
   // Run this after every render, as it's too computationally expensive to
   // do a deep compare of the text segments
@@ -58,6 +61,24 @@ export default observer((props: Props) => {
       txRxRef.current.scrollTop = txRxRef.current.scrollHeight;
     }
   });
+
+  const elRef = useRef();
+  const [height, setHeight] = useState(0);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (!elRef?.current?.clientHeight) {
+      return;
+    }
+    setHeight(elRef?.current?.clientHeight);
+  }, [elRef?.current?.clientHeight]);
+
+  useEffect(() => {
+    if (!elRef?.current?.clientWidth) {
+      return;
+    }
+    setWidth(elRef?.current?.clientWidth);
+  }, [elRef?.current?.clientWidth]);
 
   return (
     <div
@@ -69,44 +90,49 @@ export default observer((props: Props) => {
           terminal.setScrollLock(false);
         }
       }}
+      ref={elRef}
       style={{
         flexGrow: '1',
         backgroundColor: '#161616',
         fontFamily: 'monospace',
         whiteSpace: 'pre-wrap', // This allows \n to create new lines
-        // overflowY: 'scroll',
+        overflowY: 'scroll',
         // padding: '10px',
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
       }}
     >
-      <div
+      {/* <div
         ref={txRxRef}
         style={{
           height: '100%',
           width: '100%',
-          position: 'absolute',
-          overflowY: 'scroll',
+          // position: 'absolute',
+          // overflowY: 'scroll',
           padding: '10px',
         }}
-      >
-        {/* <div
+      > */}
+      {/* <div
           id="limiting-text-width"
           style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
           data-testid="tx-rx-terminal-view"
         >
           {terminal.outputHtml}
         </div> */}
-        <FixedSizeList
-          height={300}
-          itemCount={appStore.txRxTerminal.terminalRows.length}
-          itemSize={15}
-          width={400}
-          itemData={appStore.txRxTerminal.terminalRows}
-        >
-          {Row}
-        </FixedSizeList>
-      </div>
+      {/* <AutoSizer> */}
+        {/* {({ height, width }) => ( */}
+          <FixedSizeList
+            height={height}
+            itemCount={appStore.txRxTerminal.terminalRows.length}
+            itemSize={20}
+            width={width}
+            itemData={appStore.txRxTerminal.terminalRows}
+          >
+            {Row}
+          </FixedSizeList>
+        {/* )} */}
+      {/* </AutoSizer> */}
+      {/* </div> */}
       {/* ================== SCROLL LOCK ARROW ==================== */}
       <IconButton
         onClick={() => {
