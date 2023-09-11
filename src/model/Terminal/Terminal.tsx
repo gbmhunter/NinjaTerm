@@ -40,6 +40,8 @@ export default class Terminal {
       const char = text[idx];
       const terminalChar = new TerminalChar();
       terminalChar.char = char;
+      // We need to make a copy of the current style, so that future updates won't
+      // effect all previous styles
       terminalChar.style = { ...this.currentStyle };
       const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
       rowToInsertInto.terminalChars.splice(

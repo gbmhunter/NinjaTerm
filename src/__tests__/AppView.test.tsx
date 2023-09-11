@@ -80,14 +80,22 @@ describe('App', () => {
     if (port.port === undefined) {
       return;
     }
-    port.port.emitData('Hello, world!\n');
+    const textToSend = 'Hello, world!';
+    port.port.emitData(`${textToSend}\n`);
     const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
-    screen.debug(txRxTerminalView);
 
     await waitFor(() => {
       const text = within(txRxTerminalView).queryByText('H');
       expect(text).toBeTruthy();
-      screen.debug(screen.getByTestId('tx-rx-terminal-view'));
     });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    screen.debug(terminalRows);
+    for (let idx = 0; idx < textToSend.length; idx += 1) {
+      expect(terminalRows.children[0].children[idx].textContent).toEqual(
+        textToSend[idx]
+      );
+    }
   });
 });

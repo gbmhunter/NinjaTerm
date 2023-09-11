@@ -3,13 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { WheelEvent, useRef, useEffect, ReactElement, useState } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
+import { toJS } from 'mobx';
+
 // import AutoSizer from 'react-virtualized-auto-sizer';
 // import { AutoSizer } from 'react-virtualized';
 
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
 import TerminalRow from 'model/Terminal/TerminalRow';
-import { observable, toJS } from 'mobx';
 
 interface Props {
   appStore: App;
