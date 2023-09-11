@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 - Cursor can now be moved into back into previous text -- it is no longer stuck at the end of all the data. This allows for more ANSI escape code support.
+- Only current view port of terminal is actually rendered in the DOM, providing better performance for large scrollback buffers.
+
 ## [3.1.0] - 2023-08-28
 
 - Fixed broken links to GitHub tags in this CHANGELOG.
