@@ -36,27 +36,11 @@ export default class Terminal {
   }
 
   addText(text: string) {
-    // const spanToInsertInto = this.outputHtml[this.cursorPosition[0]];
-    // const existingText = spanToInsertInto.props.children as string;
-    // console.log(`existingText="${existingText}"`);
-    // const newText =
-    //   existingText.slice(0, this.cursorPosition[1]) +
-    //   text +
-    //   existingText.slice(this.cursorPosition[1]);
-    // console.log(`newText="${newText}"`);
-    // const style = makeAutoObservable({
-    //   color: '#456789',
-    // });
-    // this.outputHtml[this.cursorPosition[0]] = toJS(
-    //   <span key={this.cursorPosition[0]} style={style}>
-    //     {newText}
-    //   </span>
-    // );
-
     for (let idx = 0; idx < text.length; idx += 1) {
       const char = text[idx];
       const terminalChar = new TerminalChar();
       terminalChar.char = char;
+      terminalChar.style = { ...this.currentStyle };
       const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
       rowToInsertInto.terminalChars.splice(
         this.cursorPosition[1],
@@ -71,9 +55,7 @@ export default class Terminal {
   }
 
   clearData() {
-    this.currentStyle = {
-      color: '#ffffff',
-    };
+    this.currentStyle = {};
 
     this.outputHtml = [];
     this.outputHtml.push(<span key={this.cursorPosition[0]}> </span>);
@@ -88,7 +70,8 @@ export default class Terminal {
   }
 
   setStyle(style: {}) {
-    this.currentStyle = style;
+    // Override any provided style properties
+    this.currentStyle = Object.assign(this.currentStyle, style);
   }
 
   setScrollLock(trueFalse: boolean) {

@@ -6,8 +6,11 @@ import { makeAutoObservable } from 'mobx';
 export default class TerminalChar {
   char: string;
 
+  style: {};
+
   constructor() {
     this.char = '';
+    this.style = {};
     makeAutoObservable(this);
   }
 }

@@ -118,6 +118,7 @@ export default class RxDataParser {
         console.log('Reached end of escape code.');
         const color = this.codeToNormalColourMap[Number(firstNumber)];
         console.log('color=', color);
+        this.txRxTerminal.setStyle({ color });
       }
     }
   }

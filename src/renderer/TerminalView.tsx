@@ -9,6 +9,7 @@ import { FixedSizeList } from 'react-window';
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
 import TerminalRow from 'model/Terminal/TerminalRow';
+import { observable, toJS } from 'mobx';
 
 interface Props {
   appStore: App;
@@ -36,7 +37,8 @@ export default observer((props: Props) => {
       colIdx < terminalRow.terminalChars.length;
       colIdx += 1
     ) {
-      console.log('rendering', terminalRow.terminalChars[colIdx].char);
+      const terminalChar = terminalRow.terminalChars[colIdx];
+      console.log('rendering', terminalChar.char);
       let id = '';
       if (
         index === terminal.cursorPosition[0] &&
@@ -45,8 +47,8 @@ export default observer((props: Props) => {
         id = 'cursor';
       }
       spans.push(
-        <span key={colIdx} id={id}>
-          {terminalRow.terminalChars[colIdx].char}
+        <span key={colIdx} id={id} style={toJS(terminalChar.style)}>
+          {terminalChar.char}
         </span>
       );
     }
