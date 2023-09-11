@@ -84,10 +84,10 @@ describe('App', () => {
     const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
     screen.debug(txRxTerminalView);
 
-    // await waitFor(() => {
-    //   const text = within(txRxTerminalView).queryByText('H');
-    //   expect(text).toBeTruthy();
-    //   screen.debug(screen.getByTestId('tx-rx-terminal-view'));
-    // });
+    await waitFor(() => {
+      const text = within(txRxTerminalView).queryByText('H');
+      expect(text).toBeTruthy();
+      screen.debug(screen.getByTestId('tx-rx-terminal-view'));
+    });
   });
 });

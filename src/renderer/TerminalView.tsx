@@ -44,7 +44,11 @@ export default observer((props: Props) => {
       ) {
         id = 'cursor';
       }
-      spans.push(<span id={id}>{terminalRow.terminalChars[colIdx].char}</span>);
+      spans.push(
+        <span key={colIdx} id={id}>
+          {terminalRow.terminalChars[colIdx].char}
+        </span>
+      );
     }
     // console.log(txRxRef);
     // if (txRxRef.current !== null) {
@@ -103,6 +107,7 @@ export default observer((props: Props) => {
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
       }}
+      data-testid="tx-rx-terminal-view"
     >
       {/* <div
         ref={txRxRef}
