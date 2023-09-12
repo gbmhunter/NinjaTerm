@@ -46,9 +46,7 @@ async function connectToSerialPort() {
     .find((row) => within(row).queryByText('COM99') !== null);
   expect(com99Row).toBeDefined();
   // Keep typescript happy
-  if (com99Row === undefined) {
-    throw Error('jfjf');
-  }
+  assert(com99Row !== undefined);
 
   // Click the row to select it
   fireEvent.click(com99Row);
@@ -71,6 +69,38 @@ async function connectToSerialPort() {
   return port;
 }
 
+interface ExpectedTerminalChar {
+  char: string;
+  style: { [key: string]: string };
+}
+
+/**
+ * Helper function which compares expected displayed data with
+ * what was actually rendered.
+ *
+ * @param expectedDisplay What you expect to be displayed.
+ * @param actualDisplay What was actually displayed.
+ */
+function checkExpectedAgainstActualDisplay(
+  expectedDisplay: ExpectedTerminalChar[][],
+  actualDisplay: Element
+) {
+  // screen.debug(terminalRows);
+  for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
+    const row = expectedDisplay[rowIdx];
+    for (let colIdx = 0; colIdx < row.length; colIdx += 1) {
+      const expectedTerminalChar = row[colIdx];
+      const span = actualDisplay.children[rowIdx].children[colIdx];
+      expect(span.textContent).toEqual(expectedTerminalChar.char);
+      // toHaveStyle doesn't work well if you pass it an empty object
+      if (JSON.stringify(expectedTerminalChar.style) !== '{}') {
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(span).toHaveStyle(expectedTerminalChar.style);
+      }
+    }
+  }
+}
+
 describe('App', () => {
   it('should display "Hello, World"', async () => {
     const port = await connectToSerialPort();
@@ -89,10 +119,53 @@ describe('App', () => {
     });
 
     // Check that all data is displayed correctly in terminal
-    for (let idx = 0; idx < textToSend.length; idx += 1) {
-      expect(terminalRows.children[0].children[idx].textContent).toEqual(
-        textToSend[idx]
-      );
-    }
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'H', style: {} },
+        { char: 'e', style: {} },
+        { char: 'l', style: {} },
+        { char: 'l', style: {} },
+        { char: 'o', style: {} },
+        { char: ',', style: {} },
+        { char: ' ', style: {} },
+        { char: 'w', style: {} },
+        { char: 'o', style: {} },
+        { char: 'r', style: {} },
+        { char: 'l', style: {} },
+        { char: 'd', style: {} },
+        { char: '!', style: {} },
+      ],
+      // Because of new line char in input, we expect the cursor now to be on the next line
+      [{ char: ' ', style: {} }],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('should render red text', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    const textToSend = '\x1B[31mred';
+    port.port.emitData(`${textToSend}`);
+    // const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
+        { char: ' ', style: {} },
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
   });
 });
