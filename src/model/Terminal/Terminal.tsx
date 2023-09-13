@@ -49,7 +49,6 @@ export default class Terminal {
         0,
         terminalChar
       );
-      console.log('row=', rowToInsertInto.terminalChars);
     }
 
     // Increment cursor
@@ -76,6 +75,11 @@ export default class Terminal {
     this.currentStyle = Object.assign(this.currentStyle, style);
   }
 
+  clearStyle() {
+    // Clear all styles
+    this.currentStyle = {};
+  }
+
   setScrollLock(trueFalse: boolean) {
     this.scrollLock = trueFalse;
   }
@@ -83,11 +87,9 @@ export default class Terminal {
   moveToNewLine() {
     // If we are currently not on the last row, we just need to move to the start of the next line
     if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
-      console.log('Not on last line.');
       this.cursorPosition[0] += 1;
       this.cursorPosition[1] = 0;
     } else {
-      console.log('Cursor on last line!');
       const terminalRow = new TerminalRow();
       this.terminalRows.push(terminalRow);
       this.cursorPosition[0] += 1;

@@ -30,7 +30,7 @@ export default observer((props: Props) => {
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
-    console.log('Row() called.');
+    // console.log('Row() called.');
     const terminalRow = data[index];
     const spans: ReactElement[] = [];
     for (
@@ -39,7 +39,7 @@ export default observer((props: Props) => {
       colIdx += 1
     ) {
       const terminalChar = terminalRow.terminalChars[colIdx];
-      console.log('rendering', terminalChar.char);
+      // console.log('rendering', terminalChar.char);
       let id = '';
       if (
         index === terminal.cursorPosition[0] &&

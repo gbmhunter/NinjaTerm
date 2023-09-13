@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 // import TextDecoder from 'util';
 import { makeAutoObservable } from 'mobx';
 import { TextEncoder, TextDecoder } from 'util';
@@ -10,6 +11,10 @@ Object.assign(global, { TextDecoder, TextEncoder });
 
 export default class RxDataParser {
   txRxTerminal: Terminal;
+
+  // True if this RX data parser is just processing text as plain text, i.e.
+  // no partial escape code has been detected.
+  inIdleState: boolean;
 
   // True if we have received the escape code start char and are currently waiting
   // for more data to complete the sequence
@@ -26,6 +31,7 @@ export default class RxDataParser {
 
   constructor(txRxTerminal: Terminal) {
     this.txRxTerminal = txRxTerminal;
+    this.inIdleState = true;
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = '';
     this.inCSISequence = false;
@@ -51,7 +57,9 @@ export default class RxDataParser {
       const char = dataAsStr[idx];
       console.log('char=', char);
 
-      if (char === '\n') {
+      // Don't want to interpret new lines if we are half-way
+      // through processing an ANSI escape code
+      if (this.inIdleState && char === '\n') {
         console.log('Found new line char');
         this.txRxTerminal.moveToNewLine();
         // eslint-disable-next-line no-continue
@@ -62,6 +70,7 @@ export default class RxDataParser {
         console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
+        this.inIdleState = false;
       }
       // If we are not currently processing an escape code
       // character is to be displayed
@@ -83,6 +92,7 @@ export default class RxDataParser {
             );
             this.parseCSISequence(this.partialEscapeCode);
             this.resetEscapeCodeParserState();
+            this.inIdleState = true;
           }
         }
       } else {
@@ -101,24 +111,42 @@ export default class RxDataParser {
     const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
     if (lastChar === 'm') {
       console.log('Found m, select graphic rendition code');
-      let firstNumber = '';
-      // ESC[<first number>
-      let currIdx = 2;
-      while (
-        RxDataParser.isNumber(ansiEscapeCode[currIdx]) &&
-        currIdx < ansiEscapeCode.length
-      ) {
-        console.log('Found number');
-        firstNumber += ansiEscapeCode[currIdx];
-        currIdx += 1;
-      }
-      console.log('Finished first number. firstNumber=', firstNumber);
-      if (currIdx === ansiEscapeCode.length - 1) {
-        // A SGR code with just one number in the form ESC[<number>m
-        console.log('Reached end of escape code.');
-        const color = this.codeToNormalColourMap[Number(firstNumber)];
-        console.log('color=', color);
-        this.txRxTerminal.setStyle({ color });
+      // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
+      // Allowed form: ESC[<first number>;<second number>;...m
+
+      // Remove "ESC["" from start and "m" from end
+      const numbersAndSemicolons = ansiEscapeCode.slice(
+        2,
+        ansiEscapeCode.length - 1
+      );
+      // Split into individual codes
+      const numberCodeStrings = numbersAndSemicolons.split(';');
+      for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
+        const numberCodeString = numberCodeStrings[idx];
+        const numberCode = parseInt(numberCodeString, 10);
+        if (Number.isNaN(numberCode)) {
+          console.error(
+            `Number string in SGR code could not converted into integer. numberCodeString=${numberCodeString}.`
+          );
+          // Skip processing this number, but continue with the rest
+          continue;
+        }
+        console.log('numberCode=', numberCode);
+        if (numberCode === 0) {
+          console.log('Clearing all SGR styles...');
+          this.txRxTerminal.clearStyle();
+        } else if (numberCode >= 30 && numberCode <= 37) {
+          console.log('Setting foreground colour...');
+          const color = this.codeToNormalColourMap[numberCode];
+          console.log('color=', color);
+          this.txRxTerminal.setStyle({ color });
+        } else if (numberCode >= 40 && numberCode <= 47) {
+          console.log('Setting foreground colour...');
+        } else {
+          console.log(
+            `Number ${numberCode} provided to SGR control sequence unsupported.`
+          );
+        }
       }
     }
   }

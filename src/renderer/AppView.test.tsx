@@ -1,3 +1,7 @@
+/**
+ * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
+ * to a fake serial port, injecting fake serial data, and making sure that this data is rendered correctly on the screen.
+ */
 import '@testing-library/jest-dom';
 import {
   render,
@@ -10,7 +14,7 @@ import { SerialPortMock } from 'serialport';
 import assert from 'assert';
 
 import { App } from 'model/App';
-import AppView from '../renderer/AppView';
+import AppView from './AppView';
 
 /**
  * Setup function that is re-used by all tests in this file.
