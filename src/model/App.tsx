@@ -14,7 +14,6 @@ import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { SettingsStore } from './Settings/Settings';
-import RxDataParser from './RxDataParser';
 import Terminal from './Terminal/Terminal';
 
 declare global {
@@ -109,8 +108,6 @@ export class App {
 
   txRxTerminal: Terminal;
 
-  rxDataParser: RxDataParser;
-
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
 
@@ -137,7 +134,6 @@ export class App {
 
     // New stuff
     this.txRxTerminal = new Terminal();
-    this.rxDataParser = new RxDataParser(this.txRxTerminal);
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
     makeAutoObservable(this); // Make sure this near the end
@@ -331,115 +327,6 @@ export class App {
         }
       });
     }
-  }
-
-  /**
-   * Processes newly received serial data through the various parsing streams, all the way
-   * to output data which is displayed to the user.
-   */
-  addNewRxData(data: Buffer) {
-    // console.log('addNewRxData() called. data=', data);
-    this.rxDataParser.parseData(data);
-    // return;
-
-    // this.rxData += data.toString();
-
-    // this.input.append(data.toString());
-    // this.newLineParser.parse(this.input, this.buffer1);
-    // this.ansiECParser.parse(this.buffer1, this.output);
-    // // this.output contains the new data needed to be add to the RX terminal window
-
-    // // Copy all text before first ColourMarker entry into the first text node
-    // let indexOfLastCharPlusOne: number;
-    // if (this.output.getColourMarkers().length === 0) {
-    //   indexOfLastCharPlusOne = this.output.getText().length;
-    // } else {
-    //   indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos();
-    // }
-
-    // let textToAppend = this.output
-    //   .getText()
-    //   .substring(0, indexOfLastCharPlusOne);
-
-    // // Create new line characters for all new line markers that point to text
-    // // shifted above
-    // let currNewLineMarkerIndex = 0;
-    // for (let i = 0; i < this.output.getNewLineMarkers().length; i += 1) {
-    //   if (
-    //     this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos >
-    //     indexOfLastCharPlusOne
-    //   )
-    //     break;
-
-    //   textToAppend.insert(
-    //     this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos + i,
-    //     '\n' // New line character
-    //   );
-    //   currNewLineMarkerIndex += 1;
-    // }
-
-    // // Add this remaining text to the last existing element in the RX segments
-    // this.rxSegments.appendText(textToAppend);
-    // this.txRxSegments.appendText(textToAppend);
-
-    // // Create new text nodes and copy all text
-    // // This loop won't run if there is no elements in the TextColors array
-    // for (let x = 0; x < this.output.getColourMarkers().length; x += 1) {
-    //   // defaultTextColorActive = false;
-    //   const indexOfFirstCharInNode = this.output
-    //     .getColourMarkers()
-    //     [x].getCharPos();
-
-    //   let indexOfLastCharInNodePlusOne = 0;
-    //   if (x >= this.output.getColourMarkers().length - 1) {
-    //     indexOfLastCharInNodePlusOne = this.output.getText().length;
-    //   } else {
-    //     indexOfLastCharInNodePlusOne = this.output
-    //       .getColourMarkers()
-    //       [x + 1].getCharPos();
-    //   }
-
-    //   textToAppend = this.output
-    //     .getText()
-    //     .substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne);
-
-    //   // Create new line characters for all new line markers that point to text
-    //   // shifted above
-    //   let insertionCount = 0;
-    //   while (true) {
-    //     if (currNewLineMarkerIndex >= this.output.getNewLineMarkers().length)
-    //       break;
-
-    //     if (
-    //       this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() >
-    //       indexOfLastCharInNodePlusOne
-    //     )
-    //       break;
-
-    //     textToAppend.insert(
-    //       this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() +
-    //         insertionCount -
-    //         indexOfFirstCharInNode,
-    //       '\n'
-    //     ); // New line char
-    //     currNewLineMarkerIndex += 1;
-    //     insertionCount += 1;
-    //   }
-
-    //   // Add this remaining text to a new text segment
-    //   const textColor = this.output.getColourMarkers()[x].color;
-    //   this.rxSegments.addNewSegment(textToAppend.toString(), textColor);
-    //   this.txRxSegments.addNewSegment(textToAppend.toString(), textColor);
-    // }
-
-    // this.output.clear();
-
-    // // ================ TRIM SCROLLBACK BUFFER ===============//
-    // const scrollbackSizeChars =
-    //   this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
-    //     .value;
-    // this.rxSegments.trimSegments(scrollbackSizeChars);
-    // this.txRxSegments.trimSegments(scrollbackSizeChars);
   }
 
   clearAllData() {
