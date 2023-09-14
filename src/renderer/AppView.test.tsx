@@ -1,6 +1,8 @@
 /**
  * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
  * to a fake serial port, injecting fake serial data, and making sure that this data is rendered correctly on the screen.
+ *
+ * Add .only to the end of "it" to run just 1 test during development, e.g. it.only(...)
  */
 import '@testing-library/jest-dom';
 import {
@@ -151,7 +153,6 @@ describe('App', () => {
 
     const textToSend = '\x1B[31mred';
     port.port.emitData(`${textToSend}`);
-    // const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
 
     // Await for any data to be displayed in terminal (this will be when there
     // is more than just 1 " " char on the screen for the cursor)
@@ -167,6 +168,104 @@ describe('App', () => {
         { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
         { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
         { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
+        { char: ' ', style: {} },
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('should render bright red text', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    const textToSend = '\x1B[91mred';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    // Red should be "bright red"
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'r', style: { color: 'rgb(255, 85, 85)' } },
+        { char: 'e', style: { color: 'rgb(255, 85, 85)' } },
+        { char: 'd', style: { color: 'rgb(255, 85, 85)' } },
+        { char: ' ', style: {} },
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('ESC[m should reset CSI styles', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    // ESC[m should be interpreted as ESC[0m
+    const textToSend = '\x1B[31mred\x1B[mreset';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    // After "red", the word "reset" should be back to the default
+    // style
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'r', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 's', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 't', style: { color: '' } },
+        { char: ' ', style: {} },
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('ESC[0m should reset CSI styles', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    // ESC[m should be interpreted as ESC[0m
+    const textToSend = '\x1B[31mred\x1B[0mreset';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    // After "red", the word "reset" should be back to the default
+    // style
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'r', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 's', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 't', style: { color: '' } },
         { char: ' ', style: {} },
       ],
     ];

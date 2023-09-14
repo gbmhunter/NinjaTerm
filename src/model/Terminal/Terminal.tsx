@@ -87,6 +87,142 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
+  parseData(data: Buffer) {
+    // Parse each character
+    const dataAsStr = new TextDecoder().decode(data);
+    for (let idx = 0; idx < data.length; idx += 1) {
+      const char = dataAsStr[idx];
+      console.log('char=', char);
+
+      // Don't want to interpret new lines if we are half-way
+      // through processing an ANSI escape code
+      if (this.inIdleState && char === '\n') {
+        console.log('Found new line char');
+        this.moveToNewLine();
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+
+      if (char === '\x1B') {
+        console.log('Start of escape sequence found!');
+        this.resetEscapeCodeParserState();
+        this.inAnsiEscapeCode = true;
+        this.inIdleState = false;
+      }
+      // If we are not currently processing an escape code
+      // character is to be displayed
+      if (this.inAnsiEscapeCode) {
+        // Add received char to partial escape code
+        this.partialEscapeCode += char;
+        console.log('partialEscapeCode=', this.partialEscapeCode);
+        if (this.partialEscapeCode === '\x1B[') {
+          this.inCSISequence = true;
+        }
+
+        if (this.inCSISequence) {
+          console.log('In CSI sequence');
+          // Wait for alphabetic character to end CSI sequence
+          if (char.toUpperCase() !== char.toLowerCase()) {
+            console.log(
+              'Received terminating letter of CSI sequence! Escape code = ',
+              this.partialEscapeCode
+            );
+            this.parseCSISequence(this.partialEscapeCode);
+            this.resetEscapeCodeParserState();
+            this.inIdleState = true;
+          }
+        }
+      } else {
+        // Not currently receiving ANSI escape code,
+        // so send character to terminal(s)
+        this.addVisibleText(char);
+      }
+    }
+  }
+
+  /**
+   * Parses a CSI sequence.
+   * @param ansiEscapeCode Must be in the form "ESC[<remaining data>". This function will validate
+   *    the rest of the code, and perform actions on the terminal as required.
+   */
+  parseCSISequence(ansiEscapeCode: string) {
+    const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
+    if (lastChar === 'A') {
+      // CUU Cursor Up
+      console.log('Cursor up');
+
+    } else if (lastChar === 'm') {
+      console.log('Found m, select graphic rendition code');
+      // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
+      // Allowed form: ESC[<first number>;<second number>;...m
+
+      // Remove "ESC["" from start and "m" from end
+      let numbersAndSemicolons = ansiEscapeCode.slice(
+        2,
+        ansiEscapeCode.length - 1
+      );
+
+      // Check if there is nothing between the ESC[ and the m, i.e.
+      // the entire escape code was just ESC[m. In this case, treat
+      // it the same as ESC[0m]
+      if (numbersAndSemicolons === '') {
+        numbersAndSemicolons = '0';
+      }
+      // Split into individual codes
+      const numberCodeStrings = numbersAndSemicolons.split(';');
+      for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
+        const numberCodeString = numberCodeStrings[idx];
+        const numberCode = parseInt(numberCodeString, 10);
+        if (Number.isNaN(numberCode)) {
+          console.error(
+            `Number string in SGR code could not converted into integer. numberCodeString=${numberCodeString}.`
+          );
+          // Skip processing this number, but continue with the rest
+          continue;
+        }
+        console.log('numberCode=', numberCode);
+        if (numberCode === 0) {
+          console.log('Clearing all SGR styles...');
+          this.clearStyle();
+        } else if (numberCode === 1) {
+          // Got the "bold or increased intensity" code
+          this.boldOrIncreasedIntensity = true;
+        } else if (numberCode >= 30 && numberCode <= 37) {
+          let color;
+          if (this.boldOrIncreasedIntensity) {
+            color = this.sgaCodeToBrightColorMapVga[numberCode - 30];
+          } else {
+            color = this.sgaCodeToColorMapVga[numberCode - 30];
+          }
+          this.setStyle({ color });
+        } else if (numberCode >= 40 && numberCode <= 47) {
+          let color;
+          if (this.boldOrIncreasedIntensity) {
+            color = this.sgaCodeToBrightColorMapVga[numberCode - 40];
+          } else {
+            color = this.sgaCodeToColorMapVga[numberCode - 40];
+          }
+          this.setStyle({ 'background-color': color });
+        } else if (numberCode >= 90 && numberCode <= 97) {
+          // Bright foreground colors
+          this.setStyle({
+            color: this.sgaCodeToBrightColorMapVga[numberCode - 90],
+          });
+        } else if (numberCode >= 100 && numberCode <= 107) {
+          // Bright background colors
+          this.setStyle({
+            'background-color':
+              this.sgaCodeToBrightColorMapVga[numberCode - 100],
+          });
+        } else {
+          console.log(
+            `Number ${numberCode} provided to SGR control sequence unsupported.`
+          );
+        }
+      }
+    }
+  }
+
   addVisibleText(text: string) {
     for (let idx = 0; idx < text.length; idx += 1) {
       const char = text[idx];
@@ -157,59 +293,6 @@ export default class Terminal {
     }
   }
 
-  parseData(data: Buffer) {
-    // Parse each character
-    const dataAsStr = new TextDecoder().decode(data);
-    for (let idx = 0; idx < data.length; idx += 1) {
-      const char = dataAsStr[idx];
-      console.log('char=', char);
-
-      // Don't want to interpret new lines if we are half-way
-      // through processing an ANSI escape code
-      if (this.inIdleState && char === '\n') {
-        console.log('Found new line char');
-        this.moveToNewLine();
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
-      if (char === '\x1B') {
-        console.log('Start of escape sequence found!');
-        this.resetEscapeCodeParserState();
-        this.inAnsiEscapeCode = true;
-        this.inIdleState = false;
-      }
-      // If we are not currently processing an escape code
-      // character is to be displayed
-      if (this.inAnsiEscapeCode) {
-        // Add received char to partial escape code
-        this.partialEscapeCode += char;
-        console.log('partialEscapeCode=', this.partialEscapeCode);
-        if (this.partialEscapeCode === '\x1B[') {
-          this.inCSISequence = true;
-        }
-
-        if (this.inCSISequence) {
-          console.log('In CSI sequence');
-          // Wait for alphabetic character to end CSI sequence
-          if (char.toUpperCase() !== char.toLowerCase()) {
-            console.log(
-              'Received terminating letter of CSI sequence! Escape code = ',
-              this.partialEscapeCode
-            );
-            this.parseCSISequence(this.partialEscapeCode);
-            this.resetEscapeCodeParserState();
-            this.inIdleState = true;
-          }
-        }
-      } else {
-        // Not currently receiving ANSI escape code,
-        // so send character to terminal(s)
-        this.addVisibleText(char);
-      }
-    }
-  }
-
   resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = '';
@@ -218,65 +301,5 @@ export default class Terminal {
 
   static isNumber(char: string) {
     return /^\d$/.test(char);
-  }
-
-  parseCSISequence(ansiEscapeCode: string) {
-    const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
-    if (lastChar === 'm') {
-      console.log('Found m, select graphic rendition code');
-      // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
-      // Allowed form: ESC[<first number>;<second number>;...m
-
-      // Remove "ESC["" from start and "m" from end
-      const numbersAndSemicolons = ansiEscapeCode.slice(
-        2,
-        ansiEscapeCode.length - 1
-      );
-      // Split into individual codes
-      const numberCodeStrings = numbersAndSemicolons.split(';');
-      for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
-        const numberCodeString = numberCodeStrings[idx];
-        const numberCode = parseInt(numberCodeString, 10);
-        if (Number.isNaN(numberCode)) {
-          console.error(
-            `Number string in SGR code could not converted into integer. numberCodeString=${numberCodeString}.`
-          );
-          // Skip processing this number, but continue with the rest
-          continue;
-        }
-        console.log('numberCode=', numberCode);
-        if (numberCode === 0) {
-          console.log('Clearing all SGR styles...');
-          this.clearStyle();
-        } else if (numberCode === 1) {
-          // Got the "bold or increased intensity" code
-          this.boldOrIncreasedIntensity = true;
-        } else if (numberCode >= 30 && numberCode <= 37) {
-          console.log('Setting foreground colour...');
-          let color;
-          if (this.boldOrIncreasedIntensity) {
-            color = this.sgaCodeToBrightColorMapVga[numberCode - 30];
-          } else {
-            color = this.sgaCodeToColorMapVga[numberCode - 30];
-          }
-          console.log('color=', color);
-          this.setStyle({ color });
-        } else if (numberCode >= 40 && numberCode <= 47) {
-          console.log('Setting background colour...');
-          let color;
-          if (this.boldOrIncreasedIntensity) {
-            color = this.sgaCodeToBrightColorMapVga[numberCode - 40];
-          } else {
-            color = this.sgaCodeToColorMapVga[numberCode - 40];
-          }
-          console.log('color=', color);
-          this.setStyle({ 'background-color': color });
-        } else {
-          console.log(
-            `Number ${numberCode} provided to SGR control sequence unsupported.`
-          );
-        }
-      }
-    }
   }
 }
