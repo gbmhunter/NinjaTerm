@@ -228,7 +228,8 @@ export class App {
 
     // Switches the port into "flowing mode"
     this.serialPort.on('data', (data) => {
-      this.addNewRxData(data);
+      // this.addNewRxData(data);
+      this.txRxTerminal.parseData(data);
     });
   }
 

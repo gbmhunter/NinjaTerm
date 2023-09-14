@@ -90,7 +90,7 @@ export default class RxDataParser {
               'Received terminating letter of CSI sequence! Escape code = ',
               this.partialEscapeCode
             );
-            this.parseCSISequence(this.partialEscapeCode);
+            // this.parseCSISequence(this.partialEscapeCode);
             this.resetEscapeCodeParserState();
             this.inIdleState = true;
           }
@@ -98,55 +98,7 @@ export default class RxDataParser {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.txRxTerminal.addText(char);
-      }
-    }
-  }
-
-  static isNumber(char: string) {
-    return /^\d$/.test(char);
-  }
-
-  parseCSISequence(ansiEscapeCode: string) {
-    const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
-    if (lastChar === 'm') {
-      console.log('Found m, select graphic rendition code');
-      // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
-      // Allowed form: ESC[<first number>;<second number>;...m
-
-      // Remove "ESC["" from start and "m" from end
-      const numbersAndSemicolons = ansiEscapeCode.slice(
-        2,
-        ansiEscapeCode.length - 1
-      );
-      // Split into individual codes
-      const numberCodeStrings = numbersAndSemicolons.split(';');
-      for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
-        const numberCodeString = numberCodeStrings[idx];
-        const numberCode = parseInt(numberCodeString, 10);
-        if (Number.isNaN(numberCode)) {
-          console.error(
-            `Number string in SGR code could not converted into integer. numberCodeString=${numberCodeString}.`
-          );
-          // Skip processing this number, but continue with the rest
-          continue;
-        }
-        console.log('numberCode=', numberCode);
-        if (numberCode === 0) {
-          console.log('Clearing all SGR styles...');
-          this.txRxTerminal.clearStyle();
-        } else if (numberCode >= 30 && numberCode <= 37) {
-          console.log('Setting foreground colour...');
-          const color = this.codeToNormalColourMap[numberCode];
-          console.log('color=', color);
-          this.txRxTerminal.setStyle({ color });
-        } else if (numberCode >= 40 && numberCode <= 47) {
-          console.log('Setting foreground colour...');
-        } else {
-          console.log(
-            `Number ${numberCode} provided to SGR control sequence unsupported.`
-          );
-        }
+        this.txRxTerminal.addVisibleText(char);
       }
     }
   }
