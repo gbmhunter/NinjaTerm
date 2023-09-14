@@ -92,7 +92,7 @@ export default class Terminal {
     const dataAsStr = new TextDecoder().decode(data);
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
-      console.log('char=', char);
+      console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
@@ -149,9 +149,25 @@ export default class Terminal {
     const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
     if (lastChar === 'A') {
       // CUU Cursor Up
+      // ===========================
       console.log('Cursor up');
-
+      if (this.cursorPosition[0] === 0) {
+        console.log('Cant go up.');
+        return;
+      }
+      // There is a row above us, so safe to go up
+      this.cursorPosition[0] -= 1;
+      // Need to pad out this row with spaces " " if cursor
+      // is beyond end of existing text on row
+      const row = this.terminalRows[this.cursorPosition[0]];
+      while (this.cursorPosition[1] > row.terminalChars.length - 1) {
+        const space = new TerminalChar();
+        space.char = ' ';
+        row.terminalChars.push(space);
+      }
     } else if (lastChar === 'm') {
+      // SGR
+      // ==============================
       console.log('Found m, select graphic rendition code');
       // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
       // Allowed form: ESC[<first number>;<second number>;...m
@@ -223,6 +239,10 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Adds visible text to the terminal
+   * @param text
+   */
   addVisibleText(text: string) {
     for (let idx = 0; idx < text.length; idx += 1) {
       const char = text[idx];

@@ -271,4 +271,39 @@ describe('App', () => {
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
   });
+
+  it('ESC[1A should go up 1 row', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    // ESC[m should be interpreted as ESC[0m
+    const textToSend = '\x1B[31mred\x1B[0mreset';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    // After "red", the word "reset" should be back to the default
+    // style
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
+        { char: 'r', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 's', style: { color: '' } },
+        { char: 'e', style: { color: '' } },
+        { char: 't', style: { color: '' } },
+        { char: ' ', style: {} },
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
 });
