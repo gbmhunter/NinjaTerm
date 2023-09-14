@@ -2,6 +2,7 @@
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
 import { TextEncoder, TextDecoder } from 'util';
+import { assert } from 'console';
 
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
@@ -47,6 +48,9 @@ export default class Terminal {
 
   sgaCodeToBrightColorMapVga: { [key: number]: string } = {};
 
+  // The max. number of chars to display per row
+  charWidth: number;
+
   constructor() {
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
@@ -83,6 +87,8 @@ export default class Terminal {
     this.sgaCodeToBrightColorMapVga[5] = 'rgb(255, 85, 255)';
     this.sgaCodeToBrightColorMapVga[6] = 'rgb(85, 255, 255)';
     this.sgaCodeToBrightColorMapVga[7] = 'rgb(255, 255, 255)';
+
+    this.charWidth = 80;
 
     makeAutoObservable(this);
   }
@@ -257,10 +263,16 @@ export default class Terminal {
         0,
         terminalChar
       );
+      // Increment cursor, move to next row if we have hit max char width
+      if (this.cursorPosition[1] === this.charWidth - 1) {
+        // Remove space " " for cursor at the end of the current line
+        rowToInsertInto.terminalChars.splice(this.cursorPosition[1] + 1, 1);
+        this.cursorPosition[1] = 0;
+        this.moveToNewLine();
+      } else {
+        this.cursorPosition[1] += 1;
+      }
     }
-
-    // Increment cursor
-    this.cursorPosition[1] += text.length;
   }
 
   clearData() {
@@ -321,5 +333,10 @@ export default class Terminal {
 
   static isNumber(char: string) {
     return /^\d$/.test(char);
+  }
+
+  setCharWidth(charWidth: number) {
+    assert(charWidth > 0);
+    this.charWidth = charWidth;
   }
 }

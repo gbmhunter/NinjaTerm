@@ -34,7 +34,7 @@ class Data {
       rule: 'required',
     },
     wrappingWidthChars: {
-      value: 120, // 120 is a good default
+      value: 80, // 80 is standard
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
@@ -59,7 +59,7 @@ class Data {
 }
 
 export default class DataProcessingSettings {
-  appStore: App;
+  app: App;
 
   // The data which is visible to the user, may or may not be valid
   visibleData = new Data();
@@ -72,7 +72,10 @@ export default class DataProcessingSettings {
   isApplyable = false;
 
   constructor(app: App) {
-    this.appStore = app;
+    this.app = app;
+    this.app.txRxTerminal.setCharWidth(
+      this.appliedData.fields.wrappingWidthChars.value
+    );
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -115,8 +118,12 @@ export default class DataProcessingSettings {
   applyChanges = () => {
     // Deep-copy visible data to applied data
     this.appliedData = JSON.parse(JSON.stringify(this.visibleData));
-    this.appStore.ansiECParser.isEnabled =
+    // Apply any actions because of these new applied settings
+    this.app.ansiECParser.isEnabled =
       this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
+    this.app.txRxTerminal.setCharWidth(
+      this.appliedData.fields.wrappingWidthChars.value
+    );
     this.isApplyable = false;
   };
 }

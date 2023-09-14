@@ -115,6 +115,10 @@ export class App {
   statusMsgScrollLock = true;
 
   constructor(SerialPortType: typeof SerialPort | typeof SerialPortMock) {
+    // Need to create terminal before settings, as the settings
+    // will configure the terminal
+    this.txRxTerminal = new Terminal();
+
     this.settings = new SettingsStore(this);
 
     this.dataPane1 = new DataPane();
@@ -131,9 +135,6 @@ export class App {
     // A mix of both TX and RX data. Displayed when the "COMBINED_TX_RX_PANE"
     // view configuration is selected.
     this.txRxSegments = new TextSegmentController();
-
-    // New stuff
-    this.txRxTerminal = new Terminal();
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
     makeAutoObservable(this); // Make sure this near the end
