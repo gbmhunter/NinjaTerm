@@ -5,9 +5,6 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 import { toJS } from 'mobx';
 
-// import AutoSizer from 'react-virtualized-auto-sizer';
-// import { AutoSizer } from 'react-virtualized';
-
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
 import TerminalRow from 'model/Terminal/TerminalRow';
@@ -91,7 +88,7 @@ export default observer((props: Props) => {
     setWidth(inputOutputTextDiv?.current?.clientWidth);
   }, [inputOutputTextDiv?.current?.clientWidth]);
 
-  console.log('height=', height);
+  // Use a fake height if testing
   let heightDebug;
   if (appStore.testing) {
     heightDebug = 200;
@@ -148,6 +145,10 @@ export default observer((props: Props) => {
         itemSize={20}
         width={width}
         itemData={appStore.txRxTerminal.terminalRows}
+        onScroll={(scrollProps) => {
+          const { scrollOffset } = scrollProps;
+          console.log('scrollOffset=', scrollOffset);
+        }}
       >
         {Row}
       </FixedSizeList>

@@ -12,6 +12,14 @@ void setup() {
   Serial.begin(115200);
 }
 
+/*
+[1B][8D[1B][J-- [00:10:53.854,217] [1B][0m<inf> Bsp: Toggle all leds[1B][0m
+[1B][1;32muart:~$ [1B][m[1B][8D[1B][J-- [00:10:54.054,290] [1B][0m<inf> Bsp: Toggle all leds[1B][0m
+[1B][1;32muart:~$ [1B][m[1B][8D[1B][J-- [00:10:54.254,394] [1B][0m<inf> Bsp: Toggle all leds[1B][0m
+[1B][1;32muart:~$ [1B][m[1B][8D[1B][J-- [00:10:54.254,425] [1B][0m<inf> Main: Tick[1B][0m
+[1B][1;32muart:~$ [1B][m[1B][8D[1B][J[1B][1;32muart:~$ [1B][m
+*/
+
 void loop() {
 
   if (Serial.available()) {

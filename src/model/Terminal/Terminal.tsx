@@ -208,6 +208,10 @@ export default class Terminal {
         return;
       }
       this.cursorLeft(numColsToGoLeft);
+    } else if (lastChar === 'J') {
+      // ED - Erase in Display
+      // ==============================
+      // TODO: Add processing code here
     } else if (lastChar === 'm') {
       // SGR
       // ==============================
