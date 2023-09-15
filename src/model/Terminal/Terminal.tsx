@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-continue */
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
@@ -211,7 +212,41 @@ export default class Terminal {
     } else if (lastChar === 'J') {
       // ED - Erase in Display
       // ==============================
-      // TODO: Add processing code here
+      console.log('Erase in display');
+      // Extract number in the form ESC[nJ
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      // If there was no number provided, assume it was '0' (default)
+      if (numberStr === '') {
+        numberStr = '0';
+      }
+      const numberN = parseInt(numberStr, 10);
+      if (Number.isNaN(numberN)) {
+        console.error(
+          `Number string in Erase in Display (ED) CSI sequence could not converted into integer. numberStr=${numberStr}.`
+        );
+        return;
+      }
+      if (numberN === 0) {
+        // Clear from cursor to end of screen. We assume this mean from cursor location to end
+        // of all data
+        // First, remove all chars at the cursor position or beyond
+        // on the current row
+        const currRow = this.terminalRows[this.cursorPosition[0]];
+        const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
+        currRow.terminalChars.splice(
+          this.cursorPosition[1],
+          numCharsToDeleteOnCurrRow
+        );
+        // Add cursor char at current position
+        const cursorChar = new TerminalChar();
+        cursorChar.char = ' ';
+        cursorChar.forCursor = true;
+        currRow.terminalChars.push(cursorChar);
+        // Now remove all rows past the one the cursor is on
+        this.terminalRows.splice(this.cursorPosition[0] + 1);
+      } else {
+        console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
+      }
     } else if (lastChar === 'm') {
       // SGR
       // ==============================

@@ -145,10 +145,10 @@ export default observer((props: Props) => {
         itemSize={20}
         width={width}
         itemData={appStore.txRxTerminal.terminalRows}
-        onScroll={(scrollProps) => {
-          const { scrollOffset } = scrollProps;
-          console.log('scrollOffset=', scrollOffset);
-        }}
+        // onScroll={(scrollProps) => {
+        //   const { scrollOffset } = scrollProps;
+        //   console.log('scrollOffset=', scrollOffset);
+        // }}
       >
         {Row}
       </FixedSizeList>

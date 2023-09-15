@@ -110,7 +110,6 @@ function checkExpectedAgainstActualDisplay(
   expectedDisplay: ExpectedTerminalChar[][],
   actualDisplay: Element
 ) {
-  screen.debug(actualDisplay);
   // Make sure there are the same number of actual rows as expected rows
   expect(actualDisplay.children.length).toBe(expectedDisplay.length);
 
@@ -381,8 +380,6 @@ describe('App', () => {
     const textToSend = 'row1\x1B[1D';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
 
@@ -406,6 +403,57 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  it('ESC[J rewriting a single row', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    // Let's rename row1 to rowA
+    const textToSend = 'row1\x1B[4D\x1B[JrowA';
+    port.port.emitData(`${textToSend}`);
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'A' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  it('ESC[J clearing multiple rows', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    // Let's move back to the 'w' in row2 and then up to the 'w' in row1, then clear everything
+    // to the end of screen
+    const textToSend = 'row1\nrow2\x1B[2D\x1B[1A\x1B[J';
+    port.port.emitData(`${textToSend}`);
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }), // All data after this 'o' should be gone!
         new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
       ],
     ];
