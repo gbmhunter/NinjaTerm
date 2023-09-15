@@ -28,7 +28,7 @@ async function connectToSerialPort() {
   // Create fake serial interface
   SerialPortMock.binding.createPort('COM99');
   // Create model
-  const app = new App(SerialPortMock);
+  const app = new App(SerialPortMock, true);
   render(<AppView app={app} />);
 
   // Make sure dialog window is not open by default
@@ -76,12 +76,6 @@ async function connectToSerialPort() {
   return port;
 }
 
-// interface ExpectedTerminalChar {
-//   char: string;
-//   style: { [key: string]: string };
-//   classNames: string | null;
-// }
-
 class ExpectedTerminalChar {
   char: string;
 
@@ -115,6 +109,7 @@ function checkExpectedAgainstActualDisplay(
   expectedDisplay: ExpectedTerminalChar[][],
   actualDisplay: Element
 ) {
+  screen.debug(actualDisplay);
   // Make sure there are the same number of actual rows as expected rows
   expect(actualDisplay.children.length).toBe(expectedDisplay.length);
 
@@ -326,6 +321,49 @@ describe('App', () => {
       [
         new ExpectedTerminalChar({ char: 'u', classNames: 'cursor' }), // Cursor should be here now!
         new ExpectedTerminalChar({ char: 'p' }),
+      ],
+      // eslint-disable-next-line prettier/prettier
+      [
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('ESC[2A should go up 2 rows', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    const textToSend = 'row1\nrow2\nrow3\n\x1B[2A';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+    await waitFor(() => {
+      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
+    });
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '1' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: 'r', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '2' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '3' }),
       ],
       // eslint-disable-next-line prettier/prettier
       [

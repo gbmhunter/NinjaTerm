@@ -156,13 +156,26 @@ export default class Terminal {
     if (lastChar === 'A') {
       // CUU Cursor Up
       // ===========================
-      console.log('Cursor up');
-      if (this.cursorPosition[0] === 0) {
-        console.log('Cant go up.');
+      // Extract number in the form ESC[nA
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      // If there was no number provided, assume it was '1' (default)
+      if (numberStr === '') {
+        numberStr = '1';
+      }
+      let numRowsToGoUp = parseInt(numberStr, 10);
+      if (Number.isNaN(numRowsToGoUp)) {
+        console.error(
+          `Number string in SGR code could not converted into integer. numberStr=${numberStr}.`
+        );
         return;
       }
+      // Check if we can't go up the full amount, and if so, only
+      // go up to the first line
+      if (numRowsToGoUp > this.cursorPosition[0]) {
+        [numRowsToGoUp] = this.cursorPosition;
+      }
       // There is a row above us, so safe to go up.
-      this.cursorPosition[0] -= 1;
+      this.cursorPosition[0] -= numRowsToGoUp;
       // Need to pad out this row with spaces " " if cursor
       // is beyond end of existing text on row
       const row = this.terminalRows[this.cursorPosition[0]];
@@ -177,6 +190,10 @@ export default class Terminal {
           row.terminalChars[this.cursorPosition[1]].forCursor = true;
         }
       }
+    } else if (lastChar === 'D') {
+      // CUB Cursor Back
+      // ===========================
+      console.log('Cursor back');
     } else if (lastChar === 'm') {
       // SGR
       // ==============================

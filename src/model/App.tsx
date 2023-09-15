@@ -114,7 +114,16 @@ export class App {
   // If true, the status msg panel scroll will be locked at the bottom
   statusMsgScrollLock = true;
 
-  constructor(SerialPortType: typeof SerialPort | typeof SerialPortMock) {
+  // If true app is being tested by code.
+  // Used for force terminal height to value when browser is not
+  // available to determine height
+  testing: boolean;
+
+  constructor(
+    SerialPortType: typeof SerialPort | typeof SerialPortMock,
+    testing = false
+  ) {
+    this.testing = testing;
     // Need to create terminal before settings, as the settings
     // will configure the terminal
     this.txRxTerminal = new Terminal();

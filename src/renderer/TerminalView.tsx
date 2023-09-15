@@ -30,7 +30,6 @@ export default observer((props: Props) => {
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
-    // console.log('Row() called.');
     const terminalRow = data[index];
     const spans: ReactElement[] = [];
     for (
@@ -39,7 +38,6 @@ export default observer((props: Props) => {
       colIdx += 1
     ) {
       const terminalChar = terminalRow.terminalChars[colIdx];
-      // console.log('rendering', terminalChar.char);
       let className = '';
       if (
         index === terminal.cursorPosition[0] &&
@@ -93,6 +91,14 @@ export default observer((props: Props) => {
     setWidth(inputOutputTextDiv?.current?.clientWidth);
   }, [inputOutputTextDiv?.current?.clientWidth]);
 
+  console.log('height=', height);
+  let heightDebug;
+  if (appStore.testing) {
+    heightDebug = 200;
+  } else {
+    heightDebug = height;
+  }
+
   return (
     <div
       id="input-output-text"
@@ -137,7 +143,7 @@ export default observer((props: Props) => {
       {/* {({ height, width }) => ( */}
       <FixedSizeList
         ref={reactWindowRef}
-        height={height}
+        height={heightDebug}
         itemCount={appStore.txRxTerminal.terminalRows.length}
         itemSize={20}
         width={width}
