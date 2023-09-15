@@ -14,7 +14,7 @@ void setup() {
 }
 
 void loop() {
-  char * msg = "up\x1B[1A\n";
+  char * msg = "up\n\x1B[1A";
   for (uint8_t i = 0; i <= strlen(msg) - 1; i++) {
     Serial.print(msg[i]);
     delay(DISPLAY_PERIOD_MS);

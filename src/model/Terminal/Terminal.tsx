@@ -141,7 +141,7 @@ export default class Terminal {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.addVisibleText(char);
+        this.addVisibleChar(char);
       }
     }
   }
@@ -161,7 +161,7 @@ export default class Terminal {
         console.log('Cant go up.');
         return;
       }
-      // There is a row above us, so safe to go up
+      // There is a row above us, so safe to go up.
       this.cursorPosition[0] -= 1;
       // Need to pad out this row with spaces " " if cursor
       // is beyond end of existing text on row
@@ -170,6 +170,12 @@ export default class Terminal {
         const space = new TerminalChar();
         space.char = ' ';
         row.terminalChars.push(space);
+        // If this is the last ' ' to insert, set it to a special "for cursor"
+        // space which will get deleted if the cursor moves. Note that we don't
+        // do this for any of the other spaces added (should we?)
+        if (this.cursorPosition[1] === row.terminalChars.length - 1) {
+          row.terminalChars[this.cursorPosition[1]].forCursor = true;
+        }
       }
     } else if (lastChar === 'm') {
       // SGR
@@ -246,31 +252,35 @@ export default class Terminal {
   }
 
   /**
-   * Adds visible text to the terminal
-   * @param text
+   * Adds a single printable character to the terminal at the current cursor position.
+   * Cursor is also incremented to next suitable position.
+   * @param char Must be a single printable character only.
    */
-  addVisibleText(text: string) {
-    for (let idx = 0; idx < text.length; idx += 1) {
-      const char = text[idx];
-      const terminalChar = new TerminalChar();
-      terminalChar.char = char;
-      // We need to make a copy of the current style, so that future updates won't
-      // effect all previous styles
-      terminalChar.style = { ...this.currentStyle };
-      const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
-      rowToInsertInto.terminalChars.splice(
-        this.cursorPosition[1],
-        0,
-        terminalChar
-      );
-      // Increment cursor, move to next row if we have hit max char width
-      if (this.cursorPosition[1] === this.charWidth - 1) {
-        // Remove space " " for cursor at the end of the current line
-        rowToInsertInto.terminalChars.splice(this.cursorPosition[1] + 1, 1);
-        this.cursorPosition[1] = 0;
-        this.moveToNewLine();
-      } else {
-        this.cursorPosition[1] += 1;
+  addVisibleChar(char: string) {
+    assert(char.length === 1);
+    const terminalChar = new TerminalChar();
+    terminalChar.char = char;
+    // We need to make a copy of the current style, so that future updates won't
+    // effect all previous styles
+    terminalChar.style = { ...this.currentStyle };
+    const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
+    // Cursor should always be at a valid and pre-existing character position
+    // Most of the time cursor will at a " " inserted for holding the cursor at
+    // the end of all pre-existing text.
+    rowToInsertInto.terminalChars[this.cursorPosition[1]] = terminalChar;
+    // Increment cursor, move to next row if we have hit max char width
+    if (this.cursorPosition[1] === this.charWidth - 1) {
+      // Remove space " " for cursor at the end of the current line
+      this.cursorPosition[1] = 0;
+      this.moveToNewLine(); // This adds the " " if needed for the cursor
+    } else {
+      this.cursorPosition[1] += 1;
+      // Add space here is there is no text
+      if (this.cursorPosition[1] === rowToInsertInto.terminalChars.length) {
+        const spaceTerminalChar = new TerminalChar();
+        spaceTerminalChar.char = ' ';
+        spaceTerminalChar.forCursor = true;
+        rowToInsertInto.terminalChars.push(spaceTerminalChar);
       }
     }
   }
@@ -286,6 +296,7 @@ export default class Terminal {
     const terminalRow = new TerminalRow();
     const terminalChar = new TerminalChar();
     terminalChar.char = ' ';
+    terminalChar.forCursor = true;
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
   }
@@ -306,7 +317,17 @@ export default class Terminal {
   }
 
   moveToNewLine() {
-    // If we are currently not on the last row, we just need to move to the start of the next line
+    // Delete char at current cursor location if specifically for cursor
+    if (
+      this.terminalRows[this.cursorPosition[0]].terminalChars[
+        this.cursorPosition[1]
+      ].forCursor
+    ) {
+      this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
+        this.cursorPosition[1],
+        1
+      );
+    }
     if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
       this.cursorPosition[0] += 1;
       this.cursorPosition[1] = 0;

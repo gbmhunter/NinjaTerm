@@ -40,15 +40,19 @@ export default observer((props: Props) => {
     ) {
       const terminalChar = terminalRow.terminalChars[colIdx];
       // console.log('rendering', terminalChar.char);
-      let id = '';
+      let className = '';
       if (
         index === terminal.cursorPosition[0] &&
         colIdx === terminal.cursorPosition[1]
       ) {
-        id = 'cursor';
+        className = 'cursor';
       }
       spans.push(
-        <span key={colIdx} id={id} style={toJS(terminalChar.style)}>
+        <span
+          key={colIdx}
+          className={className}
+          style={toJS(terminalChar.style)}
+        >
           {terminalChar.char}
         </span>
       );

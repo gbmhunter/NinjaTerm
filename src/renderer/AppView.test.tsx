@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
  * to a fake serial port, injecting fake serial data, and making sure that this data is rendered correctly on the screen.
@@ -75,9 +76,32 @@ async function connectToSerialPort() {
   return port;
 }
 
-interface ExpectedTerminalChar {
+// interface ExpectedTerminalChar {
+//   char: string;
+//   style: { [key: string]: string };
+//   classNames: string | null;
+// }
+
+class ExpectedTerminalChar {
   char: string;
-  style: { [key: string]: string };
+
+  style: { [key: string]: string } | null;
+
+  classNames: string | null;
+
+  constructor({
+    char,
+    style = null,
+    classNames = null,
+  }: {
+    char: string;
+    style?: { [key: string]: string } | null;
+    classNames?: string | null;
+  }) {
+    this.char = char;
+    this.style = style;
+    this.classNames = classNames;
+  }
 }
 
 /**
@@ -91,17 +115,26 @@ function checkExpectedAgainstActualDisplay(
   expectedDisplay: ExpectedTerminalChar[][],
   actualDisplay: Element
 ) {
-  // screen.debug(terminalRows);
+  // Make sure there are the same number of actual rows as expected rows
+  expect(actualDisplay.children.length).toBe(expectedDisplay.length);
+
+  // Now iterate over every row and check contents are equal
   for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
     const row = expectedDisplay[rowIdx];
+    // Make sure there are the same number of expected text elements as actual
+    // spans
+    expect(actualDisplay.children[rowIdx].children.length).toBe(row.length);
     for (let colIdx = 0; colIdx < row.length; colIdx += 1) {
       const expectedTerminalChar = row[colIdx];
       const span = actualDisplay.children[rowIdx].children[colIdx];
       expect(span.textContent).toEqual(expectedTerminalChar.char);
       // toHaveStyle doesn't work well if you pass it an empty object
-      if (JSON.stringify(expectedTerminalChar.style) !== '{}') {
+      if (expectedTerminalChar.style !== null) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(span).toHaveStyle(expectedTerminalChar.style);
+      }
+      if (expectedTerminalChar.classNames !== null) {
+        expect(span).toHaveClass(expectedTerminalChar.classNames);
       }
     }
   }
@@ -127,22 +160,22 @@ describe('App', () => {
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'H', style: {} },
-        { char: 'e', style: {} },
-        { char: 'l', style: {} },
-        { char: 'l', style: {} },
-        { char: 'o', style: {} },
-        { char: ',', style: {} },
-        { char: ' ', style: {} },
-        { char: 'w', style: {} },
-        { char: 'o', style: {} },
-        { char: 'r', style: {} },
-        { char: 'l', style: {} },
-        { char: 'd', style: {} },
-        { char: '!', style: {} },
+        new ExpectedTerminalChar({ char: 'H' }),
+        new ExpectedTerminalChar({ char: 'e' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: ',' }),
+        new ExpectedTerminalChar({ char: ' ' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'd' }),
+        new ExpectedTerminalChar({ char: '!' }),
       ],
       // Because of new line char in input, we expect the cursor now to be on the next line
-      [{ char: ' ', style: {} }],
+      [new ExpectedTerminalChar({ char: ' ' })],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
   });
@@ -165,10 +198,11 @@ describe('App', () => {
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
-        { char: ' ', style: {} },
+        // eslint-disable-next-line prettier/prettier
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
@@ -193,10 +227,10 @@ describe('App', () => {
     // Red should be "bright red"
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'r', style: { color: 'rgb(255, 85, 85)' } },
-        { char: 'e', style: { color: 'rgb(255, 85, 85)' } },
-        { char: 'd', style: { color: 'rgb(255, 85, 85)' } },
-        { char: ' ', style: {} },
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
@@ -223,15 +257,15 @@ describe('App', () => {
     // style
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'r', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 's', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 't', style: { color: '' } },
-        { char: ' ', style: {} },
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
@@ -258,15 +292,15 @@ describe('App', () => {
     // style
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'r', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 's', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 't', style: { color: '' } },
-        { char: ' ', style: {} },
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
@@ -276,8 +310,7 @@ describe('App', () => {
     const port = await connectToSerialPort();
     assert(port.port !== undefined);
 
-    // ESC[m should be interpreted as ESC[0m
-    const textToSend = '\x1B[31mred\x1B[0mreset';
+    const textToSend = 'up\n\x1B[1A';
     port.port.emitData(`${textToSend}`);
 
     // Await for any data to be displayed in terminal (this will be when there
@@ -289,19 +322,14 @@ describe('App', () => {
     });
 
     // Check that all data is displayed correctly in terminal
-    // After "red", the word "reset" should be back to the default
-    // style
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        { char: 'r', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'e', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'd', style: { color: 'rgb(170, 0, 0)' } },
-        { char: 'r', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 's', style: { color: '' } },
-        { char: 'e', style: { color: '' } },
-        { char: 't', style: { color: '' } },
-        { char: ' ', style: {} },
+        new ExpectedTerminalChar({ char: 'u', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'p' }),
+      ],
+      // eslint-disable-next-line prettier/prettier
+      [
+        new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
