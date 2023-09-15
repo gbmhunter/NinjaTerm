@@ -194,6 +194,20 @@ export default class Terminal {
       // CUB Cursor Back
       // ===========================
       console.log('Cursor back');
+      // Extract number in the form ESC[nA
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      // If there was no number provided, assume it was '1' (default)
+      if (numberStr === '') {
+        numberStr = '1';
+      }
+      const numColsToGoLeft = parseInt(numberStr, 10);
+      if (Number.isNaN(numColsToGoLeft)) {
+        console.error(
+          `Number string in SGR code could not converted into integer. numberStr=${numberStr}.`
+        );
+        return;
+      }
+      this.cursorLeft(numColsToGoLeft);
     } else if (lastChar === 'm') {
       // SGR
       // ==============================
@@ -266,6 +280,26 @@ export default class Terminal {
         }
       }
     }
+  }
+
+  cursorLeft(numColsToGoLeft: number) {
+    // Cap number columns to go left
+    const currCursorColIdx = this.cursorPosition[1];
+    let numColsToLeftAdjusted = numColsToGoLeft;
+    if (numColsToGoLeft > currCursorColIdx) {
+      numColsToLeftAdjusted = currCursorColIdx;
+    }
+    // Check if we actually need to move
+    if (numColsToLeftAdjusted === 0) {
+      return;
+    }
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    // Check if terminal char we are moving from is only for cursor, and
+    // is so, delete it
+    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
+      currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    }
+    this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
   /**

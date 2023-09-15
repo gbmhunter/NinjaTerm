@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 /* eslint-disable prettier/prettier */
 /**
  * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
@@ -371,5 +372,45 @@ describe('App', () => {
       ],
     ];
     checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+  });
+
+  it('ESC[1D should go back 1', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    const textToSend = 'row1\x1B[1D';
+    port.port.emitData(`${textToSend}`);
+
+    // Await for any data to be displayed in terminal (this will be when there
+    // is more than just 1 " " char on the screen for the cursor)
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    let expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '1', classNames: 'cursor' }), // Cursor should be moved back 1
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+
+    port.port.emitData(`A`);
+    expectedDisplay = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 });

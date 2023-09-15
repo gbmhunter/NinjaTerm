@@ -14,7 +14,7 @@ void setup() {
 }
 
 void loop() {
-  char * msg = "row1\nrow2\nrow3\n\x1B[2A";
+  char * msg = "row1\nrow2\nrow3\nup1\x1B[1Aback1\x1B[1D";
   for (uint8_t i = 0; i <= strlen(msg) - 1; i++) {
     Serial.print(msg[i]);
     delay(DISPLAY_PERIOD_MS);
