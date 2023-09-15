@@ -1,0 +1,5 @@
+.terminal > div {
+  /* Need to use important to override inline style in 3rd party
+  component */
+  overflow-y: scroll !important;
+}

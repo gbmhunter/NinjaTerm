@@ -8,6 +8,7 @@ import { toJS } from 'mobx';
 import { App } from 'model/App';
 import Terminal from 'model/Terminal/Terminal';
 import TerminalRow from 'model/Terminal/TerminalRow';
+import styles from './TerminalView.module.css';
 
 interface Props {
   appStore: App;
@@ -70,23 +71,23 @@ export default observer((props: Props) => {
     }
   });
 
-  const inputOutputTextDiv = useRef<HTMLInputElement>(null);
+  const terminalDiv = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
 
   useEffect(() => {
-    if (!inputOutputTextDiv?.current?.clientHeight) {
+    if (!terminalDiv?.current?.clientHeight) {
       return;
     }
-    setHeight(inputOutputTextDiv?.current?.clientHeight);
-  }, [inputOutputTextDiv?.current?.clientHeight]);
+    setHeight(terminalDiv?.current?.clientHeight);
+  }, [terminalDiv?.current?.clientHeight]);
 
   useEffect(() => {
-    if (!inputOutputTextDiv?.current?.clientWidth) {
+    if (!terminalDiv?.current?.clientWidth) {
       return;
     }
-    setWidth(inputOutputTextDiv?.current?.clientWidth);
-  }, [inputOutputTextDiv?.current?.clientWidth]);
+    setWidth(terminalDiv?.current?.clientWidth);
+  }, [terminalDiv?.current?.clientWidth]);
 
   // Use a fake height if testing
   let heightDebug;
@@ -98,7 +99,6 @@ export default observer((props: Props) => {
 
   return (
     <div
-      id="input-output-text"
       onWheel={(e: WheelEvent<HTMLDivElement>) => {
         // Disable scroll lock if enabled and the scroll direction was
         // up (negative deltaY)
@@ -106,7 +106,7 @@ export default observer((props: Props) => {
           terminal.setScrollLock(false);
         }
       }}
-      ref={inputOutputTextDiv}
+      ref={terminalDiv}
       style={{
         flexGrow: '1',
         backgroundColor: '#161616',
@@ -118,26 +118,8 @@ export default observer((props: Props) => {
         position: 'relative', // This is so we can use position: absolute for the down icon
       }}
       data-testid="tx-rx-terminal-view"
+      className={styles.terminal}
     >
-      {/* <div
-        ref={txRxRef}
-        style={{
-          height: '100%',
-          width: '100%',
-          // position: 'absolute',
-          // overflowY: 'scroll',
-          padding: '10px',
-        }}
-      > */}
-      {/* <div
-          id="limiting-text-width"
-          style={{ wordBreak: dataPaneWordBreak, width: dataPaneWidth }}
-          data-testid="tx-rx-terminal-view"
-        >
-          {terminal.outputHtml}
-        </div> */}
-      {/* <AutoSizer> */}
-      {/* {({ height, width }) => ( */}
       <FixedSizeList
         ref={reactWindowRef}
         height={heightDebug}
@@ -152,9 +134,6 @@ export default observer((props: Props) => {
       >
         {Row}
       </FixedSizeList>
-      {/* )} */}
-      {/* </AutoSizer> */}
-      {/* </div> */}
       {/* ================== SCROLL LOCK ARROW ==================== */}
       <IconButton
         onClick={() => {
