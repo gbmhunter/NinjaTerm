@@ -112,7 +112,6 @@ export default observer((props: Props) => {
         backgroundColor: '#161616',
         fontFamily: 'monospace',
         whiteSpace: 'pre-wrap', // This allows \n to create new lines
-        // overflowY: 'scroll',
         // padding: '10px',
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon

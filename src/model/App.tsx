@@ -57,6 +57,34 @@ export const portStateToButtonProps: {
   },
 };
 
+function padTo2Digits(num: number) {
+  return num.toString().padStart(2, '0');
+}
+
+/**
+ * Converts a date into a readable string for the status bar.
+ *
+ * @param date Converts a Date object into a string in the
+ *    format YY-MM-DD HH:MM:SS.
+ * @returns Converted string.
+ */
+function formatDate(date: Date) {
+  return (
+    // eslint-disable-next-line prefer-template
+    [
+      date.getFullYear(),
+      padTo2Digits(date.getMonth() + 1),
+      padTo2Digits(date.getDate()),
+    ].join('-') +
+    ' ' +
+    [
+      padTo2Digits(date.getHours()),
+      padTo2Digits(date.getMinutes()),
+      padTo2Digits(date.getSeconds()),
+    ].join(':')
+  );
+}
+
 export class App {
   SerialPortType: typeof SerialPort | typeof SerialPortMock;
 
@@ -277,7 +305,7 @@ export class App {
     this.statusMsgs.push(
       new StatusMsg(
         this.statusMsgs.length,
-        `${currDate.toISOString()}: ${msg}`,
+        `${formatDate(currDate)}: ${msg}`,
         severity,
         showInPortSettings
       )

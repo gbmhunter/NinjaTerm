@@ -52,6 +52,10 @@ export default class Terminal {
   // The max. number of chars to display per row
   charWidth: number;
 
+  currForegroundColorNum: number | null;
+
+  currBackgroundColorNum: number | null;
+
   constructor() {
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
@@ -69,6 +73,9 @@ export default class Terminal {
     this.partialEscapeCode = '';
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
+
+    this.currForegroundColorNum = null;
+    this.currBackgroundColorNum = null;
 
     // Populate the map with data
     this.sgaCodeToColorMapVga[0] = 'rgb(0, 0, 0)';
@@ -286,32 +293,15 @@ export default class Terminal {
           // Got the "bold or increased intensity" code
           this.boldOrIncreasedIntensity = true;
         } else if (numberCode >= 30 && numberCode <= 37) {
-          let color;
-          if (this.boldOrIncreasedIntensity) {
-            color = this.sgaCodeToBrightColorMapVga[numberCode - 30];
-          } else {
-            color = this.sgaCodeToColorMapVga[numberCode - 30];
-          }
-          this.setStyle({ color });
+          this.currForegroundColorNum = numberCode
         } else if (numberCode >= 40 && numberCode <= 47) {
-          let color;
-          if (this.boldOrIncreasedIntensity) {
-            color = this.sgaCodeToBrightColorMapVga[numberCode - 40];
-          } else {
-            color = this.sgaCodeToColorMapVga[numberCode - 40];
-          }
-          this.setStyle({ 'background-color': color });
+          this.currBackgroundColorNum = numberCode;
         } else if (numberCode >= 90 && numberCode <= 97) {
           // Bright foreground colors
-          this.setStyle({
-            color: this.sgaCodeToBrightColorMapVga[numberCode - 90],
-          });
+          this.currForegroundColorNum = numberCode;
         } else if (numberCode >= 100 && numberCode <= 107) {
           // Bright background colors
-          this.setStyle({
-            'background-color':
-              this.sgaCodeToBrightColorMapVga[numberCode - 100],
-          });
+          this.currBackgroundColorNum = numberCode;
         } else {
           console.log(
             `Number ${numberCode} provided to SGR control sequence unsupported.`
@@ -350,9 +340,44 @@ export default class Terminal {
     assert(char.length === 1);
     const terminalChar = new TerminalChar();
     terminalChar.char = char;
+
+    // Calculate the foreground color CSS
+    let foregroundColorCss = '';
+    if (this.currForegroundColorNum !== null) {
+      if (this.currForegroundColorNum >= 30 && this.currForegroundColorNum <= 37) {
+        if (this.boldOrIncreasedIntensity) {
+          foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 30];
+        } else {
+          foregroundColorCss = this.sgaCodeToColorMapVga[this.currForegroundColorNum - 30];
+        }
+      } else if (this.currForegroundColorNum >= 90 && this.currForegroundColorNum <= 97) {
+        // Bright foreground colors
+        foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 90];
+      };
+    }
+
+    // Calculate the background color CSS
+    let backgroundColorCss = '';
+    if (this.currBackgroundColorNum !== null) {
+      if (this.currBackgroundColorNum >= 40 && this.currBackgroundColorNum <= 47) {
+        if (this.boldOrIncreasedIntensity) {
+          backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 40];
+        } else {
+          backgroundColorCss = this.sgaCodeToColorMapVga[this.currBackgroundColorNum - 40];
+        }
+      } else if (this.currBackgroundColorNum >= 100 && this.currBackgroundColorNum <= 107) {
+        // Bright background colors
+        backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 100];
+      }
+    }
+
     // We need to make a copy of the current style, so that future updates won't
     // effect all previous styles
-    terminalChar.style = { ...this.currentStyle };
+    terminalChar.style = {
+      'color': foregroundColorCss,
+      'backgroundColor': backgroundColorCss,
+    };
+
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position
     // Most of the time cursor will at a " " inserted for holding the cursor at
@@ -400,6 +425,8 @@ export default class Terminal {
     // Clear all styles
     this.currentStyle = {};
     this.boldOrIncreasedIntensity = false;
+    this.currForegroundColorNum = null;
+    this.currBackgroundColorNum = null;
   }
 
   setScrollLock(trueFalse: boolean) {

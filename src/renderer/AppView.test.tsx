@@ -142,15 +142,9 @@ describe('App', () => {
 
     const textToSend = 'Hello, world!';
     port.port.emitData(`${textToSend}\n`);
-    // const txRxTerminalView = screen.getByTestId('tx-rx-terminal-view');
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
@@ -172,7 +166,9 @@ describe('App', () => {
       // Because of new line char in input, we expect the cursor now to be on the next line
       [new ExpectedTerminalChar({ char: ' ' })],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('should render red text', async () => {
@@ -182,41 +178,32 @@ describe('App', () => {
     const textToSend = '\x1B[31mred';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        // eslint-disable-next-line prettier/prettier
         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
-  it('should render bright red text', async () => {
+  it('should render bright red text using bold mode', async () => {
     const port = await connectToSerialPort();
     assert(port.port !== undefined);
 
-    const textToSend = '\x1B[91mred';
+    const textToSend = '\x1B[31;1mred';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     // Red should be "bright red"
@@ -228,7 +215,34 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  it('should render bright red text using number 91', async () => {
+    const port = await connectToSerialPort();
+    assert(port.port !== undefined);
+
+    const textToSend = '\x1B[91mred';
+    port.port.emitData(`${textToSend}`);
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    // Red should be "bright red"
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('ESC[m should reset CSI styles', async () => {
@@ -239,13 +253,8 @@ describe('App', () => {
     const textToSend = '\x1B[31mred\x1B[mreset';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     // After "red", the word "reset" should be back to the default
@@ -263,7 +272,9 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('ESC[0m should reset CSI styles', async () => {
@@ -274,13 +285,8 @@ describe('App', () => {
     const textToSend = '\x1B[31mred\x1B[0mreset';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     // After "red", the word "reset" should be back to the default
@@ -298,7 +304,9 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('ESC[1A should go up 1 row', async () => {
@@ -308,13 +316,8 @@ describe('App', () => {
     const textToSend = 'up\n\x1B[1A';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
@@ -327,7 +330,9 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('ESC[2A should go up 2 rows', async () => {
@@ -337,13 +342,8 @@ describe('App', () => {
     const textToSend = 'row1\nrow2\nrow3\n\x1B[2A';
     port.port.emitData(`${textToSend}`);
 
-    // Await for any data to be displayed in terminal (this will be when there
-    // is more than just 1 " " char on the screen for the cursor)
     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
       .children[0];
-    await waitFor(() => {
-      expect(terminalRows.children[0].children.length).toBeGreaterThan(1);
-    });
 
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
@@ -370,7 +370,9 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
-    checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
   });
 
   it('ESC[1D should go back 1', async () => {

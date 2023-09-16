@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added support for the CSI codes that move the cursor back, forwards, up and down.
 - Added integration tests which test the entire application. A mock serial port is created, jest is used to simulated mouse clicks and connect to the port, fake data is inserted into the serial port and the render is checked to make sure the correct result is displayed.
 - Terminal max. width is working correctly now.
+- Datetimes in status bar are now shown in local time zone, not UTC.
 
 ## [3.1.0] - 2023-08-28
 
