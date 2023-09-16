@@ -352,6 +352,8 @@ export class App {
       if (event.key === 'Enter') {
         bytesToWrite.push(13);
         bytesToWrite.push(10);
+        // this.txTerminal.parseData(Buffer.from('\n'));
+        // this.txRxTerminal.parseData(Buffer.from('\n'));
       } else if (isLetter || isNumber || isSymbol) {
         bytesToWrite.push(event.key.charCodeAt(0));
       } else {
@@ -367,8 +369,8 @@ export class App {
         } else {
           // Sending was successful, increment TX count and insert sent data
           // into TX and TXRX segments for showing in pane(s)
-          this.txTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
-          this.txRxTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
+          this.txTerminal.parseData(Buffer.from(bytesToWrite));
+          this.txRxTerminal.parseData(Buffer.from(bytesToWrite));
         }
       });
     }

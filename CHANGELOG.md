@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- Fixed rendering bug where window resizing would not properly adjust terminal panes.
+- Fixed bug where TX data was not being displayed correctly in the terminals.
+
 ## [3.2.0] - 2023-09-16
 
 - Cursor can now be moved back into previous text -- it is no longer stuck at the end of all the data. This allows for more ANSI escape code support.

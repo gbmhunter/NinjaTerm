@@ -111,10 +111,10 @@ const AppView = observer((props: Props) => {
     // pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
     pane1 = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
-        <TerminalView appStore={app} terminal={app.txTerminal} />;
+        <TerminalView appStore={app} terminal={app.txTerminal} />
       </div>
       <div style={{ height: '50%', display: 'flex' }}>
-      <TerminalView appStore={app} terminal={app.rxTerminal} />;
+      <TerminalView appStore={app} terminal={app.rxTerminal} />
       </div>
     </div>;
   } else {

@@ -1,6 +1,7 @@
+/* eslint-disable prettier/prettier */
 import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { WheelEvent, useRef, useEffect, ReactElement, useState } from 'react';
+import { WheelEvent, useRef, useEffect, ReactElement, useState, useLayoutEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 import { toJS } from 'mobx';
@@ -30,6 +31,7 @@ export default observer((props: Props) => {
     const { data, index, style } = rowProps;
     const terminalRow = data[index];
     const spans: ReactElement[] = [];
+
     for (
       let colIdx = 0;
       colIdx < terminalRow.terminalChars.length;
@@ -53,10 +55,6 @@ export default observer((props: Props) => {
         </span>
       );
     }
-    // console.log(txRxRef);
-    // if (txRxRef.current !== null) {
-    //   txRxRef.current._onResize();
-    // }
     return <div style={style}>{spans}</div>;
   });
 
@@ -71,21 +69,38 @@ export default observer((props: Props) => {
 
   const terminalDiv = useRef<HTMLInputElement>(null);
   const [height, setHeight] = useState(0);
-  const [width, setWidth] = useState(0);
 
-  useEffect(() => {
-    if (!terminalDiv?.current?.clientHeight) {
-      return;
-    }
-    setHeight(terminalDiv?.current?.clientHeight);
-  }, [terminalDiv?.current?.clientHeight]);
+  // This is what I tried to get working to set the
+  // react-window height but it didn't work. Leaving it
+  // here because this might be worth getting working
+  // in the future.
+  // useEffect(() => {
+  //   if (!terminalDiv?.current?.offsetHeight) {
+  //     return;
+  //   }
+  //   const boundingRect = terminalDiv?.current.getBoundingClientRect();
+  //   const { width: width1, height: height1 } = boundingRect;
+  //   console.log('setting height=', height1);
+  //   setHeight(height1);
+  // }, [terminalDiv]);
 
-  useEffect(() => {
-    if (!terminalDiv?.current?.clientWidth) {
-      return;
+  useLayoutEffect(() => {
+    if (!terminalDiv?.current?.offsetHeight) {
+      return () => {};
     }
-    setWidth(terminalDiv?.current?.clientWidth);
-  }, [terminalDiv?.current?.clientWidth]);
+    const handleResize = () => {
+      if (!terminalDiv?.current?.offsetHeight) {
+        return;
+      }
+      setHeight(terminalDiv?.current?.offsetHeight);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // Use a fake height if testing
   let heightDebug;
@@ -113,7 +128,11 @@ export default observer((props: Props) => {
         // padding: '10px',
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
-        flexBasis: '100px',
+        flexBasis: '0',
+        // overflowY: hidden is important so that that it ignores the height of the child
+        // react-window List when calculating what size it should be. Then the List
+        // height is set from the height of this div.
+        overflowY: 'hidden',
       }}
       data-testid="tx-rx-terminal-view"
       className={styles.terminal}
@@ -123,7 +142,7 @@ export default observer((props: Props) => {
         height={heightDebug}
         itemCount={terminal.terminalRows.length}
         itemSize={20}
-        width={width}
+        width="100%"
         itemData={terminal.terminalRows}
         // onScroll={(scrollProps) => {
         //   const { scrollOffset } = scrollProps;

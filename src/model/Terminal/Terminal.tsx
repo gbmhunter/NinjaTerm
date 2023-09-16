@@ -24,7 +24,9 @@ export default class Terminal {
   cursorPosition: [number, number];
 
   // If true, the data pane scroll will be locked at the bottom
-  scrollLock = true;
+  scrollLock: boolean;
+
+  rowToScrollLockTo: number;
 
   terminalRows: TerminalRow[];
 
@@ -59,6 +61,9 @@ export default class Terminal {
   constructor() {
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
+
+    this.scrollLock = true;
+    this.rowToScrollLockTo = 0;
 
     // This is just to keep typescript happy, they
     // are all set in clearData() anyway.
@@ -106,12 +111,11 @@ export default class Terminal {
     const dataAsStr = new TextDecoder().decode(data);
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
-      console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
+      // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
       if (this.inIdleState && char === '\n') {
-        console.log('Found new line char');
         this.moveToNewLine();
         // eslint-disable-next-line no-continue
         continue;
@@ -420,6 +424,7 @@ export default class Terminal {
     terminalChar.forCursor = true;
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
+    this.rowToScrollLockTo = 0;
   }
 
   setStyle(style: {}) {
@@ -459,6 +464,7 @@ export default class Terminal {
       this.terminalRows.push(terminalRow);
       this.cursorPosition[0] += 1;
       this.cursorPosition[1] = 0;
+      this.rowToScrollLockTo = this.terminalRows.length - 1;
     }
     // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
     const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
