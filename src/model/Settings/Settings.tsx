@@ -13,7 +13,7 @@ export enum SettingsCategories {
   DATA_PROCESSING,
 }
 
-export class SettingsStore {
+export class Settings {
   app: App;
 
   activeSettingsCategory: SettingsCategories =

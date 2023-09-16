@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
@@ -73,9 +74,9 @@ export default class DataProcessingSettings {
 
   constructor(app: App) {
     this.app = app;
-    this.app.txRxTerminal.setCharWidth(
-      this.appliedData.fields.wrappingWidthChars.value
-    );
+    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -121,9 +122,9 @@ export default class DataProcessingSettings {
     // Apply any actions because of these new applied settings
     this.app.ansiECParser.isEnabled =
       this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
-    this.app.txRxTerminal.setCharWidth(
-      this.appliedData.fields.wrappingWidthChars.value
-    );
+    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.isApplyable = false;
   };
 }

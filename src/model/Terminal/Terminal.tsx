@@ -331,6 +331,12 @@ export default class Terminal {
     this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
+  addVisibleChars(chars: string) {
+    for (let idx = 0; idx < chars.length; idx += 1) {
+      this.addVisibleChar(chars[idx]);
+    }
+  }
+
   /**
    * Adds a single printable character to the terminal at the current cursor position.
    * Cursor is also incremented to next suitable position.

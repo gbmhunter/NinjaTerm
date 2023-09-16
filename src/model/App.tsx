@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
@@ -13,7 +14,7 @@ import DataPane from './DataPane';
 import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
-import { SettingsStore } from './Settings/Settings';
+import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 
 declare global {
@@ -88,7 +89,7 @@ function formatDate(date: Date) {
 export class App {
   SerialPortType: typeof SerialPort | typeof SerialPortMock;
 
-  settings: SettingsStore;
+  settings: Settings;
 
   settingsDialogOpen = false;
 
@@ -136,6 +137,10 @@ export class App {
 
   txRxTerminal: Terminal;
 
+  rxTerminal: Terminal;
+
+  txTerminal: Terminal;
+
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
 
@@ -152,11 +157,13 @@ export class App {
     testing = false
   ) {
     this.testing = testing;
-    // Need to create terminal before settings, as the settings
-    // will configure the terminal
+    // Need to create terminals before settings, as the settings
+    // will configure the terminals
     this.txRxTerminal = new Terminal();
+    this.rxTerminal = new Terminal();
+    this.txTerminal = new Terminal();
 
-    this.settings = new SettingsStore(this);
+    this.settings = new Settings(this);
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
@@ -262,7 +269,7 @@ export class App {
 
     // Switches the port into "flowing mode"
     this.serialPort.on('data', (data) => {
-      // this.addNewRxData(data);
+      this.rxTerminal.parseData(data);
       this.txRxTerminal.parseData(data);
     });
   }
@@ -360,8 +367,8 @@ export class App {
         } else {
           // Sending was successful, increment TX count and insert sent data
           // into TX and TXRX segments for showing in pane(s)
-          this.txSegments.appendText(String.fromCharCode(...bytesToWrite));
-          this.txRxSegments.appendText(String.fromCharCode(...bytesToWrite));
+          this.txTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
+          this.txRxTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
         }
       });
     }
@@ -369,6 +376,8 @@ export class App {
 
   clearAllData() {
     this.txRxTerminal.clearData();
+    this.txTerminal.clearData();
+    this.rxTerminal.clearData();
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

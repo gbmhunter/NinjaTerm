@@ -65,9 +65,7 @@ export default observer((props: Props) => {
   useEffect(() => {
     // Only scroll to bottom if enabled in app model
     if (reactWindowRef.current && terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(
-        appStore.txRxTerminal.terminalRows.length - 1
-      );
+      reactWindowRef.current.scrollToItem(terminal.terminalRows.length - 1);
     }
   });
 
@@ -122,10 +120,10 @@ export default observer((props: Props) => {
       <FixedSizeList
         ref={reactWindowRef}
         height={heightDebug}
-        itemCount={appStore.txRxTerminal.terminalRows.length}
+        itemCount={terminal.terminalRows.length}
         itemSize={20}
         width={width}
-        itemData={appStore.txRxTerminal.terminalRows}
+        itemData={terminal.terminalRows}
         // onScroll={(scrollProps) => {
         //   const { scrollOffset } = scrollProps;
         //   console.log('scrollOffset=', scrollOffset);

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
@@ -28,7 +29,6 @@ import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'model/Settings/DataProcessingSettings';
-import DataPaneView from './DataPaneView';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
 
@@ -95,46 +95,21 @@ const AppView = observer((props: Props) => {
     }
   });
 
-  // Create data panes based on selected configuration
+  // TERMINAL CREATION
+  // =================
+  // Create terminals based on selected configuration
   let pane1;
   let pane2;
-  if (
-    app.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.RX_PANE
-  ) {
+  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.RX_PANE) {
     // Show only 1 pane, which only contains RX data
-    pane1 = (
-      <DataPaneView
-        appStore={app}
-        dataPane={app.dataPane1}
-        textSegmentController={app.rxSegments}
-      />
-    );
-  } else if (
-    app.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.COMBINED_TX_RX_PANE
-  ) {
+    pane1 = <TerminalView appStore={app} terminal={app.rxTerminal} />;
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.COMBINED_TX_RX_PANE) {
     // Show only 1 pane, but contains both TX and RX pane
     pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
-  } else if (
-    app.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.SEPARATE_TX_RX_PANES
-  ) {
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_PANES) {
     // Shows 2 panes, 1 for TX data and 1 for RX data
-    pane1 = (
-      <DataPaneView
-        appStore={app}
-        dataPane={app.dataPane1}
-        textSegmentController={app.txSegments}
-      />
-    );
-    pane2 = (
-      <DataPaneView
-        appStore={app}
-        dataPane={app.dataPane2}
-        textSegmentController={app.rxSegments}
-      />
-    );
+    pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
+    pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
   } else {
     throw Error(
       `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
