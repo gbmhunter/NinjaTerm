@@ -99,7 +99,6 @@ const AppView = observer((props: Props) => {
   // =================
   // Create terminals based on selected configuration
   let pane1;
-  let pane2;
   if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.RX_PANE) {
     // Show only 1 pane, which only contains RX data
     pane1 = <TerminalView appStore={app} terminal={app.rxTerminal} />;
@@ -108,8 +107,16 @@ const AppView = observer((props: Props) => {
     pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
   } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_PANES) {
     // Shows 2 panes, 1 for TX data and 1 for RX data
-    pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
-    pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
+    // pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
+    // pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
+    pane1 = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '50%', display: 'flex' }}>
+        <TerminalView appStore={app} terminal={app.txTerminal} />;
+      </div>
+      <div style={{ height: '50%', display: 'flex' }}>
+      <TerminalView appStore={app} terminal={app.rxTerminal} />;
+      </div>
+    </div>;
   } else {
     throw Error(
       `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
@@ -251,7 +258,6 @@ const AppView = observer((props: Props) => {
           </Box>
           {/* ================== DATA PANES ==================== */}
           {pane1}
-          {pane2}
           <div id="footer">
             {/* ================== STATUS MESSAGES ==================== */}
             <div

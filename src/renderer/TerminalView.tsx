@@ -113,6 +113,7 @@ export default observer((props: Props) => {
         // padding: '10px',
         marginBottom: '10px',
         position: 'relative', // This is so we can use position: absolute for the down icon
+        flexBasis: '100px',
       }}
       data-testid="tx-rx-terminal-view"
       className={styles.terminal}
