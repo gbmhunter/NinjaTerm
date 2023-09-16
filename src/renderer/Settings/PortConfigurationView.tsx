@@ -21,12 +21,12 @@ import {
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore, portStateToButtonProps, PortState } from 'stores/App';
-import { StopBits } from 'stores/Settings/Settings';
-import { StatusMsgSeverity } from 'stores/StatusMsg';
+import { App, portStateToButtonProps, PortState } from 'model/App';
+import { StopBits } from 'model/Settings/Settings';
+import { StatusMsgSeverity } from 'model/StatusMsg';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
 }
 
 function PortConfigurationView(props: Props) {
@@ -59,7 +59,12 @@ function PortConfigurationView(props: Props) {
       <DialogContentText>Select serial port to open:</DialogContentText>
       {/* ====================== Table showing the serial ports and their properties ============================== */}
       <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
-        <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
+        <Table
+          sx={{ minWidth: 650 }}
+          size="small"
+          aria-label="a dense table"
+          data-testid="found-serial-ports-table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Selected</TableCell>

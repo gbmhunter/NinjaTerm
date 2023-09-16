@@ -8,12 +8,12 @@
 
 void setup() {
   // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
+  Serial.begin(115200);
 }
 
 void loop() {
   Serial.println("Hello, world!");
-  delay(2000);
+  delay(200);
 }
 
 

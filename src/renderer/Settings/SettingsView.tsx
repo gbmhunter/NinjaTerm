@@ -12,14 +12,14 @@ import {
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { AppStore } from 'stores/App';
-import { SettingsCategories } from 'stores/Settings/Settings';
+import { App } from 'model/App';
+import { SettingsCategories } from 'model/Settings/Settings';
 
 import PortConfigurationView from './PortConfigurationView';
 import DataProcessingView from './DataProcessingView';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
 }
 
 function SettingsDialog(props: Props) {

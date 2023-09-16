@@ -3,29 +3,50 @@ import { observer } from 'mobx-react-lite';
 import { CSSProperties, WheelEvent, useRef, useEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-import { AppStore } from 'stores/App';
-import TextSegment from 'stores/TextSegment';
-import DataPane from 'stores/DataPane';
+import { App } from 'model/App';
+import DataPane from 'model/DataPane';
+import TextSegmentController from 'model/TextSegmentController';
 
 interface Props {
-  appStore: AppStore;
+  appStore: App;
   dataPane: DataPane;
-  textSegments: TextSegment[];
+  textSegmentController: TextSegmentController;
 }
 
 export default observer((props: Props) => {
-  const { appStore, dataPane, textSegments } = props;
-  console.log('DataPaneView rendering. textSegments=', textSegments);
+  const { appStore, dataPane, textSegmentController } = props;
 
   // Need to apply white-space: pre-wrap and word-break: break-all to the element holding serial port data, as we want:
   // 1) White space preserved
   // 2) \n to create a new line
   // 3) Text to wrap once it hits the maximum terminal width
   // Always apply +0.1 to the 'ch' units for terminal width, this prevents rounding errors from chopping
-  const rxSpans = textSegments.map((segment) => {
+
+  const cursorPosition = textSegmentController.cursorLocation;
+  const rxSpans = textSegmentController.textSegments.map((segment, idx) => {
+    // Check which segment contains the cursor and insert the span around the single char
+    // the cursor is on in the correct place
+    let interiorHtml;
+    if (idx === cursorPosition[0]) {
+      interiorHtml = (
+        <span>
+          {segment.text.slice(0, cursorPosition[1])}
+          {/* CSS in App.css animates the element with id=cursor to make it blink */}
+          <span
+            id="cursor"
+            style={{ backgroundColor: 'hsla(1, 1%, 100%, 1)', color: '#000' }}
+          >
+            {segment.text[cursorPosition[1]]}
+          </span>
+          {segment.text.slice(cursorPosition[1] + 1)}
+        </span>
+      );
+    } else {
+      interiorHtml = segment.text;
+    }
     return (
       <span key={segment.key} style={{ color: segment.color }}>
-        {segment.text}
+        {interiorHtml}
       </span>
     );
   });
@@ -94,7 +115,7 @@ export default observer((props: Props) => {
         >
           {rxSpans}
           {/* Blinking cursor at end of data */}
-          <span id="cursor">█</span>
+          {/* <span id="cursor">█</span> */}
         </div>
       </div>
       {/* ================== SCROLL LOCK ARROW ==================== */}

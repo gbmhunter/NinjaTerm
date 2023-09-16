@@ -109,6 +109,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.11.2",
+    "react-virtualized": "^9.22.5",
+    "react-virtualized-auto-sizer": "^1.0.20",
+    "react-window": "^1.8.9",
     "serialport": "^11.0.1",
     "validatorjs": "^3.22.1"
   },
@@ -125,6 +128,7 @@
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4",
     "@types/react-test-renderer": "^18.0.0",
+    "@types/react-window": "^1.8.5",
     "@types/terser-webpack-plugin": "^5.0.4",
     "@types/webpack-bundle-analyzer": "^4.6.0",
     "@typescript-eslint/eslint-plugin": "^5.59.8",

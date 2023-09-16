@@ -1,7 +1,8 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
-import { SerialPort } from 'serialport';
+import { SerialPort, SerialPortMock } from 'serialport';
 
 import NewLineParser from 'util/NewLineParser/NewLineParser';
 import AnsiECParser from 'util/AnsiECParser/AnsiECParser';
@@ -9,11 +10,12 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import StreamedData from 'util/StreamedData/StreamedData';
-import TextSegment from './TextSegment';
 import DataPane from './DataPane';
+import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
-import { SettingsStore } from './Settings/Settings';
+import { Settings } from './Settings/Settings';
+import Terminal from './Terminal/Terminal';
 
 declare global {
   interface String {
@@ -56,71 +58,38 @@ export const portStateToButtonProps: {
   },
 };
 
-const defaultTxRxColor = 'rgb(255, 255, 255)';
-
-class TextSegmentController {
-  textSegments: TextSegment[];
-
-  numCharsInSegments: number;
-
-  constructor() {
-    this.textSegments = [];
-    this.numCharsInSegments = 0;
-    // This sets up the text segment array with a default segment
-    this.clear();
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
-
-  appendText(text: string) {
-    const lastSegment = this.textSegments[this.textSegments.length - 1];
-    lastSegment.text += text;
-    this.numCharsInSegments += text.length;
-  }
-
-  addNewSegment(text: string, colour: string) {
-    const newRxTextSegment = new TextSegment(
-      text,
-      colour,
-      this.textSegments[this.textSegments.length - 1].key + 1 // Increment key by 1
-    );
-    this.numCharsInSegments += newRxTextSegment.text.length;
-    this.textSegments.push(newRxTextSegment);
-  }
-
-  trimSegments(maxCharSize: number) {
-    // Trim RX segments if total amount of text exceeds scrollback buffer size
-    while (this.numCharsInSegments > maxCharSize) {
-      const numCharsToRemove = this.numCharsInSegments - maxCharSize;
-      // Remove chars from the oldest text segment first
-      const numCharsInOldestSegment = this.textSegments[0].text.length;
-      if (numCharsToRemove >= numCharsInOldestSegment) {
-        // We can remove the whole text segment, unless it's only one.
-        this.textSegments.shift();
-        this.numCharsInSegments -= numCharsInOldestSegment;
-      } else {
-        // The oldest text segment has more chars than what we need to remove,
-        // so just trim
-        this.textSegments[0].text =
-          this.textSegments[0].text.slice(numCharsToRemove);
-        this.numCharsInSegments -= numCharsToRemove;
-      }
-    }
-  }
-
-  clear() {
-    // Clear any existing segments
-    this.textSegments = [];
-    // Create a default segment for data to go into. If no ANSI escape codes
-    // are received, this will the one and only text segment
-    // debugger;
-    this.textSegments.push(new TextSegment('', defaultTxRxColor, 0));
-    // Reset char count also
-    this.numCharsInSegments = 0;
-  }
+function padTo2Digits(num: number) {
+  return num.toString().padStart(2, '0');
 }
 
-export class AppStore {
-  settings: SettingsStore;
+/**
+ * Converts a date into a readable string for the status bar.
+ *
+ * @param date Converts a Date object into a string in the
+ *    format YY-MM-DD HH:MM:SS.
+ * @returns Converted string.
+ */
+function formatDate(date: Date) {
+  return (
+    // eslint-disable-next-line prefer-template
+    [
+      date.getFullYear(),
+      padTo2Digits(date.getMonth() + 1),
+      padTo2Digits(date.getDate()),
+    ].join('-') +
+    ' ' +
+    [
+      padTo2Digits(date.getHours()),
+      padTo2Digits(date.getMinutes()),
+      padTo2Digits(date.getSeconds()),
+    ].join(':')
+  );
+}
+
+export class App {
+  SerialPortType: typeof SerialPort | typeof SerialPortMock;
+
+  settings: Settings;
 
   settingsDialogOpen = false;
 
@@ -138,7 +107,7 @@ export class AppStore {
     true
   );
 
-  serialPort: null | SerialPort = null;
+  serialPort: null | SerialPort | SerialPortMock = null;
 
   portState = PortState.CLOSED;
 
@@ -164,14 +133,37 @@ export class AppStore {
 
   txRxSegments: TextSegmentController;
 
+  // NEW
+
+  txRxTerminal: Terminal;
+
+  rxTerminal: Terminal;
+
+  txTerminal: Terminal;
+
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
 
   // If true, the status msg panel scroll will be locked at the bottom
   statusMsgScrollLock = true;
 
-  constructor() {
-    this.settings = new SettingsStore(this);
+  // If true app is being tested by code.
+  // Used for force terminal height to value when browser is not
+  // available to determine height
+  testing: boolean;
+
+  constructor(
+    SerialPortType: typeof SerialPort | typeof SerialPortMock,
+    testing = false
+  ) {
+    this.testing = testing;
+    // Need to create terminals before settings, as the settings
+    // will configure the terminals
+    this.txRxTerminal = new Terminal();
+    this.rxTerminal = new Terminal();
+    this.txTerminal = new Terminal();
+
+    this.settings = new Settings(this);
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
@@ -189,7 +181,10 @@ export class AppStore {
     this.txRxSegments = new TextSegmentController();
 
     this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
+    makeAutoObservable(this); // Make sure this near the end
+
+    // WARNING: Make sure this is after makeAutoObservable()!!!
+    this.SerialPortType = SerialPortType;
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -208,7 +203,7 @@ export class AppStore {
    * Scans the computer for available serial ports, and updates availablePortInfos.
    */
   scanForPorts() {
-    SerialPort.list()
+    this.SerialPortType.list()
       .then((ports) => {
         this.settings.setAvailablePortInfos(ports);
         // Set the selected port, this doesn't fire automatically if setting
@@ -229,9 +224,9 @@ export class AppStore {
       });
   }
 
-  openPort() {
+  async openPort() {
     this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
-    this.serialPort = new SerialPort({
+    this.serialPort = new this.SerialPortType({
       path: this.settings.selectedPortPath,
       baudRate: this.settings.selectedBaudRate,
       dataBits: this.settings.selectedNumDataBits as 5 | 6 | 7 | 8,
@@ -274,7 +269,8 @@ export class AppStore {
 
     // Switches the port into "flowing mode"
     this.serialPort.on('data', (data) => {
-      this.addNewRxData(data);
+      this.rxTerminal.parseData(data);
+      this.txRxTerminal.parseData(data);
     });
   }
 
@@ -316,7 +312,7 @@ export class AppStore {
     this.statusMsgs.push(
       new StatusMsg(
         this.statusMsgs.length,
-        `${currDate.toISOString()}: ${msg}`,
+        `${formatDate(currDate)}: ${msg}`,
         severity,
         showInPortSettings
       )
@@ -371,117 +367,17 @@ export class AppStore {
         } else {
           // Sending was successful, increment TX count and insert sent data
           // into TX and TXRX segments for showing in pane(s)
-          this.txSegments.appendText(String.fromCharCode(...bytesToWrite));
-          this.txRxSegments.appendText(String.fromCharCode(...bytesToWrite));
+          this.txTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
+          this.txRxTerminal.addVisibleChars(String.fromCharCode(...bytesToWrite));
         }
       });
     }
   }
 
-  /**
-   * Processes newly received serial data through the various parsing streams, all the way
-   * to output data which is displayed to the user.
-   */
-  addNewRxData(data: Buffer) {
-    console.log('addNewRxData() called. data=', data);
-    this.rxData += data.toString();
-
-    this.input.append(data.toString());
-    this.newLineParser.parse(this.input, this.buffer1);
-    this.ansiECParser.parse(this.buffer1, this.output);
-    // this.output contains the new data needed to be add to the RX terminal window
-
-    // Copy all text before first ColourMarker entry into the first text node
-    let indexOfLastCharPlusOne: number;
-    if (this.output.getColourMarkers().length === 0) {
-      indexOfLastCharPlusOne = this.output.getText().length;
-    } else {
-      indexOfLastCharPlusOne = this.output.getColourMarkers()[0].getCharPos();
-    }
-
-    let textToAppend = this.output
-      .getText()
-      .substring(0, indexOfLastCharPlusOne);
-
-    // Create new line characters for all new line markers that point to text
-    // shifted above
-    let currNewLineMarkerIndex = 0;
-    for (let i = 0; i < this.output.getNewLineMarkers().length; i += 1) {
-      if (
-        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos >
-        indexOfLastCharPlusOne
-      )
-        break;
-
-      textToAppend.insert(
-        this.output.getNewLineMarkers()[currNewLineMarkerIndex].charPos + i,
-        '\n' // New line character
-      );
-      currNewLineMarkerIndex += 1;
-    }
-
-    // Add this remaining text to the last existing element in the RX segments
-    this.rxSegments.appendText(textToAppend);
-    this.txRxSegments.appendText(textToAppend);
-
-    // Create new text nodes and copy all text
-    // This loop won't run if there is no elements in the TextColors array
-    for (let x = 0; x < this.output.getColourMarkers().length; x += 1) {
-      // defaultTextColorActive = false;
-      const indexOfFirstCharInNode = this.output
-        .getColourMarkers()
-        [x].getCharPos();
-
-      let indexOfLastCharInNodePlusOne = 0;
-      if (x >= this.output.getColourMarkers().length - 1) {
-        indexOfLastCharInNodePlusOne = this.output.getText().length;
-      } else {
-        indexOfLastCharInNodePlusOne = this.output
-          .getColourMarkers()
-          [x + 1].getCharPos();
-      }
-
-      textToAppend = this.output
-        .getText()
-        .substring(indexOfFirstCharInNode, indexOfLastCharInNodePlusOne);
-
-      // Create new line characters for all new line markers that point to text
-      // shifted above
-      let insertionCount = 0;
-      while (true) {
-        if (currNewLineMarkerIndex >= this.output.getNewLineMarkers().length)
-          break;
-
-        if (
-          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() >
-          indexOfLastCharInNodePlusOne
-        )
-          break;
-
-        textToAppend.insert(
-          this.output.getNewLineMarkers()[currNewLineMarkerIndex].getCharPos() +
-            insertionCount -
-            indexOfFirstCharInNode,
-          '\n'
-        ); // New line char
-        currNewLineMarkerIndex += 1;
-        insertionCount += 1;
-      }
-
-      // Add this remaining text to a new text segment
-      const textColor = this.output.getColourMarkers()[x].color;
-      this.rxSegments.addNewSegment(textToAppend.toString(), textColor);
-      this.txRxSegments.addNewSegment(textToAppend.toString(), textColor);
-    }
-
-    this.output.clear();
-
-    // ================ TRIM SCROLLBACK BUFFER ===============//
-    const scrollbackSizeChars =
-      this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeChars
-        .value;
-    this.rxSegments.trimSegments(scrollbackSizeChars);
-    this.txRxSegments.trimSegments(scrollbackSizeChars);
+  clearAllData() {
+    this.txRxTerminal.clearData();
+    this.txTerminal.clearData();
+    this.rxTerminal.clearData();
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

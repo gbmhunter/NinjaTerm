@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [3.2.0] - 2023-09-16
+
+- Cursor can now be moved back into previous text -- it is no longer stuck at the end of all the data. This allows for more ANSI escape code support.
+- Only current view port of terminal is actually rendered in the DOM, providing better performance for large scrollback buffers.
+- Added support for bright CSI SGR ANSI escape codes.
+- Added support for the CSI codes that move the cursor up ([ESC][A), back ([ESC][D), and clear the screen from cursor to end of text ([ESC][J).
+- Added integration tests which test the entire application. A mock serial port is created, jest is used to simulated mouse clicks and connect to the port, fake data is inserted into the serial port and the render is checked to make sure the correct result is displayed.
+- Terminal max. width is working correctly now.
+- Datetimes in status bar are now shown in local time zone, not UTC.
+
 ## [3.1.0] - 2023-08-28
 
 - Fixed broken links to GitHub tags in this CHANGELOG.
@@ -304,7 +314,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.1.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.2.0...v3.0.0
 [2.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.1.0...v2.2.0

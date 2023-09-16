@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
 import React, { useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
@@ -21,15 +22,15 @@ import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
 
-import { AppStore, PortState, portStateToButtonProps } from 'stores/App';
-import { StatusMsg, StatusMsgSeverity } from 'stores/StatusMsg';
+import { App, PortState, portStateToButtonProps } from 'model/App';
+import { StatusMsg, StatusMsgSeverity } from 'model/StatusMsg';
 import './App.css';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'stores/Settings/DataProcessingSettings';
-import DataPaneView from './DataPaneView';
+} from 'model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
+import TerminalView from './TerminalView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -54,22 +55,21 @@ const darkTheme = createTheme({
 });
 
 interface Props {
-  appStore: AppStore;
+  app: App;
 }
 
 const AppView = observer((props: Props) => {
-  // const appModel = useContext(AppStoreContext);
-  const { appStore } = props;
+  const { app } = props;
 
   const statusMsgDivRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    if (statusMsgDivRef.current && appStore.statusMsgScrollLock) {
+    if (statusMsgDivRef.current && app.statusMsgScrollLock) {
       statusMsgDivRef.current.scrollTop = statusMsgDivRef.current.scrollHeight;
     }
-  }, [appStore.statusMsgs.length, appStore.statusMsgScrollLock]);
+  }, [app.statusMsgs.length, app.statusMsgScrollLock]);
 
   // Generate UI showing the status messages
-  const statusMsgs = appStore.statusMsgs.map((statusMsg: StatusMsg) => {
+  const statusMsgs = app.statusMsgs.map((statusMsg: StatusMsg) => {
     if (statusMsg.severity === StatusMsgSeverity.INFO) {
       return (
         <span key={statusMsg.id} style={{ display: 'block' }}>
@@ -95,55 +95,31 @@ const AppView = observer((props: Props) => {
     }
   });
 
-  // Create data panes based on selected configuration
+  // TERMINAL CREATION
+  // =================
+  // Create terminals based on selected configuration
   let pane1;
-  let pane2;
-  if (
-    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.RX_PANE
-  ) {
+  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.RX_PANE) {
     // Show only 1 pane, which only contains RX data
-    pane1 = (
-      <DataPaneView
-        appStore={appStore}
-        dataPane={appStore.dataPane1}
-        textSegments={appStore.rxSegments.textSegments}
-      />
-    );
-  } else if (
-    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.COMBINED_TX_RX_PANE
-  ) {
+    pane1 = <TerminalView appStore={app} terminal={app.rxTerminal} />;
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.COMBINED_TX_RX_PANE) {
     // Show only 1 pane, but contains both TX and RX pane
-    pane1 = (
-      <DataPaneView
-        appStore={appStore}
-        dataPane={appStore.dataPane1}
-        textSegments={appStore.txRxSegments.textSegments}
-      />
-    );
-  } else if (
-    appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration
-      .value === DataViewConfiguration.SEPARATE_TX_RX_PANES
-  ) {
+    pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_PANES) {
     // Shows 2 panes, 1 for TX data and 1 for RX data
-    pane1 = (
-      <DataPaneView
-        appStore={appStore}
-        dataPane={appStore.dataPane1}
-        textSegments={appStore.txSegments.textSegments}
-      />
-    );
-    pane2 = (
-      <DataPaneView
-        appStore={appStore}
-        dataPane={appStore.dataPane2}
-        textSegments={appStore.rxSegments.textSegments}
-      />
-    );
+    // pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
+    // pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
+    pane1 = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: '50%', display: 'flex' }}>
+        <TerminalView appStore={app} terminal={app.txTerminal} />;
+      </div>
+      <div style={{ height: '50%', display: 'flex' }}>
+      <TerminalView appStore={app} terminal={app.rxTerminal} />;
+      </div>
+    </div>;
   } else {
     throw Error(
-      `Unsupported data view configuration. dataViewConfiguration=${appStore.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
+      `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
     );
   }
 
@@ -151,7 +127,7 @@ const AppView = observer((props: Props) => {
   const keyEvent = 'keypress';
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      appStore.handleKeyPress(event);
+      app.handleKeyPress(event);
     };
     window.addEventListener(keyEvent, handleKeyDown);
 
@@ -167,7 +143,7 @@ const AppView = observer((props: Props) => {
       <CssBaseline />
       <div id="outer-border" style={{ height: '100%', padding: '10px' }}>
         {/* SettingsDialog is a modal */}
-        <SettingsDialog appStore={appStore} />
+        <SettingsDialog appStore={app} />
         <div
           style={{
             display: 'flex',
@@ -195,16 +171,17 @@ const AppView = observer((props: Props) => {
             <Button
               variant="outlined"
               onClick={() => {
-                appStore.setSettingsDialogOpen(true);
+                app.setSettingsDialogOpen(true);
               }}
               startIcon={<SettingsIcon />}
+              data-testid="settings-button"
             >
               Settings
             </Button>
             <Button
               variant="outlined"
               color={
-                portStateToButtonProps[appStore.portState]
+                portStateToButtonProps[app.portState]
                   .color as OverridableStringUnion<
                   | 'inherit'
                   | 'primary'
@@ -217,29 +194,27 @@ const AppView = observer((props: Props) => {
                 >
               }
               onClick={() => {
-                if (appStore.portState === PortState.CLOSED) {
-                  appStore.openPort();
-                } else if (appStore.portState === PortState.OPENED) {
-                  appStore.closePort();
+                if (app.portState === PortState.CLOSED) {
+                  app.openPort();
+                } else if (app.portState === PortState.OPENED) {
+                  app.closePort();
                 } else {
                   throw Error(
-                    `Unsupported port state. portState=${appStore.portState}`
+                    `Unsupported port state. portState=${app.portState}`
                   );
                 }
               }}
-              startIcon={portStateToButtonProps[appStore.portState].icon}
-              disabled={appStore.settings.selectedPortPath === ''}
+              startIcon={portStateToButtonProps[app.portState].icon}
+              disabled={app.settings.selectedPortPath === ''}
             >
-              {portStateToButtonProps[appStore.portState].text}
+              {portStateToButtonProps[app.portState].text}
             </Button>
             {/* ================== CLEAR DATA BUTTON ==================== */}
             <Button
               variant="outlined"
               startIcon={<ClearIcon />}
               onClick={() => {
-                appStore.txSegments.clear();
-                appStore.rxSegments.clear();
-                appStore.txRxSegments.clear();
+                app.clearAllData();
               }}
             >
               Clear Data
@@ -254,17 +229,17 @@ const AppView = observer((props: Props) => {
                 <Select
                   name="dataViewConfiguration"
                   value={
-                    appStore.settings.dataProcessing.visibleData.fields
+                    app.settings.dataProcessing.visibleData.fields
                       .dataViewConfiguration.value
                   }
                   onChange={(e) => {
-                    appStore.settings.dataProcessing.onFieldChange(
+                    app.settings.dataProcessing.onFieldChange(
                       e.target.name,
                       Number(e.target.value)
                     );
                     // In the settings dialog, this same setting is under the influence of
                     // an Apply button. But on the main screen, lets just apply changes automatically
-                    appStore.settings.dataProcessing.applyChanges();
+                    app.settings.dataProcessing.applyChanges();
                   }}
                   sx={{ fontSize: '0.8rem' }}
                 >
@@ -281,9 +256,8 @@ const AppView = observer((props: Props) => {
               </FormControl>
             </Tooltip>
           </Box>
-          {/* ================== DATA PANE 1 ==================== */}
+          {/* ================== DATA PANES ==================== */}
           {pane1}
-          {pane2}
           <div id="footer">
             {/* ================== STATUS MESSAGES ==================== */}
             <div
@@ -291,8 +265,8 @@ const AppView = observer((props: Props) => {
               onWheel={(e: WheelEvent<HTMLDivElement>) => {
                 // Disable scroll lock if enabled and the scroll direction was
                 // up (negative deltaY)
-                if (e.deltaY < 0 && appStore.statusMsgScrollLock) {
-                  appStore.setStatusMsgScrollLock(false);
+                if (e.deltaY < 0 && app.statusMsgScrollLock) {
+                  app.setStatusMsgScrollLock(false);
                 }
               }}
               style={{
@@ -320,10 +294,10 @@ const AppView = observer((props: Props) => {
               {/* ================== SCROLL LOCK ARROW ==================== */}
               <IconButton
                 onClick={() => {
-                  appStore.setStatusMsgScrollLock(true);
+                  app.setStatusMsgScrollLock(true);
                 }}
                 sx={{
-                  display: appStore.statusMsgScrollLock ? 'none' : 'block',
+                  display: app.statusMsgScrollLock ? 'none' : 'block',
                   position: 'absolute', // Fix it to the bottom right of the TX/RX view port
                   bottom: '20px',
                   right: '30px',
@@ -353,11 +327,11 @@ const AppView = observer((props: Props) => {
           >
             <Box>
               Port:{' '}
-              {appStore.settings.selectedPortPath !== ''
-                ? appStore.settings.selectedPortPath
+              {app.settings.selectedPortPath !== ''
+                ? app.settings.selectedPortPath
                 : 'n/a'}{' '}
             </Box>
-            <Box>{PortState[appStore.portState]}</Box>
+            <Box>{PortState[app.portState]}</Box>
           </Box>
         </div>
       </div>
@@ -365,12 +339,12 @@ const AppView = observer((props: Props) => {
   );
 });
 
-const appStore = new AppStore();
-export default function App() {
+export default function AppWrapped(props: Props) {
+  const { app } = props;
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AppView appStore={appStore} />} />
+        <Route path="/" element={<AppView app={app} />} />
       </Routes>
     </Router>
   );

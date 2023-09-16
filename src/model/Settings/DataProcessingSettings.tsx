@@ -1,9 +1,10 @@
+/* eslint-disable prettier/prettier */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
 
 // eslint-disable-next-line import/no-cycle
-import { AppStore } from 'stores/App';
+import { App } from 'model/App';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -34,7 +35,7 @@ class Data {
       rule: 'required',
     },
     wrappingWidthChars: {
-      value: 120, // 120 is a good default
+      value: 80, // 80 is standard
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
@@ -59,7 +60,7 @@ class Data {
 }
 
 export default class DataProcessingSettings {
-  appStore: AppStore;
+  app: App;
 
   // The data which is visible to the user, may or may not be valid
   visibleData = new Data();
@@ -71,8 +72,11 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
-  constructor(app: AppStore) {
-    this.appStore = app;
+  constructor(app: App) {
+    this.app = app;
+    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -115,8 +119,12 @@ export default class DataProcessingSettings {
   applyChanges = () => {
     // Deep-copy visible data to applied data
     this.appliedData = JSON.parse(JSON.stringify(this.visibleData));
-    this.appStore.ansiECParser.isEnabled =
+    // Apply any actions because of these new applied settings
+    this.app.ansiECParser.isEnabled =
       this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
+    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.isApplyable = false;
   };
 }
