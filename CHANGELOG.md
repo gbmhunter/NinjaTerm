@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [3.2.1] - 2023-09-17
+
 - Fixed rendering bug where window resizing would not properly adjust terminal panes.
 - Fixed bug where TX data was not being displayed correctly in the terminals.
 
@@ -317,7 +319,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.2.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v3.2.1...HEAD
+[3.2.1]: https://github.com/gbmhunter/NinjaTerm/compare/v3.2.0...v3.2.1
 [3.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/gbmhunter/NinjaTerm/compare/v2.2.0...v3.0.0
