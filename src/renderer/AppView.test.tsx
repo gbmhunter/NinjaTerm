@@ -25,9 +25,11 @@ import AppView from './AppView';
  *
  * @returns SerialPortMock object for sending mock data with.
  */
-async function connectToSerialPort() {
+async function createAppWithMockSerialPort() {
   // Create fake serial interface
-  SerialPortMock.binding.createPort('COM99');
+  // Set record: true so that we can see what data the app
+  // writes to the port
+  SerialPortMock.binding.createPort('COM99', { record: true });
   // Create model
   const app = new App(SerialPortMock, true);
   render(<AppView app={app} />);
@@ -137,7 +139,7 @@ function checkExpectedAgainstActualDisplay(
 
 describe('App', () => {
   it('should display "Hello, World"', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = 'Hello, world!';
@@ -172,7 +174,7 @@ describe('App', () => {
   });
 
   it('should render red text', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = '\x1B[31mred';
@@ -196,7 +198,7 @@ describe('App', () => {
   });
 
   it('should render bright red text using bold mode', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = '\x1B[31;1mred';
@@ -221,7 +223,7 @@ describe('App', () => {
   });
 
   it('should render bright red text using number 91', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = '\x1B[91mred';
@@ -246,7 +248,7 @@ describe('App', () => {
   });
 
   it('ESC[m should reset CSI styles', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     // ESC[m should be interpreted as ESC[0m
@@ -278,7 +280,7 @@ describe('App', () => {
   });
 
   it('ESC[0m should reset CSI styles', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     // ESC[m should be interpreted as ESC[0m
@@ -310,7 +312,7 @@ describe('App', () => {
   });
 
   it('ESC[1A should go up 1 row', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = 'up\n\x1B[1A';
@@ -336,7 +338,7 @@ describe('App', () => {
   });
 
   it('ESC[2A should go up 2 rows', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = 'row1\nrow2\nrow3\n\x1B[2A';
@@ -376,7 +378,7 @@ describe('App', () => {
   });
 
   it('ESC[1D should go back 1', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     const textToSend = 'row1\x1B[1D';
@@ -414,7 +416,7 @@ describe('App', () => {
   });
 
   it('ESC[J rewriting a single row', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     // Let's rename row1 to rowA
@@ -440,7 +442,7 @@ describe('App', () => {
   });
 
   it('ESC[J clearing multiple rows', async () => {
-    const port = await connectToSerialPort();
+    const port = await createAppWithMockSerialPort();
     assert(port.port !== undefined);
 
     // Let's move back to the 'w' in row2 and then up to the 'w' in row1, then clear everything
@@ -461,6 +463,17 @@ describe('App', () => {
     ];
     await waitFor(() => {
       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  it('app should send basic A char', async () => {
+    const port = await createAppWithMockSerialPort();
+    assert(port.port !== undefined);
+
+    const terminal = screen.getByTestId('tx-rx-terminal-view');
+    fireEvent.keyPress(terminal, {key: 'A', code: 'KeyA'})
+    await waitFor(() => {
+      expect(port.port?.recording.equals(Buffer.from('A'))).toBe(true);
     });
   });
 });
