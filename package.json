@@ -1,5 +1,5 @@
 {
-  "description": "A foundation for scalable desktop apps",
+  "description": "A serial port terminal that's got your back.",
   "keywords": [
     "electron",
     "boilerplate",
@@ -21,9 +21,9 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "name": "Geoffrey Hunter",
+    "email": "gbmhunter@gmail.com",
+    "url": "https://blog.mbedded.ninja"
   },
   "contributors": [
     {
@@ -246,9 +246,6 @@
       "owner": "gbmhunter",
       "repo": "NinjaTerm"
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",
