@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 - Version number now shown in app title bar.
+- App now starts up maximized on screen.
 
 ## [3.2.1] - 2023-09-17
 

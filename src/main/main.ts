@@ -76,6 +76,7 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     title: `NinjaTerm v${packageJson.version}`,
+    // fullscreen: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
@@ -95,6 +96,10 @@ const createWindow = async () => {
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
+      // maximize() starts the app so that it takes up the full-screen. This is not
+      // the same as setting fullscreen: true when creating the BrowserWindow,
+      // which is not what we want!
+      mainWindow.maximize();
       mainWindow.show();
     }
   });
