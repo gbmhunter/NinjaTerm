@@ -14,6 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import packageJson from '../../release/app/package.json';
 
 class AppUpdater {
   constructor() {
@@ -74,6 +75,7 @@ const createWindow = async () => {
     width: 1024,
     height: 728,
     icon: getAssetPath('icon.png'),
+    title: `NinjaTerm v${packageJson.version}`,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

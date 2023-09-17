@@ -17,6 +17,8 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 
+// console.log(version);
+
 declare global {
   interface String {
     insert(index: number, string: string): string;
