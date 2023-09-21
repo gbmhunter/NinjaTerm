@@ -1,9 +1,8 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable no-continue */
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
-import { TextEncoder, TextDecoder } from 'util';
-import { assert } from 'console';
+// import { TextEncoder, TextDecoder } from 'util';
+// import { assert } from 'console';
 
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
@@ -106,12 +105,13 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
-  parseData(data: Buffer) {
+  parseData(data: Uint8Array) {
     // Parse each character
+    console.log('parseData() called');
     const dataAsStr = new TextDecoder().decode(data);
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
-      // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
+      console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
@@ -347,7 +347,7 @@ export default class Terminal {
    * @param char Must be a single printable character only.
    */
   addVisibleChar(char: string) {
-    assert(char.length === 1);
+    // assert(char.length === 1);
     const terminalChar = new TerminalChar();
     terminalChar.char = char;
 
@@ -486,7 +486,7 @@ export default class Terminal {
   }
 
   setCharWidth(charWidth: number) {
-    assert(charWidth > 0);
+    // assert(charWidth > 0);
     this.charWidth = charWidth;
   }
 }
