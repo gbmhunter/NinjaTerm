@@ -257,61 +257,6 @@ const AppView = observer((props: Props) => {
           </Box>
           {/* ================== DATA PANES ==================== */}
           {pane1}
-          <div id="footer">
-            {/* ================== STATUS MESSAGES ==================== */}
-            <div
-              id="log-text"
-              onWheel={(e: WheelEvent<HTMLDivElement>) => {
-                // Disable scroll lock if enabled and the scroll direction was
-                // up (negative deltaY)
-                if (e.deltaY < 0 && app.statusMsgScrollLock) {
-                  app.setStatusMsgScrollLock(false);
-                }
-              }}
-              style={{
-                height: '100px',
-                backgroundColor: '#161616',
-                whiteSpace: 'pre-wrap', // This allows \n to create new lines
-                marginBottom: '10px',
-                position: 'relative',
-              }}
-            >
-              <div
-                ref={statusMsgDivRef}
-                style={{
-                  height: '100%',
-                  width: '100%',
-                  position: 'absolute',
-                  overflowY: 'scroll',
-                  padding: '10px',
-                }}
-              >
-                <Typography sx={{ fontSize: '0.9rem' }}>
-                  {statusMsgs}
-                </Typography>
-              </div>
-              {/* ================== SCROLL LOCK ARROW ==================== */}
-              <IconButton
-                onClick={() => {
-                  app.setStatusMsgScrollLock(true);
-                }}
-                sx={{
-                  display: app.statusMsgScrollLock ? 'none' : 'block',
-                  position: 'absolute', // Fix it to the bottom right of the TX/RX view port
-                  bottom: '20px',
-                  right: '30px',
-                  color: 'rgba(255, 255, 255, 0.4)',
-                }}
-              >
-                <ArrowDownwardIcon
-                  sx={{
-                    width: '40px',
-                    height: '40px',
-                  }}
-                />
-              </IconButton>
-            </div>
-          </div>
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"
