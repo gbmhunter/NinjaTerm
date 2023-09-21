@@ -1,13 +1,6 @@
 import {
   Button,
   DialogContentText,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Checkbox,
   Select,
   MenuItem,
@@ -32,10 +25,10 @@ interface Props {
 function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
-  let textColor = '#fff';
-  if (appStore.portState !== PortState.CLOSED) {
-    textColor = 'rgba(255, 255, 255, 0.5)';
-  }
+  // let textColor = '#fff';
+  // if (appStore.portState !== PortState.CLOSED) {
+  //   textColor = 'rgba(255, 255, 255, 0.5)';
+  // }
 
   const statusTextTypeToColor: { [key in StatusMsgSeverity]: string } = {
     [StatusMsgSeverity.INFO]: '#fff',

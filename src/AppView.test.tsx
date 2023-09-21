@@ -16,8 +16,8 @@ import '@testing-library/jest-dom';
 // import { SerialPortMock } from 'serialport';
 // import assert from 'assert';
 
-import { App } from './model/App';
-import AppView from './AppView';
+// import { App } from './model/App';
+// import AppView from './AppView';
 
 // /**
 //  * Setup function that is re-used by all tests in this file.
@@ -138,6 +138,7 @@ import AppView from './AppView';
 
 describe('App', () => {
   it('should display "Hello, World"', async () => {
+    expect(true).toBe(true);
     expect(true).toBe(true);
   })
 })
