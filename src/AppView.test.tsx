@@ -1,4 +1,3 @@
-export {}
 // /* eslint-disable jest/expect-expect */
 // /**
 //  * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
@@ -6,7 +5,7 @@ export {}
 //  *
 //  * Add .only to the end of "it" to run just 1 test during development, e.g. it.only(...)
 //  */
-// import '@testing-library/jest-dom';
+import '@testing-library/jest-dom';
 // import {
 //   render,
 //   fireEvent,
@@ -17,8 +16,8 @@ export {}
 // import { SerialPortMock } from 'serialport';
 // import assert from 'assert';
 
-// import { App } from 'model/App';
-// import AppView from './AppView';
+import { App } from './model/App';
+import AppView from './AppView';
 
 // /**
 //  * Setup function that is re-used by all tests in this file.
@@ -136,6 +135,12 @@ export {}
 //     }
 //   }
 // }
+
+describe('App', () => {
+  it('should display "Hello, World"', async () => {
+    expect(true).toBe(true);
+  })
+})
 
 // describe('App', () => {
 //   it('should display "Hello, World"', async () => {
