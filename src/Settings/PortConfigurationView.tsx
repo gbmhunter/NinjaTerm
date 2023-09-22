@@ -46,6 +46,7 @@ function PortConfigurationView(props: Props) {
           appStore.scanForPorts();
         }}
         sx={{ marginBottom: '10px' }}
+        data-testid="request-port-access"
       >
         Scan For Ports
       </Button>

@@ -9,7 +9,7 @@ import TerminalChar from './TerminalChar';
 
 // Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
 // https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
-Object.assign(global, { TextDecoder, TextEncoder });
+// Object.assign(global, { TextDecoder, TextEncoder });
 
 /**
  * Represents a single terminal-style user interface.
@@ -108,7 +108,8 @@ export default class Terminal {
   parseData(data: Uint8Array) {
     // Parse each character
     console.log('parseData() called');
-    const dataAsStr = new TextDecoder().decode(data);
+    // const dataAsStr = new TextDecoder().decode(data);
+    const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
       console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);

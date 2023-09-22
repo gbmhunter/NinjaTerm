@@ -6,77 +6,101 @@
 //  * Add .only to the end of "it" to run just 1 test during development, e.g. it.only(...)
 //  */
 import '@testing-library/jest-dom';
-// import {
-//   render,
-//   fireEvent,
-//   within,
-//   screen,
-//   waitFor,
-// } from '@testing-library/react';
+import {
+  render,
+  fireEvent,
+  within,
+  screen,
+  waitFor,
+  act,
+} from '@testing-library/react';
 // import { SerialPortMock } from 'serialport';
-// import assert from 'assert';
+import assert from 'assert';
 
-// import { App } from './model/App';
-// import AppView from './AppView';
+import { App } from './model/App';
+import AppView from './AppView';
 
-// /**
-//  * Setup function that is re-used by all tests in this file.
-//  *
-//  * @returns SerialPortMock object for sending mock data with.
-//  */
-// async function createAppWithMockSerialPort() {
-//   // Create fake serial interface
-//   // Set record: true so that we can see what data the app
-//   // writes to the port
-//   SerialPortMock.binding.createPort('COM99', { record: true });
-//   // Create model
-//   const app = new App(SerialPortMock, true);
-//   render(<AppView app={app} />);
+/**
+ * Setup function that is re-used by all tests in this file.
+ *
+ * @returns SerialPortMock object for sending mock data with.
+ */
+async function createAppWithMockSerialPort() {
+  // Create fake serial interface
+  // Set record: true so that we can see what data the app
+  // writes to the port
+  // Create model
 
-//   // Make sure dialog window is not open by default
-//   let dialogWindow = screen.queryByRole('dialog');
-//   expect(dialogWindow).toBeNull();
+  const mockPort = {
+    getInfo: jest.fn().mockImplementation(() => {
+        return {
+          usbProductId: '123',
+          usbVendorId: '456',
+        };
+    }),
+    open: jest.fn().mockImplementation(() => {
+      console.log('mock open() called.');
+      return Promise.resolve();
+    }),
+    close: jest.fn().mockImplementation(() => {
+      console.log('mock open() called.');
+      return Promise.resolve();
+    }),
+  }
 
-//   // Click button to open settings dialog window
-//   const button = await screen.findByTestId('settings-button');
-//   fireEvent.click(button);
+  const mockSerial = {
+    getCurrentPosition: jest.fn()
+      .mockImplementationOnce((success) => Promise.resolve(success({
+        coords: {
+          latitude: 51.1,
+          longitude: 45.3
+        }
+      }))),
+      requestPort: jest.fn().mockImplementation(() => {
+        console.log('mock requestPort() called.');
+        return Promise.resolve(mockPort);
+      }),
 
-//   dialogWindow = screen.getByRole('dialog');
-//   // Dialog window should now be in the DOM and visible
-//   expect(dialogWindow).toBeVisible();
+  };
+  // @ts-ignore:next-line
+  global.navigator.serial = mockSerial;
 
-//   const foundSerialPortsTable = await screen.findByTestId(
-//     'found-serial-ports-table'
-//   );
+  const app = new App(true);
+  render(<AppView app={app} />);
 
-//   // Make sure a row is displayed for our mock COM port (COM99)
-//   const com99Row = within(foundSerialPortsTable)
-//     .getAllByRole('row')
-//     .find((row) => within(row).queryByText('COM99') !== null);
-//   expect(com99Row).toBeDefined();
-//   // Keep typescript happy
-//   assert(com99Row !== undefined);
+  // Make sure dialog window is not open by default
+  let dialogWindow = screen.queryByRole('dialog');
+  expect(dialogWindow).toBeNull();
 
-//   // Click the row to select it
-//   fireEvent.click(com99Row);
+  // Click button to open settings dialog window
+  const button = await screen.findByTestId('settings-button');
+  fireEvent.click(button);
 
-//   // Now click the "Open Port" button
-//   const openPortButton = within(dialogWindow).getByText('Open Port');
-//   expect(openPortButton).toBeEnabled(); // It should be enabled
-//   fireEvent.click(openPortButton);
+  dialogWindow = screen.getByRole('dialog');
+  // Dialog window should now be in the DOM and visible
+  expect(dialogWindow).toBeVisible();
 
-//   // Wait for settings dialog to disappear
-//   await waitFor(() => {
-//     const settingsDialog = screen.queryByRole('dialog');
-//     expect(settingsDialog).not.toBeInTheDocument();
-//   });
+  let requestPortAcessButton = await screen.findByTestId('request-port-access');
 
-//   const port = app.serialPort;
-//   assert(port !== null);
-//   assert(port instanceof SerialPortMock);
+  await act(async () => {
+    fireEvent.click(requestPortAcessButton);
+  });
 
-//   return port;
-// }
+  // Now click the "Open Port" button
+  const openPortButton = await within(dialogWindow).findByText('Open Port');
+  await waitFor(() => {
+    expect(openPortButton).toBeEnabled(); // It should be enabled
+  })
+  await act(async () => {
+    fireEvent.click(openPortButton);
+  });
+  // Wait for settings dialog to disappear
+  await waitFor(() => {
+    const settingsDialog = screen.queryByRole('dialog');
+    expect(settingsDialog).not.toBeInTheDocument();
+  });
+
+}
 
 // class ExpectedTerminalChar {
 //   char: string;
@@ -138,6 +162,9 @@ import '@testing-library/jest-dom';
 
 describe('App', () => {
   it('should display "Hello, World"', async () => {
+
+    const port = await createAppWithMockSerialPort();
+    // expect(port.port). !== undefined);
     expect(true).toBe(true);
     expect(true).toBe(true);
   })

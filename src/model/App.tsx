@@ -166,7 +166,7 @@ export class App {
     this.port = null;
     this.serialPortInfo = null;
 
-    this.addStatusBarMsg('Started NinjaTerm.', StatusMsgSeverity.INFO);
+    console.log('Started NinjaTerm.');
     makeAutoObservable(this); // Make sure this near the end
   }
 
@@ -187,15 +187,17 @@ export class App {
     if ("serial" in navigator) {
       // The Web Serial API is supported.
       const localPort = await navigator.serial.requestPort();
+      console.log('Got local port, now setting state...');
       runInAction(() => {
+        console.log('Setting this.port and this.serialPortInfo...');
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
       })
     } else {
       console.log('Not supported!');
     }
-    
-    
+
+
     // this.SerialPortType.list()
     //   .then((ports) => {
     //     this.settings.setAvailablePortInfos(ports);
@@ -233,10 +235,10 @@ export class App {
     //   autoOpen: false, // Prevent serial port from opening until we call open()
     // });
 
-    navigator.serial.addEventListener("connect", (event) => {
-      // TODO: Automatically open event.target or warn user a port is available.
-      console.log('connect event called.');
-    });
+    // navigator.serial.addEventListener("connect", (event) => {
+    //   // TODO: Automatically open event.target or warn user a port is available.
+    //   console.log('connect event called.');
+    // });
 
     await this.port?.open({baudRate: this.settings.selectedBaudRate})
     console.log('Serial port opened.');
@@ -251,7 +253,7 @@ export class App {
     if (this.closeSettingsDialogOnPortOpenOrClose) {
       this.setSettingsDialogOpen(false);
     }
-    
+
 
     await this.readUntilClosed();
 
@@ -310,7 +312,7 @@ export class App {
         reader.releaseLock();
       }
     }
-  
+
     await this.port?.close();
   }
 
