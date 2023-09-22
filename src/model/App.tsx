@@ -303,7 +303,7 @@ export class App {
             break;
           }
           // value is a Uint8Array.
-          this.txRxTerminal.parseData(value);
+          this.parseRxData(value);
         }
       } catch (error) {
         // Handle error...
@@ -314,6 +314,10 @@ export class App {
     }
 
     await this.port?.close();
+  }
+
+  parseRxData(value: Uint8Array) {
+    this.txRxTerminal.parseData(value);
   }
 
   closePort() {

@@ -20,6 +20,10 @@ import assert from 'assert';
 import { App } from './model/App';
 import AppView from './AppView';
 
+import { TextEncoder, TextDecoder } from 'util';
+
+Object.assign(global, { TextDecoder, TextEncoder });
+
 /**
  * Setup function that is re-used by all tests in this file.
  *
@@ -30,6 +34,13 @@ async function createAppWithMockSerialPort() {
   // Set record: true so that we can see what data the app
   // writes to the port
   // Create model
+
+  const mockReader = {
+    releaseLock: jest.fn().mockImplementation(() => {
+      console.log('mock releaseLock() called.');
+      return;
+    }),
+  }
 
   const mockPort = {
     getInfo: jest.fn().mockImplementation(() => {
@@ -46,6 +57,13 @@ async function createAppWithMockSerialPort() {
       console.log('mock open() called.');
       return Promise.resolve();
     }),
+    readable:{
+      getReader: jest.fn().mockImplementation(() => {
+        console.log('mock getReader() called.');
+        return mockReader;
+      }),
+
+    }
   }
 
   const mockSerial = {
@@ -100,111 +118,112 @@ async function createAppWithMockSerialPort() {
     expect(settingsDialog).not.toBeInTheDocument();
   });
 
+  return app;
+
 }
 
-// class ExpectedTerminalChar {
-//   char: string;
+class ExpectedTerminalChar {
+  char: string;
 
-//   style: { [key: string]: string } | null;
+  style: { [key: string]: string } | null;
 
-//   classNames: string | null;
+  classNames: string | null;
 
-//   constructor({
-//     char,
-//     style = null,
-//     classNames = null,
-//   }: {
-//     char: string;
-//     style?: { [key: string]: string } | null;
-//     classNames?: string | null;
-//   }) {
-//     this.char = char;
-//     this.style = style;
-//     this.classNames = classNames;
-//   }
-// }
+  constructor({
+    char,
+    style = null,
+    classNames = null,
+  }: {
+    char: string;
+    style?: { [key: string]: string } | null;
+    classNames?: string | null;
+  }) {
+    this.char = char;
+    this.style = style;
+    this.classNames = classNames;
+  }
+}
 
-// /**
-//  * Helper function which compares expected displayed data with
-//  * what was actually rendered.
-//  *
-//  * @param expectedDisplay What you expect to be displayed.
-//  * @param actualDisplay What was actually displayed.
-//  */
-// function checkExpectedAgainstActualDisplay(
-//   expectedDisplay: ExpectedTerminalChar[][],
-//   actualDisplay: Element
-// ) {
-//   // Make sure there are the same number of actual rows as expected rows
-//   expect(actualDisplay.children.length).toBe(expectedDisplay.length);
+/**
+ * Helper function which compares expected displayed data with
+ * what was actually rendered.
+ *
+ * @param expectedDisplay What you expect to be displayed.
+ * @param actualDisplay What was actually displayed.
+ */
+function checkExpectedAgainstActualDisplay(
+  expectedDisplay: ExpectedTerminalChar[][],
+  actualDisplay: Element
+) {
+  // Make sure there are the same number of actual rows as expected rows
+  expect(actualDisplay.children.length).toBe(expectedDisplay.length);
 
-//   // Now iterate over every row and check contents are equal
-//   for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
-//     const row = expectedDisplay[rowIdx];
-//     // Make sure there are the same number of expected text elements as actual
-//     // spans
-//     expect(actualDisplay.children[rowIdx].children.length).toBe(row.length);
-//     for (let colIdx = 0; colIdx < row.length; colIdx += 1) {
-//       const expectedTerminalChar = row[colIdx];
-//       const span = actualDisplay.children[rowIdx].children[colIdx];
-//       expect(span.textContent).toEqual(expectedTerminalChar.char);
-//       // toHaveStyle doesn't work well if you pass it an empty object
-//       if (expectedTerminalChar.style !== null) {
-//         // eslint-disable-next-line jest/no-conditional-expect
-//         expect(span).toHaveStyle(expectedTerminalChar.style);
-//       }
-//       if (expectedTerminalChar.classNames !== null) {
-//         expect(span).toHaveClass(expectedTerminalChar.classNames);
-//       }
-//     }
-//   }
-// }
+  // Now iterate over every row and check contents are equal
+  for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
+    const row = expectedDisplay[rowIdx];
+    // Make sure there are the same number of expected text elements as actual
+    // spans
+    expect(actualDisplay.children[rowIdx].children.length).toBe(row.length);
+    for (let colIdx = 0; colIdx < row.length; colIdx += 1) {
+      const expectedTerminalChar = row[colIdx];
+      const span = actualDisplay.children[rowIdx].children[colIdx];
+      expect(span.textContent).toEqual(expectedTerminalChar.char);
+      // toHaveStyle doesn't work well if you pass it an empty object
+      if (expectedTerminalChar.style !== null) {
+        // eslint-disable-next-line jest/no-conditional-expect
+        expect(span).toHaveStyle(expectedTerminalChar.style);
+      }
+      if (expectedTerminalChar.classNames !== null) {
+        expect(span).toHaveClass(expectedTerminalChar.classNames);
+      }
+    }
+  }
+}
 
 describe('App', () => {
+
+
+
   it('should display "Hello, World"', async () => {
+    // const port = await createAppWithMockSerialPort();
+    // assert(port.port !== undefined);
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-    const port = await createAppWithMockSerialPort();
-    // expect(port.port). !== undefined);
-    expect(true).toBe(true);
-    expect(true).toBe(true);
-  })
+    const textToSend = 'Hello, world!';
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}\n`));
+    });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'H' }),
+        new ExpectedTerminalChar({ char: 'e' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: ',' }),
+        new ExpectedTerminalChar({ char: ' ' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'l' }),
+        new ExpectedTerminalChar({ char: 'd' }),
+        new ExpectedTerminalChar({ char: '!' }),
+      ],
+      // Because of new line char in input, we expect the cursor now to be on the next line
+      [new ExpectedTerminalChar({ char: ' ' })],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 })
-
-// describe('App', () => {
-//   it('should display "Hello, World"', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
-
-//     const textToSend = 'Hello, world!';
-//     port.port.emitData(`${textToSend}\n`);
-
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
-
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'H' }),
-//         new ExpectedTerminalChar({ char: 'e' }),
-//         new ExpectedTerminalChar({ char: 'l' }),
-//         new ExpectedTerminalChar({ char: 'l' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: ',' }),
-//         new ExpectedTerminalChar({ char: ' ' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'l' }),
-//         new ExpectedTerminalChar({ char: 'd' }),
-//         new ExpectedTerminalChar({ char: '!' }),
-//       ],
-//       // Because of new line char in input, we expect the cursor now to be on the next line
-//       [new ExpectedTerminalChar({ char: ' ' })],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
 
 //   it('should render red text', async () => {
 //     const port = await createAppWithMockSerialPort();
