@@ -142,6 +142,10 @@ export class App {
 
   keepReading: boolean = true;
 
+  reader: ReadableStreamDefaultReader<Uint8Array> | null;
+
+  closedPromise: Promise<void> | null;
+
   constructor(
     testing = false
   ) {
@@ -165,6 +169,8 @@ export class App {
 
     this.port = null;
     this.serialPortInfo = null;
+    this.reader = null;
+    this.closedPromise = null;
 
     console.log('Started NinjaTerm.');
     makeAutoObservable(this); // Make sure this near the end
@@ -254,50 +260,17 @@ export class App {
       this.setSettingsDialogOpen(false);
     }
 
-
-    await this.readUntilClosed();
-
-    // // The open event is always emitted
-    // this.serialPort.on('open', () => {
-    //   // open logic
-    //   this.setPortState(PortState.OPENED);
-    //   this.addStatusBarMsg(
-    //     'Port opened successfully.',
-    //     StatusMsgSeverity.OK,
-    //     true
-    //   );
-    //   // This will automatically close the settings window if the user is currently in it,
-    //   // clicks "Open" and the port opens successfully.
-    //   if (this.closeSettingsDialogOnPortOpenOrClose) {
-    //     this.setSettingsDialogOpen(false);
-    //   }
-    // });
-
-    // if (this.serialPort.isOpen) {
-    //   console.log('WARNING: Serial port already open!!!');
-    // }
-    // this.serialPort.open((error) => {
-    //   if (error) {
-    //     console.log(error);
-    //     // Error already says "Error" at the start
-    //     this.addStatusBarMsg(`${error}`, StatusMsgSeverity.ERROR, true);
-    //   }
-    // });
-
-    // // Switches the port into "flowing mode"
-    // this.serialPort.on('data', (data) => {
-    //   this.rxTerminal.parseData(data);
-    //   this.txRxTerminal.parseData(data);
-    // });
+    this.keepReading = true;
+    this.closedPromise = this.readUntilClosed();
   }
 
   async readUntilClosed() {
     // this.txRxTerminal.parseData(Buffer.from('s'));
     while (this.port?.readable && this.keepReading) {
-      const reader = this.port.readable.getReader();
+      this.reader = this.port.readable.getReader();
       try {
         while (true) {
-          const { value, done } = await reader.read();
+          const { value, done } = await this.reader.read();
           if (done) {
             // reader.cancel() has been called.
             break;
@@ -309,7 +282,7 @@ export class App {
         // Handle error...
       } finally {
         // Allow the serial port to be closed later.
-        reader.releaseLock();
+        this.reader.releaseLock();
       }
     }
 
@@ -320,24 +293,20 @@ export class App {
     this.txRxTerminal.parseData(value);
   }
 
-  closePort() {
-    // if (!this.serialPort?.isOpen) {
-    //   console.log('closePort() called but port was not open.');
-    //   return;
-    // }
-    // this.serialPort?.close(() => {
-    //   this.setPortState(PortState.CLOSED);
-    //   // This will automatically close the settings window if the user is currently in it,
-    //   // clicks "Close" and the port closes successfully.
-    //   if (this.closeSettingsDialogOnPortOpenOrClose) {
-    //     this.setSettingsDialogOpen(false);
-    //   }
-    //   this.addStatusBarMsg(
-    //     'Port successfully closed.',
-    //     StatusMsgSeverity.OK,
-    //     true
-    //   );
-    // });
+  async closePort() {
+    this.keepReading = false;
+    // Force reader.read() to resolve immediately and subsequently
+    // call reader.releaseLock() in the loop example above.
+    this.reader?.cancel();
+
+    if (this.closedPromise === null) {
+      throw Error('jfjfjf')
+    }
+    await this.closedPromise;
+
+    this.setPortState(PortState.CLOSED);
+    this.reader = null;
+    this.closedPromise = null;
   }
 
   setPortState(newPortState: PortState) {
