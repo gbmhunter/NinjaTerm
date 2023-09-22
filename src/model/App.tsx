@@ -343,7 +343,7 @@ export class App {
     }
   };
 
-  handleKeyPress(event: KeyboardEvent) {
+  async handleKeyPress(event: KeyboardEvent) {
     console.log('handleKeyPress() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
@@ -375,19 +375,15 @@ export class App {
         console.log('Unsupported char!');
       }
       console.log('Writing to serial port. bytesToWrite=', bytesToWrite);
-      // this.serialPort?.write(bytesToWrite, (error) => {
-      //   if (error) {
-      //     this.addStatusBarMsg(
-      //       `Could not write data to serial port. data=${event.key}, error=${error}.`,
-      //       StatusMsgSeverity.ERROR
-      //     );
-      //   } else {
-      //     // Sending was successful, increment TX count and insert sent data
-      //     // into TX and TXRX segments for showing in pane(s)
-      //     this.txTerminal.parseData(Buffer.from(bytesToWrite));
-      //     this.txRxTerminal.parseData(Buffer.from(bytesToWrite));
-      //   }
-      // });
+      const writer = this.port?.writable?.getWriter();
+
+      const data = new Uint8Array([104, 101, 108, 108, 111]); // hello
+      await writer?.write(data);
+
+      // Allow the serial port to be closed later.
+      writer?.releaseLock();
+      this.txTerminal.parseData(Uint8Array.from(bytesToWrite));
+      this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
     }
   }
 
