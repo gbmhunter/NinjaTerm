@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- Nothing here yet
+
+## [4.0.0] - 2023-09-22
+
+- Ported from NinjaTerm being an Electron app to a PWA (Progressive Web App).
+
 ## [3.2.1] - 2023-09-17
 
 - Fixed rendering bug where window resizing would not properly adjust terminal panes.
 - Fixed bug where TX data was not being displayed correctly in the terminals.
+- Removed status message pane from the bottom of the app.
 
 ## [3.2.0] - 2023-09-16
 

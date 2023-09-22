@@ -14,7 +14,7 @@
 
 <!-- UPDATE THE VERSION ON THE LINE BELOW -->
 <!-- This will automatically all the X.X.X's scattered through-out this page -->
-<body onload="updateVersionNumber('3.2.1')">
+<!-- <body onload="updateVersionNumber('3.2.1')"> -->
 
 
 <section class="page-header">
@@ -23,17 +23,9 @@
         <div>
             <h1 class="project-name">NinjaTerm</h1>
             <h2 class="project-tagline">A serial port terminal that's got your back.</h2>
-            <a id="windows-link"
-               href="https://github.com/gbmhunter/NinjaTerm/releases/download/vX.X.X/NinjaTerm-Setup-X.X.X.exe"
-               class="btn">vX.X.X (Win)</a>
-            <a id="nix-link"
-               href="https://github.com/gbmhunter/NinjaTerm/releases/download/vX.X.X/NinjaTerm-X.X.X.AppImage"
-               class="btn">vX.X.X (UNIX)</a>
-            <a id="mac-link"
-               href="https://github.com/gbmhunter/NinjaTerm/releases/download/vX.X.X/NinjaTerm-X.X.X.dmg"
-               class="btn">vX.X.X (MacOS)</a>
+            <a href="https://ninjaterm.mbedded.ninja" class="btn">Open App</a>
             <a href="https://github.com/gbmhunter/NinjaTerm" class="btn">View on GitHub</a>
-            <p>NinjaTerm has been downloaded <span id="total-download-count"></span> times.</p>
+            <!-- <p>NinjaTerm has been downloaded <span id="total-download-count"></span> times.</p> -->
         </div>
     </div>
     <!--<a href="#" class="btn">Download .tar.gz</a>-->
@@ -48,7 +40,7 @@
 
     <div id="contents">
 
-        <blockquote>Problems installing? See the <a href="#installation">Installation section</a>.</blockquote>
+        <blockquote>NinjaTerm is a PWA (Progressive Web App), and is both runnable entirely from the browser and/or installable!</blockquote>
 
         <h1>Features</h1>
 
@@ -76,32 +68,6 @@
             <li><i>"Always On Top" Feature - </i>The NinjaTerm window stays on top of other windows, even if it loses focus.</li>
             <li><i>Custom Baud Rates - </i>NinjaTerm supports non-standard (custom) baud rates (as long as the underlying OS/hardware also supports it).</li>
         </ul>
-
-        <h1><a name="installation">Installation</a></h1>
-
-            <blockquote>TIME SAVER - If you already have NinjaTerm installed, just run it and the auto-updater should ask you if you wish to download and update your version of NinjaTerm.</blockquote>
-
-            <h2>Windows</h2>
-
-                <ol>
-                    <li>Click the 'Win' download link above to download a .exe installer.</li>
-                    <li>Run the .exe, NinjaTerm should install.</li>
-                    <li>All done!</li>
-                </ol>
-
-            <h2>UNIX (e.g. Ubuntu)</h2>
-
-                <p>Note that the commands are tailored to Debian systems (i.e. <code>apt-get</code>). They will have to be modified for Redhat systems (i.e. using <code>yum/rpm</code>).</p>
-
-                <ol>
-                    <li>
-                        <p>Click the 'nix' download link above to download a '.sh' installer.</p>
-                    </li>
-                    <li>
-                        <p>All done! Note that if NinjaTerm is not finding your COM port, it may be because the user who ran NinjaTerm does not have privileges to access it. To give yourself access privileges, run:</p>
-                        <code>sudo chmod 666 /dev/ttyACM0</code>
-                    </li>
-                </ol>
 
         <h1>Bugs, Feature Requests, Questions, e.t.c</h1>
 

@@ -1,16 +1,15 @@
-/* eslint-disable prettier/prettier */
 /* eslint-disable no-continue */
 import { makeAutoObservable } from 'mobx';
 import { ReactElement } from 'react';
-import { TextEncoder, TextDecoder } from 'util';
-import { assert } from 'console';
+// import { TextEncoder, TextDecoder } from 'util';
+// import { assert } from 'console';
 
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
 
 // Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
 // https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
-Object.assign(global, { TextDecoder, TextEncoder });
+// Object.assign(global, { TextDecoder, TextEncoder });
 
 /**
  * Represents a single terminal-style user interface.
@@ -106,9 +105,11 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
-  parseData(data: Buffer) {
+  parseData(data: Uint8Array) {
     // Parse each character
-    const dataAsStr = new TextDecoder().decode(data);
+    console.log('parseData() called');
+    // const dataAsStr = new TextDecoder().decode(data);
+    const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
@@ -347,7 +348,7 @@ export default class Terminal {
    * @param char Must be a single printable character only.
    */
   addVisibleChar(char: string) {
-    assert(char.length === 1);
+    // assert(char.length === 1);
     const terminalChar = new TerminalChar();
     terminalChar.char = char;
 
@@ -486,7 +487,7 @@ export default class Terminal {
   }
 
   setCharWidth(charWidth: number) {
-    assert(charWidth > 0);
+    // assert(charWidth > 0);
     this.charWidth = charWidth;
   }
 }

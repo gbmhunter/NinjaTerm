@@ -2,6 +2,9 @@ name: Test
 
 on: [push, pull_request]
 
+env:
+  CI: false
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -28,7 +31,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm run package
-          npm run lint
-          npm exec tsc
-          npm test
+          npm run build
+          npm run test

@@ -1,9 +1,9 @@
-import PortInfo from '@serialport/bindings-interface';
+// import PortInfo from '@serialport/bindings-interface';
 
 import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
-import { App } from 'model/App';
+import { App } from '../App';
 import DataProcessingSettings from './DataProcessingSettings';
 
 export type StopBits = 1 | 1.5 | 2;
@@ -23,7 +23,7 @@ export class Settings {
 
   selectedPortPath = '';
 
-  availablePortInfos: PortInfo.PortInfo[] = [];
+  // availablePortInfos: PortInfo.PortInfo[] = [];
 
   // Commonly-available baud rates as mentioned at https://serialport.io/docs/api-stream/
   baudRates = [
@@ -58,9 +58,9 @@ export class Settings {
     this.selectedPortPath = selectedPortPath;
   }
 
-  setAvailablePortInfos(availablePortInfos: PortInfo.PortInfo[]) {
-    this.availablePortInfos = availablePortInfos;
-  }
+  // setAvailablePortInfos(availablePortInfos: PortInfo.PortInfo[]) {
+  //   this.availablePortInfos = availablePortInfos;
+  // }
 
   setSelectedBaudRate(baudRate: number) {
     this.selectedBaudRate = baudRate;

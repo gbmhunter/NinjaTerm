@@ -1,10 +1,9 @@
-/* eslint-disable prettier/prettier */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
 
 // eslint-disable-next-line import/no-cycle
-import { App } from 'model/App';
+import { App } from '../App';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -120,8 +119,8 @@ export default class DataProcessingSettings {
     // Deep-copy visible data to applied data
     this.appliedData = JSON.parse(JSON.stringify(this.visibleData));
     // Apply any actions because of these new applied settings
-    this.app.ansiECParser.isEnabled =
-      this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
+    // this.app.ansiECParser.isEnabled =
+    //   this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
     this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
