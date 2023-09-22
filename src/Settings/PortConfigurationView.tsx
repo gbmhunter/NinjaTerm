@@ -48,12 +48,15 @@ function PortConfigurationView(props: Props) {
         sx={{ marginBottom: '10px' }}
         data-testid="request-port-access"
       >
-        Scan For Ports
+        Select Port
       </Button>
-      <DialogContentText>Select serial port to open:</DialogContentText>
+
+      <div style={{ height: '20px' }}></div>
 
       <Typography>Product ID: {appStore.serialPortInfo?.usbProductId}</Typography>
       <Typography>Vendor ID: {appStore.serialPortInfo?.usbVendorId}</Typography>
+
+      <div style={{ height: '20px' }}></div>
 
       {/* ====================== Table showing the serial ports and their properties ============================== */}
       {/* <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
@@ -221,8 +224,12 @@ function PortConfigurationView(props: Props) {
             })}
           </Select>
         </FormControl>
-        {/*  ====================== OPEN/CLOSE BUTTON ============================= */}
-        <Button
+      </Box>
+
+      <div style={{ height: '20px' }}></div>
+
+      {/*  ====================== OPEN/CLOSE BUTTON ============================= */}
+      <Button
           variant="outlined"
           color={
             portStateToButtonProps[appStore.portState]
@@ -250,7 +257,8 @@ function PortConfigurationView(props: Props) {
         >
           {portStateToButtonProps[appStore.portState].text}
         </Button>
-      </Box>
+
+      <div style={{ height: '20px' }}></div>
 
       <Box display="flex" flexDirection="row">
         {/*  ====================== CLOSE WINDOW CHECKBOX ============================= */}
