@@ -146,6 +146,8 @@ export class App {
 
   closedPromise: Promise<void> | null;
 
+  snackBarOpen: boolean;
+
   constructor(
     testing = false
   ) {
@@ -172,8 +174,14 @@ export class App {
     this.reader = null;
     this.closedPromise = null;
 
+    this.snackBarOpen = false;
+
     console.log('Started NinjaTerm.');
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  setSnackBarOpen(trueFalse: boolean) {
+    this.snackBarOpen = trueFalse;
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -186,13 +194,24 @@ export class App {
 
   /**
    * Scans the computer for available serial ports, and updates availablePortInfos.
+   *
+   * Based of https://developer.chrome.com/en/articles/serial/
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    console.log('hfhfh');
     if ("serial" in navigator) {
       // The Web Serial API is supported.
-      const localPort = await navigator.serial.requestPort();
+
+      let localPort: SerialPort;
+
+      // If the user clicks cancel, a DOMException is thrown
+      try {
+        localPort = await navigator.serial.requestPort();
+      } catch (error) {
+          console.log('Error occured. error=', error);
+          this.setSnackBarOpen(true);
+          return;
+      }
       console.log('Got local port, now setting state...');
       runInAction(() => {
         console.log('Setting this.port and this.serialPortInfo...');

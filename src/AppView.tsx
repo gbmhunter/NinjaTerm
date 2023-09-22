@@ -3,6 +3,7 @@ import React, { useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
+  Alert,
   Box,
   Button,
   ButtonPropsColorOverrides,
@@ -11,6 +12,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -135,6 +137,16 @@ const AppView = observer((props: Props) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSnackBarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    // Prevent the snackbar from closing if the user clicks somewhere, we only want
+    // the snackbar to close when the snackbars timer runs out.
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    app.setSnackBarOpen(false);
+  };
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
@@ -278,6 +290,12 @@ const AppView = observer((props: Props) => {
             <Box>{PortState[app.portState]}</Box>
           </Box>
         </div>
+        {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow */}
+        <Snackbar open={app.snackBarOpen} autoHideDuration={6000} onClose={handleSnackBarClose}>
+          <Alert onClose={handleSnackBarClose} severity="error" sx={{ width: '100%' }}>
+            This is a success message!
+          </Alert>
+        </Snackbar>
       </div>
     </ThemeProvider>
   );
