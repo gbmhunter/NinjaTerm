@@ -2,6 +2,9 @@ name: Test
 
 on: [push, pull_request]
 
+env:
+  CI: false
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
