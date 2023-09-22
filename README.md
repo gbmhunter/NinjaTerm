@@ -1,4 +1,4 @@
-<p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
+<p align="center"><img src="img/logo/v3/github-readme-logo.png" alt="QList" height="200px"></p>
 
 #### A serial port terminal that's got your back.
 
@@ -62,6 +62,10 @@ MobX is used to store the application state. The application model is under `src
 ## GitHub Pages
 
 The `docs/` folder contains the source code for the NinjaTerm homepage, hosted by GitHub Pages. This is automatically build and deployed with new commits pushed to `main`.
+
+## Theme Colors
+
+* DC3545 (red): Primary colour, used for logo.
 
 ## Extensions
 

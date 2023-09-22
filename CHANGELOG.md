@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-- Fixed HTML page title from "React App" to "NinjaTerm". 
+- Fixed HTML page title from "React App" to "NinjaTerm".
+- Updated logo in README to use standard red theme colour.
 
 ## [4.0.0] - 2023-09-22
 
