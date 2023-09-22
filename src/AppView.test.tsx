@@ -1,3 +1,5 @@
+/* eslint-disable testing-library/no-unnecessary-act */
+/* eslint-disable testing-library/no-node-access */
 // /* eslint-disable jest/expect-expect */
 // /**
 //  * This file contains the integration tests for NinjaTerm. These test the entire application, from faking mouse clicks to connect
@@ -14,7 +16,6 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
-// import { SerialPortMock } from 'serialport';
 import assert from 'assert';
 
 import { App } from './model/App';
@@ -182,11 +183,7 @@ function checkExpectedAgainstActualDisplay(
 
 describe('App', () => {
 
-
-
   it('should display "Hello, World"', async () => {
-    // const port = await createAppWithMockSerialPort();
-    // assert(port.port !== undefined);
     const app = new App(true);
     render(<AppView app={app} />);
 
@@ -223,309 +220,348 @@ describe('App', () => {
       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
     });
   });
-})
 
-//   it('should render red text', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+  it('should render red text', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const textToSend = '\x1B[31mred';
-//     port.port.emitData(`${textToSend}`);
+    const textToSend = '\x1B[31mred';
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: ' ' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//   it('should render bright red text using bold mode', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+  it('should render bright red text using bold mode', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const textToSend = '\x1B[31;1mred';
-//     port.port.emitData(`${textToSend}`);
+    const textToSend = '\x1B[31;1mred';
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     // Check that all data is displayed correctly in terminal
-//     // Red should be "bright red"
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: ' ' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//   it('should render bright red text using number 91', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    // Check that all data is displayed correctly in terminal
+    // Red should be "bright red"
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//     const textToSend = '\x1B[91mred';
-//     port.port.emitData(`${textToSend}`);
+  it('should render bright red text using number 91', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const textToSend = '\x1B[91mred';
 
-//     // Check that all data is displayed correctly in terminal
-//     // Red should be "bright red"
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
-//         new ExpectedTerminalChar({ char: ' ' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
 
-//   it('ESC[m should reset CSI styles', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     // ESC[m should be interpreted as ESC[0m
-//     const textToSend = '\x1B[31mred\x1B[mreset';
-//     port.port.emitData(`${textToSend}`);
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    // Check that all data is displayed correctly in terminal
+    // Red should be "bright red"
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//     // Check that all data is displayed correctly in terminal
-//     // After "red", the word "reset" should be back to the default
-//     // style
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+  it('ESC[m should reset CSI styles', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//   it('ESC[0m should reset CSI styles', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    // ESC[m should be interpreted as ESC[0m
+    const textToSend = '\x1B[31mred\x1B[mreset';
 
-//     // ESC[m should be interpreted as ESC[0m
-//     const textToSend = '\x1B[31mred\x1B[0mreset';
-//     port.port.emitData(`${textToSend}`);
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     // Check that all data is displayed correctly in terminal
-//     // After "red", the word "reset" should be back to the default
-//     // style
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
-//         new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
-//         new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    // Check that all data is displayed correctly in terminal
+    // After "red", the word "reset" should be back to the default
+    // style
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//   it('ESC[1A should go up 1 row', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+  it('ESC[0m should reset CSI styles', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const textToSend = 'up\n\x1B[1A';
-//     port.port.emitData(`${textToSend}`);
+    // ESC[m should be interpreted as ESC[0m
+    const textToSend = '\x1B[31mred\x1B[0mreset';
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'u', classNames: 'cursor' }), // Cursor should be here now!
-//         new ExpectedTerminalChar({ char: 'p' }),
-//       ],
-//       // eslint-disable-next-line prettier/prettier
-//       [
-//         new ExpectedTerminalChar({ char: ' ' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//   it('ESC[2A should go up 2 rows', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    // Check that all data is displayed correctly in terminal
+    // After "red", the word "reset" should be back to the default
+    // style
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: '' } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: '' } }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//     const textToSend = 'row1\nrow2\nrow3\n\x1B[2A';
-//     port.port.emitData(`${textToSend}`);
+  it('ESC[1A should go up 1 row', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    const textToSend = 'up\n\x1B[1A';
 
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }), // Cursor should be here now!
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: '1' }),
-//       ],
-//       [
-//         new ExpectedTerminalChar({ char: 'r', classNames: 'cursor' }), // Cursor should be here now!
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: '2' }),
-//       ],
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: '3' }),
-//       ],
-//       // eslint-disable-next-line prettier/prettier
-//       [
-//         new ExpectedTerminalChar({ char: ' ' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//   it('ESC[1D should go back 1', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     const textToSend = 'row1\x1B[1D';
-//     port.port.emitData(`${textToSend}`);
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'u', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'p' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+  it('ESC[2A should go up 2 rows', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     // Check that all data is displayed correctly in terminal
-//     let expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: '1', classNames: 'cursor' }), // Cursor should be moved back 1
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
+    const textToSend = 'row1\nrow2\nrow3\n\x1B[2A';
 
-//     port.port.emitData(`A`);
-//     expectedDisplay = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
-//         new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//   it('ESC[J rewriting a single row', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     // Let's rename row1 to rowA
-//     const textToSend = 'row1\x1B[4D\x1B[JrowA';
-//     port.port.emitData(`${textToSend}`);
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '1' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: 'r', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '2' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '3' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+  it('ESC[1D should go back 1', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'o' }),
-//         new ExpectedTerminalChar({ char: 'w' }),
-//         new ExpectedTerminalChar({ char: 'A' }),
-//         new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    const textToSend = 'row1\x1B[1D';
 
-//   it('ESC[J clearing multiple rows', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
 
-//     // Let's move back to the 'w' in row2 and then up to the 'w' in row1, then clear everything
-//     // to the end of screen
-//     const textToSend = 'row1\nrow2\x1B[2D\x1B[1A\x1B[J';
-//     port.port.emitData(`${textToSend}`);
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
 
-//     const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
-//       .children[0];
+    // Check that all data is displayed correctly in terminal
+    let expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: '1', classNames: 'cursor' }), // Cursor should be moved back 1
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
 
-//     // Check that all data is displayed correctly in terminal
-//     const expectedDisplay: ExpectedTerminalChar[][] = [
-//       [
-//         new ExpectedTerminalChar({ char: 'r' }),
-//         new ExpectedTerminalChar({ char: 'o' }), // All data after this 'o' should be gone!
-//         new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
-//       ],
-//     ];
-//     await waitFor(() => {
-//       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-//     });
-//   });
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode('A'));
+    });
+    expectedDisplay = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
-//   it('app should send basic A char', async () => {
-//     const port = await createAppWithMockSerialPort();
-//     assert(port.port !== undefined);
+  it('ESC[J rewriting a single row', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
 
-//     const terminal = screen.getByTestId('tx-rx-terminal-view');
-//     fireEvent.keyPress(terminal, {key: 'A', code: 'KeyA'})
-//     await waitFor(() => {
-//       expect(port.port?.recording.equals(Buffer.from('A'))).toBe(true);
-//     });
-//   });
-// });
+    // Let's rename row1 to rowA
+    const textToSend = 'row1\x1B[4D\x1B[JrowA';
+
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }),
+        new ExpectedTerminalChar({ char: 'w' }),
+        new ExpectedTerminalChar({ char: 'A' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  it('ESC[J clearing multiple rows', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
+
+    // Let's move back to the 'w' in row2 and then up to the 'w' in row1, then clear everything
+    // to the end of screen
+    const textToSend = 'row1\nrow2\x1B[2D\x1B[1A\x1B[J';
+
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' }),
+        new ExpectedTerminalChar({ char: 'o' }), // All data after this 'o' should be gone!
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  // it('app should send basic A char', async () => {
+  //   const port = await createAppWithMockSerialPort();
+  //   assert(port.port !== undefined);
+
+  //   const terminal = screen.getByTestId('tx-rx-terminal-view');
+  //   fireEvent.keyPress(terminal, {key: 'A', code: 'KeyA'})
+  //   await waitFor(() => {
+  //     expect(port.port?.recording.equals(Buffer.from('A'))).toBe(true);
+  //   });
+  // });
+});

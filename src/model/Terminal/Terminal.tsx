@@ -112,7 +112,7 @@ export default class Terminal {
     const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
-      console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
+      // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
