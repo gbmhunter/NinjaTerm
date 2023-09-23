@@ -29,25 +29,30 @@ function DataProcessingView(props: Props) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="ansiEscapeCodeParsingEnabled"
-            checked={
-              appStore.settings.dataProcessing.visibleData.fields
-                .ansiEscapeCodeParsingEnabled.value
-            }
-            onChange={(e) => {
-              appStore.settings.dataProcessing.onFieldChange(
-                e.target.name,
-                e.target.checked
-              );
-            }}
-          />
-        }
-        label="ANSI Escape Code Parsing"
-        sx={{ marginBottom: '10px' }}
-      />
+      {/* ============================ ANSI ESCAPE CODE PARSING ENABLED =========================== */}
+      <Tooltip
+        title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
+        some of the move cursor commands are supported."
+        placement="top">
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="ansiEscapeCodeParsingEnabled"
+              checked={
+                appStore.settings.dataProcessing.visibleData.fields
+                  .ansiEscapeCodeParsingEnabled.value
+              }
+              onChange={(e) => {
+                appStore.settings.dataProcessing.onFieldChange(
+                  e.target.name,
+                  e.target.checked
+                );
+              }}
+            />
+          }
+          label="ANSI Escape Code Parsing"
+          sx={{ marginBottom: '10px' }}/>
+      </Tooltip>
       {/* ============================ DATA WIDTH =========================== */}
       <Tooltip title="The max. number of characters to display per line of data before wrapping to the next line. Must be a positive integer. Set to 0 to have infinite width (only new line characters will cause text to jump to the next line).">
         <TextField
@@ -120,7 +125,7 @@ function DataProcessingView(props: Props) {
         title="Control whether 1 or 2 data panes are used to display the data."
         placement="top"
       >
-        <FormControl size="small">
+        <FormControl size="small" sx={{ minWidth: '210px' }}>
           <InputLabel>Data View Configuration</InputLabel>
           <Select
             name="dataViewConfiguration"
@@ -147,6 +152,32 @@ function DataProcessingView(props: Props) {
               })}
           </Select>
         </FormControl>
+      </Tooltip>
+      {/* ============================ LOCAL TX ECHO =========================== */}
+      <Tooltip
+        title="If enabled, transmitted data will be treated as received data. Useful in ASCII mode when
+        the device on the other end of the serial port does not echo back characters. Disable this if
+        you see two of every character appear."
+        placement="top"
+      >
+      <FormControlLabel
+        control={
+          <Checkbox
+            name="localTxEcho"
+            checked={
+              appStore.settings.dataProcessing.visibleData.fields
+                .localTxEcho.value
+            }
+            onChange={(e) => {
+              appStore.settings.dataProcessing.onFieldChange(
+                e.target.name,
+                e.target.checked
+              );
+            }}
+          />
+        }
+        label="Local TX Echo"
+        sx={{ marginBottom: '10px' }}/>
       </Tooltip>
       {/* ============================ APPLY BUTTON =========================== */}
       <Button

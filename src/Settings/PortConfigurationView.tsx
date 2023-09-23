@@ -276,12 +276,8 @@ function PortConfigurationView(props: Props) {
         />
       </Box>
       {/*  ====================== PORT STATUS MSG ============================= */}
-      <Typography
-        sx={{
-          color: statusTextTypeToColor[appStore.portSettingsMsg.severity],
-        }}
-      >
-        Status: {appStore.portSettingsMsg.msg}
+      <Typography>
+        Status: {PortState[appStore.portState]}
       </Typography>
     </Box>
   );

@@ -96,14 +96,6 @@ export class App {
   /** Contains the text data for the status textarea. */
   statusMsgs: StatusMsg[] = [];
 
-  /** The one status message is display in the port settings dialog */
-  portSettingsMsg: StatusMsg = new StatusMsg(
-    0,
-    '',
-    StatusMsgSeverity.INFO,
-    true
-  );
-
   portState = PortState.CLOSED;
 
   dataPane1: DataPane;
@@ -374,15 +366,6 @@ export class App {
         showInPortSettings
       )
     );
-    // If showInPortSettings is true, replace the port settings message
-    if (showInPortSettings) {
-      this.portSettingsMsg = new StatusMsg(
-        0, // Doesn't actually matter
-        msg,
-        severity,
-        true // Doesn't actually matter
-      );
-    }
   };
 
   async handleKeyPress(event: KeyboardEvent) {
