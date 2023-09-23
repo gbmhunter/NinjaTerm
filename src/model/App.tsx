@@ -248,27 +248,16 @@ export class App {
   }
 
   async openPort() {
-    // this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
-    // this.serialPort = new this.SerialPortType({
-    //   path: this.settings.selectedPortPath,
-    //   baudRate: this.settings.selectedBaudRate,
-    //   dataBits: this.settings.selectedNumDataBits as 5 | 6 | 7 | 8,
-    //   parity: this.settings.selectedParity as
-    //     | 'none'
-    //     | 'even'
-    //     | 'odd'
-    //     | 'mark'
-    //     | 'space',
-    //   stopBits: this.settings.selectedStopBits,
-    //   autoOpen: false, // Prevent serial port from opening until we call open()
-    // });
-
     // navigator.serial.addEventListener("connect", (event) => {
     //   // TODO: Automatically open event.target or warn user a port is available.
     //   console.log('connect event called.');
     // });
 
-    await this.port?.open({baudRate: this.settings.selectedBaudRate})
+    await this.port?.open({
+      baudRate: this.settings.selectedBaudRate,
+      dataBits: this.settings.selectedNumDataBits,
+      parity: this.settings.selectedParity as ParityType,
+      stopBits: this.settings.selectedStopBits})
     console.log('Serial port opened.');
     enqueueSnackbar('Serial port opened.', { variant: 'success'});
     this.setPortState(PortState.OPENED);

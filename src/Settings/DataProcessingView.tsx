@@ -124,7 +124,7 @@ function DataProcessingView(props: Props) {
       </Tooltip>
       {/* ============================ DATA VIEW CONFIGURATION =========================== */}
       <Tooltip
-        title="Control whether 1 or 2 data panes are used to display the data."
+        title="Control whether a combined TX/RX terminal or two separate terminals are displayed."
         placement="top"
       >
         <FormControl size="small" sx={{ minWidth: '210px' }}>

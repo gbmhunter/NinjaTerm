@@ -36,7 +36,7 @@ export class Settings {
 
   selectedNumDataBits = 8;
 
-  parityOptions = ['none', 'even', 'mark', 'odd', 'space'];
+  parityOptions = ['none', 'even', 'odd'];
 
   selectedParity = 'none';
 
