@@ -42,10 +42,10 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     // primary: {
-    //   main: '#ff0000', // your primary color
+    //   main: '#dc3545', // your primary color
     // },
     // secondary: {
-    //   main: '#00ff00', // your secondary color
+    //   main: '#35dccb', // your secondary color
     // },
   },
   typography: {
@@ -294,28 +294,12 @@ const AppView = observer((props: Props) => {
             <Box>Port State: {PortState[app.portState]}</Box>
           </Box>
         </div>
-        {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow */}
-        {/* <Snackbar open={app.snackBarOpen} autoHideDuration={6000} onClose={handleSnackBarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-          <Alert onClose={handleSnackBarClose} severity="error" sx={{ width: '100%' }}>
-            This is a success message!
-          </Alert>
-        </Snackbar> */}
-        <SnackbarProvider />
+        {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
+        Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}
+        <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} />
       </div>
     </ThemeProvider>
   );
 });
 
 export default AppView;
-
-// export default function AppWrapped(props: Props) {
-//   const { app } = props;
-//   return (
-//     <Router>
-//       <Routes>
-//         <Route path="/" element={<AppView app={app} />} />
-//       </Routes>
-//     </Router>
-//   );
-// }
