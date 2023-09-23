@@ -4,6 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { SnackbarProvider, enqueueSnackbar } from 'notistack';
 
 import DataPane from './DataPane';
 import TextSegmentController from './TextSegmentController';
@@ -176,7 +177,16 @@ export class App {
 
     this.snackBarOpen = false;
 
-    console.log('Started NinjaTerm.');
+    console.log('Started NinjaTerm.')
+
+    // This is fired whenever a serial port that has been allowed access
+    // dissappears (i.e. USB serial), even if we are not connected to it.
+    navigator.serial.addEventListener("disconnect", (event) => {
+      // TODO: Remove |event.target| from the UI.
+      // If the serial port was opened, a stream error would be observed as well.
+      console.log('Serial port removed.');
+    });
+
     makeAutoObservable(this); // Make sure this near the end
   }
 
@@ -209,7 +219,7 @@ export class App {
         localPort = await navigator.serial.requestPort();
       } catch (error) {
           console.log('Error occured. error=', error);
-          this.setSnackBarOpen(true);
+          enqueueSnackbar('User cancelled port selection.', { variant: 'error'});
           return;
       }
       console.log('Got local port, now setting state...');
@@ -267,12 +277,8 @@ export class App {
 
     await this.port?.open({baudRate: this.settings.selectedBaudRate})
     console.log('Serial port opened.');
+    enqueueSnackbar('Serial port opened.', { variant: 'success'});
     this.setPortState(PortState.OPENED);
-      // this.addStatusBarMsg(
-      //   'Port opened successfully.',
-      //   StatusMsgSeverity.OK,
-      //   true
-      // );
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
     if (this.closeSettingsDialogOnPortOpenOrClose) {
@@ -283,8 +289,8 @@ export class App {
     this.closedPromise = this.readUntilClosed();
   }
 
+  /** Continuously reads from the serial port. */
   async readUntilClosed() {
-    // this.txRxTerminal.parseData(Buffer.from('s'));
     while (this.port?.readable && this.keepReading) {
       this.reader = this.port.readable.getReader();
       try {
@@ -292,13 +298,24 @@ export class App {
           const { value, done } = await this.reader.read();
           if (done) {
             // reader.cancel() has been called.
+            console.log('reader.read() returned done.');
             break;
           }
           // value is a Uint8Array.
           this.parseRxData(value);
         }
       } catch (error) {
-        // Handle error...
+          // This is called if the USB serial device is removed whilst
+          // reading
+          enqueueSnackbar('Serial port was removed unexpectedly.', { variant: 'error'});
+          this.setPortState(PortState.CLOSED);
+          runInAction(() => {
+            // Setting this.port to null means the port needs to be
+            // reselected in the UI (which makes sense because we just
+            // lost it)
+            this.port = null;
+            this.closedPromise = null;
+          });
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
@@ -313,17 +330,20 @@ export class App {
   }
 
   async closePort() {
+    console.log('closePort() called.');
     this.keepReading = false;
     // Force reader.read() to resolve immediately and subsequently
     // call reader.releaseLock() in the loop example above.
     this.reader?.cancel();
 
     if (this.closedPromise === null) {
+      console.log('was null.');
       throw Error('jfjfjf')
     }
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
+    enqueueSnackbar('Serial port closed.', { variant: 'success'});
     this.reader = null;
     this.closedPromise = null;
   }

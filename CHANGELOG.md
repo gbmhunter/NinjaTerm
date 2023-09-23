@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed HTML page title from "React App" to "NinjaTerm".
 - Updated logo in README to use standard red theme colour.
 - Added a snackbar to display status messages to the user.
-- Error handled correctly when user clicks the "Cancel" button in the serial port list.
+- App now correctly handles situation when user clicks the "Cancel" button in the serial port list.
+- App now correctly handles situation when USB serial device is removed whilst connected.
 
 ## [4.0.0] - 2023-09-22
 

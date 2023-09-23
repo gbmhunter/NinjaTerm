@@ -12,6 +12,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Slide,
   Snackbar,
   Tooltip,
   Typography,
@@ -22,6 +23,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
+import { SnackbarProvider, enqueueSnackbar } from 'notistack';
 
 import { App, PortState, portStateToButtonProps } from './model/App';
 import { StatusMsg, StatusMsgSeverity } from './model/StatusMsg';
@@ -291,11 +293,13 @@ const AppView = observer((props: Props) => {
           </Box>
         </div>
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow */}
-        <Snackbar open={app.snackBarOpen} autoHideDuration={6000} onClose={handleSnackBarClose}>
+        {/* <Snackbar open={app.snackBarOpen} autoHideDuration={6000} onClose={handleSnackBarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
           <Alert onClose={handleSnackBarClose} severity="error" sx={{ width: '100%' }}>
             This is a success message!
           </Alert>
-        </Snackbar>
+        </Snackbar> */}
+        <SnackbarProvider />
       </div>
     </ThemeProvider>
   );
