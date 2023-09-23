@@ -8,12 +8,14 @@ import {
   Button,
   ButtonPropsColorOverrides,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
   Slide,
   Snackbar,
+  Switch,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -39,6 +41,12 @@ import TerminalView from './TerminalView';
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
+    // primary: {
+    //   main: '#ff0000', // your primary color
+    // },
+    // secondary: {
+    //   main: '#00ff00', // your secondary color
+    // },
   },
   typography: {
     // Make all fonts slightly smaller by default for a dense layout
@@ -101,18 +109,13 @@ const AppView = observer((props: Props) => {
   // TERMINAL CREATION
   // =================
   // Create terminals based on selected configuration
-  let pane1;
-  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.RX_PANE) {
-    // Show only 1 pane, which only contains RX data
-    pane1 = <TerminalView appStore={app} terminal={app.rxTerminal} />;
-  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.COMBINED_TX_RX_PANE) {
-    // Show only 1 pane, but contains both TX and RX pane
-    pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
-  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_PANES) {
-    // Shows 2 panes, 1 for TX data and 1 for RX data
-    // pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
-    // pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
-    pane1 = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+  let terminals;
+  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
+    // Show only 1 terminal
+    terminals = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+    // Shows 2 terminals, 1 for TX data and 1 for RX data
+    terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
         <TerminalView appStore={app} terminal={app.txTerminal} />
       </div>
@@ -139,16 +142,6 @@ const AppView = observer((props: Props) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleSnackBarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-    // Prevent the snackbar from closing if the user clicks somewhere, we only want
-    // the snackbar to close when the snackbars timer runs out.
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    app.setSnackBarOpen(false);
-  };
 
   return (
     /* ThemeProvider sets theme for all MUI elements */
@@ -228,16 +221,14 @@ const AppView = observer((props: Props) => {
               startIcon={<ClearIcon />}
               onClick={() => {
                 app.clearAllData();
-              }}
-            >
+              }}>
               Clear Data
             </Button>
             {/* ============================ DATA VIEW CONFIGURATION =========================== */}
             <Tooltip
               title="Controls how to display the TX and RX data. Different use cases required different view configurations."
-              placement="left"
-            >
-              <FormControl size="small">
+              placement="left">
+              <FormControl size="small" sx={{ minWidth: '210px' }}>
                 <InputLabel>Data View Configuration</InputLabel>
                 <Select
                   name="dataViewConfiguration"
@@ -268,9 +259,26 @@ const AppView = observer((props: Props) => {
                 </Select>
               </FormControl>
             </Tooltip>
+
+
+            <FormControlLabel control={
+                <Switch
+                  name="localTxEcho"
+                  checked={app.settings.dataProcessing.appliedData.fields.localTxEcho.value} onChange={(e) => {
+                  app.settings.dataProcessing.onFieldChange(
+                    e.target.name,
+                    e.target.checked
+                  );
+                  // In the settings dialog, this same setting is under the influence of
+                  // an Apply button. But on the main screen, lets just apply changes automatically
+                  app.settings.dataProcessing.applyChanges();
+                }} />
+              } label="Local TX Echo" />
+
+
           </Box>
           {/* ================== DATA PANES ==================== */}
-          {pane1}
+          {terminals}
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"

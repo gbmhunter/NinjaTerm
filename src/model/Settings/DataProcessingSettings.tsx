@@ -9,18 +9,16 @@ import { App } from '../App';
  * can be displayed. One of these may be active at any one time.
  */
 export enum DataViewConfiguration {
-  RX_PANE, // No TX echo
-  COMBINED_TX_RX_PANE, // TX echo
-  SEPARATE_TX_RX_PANES,
+  SINGLE_TERMINAL, // TX echo
+  SEPARATE_TX_RX_TERMINALS,
 }
 
 // Maps the enums to human-readable names for display
 export const dataViewConfigEnumToDisplayName: {
   [key: string]: string;
 } = {
-  [DataViewConfiguration.RX_PANE]: 'RX pane (no TX echo)',
-  [DataViewConfiguration.COMBINED_TX_RX_PANE]: 'Combined TX/RX pane (TX echo)',
-  [DataViewConfiguration.SEPARATE_TX_RX_PANES]: 'Separate TX/RX panes',
+  [DataViewConfiguration.SINGLE_TERMINAL]: 'Single terminal',
+  [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
 };
 
 /** This class represents all the data which is stored in the data processing setting category.
@@ -46,7 +44,14 @@ class Data {
       rule: 'required|integer|min:1',
     },
     dataViewConfiguration: {
-      value: DataViewConfiguration.COMBINED_TX_RX_PANE,
+      value: DataViewConfiguration.SINGLE_TERMINAL,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required',
+    },
+    // If true, local TX data will be echoed to RX
+    localTxEcho: {
+      value: false,
       hasError: false,
       errorMsg: '',
       rule: 'required',

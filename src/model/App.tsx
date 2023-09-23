@@ -166,7 +166,7 @@ export class App {
 
     this.txSegments = new TextSegmentController();
     this.rxSegments = new TextSegmentController();
-    // A mix of both TX and RX data. Displayed when the "COMBINED_TX_RX_PANE"
+    // A mix of both TX and RX data. Displayed when the "Single Terminal"
     // view configuration is selected.
     this.txRxSegments = new TextSegmentController();
 
@@ -326,7 +326,10 @@ export class App {
   }
 
   parseRxData(value: Uint8Array) {
+    // Send received data to both the single TX/RX terminal
+    // and the RX terminal
     this.txRxTerminal.parseData(value);
+    this.rxTerminal.parseData(value);
   }
 
   async closePort() {
@@ -413,16 +416,19 @@ export class App {
       } else {
         console.log('Unsupported char!');
       }
-      console.log('Writing to serial port. bytesToWrite=', bytesToWrite);
       const writer = this.port?.writable?.getWriter();
 
-      const data = new Uint8Array([104, 101, 108, 108, 111]); // hello
+      const data = Uint8Array.from(bytesToWrite);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
       writer?.releaseLock();
       this.txTerminal.parseData(Uint8Array.from(bytesToWrite));
-      this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
+      // Check if local TX echo is enabled, and if so, send the data to
+      // the combined single terminal.
+      if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
+        this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
+      }
     }
   }
 
