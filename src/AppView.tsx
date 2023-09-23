@@ -260,7 +260,7 @@ const AppView = observer((props: Props) => {
               </FormControl>
             </Tooltip>
 
-
+            {/* ============================ LOCAL TX ECHO SWITCH =========================== */}
             <FormControlLabel control={
                 <Switch
                   name="localTxEcho"
@@ -274,6 +274,10 @@ const AppView = observer((props: Props) => {
                   app.settings.dataProcessing.applyChanges();
                 }} />
               } label="Local TX Echo" />
+
+            {/* ============================ VERSION NUMBER =========================== */}
+            {/* Push to right hand side of screen */}
+            <Typography sx={{ marginLeft: 'auto' }}>v{app.version}</Typography>
 
 
           </Box>

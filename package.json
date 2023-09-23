@@ -1,6 +1,6 @@
 {
-  "name": "my-app",
-  "version": "0.1.0",
+  "name": "ninjaterm",
+  "version": "4.0.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",

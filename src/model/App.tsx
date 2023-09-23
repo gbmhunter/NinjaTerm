@@ -6,6 +6,7 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { SnackbarProvider, enqueueSnackbar } from 'notistack';
 
+import packageDotJson from '../../package.json'
 import DataPane from './DataPane';
 import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
@@ -13,7 +14,7 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 
-// console.log(version);
+console.log(packageDotJson['version']);
 
 declare global {
   interface String {
@@ -141,10 +142,15 @@ export class App {
 
   snackBarOpen: boolean;
 
+  // Version of the NinjaTerm app. Read from package.json
+  version: string;
+
   constructor(
     testing = false
   ) {
     this.testing = testing;
+
+    this.version = packageDotJson['version'];
 
     this.settings = new Settings(this);
 

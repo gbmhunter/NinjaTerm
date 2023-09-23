@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added a snackbar to display status messages to the user.
+- NinjaTerm version number displayed in top-right of screen.
 
 ### Changed
 
@@ -18,10 +19,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed HTML page title from "React App" to "NinjaTerm".
-
 - Fixed missing status information in the "Port Configuration" settings.
 - App now correctly handles situation when user clicks the "Cancel" button in the serial port list.
 - App now correctly handles situation when USB serial device is removed whilst connected.
+- Num. data bits, parity and num. stop bits now being configured correctly in serial port.
 
 ## [4.0.0] - 2023-09-22
 
