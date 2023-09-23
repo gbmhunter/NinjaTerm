@@ -283,13 +283,7 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
-            <Box>
-              Port:{' '}
-              {app.settings.selectedPortPath !== ''
-                ? app.settings.selectedPortPath
-                : 'n/a'}{' '}
-            </Box>
-            <Box>{PortState[app.portState]}</Box>
+            <Box>Port State: {PortState[app.portState]}</Box>
           </Box>
         </div>
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow */}

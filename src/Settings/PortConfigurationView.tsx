@@ -25,11 +25,6 @@ interface Props {
 function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
-  // let textColor = '#fff';
-  // if (appStore.portState !== PortState.CLOSED) {
-  //   textColor = 'rgba(255, 255, 255, 0.5)';
-  // }
-
   const statusTextTypeToColor: { [key in StatusMsgSeverity]: string } = {
     [StatusMsgSeverity.INFO]: '#fff',
     [StatusMsgSeverity.OK]: '#66bb6a',
@@ -53,8 +48,12 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: '20px' }}></div>
 
-      <Typography>Product ID: {appStore.serialPortInfo?.usbProductId}</Typography>
-      <Typography>Vendor ID: {appStore.serialPortInfo?.usbVendorId}</Typography>
+      <Typography sx={{ color: (theme) => appStore.port !== null ? theme.palette.text.primary : theme.palette.text.disabled }}>
+        Selected Port Product ID: {appStore.serialPortInfo?.usbProductId}
+      </Typography>
+      <Typography sx={{ color: (theme) => appStore.port !== null ? theme.palette.text.primary : theme.palette.text.disabled }}>
+        Selected Port Vendor ID: {appStore.serialPortInfo?.usbVendorId}
+      </Typography>
 
       <div style={{ height: '20px' }}></div>
 
