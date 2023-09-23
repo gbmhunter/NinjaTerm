@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, runInAction, observe } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
@@ -145,13 +145,14 @@ export class App {
     testing = false
   ) {
     this.testing = testing;
-    // Need to create terminals before settings, as the settings
-    // will configure the terminals
-    this.txRxTerminal = new Terminal();
-    this.rxTerminal = new Terminal();
-    this.txTerminal = new Terminal();
 
     this.settings = new Settings(this);
+
+    // Need to create terminals before settings, as the settings
+    // will configure the terminals
+    this.txRxTerminal = new Terminal(this.settings);
+    this.rxTerminal = new Terminal(this.settings);
+    this.txTerminal = new Terminal(this.settings);
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
@@ -173,11 +174,11 @@ export class App {
 
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
-    navigator.serial.addEventListener("disconnect", (event) => {
-      // TODO: Remove |event.target| from the UI.
-      // If the serial port was opened, a stream error would be observed as well.
-      console.log('Serial port removed.');
-    });
+    // navigator.serial.addEventListener("disconnect", (event) => {
+    //   // TODO: Remove |event.target| from the UI.
+    //   // If the serial port was opened, a stream error would be observed as well.
+    //   console.log('Serial port removed.');
+    // });
 
     makeAutoObservable(this); // Make sure this near the end
   }

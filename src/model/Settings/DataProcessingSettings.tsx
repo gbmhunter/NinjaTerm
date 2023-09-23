@@ -31,14 +31,14 @@ class Data {
       errorMsg: '',
       rule: 'required',
     },
-    wrappingWidthChars: {
+    terminalWidthChars: {
       value: 80, // 80 is standard
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
-    scrollbackBufferSizeChars: {
-      value: 100000,
+    scrollbackBufferSizeRows: {
+      value: 10000,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
@@ -78,9 +78,9 @@ export default class DataProcessingSettings {
 
   constructor(app: App) {
     this.app = app;
-    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -126,9 +126,9 @@ export default class DataProcessingSettings {
     // Apply any actions because of these new applied settings
     // this.app.ansiECParser.isEnabled =
     //   this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
-    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.isApplyable = false;
   };
 }

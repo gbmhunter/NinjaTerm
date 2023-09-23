@@ -54,11 +54,12 @@ function DataProcessingView(props: Props) {
           sx={{ marginBottom: '10px' }}/>
       </Tooltip>
       {/* ============================ DATA WIDTH =========================== */}
-      <Tooltip title="The max. number of characters to display per line of data before wrapping to the next line. Must be a positive integer. Set to 0 to have infinite width (only new line characters will cause text to jump to the next line).">
+      <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line.
+      Must be a positive integer. New line characters also cause text to jump to the next line.">
         <TextField
           id="outlined-basic"
-          name="wrappingWidthChars"
-          label="Wrapping Width"
+          name="terminalWidthChars"
+          label="Terminal Width"
           variant="outlined"
           size="small"
           InputProps={{
@@ -68,7 +69,7 @@ function DataProcessingView(props: Props) {
           }}
           value={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.value
+              .terminalWidthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -78,30 +79,31 @@ function DataProcessingView(props: Props) {
           }}
           error={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.hasError
+              .terminalWidthChars.hasError
           }
           helperText={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.errorMsg
+              .terminalWidthChars.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
       {/* ============================ SCROLLBACK SIZE =========================== */}
-      <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage. Must be a positive non-zero integer.">
+      <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
+                      Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer.">
         <TextField
-          name="scrollbackBufferSizeChars"
+          name="scrollbackBufferSizeRows"
           label="Scrollback Buffer Size"
           variant="outlined"
           size="small"
           InputProps={{
             endAdornment: (
-              <InputAdornment position="start">chars</InputAdornment>
+              <InputAdornment position="start">rows</InputAdornment>
             ),
           }}
           value={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.value
+              .scrollbackBufferSizeRows.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -111,11 +113,11 @@ function DataProcessingView(props: Props) {
           }}
           error={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.hasError
+              .scrollbackBufferSizeRows.hasError
           }
           helperText={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.errorMsg
+              .scrollbackBufferSizeRows.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
