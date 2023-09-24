@@ -1,11 +1,13 @@
 /* eslint-disable no-continue */
-import { makeAutoObservable } from 'mobx';
+import { autorun, makeAutoObservable, observe } from 'mobx';
 import { ReactElement } from 'react';
 // import { TextEncoder, TextDecoder } from 'util';
 // import { assert } from 'console';
 
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
+import { App } from '../App';
+import { Settings } from '../Settings/Settings';
 
 // Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
 // https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
@@ -51,13 +53,29 @@ export default class Terminal {
   sgaCodeToBrightColorMapVga: { [key: number]: string } = {};
 
   // The max. number of chars to display per row
-  charWidth: number;
+  // charWidth: number;
 
   currForegroundColorNum: number | null;
 
   currBackgroundColorNum: number | null;
 
-  constructor() {
+  settings: Settings;
+
+  constructor(settings: Settings) {
+    this.settings = settings;
+
+    autorun(() => {
+      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+        // ANSI escape code parsing has been disabled
+        // Flush any partial ANSI escape code
+        this.addVisibleChars(this.partialEscapeCode);
+        this.partialEscapeCode = '';
+        this.inAnsiEscapeCode = false;
+        this.inCSISequence = false;
+        this.inIdleState = true;
+      }
+    })
+
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
 
@@ -100,7 +118,7 @@ export default class Terminal {
     this.sgaCodeToBrightColorMapVga[6] = 'rgb(85, 255, 255)';
     this.sgaCodeToBrightColorMapVga[7] = 'rgb(255, 255, 255)';
 
-    this.charWidth = 80;
+    // this.charWidth = 80;
 
     makeAutoObservable(this);
   }
@@ -122,12 +140,19 @@ export default class Terminal {
         continue;
       }
 
+      // Check if ANSI escape code parsing is disabled, and if so, skip parsing
+      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+        this.addVisibleChar(char);
+        continue;
+      }
+
       if (char === '\x1B') {
         console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
         this.inIdleState = false;
       }
+
       // If we are not currently processing an escape code
       // character is to be displayed
       if (this.inAnsiEscapeCode) {
@@ -395,7 +420,9 @@ export default class Terminal {
     // the end of all pre-existing text.
     rowToInsertInto.terminalChars[this.cursorPosition[1]] = terminalChar;
     // Increment cursor, move to next row if we have hit max char width
-    if (this.cursorPosition[1] === this.charWidth - 1) {
+    // NOTE: Max. width may change at any time, and may reduce to a smaller value even
+    // when chars are currently being inserted beyond the end. Thus the >= comparison here.
+    if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       this.moveToNewLine(); // This adds the " " if needed for the cursor
@@ -486,8 +513,8 @@ export default class Terminal {
     return /^\d$/.test(char);
   }
 
-  setCharWidth(charWidth: number) {
-    // assert(charWidth > 0);
-    this.charWidth = charWidth;
-  }
+  // setCharWidth(charWidth: number) {
+  //   // assert(charWidth > 0);
+  //   this.charWidth = charWidth;
+  // }
 }

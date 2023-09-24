@@ -29,31 +29,37 @@ function DataProcessingView(props: Props) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="ansiEscapeCodeParsingEnabled"
-            checked={
-              appStore.settings.dataProcessing.visibleData.fields
-                .ansiEscapeCodeParsingEnabled.value
-            }
-            onChange={(e) => {
-              appStore.settings.dataProcessing.onFieldChange(
-                e.target.name,
-                e.target.checked
-              );
-            }}
-          />
-        }
-        label="ANSI Escape Code Parsing"
-        sx={{ marginBottom: '10px' }}
-      />
+      {/* ============================ ANSI ESCAPE CODE PARSING ENABLED =========================== */}
+      <Tooltip
+        title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
+        some of the move cursor commands are supported."
+        placement="top">
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="ansiEscapeCodeParsingEnabled"
+              checked={
+                appStore.settings.dataProcessing.visibleData.fields
+                  .ansiEscapeCodeParsingEnabled.value
+              }
+              onChange={(e) => {
+                appStore.settings.dataProcessing.onFieldChange(
+                  e.target.name,
+                  e.target.checked
+                );
+              }}
+            />
+          }
+          label="ANSI Escape Code Parsing"
+          sx={{ marginBottom: '10px' }}/>
+      </Tooltip>
       {/* ============================ DATA WIDTH =========================== */}
-      <Tooltip title="The max. number of characters to display per line of data before wrapping to the next line. Must be a positive integer. Set to 0 to have infinite width (only new line characters will cause text to jump to the next line).">
+      <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line.
+      Must be a positive integer. New line characters also cause text to jump to the next line.">
         <TextField
           id="outlined-basic"
-          name="wrappingWidthChars"
-          label="Wrapping Width"
+          name="terminalWidthChars"
+          label="Terminal Width"
           variant="outlined"
           size="small"
           InputProps={{
@@ -63,7 +69,7 @@ function DataProcessingView(props: Props) {
           }}
           value={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.value
+              .terminalWidthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -73,30 +79,31 @@ function DataProcessingView(props: Props) {
           }}
           error={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.hasError
+              .terminalWidthChars.hasError
           }
           helperText={
             appStore.settings.dataProcessing.visibleData.fields
-              .wrappingWidthChars.errorMsg
+              .terminalWidthChars.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
       {/* ============================ SCROLLBACK SIZE =========================== */}
-      <Tooltip title="The max. number of characters to store in any scrollback buffer (TX, RX, TX/RX). Increasing this will decrease performance and increase memory usage. Must be a positive non-zero integer.">
+      <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
+                      Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer.">
         <TextField
-          name="scrollbackBufferSizeChars"
+          name="scrollbackBufferSizeRows"
           label="Scrollback Buffer Size"
           variant="outlined"
           size="small"
           InputProps={{
             endAdornment: (
-              <InputAdornment position="start">chars</InputAdornment>
+              <InputAdornment position="start">rows</InputAdornment>
             ),
           }}
           value={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.value
+              .scrollbackBufferSizeRows.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             appStore.settings.dataProcessing.onFieldChange(
@@ -106,21 +113,21 @@ function DataProcessingView(props: Props) {
           }}
           error={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.hasError
+              .scrollbackBufferSizeRows.hasError
           }
           helperText={
             appStore.settings.dataProcessing.visibleData.fields
-              .scrollbackBufferSizeChars.errorMsg
+              .scrollbackBufferSizeRows.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
       {/* ============================ DATA VIEW CONFIGURATION =========================== */}
       <Tooltip
-        title="Control whether 1 or 2 data panes are used to display the data."
+        title="Control whether a combined TX/RX terminal or two separate terminals are displayed."
         placement="top"
       >
-        <FormControl size="small">
+        <FormControl size="small" sx={{ minWidth: '210px' }}>
           <InputLabel>Data View Configuration</InputLabel>
           <Select
             name="dataViewConfiguration"
@@ -147,6 +154,32 @@ function DataProcessingView(props: Props) {
               })}
           </Select>
         </FormControl>
+      </Tooltip>
+      {/* ============================ LOCAL TX ECHO =========================== */}
+      <Tooltip
+        title="If enabled, transmitted data will be treated as received data. Useful in ASCII mode when
+        the device on the other end of the serial port does not echo back characters. Disable this if
+        you see two of every character appear."
+        placement="top"
+      >
+      <FormControlLabel
+        control={
+          <Checkbox
+            name="localTxEcho"
+            checked={
+              appStore.settings.dataProcessing.visibleData.fields
+                .localTxEcho.value
+            }
+            onChange={(e) => {
+              appStore.settings.dataProcessing.onFieldChange(
+                e.target.name,
+                e.target.checked
+              );
+            }}
+          />
+        }
+        label="Local TX Echo"
+        sx={{ marginBottom: '10px' }}/>
       </Tooltip>
       {/* ============================ APPLY BUTTON =========================== */}
       <Button

@@ -1,4 +1,4 @@
-<p align="center"><img src="img/logo/logotype.png" alt="QList" height="200px"></p>
+<p align="center"><img src="img/logo/v3/github-readme-logo.png" alt="QList" height="200px"></p>
 
 #### A serial port terminal that's got your back.
 
@@ -39,11 +39,13 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Releasing
 
-1. Version number has been updated in `release/app/package.json`.
-1. Version number has been updated in `docs/index.html`.
-1. CHANGELOG has been updated.
-
-Once the build on `develop` has been successfully run, merge the `develop` branch into `main`.
+1. Update the version number in `package.json`.
+1. Update the CHANGELOG.
+1. Create pull request merging `develop` into `main`.
+1. Once the build on `develop` has been successfully run, merge the `develop` branch into `main`.
+1. Tag the branch on main with the version number, e.g. `v4.1.0`.
+1. Create a release on GitHub pointing to the tag.
+1. Enter the CHANGELOG contents into the release body text.
 
 ## Deployment
 
@@ -62,6 +64,10 @@ MobX is used to store the application state. The application model is under `src
 ## GitHub Pages
 
 The `docs/` folder contains the source code for the NinjaTerm homepage, hosted by GitHub Pages. This is automatically build and deployed with new commits pushed to `main`.
+
+## Theme Colors
+
+* DC3545 (red): Primary colour, used for logo.
 
 ## Extensions
 

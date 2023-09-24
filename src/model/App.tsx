@@ -4,7 +4,9 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { enqueueSnackbar } from 'notistack';
 
+import packageDotJson from '../../package.json'
 import DataPane from './DataPane';
 import TextSegmentController from './TextSegmentController';
 import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
@@ -12,7 +14,7 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 
-// console.log(version);
+console.log(packageDotJson['version']);
 
 declare global {
   interface String {
@@ -95,14 +97,6 @@ export class App {
   /** Contains the text data for the status textarea. */
   statusMsgs: StatusMsg[] = [];
 
-  /** The one status message is display in the port settings dialog */
-  portSettingsMsg: StatusMsg = new StatusMsg(
-    0,
-    '',
-    StatusMsgSeverity.INFO,
-    true
-  );
-
   portState = PortState.CLOSED;
 
   dataPane1: DataPane;
@@ -146,24 +140,32 @@ export class App {
 
   closedPromise: Promise<void> | null;
 
+  snackBarOpen: boolean;
+
+  // Version of the NinjaTerm app. Read from package.json
+  version: string;
+
   constructor(
     testing = false
   ) {
     this.testing = testing;
-    // Need to create terminals before settings, as the settings
-    // will configure the terminals
-    this.txRxTerminal = new Terminal();
-    this.rxTerminal = new Terminal();
-    this.txTerminal = new Terminal();
+
+    this.version = packageDotJson['version'];
 
     this.settings = new Settings(this);
+
+    // Need to create terminals before settings, as the settings
+    // will configure the terminals
+    this.txRxTerminal = new Terminal(this.settings);
+    this.rxTerminal = new Terminal(this.settings);
+    this.txTerminal = new Terminal(this.settings);
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
 
     this.txSegments = new TextSegmentController();
     this.rxSegments = new TextSegmentController();
-    // A mix of both TX and RX data. Displayed when the "COMBINED_TX_RX_PANE"
+    // A mix of both TX and RX data. Displayed when the "Single Terminal"
     // view configuration is selected.
     this.txRxSegments = new TextSegmentController();
 
@@ -172,8 +174,23 @@ export class App {
     this.reader = null;
     this.closedPromise = null;
 
-    console.log('Started NinjaTerm.');
+    this.snackBarOpen = false;
+
+    console.log('Started NinjaTerm.')
+
+    // This is fired whenever a serial port that has been allowed access
+    // dissappears (i.e. USB serial), even if we are not connected to it.
+    // navigator.serial.addEventListener("disconnect", (event) => {
+    //   // TODO: Remove |event.target| from the UI.
+    //   // If the serial port was opened, a stream error would be observed as well.
+    //   console.log('Serial port removed.');
+    // });
+
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  setSnackBarOpen(trueFalse: boolean) {
+    this.snackBarOpen = trueFalse;
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -186,13 +203,24 @@ export class App {
 
   /**
    * Scans the computer for available serial ports, and updates availablePortInfos.
+   *
+   * Based of https://developer.chrome.com/en/articles/serial/
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    console.log('hfhfh');
     if ("serial" in navigator) {
       // The Web Serial API is supported.
-      const localPort = await navigator.serial.requestPort();
+
+      let localPort: SerialPort;
+
+      // If the user clicks cancel, a DOMException is thrown
+      try {
+        localPort = await navigator.serial.requestPort();
+      } catch (error) {
+          console.log('Error occured. error=', error);
+          enqueueSnackbar('User cancelled port selection.', { variant: 'error'});
+          return;
+      }
       console.log('Got local port, now setting state...');
       runInAction(() => {
         console.log('Setting this.port and this.serialPortInfo...');
@@ -226,34 +254,19 @@ export class App {
   }
 
   async openPort() {
-    // this.addStatusBarMsg('Opening port...', StatusMsgSeverity.INFO, true);
-    // this.serialPort = new this.SerialPortType({
-    //   path: this.settings.selectedPortPath,
-    //   baudRate: this.settings.selectedBaudRate,
-    //   dataBits: this.settings.selectedNumDataBits as 5 | 6 | 7 | 8,
-    //   parity: this.settings.selectedParity as
-    //     | 'none'
-    //     | 'even'
-    //     | 'odd'
-    //     | 'mark'
-    //     | 'space',
-    //   stopBits: this.settings.selectedStopBits,
-    //   autoOpen: false, // Prevent serial port from opening until we call open()
-    // });
-
     // navigator.serial.addEventListener("connect", (event) => {
     //   // TODO: Automatically open event.target or warn user a port is available.
     //   console.log('connect event called.');
     // });
 
-    await this.port?.open({baudRate: this.settings.selectedBaudRate})
+    await this.port?.open({
+      baudRate: this.settings.selectedBaudRate,
+      dataBits: this.settings.selectedNumDataBits,
+      parity: this.settings.selectedParity as ParityType,
+      stopBits: this.settings.selectedStopBits})
     console.log('Serial port opened.');
+    enqueueSnackbar('Serial port opened.', { variant: 'success'});
     this.setPortState(PortState.OPENED);
-      // this.addStatusBarMsg(
-      //   'Port opened successfully.',
-      //   StatusMsgSeverity.OK,
-      //   true
-      // );
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
     if (this.closeSettingsDialogOnPortOpenOrClose) {
@@ -264,8 +277,8 @@ export class App {
     this.closedPromise = this.readUntilClosed();
   }
 
+  /** Continuously reads from the serial port. */
   async readUntilClosed() {
-    // this.txRxTerminal.parseData(Buffer.from('s'));
     while (this.port?.readable && this.keepReading) {
       this.reader = this.port.readable.getReader();
       try {
@@ -273,13 +286,24 @@ export class App {
           const { value, done } = await this.reader.read();
           if (done) {
             // reader.cancel() has been called.
+            console.log('reader.read() returned done.');
             break;
           }
           // value is a Uint8Array.
           this.parseRxData(value);
         }
       } catch (error) {
-        // Handle error...
+          // This is called if the USB serial device is removed whilst
+          // reading
+          enqueueSnackbar('Serial port was removed unexpectedly.', { variant: 'error'});
+          this.setPortState(PortState.CLOSED);
+          runInAction(() => {
+            // Setting this.port to null means the port needs to be
+            // reselected in the UI (which makes sense because we just
+            // lost it)
+            this.port = null;
+            this.closedPromise = null;
+          });
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
@@ -290,21 +314,27 @@ export class App {
   }
 
   parseRxData(value: Uint8Array) {
+    // Send received data to both the single TX/RX terminal
+    // and the RX terminal
     this.txRxTerminal.parseData(value);
+    this.rxTerminal.parseData(value);
   }
 
   async closePort() {
+    console.log('closePort() called.');
     this.keepReading = false;
     // Force reader.read() to resolve immediately and subsequently
     // call reader.releaseLock() in the loop example above.
     this.reader?.cancel();
 
     if (this.closedPromise === null) {
+      console.log('was null.');
       throw Error('jfjfjf')
     }
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
+    enqueueSnackbar('Serial port closed.', { variant: 'success'});
     this.reader = null;
     this.closedPromise = null;
   }
@@ -332,15 +362,6 @@ export class App {
         showInPortSettings
       )
     );
-    // If showInPortSettings is true, replace the port settings message
-    if (showInPortSettings) {
-      this.portSettingsMsg = new StatusMsg(
-        0, // Doesn't actually matter
-        msg,
-        severity,
-        true // Doesn't actually matter
-      );
-    }
   };
 
   async handleKeyPress(event: KeyboardEvent) {
@@ -374,16 +395,19 @@ export class App {
       } else {
         console.log('Unsupported char!');
       }
-      console.log('Writing to serial port. bytesToWrite=', bytesToWrite);
       const writer = this.port?.writable?.getWriter();
 
-      const data = new Uint8Array([104, 101, 108, 108, 111]); // hello
+      const data = Uint8Array.from(bytesToWrite);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
       writer?.releaseLock();
       this.txTerminal.parseData(Uint8Array.from(bytesToWrite));
-      this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
+      // Check if local TX echo is enabled, and if so, send the data to
+      // the combined single terminal.
+      if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
+        this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
+      }
     }
   }
 

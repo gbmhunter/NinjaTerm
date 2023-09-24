@@ -3,14 +3,19 @@ import React, { useEffect, useRef, WheelEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
+  Alert,
   Box,
   Button,
   ButtonPropsColorOverrides,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
+  Slide,
+  Snackbar,
+  Switch,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -20,6 +25,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
+import { SnackbarProvider, enqueueSnackbar } from 'notistack';
 
 import { App, PortState, portStateToButtonProps } from './model/App';
 import { StatusMsg, StatusMsgSeverity } from './model/StatusMsg';
@@ -30,11 +36,25 @@ import {
 } from './model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
+import LogoImage from './logo192.png';
+
+import KofiButton from "kofi-button"
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
+    background: {
+      default: '#202020',
+      paper: '#202020',
+      // paper: deepOrange[900],
+    },
+    // primary: {
+    //   main: '#dc3545', // your primary color
+    // },
+    // secondary: {
+    //   main: '#35dccb', // your secondary color
+    // },
   },
   typography: {
     // Make all fonts slightly smaller by default for a dense layout
@@ -97,18 +117,13 @@ const AppView = observer((props: Props) => {
   // TERMINAL CREATION
   // =================
   // Create terminals based on selected configuration
-  let pane1;
-  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.RX_PANE) {
-    // Show only 1 pane, which only contains RX data
-    pane1 = <TerminalView appStore={app} terminal={app.rxTerminal} />;
-  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.COMBINED_TX_RX_PANE) {
-    // Show only 1 pane, but contains both TX and RX pane
-    pane1 = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
-  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_PANES) {
-    // Shows 2 panes, 1 for TX data and 1 for RX data
-    // pane1 = (<TerminalView appStore={app} terminal={app.txTerminal}/>);
-    // pane2 = (<TerminalView appStore={app} terminal={app.rxTerminal}/>);
-    pane1 = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+  let terminals;
+  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
+    // Show only 1 terminal
+    terminals = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
+  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+    // Shows 2 terminals, 1 for TX data and 1 for RX data
+    terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
         <TerminalView appStore={app} terminal={app.txTerminal} />
       </div>
@@ -165,16 +180,15 @@ const AppView = observer((props: Props) => {
               height: '40px',
               gap: '10px',
               marginBottom: '10px',
-            }}
-          >
+            }}>
+            <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
             <Button
               variant="outlined"
               onClick={() => {
                 app.setSettingsDialogOpen(true);
               }}
               startIcon={<SettingsIcon />}
-              data-testid="settings-button"
-            >
+              data-testid="settings-button">
               Settings
             </Button>
             <Button
@@ -214,16 +228,14 @@ const AppView = observer((props: Props) => {
               startIcon={<ClearIcon />}
               onClick={() => {
                 app.clearAllData();
-              }}
-            >
+              }}>
               Clear Data
             </Button>
             {/* ============================ DATA VIEW CONFIGURATION =========================== */}
             <Tooltip
               title="Controls how to display the TX and RX data. Different use cases required different view configurations."
-              placement="left"
-            >
-              <FormControl size="small">
+              placement="left">
+              <FormControl size="small" sx={{ minWidth: '210px' }}>
                 <InputLabel>Data View Configuration</InputLabel>
                 <Select
                   name="dataViewConfiguration"
@@ -240,8 +252,7 @@ const AppView = observer((props: Props) => {
                     // an Apply button. But on the main screen, lets just apply changes automatically
                     app.settings.dataProcessing.applyChanges();
                   }}
-                  sx={{ fontSize: '0.8rem' }}
-                >
+                  sx={{ fontSize: '0.8rem' }}>
                   {Object.keys(DataViewConfiguration)
                     .filter((key) => !Number.isNaN(Number(key)))
                     .map((key) => {
@@ -254,9 +265,31 @@ const AppView = observer((props: Props) => {
                 </Select>
               </FormControl>
             </Tooltip>
+
+            {/* ============================ LOCAL TX ECHO SWITCH =========================== */}
+            <FormControlLabel control={
+                <Switch
+                  name="localTxEcho"
+                  checked={app.settings.dataProcessing.appliedData.fields.localTxEcho.value} onChange={(e) => {
+                  app.settings.dataProcessing.onFieldChange(
+                    e.target.name,
+                    e.target.checked
+                  );
+                  // In the settings dialog, this same setting is under the influence of
+                  // an Apply button. But on the main screen, lets just apply changes automatically
+                  app.settings.dataProcessing.applyChanges();
+                }} />
+              } label="Local TX Echo" />
+
+            {/* ============================ VERSION NUMBER =========================== */}
+            {/* Push to right hand side of screen */}
+            <Typography sx={{ marginLeft: 'auto' }}>v{app.version}</Typography>
+
+            {/* ============================ Ko-Fi "Donate" button =========================== */}
+            <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
           </Box>
           {/* ================== DATA PANES ==================== */}
-          {pane1}
+          {terminals}
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"
@@ -269,29 +302,17 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
-            <Box>
-              Port:{' '}
-              {app.settings.selectedPortPath !== ''
-                ? app.settings.selectedPortPath
-                : 'n/a'}{' '}
-            </Box>
-            <Box>{PortState[app.portState]}</Box>
+            {/* Show port configuration in short hand, e.g. "115200 8n1" */}
+            <Box>{app.settings.shortSerialConfigName}</Box>
+            <Box>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
+        {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
+        Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}
+        <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} />
       </div>
     </ThemeProvider>
   );
 });
 
 export default AppView;
-
-// export default function AppWrapped(props: Props) {
-//   const { app } = props;
-//   return (
-//     <Router>
-//       <Routes>
-//         <Route path="/" element={<AppView app={app} />} />
-//       </Routes>
-//     </Router>
-//   );
-// }

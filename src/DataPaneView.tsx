@@ -57,10 +57,10 @@ export default observer((props: Props) => {
   let dataPaneWidth = '';
   let dataPaneWordBreak: CSSProperties['wordBreak'];
   if (
-    appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars
+    appStore.settings.dataProcessing.appliedData.fields.terminalWidthChars
       .value > 0
   ) {
-    dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.wrappingWidthChars.value}ch`;
+    dataPaneWidth = `${appStore.settings.dataProcessing.appliedData.fields.terminalWidthChars.value}ch`;
     dataPaneWordBreak = 'break-all';
   } else {
     dataPaneWidth = '100%';

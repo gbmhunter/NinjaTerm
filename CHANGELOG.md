@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-- Nothing here yet
+## [4.1.0] - 2023-09-24
+
+### Added
+
+- Added a snackbar to display status messages to the user.
+- NinjaTerm version number displayed in top-right of screen.
+- Added shorthand serial port config. display in the bottom toolbar of app.
+- Added logo to the app toolbar.
+- Added a "Ko-Fi" donate button to the app toolbar.
+
+### Changed
+
+- Updated logo in README to use standard red theme colour.
+
+### Fixed
+
+- Fixed HTML page title from "React App" to "NinjaTerm".
+- Fixed missing status information in the "Port Configuration" settings.
+- App now correctly handles situation when user clicks the "Cancel" button in the serial port list.
+- App now correctly handles situation when USB serial device is removed whilst connected.
+- Num. data bits, parity and num. stop bits now being configured correctly in serial port.
 
 ## [4.0.0] - 2023-09-22
 

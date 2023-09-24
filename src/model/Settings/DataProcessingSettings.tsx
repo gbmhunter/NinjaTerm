@@ -9,18 +9,16 @@ import { App } from '../App';
  * can be displayed. One of these may be active at any one time.
  */
 export enum DataViewConfiguration {
-  RX_PANE, // No TX echo
-  COMBINED_TX_RX_PANE, // TX echo
-  SEPARATE_TX_RX_PANES,
+  SINGLE_TERMINAL, // TX echo
+  SEPARATE_TX_RX_TERMINALS,
 }
 
 // Maps the enums to human-readable names for display
 export const dataViewConfigEnumToDisplayName: {
   [key: string]: string;
 } = {
-  [DataViewConfiguration.RX_PANE]: 'RX pane (no TX echo)',
-  [DataViewConfiguration.COMBINED_TX_RX_PANE]: 'Combined TX/RX pane (TX echo)',
-  [DataViewConfiguration.SEPARATE_TX_RX_PANES]: 'Separate TX/RX panes',
+  [DataViewConfiguration.SINGLE_TERMINAL]: 'Single terminal',
+  [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
 };
 
 /** This class represents all the data which is stored in the data processing setting category.
@@ -33,20 +31,27 @@ class Data {
       errorMsg: '',
       rule: 'required',
     },
-    wrappingWidthChars: {
+    terminalWidthChars: {
       value: 80, // 80 is standard
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
-    scrollbackBufferSizeChars: {
-      value: 100000,
+    scrollbackBufferSizeRows: {
+      value: 10000,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
     dataViewConfiguration: {
-      value: DataViewConfiguration.COMBINED_TX_RX_PANE,
+      value: DataViewConfiguration.SINGLE_TERMINAL,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required',
+    },
+    // If true, local TX data will be echoed to RX
+    localTxEcho: {
+      value: false,
       hasError: false,
       errorMsg: '',
       rule: 'required',
@@ -73,9 +78,9 @@ export default class DataProcessingSettings {
 
   constructor(app: App) {
     this.app = app;
-    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -121,9 +126,9 @@ export default class DataProcessingSettings {
     // Apply any actions because of these new applied settings
     // this.app.ansiECParser.isEnabled =
     //   this.appliedData.fields.ansiEscapeCodeParsingEnabled.value;
-    this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
+    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     this.isApplyable = false;
   };
 }
