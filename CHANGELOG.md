@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added a snackbar to display status messages to the user.
 - NinjaTerm version number displayed in top-right of screen.
+- Added shorthand serial port config. display in the bottom toolbar of app.
 
 ### Changed
 

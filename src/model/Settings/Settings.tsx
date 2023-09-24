@@ -50,6 +50,19 @@ export class Settings {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
+  /** Computed value which represents the serial port config in short hand,
+   * e.g. "115200 8n1"
+   */
+  get shortSerialConfigName() {
+    let output = '';
+    output += this.selectedBaudRate.toString();
+    output += ' ';
+    output += this.selectedNumDataBits.toString();
+    output += this.selectedParity[0];
+    output += this.selectedStopBits.toString();
+    return output;
+  }
+
   setActiveSettingsCategory(settingsCategory: SettingsCategories) {
     this.activeSettingsCategory = settingsCategory;
   }
@@ -57,10 +70,6 @@ export class Settings {
   setSelectedPortPath(selectedPortPath: string) {
     this.selectedPortPath = selectedPortPath;
   }
-
-  // setAvailablePortInfos(availablePortInfos: PortInfo.PortInfo[]) {
-  //   this.availablePortInfos = availablePortInfos;
-  // }
 
   setSelectedBaudRate(baudRate: number) {
     this.selectedBaudRate = baudRate;

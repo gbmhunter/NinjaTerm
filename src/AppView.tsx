@@ -295,6 +295,8 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
+            {/* Show port configuration in short hand, e.g. "115200 8n1" */}
+            <Box>{app.settings.shortSerialConfigName}</Box>
             <Box>Port State: {PortState[app.portState]}</Box>
           </Box>
         </div>
