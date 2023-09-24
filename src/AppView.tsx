@@ -44,6 +44,11 @@ import LogoImage from './logo192.png';
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
+    background: {
+      default: '#202020',
+      paper: '#202020',
+      // paper: deepOrange[900],
+    },
     // primary: {
     //   main: '#dc3545', // your primary color
     // },
@@ -299,7 +304,7 @@ const AppView = observer((props: Props) => {
           >
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
-            <Box>Port State: {PortState[app.portState]}</Box>
+            <Box>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.

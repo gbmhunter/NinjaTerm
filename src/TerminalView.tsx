@@ -121,7 +121,7 @@ export default observer((props: Props) => {
       ref={terminalDiv}
       style={{
         flexGrow: '1',
-        backgroundColor: '#161616',
+        backgroundColor: '#000000', // This sets the background color of the terminal
         fontFamily: 'monospace',
         whiteSpace: 'pre-wrap', // This allows \n to create new lines
         // padding: '10px',
