@@ -38,7 +38,7 @@ import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
 import LogoImage from './logo192.png';
 
-// import image from '../public/logo192.png';
+import KofiButton from "kofi-button"
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -252,8 +252,7 @@ const AppView = observer((props: Props) => {
                     // an Apply button. But on the main screen, lets just apply changes automatically
                     app.settings.dataProcessing.applyChanges();
                   }}
-                  sx={{ fontSize: '0.8rem' }}
-                >
+                  sx={{ fontSize: '0.8rem' }}>
                   {Object.keys(DataViewConfiguration)
                     .filter((key) => !Number.isNaN(Number(key)))
                     .map((key) => {
@@ -286,7 +285,8 @@ const AppView = observer((props: Props) => {
             {/* Push to right hand side of screen */}
             <Typography sx={{ marginLeft: 'auto' }}>v{app.version}</Typography>
 
-
+            {/* ============================ Ko-Fi "Donate" button =========================== */}
+            <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
           </Box>
           {/* ================== DATA PANES ==================== */}
           {terminals}
