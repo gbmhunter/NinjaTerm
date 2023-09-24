@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable, runInAction, observe } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { SnackbarProvider, enqueueSnackbar } from 'notistack';
+import { enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
 import DataPane from './DataPane';

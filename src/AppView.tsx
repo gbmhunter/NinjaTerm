@@ -36,6 +36,9 @@ import {
 } from './model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
+import LogoImage from './logo192.png';
+
+// import image from '../public/logo192.png';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -172,16 +175,15 @@ const AppView = observer((props: Props) => {
               height: '40px',
               gap: '10px',
               marginBottom: '10px',
-            }}
-          >
+            }}>
+            <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
             <Button
               variant="outlined"
               onClick={() => {
                 app.setSettingsDialogOpen(true);
               }}
               startIcon={<SettingsIcon />}
-              data-testid="settings-button"
-            >
+              data-testid="settings-button">
               Settings
             </Button>
             <Button
