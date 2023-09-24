@@ -1,34 +1,28 @@
 // import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { useEffect, useRef, WheelEvent } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
-  Alert,
   Box,
   Button,
   ButtonPropsColorOverrides,
   FormControl,
   FormControlLabel,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
-  Slide,
-  Snackbar,
   Switch,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
-import { SnackbarProvider, enqueueSnackbar } from 'notistack';
+import { SnackbarProvider } from 'notistack';
 
 import { App, PortState, portStateToButtonProps } from './model/App';
-import { StatusMsg, StatusMsgSeverity } from './model/StatusMsg';
 import './App.css';
 import {
   DataViewConfiguration,
@@ -87,48 +81,21 @@ const AppView = observer((props: Props) => {
     }
   }, [app.statusMsgs.length, app.statusMsgScrollLock]);
 
-  // Generate UI showing the status messages
-  const statusMsgs = app.statusMsgs.map((statusMsg: StatusMsg) => {
-    if (statusMsg.severity === StatusMsgSeverity.INFO) {
-      return (
-        <span key={statusMsg.id} style={{ display: 'block' }}>
-          {statusMsg.msg}
-        </span>
-      );
-      // eslint-disable-next-line no-else-return
-    } else if (statusMsg.severity === StatusMsgSeverity.OK) {
-      return (
-        <span key={statusMsg.id} style={{ display: 'block', color: 'green' }}>
-          {statusMsg.msg}
-        </span>
-      );
-      // eslint-disable-next-line no-else-return
-    } else if (statusMsg.severity === StatusMsgSeverity.ERROR) {
-      return (
-        <span key={statusMsg.id} style={{ display: 'block', color: 'red' }}>
-          ERROR: {statusMsg.msg}
-        </span>
-      );
-    } else {
-      throw Error('Unrecognized severity.');
-    }
-  });
-
   // TERMINAL CREATION
   // =================
   // Create terminals based on selected configuration
   let terminals;
   if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
-    terminals = <TerminalView appStore={app} terminal={app.txRxTerminal} />;
+    terminals = <TerminalView appStore={app} terminal={app.txRxTerminal} testId='tx-rx-terminal-view' />;
   } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
-        <TerminalView appStore={app} terminal={app.txTerminal} />
+        <TerminalView appStore={app} terminal={app.txTerminal} testId='tx-terminal-view'/>
       </div>
       <div style={{ height: '50%', display: 'flex' }}>
-      <TerminalView appStore={app} terminal={app.rxTerminal} />
+        <TerminalView appStore={app} terminal={app.rxTerminal} testId='rx-terminal-view' />
       </div>
     </div>;
   } else {

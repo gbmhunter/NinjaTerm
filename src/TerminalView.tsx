@@ -13,6 +13,7 @@ import styles from './TerminalView.module.css';
 interface Props {
   appStore: App;
   terminal: Terminal;
+  testId: string;
 }
 
 interface RowProps {
@@ -22,7 +23,7 @@ interface RowProps {
 }
 
 export default observer((props: Props) => {
-  const { appStore, terminal } = props;
+  const { appStore, terminal, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -133,7 +134,7 @@ export default observer((props: Props) => {
         // height is set from the height of this div.
         overflowY: 'hidden',
       }}
-      data-testid="tx-rx-terminal-view"
+      data-testid={testId}
       className={styles.terminal}
     >
       <FixedSizeList

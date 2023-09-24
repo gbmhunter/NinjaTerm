@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Testing function which sets up the App with a mocked WebSerial API is working.
+
 ## [4.1.0] - 2023-09-24
 
 ### Added

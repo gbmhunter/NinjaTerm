@@ -16,7 +16,6 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
-import assert from 'assert';
 
 import { App } from './model/App';
 import AppView from './AppView';
@@ -28,15 +27,17 @@ Object.assign(global, { TextDecoder, TextEncoder });
 /**
  * Setup function that is re-used by all tests in this file.
  *
- * @returns SerialPortMock object for sending mock data with.
+ * @returns Created app with mock serial port.
  */
 async function createAppWithMockSerialPort() {
-  // Create fake serial interface
-  // Set record: true so that we can see what data the app
-  // writes to the port
-  // Create model
-
   const mockReader = {
+    read: jest.fn().mockImplementation(() => {
+      return new Promise(function(resolve, reject) {
+        // Don't do anything, which will cause read() in App to never resolve. I tried to get a
+        // deferred promise working but I could never just trigger a resolution once (e.g. provide
+        // a single character, it was always get stuck repeatedly resolving)
+      });;
+    }),
     releaseLock: jest.fn().mockImplementation(() => {
       console.log('mock releaseLock() called.');
       return;
@@ -68,18 +69,10 @@ async function createAppWithMockSerialPort() {
   }
 
   const mockSerial = {
-    getCurrentPosition: jest.fn()
-      .mockImplementationOnce((success) => Promise.resolve(success({
-        coords: {
-          latitude: 51.1,
-          longitude: 45.3
-        }
-      }))),
-      requestPort: jest.fn().mockImplementation(() => {
-        console.log('mock requestPort() called.');
-        return Promise.resolve(mockPort);
-      }),
-
+    requestPort: jest.fn().mockImplementation(() => {
+      console.log('mock requestPort() called.');
+      return Promise.resolve(mockPort);
+    }),
   };
   // @ts-ignore:next-line
   global.navigator.serial = mockSerial;
@@ -182,6 +175,31 @@ function checkExpectedAgainstActualDisplay(
 }
 
 describe('App', () => {
+
+  it.only('should handle single RX char', async () => {
+    let app = await createAppWithMockSerialPort();
+
+    const textToSend = 'A';
+    const utf8EncodeText = new TextEncoder();
+
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'A' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
 
   it('should display "Hello, World"', async () => {
     const app = new App(true);
