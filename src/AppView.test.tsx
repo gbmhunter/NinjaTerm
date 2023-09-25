@@ -30,6 +30,21 @@ Object.assign(global, { TextDecoder, TextEncoder });
  * @returns Created app with mock serial port.
  */
 async function createAppWithMockSerialPort() {
+
+  let writtenData: number[] = []
+
+  const mockWriter = {
+    write: jest.fn().mockImplementation((data: Uint8Array) => {
+      for (let i = 0; i < data.length; i += 1) {
+        writtenData.push(data[i]);
+      }
+      return Promise.resolve();
+    }),
+    releaseLock: jest.fn().mockImplementation(() => {
+      return Promise.resolve();
+    }),
+  }
+
   const mockReader = {
     read: jest.fn().mockImplementation(() => {
       return new Promise(function(resolve, reject) {
@@ -46,10 +61,10 @@ async function createAppWithMockSerialPort() {
 
   const mockPort = {
     getInfo: jest.fn().mockImplementation(() => {
-        return {
-          usbProductId: '123',
-          usbVendorId: '456',
-        };
+      return {
+        usbProductId: '123',
+        usbVendorId: '456',
+      };
     }),
     open: jest.fn().mockImplementation(() => {
       console.log('mock open() called.');
@@ -59,12 +74,17 @@ async function createAppWithMockSerialPort() {
       console.log('mock open() called.');
       return Promise.resolve();
     }),
-    readable:{
+    writable:  {
+      getWriter: jest.fn().mockImplementation(() => {
+        console.log('mock writable() called.');
+        return mockWriter;
+      }),
+    },
+    readable: {
       getReader: jest.fn().mockImplementation(() => {
-        console.log('mock getReader() called.');
+        console.log('mock readable() called.');
         return mockReader;
       }),
-
     }
   }
 
@@ -112,7 +132,7 @@ async function createAppWithMockSerialPort() {
     expect(settingsDialog).not.toBeInTheDocument();
   });
 
-  return app;
+  return { app, writtenData };
 
 }
 
@@ -176,8 +196,8 @@ function checkExpectedAgainstActualDisplay(
 
 describe('App', () => {
 
-  it.only('should handle single RX char', async () => {
-    let app = await createAppWithMockSerialPort();
+  it('should handle single RX char', async () => {
+    let {app, writtenData} = await createAppWithMockSerialPort();
 
     const textToSend = 'A';
     const utf8EncodeText = new TextEncoder();
@@ -572,14 +592,18 @@ describe('App', () => {
     });
   });
 
-  // it('app should send basic A char', async () => {
-  //   const port = await createAppWithMockSerialPort();
-  //   assert(port.port !== undefined);
+  it('app should send basic A char', async () => {
+    let {app, writtenData} = await createAppWithMockSerialPort();
 
-  //   const terminal = screen.getByTestId('tx-rx-terminal-view');
-  //   fireEvent.keyPress(terminal, {key: 'A', code: 'KeyA'})
-  //   await waitFor(() => {
-  //     expect(port.port?.recording.equals(Buffer.from('A'))).toBe(true);
-  //   });
-  // });
+    const terminal = screen.getByTestId('tx-rx-terminal-view');
+    // Simulate a key press
+    fireEvent.keyPress(terminal, {key: 'A', code: 'KeyA'})
+    const utf8EncodeText = new TextEncoder();
+    const expectedText = utf8EncodeText.encode('A');
+    await waitFor(() => {
+      // Comparing Uint8Array's does not work, so convert to
+      // number[] and compare those instead
+      expect(writtenData).toEqual(Array.from(expectedText));
+    });
+  });
 });
