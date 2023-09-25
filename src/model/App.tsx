@@ -280,7 +280,14 @@ export class App {
       } catch (error) {
           // This is called if the USB serial device is removed whilst
           // reading
-          enqueueSnackbar('Serial port was removed unexpectedly.', { variant: 'error'});
+          console.log('reader.read() threw an error. error=', error);
+          enqueueSnackbar(
+            `Serial port was removed unexpectedly.
+            Returned error from reader.read(): ${error}`,
+            {
+              variant: 'error',
+              style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+            });
           this.setPortState(PortState.CLOSED);
           runInAction(() => {
             // Setting this.port to null means the port needs to be

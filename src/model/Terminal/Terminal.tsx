@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, observe } from 'mobx';
+import { autorun, makeAutoObservable, observe, reaction } from 'mobx';
 import { ReactElement } from 'react';
 // import { TextEncoder, TextDecoder } from 'util';
 // import { assert } from 'console';
@@ -76,6 +76,13 @@ export default class Terminal {
       }
     })
 
+    // reaction(
+    //   () => this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value,
+    //   (scrollbackBufferSizeRows) => {
+    //     console.log('scrollbackBufferSizeRows=', scrollbackBufferSizeRows);
+    //   }
+    // )
+
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
 
@@ -125,7 +132,7 @@ export default class Terminal {
 
   parseData(data: Uint8Array) {
     // Parse each character
-    console.log('parseData() called');
+    console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
     const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
@@ -136,6 +143,7 @@ export default class Terminal {
       // through processing an ANSI escape code
       if (this.inIdleState && char === '\n') {
         this.moveToNewLine();
+        // this.limitNumRows();
         // eslint-disable-next-line no-continue
         continue;
       }
@@ -143,6 +151,7 @@ export default class Terminal {
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(char);
+        // this.limitNumRows();
         continue;
       }
 
@@ -182,6 +191,7 @@ export default class Terminal {
         this.addVisibleChar(char);
       }
     }
+    this.limitNumRows();
   }
 
   /**
@@ -513,8 +523,30 @@ export default class Terminal {
     return /^\d$/.test(char);
   }
 
-  // setCharWidth(charWidth: number) {
-  //   // assert(charWidth > 0);
-  //   this.charWidth = charWidth;
-  // }
+  limitNumRows() {
+    const maxRows = this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
+    console.log('limitNumRows() called. maxRows=', maxRows);
+    const numRowsToRemove = this.terminalRows.length - maxRows;
+    if (numRowsToRemove <= 0) {
+      console.log('No need to remove any rows.');
+      return;
+    }
+    console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
+    // Remove oldest rows (rows from start of array)
+    this.terminalRows.splice(0, numRowsToRemove);
+    console.log(`Now has ${this.terminalRows.length} rows.`)
+
+    // We need to update the cursor position to point to the
+    // same row before we deleted some
+    const prevCursorRowIdx = this.cursorPosition[0];
+    const newCursorRowIdx = prevCursorRowIdx - numRowsToRemove;
+    if (newCursorRowIdx >= 0) {
+      this.cursorPosition[0] = newCursorRowIdx;
+    } else {
+      // This means we deleted the row the cursor was on, in this case, move cursor to
+      // the oldest row, at the start of the row
+      this.cursorPosition[0] = 0;
+      this.cursorPosition[1] = 0;
+    }
+  }
 }
