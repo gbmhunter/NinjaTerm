@@ -230,40 +230,25 @@ export class App {
     } else {
       console.log('Not supported!');
     }
-
-
-    // this.SerialPortType.list()
-    //   .then((ports) => {
-    //     this.settings.setAvailablePortInfos(ports);
-    //     // Set the selected port, this doesn't fire automatically if setting
-    //     // the ports via code
-    //     if (ports.length > 0) {
-    //       this.settings.setSelectedPortPath(ports[0].path);
-    //     }
-    //     this.addStatusBarMsg(
-    //       `Port scan complete. Found ${ports.length} ports.`,
-    //       StatusMsgSeverity.INFO,
-    //       true
-    //     );
-    //     return 0;
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //     this.addStatusBarMsg(`${error}`, StatusMsgSeverity.ERROR, true);
-    //   });
   }
 
   async openPort() {
-    // navigator.serial.addEventListener("connect", (event) => {
-    //   // TODO: Automatically open event.target or warn user a port is available.
-    //   console.log('connect event called.');
-    // });
-
-    await this.port?.open({
-      baudRate: this.settings.selectedBaudRate,
-      dataBits: this.settings.selectedNumDataBits,
-      parity: this.settings.selectedParity as ParityType,
-      stopBits: this.settings.selectedStopBits})
+    try {
+      await this.port?.open({
+        baudRate: this.settings.selectedBaudRate,
+        dataBits: this.settings.selectedNumDataBits,
+        parity: this.settings.selectedParity as ParityType,
+        stopBits: this.settings.selectedStopBits});
+    } catch (error) {
+      console.log('Error occurred. error=', error);
+      enqueueSnackbar(`Could not open port. Make sure serial port is not is use by another program.
+          error: ${error}`,
+          {
+            variant: 'error',
+            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+          });
+      return;
+    }
     console.log('Serial port opened.');
     enqueueSnackbar('Serial port opened.', { variant: 'success'});
     this.setPortState(PortState.OPENED);

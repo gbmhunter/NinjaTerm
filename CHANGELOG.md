@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Testing function which sets up the App with a mocked WebSerial API is working.
+- Error message is now shown if user attempts to open already in-use port, closes #254.
 
 ## [4.1.0] - 2023-09-24
 
