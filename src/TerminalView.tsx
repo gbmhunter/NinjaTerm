@@ -117,66 +117,78 @@ export default observer((props: Props) => {
   }
 
   return (
-    <div
-      onWheel={(e: WheelEvent<HTMLDivElement>) => {
-        // Disable scroll lock if enabled and the scroll direction was
-        // up (negative deltaY)
-        if (e.deltaY < 0 && terminal.scrollLock) {
-          terminal.setScrollLock(false);
-        }
-      }}
-      ref={terminalDiv}
-      style={{
-        flexGrow: '1',
-        backgroundColor: '#000000', // This sets the background color of the terminal
-        fontFamily: 'monospace',
-        whiteSpace: 'pre-wrap', // This allows \n to create new lines
-        // padding: '10px',
-        marginBottom: '10px',
-        position: 'relative', // This is so we can use position: absolute for the down icon
-        flexBasis: '0',
-        // overflowY: hidden is important so that that it ignores the height of the child
-        // react-window List when calculating what size it should be. Then the List
-        // height is set from the height of this div.
-        overflowY: 'hidden',
-      }}
-      data-testid={testId}
-      className={styles.terminal}
+    <div style={{
+      'flexGrow': 1,
+      marginBottom: '10px',
+      padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+      boxSizing: 'border-box',
+      overflowY: 'hidden',
+      backgroundColor: '#000000' }}
     >
-      <FixedSizeList
-        ref={reactWindowRef}
-        height={heightDebug}
-        itemCount={terminal.terminalRows.length}
-        itemSize={20}
-        width="100%"
-        itemData={terminal.terminalRows}
-        onScroll={(scrollProps) => {
-          const { scrollOffset } = scrollProps;
-          terminal.setScrollPos(scrollOffset);
+      <div
+        onWheel={(e: WheelEvent<HTMLDivElement>) => {
+          // Disable scroll lock if enabled and the scroll direction was
+          // up (negative deltaY)
+          if (e.deltaY < 0 && terminal.scrollLock) {
+            terminal.setScrollLock(false);
+          }
         }}
+        ref={terminalDiv}
+        style={{
+          // flexGrow: '1',
+          height: '100%',
+          // backgroundColor: '#000000', // This sets the background color of the terminal
+          fontFamily: 'monospace',
+          whiteSpace: 'pre-wrap', // This allows \n to create new lines
+          // padding: '10px',
+          // marginBottom: '10px',
+          position: 'relative', // This is so we can use position: absolute for the down icon
+          // flexBasis: '0',
+          // overflowY: hidden is important so that that it ignores the height of the child
+          // react-window List when calculating what size it should be. Then the List
+          // height is set from the height of this div.
+          overflowY: 'hidden',
+          boxSizing: 'border-box',
+        }}
+        data-testid={testId}
+        className={styles.terminal}
       >
-        {Row}
-      </FixedSizeList>
-      {/* ================== SCROLL LOCK ARROW ==================== */}
-      <IconButton
-        onClick={() => {
-          terminal.setScrollLock(true);
-        }}
-        sx={{
-          display: terminal.scrollLock ? 'none' : 'block',
-          position: 'absolute', // Fix it to the bottom right of the TX/RX view port
-          bottom: '20px',
-          right: '30px',
-          color: 'rgba(255, 255, 255, 0.4)',
-        }}
-      >
-        <ArrowDownwardIcon
-          sx={{
-            width: '40px',
-            height: '40px',
+        <FixedSizeList
+          ref={reactWindowRef}
+          height={heightDebug}
+          itemCount={terminal.terminalRows.length}
+          itemSize={20}
+          width="100%"
+          itemData={terminal.terminalRows}
+          onScroll={(scrollProps) => {
+            const { scrollOffset } = scrollProps;
+            terminal.setScrollPos(scrollOffset);
           }}
-        />
-      </IconButton>
+          style={{ padding: '20px' }}
+        >
+          {Row}
+        </FixedSizeList>
+        {/* ================== SCROLL LOCK ARROW ==================== */}
+        <IconButton
+          onClick={() => {
+            terminal.setScrollLock(true);
+          }}
+          sx={{
+            display: terminal.scrollLock ? 'none' : 'block',
+            position: 'absolute', // Fix it to the bottom right of the TX/RX view port
+            bottom: '20px',
+            right: '30px',
+            color: 'rgba(255, 255, 255, 0.4)',
+          }}
+        >
+          <ArrowDownwardIcon
+            sx={{
+              width: '40px',
+              height: '40px',
+            }}
+          />
+        </IconButton>
+      </div>
     </div>
   );
 });
