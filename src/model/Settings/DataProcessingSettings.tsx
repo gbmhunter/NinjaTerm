@@ -32,13 +32,13 @@ class Data {
       rule: 'required',
     },
     terminalWidthChars: {
-      value: 80, // 80 is standard
+      value: 120, // 80 is standard
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
     scrollbackBufferSizeRows: {
-      value: 10000,
+      value: 2000,
       hasError: false,
       errorMsg: '',
       rule: 'required|integer|min:1',

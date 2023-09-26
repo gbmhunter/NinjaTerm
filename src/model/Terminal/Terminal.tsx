@@ -163,7 +163,7 @@ export default class Terminal {
       }
 
       if (char === '\x1B') {
-        console.log('Start of escape sequence found!');
+        // console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
         this.inIdleState = false;
@@ -174,19 +174,19 @@ export default class Terminal {
       if (this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += char;
-        console.log('partialEscapeCode=', this.partialEscapeCode);
+        // console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
         if (this.inCSISequence) {
-          console.log('In CSI sequence');
+          // console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
           if (char.toUpperCase() !== char.toLowerCase()) {
-            console.log(
-              'Received terminating letter of CSI sequence! Escape code = ',
-              this.partialEscapeCode
-            );
+            // console.log(
+            //   'Received terminating letter of CSI sequence! Escape code = ',
+            //   this.partialEscapeCode
+            // );
             this.parseCSISequence(this.partialEscapeCode);
             this.resetEscapeCodeParserState();
             this.inIdleState = true;
@@ -251,7 +251,7 @@ export default class Terminal {
     } else if (lastChar === 'D') {
       // CUB Cursor Back
       // ===========================
-      console.log('Cursor back');
+      // console.log('Cursor back');
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
@@ -269,7 +269,7 @@ export default class Terminal {
     } else if (lastChar === 'J') {
       // ED - Erase in Display
       // ==============================
-      console.log('Erase in display');
+      // console.log('Erase in display');
       // Extract number in the form ESC[nJ
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '0' (default)
@@ -307,7 +307,7 @@ export default class Terminal {
     } else if (lastChar === 'm') {
       // SGR
       // ==============================
-      console.log('Found m, select graphic rendition code');
+      // console.log('Found m, select graphic rendition code');
       // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
       // Allowed form: ESC[<first number>;<second number>;...m
 
@@ -335,9 +335,9 @@ export default class Terminal {
           // Skip processing this number, but continue with the rest
           continue;
         }
-        console.log('numberCode=', numberCode);
+        // console.log('numberCode=', numberCode);
         if (numberCode === 0) {
-          console.log('Clearing all SGR styles...');
+          // console.log('Clearing all SGR styles...');
           this.clearStyle();
         } else if (numberCode === 1) {
           // Got the "bold or increased intensity" code

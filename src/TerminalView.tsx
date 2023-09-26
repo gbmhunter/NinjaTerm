@@ -152,10 +152,7 @@ export default observer((props: Props) => {
         itemData={terminal.terminalRows}
         onScroll={(scrollProps) => {
           const { scrollOffset } = scrollProps;
-          console.log('scrollProps=', scrollProps);
-          console.log('scrollOffset=', scrollOffset);
           terminal.setScrollPos(scrollOffset);
-          // reactWindowRef.current?.scrollTo(scrollOffset);
         }}
       >
         {Row}

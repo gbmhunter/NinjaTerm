@@ -259,7 +259,8 @@ export class App {
         baudRate: this.settings.selectedBaudRate,
         dataBits: this.settings.selectedNumDataBits,
         parity: this.settings.selectedParity as ParityType,
-        stopBits: this.settings.selectedStopBits});
+        stopBits: this.settings.selectedStopBits,
+        bufferSize: 1000000}); // Default buffer size is only 256bits, which is not enough and causes crashes!
     } catch (error) {
       console.log('Error occurred. error=', error);
       enqueueSnackbar(`Could not open port. Make sure serial port is not is use by another program.
@@ -302,6 +303,22 @@ export class App {
           // This is called if the USB serial device is removed whilst
           // reading
           console.log('reader.read() threw an error. error=', error);
+          // @ts-ignore:
+          if (error instanceof DOMException) {
+            console.log('Exception was DOMException. error.name=', error.name);
+            // BufferOverrunError: Rendering couldn't get up with input data,
+            // potentially make buffer size to port.open() larger or speed up processing/rendering
+            // if this occurs often
+            if (error.name === 'BufferOverrunError') {
+              enqueueSnackbar(
+                `RX buffer overrun occurred. Too much data is coming in for the app to handle.
+                Returned error from reader.read(): ${error}`,
+                {
+                  variant: 'error',
+                  style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+                });
+            }
+          }
           enqueueSnackbar(
             `Serial port was removed unexpectedly.
             Returned error from reader.read(): ${error}`,
