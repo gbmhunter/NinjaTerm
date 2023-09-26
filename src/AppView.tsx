@@ -67,6 +67,14 @@ const darkTheme = createTheme({
   },
 });
 
+/**
+ * Maps a port state to a colour used in the port state status background on the bottom toolbar.
+ */
+const portStateToBackgroundColor: { [key in PortState]: string; } = {
+  [PortState.CLOSED]: 'red',
+  [PortState.OPENED]: 'green',
+};
+
 interface Props {
   app: App;
 }
@@ -146,9 +154,11 @@ const AppView = observer((props: Props) => {
               alignItems: 'center',
               height: '40px',
               gap: '10px',
-              marginBottom: '10px',
-            }}>
+              marginBottom: '10px'}}>
+            {/* ================== LOGO ==================== */}
             <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
+
+            {/* ================== SETTINGS BUTTON ==================== */}
             <Button
               variant="outlined"
               onClick={() => {
@@ -158,6 +168,7 @@ const AppView = observer((props: Props) => {
               data-testid="settings-button">
               Settings
             </Button>
+            {/* ================== OPEN/CLOSE BUTTON ==================== */}
             <Button
               variant="outlined"
               color={
@@ -186,7 +197,7 @@ const AppView = observer((props: Props) => {
               }}
               startIcon={portStateToButtonProps[app.portState].icon}
               disabled={app.port === null}
-            >
+              sx={{ width: '150px' }}> {/* Specify a width to prevent it resizing when the text changes */}
               {portStateToButtonProps[app.portState].text}
             </Button>
             {/* ================== CLEAR DATA BUTTON ==================== */}
@@ -271,7 +282,7 @@ const AppView = observer((props: Props) => {
           >
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
-            <Box>Port {PortState[app.portState]}</Box>
+            <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.

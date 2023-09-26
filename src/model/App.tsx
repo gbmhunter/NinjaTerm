@@ -14,8 +14,6 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 
-console.log(packageDotJson['version']);
-
 declare global {
   interface String {
     insert(index: number, string: string): string;
@@ -42,9 +40,7 @@ export type PortStateToButtonPropsItem = {
   icon: any;
 };
 
-export const portStateToButtonProps: {
-  [key in PortState]: PortStateToButtonPropsItem;
-} = {
+export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
   [PortState.CLOSED]: {
     text: 'Open Port',
     color: 'success',
@@ -56,34 +52,6 @@ export const portStateToButtonProps: {
     icon: <StopIcon />,
   },
 };
-
-function padTo2Digits(num: number) {
-  return num.toString().padStart(2, '0');
-}
-
-/**
- * Converts a date into a readable string for the status bar.
- *
- * @param date Converts a Date object into a string in the
- *    format YY-MM-DD HH:MM:SS.
- * @returns Converted string.
- */
-function formatDate(date: Date) {
-  return (
-    // eslint-disable-next-line prefer-template
-    [
-      date.getFullYear(),
-      padTo2Digits(date.getMonth() + 1),
-      padTo2Digits(date.getDate()),
-    ].join('-') +
-    ' ' +
-    [
-      padTo2Digits(date.getHours()),
-      padTo2Digits(date.getMinutes()),
-      padTo2Digits(date.getSeconds()),
-    ].join(':')
-  );
-}
 
 export class App {
 
@@ -262,13 +230,43 @@ export class App {
         stopBits: this.settings.selectedStopBits,
         bufferSize: 1000000}); // Default buffer size is only 256bits, which is not enough and causes crashes!
     } catch (error) {
-      console.log('Error occurred. error=', error);
-      enqueueSnackbar(`Could not open port. Make sure serial port is not is use by another program.
-          error: ${error}`,
-          {
-            variant: 'error',
-            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-          });
+      if (error instanceof DOMException) {
+        if (error.name === 'NetworkError') {
+          const msg = 'Serial port is already in use by another program.\n'
+                    + 'Reported error from port.open():\n'
+                    + `${error}`
+          enqueueSnackbar(msg,
+                          {
+                            variant: 'error',
+                            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+                          });
+          console.log(msg);
+        } else {
+          const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
+          + 'Reported error from port.open():\n'
+          + `${error}`
+          enqueueSnackbar(msg,
+                          {
+                            variant: 'error',
+                            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+                          });
+          console.log(msg);
+        }
+      } else {
+        // Type of error not recognized or seen before
+        const msg = `Unrecognized error occurred when trying to open serial port.\n`
+        + 'Reported error from port.open():\n'
+        + `${error}`
+        enqueueSnackbar(msg,
+                        {
+                          variant: 'error',
+                          style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+                        });
+        console.log(msg);
+      }
+
+      // An error occurred whilst calling port.open(), so DO NOT continue, port
+      // cannot be considered open
       return;
     }
     console.log('Serial port opened.');
@@ -284,7 +282,10 @@ export class App {
     this.closedPromise = this.readUntilClosed();
   }
 
-  /** Continuously reads from the serial port. */
+  /** Continuously reads from the serial port until:
+   *  1) keepReading is set to false and then reader.cancel() is called to break out of inner read() loop
+   *  2) Fatal error is thrown in read()
+   */
   async readUntilClosed() {
     while (this.port?.readable && this.keepReading) {
       this.reader = this.port.readable.getReader();
@@ -343,11 +344,17 @@ export class App {
     await this.port?.close();
   }
 
-  parseRxData(value: Uint8Array) {
+  /**
+   * Unit tests call this instead of mocking out the serial port read() function
+   * as setting up the deferred promise was too tricky.
+   *
+   * @param rxData
+   */
+  parseRxData(rxData: Uint8Array) {
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
-    this.txRxTerminal.parseData(value);
-    this.rxTerminal.parseData(value);
+    this.txRxTerminal.parseData(rxData);
+    this.rxTerminal.parseData(rxData);
   }
 
   async closePort() {
@@ -372,27 +379,6 @@ export class App {
   setPortState(newPortState: PortState) {
     this.portState = newPortState;
   }
-
-  /**
-   * Call this to add a message to the status bar at the bottom of the main view.
-   *
-   * @param msg Message to output to the status bar. Message should include new line character.
-   */
-  addStatusBarMsg = (
-    msg: string,
-    severity: StatusMsgSeverity,
-    showInPortSettings: boolean = false
-  ) => {
-    const currDate = new Date();
-    this.statusMsgs.push(
-      new StatusMsg(
-        this.statusMsgs.length,
-        `${formatDate(currDate)}: ${msg}`,
-        severity,
-        showInPortSettings
-      )
-    );
-  };
 
   async handleKeyPress(event: KeyboardEvent) {
     console.log('handleKeyPress() called. event=', event, this);

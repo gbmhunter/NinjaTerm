@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Error message is now shown if user attempts to open already in-use port, closes #254.
 - Smart scrolling when max. scrollback size is reached, auto-scroll occurs to keep the same data in view. 
 - Added specific error handling for a BufferOverrunError.
+- Easy to identify colour to the background of the port state in bottom statusbar.
 
 ### Fixed
 
