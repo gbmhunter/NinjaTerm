@@ -287,6 +287,7 @@ export class App {
    *  2) Fatal error is thrown in read()
    */
   async readUntilClosed() {
+    // port.readable will become null when a fatal error occurs
     while (this.port?.readable && this.keepReading) {
       this.reader = this.port.readable.getReader();
       try {
@@ -303,7 +304,7 @@ export class App {
       } catch (error) {
           // This is called if the USB serial device is removed whilst
           // reading
-          console.log('reader.read() threw an error. error=', error);
+          console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
           // @ts-ignore:
           if (error instanceof DOMException) {
             console.log('Exception was DOMException. error.name=', error.name);
@@ -341,6 +342,7 @@ export class App {
       }
     }
 
+    console.log('Closing port...');
     await this.port?.close();
   }
 
