@@ -58,12 +58,18 @@ export default observer((props: Props) => {
     return <div style={style}>{spans}</div>;
   });
 
-  // Run this after every render, as it's too computationally expensive to
+  // Run this after every render, even though we only need to do it if
+  // a new row has been added. It's too computationally expensive to
   // do a deep compare of the text segments
   useEffect(() => {
-    // Only scroll to bottom if enabled in app model
-    if (reactWindowRef.current && terminal.scrollLock) {
+    if (reactWindowRef.current === null) {
+      return;
+    }
+    if (terminal.scrollLock) {
       reactWindowRef.current.scrollToItem(terminal.terminalRows.length - 1);
+    } else {
+      // Scroll to the position determined by the Terminal model
+      reactWindowRef.current.scrollTo(terminal.scrollPos);
     }
   });
 
@@ -144,10 +150,13 @@ export default observer((props: Props) => {
         itemSize={20}
         width="100%"
         itemData={terminal.terminalRows}
-        // onScroll={(scrollProps) => {
-        //   const { scrollOffset } = scrollProps;
-        //   console.log('scrollOffset=', scrollOffset);
-        // }}
+        onScroll={(scrollProps) => {
+          const { scrollOffset } = scrollProps;
+          console.log('scrollProps=', scrollProps);
+          console.log('scrollOffset=', scrollOffset);
+          terminal.setScrollPos(scrollOffset);
+          // reactWindowRef.current?.scrollTo(scrollOffset);
+        }}
       >
         {Row}
       </FixedSizeList>

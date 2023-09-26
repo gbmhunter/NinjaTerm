@@ -178,6 +178,7 @@ export class App {
 
     console.log('Started NinjaTerm.')
 
+    // this.runTestMode();
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -187,6 +188,26 @@ export class App {
     // });
 
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  /** Function used for testing when you don't have an Arduino handy.
+   * Sets up a interval timer to add fake RX data.
+   * Change as needed for testing!
+   */
+  runTestMode() {
+    console.log('runTestMode() called.');
+    this.settings.dataProcessing.visibleData.fields.scrollbackBufferSizeRows.value = 300;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 65;
+    setInterval(() => {
+      const te = new TextEncoder();
+      const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      this.parseRxData(Uint8Array.from(data));
+      testCharIdx += 1;
+      if (testCharIdx === 90) {
+        testCharIdx = 65;
+      }
+    }, 200);
   }
 
   setSnackBarOpen(trueFalse: boolean) {

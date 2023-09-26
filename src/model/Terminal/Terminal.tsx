@@ -29,6 +29,8 @@ export default class Terminal {
 
   rowToScrollLockTo: number;
 
+  scrollPos: number;
+
   terminalRows: TerminalRow[];
 
   // True if this RX data parser is just processing text as plain text, i.e.
@@ -88,6 +90,7 @@ export default class Terminal {
 
     this.scrollLock = true;
     this.rowToScrollLockTo = 0;
+    this.scrollPos = 0;
 
     // This is just to keep typescript happy, they
     // are all set in clearData() anyway.
@@ -130,9 +133,13 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
+  setScrollPos(scrollPos: number) {
+    this.scrollPos = scrollPos;
+  }
+
   parseData(data: Uint8Array) {
     // Parse each character
-    console.log('parseData() called. data=', data);
+    // console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
     const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
@@ -191,6 +198,9 @@ export default class Terminal {
         this.addVisibleChar(char);
       }
     }
+
+    // Right at the end of adding everything, limit the num. of max. rows in the terminal
+    // as determined by the settings
     this.limitNumRows();
   }
 
@@ -525,16 +535,16 @@ export default class Terminal {
 
   limitNumRows() {
     const maxRows = this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
-    console.log('limitNumRows() called. maxRows=', maxRows);
+    // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
-      console.log('No need to remove any rows.');
+      // console.log('No need to remove any rows.');
       return;
     }
-    console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
+    // console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
     // Remove oldest rows (rows from start of array)
     this.terminalRows.splice(0, numRowsToRemove);
-    console.log(`Now has ${this.terminalRows.length} rows.`)
+    // console.log(`Now has ${this.terminalRows.length} rows.`)
 
     // We need to update the cursor position to point to the
     // same row before we deleted some
@@ -547,6 +557,17 @@ export default class Terminal {
       // the oldest row, at the start of the row
       this.cursorPosition[0] = 0;
       this.cursorPosition[1] = 0;
+    }
+
+    // Need to update scroll position for view to use if we are not scroll locked
+    // to the bottom. Move the scroll position back the same amount of vertical
+    // space as the rows we removed, so the user sees the same data on the screen
+    if (!this.scrollLock) {
+      let newScrollPos = this.scrollPos - 20*numRowsToRemove;
+      if (newScrollPos < 0) {
+        newScrollPos = 0;
+      }
+      this.scrollPos = newScrollPos;
     }
   }
 }
