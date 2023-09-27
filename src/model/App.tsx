@@ -4,7 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { enqueueSnackbar } from 'notistack';
+import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
 import DataPane from './DataPane';
@@ -206,8 +206,8 @@ export class App {
       try {
         localPort = await navigator.serial.requestPort();
       } catch (error) {
-          console.log('Error occured. error=', error);
-          enqueueSnackbar('User cancelled port selection.', { variant: 'error'});
+          console.log('Error occurred. error=', error);
+          this.sendToSnackbar('User cancelled port selection.', 'error');
           return;
       }
       console.log('Got local port, now setting state...');
@@ -228,28 +228,20 @@ export class App {
         dataBits: this.settings.selectedNumDataBits,
         parity: this.settings.selectedParity as ParityType,
         stopBits: this.settings.selectedStopBits,
-        bufferSize: 1000000}); // Default buffer size is only 256bits, which is not enough and causes crashes!
+        bufferSize: 1000000}); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
     } catch (error) {
       if (error instanceof DOMException) {
         if (error.name === 'NetworkError') {
           const msg = 'Serial port is already in use by another program.\n'
                     + 'Reported error from port.open():\n'
                     + `${error}`
-          enqueueSnackbar(msg,
-                          {
-                            variant: 'error',
-                            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-                          });
+          this.sendToSnackbar(msg, 'error');
           console.log(msg);
         } else {
           const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
           + 'Reported error from port.open():\n'
           + `${error}`
-          enqueueSnackbar(msg,
-                          {
-                            variant: 'error',
-                            style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-                          });
+          this.sendToSnackbar(msg, 'error');
           console.log(msg);
         }
       } else {
@@ -257,11 +249,7 @@ export class App {
         const msg = `Unrecognized error occurred when trying to open serial port.\n`
         + 'Reported error from port.open():\n'
         + `${error}`
-        enqueueSnackbar(msg,
-                        {
-                          variant: 'error',
-                          style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-                        });
+        this.sendToSnackbar(msg, 'error');
         console.log(msg);
       }
 
@@ -270,7 +258,7 @@ export class App {
       return;
     }
     console.log('Serial port opened.');
-    enqueueSnackbar('Serial port opened.', { variant: 'success'});
+    this.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
@@ -284,7 +272,7 @@ export class App {
 
   /** Continuously reads from the serial port until:
    *  1) keepReading is set to false and then reader.cancel() is called to break out of inner read() loop
-   *  2) Fatal error is thrown in read()
+   *  2) Fatal error is thrown in read(), which causes port.readable to become null
    */
   async readUntilClosed() {
     // port.readable will become null when a fatal error occurs
@@ -310,32 +298,36 @@ export class App {
             console.log('Exception was DOMException. error.name=', error.name);
             // BufferOverrunError: Rendering couldn't get up with input data,
             // potentially make buffer size to port.open() larger or speed up processing/rendering
-            // if this occurs often
+            // if this occurs often. This is non-fatal, readable will not be null
             if (error.name === 'BufferOverrunError') {
-              enqueueSnackbar(
-                `RX buffer overrun occurred. Too much data is coming in for the app to handle.
-                Returned error from reader.read(): ${error}`,
-                {
-                  variant: 'error',
-                  style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-                });
+              this.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            } else if (error.name === 'BreakError') {
+              this.sendToSnackbar('Encountered break signal.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            } else {
+              const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
+                          + 'Reported error from port.read():\n'
+                          + `${error}`;
+              this.sendToSnackbar(msg, 'error');
+              console.log(msg);
             }
+          } else {
+            this.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
           }
-          enqueueSnackbar(
-            `Serial port was removed unexpectedly.
-            Returned error from reader.read(): ${error}`,
-            {
-              variant: 'error',
-              style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-            });
-          this.setPortState(PortState.CLOSED);
-          runInAction(() => {
-            // Setting this.port to null means the port needs to be
-            // reselected in the UI (which makes sense because we just
-            // lost it)
-            this.port = null;
-            this.closedPromise = null;
-          });
+
+          // this.setPortState(PortState.CLOSED);
+          // runInAction(() => {
+          //   // Setting this.port to null means the port needs to be
+          //   // reselected in the UI (which makes sense because we just
+          //   // lost it)
+          //   // this.port = null;
+          //   // this.closedPromise = null;
+          // });
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
@@ -344,6 +336,21 @@ export class App {
 
     console.log('Closing port...');
     await this.port?.close();
+  }
+
+  /**
+   * Enqueues a message to the snackbar used for temporary status updates to the user.
+   *
+   * @param msg The message you want to display. Use "\n" to insert new lines.
+   * @param variant The variant (e.g. error, warning) of snackbar you want to display.
+   */
+  sendToSnackbar(msg: string, variant: VariantType) {
+    enqueueSnackbar(
+      msg,
+      {
+        variant: variant,
+        style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+      });
   }
 
   /**
@@ -373,7 +380,7 @@ export class App {
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
-    enqueueSnackbar('Serial port closed.', { variant: 'success'});
+    this.sendToSnackbar('Serial port closed.', 'success');
     this.reader = null;
     this.closedPromise = null;
   }

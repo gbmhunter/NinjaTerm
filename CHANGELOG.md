@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Test which checks written data is working again.
 - Max. scrollback buffer size value now obeyed.
+- Non-fatal errors such as a BufferOverrunError or BreakError keep the connection open.
 
 ## [4.1.0] - 2023-09-24
 
