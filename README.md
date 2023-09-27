@@ -42,10 +42,11 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 1. Update the version number in `package.json`.
 1. Update the CHANGELOG.
 1. Create pull request merging `develop` into `main`.
-1. Once the build on `develop` has been successfully run, merge the `develop` branch into `main`.
+1. Once the build on `develop` has been successfully run, merge the `develop` branch into `main` via the merge request.
 1. Tag the branch on main with the version number, e.g. `v4.1.0`.
 1. Create a release on GitHub pointing to the tag.
 1. Enter the CHANGELOG contents into the release body text.
+1. Checkout the `develop` branch and fast-forward it to the new commit on `main`.
 
 ## Deployment
 
