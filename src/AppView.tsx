@@ -31,6 +31,7 @@ import {
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
 import LogoImage from './logo192.png';
+import styles from './AppView.module.css'
 
 import KofiButton from "kofi-button"
 
@@ -275,11 +276,17 @@ const AppView = observer((props: Props) => {
               display: 'flex',
               flexDirection: 'row',
               justifyContent: 'end',
+              alignItems: 'center',
               fontSize: '0.9rem',
               gap: '20px',
             }}
             style={{ height: '20px' }}
           >
+            {/* TX/RX ACTIVITY INDICATORS */}
+            {/* Use the key prop here to make React consider this a new element everytime the number
+            of bytes changes. This will re-trigger the flashing animation as desired */}
+            <Box key={app.numBytesTransmitted} className={styles.ledblue}>TX</Box>
+            <Box key={app.numBytesReceived} className={styles.ledyellow}>RX</Box>
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
             <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>

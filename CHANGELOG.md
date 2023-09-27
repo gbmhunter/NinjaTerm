@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added specific error handling for a BufferOverrunError.
 - Easy to identify colour to the background of the port state in bottom statusbar.
 - Added a margin between the outer edges of each terminal and the displayed text inside it.
+- Flashing indicators added to the bottom status bar to indicate when TX or RX data is received.
 
 ### Fixed
 

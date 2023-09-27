@@ -87,6 +87,10 @@ export class App {
 
   txTerminal: Terminal;
 
+  numBytesReceived: number;
+
+  numBytesTransmitted: number;
+
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
 
@@ -127,6 +131,9 @@ export class App {
     this.txRxTerminal = new Terminal(this.settings);
     this.rxTerminal = new Terminal(this.settings);
     this.txTerminal = new Terminal(this.settings);
+
+    this.numBytesReceived = 0;
+    this.numBytesTransmitted = 0;
 
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
@@ -364,6 +371,7 @@ export class App {
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
     this.rxTerminal.parseData(rxData);
+    this.numBytesReceived += rxData.length;
   }
 
   async closePort() {
@@ -433,7 +441,9 @@ export class App {
       if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
         this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
       }
-    }
+
+      this.numBytesTransmitted += bytesToWrite.length;
+    } // if (this.portState === PortState.OPENED) {
   }
 
   clearAllData() {

@@ -1,0 +1,46 @@
+:root {
+  --yellow-idle-color: rgb(112, 112, 0);
+  --yellow-bright-color: rgb(255, 255, 0);
+  --blue-idle-color: rgb(0, 63, 99);
+  --blue-bright-color: rgb(0, 102, 255);
+}
+
+.ledyellow {
+  /* margin: 0 auto; */
+  width: 24px;
+  height: 24px;
+  background-color: var(--yellow-idle-color);
+  /* border-radius: 50%; */
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset #808002 0 -1px 9px, var(--yellow-idle-color) 0 2px 12px;
+  animation: blinkYellow 1s forwards;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+}
+
+@keyframes blinkYellow {
+  from { background-color: var(--yellow-idle-color); }
+  10% { background-color: var(--yellow-bright-color); box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset var(--yellow-idle-color) 0 -1px 9px, var(--yellow-idle-color) 0 2px 0; }
+  to { background-color: var(--yellow-idle-color); }
+}
+
+.ledblue {
+  width: 24px;
+  height: 24px;
+  background-color: var(--blue-idle-color);
+  box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset var(--blue-idle-color) 0 -1px 9px, var(--blue-idle-color) 0 2px 12px;
+  animation: blinkblue 0.5s forwards;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+}
+
+@keyframes blinkblue {
+  from { background-color: var(--blue-idle-color); }
+  10% { background-color: var(--blue-bright-color); box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset var(--blue-idle-color) 0 -1px 9px, var(--blue-idle-color) 0 2px 0; }
+  to { background-color: var(--blue-idle-color); }
+}
