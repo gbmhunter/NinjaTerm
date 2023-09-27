@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, observe } from 'mobx';
+import { autorun, makeAutoObservable, observe, reaction } from 'mobx';
 import { ReactElement } from 'react';
 // import { TextEncoder, TextDecoder } from 'util';
 // import { assert } from 'console';
@@ -28,6 +28,8 @@ export default class Terminal {
   scrollLock: boolean;
 
   rowToScrollLockTo: number;
+
+  scrollPos: number;
 
   terminalRows: TerminalRow[];
 
@@ -76,11 +78,19 @@ export default class Terminal {
       }
     })
 
+    // reaction(
+    //   () => this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value,
+    //   (scrollbackBufferSizeRows) => {
+    //     console.log('scrollbackBufferSizeRows=', scrollbackBufferSizeRows);
+    //   }
+    // )
+
     this.outputHtml = [];
     this.cursorPosition = [0, 0];
 
     this.scrollLock = true;
     this.rowToScrollLockTo = 0;
+    this.scrollPos = 0;
 
     // This is just to keep typescript happy, they
     // are all set in clearData() anyway.
@@ -123,9 +133,13 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
+  setScrollPos(scrollPos: number) {
+    this.scrollPos = scrollPos;
+  }
+
   parseData(data: Uint8Array) {
     // Parse each character
-    console.log('parseData() called');
+    // console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
     const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
@@ -136,6 +150,7 @@ export default class Terminal {
       // through processing an ANSI escape code
       if (this.inIdleState && char === '\n') {
         this.moveToNewLine();
+        // this.limitNumRows();
         // eslint-disable-next-line no-continue
         continue;
       }
@@ -143,11 +158,12 @@ export default class Terminal {
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(char);
+        // this.limitNumRows();
         continue;
       }
 
       if (char === '\x1B') {
-        console.log('Start of escape sequence found!');
+        // console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
         this.inIdleState = false;
@@ -158,19 +174,19 @@ export default class Terminal {
       if (this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += char;
-        console.log('partialEscapeCode=', this.partialEscapeCode);
+        // console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
         if (this.inCSISequence) {
-          console.log('In CSI sequence');
+          // console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
           if (char.toUpperCase() !== char.toLowerCase()) {
-            console.log(
-              'Received terminating letter of CSI sequence! Escape code = ',
-              this.partialEscapeCode
-            );
+            // console.log(
+            //   'Received terminating letter of CSI sequence! Escape code = ',
+            //   this.partialEscapeCode
+            // );
             this.parseCSISequence(this.partialEscapeCode);
             this.resetEscapeCodeParserState();
             this.inIdleState = true;
@@ -182,6 +198,10 @@ export default class Terminal {
         this.addVisibleChar(char);
       }
     }
+
+    // Right at the end of adding everything, limit the num. of max. rows in the terminal
+    // as determined by the settings
+    this.limitNumRows();
   }
 
   /**
@@ -231,7 +251,7 @@ export default class Terminal {
     } else if (lastChar === 'D') {
       // CUB Cursor Back
       // ===========================
-      console.log('Cursor back');
+      // console.log('Cursor back');
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
@@ -249,7 +269,7 @@ export default class Terminal {
     } else if (lastChar === 'J') {
       // ED - Erase in Display
       // ==============================
-      console.log('Erase in display');
+      // console.log('Erase in display');
       // Extract number in the form ESC[nJ
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '0' (default)
@@ -287,7 +307,7 @@ export default class Terminal {
     } else if (lastChar === 'm') {
       // SGR
       // ==============================
-      console.log('Found m, select graphic rendition code');
+      // console.log('Found m, select graphic rendition code');
       // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR
       // Allowed form: ESC[<first number>;<second number>;...m
 
@@ -315,9 +335,9 @@ export default class Terminal {
           // Skip processing this number, but continue with the rest
           continue;
         }
-        console.log('numberCode=', numberCode);
+        // console.log('numberCode=', numberCode);
         if (numberCode === 0) {
-          console.log('Clearing all SGR styles...');
+          // console.log('Clearing all SGR styles...');
           this.clearStyle();
         } else if (numberCode === 1) {
           // Got the "bold or increased intensity" code
@@ -513,8 +533,41 @@ export default class Terminal {
     return /^\d$/.test(char);
   }
 
-  // setCharWidth(charWidth: number) {
-  //   // assert(charWidth > 0);
-  //   this.charWidth = charWidth;
-  // }
+  limitNumRows() {
+    const maxRows = this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
+    // console.log('limitNumRows() called. maxRows=', maxRows);
+    const numRowsToRemove = this.terminalRows.length - maxRows;
+    if (numRowsToRemove <= 0) {
+      // console.log('No need to remove any rows.');
+      return;
+    }
+    // console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
+    // Remove oldest rows (rows from start of array)
+    this.terminalRows.splice(0, numRowsToRemove);
+    // console.log(`Now has ${this.terminalRows.length} rows.`)
+
+    // We need to update the cursor position to point to the
+    // same row before we deleted some
+    const prevCursorRowIdx = this.cursorPosition[0];
+    const newCursorRowIdx = prevCursorRowIdx - numRowsToRemove;
+    if (newCursorRowIdx >= 0) {
+      this.cursorPosition[0] = newCursorRowIdx;
+    } else {
+      // This means we deleted the row the cursor was on, in this case, move cursor to
+      // the oldest row, at the start of the row
+      this.cursorPosition[0] = 0;
+      this.cursorPosition[1] = 0;
+    }
+
+    // Need to update scroll position for view to use if we are not scroll locked
+    // to the bottom. Move the scroll position back the same amount of vertical
+    // space as the rows we removed, so the user sees the same data on the screen
+    if (!this.scrollLock) {
+      let newScrollPos = this.scrollPos - 20*numRowsToRemove;
+      if (newScrollPos < 0) {
+        newScrollPos = 0;
+      }
+      this.scrollPos = newScrollPos;
+    }
+  }
 }

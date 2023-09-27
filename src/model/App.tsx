@@ -4,7 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { enqueueSnackbar } from 'notistack';
+import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
 import DataPane from './DataPane';
@@ -13,8 +13,6 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
-
-console.log(packageDotJson['version']);
 
 declare global {
   interface String {
@@ -42,9 +40,7 @@ export type PortStateToButtonPropsItem = {
   icon: any;
 };
 
-export const portStateToButtonProps: {
-  [key in PortState]: PortStateToButtonPropsItem;
-} = {
+export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
   [PortState.CLOSED]: {
     text: 'Open Port',
     color: 'success',
@@ -56,34 +52,6 @@ export const portStateToButtonProps: {
     icon: <StopIcon />,
   },
 };
-
-function padTo2Digits(num: number) {
-  return num.toString().padStart(2, '0');
-}
-
-/**
- * Converts a date into a readable string for the status bar.
- *
- * @param date Converts a Date object into a string in the
- *    format YY-MM-DD HH:MM:SS.
- * @returns Converted string.
- */
-function formatDate(date: Date) {
-  return (
-    // eslint-disable-next-line prefer-template
-    [
-      date.getFullYear(),
-      padTo2Digits(date.getMonth() + 1),
-      padTo2Digits(date.getDate()),
-    ].join('-') +
-    ' ' +
-    [
-      padTo2Digits(date.getHours()),
-      padTo2Digits(date.getMinutes()),
-      padTo2Digits(date.getSeconds()),
-    ].join(':')
-  );
-}
 
 export class App {
 
@@ -118,6 +86,10 @@ export class App {
   rxTerminal: Terminal;
 
   txTerminal: Terminal;
+
+  numBytesReceived: number;
+
+  numBytesTransmitted: number;
 
   // If true, the TX/RX panel scroll will be locked at the bottom
   txRxTextScrollLock = true;
@@ -160,6 +132,9 @@ export class App {
     this.rxTerminal = new Terminal(this.settings);
     this.txTerminal = new Terminal(this.settings);
 
+    this.numBytesReceived = 0;
+    this.numBytesTransmitted = 0;
+
     this.dataPane1 = new DataPane();
     this.dataPane2 = new DataPane();
 
@@ -178,6 +153,7 @@ export class App {
 
     console.log('Started NinjaTerm.')
 
+    // this.runTestMode();
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -187,6 +163,26 @@ export class App {
     // });
 
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  /** Function used for testing when you don't have an Arduino handy.
+   * Sets up a interval timer to add fake RX data.
+   * Change as needed for testing!
+   */
+  runTestMode() {
+    console.log('runTestMode() called.');
+    this.settings.dataProcessing.visibleData.fields.scrollbackBufferSizeRows.value = 300;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 65;
+    setInterval(() => {
+      const te = new TextEncoder();
+      const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      this.parseRxData(Uint8Array.from(data));
+      testCharIdx += 1;
+      if (testCharIdx === 90) {
+        testCharIdx = 65;
+      }
+    }, 200);
   }
 
   setSnackBarOpen(trueFalse: boolean) {
@@ -217,8 +213,8 @@ export class App {
       try {
         localPort = await navigator.serial.requestPort();
       } catch (error) {
-          console.log('Error occured. error=', error);
-          enqueueSnackbar('User cancelled port selection.', { variant: 'error'});
+          console.log('Error occurred. error=', error);
+          this.sendToSnackbar('User cancelled port selection.', 'error');
           return;
       }
       console.log('Got local port, now setting state...');
@@ -230,42 +226,46 @@ export class App {
     } else {
       console.log('Not supported!');
     }
-
-
-    // this.SerialPortType.list()
-    //   .then((ports) => {
-    //     this.settings.setAvailablePortInfos(ports);
-    //     // Set the selected port, this doesn't fire automatically if setting
-    //     // the ports via code
-    //     if (ports.length > 0) {
-    //       this.settings.setSelectedPortPath(ports[0].path);
-    //     }
-    //     this.addStatusBarMsg(
-    //       `Port scan complete. Found ${ports.length} ports.`,
-    //       StatusMsgSeverity.INFO,
-    //       true
-    //     );
-    //     return 0;
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //     this.addStatusBarMsg(`${error}`, StatusMsgSeverity.ERROR, true);
-    //   });
   }
 
   async openPort() {
-    // navigator.serial.addEventListener("connect", (event) => {
-    //   // TODO: Automatically open event.target or warn user a port is available.
-    //   console.log('connect event called.');
-    // });
+    try {
+      await this.port?.open({
+        baudRate: this.settings.selectedBaudRate,
+        dataBits: this.settings.selectedNumDataBits,
+        parity: this.settings.selectedParity as ParityType,
+        stopBits: this.settings.selectedStopBits,
+        bufferSize: 1000000}); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
+    } catch (error) {
+      if (error instanceof DOMException) {
+        if (error.name === 'NetworkError') {
+          const msg = 'Serial port is already in use by another program.\n'
+                    + 'Reported error from port.open():\n'
+                    + `${error}`
+          this.sendToSnackbar(msg, 'error');
+          console.log(msg);
+        } else {
+          const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
+          + 'Reported error from port.open():\n'
+          + `${error}`
+          this.sendToSnackbar(msg, 'error');
+          console.log(msg);
+        }
+      } else {
+        // Type of error not recognized or seen before
+        const msg = `Unrecognized error occurred when trying to open serial port.\n`
+        + 'Reported error from port.open():\n'
+        + `${error}`
+        this.sendToSnackbar(msg, 'error');
+        console.log(msg);
+      }
 
-    await this.port?.open({
-      baudRate: this.settings.selectedBaudRate,
-      dataBits: this.settings.selectedNumDataBits,
-      parity: this.settings.selectedParity as ParityType,
-      stopBits: this.settings.selectedStopBits})
+      // An error occurred whilst calling port.open(), so DO NOT continue, port
+      // cannot be considered open
+      return;
+    }
     console.log('Serial port opened.');
-    enqueueSnackbar('Serial port opened.', { variant: 'success'});
+    this.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
@@ -277,8 +277,12 @@ export class App {
     this.closedPromise = this.readUntilClosed();
   }
 
-  /** Continuously reads from the serial port. */
+  /** Continuously reads from the serial port until:
+   *  1) keepReading is set to false and then reader.cancel() is called to break out of inner read() loop
+   *  2) Fatal error is thrown in read(), which causes port.readable to become null
+   */
   async readUntilClosed() {
+    // port.readable will become null when a fatal error occurs
     while (this.port?.readable && this.keepReading) {
       this.reader = this.port.readable.getReader();
       try {
@@ -295,29 +299,79 @@ export class App {
       } catch (error) {
           // This is called if the USB serial device is removed whilst
           // reading
-          enqueueSnackbar('Serial port was removed unexpectedly.', { variant: 'error'});
-          this.setPortState(PortState.CLOSED);
-          runInAction(() => {
-            // Setting this.port to null means the port needs to be
-            // reselected in the UI (which makes sense because we just
-            // lost it)
-            this.port = null;
-            this.closedPromise = null;
-          });
+          console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
+          // @ts-ignore:
+          if (error instanceof DOMException) {
+            console.log('Exception was DOMException. error.name=', error.name);
+            // BufferOverrunError: Rendering couldn't get up with input data,
+            // potentially make buffer size to port.open() larger or speed up processing/rendering
+            // if this occurs often. This is non-fatal, readable will not be null
+            if (error.name === 'BufferOverrunError') {
+              this.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            } else if (error.name === 'BreakError') {
+              this.sendToSnackbar('Encountered break signal.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            } else {
+              const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
+                          + 'Reported error from port.read():\n'
+                          + `${error}`;
+              this.sendToSnackbar(msg, 'error');
+              console.log(msg);
+            }
+          } else {
+            this.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
+          }
+
+          // this.setPortState(PortState.CLOSED);
+          // runInAction(() => {
+          //   // Setting this.port to null means the port needs to be
+          //   // reselected in the UI (which makes sense because we just
+          //   // lost it)
+          //   // this.port = null;
+          //   // this.closedPromise = null;
+          // });
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
       }
     }
 
+    console.log('Closing port...');
     await this.port?.close();
   }
 
-  parseRxData(value: Uint8Array) {
+  /**
+   * Enqueues a message to the snackbar used for temporary status updates to the user.
+   *
+   * @param msg The message you want to display. Use "\n" to insert new lines.
+   * @param variant The variant (e.g. error, warning) of snackbar you want to display.
+   */
+  sendToSnackbar(msg: string, variant: VariantType) {
+    enqueueSnackbar(
+      msg,
+      {
+        variant: variant,
+        style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
+      });
+  }
+
+  /**
+   * Unit tests call this instead of mocking out the serial port read() function
+   * as setting up the deferred promise was too tricky.
+   *
+   * @param rxData
+   */
+  parseRxData(rxData: Uint8Array) {
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
-    this.txRxTerminal.parseData(value);
-    this.rxTerminal.parseData(value);
+    this.txRxTerminal.parseData(rxData);
+    this.rxTerminal.parseData(rxData);
+    this.numBytesReceived += rxData.length;
   }
 
   async closePort() {
@@ -334,7 +388,7 @@ export class App {
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
-    enqueueSnackbar('Serial port closed.', { variant: 'success'});
+    this.sendToSnackbar('Serial port closed.', 'success');
     this.reader = null;
     this.closedPromise = null;
   }
@@ -342,27 +396,6 @@ export class App {
   setPortState(newPortState: PortState) {
     this.portState = newPortState;
   }
-
-  /**
-   * Call this to add a message to the status bar at the bottom of the main view.
-   *
-   * @param msg Message to output to the status bar. Message should include new line character.
-   */
-  addStatusBarMsg = (
-    msg: string,
-    severity: StatusMsgSeverity,
-    showInPortSettings: boolean = false
-  ) => {
-    const currDate = new Date();
-    this.statusMsgs.push(
-      new StatusMsg(
-        this.statusMsgs.length,
-        `${formatDate(currDate)}: ${msg}`,
-        severity,
-        showInPortSettings
-      )
-    );
-  };
 
   async handleKeyPress(event: KeyboardEvent) {
     console.log('handleKeyPress() called. event=', event, this);
@@ -408,7 +441,9 @@ export class App {
       if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
         this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
       }
-    }
+
+      this.numBytesTransmitted += bytesToWrite.length;
+    } // if (this.portState === PortState.OPENED) {
   }
 
   clearAllData() {
