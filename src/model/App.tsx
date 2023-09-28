@@ -429,7 +429,7 @@ export class App {
       } else if (event.key === 'Backspace') {
         // Send BS (0x08) or DEL (0x7F)???
         console.log('Got backspace.')
-        bytesToWrite.push(8);
+        bytesToWrite.push(0x08);
       } else {
         console.log('Unsupported char! event=', event);
       }
