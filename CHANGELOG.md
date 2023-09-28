@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where "Space" and "Backspace" were not sending the correct data to the serial port.
+- Fixed issue with duplicate keys in view (on indicator elements).
+
 ## [4.2.0] - 2023-09-27
 
 ### Added
