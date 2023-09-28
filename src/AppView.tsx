@@ -114,10 +114,12 @@ const AppView = observer((props: Props) => {
   }
 
   // Attach listener to catch key presses over entire app
-  const keyEvent = 'keypress';
+  // NOTE: keypress is not sufficient, as it does not fire when Backspace is pressed
+  // const keyEvent = 'keypress';
+  const keyEvent = 'keydown';
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      app.handleKeyPress(event);
+      app.handleKeyDown(event);
     };
     window.addEventListener(keyEvent, handleKeyDown);
 

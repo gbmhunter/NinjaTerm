@@ -397,8 +397,8 @@ export class App {
     this.portState = newPortState;
   }
 
-  async handleKeyPress(event: KeyboardEvent) {
-    console.log('handleKeyPress() called. event=', event, this);
+  async handleKeyDown(event: KeyboardEvent) {
+    console.log('handleKeyDown() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
@@ -406,31 +406,37 @@ export class App {
       // Convert event.key to required ASCII number. This would be easier if we could
       // use keyCode, but this method is deprecated!
       const bytesToWrite: number[] = [];
-      const isLetter =
-        (event.key >= 'a' && event.key <= 'z') ||
-        (event.key >= 'A' && event.key <= 'Z');
-      const isNumber = event.key >= '0' && event.key <= '9';
-      // List of allowed symbols
-      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?';
-      const isSymbol = symbols.includes(event.key);
-      if (event.ctrlKey) {
-        // Don't send anything if a control key was held down
+      // List of allowed symbols, includes space char also
+      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
+      const alphaNumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789'
+      if (event.ctrlKey || event.shiftKey) {
+        // Don't send anything if a control key/shift key was pressed
         return;
       }
 
       if (event.key === 'Enter') {
+        console.log('Got enter')
         bytesToWrite.push(13);
         bytesToWrite.push(10);
         // this.txTerminal.parseData(Buffer.from('\n'));
         // this.txRxTerminal.parseData(Buffer.from('\n'));
-      } else if (isLetter || isNumber || isSymbol) {
+      } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
+        console.log('Got alphanumeric char')
         bytesToWrite.push(event.key.charCodeAt(0));
+      } else if (event.key.length === 1 && symbols.includes(event.key)) {
+        console.log('Got symbol char')
+        bytesToWrite.push(event.key.charCodeAt(0));
+      } else if (event.key === 'Backspace') {
+        // Send BS (0x08) or DEL (0x7F)???
+        console.log('Got backspace.')
+        bytesToWrite.push(8);
       } else {
-        console.log('Unsupported char!');
+        console.log('Unsupported char! event=', event);
       }
       const writer = this.port?.writable?.getWriter();
 
       const data = Uint8Array.from(bytesToWrite);
+      console.log('Calling writer.write() with data=', data);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
