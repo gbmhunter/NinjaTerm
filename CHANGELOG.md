@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added support for pressed arrow keys to send to appropriate ANSI escape codes across port (for terminal emulation).
 - Added RX support for ESC[nC commands (CUF - Cursor Forward).
+
 ### Fixed
 
 - Fixed bug where "Space" and "Backspace" were not sending the correct data to the serial port.
