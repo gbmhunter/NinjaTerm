@@ -415,23 +415,37 @@ export class App {
       }
 
       if (event.key === 'Enter') {
-        console.log('Got enter')
         bytesToWrite.push(13);
         bytesToWrite.push(10);
-        // this.txTerminal.parseData(Buffer.from('\n'));
-        // this.txRxTerminal.parseData(Buffer.from('\n'));
       } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
-        console.log('Got alphanumeric char')
+        // Pressed key is alphanumeric
         bytesToWrite.push(event.key.charCodeAt(0));
       } else if (event.key.length === 1 && symbols.includes(event.key)) {
-        console.log('Got symbol char')
+        // Pressed key is a symbol (e.g. ';?.,<>)
+        // Do same thing as with alphanumeric cars
         bytesToWrite.push(event.key.charCodeAt(0));
       } else if (event.key === 'Backspace') {
         // Send BS (0x08) or DEL (0x7F)???
-        console.log('Got backspace.')
         bytesToWrite.push(0x08);
+      //===========================================================
+      // HANDLE ARROW KEYS
+      //===========================================================
+      } else if (event.key === 'ArrowLeft') {
+        // Send "ESC[D" (go back 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'D'.charCodeAt(0));
+      } else if (event.key === 'ArrowRight') {
+        // Send "ESC[C" (go forward 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'C'.charCodeAt(0));
+      } else if (event.key === 'ArrowUp') {
+        // Send "ESC[A" (go up 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'A'.charCodeAt(0));
+      } else if (event.key === 'ArrowDown') {
+        // Send "ESC[B" (go down 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'B'.charCodeAt(0));
+      // If we get here, we don't know what to do with the key press
       } else {
         console.log('Unsupported char! event=', event);
+        return;
       }
       const writer = this.port?.writable?.getWriter();
 
@@ -447,8 +461,9 @@ export class App {
       if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
         this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
       }
-
-      this.numBytesTransmitted += bytesToWrite.length;
+      runInAction(() => {
+        this.numBytesTransmitted += bytesToWrite.length;
+      })
     } // if (this.portState === PortState.OPENED) {
   }
 
