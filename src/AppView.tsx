@@ -285,10 +285,13 @@ const AppView = observer((props: Props) => {
             style={{ height: '20px' }}
           >
             {/* TX/RX ACTIVITY INDICATORS */}
-            {/* Use the key prop here to make React consider this a new element everytime the number
-            of bytes changes. This will re-trigger the flashing animation as desired */}
-            <Box key={app.numBytesTransmitted} className={styles.ledblue}>TX</Box>
-            <Box key={app.numBytesReceived} className={styles.ledyellow}>RX</Box>
+            {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
+            <Box>
+              <Box key={app.numBytesTransmitted} className={styles.ledblue}>TX</Box>
+            </Box>
+            <Box>
+              <Box key={app.numBytesReceived} className={styles.ledyellow}>RX</Box>
+            </Box>
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
             <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
