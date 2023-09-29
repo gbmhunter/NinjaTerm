@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import AppView from './AppView';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 import {
@@ -10,6 +9,8 @@ import {
 } from "react-router-dom";
 
 import { App } from './model/App';
+import AppView from './AppView';
+import HomepageView from './HomepageView';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -23,7 +24,7 @@ const app = new App();
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <div>Homepage</div>,
+    element: <HomepageView />,
   },
   {
     path: "/app",
