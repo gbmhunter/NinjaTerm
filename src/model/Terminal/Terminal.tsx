@@ -144,6 +144,7 @@ export default class Terminal {
     const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
     for (let idx = 0; idx < data.length; idx += 1) {
       const char = dataAsStr[idx];
+      // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
@@ -210,10 +211,12 @@ export default class Terminal {
    *    the rest of the code, and perform actions on the terminal as required.
    */
   parseCSISequence(ansiEscapeCode: string) {
+    // The last char is used to work out what kind of CSI sequence it is
     const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
+    //============================================================
+    // CUU Cursor Up
+    //============================================================
     if (lastChar === 'A') {
-      // CUU Cursor Up
-      // ===========================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
@@ -248,10 +251,26 @@ export default class Terminal {
           row.terminalChars[this.cursorPosition[1]].forCursor = true;
         }
       }
+    } else if (lastChar === 'C') {
+      //============================================================
+      // CUC - Cursor Forward
+      //============================================================
+      // Extract number in the form ESC[nA
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      // If there was no number provided, assume it was '1' (default)
+      if (numberStr === '') {
+        numberStr = '1';
+      }
+      const numColsToGoRight = parseInt(numberStr, 10);
+      if (Number.isNaN(numColsToGoRight)) {
+        console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
+        return;
+      }
+      this.cursorRight(numColsToGoRight);
     } else if (lastChar === 'D') {
+      //============================================================
       // CUB Cursor Back
-      // ===========================
-      // console.log('Cursor back');
+      //============================================================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
@@ -267,8 +286,9 @@ export default class Terminal {
       }
       this.cursorLeft(numColsToGoLeft);
     } else if (lastChar === 'J') {
-      // ED - Erase in Display
-      // ==============================
+      //============================================================
+    // ED Erase in Display
+    //============================================================
       // console.log('Erase in display');
       // Extract number in the form ESC[nJ
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
@@ -357,6 +377,33 @@ export default class Terminal {
             `Number ${numberCode} provided to SGR control sequence unsupported.`
           );
         }
+      }
+    }
+  }
+
+  cursorRight(numColsToGoRight: number) {
+    // Go right one character at a time and perform various checks along the way
+    for (let numColsGoneRight = 0; numColsGoneRight < numColsToGoRight; numColsGoneRight += 1) {
+      // Never exceed the specified terminal width when going right
+      if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
+        return;
+      }
+      // If we reach here, we can go right by at least 1
+
+      // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
+      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
+      if (existingChar.forCursor) {
+        existingChar.forCursor = false;
+      }
+
+      this.cursorPosition[1] += 1;
+      // If there is no character here, add one for cursor
+      if (this.cursorPosition[1] === currRow.terminalChars.length) {
+        const spaceTerminalChar = new TerminalChar();
+        spaceTerminalChar.char = ' ';
+        spaceTerminalChar.forCursor = true;
+        currRow.terminalChars.push(spaceTerminalChar);
       }
     }
   }

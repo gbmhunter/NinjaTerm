@@ -1,11 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import AppView from './AppView';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
 
 import { App } from './model/App';
+import AppView from './AppView';
+import HomepageView from './HomepageView';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -13,9 +18,23 @@ const root = ReactDOM.createRoot(
 
 const app = new App();
 
+// Create routes. Only 2 routes. The root is the
+// landing page which is static, and then
+// at /app is the main NinjaTerm application
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <HomepageView />,
+  },
+  {
+    path: "/app",
+    element: <AppView app={app} />,
+  },
+]);
+
 root.render(
   <React.StrictMode>
-    <AppView app={app} />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 

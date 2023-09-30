@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.3.0] - 2023-09-30
+
+### Added
+
+- Added support for pressed arrow keys to send to appropriate ANSI escape codes across port (for terminal emulation).
+- Added RX support for ESC[nC commands (CUF - Cursor Forward).
+- Added new homepage for NinjaTerm which is built into the app, rather than a separate site deployed to GitHub page.
+
+### Fixed
+
+- Fixed bug where "Space" and "Backspace" were not sending the correct data to the serial port, closes #256.
+- Fixed issue with duplicate keys in view (on indicator elements).
+
 ## [4.2.0] - 2023-09-27
 
 ### Added

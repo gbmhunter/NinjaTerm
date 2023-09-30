@@ -13,6 +13,13 @@ import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
+import * as serviceWorkerRegistration from '../serviceWorkerRegistration';
+
+// If you want your app to work offline and load faster, you can change
+// unregister() to register() below. Note this comes with some pitfalls.
+// Learn more about service workers: https://cra.link/PWA
+// serviceWorkerRegistration.unregister();
+// serviceWorkerRegistration.register();
 
 declare global {
   interface String {
@@ -397,8 +404,8 @@ export class App {
     this.portState = newPortState;
   }
 
-  async handleKeyPress(event: KeyboardEvent) {
-    console.log('handleKeyPress() called. event=', event, this);
+  async handleKeyDown(event: KeyboardEvent) {
+    console.log('handleKeyDown() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
@@ -406,31 +413,51 @@ export class App {
       // Convert event.key to required ASCII number. This would be easier if we could
       // use keyCode, but this method is deprecated!
       const bytesToWrite: number[] = [];
-      const isLetter =
-        (event.key >= 'a' && event.key <= 'z') ||
-        (event.key >= 'A' && event.key <= 'Z');
-      const isNumber = event.key >= '0' && event.key <= '9';
-      // List of allowed symbols
-      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/?';
-      const isSymbol = symbols.includes(event.key);
-      if (event.ctrlKey) {
-        // Don't send anything if a control key was held down
+      // List of allowed symbols, includes space char also
+      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
+      const alphaNumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789'
+      if (event.ctrlKey || event.shiftKey) {
+        // Don't send anything if a control key/shift key was pressed
         return;
       }
 
       if (event.key === 'Enter') {
         bytesToWrite.push(13);
         bytesToWrite.push(10);
-        // this.txTerminal.parseData(Buffer.from('\n'));
-        // this.txRxTerminal.parseData(Buffer.from('\n'));
-      } else if (isLetter || isNumber || isSymbol) {
+      } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
+        // Pressed key is alphanumeric
         bytesToWrite.push(event.key.charCodeAt(0));
+      } else if (event.key.length === 1 && symbols.includes(event.key)) {
+        // Pressed key is a symbol (e.g. ';?.,<>)
+        // Do same thing as with alphanumeric cars
+        bytesToWrite.push(event.key.charCodeAt(0));
+      } else if (event.key === 'Backspace') {
+        // Send BS (0x08) or DEL (0x7F)???
+        bytesToWrite.push(0x08);
+      //===========================================================
+      // HANDLE ARROW KEYS
+      //===========================================================
+      } else if (event.key === 'ArrowLeft') {
+        // Send "ESC[D" (go back 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'D'.charCodeAt(0));
+      } else if (event.key === 'ArrowRight') {
+        // Send "ESC[C" (go forward 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'C'.charCodeAt(0));
+      } else if (event.key === 'ArrowUp') {
+        // Send "ESC[A" (go up 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'A'.charCodeAt(0));
+      } else if (event.key === 'ArrowDown') {
+        // Send "ESC[B" (go down 1)
+        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'B'.charCodeAt(0));
+      // If we get here, we don't know what to do with the key press
       } else {
-        console.log('Unsupported char!');
+        console.log('Unsupported char! event=', event);
+        return;
       }
       const writer = this.port?.writable?.getWriter();
 
       const data = Uint8Array.from(bytesToWrite);
+      console.log('Calling writer.write() with data=', data);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
@@ -441,8 +468,9 @@ export class App {
       if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
         this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
       }
-
-      this.numBytesTransmitted += bytesToWrite.length;
+      runInAction(() => {
+        this.numBytesTransmitted += bytesToWrite.length;
+      })
     } // if (this.portState === PortState.OPENED) {
   }
 

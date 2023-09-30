@@ -70,7 +70,7 @@ void loop() {
   }
 
   uint32_t currTime_ms = millis();
-  if (currTime_ms > lastMsgTime_ms + 2000) {
+  if (currTime_ms > lastMsgTime_ms + 500) {
     int messageNum = random(sizeof(messages)/sizeof(messages[0]) - 1);
     sendMsg(messages[messageNum]);
     lastMsgTime_ms = currTime_ms;
