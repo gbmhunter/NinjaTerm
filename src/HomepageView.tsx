@@ -37,8 +37,8 @@ const darkTheme = createTheme({
     },
   },
   typography: {
-    // Make all fonts slightly smaller by default for a dense layout
-    fontSize: 13,
+    // Default of 14 was a little small for the landing page, 16 works well
+    fontSize: 16,
   },
   components: {
     MuiTooltip: {
