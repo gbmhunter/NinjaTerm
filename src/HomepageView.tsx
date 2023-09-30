@@ -7,11 +7,13 @@ import {
   Card,
   CardActions,
   CardContent,
+  IconButton,
   Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import TwitterIcon from '@mui/icons-material/Twitter';
 
 import GitHubReadmeLogo from "./github-readme-logo.png";
 import AnsiEscapeCodeColours from "./ansi-escape-code-colours.gif";
@@ -24,6 +26,7 @@ const logoColor = "#DC3545";
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
+  spacing: 10,
   palette: {
     mode: "dark",
     background: {
@@ -45,7 +48,8 @@ const darkTheme = createTheme({
     h2: {
       color: logoColor,
       fontSize: 32,
-    }
+      marginBottom: '10px',
+    },
   },
   components: {
     MuiTooltip: {
@@ -77,7 +81,7 @@ export default observer((props: Props) => {
           alignItems: "center",
         }}
       >
-        <Grid container sx={{ maxWidth: '1000px' }}>
+        <Grid container sx={{ maxWidth: '1000px', display: 'flex', flexDirection: 'column' }}>
           <Grid xs={12} sx={{ height: "20px" }} />
 
           <Grid xs={12} sx={{ display: "flex", justifyContent: "center" }}>
@@ -169,6 +173,21 @@ export default observer((props: Props) => {
             </Grid>
           </Grid>
 
+          <Typography variant="h2">Coming Soon...</Typography>
+          <Typography>
+            <ul>
+              <li>Support for showing data in hex format</li>
+              <li>Options for controlling CR/LF/CR+LF</li>
+              <li>Mode to send data only on enter</li>
+              <li>Graphing</li>
+            </ul>
+          </Typography>
+
+          <Typography variant="h2">Bugs and Features</Typography>
+          <Typography>
+            <p>Found a bug? Have a awesome feature you'd like added to NinjaTerm? <a href="https://github.com/gbmhunter/NinjaTerm/issues">Open an issue on GitHub</a>.</p>
+          </Typography>
+
           <Typography variant="h2">Contributors</Typography>
 
           <Typography>
@@ -180,7 +199,7 @@ export default observer((props: Props) => {
 
           <hr style={{ width: '100%' }}/>
 
-          <p style={{ fontWeight: 'bold' }}>NinjaTerm is developed and maintained by Geoffrey Hunter (<a href="https://blog.mbedded.ninja/">mbedded.ninja</a>).</p>
+          <p style={{ fontWeight: 'bold', marginBottom: '50px' }}>NinjaTerm is developed and maintained by Geoffrey Hunter <IconButton href="https://twitter.com/gbmhunter" target="_blank"><TwitterIcon /></IconButton> (<a href="https://blog.mbedded.ninja/">mbedded.ninja</a>).</p>
 
         </Grid>
       </Box>
