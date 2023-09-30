@@ -19,6 +19,9 @@ import SmartScrollGif from "./smart-scroll.gif";
 
 import "./HomepageView.css";
 
+const primaryColor = "#E47F37";
+const logoColor = "#DC3545";
+
 // Create dark theme for MUI
 const darkTheme = createTheme({
   palette: {
@@ -30,7 +33,7 @@ const darkTheme = createTheme({
     },
     primary: {
       // main: '#dc3545', // your primary color
-      main: "#E47F37", // your primary color
+      main: primaryColor, // your primary color
     },
     secondary: {
       main: "#35dccb", // your secondary color
@@ -38,7 +41,11 @@ const darkTheme = createTheme({
   },
   typography: {
     // Default of 14 was a little small for the landing page, 16 works well
-    fontSize: 16,
+    fontSize: 14,
+    h2: {
+      color: logoColor,
+      fontSize: 32,
+    }
   },
   components: {
     MuiTooltip: {
@@ -120,7 +127,10 @@ export default observer((props: Props) => {
 
           <Grid xs={12} sx={{ height: "20px" }} />
 
-          <Grid container xs={12} spacing={2.0}>
+
+          <Typography variant="h2" style={{ marginBottom: '20px' }}>Features</Typography>
+
+          <Grid container xs={12} spacing={2.0} sx={{ marginBottom: '20px' }}>
             <Grid xs={12}>
               <div
                 style={{
@@ -159,6 +169,18 @@ export default observer((props: Props) => {
             </Grid>
           </Grid>
 
+          <Typography variant="h2">Contributors</Typography>
+
+          <Typography>
+            <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
+            <p>Thanks to testing done by William Hunter.</p>
+            <p>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI (back when NinjaTerm was written in Java).</p>
+            <p>Big ups to "utopian" to creating the NinjaTerm logo!</p>
+          </Typography>
+
+          <hr style={{ width: '100%' }}/>
+
+          <p style={{ fontWeight: 'bold' }}>NinjaTerm is developed and maintained by Geoffrey Hunter (<a href="https://blog.mbedded.ninja/">mbedded.ninja</a>).</p>
 
         </Grid>
       </Box>
