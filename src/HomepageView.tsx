@@ -125,7 +125,7 @@ export default observer((props: Props) => {
 
           <Grid xs={12}>
             <Typography sx={{ fontSize: '20px', fontStyle: 'italic', marginBottom: '20px' }}>
-              NinjaTerm is an application designed for viewing debug serial port data and sending commands when writing firmware for a microcontroller.
+              NinjaTerm is an open source and free application designed for viewing debug serial port data and sending commands when writing firmware for a microcontroller.
             </Typography>
           </Grid>
 
@@ -174,28 +174,24 @@ export default observer((props: Props) => {
           </Grid>
 
           <Typography variant="h2">Coming Soon...</Typography>
-          <Typography>
-            <ul>
-              <li>Support for showing data in hex format</li>
-              <li>Options for controlling CR/LF/CR+LF</li>
-              <li>Mode to send data only on enter</li>
-              <li>Graphing</li>
-            </ul>
-          </Typography>
+          <ul>
+            <li>Support for showing data in hex format</li>
+            <li>Options for controlling CR/LF/CR+LF</li>
+            <li>Timestamping</li>
+            <li>Mode to send data only on enter</li>
+            <li>Graphing</li>
+          </ul>
 
           <Typography variant="h2">Bugs and Features</Typography>
-          <Typography>
-            <p>Found a bug? Have a awesome feature you'd like added to NinjaTerm? <a href="https://github.com/gbmhunter/NinjaTerm/issues">Open an issue on GitHub</a>.</p>
+          <Typography style={{ marginBottom: '20px' }}>Found a bug? Have a awesome feature you'd like added to NinjaTerm? <a href="https://github.com/gbmhunter/NinjaTerm/issues">Open an issue on GitHub</a>.
           </Typography>
 
           <Typography variant="h2">Contributors</Typography>
 
-          <Typography>
-            <p>Thanks to Zac Frank for user-interaction guidance and tips!</p>
-            <p>Thanks to testing done by William Hunter.</p>
-            <p>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI (back when NinjaTerm was written in Java).</p>
-            <p>Big ups to "utopian" to creating the NinjaTerm logo!</p>
-          </Typography>
+          <Typography>Thanks to Zac Frank for user-interaction guidance and tips!</Typography>
+          <Typography>Thanks to testing done by William Hunter.</Typography>
+          <Typography>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI (back when NinjaTerm was written in Java).</Typography>
+          <Typography>Big ups to "utopian" to creating the NinjaTerm logo!</Typography>
 
           <hr style={{ width: '100%' }}/>
 

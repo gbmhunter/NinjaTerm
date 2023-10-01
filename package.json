@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -22,6 +22,7 @@
     "notistack": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-ga4": "^2.1.0",
     "react-router-dom": "^6.16.0",
     "react-scripts": "5.0.1",
     "react-transition-group": "^4.4.5",

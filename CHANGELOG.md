@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.3.1] - 2023-10-01
+
+### Added
+
+- Added Google Analytics.
+
+### Fixed
+
+- Fixed nesting error of paragraph elements on the homepage.
+
 ## [4.3.0] - 2023-09-30
 
 ### Added
