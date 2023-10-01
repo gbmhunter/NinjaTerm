@@ -7,10 +7,14 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import ReactGA from "react-ga4";
 
 import { App } from './model/App';
 import AppView from './AppView';
 import HomepageView from './HomepageView';
+
+// Google Analytics
+ReactGA.initialize("G-SDMMGN71FN");
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
