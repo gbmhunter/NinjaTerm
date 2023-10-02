@@ -7,9 +7,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
-import DataPane from './DataPane';
-import TextSegmentController from './TextSegmentController';
-import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
@@ -69,24 +66,9 @@ export class App {
   // If true, the settings dialog will be automatically closed on port open or close
   closeSettingsDialogOnPortOpenOrClose = true;
 
-  /** Contains the text data for the status textarea. */
-  statusMsgs: StatusMsg[] = [];
-
   portState = PortState.CLOSED;
 
-  dataPane1: DataPane;
-
-  dataPane2: DataPane;
-
   rxData = '';
-
-  txSegments: TextSegmentController;
-
-  rxSegments: TextSegmentController;
-
-  txRxSegments: TextSegmentController;
-
-  // NEW
 
   txRxTerminal: Terminal;
 
@@ -141,15 +123,6 @@ export class App {
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
-
-    this.dataPane1 = new DataPane();
-    this.dataPane2 = new DataPane();
-
-    this.txSegments = new TextSegmentController();
-    this.rxSegments = new TextSegmentController();
-    // A mix of both TX and RX data. Displayed when the "Single Terminal"
-    // view configuration is selected.
-    this.txRxSegments = new TextSegmentController();
 
     this.port = null;
     this.serialPortInfo = null;

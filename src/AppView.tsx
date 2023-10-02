@@ -83,13 +83,6 @@ interface Props {
 const AppView = observer((props: Props) => {
   const { app } = props;
 
-  const statusMsgDivRef = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (statusMsgDivRef.current && app.statusMsgScrollLock) {
-      statusMsgDivRef.current.scrollTop = statusMsgDivRef.current.scrollHeight;
-    }
-  }, [app.statusMsgs.length, app.statusMsgScrollLock]);
-
   // TERMINAL CREATION
   // =================
   // Create terminals based on selected configuration
