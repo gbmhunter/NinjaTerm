@@ -109,18 +109,18 @@ const AppView = observer((props: Props) => {
   // Attach listener to catch key presses over entire app
   // NOTE: keypress is not sufficient, as it does not fire when Backspace is pressed
   // const keyEvent = 'keypress';
-  const keyEvent = 'keydown';
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      app.handleKeyDown(event);
-    };
-    window.addEventListener(keyEvent, handleKeyDown);
+  // const keyEvent = 'keydown';
+  // useEffect(() => {
+  //   const handleKeyDown = (event: KeyboardEvent) => {
+  //     app.handleKeyDown(event);
+  //   };
+  //   window.addEventListener(keyEvent, handleKeyDown);
 
-    return () => {
-      window.removeEventListener(keyEvent, handleKeyDown);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  //   return () => {
+  //     window.removeEventListener(keyEvent, handleKeyDown);
+  //   };
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   return (
     /* ThemeProvider sets theme for all MUI elements */

@@ -377,7 +377,7 @@ export class App {
     this.portState = newPortState;
   }
 
-  async handleKeyDown(event: KeyboardEvent) {
+  async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     console.log('handleKeyDown() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial

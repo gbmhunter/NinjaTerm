@@ -8,8 +8,10 @@
 it is focused. This makes it obvious to the user that they have clicked/selected
 it */
 .outerTerminalWrapper:hover, .outerTerminalWrapper:focus-within {
-  box-shadow: 0px 0px 10px 0px #de3545;
+  box-shadow: 0px 0px 10px 0px #de3545; /* Give a box shadow when focused or hovered */
+  outline: none; /* Prevent default white outline from showing when focused */
 }
+
 
 /* When the Terminal is focused, show the cursor as a solid blinking rectangle */
 .cursorFocused {

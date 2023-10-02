@@ -132,15 +132,16 @@ export default observer((props: Props) => {
         padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
         boxSizing: 'border-box',
         overflowY: 'hidden',
-        backgroundColor: '#000000'
+        backgroundColor: '#000000',
       }}
       onFocus={(e) => {
-        console.log('onFocus(). e=', e);
         terminal.setIsFocused(true);
       }}
       onBlur={(e) => {
-        console.log('onBlue(). e=', e);
         terminal.setIsFocused(false);
+      }}
+      onKeyDown={(e) => {
+        appStore.handleKeyDown(e);
       }}
     >
       <div
