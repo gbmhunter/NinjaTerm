@@ -43,7 +43,12 @@ export default observer((props: Props) => {
         index === terminal.cursorPosition[0] &&
         colIdx === terminal.cursorPosition[1]
       ) {
-        className = 'cursor';
+        // Found the cursor position!
+        if (terminal.isFocused) {
+          className = styles.cursorFocused;
+        } else {
+          className = styles.cursorUnfocused;
+        }
       }
       spans.push(
         <span
@@ -117,13 +122,26 @@ export default observer((props: Props) => {
   }
 
   return (
-    <div style={{
-      'flexGrow': 1,
-      marginBottom: '10px',
-      padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
-      boxSizing: 'border-box',
-      overflowY: 'hidden',
-      backgroundColor: '#000000' }}
+    // This is the outer terminal div which sets the background colour
+    <div
+      tabIndex={0}
+      className={styles.outerTerminalWrapper}
+      style={{
+        'flexGrow': 1,
+        marginBottom: '10px',
+        padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+        boxSizing: 'border-box',
+        overflowY: 'hidden',
+        backgroundColor: '#000000'
+      }}
+      onFocus={(e) => {
+        console.log('onFocus(). e=', e);
+        terminal.setIsFocused(true);
+      }}
+      onBlur={(e) => {
+        console.log('onBlue(). e=', e);
+        terminal.setIsFocused(false);
+      }}
     >
       <div
         onWheel={(e: WheelEvent<HTMLDivElement>) => {

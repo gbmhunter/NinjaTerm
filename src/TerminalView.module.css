@@ -3,3 +3,53 @@
   component */
   overflow-y: scroll !important;
 }
+
+/* Make the outer Terminal div glow when either it's hovered over OR
+it is focused. This makes it obvious to the user that they have clicked/selected
+it */
+.outerTerminalWrapper:hover, .outerTerminalWrapper:focus-within {
+  box-shadow: 0px 0px 10px 0px #de3545;
+}
+
+/* When the Terminal is focused, show the cursor as a solid blinking rectangle */
+.cursorFocused {
+  -webkit-animation: blinkFocused 0.8s infinite;
+  animation: blinkFocused 0.8s infinite;
+  border-width: 1px;
+  border-style: solid;
+}
+
+@keyframes blinkFocused {
+  0% {
+    border-color: #222;
+    background-color: #222;
+  }
+  50% {
+    background-color: white;
+    border-color: white;
+  }
+  100% {
+    background-color: #222;
+    border-color: #222;
+  }
+}
+
+/* When the Terminal is unfocused, show the cursor as just a blinking outline */
+.cursorUnfocused {
+  -webkit-animation: blinkunfocused 0.8s infinite;
+  animation: blinkunfocused 0.8s infinite;
+  border-width: 1px;
+  border-style: solid;
+}
+
+@keyframes blinkunfocused {
+  0% {
+    border-color: #222;
+  }
+  50% {
+    border-color: white;
+  }
+  100% {
+    border-color: #222;
+  }
+}
