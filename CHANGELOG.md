@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Terminal panes are now focusable. Border glow is shown when focused and cursor changes from an outline to a solid rectangle.
 - Key presses are only interpreted as data to be sent to serial ports when terminal panes are focused.
 
+### Fixed
+
+- Fixed weird layout issues that were occurring in the Terminal pane(s) when data was present, closes #264.
+
+### Changed
+
+- Simplified issue templates.
+
 ## [4.3.1] - 2023-10-01
 
 ### Added

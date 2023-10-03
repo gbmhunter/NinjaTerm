@@ -183,7 +183,9 @@ export default observer((props: Props) => {
             const { scrollOffset } = scrollProps;
             terminal.setScrollPos(scrollOffset);
           }}
-          style={{ padding: '20px' }}
+          // Disabled this style, was causing weird layout issues.
+          // Not sure why I added it in the first place?
+          // style={{ padding: '20px' }}
         >
           {Row}
         </FixedSizeList>
