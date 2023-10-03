@@ -54,7 +54,7 @@ async function createAppWithMockSerialPort() {
       });;
     }),
     releaseLock: jest.fn().mockImplementation(() => {
-      console.log('mock releaseLock() called.');
+      // console.log('mock releaseLock() called.');
       return;
     }),
   }
@@ -67,22 +67,22 @@ async function createAppWithMockSerialPort() {
       };
     }),
     open: jest.fn().mockImplementation(() => {
-      console.log('mock open() called.');
+      // console.log('mock open() called.');
       return Promise.resolve();
     }),
     close: jest.fn().mockImplementation(() => {
-      console.log('mock open() called.');
+      // console.log('mock open() called.');
       return Promise.resolve();
     }),
     writable:  {
       getWriter: jest.fn().mockImplementation(() => {
-        console.log('mock writable() called.');
+        // console.log('mock writable() called.');
         return mockWriter;
       }),
     },
     readable: {
       getReader: jest.fn().mockImplementation(() => {
-        console.log('mock readable() called.');
+        // console.log('mock readable() called.');
         return mockReader;
       }),
     }
@@ -90,7 +90,7 @@ async function createAppWithMockSerialPort() {
 
   const mockSerial = {
     requestPort: jest.fn().mockImplementation(() => {
-      console.log('mock requestPort() called.');
+      // console.log('mock requestPort() called.');
       return Promise.resolve(mockPort);
     }),
   };
@@ -213,7 +213,7 @@ describe('App', () => {
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
         new ExpectedTerminalChar({ char: 'A' }),
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
       ],
     ];
     await waitFor(() => {
@@ -434,7 +434,7 @@ describe('App', () => {
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'u', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'u', classNames: 'cursorUnfocused' }), // Cursor should be here now!
         new ExpectedTerminalChar({ char: 'p' }),
       ],
       [
@@ -469,7 +469,7 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: '1' }),
       ],
       [
-        new ExpectedTerminalChar({ char: 'r', classNames: 'cursor' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'r', classNames: 'cursorUnfocused' }), // Cursor should be here now!
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: '2' }),
@@ -509,7 +509,7 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: 'r' }),
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
-        new ExpectedTerminalChar({ char: '1', classNames: 'cursor' }), // Cursor should be moved back 1
+        new ExpectedTerminalChar({ char: '1', classNames: 'cursorUnfocused' }), // Cursor should be moved back 1
       ],
     ];
     await waitFor(() => {
@@ -525,7 +525,7 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
       ],
     ];
     await waitFor(() => {
@@ -555,7 +555,7 @@ describe('App', () => {
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: 'A' }),
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
       ],
     ];
     await waitFor(() => {
@@ -584,7 +584,7 @@ describe('App', () => {
       [
         new ExpectedTerminalChar({ char: 'r' }),
         new ExpectedTerminalChar({ char: 'o' }), // All data after this 'o' should be gone!
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursor' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
       ],
     ];
     await waitFor(() => {

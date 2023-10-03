@@ -156,7 +156,8 @@ export class App {
     let testCharIdx = 65;
     setInterval(() => {
       const te = new TextEncoder();
-      const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      // const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      const data = te.encode(String.fromCharCode(testCharIdx));
       this.parseRxData(Uint8Array.from(data));
       testCharIdx += 1;
       if (testCharIdx === 90) {
@@ -377,8 +378,15 @@ export class App {
     this.portState = newPortState;
   }
 
+  /**
+   * This is called from either the TX/RX terminal or TX terminal
+   * (i.e. any terminal pane that is allowed to send data)
+   *
+   * @param event
+   * @returns
+   */
   async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    console.log('handleKeyDown() called. event=', event, this);
+    // console.log('handleKeyDown() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
