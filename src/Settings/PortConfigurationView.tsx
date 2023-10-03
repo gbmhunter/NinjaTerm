@@ -1,6 +1,5 @@
 import {
   Button,
-  DialogContentText,
   Checkbox,
   Select,
   MenuItem,
@@ -16,7 +15,6 @@ import { observer } from 'mobx-react-lite';
 
 import { App, portStateToButtonProps, PortState } from '../model/App';
 import { StopBits } from '../model/Settings/Settings';
-import { StatusMsgSeverity } from '../model/StatusMsg';
 
 interface Props {
   appStore: App;
@@ -24,13 +22,6 @@ interface Props {
 
 function PortConfigurationView(props: Props) {
   const { appStore } = props;
-
-  const statusTextTypeToColor: { [key in StatusMsgSeverity]: string } = {
-    [StatusMsgSeverity.INFO]: '#fff',
-    [StatusMsgSeverity.OK]: '#66bb6a',
-    [StatusMsgSeverity.WARNING]: '#66bb6a',
-    [StatusMsgSeverity.ERROR]: '#f44336',
-  };
 
   return (
     <Box>

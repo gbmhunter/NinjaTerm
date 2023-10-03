@@ -1,15 +1,7 @@
 ---
 name: Feature request
-about: You want something added to the boilerplate. 🎉
+about: You want something added to NinjaTerm. 🎉
 labels: 'enhancement'
 ---
 
-<!---
-❗️❗️ Also, please consider donating (https://opencollective.com/electron-react-boilerplate-594) ❗️❗️
-
-Donations will ensure the following:
-
-🔨 Long term maintenance of the project
-🛣 Progress on the roadmap
-🐛 Quick responses to bug reports and help requests
- -->
+<!--- Please consider adding it yourself! Clone the repo, create a branch and submit a pull request back to develop in this repo. -->

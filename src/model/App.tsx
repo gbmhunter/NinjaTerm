@@ -7,9 +7,6 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
-import DataPane from './DataPane';
-import TextSegmentController from './TextSegmentController';
-import { StatusMsg, StatusMsgSeverity } from './StatusMsg';
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
@@ -69,24 +66,9 @@ export class App {
   // If true, the settings dialog will be automatically closed on port open or close
   closeSettingsDialogOnPortOpenOrClose = true;
 
-  /** Contains the text data for the status textarea. */
-  statusMsgs: StatusMsg[] = [];
-
   portState = PortState.CLOSED;
 
-  dataPane1: DataPane;
-
-  dataPane2: DataPane;
-
   rxData = '';
-
-  txSegments: TextSegmentController;
-
-  rxSegments: TextSegmentController;
-
-  txRxSegments: TextSegmentController;
-
-  // NEW
 
   txRxTerminal: Terminal;
 
@@ -142,15 +124,6 @@ export class App {
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
 
-    this.dataPane1 = new DataPane();
-    this.dataPane2 = new DataPane();
-
-    this.txSegments = new TextSegmentController();
-    this.rxSegments = new TextSegmentController();
-    // A mix of both TX and RX data. Displayed when the "Single Terminal"
-    // view configuration is selected.
-    this.txRxSegments = new TextSegmentController();
-
     this.port = null;
     this.serialPortInfo = null;
     this.reader = null;
@@ -183,7 +156,8 @@ export class App {
     let testCharIdx = 65;
     setInterval(() => {
       const te = new TextEncoder();
-      const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      // const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      const data = te.encode(String.fromCharCode(testCharIdx));
       this.parseRxData(Uint8Array.from(data));
       testCharIdx += 1;
       if (testCharIdx === 90) {
@@ -404,8 +378,15 @@ export class App {
     this.portState = newPortState;
   }
 
-  async handleKeyDown(event: KeyboardEvent) {
-    console.log('handleKeyDown() called. event=', event, this);
+  /**
+   * This is called from either the TX/RX terminal or TX terminal
+   * (i.e. any terminal pane that is allowed to send data)
+   *
+   * @param event
+   * @returns
+   */
+  async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    // console.log('handleKeyDown() called. event=', event, this);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port

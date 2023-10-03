@@ -58,7 +58,8 @@ void loop() {
 
   if (Serial.available()) {
     uint8_t rxChar = Serial.read();
-    // Echo character back
+    // Echo character back.
+    // TODO: We don't actually want to echo everything back, e.g. escape codes
     Serial.write(rxChar);
     rxBuffer[rxBufferPos] = rxChar;
     rxBufferPos += 1;

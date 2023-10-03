@@ -63,6 +63,10 @@ export default class Terminal {
 
   settings: Settings;
 
+  // Set to true when the user clicks within the Terminals bounding box
+  // Used to know when to capture key strokes for the Terminal
+  isFocused: boolean;
+
   constructor(settings: Settings) {
     this.settings = settings;
 
@@ -128,7 +132,7 @@ export default class Terminal {
     this.sgaCodeToBrightColorMapVga[6] = 'rgb(85, 255, 255)';
     this.sgaCodeToBrightColorMapVga[7] = 'rgb(255, 255, 255)';
 
-    // this.charWidth = 80;
+    this.isFocused = false;
 
     makeAutoObservable(this);
   }
@@ -616,5 +620,9 @@ export default class Terminal {
       }
       this.scrollPos = newScrollPos;
     }
+  }
+
+  setIsFocused(trueFalse: boolean) {
+    this.isFocused = trueFalse;
   }
 }

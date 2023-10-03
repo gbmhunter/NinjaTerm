@@ -43,7 +43,12 @@ export default observer((props: Props) => {
         index === terminal.cursorPosition[0] &&
         colIdx === terminal.cursorPosition[1]
       ) {
-        className = 'cursor';
+        // Found the cursor position!
+        if (terminal.isFocused) {
+          className = styles.cursorFocused;
+        } else {
+          className = styles.cursorUnfocused;
+        }
       }
       spans.push(
         <span
@@ -117,13 +122,27 @@ export default observer((props: Props) => {
   }
 
   return (
-    <div style={{
-      'flexGrow': 1,
-      marginBottom: '10px',
-      padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
-      boxSizing: 'border-box',
-      overflowY: 'hidden',
-      backgroundColor: '#000000' }}
+    // This is the outer terminal div which sets the background colour
+    <div
+      tabIndex={0}
+      className={styles.outerTerminalWrapper}
+      style={{
+        'flexGrow': 1,
+        marginBottom: '10px',
+        padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+        boxSizing: 'border-box',
+        overflowY: 'hidden',
+        backgroundColor: '#000000',
+      }}
+      onFocus={(e) => {
+        terminal.setIsFocused(true);
+      }}
+      onBlur={(e) => {
+        terminal.setIsFocused(false);
+      }}
+      onKeyDown={(e) => {
+        appStore.handleKeyDown(e);
+      }}
     >
       <div
         onWheel={(e: WheelEvent<HTMLDivElement>) => {
@@ -155,6 +174,7 @@ export default observer((props: Props) => {
       >
         <FixedSizeList
           ref={reactWindowRef}
+          className={styles.fixedSizeList}
           height={heightDebug}
           itemCount={terminal.terminalRows.length}
           itemSize={20}
@@ -164,7 +184,9 @@ export default observer((props: Props) => {
             const { scrollOffset } = scrollProps;
             terminal.setScrollPos(scrollOffset);
           }}
-          style={{ padding: '20px' }}
+          // Disabled this style, was causing weird layout issues.
+          // Not sure why I added it in the first place?
+          // style={{ padding: '20px' }}
         >
           {Row}
         </FixedSizeList>
