@@ -174,6 +174,7 @@ export default observer((props: Props) => {
       >
         <FixedSizeList
           ref={reactWindowRef}
+          className={styles.fixedSizeList}
           height={heightDebug}
           itemCount={terminal.terminalRows.length}
           itemSize={20}

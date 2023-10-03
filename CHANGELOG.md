@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed weird layout issues that were occurring in the Terminal pane(s) when data was present, closes #264.
+- Fixed issue where text on a Terminal row overflows into the next one if the window width is too small, closes #262.
 
 ### Changed
 

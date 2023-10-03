@@ -55,3 +55,11 @@ it */
     border-color: #222;
   }
 }
+
+/* This is to prevent text with spaces in it from wrapping when the terminal pane width shrinks
+smaller than the width of the rows. The fixedSizeList class is applied to the FixedSizeList React
+component. Two divs down is the div's which make up each row in the Terminal, and contain the spans
+which contain the text */
+.fixedSizeList div div {
+  white-space: nowrap;
+}
