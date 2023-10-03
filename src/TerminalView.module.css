@@ -17,22 +17,21 @@ it */
 .cursorFocused {
   -webkit-animation: blinkFocused 0.8s infinite;
   animation: blinkFocused 0.8s infinite;
-  border-width: 1px;
-  border-style: solid;
+  /* This white-space is needed to be set like this so the cursor displays correctly,
+  otherwise you just get a vertical line at the start of the char. Not sure
+  why it's needed?!? */
+  white-space: break-spaces;
 }
 
 @keyframes blinkFocused {
   0% {
-    border-color: #222;
     background-color: #222;
   }
   50% {
     background-color: white;
-    border-color: white;
   }
   100% {
     background-color: #222;
-    border-color: #222;
   }
 }
 
@@ -40,19 +39,28 @@ it */
 .cursorUnfocused {
   -webkit-animation: blinkunfocused 0.8s infinite;
   animation: blinkunfocused 0.8s infinite;
-  border-width: 1px;
-  border-style: solid;
+
+  /* To prevent the cursor border from being clipped, we use outline-
+  instead of border- and also use outline-offset */
+  outline-width: 1px;
+  outline-style: solid;
+  outline-offset: -1px;
+
+  /* This white-space is needed to be set like this so the cursor displays correctly,
+  otherwise you just get a vertical line at the start of the char. Not sure
+  why it's needed?!? */
+  white-space: break-spaces;
 }
 
 @keyframes blinkunfocused {
   0% {
-    border-color: #222;
+    outline-color: #222;
   }
   50% {
-    border-color: white;
+    outline-color: white;
   }
   100% {
-    border-color: #222;
+    outline-color: #222;
   }
 }
 
@@ -61,5 +69,5 @@ smaller than the width of the rows. The fixedSizeList class is applied to the Fi
 component. Two divs down is the div's which make up each row in the Terminal, and contain the spans
 which contain the text */
 .fixedSizeList div div {
-  white-space: nowrap;
+  /* white-space: nowrap; */
 }
