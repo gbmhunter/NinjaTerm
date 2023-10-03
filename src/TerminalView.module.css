@@ -69,5 +69,5 @@ smaller than the width of the rows. The fixedSizeList class is applied to the Fi
 component. Two divs down is the div's which make up each row in the Terminal, and contain the spans
 which contain the text */
 .fixedSizeList div div {
-  /* white-space: nowrap; */
+  white-space: nowrap;
 }

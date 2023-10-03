@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Issue where text was actually still overflowing from one row to the next.
+
 ## [4.4.0] - 2023-10-03
 
 ### Added
