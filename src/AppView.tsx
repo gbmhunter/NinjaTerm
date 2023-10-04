@@ -1,5 +1,4 @@
-// import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {

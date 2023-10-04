@@ -196,6 +196,10 @@ function checkExpectedAgainstActualDisplay(
 
 describe('App', () => {
 
+  //==========================================================================
+  // RX TESTS
+  //==========================================================================
+
   it('should handle single RX char', async () => {
     let {app, writtenData} = await createAppWithMockSerialPort();
 
@@ -609,6 +613,10 @@ describe('App', () => {
       expect(writtenData).toEqual(Array.from(expectedText));
     });
   });
+
+  //==========================================================================
+  // TX TESTS
+  //==========================================================================
 
   it('app should send BS (0x08) when Backspace key is pressed', async () => {
     let {app, writtenData} = await createAppWithMockSerialPort();

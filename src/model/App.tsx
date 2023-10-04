@@ -10,13 +10,6 @@ import packageDotJson from '../../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
-import * as serviceWorkerRegistration from '../serviceWorkerRegistration';
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-// serviceWorkerRegistration.unregister();
-// serviceWorkerRegistration.register();
 
 declare global {
   interface String {

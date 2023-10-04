@@ -1,24 +1,14 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, observe, reaction } from 'mobx';
-import { ReactElement } from 'react';
-// import { TextEncoder, TextDecoder } from 'util';
-// import { assert } from 'console';
+import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
-import { App } from '../App';
 import { Settings } from '../Settings/Settings';
-
-// Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
-// https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
-// Object.assign(global, { TextDecoder, TextEncoder });
 
 /**
  * Represents a single terminal-style user interface.
  */
 export default class Terminal {
-  outputHtml: ReactElement[];
-
   // This represents the current style active on the terminal
   currentStyle: {};
 
@@ -89,7 +79,6 @@ export default class Terminal {
     //   }
     // )
 
-    this.outputHtml = [];
     this.cursorPosition = [0, 0];
 
     this.scrollLock = true;
@@ -512,8 +501,6 @@ export default class Terminal {
   clearData() {
     this.currentStyle = {};
 
-    this.outputHtml = [];
-    this.outputHtml.push(<span key={this.cursorPosition[0]}> </span>);
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
