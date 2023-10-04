@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Tab key now gets captured by the Terminal panes and HT char code sent, closes #263.
+
 ## [4.4.1] - 2023-10-04
 
 ### Fixed

@@ -387,6 +387,13 @@ export class App {
    */
   async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     // console.log('handleKeyDown() called. event=', event, this);
+
+    // Prevent Tab press from moving focus to another element on screen
+    // Do this even if port is not opened
+    if (event.key === 'Tab') {
+      event.preventDefault();
+    }
+
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
@@ -430,8 +437,11 @@ export class App {
       } else if (event.key === 'ArrowDown') {
         // Send "ESC[B" (go down 1)
         bytesToWrite.push(0x1B, '['.charCodeAt(0), 'B'.charCodeAt(0));
-      // If we get here, we don't know what to do with the key press
+      } else if (event.key === 'Tab') {
+        // Send horizontal tab, HT, 0x09
+        bytesToWrite.push(0x09);
       } else {
+        // If we get here, we don't know what to do with the key press
         console.log('Unsupported char! event=', event);
         return;
       }

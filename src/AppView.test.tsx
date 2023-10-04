@@ -621,4 +621,16 @@ describe('App', () => {
       expect(writtenData).toEqual(expectedData);
     });
   });
+
+  it('app should send Horizontal Tab, HT (0x09) when Tab key is pressed', async () => {
+    let {app, writtenData} = await createAppWithMockSerialPort();
+
+    const terminal = screen.getByTestId('tx-rx-terminal-view');
+    // Simulate a key press
+    fireEvent.keyDown(terminal, {key: 'Tab'})
+    const expectedData = [ 0x09 ];
+    await waitFor(() => {
+      expect(writtenData).toEqual(expectedData);
+    });
+  });
 });
