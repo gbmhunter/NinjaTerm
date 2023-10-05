@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Removed unused imports from Typescript files.
 - RX terminals no longer behave like they can capture keystrokes, closes #269.
 
+### Changed
+
+- Rearranged folder structure of view components.
+
 ## [4.4.1] - 2023-10-04
 
 ### Fixed

@@ -10,8 +10,8 @@ import {
 import ReactGA from "react-ga4";
 
 import { App } from './model/App';
-import AppView from './AppView';
-import HomepageView from './HomepageView';
+import AppView from './view/AppView';
+import HomepageView from './view/Homepage/HomepageView';
 
 // Google Analytics
 ReactGA.initialize("G-SDMMGN71FN");

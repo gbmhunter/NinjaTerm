@@ -21,13 +21,13 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, PortState, portStateToButtonProps } from './model/App';
+import { App, PortState, portStateToButtonProps } from '../model/App';
 import './App.css';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from './model/Settings/DataProcessingSettings';
-import SettingsDialog from './Settings/SettingsView';
+} from '../model/Settings/DataProcessingSettings';
+import SettingsDialog from '../Settings/SettingsView';
 import TerminalView from './TerminalView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
