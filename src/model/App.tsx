@@ -274,6 +274,7 @@ export class App {
           // This is called if the USB serial device is removed whilst
           // reading
           console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
+          // These error are described at https://wicg.github.io/serial/
           // @ts-ignore:
           if (error instanceof DOMException) {
             console.log('Exception was DOMException. error.name=', error.name);
@@ -290,7 +291,17 @@ export class App {
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
-            } else {
+            } else if (error.name === 'FramingError') {
+              this.sendToSnackbar('Encountered framing error.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            }  else if (error.name === 'ParityError') {
+              this.sendToSnackbar('Encountered parity error.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            }  else {
               const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
                           + 'Reported error from port.read():\n'
                           + `${error}`;

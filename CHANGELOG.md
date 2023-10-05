@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Tab key now gets captured by the Terminal panes and HT char code sent, closes #263.
 - Removed unused imports from Typescript files.
 - RX terminals no longer behave like they can capture keystrokes, closes #269.
+- Improved handling of a FramingError on read(), closes #259.
 
 ### Changed
 
