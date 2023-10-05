@@ -50,7 +50,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Deployment
 
-Netlify is used to deploy and host the static NinjaTerm HTML/JS.
+Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automatically deploys when the `main` branch is updated. Netlify also creates preview deploys on pull requests (link will be automatically posted into the PR comments).
 
 ## Code Architecture
 
@@ -60,15 +60,14 @@ Create React App (CRA) with the typescript PWA template [docs here](https://crea
 npx create-react-app my-app --template cra-template-pwa-typescript
 ```
 
-MobX is used to store the application state. The application model is under `src/model/`.
+The React based user interface code is under `src/view`.
 
-## GitHub Pages
-
-The `docs/` folder contains the source code for the NinjaTerm homepage, hosted by GitHub Pages. This is automatically build and deployed with new commits pushed to `main`.
+MobX is used to store the application state (model). The React component redraw themselves based on the state of the model. The application model is under `src/model/`.
 
 ## Theme Colors
 
-* DC3545 (red): Primary colour, used for logo.
+* `#DC3545` (red): Primary colour, used for logo.
+* `#E47F37` (orange): Secondary colour, used for buttons on homepage.
 
 ## Extensions
 
