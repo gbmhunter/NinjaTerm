@@ -57,8 +57,13 @@ export default class Terminal {
   // Used to know when to capture key strokes for the Terminal
   isFocused: boolean;
 
-  constructor(settings: Settings) {
+  // If this is set to false, the Terminal is not focusable. It will not have a background
+  // glow on hover or click, and the cursor will always outlined, never filled in.
+  isFocusable: boolean;
+
+  constructor(settings: Settings, isFocusable: boolean) {
     this.settings = settings;
+    this.isFocusable = isFocusable;
 
     autorun(() => {
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
@@ -609,7 +614,17 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Use this to set whether the terminal is considered focused or not. If focused, the
+   * terminal will be given a glow border and the cursor will go solid.
+   *
+   * @param trueFalse True to set as focused.
+   */
   setIsFocused(trueFalse: boolean) {
+    // Only let this be set if terminal is focusable
+    if (!this.isFocusable) {
+      return;
+    }
     this.isFocused = trueFalse;
   }
 }

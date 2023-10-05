@@ -121,11 +121,13 @@ export default observer((props: Props) => {
     heightDebug = height;
   }
 
+
+
   return (
     // This is the outer terminal div which sets the background colour
     <div
-      tabIndex={0}
-      className={styles.outerTerminalWrapper}
+      tabIndex={terminal.isFocusable ? 0 : undefined}
+      className={`${styles.outerTerminalWrapper} ${terminal.isFocusable ? styles.focusable : ''}`}
       style={{
         'flexGrow': 1,
         marginBottom: '10px',

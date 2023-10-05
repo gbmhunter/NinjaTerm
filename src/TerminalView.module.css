@@ -4,14 +4,18 @@
   overflow-y: scroll !important;
 }
 
+.outerTerminalWrapper {
+  /* Prevent default white outline from showing on the terminal. Only really applicable if terminal
+  is focusable, but no harm applying this to unfocusable terminals also */
+  outline: none;
+}
+
 /* Make the outer Terminal div glow when either it's hovered over OR
 it is focused. This makes it obvious to the user that they have clicked/selected
 it */
-.outerTerminalWrapper:hover, .outerTerminalWrapper:focus-within {
+.focusable.outerTerminalWrapper:hover, .focusable.outerTerminalWrapper:focus-within {
   box-shadow: 0px 0px 10px 0px #de3545; /* Give a box shadow when focused or hovered */
-  outline: none; /* Prevent default white outline from showing when focused */
 }
-
 
 /* When the Terminal is focused, show the cursor as a solid blinking rectangle */
 .cursorFocused {

@@ -110,9 +110,9 @@ export class App {
 
     // Need to create terminals before settings, as the settings
     // will configure the terminals
-    this.txRxTerminal = new Terminal(this.settings);
-    this.rxTerminal = new Terminal(this.settings);
-    this.txTerminal = new Terminal(this.settings);
+    this.txRxTerminal = new Terminal(this.settings, true);
+    this.rxTerminal = new Terminal(this.settings, false); // Not focusable
+    this.txTerminal = new Terminal(this.settings, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
