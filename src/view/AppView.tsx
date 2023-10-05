@@ -27,7 +27,7 @@ import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from '../model/Settings/DataProcessingSettings';
-import SettingsDialog from '../Settings/SettingsView';
+import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
