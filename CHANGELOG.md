@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Rearranged folder structure of view components.
+- Tooltips now follow the cursor around, improving usability in settings menu, closes #261.
 
 ## [4.4.1] - 2023-10-04
 

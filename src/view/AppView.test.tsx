@@ -17,7 +17,7 @@ import {
   act,
 } from '@testing-library/react';
 
-import { App } from 'src/model/App';
+import { App } from 'model/App';
 import AppView from './AppView';
 
 import { TextEncoder, TextDecoder } from 'util';

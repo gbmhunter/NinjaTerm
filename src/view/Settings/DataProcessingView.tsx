@@ -14,11 +14,11 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { App } from '../../model/App';
+import { App } from 'model/App';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from '../../model/Settings/DataProcessingSettings';
+} from 'model/Settings/DataProcessingSettings';
 
 interface Props {
   appStore: App;
@@ -33,7 +33,9 @@ function DataProcessingView(props: Props) {
       <Tooltip
         title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
         some of the move cursor commands are supported."
-        placement="top">
+        placement="top"
+        arrow
+      >
         <FormControlLabel
           control={
             <Checkbox
@@ -55,7 +57,10 @@ function DataProcessingView(props: Props) {
       </Tooltip>
       {/* ============================ DATA WIDTH =========================== */}
       <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line.
-      Must be a positive integer. New line characters also cause text to jump to the next line.">
+      Must be a positive integer. New line characters also cause text to jump to the next line."
+        followCursor
+        arrow
+      >
         <TextField
           id="outlined-basic"
           name="terminalWidthChars"
@@ -90,7 +95,10 @@ function DataProcessingView(props: Props) {
       </Tooltip>
       {/* ============================ SCROLLBACK SIZE =========================== */}
       <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
-                      Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer.">
+        Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer."
+        followCursor
+        arrow
+      >
         <TextField
           name="scrollbackBufferSizeRows"
           label="Scrollback Buffer Size"
@@ -126,6 +134,8 @@ function DataProcessingView(props: Props) {
       <Tooltip
         title="Control whether a combined TX/RX terminal or two separate terminals are displayed."
         placement="top"
+        followCursor
+        arrow
       >
         <FormControl size="small" sx={{ minWidth: '210px' }}>
           <InputLabel>Data View Configuration</InputLabel>
@@ -161,6 +171,8 @@ function DataProcessingView(props: Props) {
         the device on the other end of the serial port does not echo back characters. Disable this if
         you see two of every character appear."
         placement="top"
+        followCursor
+        arrow
       >
       <FormControlLabel
         control={

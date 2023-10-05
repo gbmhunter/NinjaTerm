@@ -19,8 +19,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
-    "rootDir": "./"
+    "baseUrl": "./src", // Allow relative imports from src/ dir
+    "rootDir": "./", // Allow code to back out of src/ if needed, e.g. to access package.json
   },
   "include": [
     "src"
