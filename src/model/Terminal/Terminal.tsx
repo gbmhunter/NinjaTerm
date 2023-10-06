@@ -38,6 +38,11 @@ export default class Terminal {
   // Reset back to false when receive SGR code of "0" (reset or normal)
   boldOrIncreasedIntensity: boolean;
 
+  // The max. number of chars allowed in an escape code. This is to prevent an ill
+  // formatted escape code from causing the parser to get stuck in the "in partial
+  // escape code" state forever
+  maxEscapeCodeLength: number;
+
   partialEscapeCode: string;
 
   sgaCodeToColorMapVga: { [key: number]: string } = {};
@@ -103,6 +108,7 @@ export default class Terminal {
     this.partialEscapeCode = '';
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
+    this.maxEscapeCodeLength = 10;
 
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
@@ -139,9 +145,26 @@ export default class Terminal {
     // Parse each character
     // console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
-    const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
+
+    // This variable can get modified during the loop, for example if a partial escape code
+    // reaches it's length limit, the ESC char is stripped and the remainder of the partial is
+    // prepending onto dataAsStr for further processing
+    // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
+
+    let remainingData: string[] = []
     for (let idx = 0; idx < data.length; idx += 1) {
-      const char = dataAsStr[idx];
+      remainingData.push(String.fromCharCode(data[idx]));
+    }
+
+    while (true) {
+
+      // Remove byte from start of remaining data
+      let char = remainingData.shift();
+      if (char === undefined) {
+        break;
+      }
+
+      // const char = dataAsStr[idx];
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
@@ -195,6 +218,20 @@ export default class Terminal {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
         this.addVisibleChar(char);
+      }
+
+      // When we get to the end of parsing, check that if we are still
+      // parsing an escape code, and we've hit the escape code length limit,
+      // then bail on escape code parsing. Emit partial code as data and go back to IDLE
+      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === this.maxEscapeCodeLength) {
+        console.log(`Reached max. length (${this.maxEscapeCodeLength}) for partial escape code.`);
+        // Remove the ESC byte, and then prepend the rest onto the data to be processed
+        // Got to shift them in backwards
+        for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
+          remainingData.unshift(this.partialEscapeCode[partialIdx]);
+        }
+        this.resetEscapeCodeParserState();
+        this.inIdleState = true;
       }
     }
 

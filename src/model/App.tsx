@@ -346,6 +346,8 @@ export class App {
   }
 
   /**
+   * In normal operation this is called from the readUntilClose() function above.
+   *
    * Unit tests call this instead of mocking out the serial port read() function
    * as setting up the deferred promise was too tricky.
    *

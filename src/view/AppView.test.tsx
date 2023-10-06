@@ -169,6 +169,11 @@ function checkExpectedAgainstActualDisplay(
   expectedDisplay: ExpectedTerminalChar[][],
   actualDisplay: Element
 ) {
+
+  // Enable these two lines for easy debugging!
+  // console.log('expectedDisplay=', expectedDisplay);
+  // screen.debug(actualDisplay);
+
   // Make sure there are the same number of actual rows as expected rows
   expect(actualDisplay.children.length).toBe(expectedDisplay.length);
 
@@ -596,8 +601,62 @@ describe('App', () => {
     });
   });
 
+  it('escape code over max size should not lock up parser', async () => {
+    const app = new App(true);
+    render(<AppView app={app} />);
+
+    // ESC byte then 0-7, this is 9 bytes in all
+    let textToSend = '\x1B01234567';
+
+    const utf8EncodeText = new TextEncoder();
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
+
+    const terminalRows = screen.getByTestId('tx-rx-terminal-view').children[0]
+      .children[0];
+
+    // We haven't sent 10 bytes in the escape code yet, so nothing should
+    // be displayed on screen
+    let expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+
+    // Now send 10th byte! This should cause the parser to emit all the chars
+    // after the ESC byte to the screen
+    textToSend = '8';
+    await act(async () => {
+      app.parseRxData(utf8EncodeText.encode(`${textToSend}`));
+    });
+
+    // Check that all data is displayed correctly in terminal
+    expectedDisplay = [
+      [
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+      ],
+    ];
+    await waitFor(() => {
+      checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
+    });
+  });
+
+  //==========================================================================
   // TX TESTS
-  //==========================================================
+  //==========================================================================
 
   it('app should send basic A char', async () => {
     let {app, writtenData} = await createAppWithMockSerialPort();
@@ -613,10 +672,6 @@ describe('App', () => {
       expect(writtenData).toEqual(Array.from(expectedText));
     });
   });
-
-  //==========================================================================
-  // TX TESTS
-  //==========================================================================
 
   it('app should send BS (0x08) when Backspace key is pressed', async () => {
     let {app, writtenData} = await createAppWithMockSerialPort();
