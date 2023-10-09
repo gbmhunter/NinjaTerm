@@ -29,7 +29,9 @@ function DataProcessingView(props: Props) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
-      {/* ============================ ANSI ESCAPE CODE PARSING ENABLED =========================== */}
+      {/* =============================================================================== */}
+      {/* ANSI ESCAPE CODE PARSING ENABLED */}
+      {/* =============================================================================== */}
       <Tooltip
         title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
         some of the move cursor commands are supported."
@@ -55,9 +57,49 @@ function DataProcessingView(props: Props) {
           label="ANSI Escape Code Parsing"
           sx={{ marginBottom: '10px' }}/>
       </Tooltip>
-      {/* ============================ DATA WIDTH =========================== */}
-      <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line.
-      Must be a positive integer. New line characters also cause text to jump to the next line."
+      {/* =============================================================================== */}
+      {/* MAX. ESCAPE CODE LENGTH */}
+      {/* =============================================================================== */}
+      <Tooltip title="The max. length of escape code allowed (in characters). Certain malformed escape codes (or data interruptions) could cause the escape code parser to get stuck thinking the incoming data stream is part of an escape code. This limit is so that at a certain length the parser rejects the partial code and goes back to the IDLE state. This includes all characters in the escape code, including the starting \x1B byte. Must be a least 2 chars."
+        followCursor
+        arrow
+      >
+        <TextField
+          id="outlined-basic"
+          name="maxEscapeCodeLengthChars"
+          label="Max. Escape Code Length"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">chars</InputAdornment>
+            ),
+          }}
+          value={
+            appStore.settings.dataProcessing.visibleData.fields
+              .maxEscapeCodeLengthChars.value
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            appStore.settings.dataProcessing.onFieldChange(
+              event.target.name,
+              event.target.value
+            );
+          }}
+          error={
+            appStore.settings.dataProcessing.visibleData.fields
+              .maxEscapeCodeLengthChars.hasError
+          }
+          helperText={
+            appStore.settings.dataProcessing.visibleData.fields
+              .maxEscapeCodeLengthChars.errorMsg
+          }
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
+      {/* =============================================================================== */}
+      {/* DATA WIDTH */}
+      {/* =============================================================================== */}
+      <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line. Must be a positive integer. New line characters also cause text to jump to the next line."
         followCursor
         arrow
       >
@@ -93,7 +135,9 @@ function DataProcessingView(props: Props) {
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
-      {/* ============================ SCROLLBACK SIZE =========================== */}
+      {/* =============================================================================== */}
+      {/* SCROLLBACK BUFFER SIZE */}
+      {/* =============================================================================== */}
       <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
         Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer."
         followCursor
@@ -130,7 +174,9 @@ function DataProcessingView(props: Props) {
           sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
-      {/* ============================ DATA VIEW CONFIGURATION =========================== */}
+      {/* =============================================================================== */}
+      {/* DATA VIEW CONFIGURATION */}
+      {/* =============================================================================== */}
       <Tooltip
         title="Control whether a combined TX/RX terminal or two separate terminals are displayed."
         placement="top"
@@ -165,7 +211,9 @@ function DataProcessingView(props: Props) {
           </Select>
         </FormControl>
       </Tooltip>
-      {/* ============================ LOCAL TX ECHO =========================== */}
+      {/* =============================================================================== */}
+      {/* LOCAL TX ECHO */}
+      {/* =============================================================================== */}
       <Tooltip
         title="If enabled, transmitted data will be treated as received data. Useful in ASCII mode when
         the device on the other end of the serial port does not echo back characters. Disable this if
@@ -193,7 +241,9 @@ function DataProcessingView(props: Props) {
         label="Local TX Echo"
         sx={{ marginBottom: '10px' }}/>
       </Tooltip>
-      {/* ============================ APPLY BUTTON =========================== */}
+      {/* =============================================================================== */}
+      {/* APPLY BUTTON */}
+      {/* =============================================================================== */}
       <Button
         variant="contained"
         color="success"

@@ -38,11 +38,6 @@ export default class Terminal {
   // Reset back to false when receive SGR code of "0" (reset or normal)
   boldOrIncreasedIntensity: boolean;
 
-  // The max. number of chars allowed in an escape code. This is to prevent an ill
-  // formatted escape code from causing the parser to get stuck in the "in partial
-  // escape code" state forever
-  maxEscapeCodeLength: number;
-
   partialEscapeCode: string;
 
   sgaCodeToColorMapVga: { [key: number]: string } = {};
@@ -108,7 +103,6 @@ export default class Terminal {
     this.partialEscapeCode = '';
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
-    this.maxEscapeCodeLength = 10;
 
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
@@ -223,8 +217,9 @@ export default class Terminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === this.maxEscapeCodeLength) {
-        console.log(`Reached max. length (${this.maxEscapeCodeLength}) for partial escape code.`);
+      const maxEscapeCodeLengthChars = this.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
+      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
+        console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
         // Got to shift them in backwards
         for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {

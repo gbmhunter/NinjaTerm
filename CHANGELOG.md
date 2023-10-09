@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added more info to README.
-- Escape codes that are too long now push the parser back into IDLE state, closes #270.
+- Escape codes that are too long now push the parser back into IDLE state, closes #270. Added setting to select max. escape code length.
 
 ### Fixed
 
