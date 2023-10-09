@@ -70,7 +70,7 @@ it */
 
 /* @font-face {
   font-family: myFirstFont1;
-  src: url(test3.woff);
+  src: url(UnicodeBMPFallback.ttf);
 } */
 
 /* This is to prevent text with spaces in it from wrapping when the terminal pane width shrinks
@@ -79,7 +79,7 @@ component. Two divs down is the div's which make up each row in the Terminal, an
 which contain the text */
 .fixedSizeList div div {
   white-space: nowrap;
-  /* font-family: myFirstFont; */
+  /* font-family: Consolas, Menlo, monospace; */
 }
 
 

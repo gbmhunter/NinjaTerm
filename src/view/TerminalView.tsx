@@ -158,9 +158,9 @@ export default observer((props: Props) => {
         style={{
           // flexGrow: '1',
           height: '100%',
-          // backgroundColor: '#000000', // This sets the background color of the terminal
-          fontFamily: 'monospace',
-          whiteSpace: 'pre-wrap', // This allows \n to create new lines
+          // This sets the font for displayed data in the terminal
+          fontFamily: 'Consolas, Menlo, monospace',
+          // whiteSpace: 'pre-wrap', // This allows \n to create new lines
           // padding: '10px',
           // marginBottom: '10px',
           position: 'relative', // This is so we can use position: absolute for the down icon

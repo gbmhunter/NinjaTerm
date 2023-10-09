@@ -73,7 +73,9 @@ export default class Terminal {
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
-        this.addVisibleChars(this.partialEscapeCode);
+        for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
+          this.addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+        }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
@@ -149,16 +151,16 @@ export default class Terminal {
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
-    let remainingData: string[] = []
+    let remainingData: number[] = []
     for (let idx = 0; idx < data.length; idx += 1) {
-      remainingData.push(String.fromCharCode(data[idx]));
+      remainingData.push(data[idx]);
     }
 
     while (true) {
 
-      // Remove byte from start of remaining data
-      let char = remainingData.shift();
-      if (char === undefined) {
+      // Remove char from start of remaining data
+      let rxByte = remainingData.shift();
+      if (rxByte === undefined) {
         break;
       }
 
@@ -168,7 +170,7 @@ export default class Terminal {
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
-      if (this.inIdleState && char === '\n') {
+      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
         this.moveToNewLine();
         // this.limitNumRows();
         // eslint-disable-next-line no-continue
@@ -177,12 +179,12 @@ export default class Terminal {
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
-        this.addVisibleChar(char);
+        this.addVisibleChar(rxByte);
         // this.limitNumRows();
         continue;
       }
 
-      if (char === '\x1B') {
+      if (rxByte === 0x1B) {
         // console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
@@ -193,7 +195,7 @@ export default class Terminal {
       // character is to be displayed
       if (this.inAnsiEscapeCode) {
         // Add received char to partial escape code
-        this.partialEscapeCode += char;
+        this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
@@ -202,7 +204,8 @@ export default class Terminal {
         if (this.inCSISequence) {
           // console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
-          if (char.toUpperCase() !== char.toLowerCase()) {
+          const charStr = String.fromCharCode(rxByte);
+          if (charStr.toUpperCase() !== charStr.toLowerCase()) {
             // console.log(
             //   'Received terminating letter of CSI sequence! Escape code = ',
             //   this.partialEscapeCode
@@ -215,7 +218,7 @@ export default class Terminal {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.addVisibleChar(char);
+        this.addVisibleChar(rxByte);
       }
 
       // When we get to the end of parsing, check that if we are still
@@ -230,7 +233,7 @@ export default class Terminal {
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
         // Got to shift them in backwards
         for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
-          remainingData.unshift(this.partialEscapeCode[partialIdx]);
+          remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
         }
         this.resetEscapeCodeParserState();
         this.inIdleState = true;
@@ -465,9 +468,9 @@ export default class Terminal {
     this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
-  addVisibleChars(chars: string) {
-    for (let idx = 0; idx < chars.length; idx += 1) {
-      this.addVisibleChar(chars[idx]);
+  addVisibleChars(rxBytes: number[]) {
+    for (let idx = 0; idx < rxBytes.length; idx += 1) {
+      this.addVisibleChar(rxBytes[idx]);
     }
   }
 
@@ -476,10 +479,15 @@ export default class Terminal {
    * Cursor is also incremented to next suitable position.
    * @param char Must be a single printable character only.
    */
-  addVisibleChar(char: string) {
+  addVisibleChar(rxByte: number) {
     // assert(char.length === 1);
     const terminalChar = new TerminalChar();
-    terminalChar.char = char;
+
+    if (rxByte === 0x00) {
+      terminalChar.char = String.fromCharCode(0x2400);
+    } else {
+      terminalChar.char = String.fromCharCode(rxByte);
+    }
 
     // Calculate the foreground color CSS
     let foregroundColorCss = '';
