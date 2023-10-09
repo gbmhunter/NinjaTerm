@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.4.2] - 2023-10-09
+
 ### Added
 
 - Added more info to README.
@@ -426,7 +428,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.2...HEAD
+[4.4.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.1...v4.4.2
 [4.4.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.0...v4.4.1
 [4.4.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.3.0...v4.3.1
