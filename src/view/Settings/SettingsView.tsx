@@ -12,8 +12,8 @@ import {
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { App } from '../model/App';
-import { SettingsCategories } from '../model/Settings/Settings';
+import { App } from '../../model/App';
+import { SettingsCategories } from '../../model/Settings/Settings';
 
 import PortConfigurationView from './PortConfigurationView';
 import DataProcessingView from './DataProcessingView';

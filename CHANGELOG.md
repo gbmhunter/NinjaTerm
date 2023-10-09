@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.4.2] - 2023-10-09
+
+### Added
+
+- Added more info to README.
+- Escape codes that are too long now push the parser back into IDLE state, closes #270. Added setting to select max. escape code length.
+
+### Fixed
+
+- Tab key now gets captured by the Terminal panes and HT char code sent, closes #263.
+- Removed unused imports from Typescript files.
+- RX terminals no longer behave like they can capture keystrokes, closes #269.
+- Improved handling of a FramingError on read(), closes #259.
+
+### Changed
+
+- Rearranged folder structure of view components.
+- Tooltips now follow the cursor around, improving usability in settings menu, closes #261.
+
 ## [4.4.1] - 2023-10-04
 
 ### Fixed
@@ -409,7 +428,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.2...HEAD
+[4.4.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.1...v4.4.2
 [4.4.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.0...v4.4.1
 [4.4.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.3.1...v4.4.0
 [4.3.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.3.0...v4.3.1

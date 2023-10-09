@@ -31,6 +31,12 @@ class Data {
       errorMsg: '',
       rule: 'required',
     },
+    maxEscapeCodeLengthChars: {
+      value: 10,
+      hasError: false,
+      errorMsg: '',
+      rule: 'required|integer|min:2', // Min. is two, one for the escape byte and then a single char.
+    },
     terminalWidthChars: {
       value: 120, // 80 is standard
       hasError: false,

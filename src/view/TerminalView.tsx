@@ -5,9 +5,9 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 import { toJS } from 'mobx';
 
-import { App } from './model/App';
-import Terminal from './model/Terminal/Terminal';
-import TerminalRow from './model/Terminal/TerminalRow';
+import { App } from '../model/App';
+import Terminal from '../model/Terminal/Terminal';
+import TerminalRow from '../model/Terminal/TerminalRow';
 import styles from './TerminalView.module.css';
 
 interface Props {
@@ -121,11 +121,13 @@ export default observer((props: Props) => {
     heightDebug = height;
   }
 
+
+
   return (
     // This is the outer terminal div which sets the background colour
     <div
-      tabIndex={0}
-      className={styles.outerTerminalWrapper}
+      tabIndex={terminal.isFocusable ? 0 : undefined}
+      className={`${styles.outerTerminalWrapper} ${terminal.isFocusable ? styles.focusable : ''}`}
       style={{
         'flexGrow': 1,
         marginBottom: '10px',
@@ -156,9 +158,9 @@ export default observer((props: Props) => {
         style={{
           // flexGrow: '1',
           height: '100%',
-          // backgroundColor: '#000000', // This sets the background color of the terminal
-          fontFamily: 'monospace',
-          whiteSpace: 'pre-wrap', // This allows \n to create new lines
+          // This sets the font for displayed data in the terminal
+          fontFamily: 'Consolas, Menlo, monospace',
+          // whiteSpace: 'pre-wrap', // This allows \n to create new lines
           // padding: '10px',
           // marginBottom: '10px',
           position: 'relative', // This is so we can use position: absolute for the down icon

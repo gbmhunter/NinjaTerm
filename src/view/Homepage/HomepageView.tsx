@@ -4,9 +4,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import {
   Box,
   Button,
-  Card,
-  CardActions,
-  CardContent,
   IconButton,
   Typography,
 } from "@mui/material";
@@ -149,7 +146,7 @@ export default observer((props: Props) => {
                 <Typography style={{ marginBottom: '20px' }}>Rich support for ANSI CSI colour codes, giving you ability to express information however you see fit! (e.g. colour errors red, warnings yellow).</Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={AnsiEscapeCodeColours} width="900px" style={{ margin: 'auto' }} />
+                  <img src={AnsiEscapeCodeColours} alt="Demonstration of ANSI escape codes in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
                 </div>
               </div>
             </Grid>
@@ -167,7 +164,7 @@ export default observer((props: Props) => {
                 <Typography style={{ marginBottom: '20px' }}>Most of the time you want to see the most recent information printed to the screen. NinjaTerm has a "scroll lock" feature to allow for that. However, scrolling up allows you to break the "scroll lock" and focus on previous info (e.g. an error that occurred). NinjaTerm will adjust the scroll point to keep that information in view even if the scrollback buffer is full.</Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={SmartScrollGif} width="900px" style={{ margin: 'auto' }} />
+                  <img src={SmartScrollGif} alt="Demonstration of smart scrolling in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
                 </div>
               </div>
             </Grid>

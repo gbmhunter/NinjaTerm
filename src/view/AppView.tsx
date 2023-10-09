@@ -1,5 +1,4 @@
-// import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -22,12 +21,12 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, PortState, portStateToButtonProps } from './model/App';
+import { App, PortState, portStateToButtonProps } from '../model/App';
 import './App.css';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from './model/Settings/DataProcessingSettings';
+} from '../model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
 import LogoImage from './logo192.png';

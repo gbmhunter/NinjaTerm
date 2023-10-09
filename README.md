@@ -41,7 +41,8 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 1. Update the version number in `package.json`.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
-1. Create pull request merging `develop` into `main`.
+1. Commit changes and push to `develop`.
+1. Create pull request on GitHub merging `develop` into `main`.
 1. Once the build on `develop` has been successfully run, merge the `develop` branch into `main` via the merge request.
 1. Tag the branch on main with the version number, e.g. `v4.1.0`.
 1. Create a release on GitHub pointing to the tag.
@@ -50,7 +51,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Deployment
 
-Netlify is used to deploy and host the static NinjaTerm HTML/JS.
+Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automatically deploys when the `main` branch is updated. Netlify also creates preview deploys on pull requests (link will be automatically posted into the PR comments).
 
 ## Code Architecture
 
@@ -60,15 +61,14 @@ Create React App (CRA) with the typescript PWA template [docs here](https://crea
 npx create-react-app my-app --template cra-template-pwa-typescript
 ```
 
-MobX is used to store the application state. The application model is under `src/model/`.
+The React based user interface code is under `src/view`.
 
-## GitHub Pages
-
-The `docs/` folder contains the source code for the NinjaTerm homepage, hosted by GitHub Pages. This is automatically build and deployed with new commits pushed to `main`.
+MobX is used to store the application state (model). The React component redraw themselves based on the state of the model. The application model is under `src/model/`.
 
 ## Theme Colors
 
-* DC3545 (red): Primary colour, used for logo.
+* `#DC3545` (red): Primary colour, used for logo.
+* `#E47F37` (orange): Secondary colour, used for buttons on homepage.
 
 ## Extensions
 

@@ -4,19 +4,12 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
-import * as serviceWorkerRegistration from '../serviceWorkerRegistration';
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-// serviceWorkerRegistration.unregister();
-// serviceWorkerRegistration.register();
+import Snackbar from './Snackbar';
 
 declare global {
   interface String {
@@ -101,10 +94,10 @@ export class App {
 
   closedPromise: Promise<void> | null;
 
-  snackBarOpen: boolean;
-
   // Version of the NinjaTerm app. Read from package.json
   version: string;
+
+  snackbar: Snackbar;
 
   constructor(
     testing = false
@@ -115,11 +108,11 @@ export class App {
 
     this.settings = new Settings(this);
 
-    // Need to create terminals before settings, as the settings
-    // will configure the terminals
-    this.txRxTerminal = new Terminal(this.settings);
-    this.rxTerminal = new Terminal(this.settings);
-    this.txTerminal = new Terminal(this.settings);
+    this.snackbar = new Snackbar();
+
+    this.txRxTerminal = new Terminal(this.settings, this.snackbar, true);
+    this.rxTerminal = new Terminal(this.settings, this.snackbar, false); // Not focusable
+    this.txTerminal = new Terminal(this.settings, this.snackbar, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -129,11 +122,9 @@ export class App {
     this.reader = null;
     this.closedPromise = null;
 
-    this.snackBarOpen = false;
-
     console.log('Started NinjaTerm.')
 
-    // this.runTestMode();
+    // this.runTestModeBytes0To255();
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -166,8 +157,22 @@ export class App {
     }, 200);
   }
 
-  setSnackBarOpen(trueFalse: boolean) {
-    this.snackBarOpen = trueFalse;
+  /** Function used for testing when you don't have an Arduino handy.
+   * Sets up a interval timer to add fake RX data.
+   * Change as needed for testing!
+   */
+  runTestModeBytes0To255() {
+    console.log('runTestMode2() called.');
+    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 0;
+    setInterval(() => {
+      this.parseRxData(Uint8Array.from([ testCharIdx ]));
+      testCharIdx += 1;
+      if (testCharIdx === 256) {
+        testCharIdx = 0;
+      }
+    }, 200);
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -195,7 +200,7 @@ export class App {
         localPort = await navigator.serial.requestPort();
       } catch (error) {
           console.log('Error occurred. error=', error);
-          this.sendToSnackbar('User cancelled port selection.', 'error');
+          this.snackbar.sendToSnackbar('User cancelled port selection.', 'error');
           return;
       }
       console.log('Got local port, now setting state...');
@@ -223,13 +228,13 @@ export class App {
           const msg = 'Serial port is already in use by another program.\n'
                     + 'Reported error from port.open():\n'
                     + `${error}`
-          this.sendToSnackbar(msg, 'error');
+          this.snackbar.sendToSnackbar(msg, 'error');
           console.log(msg);
         } else {
           const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
           + 'Reported error from port.open():\n'
           + `${error}`
-          this.sendToSnackbar(msg, 'error');
+          this.snackbar.sendToSnackbar(msg, 'error');
           console.log(msg);
         }
       } else {
@@ -237,7 +242,7 @@ export class App {
         const msg = `Unrecognized error occurred when trying to open serial port.\n`
         + 'Reported error from port.open():\n'
         + `${error}`
-        this.sendToSnackbar(msg, 'error');
+        this.snackbar.sendToSnackbar(msg, 'error');
         console.log(msg);
       }
 
@@ -246,7 +251,7 @@ export class App {
       return;
     }
     console.log('Serial port opened.');
-    this.sendToSnackbar('Serial port opened.', 'success');
+    this.snackbar.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
@@ -281,6 +286,7 @@ export class App {
           // This is called if the USB serial device is removed whilst
           // reading
           console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
+          // These error are described at https://wicg.github.io/serial/
           // @ts-ignore:
           if (error instanceof DOMException) {
             console.log('Exception was DOMException. error.name=', error.name);
@@ -288,24 +294,34 @@ export class App {
             // potentially make buffer size to port.open() larger or speed up processing/rendering
             // if this occurs often. This is non-fatal, readable will not be null
             if (error.name === 'BufferOverrunError') {
-              this.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
+              this.snackbar.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
             } else if (error.name === 'BreakError') {
-              this.sendToSnackbar('Encountered break signal.\n'
+              this.snackbar.sendToSnackbar('Encountered break signal.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
-            } else {
+            } else if (error.name === 'FramingError') {
+              this.snackbar.sendToSnackbar('Encountered framing error.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            }  else if (error.name === 'ParityError') {
+              this.snackbar.sendToSnackbar('Encountered parity error.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'warning');
+            }  else {
               const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
                           + 'Reported error from port.read():\n'
                           + `${error}`;
-              this.sendToSnackbar(msg, 'error');
+              this.snackbar.sendToSnackbar(msg, 'error');
               console.log(msg);
             }
           } else {
-            this.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
+            this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
           }
 
           // this.setPortState(PortState.CLOSED);
@@ -327,21 +343,8 @@ export class App {
   }
 
   /**
-   * Enqueues a message to the snackbar used for temporary status updates to the user.
+   * In normal operation this is called from the readUntilClose() function above.
    *
-   * @param msg The message you want to display. Use "\n" to insert new lines.
-   * @param variant The variant (e.g. error, warning) of snackbar you want to display.
-   */
-  sendToSnackbar(msg: string, variant: VariantType) {
-    enqueueSnackbar(
-      msg,
-      {
-        variant: variant,
-        style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-      });
-  }
-
-  /**
    * Unit tests call this instead of mocking out the serial port read() function
    * as setting up the deferred promise was too tricky.
    *
@@ -369,7 +372,7 @@ export class App {
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
-    this.sendToSnackbar('Serial port closed.', 'success');
+    this.snackbar.sendToSnackbar('Serial port closed.', 'success');
     this.reader = null;
     this.closedPromise = null;
   }
@@ -387,6 +390,13 @@ export class App {
    */
   async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     // console.log('handleKeyDown() called. event=', event, this);
+
+    // Prevent Tab press from moving focus to another element on screen
+    // Do this even if port is not opened
+    if (event.key === 'Tab') {
+      event.preventDefault();
+    }
+
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
@@ -430,8 +440,11 @@ export class App {
       } else if (event.key === 'ArrowDown') {
         // Send "ESC[B" (go down 1)
         bytesToWrite.push(0x1B, '['.charCodeAt(0), 'B'.charCodeAt(0));
-      // If we get here, we don't know what to do with the key press
+      } else if (event.key === 'Tab') {
+        // Send horizontal tab, HT, 0x09
+        bytesToWrite.push(0x09);
       } else {
+        // If we get here, we don't know what to do with the key press
         console.log('Unsupported char! event=', event);
         return;
       }

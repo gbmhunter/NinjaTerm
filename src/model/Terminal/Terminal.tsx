@@ -1,24 +1,15 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, observe, reaction } from 'mobx';
-import { ReactElement } from 'react';
-// import { TextEncoder, TextDecoder } from 'util';
-// import { assert } from 'console';
+import { autorun, makeAutoObservable } from 'mobx';
 
+import { Settings } from 'model/Settings/Settings';
+import Snackbar from 'model/Snackbar';
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
-import { App } from '../App';
-import { Settings } from '../Settings/Settings';
-
-// Polyfill because TextDecoder is not bundled with jsdom 16 and breaks Jest, see
-// https://stackoverflow.com/questions/68468203/why-am-i-getting-textencoder-is-not-defined-in-jest
-// Object.assign(global, { TextDecoder, TextEncoder });
 
 /**
  * Represents a single terminal-style user interface.
  */
 export default class Terminal {
-  outputHtml: ReactElement[];
-
   // This represents the current style active on the terminal
   currentStyle: {};
 
@@ -67,14 +58,24 @@ export default class Terminal {
   // Used to know when to capture key strokes for the Terminal
   isFocused: boolean;
 
-  constructor(settings: Settings) {
+  // If this is set to false, the Terminal is not focusable. It will not have a background
+  // glow on hover or click, and the cursor will always outlined, never filled in.
+  isFocusable: boolean;
+
+  snackbar: Snackbar;
+
+  constructor(settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
     this.settings = settings;
+    this.snackbar = snackbar;
+    this.isFocusable = isFocusable;
 
     autorun(() => {
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
-        this.addVisibleChars(this.partialEscapeCode);
+        for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
+          this.addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+        }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
@@ -89,7 +90,6 @@ export default class Terminal {
     //   }
     // )
 
-    this.outputHtml = [];
     this.cursorPosition = [0, 0];
 
     this.scrollLock = true;
@@ -145,15 +145,32 @@ export default class Terminal {
     // Parse each character
     // console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
-    const dataAsStr = String.fromCharCode.apply(null, Array.from(data));
+
+    // This variable can get modified during the loop, for example if a partial escape code
+    // reaches it's length limit, the ESC char is stripped and the remainder of the partial is
+    // prepending onto dataAsStr for further processing
+    // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
+
+    let remainingData: number[] = []
     for (let idx = 0; idx < data.length; idx += 1) {
-      const char = dataAsStr[idx];
+      remainingData.push(data[idx]);
+    }
+
+    while (true) {
+
+      // Remove char from start of remaining data
+      let rxByte = remainingData.shift();
+      if (rxByte === undefined) {
+        break;
+      }
+
+      // const char = dataAsStr[idx];
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
       // Don't want to interpret new lines if we are half-way
       // through processing an ANSI escape code
-      if (this.inIdleState && char === '\n') {
+      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
         this.moveToNewLine();
         // this.limitNumRows();
         // eslint-disable-next-line no-continue
@@ -162,12 +179,12 @@ export default class Terminal {
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
-        this.addVisibleChar(char);
+        this.addVisibleChar(rxByte);
         // this.limitNumRows();
         continue;
       }
 
-      if (char === '\x1B') {
+      if (rxByte === 0x1B) {
         // console.log('Start of escape sequence found!');
         this.resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
@@ -178,7 +195,7 @@ export default class Terminal {
       // character is to be displayed
       if (this.inAnsiEscapeCode) {
         // Add received char to partial escape code
-        this.partialEscapeCode += char;
+        this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
@@ -187,7 +204,8 @@ export default class Terminal {
         if (this.inCSISequence) {
           // console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
-          if (char.toUpperCase() !== char.toLowerCase()) {
+          const charStr = String.fromCharCode(rxByte);
+          if (charStr.toUpperCase() !== charStr.toLowerCase()) {
             // console.log(
             //   'Received terminating letter of CSI sequence! Escape code = ',
             //   this.partialEscapeCode
@@ -200,7 +218,25 @@ export default class Terminal {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.addVisibleChar(char);
+        this.addVisibleChar(rxByte);
+      }
+
+      // When we get to the end of parsing, check that if we are still
+      // parsing an escape code, and we've hit the escape code length limit,
+      // then bail on escape code parsing. Emit partial code as data and go back to IDLE
+      const maxEscapeCodeLengthChars = this.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
+      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
+        console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
+        this.snackbar.sendToSnackbar(
+          `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
+          'warning');
+        // Remove the ESC byte, and then prepend the rest onto the data to be processed
+        // Got to shift them in backwards
+        for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
+          remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+        }
+        this.resetEscapeCodeParserState();
+        this.inIdleState = true;
       }
     }
 
@@ -432,9 +468,9 @@ export default class Terminal {
     this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
-  addVisibleChars(chars: string) {
-    for (let idx = 0; idx < chars.length; idx += 1) {
-      this.addVisibleChar(chars[idx]);
+  addVisibleChars(rxBytes: number[]) {
+    for (let idx = 0; idx < rxBytes.length; idx += 1) {
+      this.addVisibleChar(rxBytes[idx]);
     }
   }
 
@@ -443,10 +479,15 @@ export default class Terminal {
    * Cursor is also incremented to next suitable position.
    * @param char Must be a single printable character only.
    */
-  addVisibleChar(char: string) {
+  addVisibleChar(rxByte: number) {
     // assert(char.length === 1);
     const terminalChar = new TerminalChar();
-    terminalChar.char = char;
+
+    if (rxByte === 0x00) {
+      terminalChar.char = String.fromCharCode(0x2400);
+    } else {
+      terminalChar.char = String.fromCharCode(rxByte);
+    }
 
     // Calculate the foreground color CSS
     let foregroundColorCss = '';
@@ -512,8 +553,6 @@ export default class Terminal {
   clearData() {
     this.currentStyle = {};
 
-    this.outputHtml = [];
-    this.outputHtml.push(<span key={this.cursorPosition[0]}> </span>);
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
@@ -622,7 +661,17 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Use this to set whether the terminal is considered focused or not. If focused, the
+   * terminal will be given a glow border and the cursor will go solid.
+   *
+   * @param trueFalse True to set as focused.
+   */
   setIsFocused(trueFalse: boolean) {
+    // Only let this be set if terminal is focusable
+    if (!this.isFocusable) {
+      return;
+    }
     this.isFocused = trueFalse;
   }
 }
