@@ -4,12 +4,12 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { VariantType, enqueueSnackbar } from 'notistack';
 
 import packageDotJson from '../../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
+import Snackbar from './Snackbar';
 
 declare global {
   interface String {
@@ -94,10 +94,10 @@ export class App {
 
   closedPromise: Promise<void> | null;
 
-  snackBarOpen: boolean;
-
   // Version of the NinjaTerm app. Read from package.json
   version: string;
+
+  snackbar: Snackbar;
 
   constructor(
     testing = false
@@ -108,11 +108,11 @@ export class App {
 
     this.settings = new Settings(this);
 
-    // Need to create terminals before settings, as the settings
-    // will configure the terminals
-    this.txRxTerminal = new Terminal(this.settings, true);
-    this.rxTerminal = new Terminal(this.settings, false); // Not focusable
-    this.txTerminal = new Terminal(this.settings, true);
+    this.snackbar = new Snackbar();
+
+    this.txRxTerminal = new Terminal(this.settings, this.snackbar, true);
+    this.rxTerminal = new Terminal(this.settings, this.snackbar, false); // Not focusable
+    this.txTerminal = new Terminal(this.settings, this.snackbar, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -121,8 +121,6 @@ export class App {
     this.serialPortInfo = null;
     this.reader = null;
     this.closedPromise = null;
-
-    this.snackBarOpen = false;
 
     console.log('Started NinjaTerm.')
 
@@ -159,10 +157,6 @@ export class App {
     }, 200);
   }
 
-  setSnackBarOpen(trueFalse: boolean) {
-    this.snackBarOpen = trueFalse;
-  }
-
   setSettingsDialogOpen(trueFalse: boolean) {
     this.settingsDialogOpen = trueFalse;
   }
@@ -188,7 +182,7 @@ export class App {
         localPort = await navigator.serial.requestPort();
       } catch (error) {
           console.log('Error occurred. error=', error);
-          this.sendToSnackbar('User cancelled port selection.', 'error');
+          this.snackbar.sendToSnackbar('User cancelled port selection.', 'error');
           return;
       }
       console.log('Got local port, now setting state...');
@@ -216,13 +210,13 @@ export class App {
           const msg = 'Serial port is already in use by another program.\n'
                     + 'Reported error from port.open():\n'
                     + `${error}`
-          this.sendToSnackbar(msg, 'error');
+          this.snackbar.sendToSnackbar(msg, 'error');
           console.log(msg);
         } else {
           const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
           + 'Reported error from port.open():\n'
           + `${error}`
-          this.sendToSnackbar(msg, 'error');
+          this.snackbar.sendToSnackbar(msg, 'error');
           console.log(msg);
         }
       } else {
@@ -230,7 +224,7 @@ export class App {
         const msg = `Unrecognized error occurred when trying to open serial port.\n`
         + 'Reported error from port.open():\n'
         + `${error}`
-        this.sendToSnackbar(msg, 'error');
+        this.snackbar.sendToSnackbar(msg, 'error');
         console.log(msg);
       }
 
@@ -239,7 +233,7 @@ export class App {
       return;
     }
     console.log('Serial port opened.');
-    this.sendToSnackbar('Serial port opened.', 'success');
+    this.snackbar.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
     // clicks "Open" and the port opens successfully.
@@ -282,22 +276,22 @@ export class App {
             // potentially make buffer size to port.open() larger or speed up processing/rendering
             // if this occurs often. This is non-fatal, readable will not be null
             if (error.name === 'BufferOverrunError') {
-              this.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
+              this.snackbar.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
             } else if (error.name === 'BreakError') {
-              this.sendToSnackbar('Encountered break signal.\n'
+              this.snackbar.sendToSnackbar('Encountered break signal.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
             } else if (error.name === 'FramingError') {
-              this.sendToSnackbar('Encountered framing error.\n'
+              this.snackbar.sendToSnackbar('Encountered framing error.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
             }  else if (error.name === 'ParityError') {
-              this.sendToSnackbar('Encountered parity error.\n'
+              this.snackbar.sendToSnackbar('Encountered parity error.\n'
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
@@ -305,11 +299,11 @@ export class App {
               const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
                           + 'Reported error from port.read():\n'
                           + `${error}`;
-              this.sendToSnackbar(msg, 'error');
+              this.snackbar.sendToSnackbar(msg, 'error');
               console.log(msg);
             }
           } else {
-            this.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
+            this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
           }
 
           // this.setPortState(PortState.CLOSED);
@@ -328,21 +322,6 @@ export class App {
 
     console.log('Closing port...');
     await this.port?.close();
-  }
-
-  /**
-   * Enqueues a message to the snackbar used for temporary status updates to the user.
-   *
-   * @param msg The message you want to display. Use "\n" to insert new lines.
-   * @param variant The variant (e.g. error, warning) of snackbar you want to display.
-   */
-  sendToSnackbar(msg: string, variant: VariantType) {
-    enqueueSnackbar(
-      msg,
-      {
-        variant: variant,
-        style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
-      });
   }
 
   /**
@@ -375,7 +354,7 @@ export class App {
     await this.closedPromise;
 
     this.setPortState(PortState.CLOSED);
-    this.sendToSnackbar('Serial port closed.', 'success');
+    this.snackbar.sendToSnackbar('Serial port closed.', 'success');
     this.reader = null;
     this.closedPromise = null;
   }

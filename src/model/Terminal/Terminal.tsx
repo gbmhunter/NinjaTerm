@@ -1,9 +1,10 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable } from 'mobx';
 
+import { Settings } from 'model/Settings/Settings';
+import Snackbar from 'model/Snackbar';
 import TerminalRow from './TerminalRow';
 import TerminalChar from './TerminalChar';
-import { Settings } from '../Settings/Settings';
 
 /**
  * Represents a single terminal-style user interface.
@@ -61,8 +62,11 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  constructor(settings: Settings, isFocusable: boolean) {
+  snackbar: Snackbar;
+
+  constructor(settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
     this.settings = settings;
+    this.snackbar = snackbar;
     this.isFocusable = isFocusable;
 
     autorun(() => {
@@ -220,6 +224,9 @@ export default class Terminal {
       const maxEscapeCodeLengthChars = this.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
+        this.snackbar.sendToSnackbar(
+          `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
+          'warning');
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
         // Got to shift them in backwards
         for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
