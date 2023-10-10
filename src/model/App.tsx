@@ -10,6 +10,7 @@ import packageDotJson from '../../package.json'
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/Terminal';
 import Snackbar from './Snackbar';
+import Graphing from './Graphing/Graphing';
 
 declare global {
   interface String {
@@ -49,6 +50,15 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
     icon: <StopIcon />,
   },
 };
+
+/**
+ * Enumerates the possible things to display as the "main pane".
+ * This is the large pane that takes up most of the screen.
+ */
+export enum MainPanes {
+  TERMINAL,
+  GRAPHING,
+}
 
 export class App {
 
@@ -99,6 +109,10 @@ export class App {
 
   snackbar: Snackbar;
 
+  shownMainPane: MainPanes;
+
+  graphing: Graphing;
+
   constructor(
     testing = false
   ) {
@@ -121,6 +135,12 @@ export class App {
     this.serialPortInfo = null;
     this.reader = null;
     this.closedPromise = null;
+
+    // Show the terminal by default
+    this.shownMainPane = MainPanes.TERMINAL;
+
+    // Create graphing instance. Graphing is disabled by default.
+    this.graphing = new Graphing();
 
     console.log('Started NinjaTerm.')
 
@@ -157,9 +177,7 @@ export class App {
     }, 200);
   }
 
-  /** Function used for testing when you don't have an Arduino handy.
-   * Sets up a interval timer to add fake RX data.
-   * Change as needed for testing!
+  /** Send bytes 0 thru to 255 as RX data.
    */
   runTestModeBytes0To255() {
     console.log('runTestMode2() called.');
@@ -480,5 +498,12 @@ export class App {
 
   setStatusMsgScrollLock(trueFalse: boolean) {
     this.statusMsgScrollLock = trueFalse;
+  }
+
+  /**
+   * Sets the main pane to be shown.
+   */
+  setShownMainPane(newPane: MainPanes) {
+    this.shownMainPane = newPane;
   }
 }

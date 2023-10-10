@@ -1,4 +1,3 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -7,6 +6,7 @@ import {
   ButtonPropsColorOverrides,
   FormControl,
   FormControlLabel,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -18,10 +18,12 @@ import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ClearIcon from '@mui/icons-material/Clear';
 import SettingsIcon from '@mui/icons-material/Settings';
+import TimelineIcon from '@mui/icons-material/Timeline';
+import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, PortState, portStateToButtonProps } from '../model/App';
+import { App, MainPanes, PortState, portStateToButtonProps } from '../model/App';
 import './App.css';
 import {
   DataViewConfiguration,
@@ -29,6 +31,7 @@ import {
 } from '../model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './TerminalView';
+import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
 
@@ -105,6 +108,17 @@ const AppView = observer((props: Props) => {
     );
   }
 
+  let mainPaneComponent;
+  if (app.shownMainPane === MainPanes.TERMINAL) {
+    mainPaneComponent = terminals;
+  } else if (app.shownMainPane === MainPanes.GRAPHING) {
+    mainPaneComponent = <GraphView app={app} />;
+  } else {
+    throw Error(
+      `Unsupported main pane. mainPane=${app.shownMainPane}`
+    );
+  }
+
   // Attach listener to catch key presses over entire app
   // NOTE: keypress is not sufficient, as it does not fire when Backspace is pressed
   // const keyEvent = 'keypress';
@@ -153,16 +167,36 @@ const AppView = observer((props: Props) => {
             {/* ================== LOGO ==================== */}
             <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
 
-            {/* ================== SETTINGS BUTTON ==================== */}
-            <Button
-              variant="outlined"
+            {/* SETTINGS BUTTON */}
+            {/* ==================================================== */}
+            <IconButton
               onClick={() => {
                 app.setSettingsDialogOpen(true);
               }}
-              startIcon={<SettingsIcon />}
+              color="primary"
               data-testid="settings-button">
-              Settings
-            </Button>
+              <SettingsIcon />
+            </IconButton>
+            {/* TERMINAL BUTTON */}
+            {/* ==================================================== */}
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.TERMINAL);
+              }}
+              color="primary"
+              data-testid="graph-button">
+                <TerminalIcon />
+            </IconButton>
+            {/* GRAPH BUTTON */}
+            {/* ==================================================== */}
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.GRAPHING);
+              }}
+              color="primary"
+              data-testid="graph-button">
+                <TimelineIcon />
+            </IconButton>
             {/* ================== OPEN/CLOSE BUTTON ==================== */}
             <Button
               variant="outlined"
@@ -261,8 +295,9 @@ const AppView = observer((props: Props) => {
             {/* ============================ Ko-Fi "Donate" button =========================== */}
             <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
           </Box>
-          {/* ================== DATA PANES ==================== */}
-          {terminals}
+          {/* MAIN PANE */}
+          {/* =================================================================================== */}
+          {mainPaneComponent}
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"

@@ -483,11 +483,12 @@ export default class Terminal {
     // assert(char.length === 1);
     const terminalChar = new TerminalChar();
 
-    if (rxByte === 0x00) {
-      terminalChar.char = String.fromCharCode(0x2400);
-    } else {
-      terminalChar.char = String.fromCharCode(rxByte);
-    }
+    // if (rxByte === 0x00) {
+    //   terminalChar.char = String.fromCharCode(0x2400);
+    // } else {
+    //   terminalChar.char = String.fromCharCode(rxByte);
+    // }
+    terminalChar.char = String.fromCharCode(rxByte);
 
     // Calculate the foreground color CSS
     let foregroundColorCss = '';
