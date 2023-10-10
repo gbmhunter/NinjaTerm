@@ -131,7 +131,7 @@ export default observer((props: Props) => {
           {/* <Line type="monotone" dataKey="uv" stroke="#8884d8" /> */}
           <Scatter
             name="A school"
-            data={app.graphing.data}
+            data={app.graphing.graphData.slice()}
             fill="#8884d8"
             line
             shape="cross"

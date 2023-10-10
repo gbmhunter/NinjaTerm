@@ -140,11 +140,13 @@ export class App {
     this.shownMainPane = MainPanes.TERMINAL;
 
     // Create graphing instance. Graphing is disabled by default.
-    this.graphing = new Graphing();
+    this.graphing = new Graphing(this.snackbar);
 
     console.log('Started NinjaTerm.')
 
     // this.runTestModeBytes0To255();
+    // this.runTestModeGraphData();
+
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -191,6 +193,23 @@ export class App {
         testCharIdx = 0;
       }
     }, 200);
+  }
+
+  /** Test mode for graphs
+   */
+  runTestModeGraphData() {
+    console.log('runTestModeGraphData() called.');
+    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 0;
+    setInterval(() => {
+      const rxData = new TextEncoder().encode('y=10\n');
+      this.parseRxData(rxData);
+      testCharIdx += 1;
+      if (testCharIdx === 256) {
+        testCharIdx = 0;
+      }
+    }, 2000);
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -373,6 +392,7 @@ export class App {
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
     this.rxTerminal.parseData(rxData);
+    this.graphing.parseData(rxData);
     this.numBytesReceived += rxData.length;
   }
 
