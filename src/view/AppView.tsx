@@ -30,7 +30,7 @@ import {
   dataViewConfigEnumToDisplayName,
 } from '../model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
-import TerminalView from './TerminalView';
+import TerminalView from './Terminal/SingleTerminalView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
@@ -86,7 +86,7 @@ const AppView = observer((props: Props) => {
   const { app } = props;
 
   // TERMINAL CREATION
-  // =================
+  // ==========================================================================
   // Create terminals based on selected configuration
   let terminals;
   if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
@@ -108,8 +108,12 @@ const AppView = observer((props: Props) => {
     );
   }
 
+  // SELECT CORRECT MAIN PANE
+  // ==========================================================================
   let mainPaneComponent;
-  if (app.shownMainPane === MainPanes.TERMINAL) {
+  if (app.shownMainPane === MainPanes.SETTINGS) {
+    mainPaneComponent = <SettingsDialog appStore={app} />;
+  } else if (app.shownMainPane === MainPanes.TERMINAL) {
     mainPaneComponent = terminals;
   } else if (app.shownMainPane === MainPanes.GRAPHING) {
     mainPaneComponent = <GraphView app={app} />;
@@ -146,9 +150,6 @@ const AppView = observer((props: Props) => {
           padding: '10px 10px 10px 0px', // No padding on left
         }}
       >
-        {/* SettingsDialog is a modal */}
-        <SettingsDialog appStore={app} />
-
         <div className="left-hand-app-bar"
           style={{
             width: '50px',
@@ -162,13 +163,13 @@ const AppView = observer((props: Props) => {
         >
 
           {/* ================== LOGO ==================== */}
-          <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
+          <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px', marginBottom: '20px' }} />
 
           {/* SETTINGS BUTTON */}
           {/* ==================================================== */}
           <IconButton
             onClick={() => {
-              app.setSettingsDialogOpen(true);
+              app.setShownMainPane(MainPanes.SETTINGS);
             }}
             color="primary"
             data-testid="settings-button">
@@ -176,25 +177,25 @@ const AppView = observer((props: Props) => {
           </IconButton>
 
           {/* TERMINAL BUTTON */}
-            {/* ==================================================== */}
-            <IconButton
-              onClick={() => {
-                app.setShownMainPane(MainPanes.TERMINAL);
-              }}
-              color="primary"
-              data-testid="terminal-button">
-                <TerminalIcon />
-            </IconButton>
-            {/* GRAPHING BUTTON */}
-            {/* ==================================================== */}
-            <IconButton
-              onClick={() => {
-                app.setShownMainPane(MainPanes.GRAPHING);
-              }}
-              color="primary"
-              data-testid="show-graphing-pane-button">
-                <TimelineIcon />
-            </IconButton>
+          {/* ==================================================== */}
+          <IconButton
+            onClick={() => {
+              app.setShownMainPane(MainPanes.TERMINAL);
+            }}
+            color="primary"
+            data-testid="show-terminal-button">
+              <TerminalIcon />
+          </IconButton>
+          {/* GRAPHING BUTTON */}
+          {/* ==================================================== */}
+          <IconButton
+            onClick={() => {
+              app.setShownMainPane(MainPanes.GRAPHING);
+            }}
+            color="primary"
+            data-testid="show-graphing-pane-button">
+              <TimelineIcon />
+          </IconButton>
 
         </div>
         <div
@@ -324,6 +325,8 @@ const AppView = observer((props: Props) => {
           {/* MAIN PANE */}
           {/* =================================================================================== */}
           {mainPaneComponent}
+
+
           {/* ================== BOTTOM TOOLBAR BAR ==================== */}
           <Box
             id="bottom-status-bar"

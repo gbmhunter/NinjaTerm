@@ -87,16 +87,15 @@ export async function createAppWithMockSerialPort() {
   render(<AppView app={app} />);
 
   // Make sure dialog window is not open by default
-  let dialogWindow = screen.queryByRole('dialog');
-  expect(dialogWindow).toBeNull();
+  // let dialogWindow = screen.queryByRole('dialog');
+  // expect(dialogWindow).toBeNull();
 
   // Click button to open settings dialog window
   const button = await screen.findByTestId('settings-button');
   fireEvent.click(button);
 
-  dialogWindow = screen.getByRole('dialog');
-  // Dialog window should now be in the DOM and visible
-  expect(dialogWindow).toBeVisible();
+  let settingsPane = screen.getByTestId('settings-pane');
+  expect(settingsPane).toBeVisible();
 
   let requestPortAcessButton = await screen.findByTestId('request-port-access');
 
@@ -105,13 +104,18 @@ export async function createAppWithMockSerialPort() {
   });
 
   // Now click the "Open Port" button
-  const openPortButton = await within(dialogWindow).findByText('Open Port');
+  const openPortButton = await within(settingsPane).findByText('Open Port');
   await waitFor(() => {
     expect(openPortButton).toBeEnabled(); // It should be enabled
   })
   await act(async () => {
     fireEvent.click(openPortButton);
   });
+
+  // Now click the Terminal icon button to go back to the terminal screen
+  const showTerminalButton = await screen.findByTestId('show-terminal-button');
+  fireEvent.click(showTerminalButton);
+
   // Wait for settings dialog to disappear
   await waitFor(() => {
     const settingsDialog = screen.queryByRole('dialog');

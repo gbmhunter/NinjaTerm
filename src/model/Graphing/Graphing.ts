@@ -104,7 +104,7 @@ class Graphing {
    * @param settingValue
    */
   setSetting = (settingName: string, settingValue: string) => {
-    console.log('setSetting() called. settingName: ' + settingName + ', settingValue: ' + settingValue);
+    // console.log('setSetting() called. settingName: ' + settingName + ', settingValue: ' + settingValue);
     if (this.settings.hasOwnProperty(settingName) === false) {
       throw new Error('Unsupported setting name: ' + settingName);
     }
@@ -117,7 +117,7 @@ class Graphing {
     const validatorValues: { [key: string]: any } = {};
     const validatorRules: { [key: string]: string } = {};
     Object.entries(this.settings).forEach(([paramName, paramData]) => {
-      console.log('key: ' + paramName, 'value: ' + paramData);
+      // console.log('key: ' + paramName, 'value: ' + paramData);
       validatorValues[paramName] = paramData.dispValue;
       validatorRules[paramName] = paramData.rule;
     })
@@ -128,7 +128,7 @@ class Graphing {
     // to enable/disable the apply button
     this.isApplyable = validation.passes();
 
-    console.log('isApplyable: ' + this.isApplyable);
+    // console.log('isApplyable: ' + this.isApplyable);
 
     // Now set individual error states and error messages (to display
     // to the user)
@@ -148,9 +148,9 @@ class Graphing {
   }
 
   applyChanges = () => {
-    console.log('applyChanges() called.');
+    // console.log('applyChanges() called.');
     Object.entries(this.settings).forEach(([key, value]) => {
-      console.log('key: ' + key, 'value: ' + value);
+      // console.log('key: ' + key, 'value: ' + value);
       value.appliedValue = value.dispValue;
     })
     this.isApplyable = false;
@@ -165,7 +165,7 @@ class Graphing {
    * @returns
    */
   parseData = (data: Uint8Array) => {
-    console.log('parseData() called.');
+    // console.log('parseData() called.');
     if (!this.graphingEnabled) {
       return;
     }
@@ -173,11 +173,11 @@ class Graphing {
     for (let i = 0; i < data.length; i++) {
       // Convert byte into a character and add to receive buffer
       let char = String.fromCharCode(data[i]);
-      console.log('char: ' + char.charCodeAt(0));
+      // console.log('char: ' + char.charCodeAt(0));
       this.rxDataBuffer += char;
-      console.log('rxDataBuffer: ' + this.rxDataBuffer);
+      // console.log('rxDataBuffer: ' + this.rxDataBuffer);
       if (char === '\n') {
-        console.log('Found data separator.')
+        // console.log('Found data separator.')
         // Found a data separator, so parse the data
         const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.settings.yVarPrefix.appliedValue);
         if (yVarPrefixIdx === -1) {
@@ -194,7 +194,7 @@ class Graphing {
           yValStr += this.rxDataBuffer[j];
         }
         const yVal = parseFloat(yValStr);
-        console.log('yVal: ' + yVal);
+        // console.log('yVal: ' + yVal);
 
         let xVal;
         if (this.settings.xVarSource.appliedValue === 'Received Time') {
@@ -203,7 +203,7 @@ class Graphing {
         } else {
           throw new Error('Unsupported X variable source: ' + this.settings.xVarSource.appliedValue);
         }
-        console.log('xVal: ' + xVal);
+        // console.log('xVal: ' + xVal);
 
         // Add data point to array of points
         this.graphData.push({ x: xVal, y: yVal });
@@ -223,10 +223,8 @@ class Graphing {
 
     }
 
-    console.log('graphData: ' + JSON.stringify(this.graphData));
-
+    // console.log('graphData: ' + JSON.stringify(this.graphData));
   }
-
 }
 
 export default Graphing;

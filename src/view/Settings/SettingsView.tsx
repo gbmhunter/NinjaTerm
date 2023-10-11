@@ -35,19 +35,7 @@ function SettingsDialog(props: Props) {
   };
 
   return (
-    <Dialog
-      open={appStore.settingsDialogOpen}
-      fullWidth
-      maxWidth="lg"
-      PaperProps={{
-        style: {
-          minHeight: '90%', // Overriding the interior paper style to force a fixed height
-          maxHeight: '90%',
-        },
-      }}
-    >
-      <DialogTitle>Settings</DialogTitle>
-      <DialogContent sx={{ height: '100%', display: 'flex' }}>
+      <div data-testid="settings-pane" style={{ height: '100%', display: 'flex' }}>
         {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width
         colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from
         top to bottom */}
@@ -101,18 +89,7 @@ function SettingsDialog(props: Props) {
             }
           </Box>
         </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            appStore.setSettingsDialogOpen(false);
-          }}
-        >
-          Close Settings
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </div>
   );
 }
 

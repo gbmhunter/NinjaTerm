@@ -56,6 +56,7 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
  * This is the large pane that takes up most of the screen.
  */
 export enum MainPanes {
+  SETTINGS,
   TERMINAL,
   GRAPHING,
 }
