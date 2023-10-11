@@ -184,17 +184,17 @@ const AppView = observer((props: Props) => {
                 app.setShownMainPane(MainPanes.TERMINAL);
               }}
               color="primary"
-              data-testid="graph-button">
+              data-testid="terminal-button">
                 <TerminalIcon />
             </IconButton>
-            {/* GRAPH BUTTON */}
+            {/* GRAPHING BUTTON */}
             {/* ==================================================== */}
             <IconButton
               onClick={() => {
                 app.setShownMainPane(MainPanes.GRAPHING);
               }}
               color="primary"
-              data-testid="graph-button">
+              data-testid="show-graphing-pane-button">
                 <TimelineIcon />
             </IconButton>
             {/* ================== OPEN/CLOSE BUTTON ==================== */}

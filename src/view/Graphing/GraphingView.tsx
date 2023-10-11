@@ -179,8 +179,9 @@ export default observer((props: Props) => {
 
       {/* GRAPH */}
       {/* ============================================================== */}
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart>
+      {/* ResponsiveContainer is causing problems with integration tests */}
+      {/* <ResponsiveContainer width="100%" height={400}> */}
+        <ScatterChart width={400} height={400}>
           <Scatter
             name="A school"
             data={app.graphing.graphData.slice()}
@@ -192,7 +193,7 @@ export default observer((props: Props) => {
           <XAxis type="number" dataKey="x" name="stature" unit="cm" />
           <YAxis type="number" dataKey="y" name="weight" unit="kg" />
         </ScatterChart>
-      </ResponsiveContainer>
+      {/* </ResponsiveContainer> */}
     </div>
   );
 });

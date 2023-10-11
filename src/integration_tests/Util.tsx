@@ -184,3 +184,38 @@ export function checkExpectedAgainstActualDisplay(
     }
   }
 }
+
+export class AppHarness {
+
+  app: App;
+  writtenData: number[];
+  constructor(app: App, writtenData: number[]) {
+    this.app = app;
+    this.writtenData = writtenData;
+  }
+
+  public static async build() {
+    let {app, writtenData} = await createAppWithMockSerialPort();
+    let appHarness = new AppHarness(app, writtenData);
+
+    return appHarness;
+  }
+
+  async sendData(data: string) {
+    let dataBytes = new Uint8Array(data.length);
+    for (let i = 0; i < data.length; i += 1) {
+      dataBytes[i] = data.charCodeAt(i);
+    }
+    await act(async () => {
+      this.app.parseRxData(dataBytes);
+    });
+  }
+
+  async enableGraphing() {
+    let showGraphingPaneButton = await screen.findByTestId('show-graphing-pane-button');
+    fireEvent.click(showGraphingPaneButton);
+    let enableGraphingButton = await screen.findByLabelText('Enable Graphing');
+    fireEvent.click(enableGraphingButton);
+    expect(this.app.graphing.graphingEnabled).toBe(true);
+  }
+}
