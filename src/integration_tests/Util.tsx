@@ -185,18 +185,29 @@ export function checkExpectedAgainstActualDisplay(
   }
 }
 
-export class AppHarness {
+/**
+ * Helper class which wraps an App instance and provides some extra
+ * functionality which is useful for integration tests.
+ */
+export class AppTestHarness {
 
   app: App;
   writtenData: number[];
+
   constructor(app: App, writtenData: number[]) {
     this.app = app;
     this.writtenData = writtenData;
   }
 
+  /**
+   * Use this to create an AppTestHarness instance. This is done because
+   * we need to be async, so we can't use the constructor directly.
+   *
+   * @returns AppTestHarness instance.
+   */
   public static async build() {
     let {app, writtenData} = await createAppWithMockSerialPort();
-    let appHarness = new AppHarness(app, writtenData);
+    let appHarness = new AppTestHarness(app, writtenData);
 
     return appHarness;
   }
