@@ -17,7 +17,7 @@ import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
 import { App, portStateToButtonProps, PortState } from "model/App";
-import Terminal from "model/Terminal/Terminal";
+import Terminal from "model/Terminal/SingleTerminal";
 import SingleTerminalView from "./SingleTerminalView";
 import {
   DataViewConfiguration,

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import TerminalChar from './TerminalChar';
+import TerminalChar from './SingleTerminalChar';
 
 /**
  * Represents a single row of characters in the terminal

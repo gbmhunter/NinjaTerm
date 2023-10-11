@@ -6,8 +6,8 @@ import { FixedSizeList } from 'react-window';
 import { toJS } from 'mobx';
 
 import { App } from '../../model/App';
-import Terminal from '../../model/Terminal/Terminal';
-import TerminalRow from '../../model/Terminal/TerminalRow';
+import Terminal from '../../model/Terminal/SingleTerminal';
+import TerminalRow from '../../model/Terminal/SingleTerminalRow';
 import styles from './SingleTerminalView.module.css';
 
 interface Props {

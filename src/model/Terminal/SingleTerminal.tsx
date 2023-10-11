@@ -3,8 +3,8 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import { Settings } from 'model/Settings/Settings';
 import Snackbar from 'model/Snackbar';
-import TerminalRow from './TerminalRow';
-import TerminalChar from './TerminalChar';
+import TerminalRow from './SingleTerminalRow';
+import TerminalChar from './SingleTerminalChar';
 
 /**
  * Represents a single terminal-style user interface.

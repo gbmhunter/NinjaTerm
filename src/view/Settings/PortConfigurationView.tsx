@@ -25,6 +25,9 @@ function PortConfigurationView(props: Props) {
 
   return (
     <Box>
+
+      <div style={{ height: '10px' }}></div>
+
       {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
       <Button
         variant="outlined"
@@ -250,22 +253,6 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: '20px' }}></div>
 
-      <Box display="flex" flexDirection="row">
-        {/*  ====================== CLOSE WINDOW CHECKBOX ============================= */}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={appStore.closeSettingsDialogOnPortOpenOrClose}
-              onChange={(e) => {
-                appStore.setCloseSettingsDialogOnPortOpenOrClose(
-                  e.target.checked
-                );
-              }}
-            />
-          }
-          label="Close this dialog on successful port open or close."
-        />
-      </Box>
       {/*  ====================== PORT STATUS MSG ============================= */}
       <Typography>
         Status: {PortState[appStore.portState]}

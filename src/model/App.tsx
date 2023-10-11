@@ -8,7 +8,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import packageDotJson from '../../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
-import Terminal from './Terminal/Terminal';
+import Terminal from './Terminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 
