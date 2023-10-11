@@ -139,45 +139,43 @@ const AppView = observer((props: Props) => {
     /* ThemeProvider sets theme for all MUI elements */
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <div id="outer-border" style={{ height: '100%', padding: '10px' }}>
+      <div id="outer-border"
+        style={{
+          height: '100%',
+          display: 'flex',
+          padding: '10px 10px 10px 0px', // No padding on left
+        }}
+      >
         {/* SettingsDialog is a modal */}
         <SettingsDialog appStore={app} />
-        <div
+
+        <div className="left-hand-app-bar"
           style={{
+            width: '50px',
+            padding: '10px',
+            borderRight: '1px solid #505050',
             display: 'flex',
             flexDirection: 'column',
-            // flex: 1,
-            // width: '100%',
-            height: '100%',
-            // margin: '30px',
-            // padding: '30px',
+            alignItems: 'center',
+            boxSizing: 'border-box',
           }}
         >
-          {/* =============================================================== */}
-          {/* ========================== TOP MENU BAR ======================= */}
-          {/* =============================================================== */}
-          <Box
-            id="menu"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              height: '40px',
-              gap: '10px',
-              marginBottom: '10px'}}>
-            {/* ================== LOGO ==================== */}
-            <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
 
-            {/* SETTINGS BUTTON */}
-            {/* ==================================================== */}
-            <IconButton
-              onClick={() => {
-                app.setSettingsDialogOpen(true);
-              }}
-              color="primary"
-              data-testid="settings-button">
-              <SettingsIcon />
-            </IconButton>
-            {/* TERMINAL BUTTON */}
+          {/* ================== LOGO ==================== */}
+          <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
+
+          {/* SETTINGS BUTTON */}
+          {/* ==================================================== */}
+          <IconButton
+            onClick={() => {
+              app.setSettingsDialogOpen(true);
+            }}
+            color="primary"
+            data-testid="settings-button">
+            <SettingsIcon />
+          </IconButton>
+
+          {/* TERMINAL BUTTON */}
             {/* ==================================================== */}
             <IconButton
               onClick={() => {
@@ -197,6 +195,34 @@ const AppView = observer((props: Props) => {
               data-testid="show-graphing-pane-button">
                 <TimelineIcon />
             </IconButton>
+
+        </div>
+        <div
+          className="right-hand-column"
+          style={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            // flex: 1,
+            // width: '100%',
+            height: '100%',
+            // margin: '30px',
+            padding: '0 0 0 10px',
+          }}
+        >
+          {/* =============================================================== */}
+          {/* ========================== TOP MENU BAR ======================= */}
+          {/* =============================================================== */}
+          <Box
+            id="menu"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              height: '40px',
+              gap: '10px',
+              marginBottom: '10px'}}>
+
+
             {/* ================== OPEN/CLOSE BUTTON ==================== */}
             <Button
               variant="outlined"
@@ -324,6 +350,7 @@ const AppView = observer((props: Props) => {
             <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
+
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
         Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}
         <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} />
