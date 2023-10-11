@@ -1,4 +1,6 @@
 import { makeAutoObservable } from "mobx";
+import * as Validator from 'validatorjs';
+
 import Snackbar from "model/Snackbar";
 
 class Point {
@@ -24,33 +26,68 @@ class Graphing {
     'Custom',
   ]
 
-  selDataSeparator = 'LF (\\n)';
-
   xVarSources = [
     'Received Time',
     'Counter',
     'In Data',
   ]
 
-  selXVarSource = 'Received Time';
-
-  /**
-   * The string to search for in the RX data to find the Y value for the graph.
-   */
-  yVarPrefix = 'y=';
-
   /**
    * Holds data that has been received but no data separator has been found yet.
    */
   rxDataBuffer: string = '';
 
-  timeAtReset: number = Date.now();
+  settings = {
+    /**
+     * The maximum size of the receive buffer before it is cleared.
+     */
+    maxBufferSize: {
+      dispValue: '100',
+      appliedValue: '100',
+      rule: 'required|integer|min:1|max:1000',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    dataSeparator: {
+      dispValue: 'LF (\\n)',
+      appliedValue: 'LF (\\n)',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    xVarSource: {
+      dispValue: 'Received Time',
+      appliedValue: 'Received Time',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    /**
+     * The string to search for in the RX data to find the Y value for the graph.
+     */
+    yVarPrefix: {
+      dispValue: 'y=',
+      appliedValue: 'y=',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+
+  }
+
+  timeAtReset_ms: number = Date.now();
+
+  isApplyable = false;
 
   constructor(snackbar: Snackbar) {
     this.snackbar = snackbar;
 
-    this.graphData.push({ x: 0, y: 0 });
-    this.graphData.push({ x: 10, y: 10 });
+    // this.graphData.push({ x: 0, y: 0 });
+    // this.graphData.push({ x: 10, y: 10 });
     makeAutoObservable(this);
   }
 
@@ -58,20 +95,69 @@ class Graphing {
     this.graphingEnabled = graphingEnabled;
   }
 
-  setYVarPrefix = (ySearchString: string) => {
-    this.yVarPrefix = ySearchString;
+  /**
+   * General purpose function that can set any parameter in the settings object.
+   *
+   * Always runs validation.
+   *
+   * @param settingName
+   * @param settingValue
+   */
+  setSetting = (settingName: string, settingValue: string) => {
+    console.log('setSetting() called. settingName: ' + settingName + ', settingValue: ' + settingValue);
+    if (this.settings.hasOwnProperty(settingName) === false) {
+      throw new Error('Unsupported setting name: ' + settingName);
+    }
+    (this.settings as any)[settingName].dispValue = settingValue;
+    this.onSettingsChange();
   }
 
-  setSelDataSeparator = (selDataSeparator: string) => {
-    this.selDataSeparator = selDataSeparator;
+  onSettingsChange = () => {
+    // Iterate over every key-value pair in settings
+    const validatorValues: { [key: string]: any } = {};
+    const validatorRules: { [key: string]: string } = {};
+    Object.entries(this.settings).forEach(([paramName, paramData]) => {
+      console.log('key: ' + paramName, 'value: ' + paramData);
+      validatorValues[paramName] = paramData.dispValue;
+      validatorRules[paramName] = paramData.rule;
+    })
+    // Check if settings are valid
+    const validation = new Validator(validatorValues, validatorRules);
+
+    // Calling passes() is needed to run the validation logic. This also assigns the result
+    // to enable/disable the apply button
+    this.isApplyable = validation.passes();
+
+    console.log('isApplyable: ' + this.isApplyable);
+
+    // Now set individual error states and error messages (to display
+    // to the user)
+    Object.entries(this.settings).forEach(
+      ([paramName, paramData]) => {
+        const hasError = validation.errors.has(paramName);
+        // Convert to any type so we can assign to it
+        // const paramDataAny = paramData as any;
+        paramData.hasError = hasError;
+        if (hasError) {
+          paramData.errorMsg = validation.errors.first(paramName);
+        } else {
+          paramData.errorMsg = '';
+        }
+      }
+    );
   }
 
-  setSelXVarSource = (selXVarSource: string) => {
-    this.selXVarSource = selXVarSource;
+  applyChanges = () => {
+    console.log('applyChanges() called.');
+    Object.entries(this.settings).forEach(([key, value]) => {
+      console.log('key: ' + key, 'value: ' + value);
+      value.appliedValue = value.dispValue;
+    })
+    this.isApplyable = false;
   }
 
   /**
-   * Takes incoming data and extracts any data points out of it.
+   * Takes incoming streamed data and extracts any data points out of it.
    *
    * Does nothing if graphing is not enabled.
    *
@@ -93,7 +179,7 @@ class Graphing {
       if (char === '\n') {
         console.log('Found data separator.')
         // Found a data separator, so parse the data
-        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix);
+        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.settings.yVarPrefix.appliedValue);
         if (yVarPrefixIdx === -1) {
           // This line does not contain the Y variable prefix, so skip it
           this.rxDataBuffer = '';
@@ -104,17 +190,18 @@ class Graphing {
         // and call parseFloat on it. This will stop at the first non-numeric
         // character (but will allow things like "."), which is what we want.
         let yValStr = '';
-        for (let j = yVarPrefixIdx + this.yVarPrefix.length; j < this.rxDataBuffer.length; j++) {
+        for (let j = yVarPrefixIdx + this.settings.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
           yValStr += this.rxDataBuffer[j];
         }
         const yVal = parseFloat(yValStr);
         console.log('yVal: ' + yVal);
 
         let xVal;
-        if (this.selXVarSource === 'Received Time') {
-          xVal = Date.now() - this.timeAtReset;
+        if (this.settings.xVarSource.appliedValue === 'Received Time') {
+          // Get the time since the last reset in ms, then convert to s
+          xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
         } else {
-          throw new Error('Unsupported X variable source: ' + this.selXVarSource);
+          throw new Error('Unsupported X variable source: ' + this.settings.xVarSource.appliedValue);
         }
         console.log('xVal: ' + xVal);
 
@@ -126,7 +213,7 @@ class Graphing {
         this.rxDataBuffer = '';
       }
 
-      if (this.rxDataBuffer.length > 100) {
+      if (this.rxDataBuffer.length > parseInt(this.settings.maxBufferSize.appliedValue)) {
         // Buffer is getting too big, so clear it
         this.rxDataBuffer = '';
         this.snackbar.sendToSnackbar(

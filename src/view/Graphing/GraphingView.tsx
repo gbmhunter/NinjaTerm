@@ -1,4 +1,5 @@
 import {
+  Button,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -10,8 +11,6 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import {
-  LineChart,
-  Line,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -26,13 +25,16 @@ interface Props {
   app: App;
 }
 
+/**
+ * The view for the graphing pane.
+ */
 export default observer((props: Props) => {
   const { app } = props;
 
   return (
     <div
       style={{
-        flexGrow: 1,
+        flexGrow: 1, // Make sure it fills the available space, to keep the app header and footer at the top and bottom of the window
         height: "100%",
         display: "flex",
         flexDirection: "column",
@@ -64,10 +66,11 @@ export default observer((props: Props) => {
         <FormControl sx={{ width: 160 }} size="small">
           <InputLabel>Data Separator</InputLabel>
           <Select
-            value={app.graphing.selDataSeparator}
+            value={app.graphing.settings.dataSeparator.dispValue}
             label="Data Separator"
+            name="dataSeparator" // Must match the name of the field in the graphing settings
             onChange={(e) => {
-              app.graphing.setSelDataSeparator(e.target.value);
+              app.graphing.setSetting(e.target.name, e.target.value);
             }}
           >
             {app.graphing.dataSeparators.map((dataSeparator) => {
@@ -81,6 +84,32 @@ export default observer((props: Props) => {
         </FormControl>
       </Tooltip>
 
+      {/* MAX BUFFER SIZE */}
+      {/* ============================================================== */}
+      <Tooltip
+        title="The max. size the graphing receiving buffer can grow to waiting for a data separator. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-1000]."
+        followCursor
+        arrow
+      >
+        <TextField
+          label="Max. Buffer Size"
+          name="maxBufferSize" // Must match the name of the field in the graphing settings
+          size="small"
+          variant="outlined"
+          value={app.graphing.settings.maxBufferSize.dispValue}
+          onChange={(e) => {
+            app.graphing.setSetting(e.target.name, e.target.value);
+          }}
+          error={
+            app.graphing.settings.maxBufferSize.hasError
+          }
+          helperText={
+            app.graphing.settings.maxBufferSize.errorMsg
+          }
+          sx={{ width: "200px" }}
+        />
+      </Tooltip>
+
       {/* X VAR SOURCE */}
       {/* ============================================================== */}
       <Tooltip
@@ -91,9 +120,10 @@ export default observer((props: Props) => {
         <FormControl sx={{ width: 160 }} size="small">
           <InputLabel>X Variable Source</InputLabel>
           <Select
-            value={app.graphing.selXVarSource}
+            name="xVarSource"
+            value={app.graphing.settings.xVarSource.dispValue}
             onChange={(e) => {
-              app.graphing.setSelXVarSource(e.target.value);
+              app.graphing.setSetting(e.target.name, e.target.value);
             }}
           >
             {app.graphing.xVarSources.map((xVarSource) => {
@@ -116,19 +146,41 @@ export default observer((props: Props) => {
       >
         <TextField
           label="Y Variable Prefix"
+          name="yVarPrefix" // Must match the name of the field in the graphing settings
           size="small"
           variant="outlined"
-          value={app.graphing.yVarPrefix}
+          value={app.graphing.settings.yVarPrefix.dispValue}
           onChange={(e) => {
-            app.graphing.setYVarPrefix(e.target.value);
+            app.graphing.setSetting(e.target.name, e.target.value);
           }}
+          error={
+            app.graphing.settings.yVarPrefix.hasError
+          }
+          helperText={
+            app.graphing.settings.yVarPrefix.errorMsg
+          }
           sx={{ width: "200px" }}
         />
       </Tooltip>
 
+      {/* APPLY BUTTON */}
+      {/* ============================================================== */}
+      <Button
+        variant="contained"
+        color="success"
+        disabled={!app.graphing.isApplyable}
+        onClick={() => {
+          app.graphing.applyChanges();
+        }}
+        sx={{ width: '150px' }}
+      >
+        Apply
+      </Button>
+
+      {/* GRAPH */}
+      {/* ============================================================== */}
       <ResponsiveContainer width="100%" height={400}>
         <ScatterChart>
-          {/* <Line type="monotone" dataKey="uv" stroke="#8884d8" /> */}
           <Scatter
             name="A school"
             data={app.graphing.graphData.slice()}
