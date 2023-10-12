@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import * as Validator from 'validatorjs';
+import Validator from 'validatorjs';
 
 import Snackbar from "model/Snackbar";
 
@@ -55,6 +55,14 @@ class Graphing {
       dispValue: 'LF (\\n)',
       appliedValue: 'LF (\\n)',
       rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    maxNumDataPoints: {
+      dispValue: '100',
+      appliedValue: '100',
+      rule: 'required|integer|min:1|max:1000',
       hasError: false,
       errorMsg: '',
     },
@@ -210,6 +218,12 @@ class Graphing {
 
         // Add data point to array of points
         this.graphData.push({ x: xVal, y: yVal });
+
+        // Check if we have exceeded the max number of data points,
+        // and if so, remove the oldest point
+        if (this.graphData.length > parseInt(this.settings.maxNumDataPoints.appliedValue)) {
+          this.graphData.shift();
+        }
 
         // Since data separator has been received and line has been parsed,
         // now clear the buffer

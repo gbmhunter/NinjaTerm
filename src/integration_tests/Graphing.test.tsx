@@ -1,4 +1,12 @@
 import '@testing-library/jest-dom';
+import {
+  render,
+  fireEvent,
+  within,
+  screen,
+  waitFor,
+  act,
+} from '@testing-library/react';
 
 import { AppTestHarness } from './Util';
 
@@ -62,6 +70,35 @@ describe('Graphing tests', () => {
     await appTestHarness.sendData('TEXT BEFORE VALUE y=5 TEXT AFTER VALUE\n');
     expect(appTestHarness.app.graphing.graphData.length).toEqual(1);
     expect(appTestHarness.app.graphing.graphData[0].y).toEqual(5);
+  });
+
+  it.only('should limit max. num of data points', async () => {
+    let appTestHarness = await AppTestHarness.build();
+    await appTestHarness.enableGraphing();
+    expect(appTestHarness.app.graphing.graphData.length).toEqual(0);
+
+    // Set max. num. data points to 2
+    let showGraphingPaneButton = await screen.findByTestId('show-graphing-pane-button');
+    fireEvent.click(showGraphingPaneButton);
+
+    let maxNumDataPointsInput = await screen.findByLabelText('Max. Num. Data Points');
+    fireEvent.change(maxNumDataPointsInput, {target: {value: '2'}});
+
+    // Make sure to apply changes
+    let applyButton = await screen.findByRole('button', {
+      name: /Apply/i
+    })
+    fireEvent.click(applyButton);
+
+    // Send 3 data points
+    await appTestHarness.sendData('y=5\ny=6\ny=7\n');
+
+    // Data should be capped at 2 points
+    expect(appTestHarness.app.graphing.graphData.length).toEqual(2);
+
+    // Newest two points should be present
+    expect(appTestHarness.app.graphing.graphData[0].y).toEqual(6);
+    expect(appTestHarness.app.graphing.graphData[1].y).toEqual(7);
   });
 
 });

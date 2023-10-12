@@ -85,6 +85,7 @@ export async function createAppWithMockSerialPort() {
 
   // Mock out the ResizeObserver, as per
   // https://github.com/maslianok/react-resize-detector/issues/145
+  // TODO: Undo change after tests finish?
   window.ResizeObserver = jest.fn().mockImplementation(() => ({
     observe: jest.fn(),
     unobserve: jest.fn(),

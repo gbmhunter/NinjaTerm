@@ -1,0 +1,10 @@
+.controlPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+  border: 1px solid #505050;
+  border-radius: 5px;
+  width: max-content;
+  padding: 10px;
+}
