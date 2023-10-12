@@ -89,6 +89,10 @@ class Graphing {
 
   }
 
+  /**
+   * Tracks the time when the reset button was pressed. This is used to calculate
+   * the X value for the graph when in "Received Time" mode.
+   */
   timeAtReset_ms: number = Date.now();
 
   isApplyable = false;
@@ -249,6 +253,14 @@ class Graphing {
     while (this.graphData.length > parseInt(this.settings.maxNumDataPoints.appliedValue)) {
       this.graphData.shift();
     }
+  }
+
+  /**
+   * Clears all existing data points and sets the start time back to 0.
+   */
+  resetData = () => {
+    this.graphData = [];
+    this.timeAtReset_ms = Date.now();
   }
 }
 

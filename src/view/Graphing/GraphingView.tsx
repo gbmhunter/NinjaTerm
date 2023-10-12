@@ -71,6 +71,9 @@ export default observer((props: Props) => {
           />
         }
         label="Enable Graphing"
+        sx={{
+          marginLeft: "20px",
+        }}
       />
 
       <div
@@ -207,19 +210,38 @@ export default observer((props: Props) => {
         </div>
       </div>
 
-      {/* APPLY BUTTON */}
-      {/* ============================================================== */}
-      <Button
-        variant="contained"
-        color="success"
-        disabled={!app.graphing.isApplyable}
-        onClick={() => {
-          app.graphing.applyChanges();
-        }}
-        sx={{ width: "150px" }}
-      >
-        Apply
-      </Button>
+      <div aria-label="row-of-buttons"
+        style={{
+          display: "flex",
+          gap: '20px',
+        }}>
+        {/* APPLY BUTTON */}
+        {/* ============================================================== */}
+        <Button
+          variant="contained"
+          color="success"
+          disabled={!app.graphing.isApplyable}
+          onClick={() => {
+            app.graphing.applyChanges();
+          }}
+          sx={{ width: "150px" }}
+        >
+          Apply
+        </Button>
+
+        {/* RESET BUTTON */}
+        {/* ============================================================== */}
+        <Button
+          variant="outlined"
+          color="warning"
+          onClick={() => {
+            app.graphing.resetData();
+          }}
+          sx={{ width: "150px" }}
+        >
+          Reset
+        </Button>
+      </div>
 
       {/* GRAPH (uses recharts) */}
       {/* ============================================================== */}
