@@ -45,6 +45,8 @@ export default observer((props: Props) => {
   }
   const yVarLabel = 'Custom';
 
+  // Wrap the graph in a
+
   return (
     <div
       style={{
@@ -193,9 +195,10 @@ export default observer((props: Props) => {
 
       {/* GRAPH (uses recharts) */}
       {/* ============================================================== */}
-      {/* ResponsiveContainer is causing problems with integration tests */}
-      {/* <ResponsiveContainer width="100%" height={400}> */}
-        <ScatterChart width={800} height={400}>
+      {/* ResponsiveContainer was causing problems with tests, but
+      fixed with ResizeObserver mocked */}
+      <ResponsiveContainer width="100%" height={400}>
+        <ScatterChart>
           <Scatter
             name="A school"
             data={app.graphing.graphData.slice()}
@@ -207,7 +210,7 @@ export default observer((props: Props) => {
           <XAxis type="number" dataKey="x" name="stature" stroke="#ccc" label={{ value: xVarLabel, position: "insideBottom", dy: 10 }} />
           <YAxis type="number" dataKey="y" name="weight" stroke="#ccc" label={{ value: yVarLabel, position: "insideLeft", angle: -90, dx: 20 }} />
         </ScatterChart>
-      {/* </ResponsiveContainer> */}
+      </ResponsiveContainer>
     </div>
   );
 });

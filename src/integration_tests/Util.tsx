@@ -83,6 +83,14 @@ export async function createAppWithMockSerialPort() {
   // @ts-ignore:next-line
   global.navigator.serial = mockSerial;
 
+  // Mock out the ResizeObserver, as per
+  // https://github.com/maslianok/react-resize-detector/issues/145
+  window.ResizeObserver = jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  }));
+
   const app = new App(true);
   render(<AppView app={app} />);
 
