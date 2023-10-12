@@ -31,6 +31,20 @@ interface Props {
 export default observer((props: Props) => {
   const { app } = props;
 
+  // Calculate x-axis label based on x variable source
+  const xVarSource = app.graphing.settings.xVarSource.appliedValue;
+  let xVarLabel = '';
+  if (xVarSource === 'Received Time') {
+    xVarLabel = 'Time [s]';
+  } else if (xVarSource === 'Counter') {
+    xVarLabel = 'Counts';
+  } else if (xVarSource === 'In Data') {
+    xVarLabel = 'Custom';
+  } else {
+    throw new Error('Unsupported X variable source: ' + xVarSource);
+  }
+  const yVarLabel = 'Custom';
+
   return (
     <div
       style={{
@@ -177,21 +191,21 @@ export default observer((props: Props) => {
         Apply
       </Button>
 
-      {/* GRAPH */}
+      {/* GRAPH (uses recharts) */}
       {/* ============================================================== */}
       {/* ResponsiveContainer is causing problems with integration tests */}
       {/* <ResponsiveContainer width="100%" height={400}> */}
-        <ScatterChart width={400} height={400}>
+        <ScatterChart width={800} height={400}>
           <Scatter
             name="A school"
             data={app.graphing.graphData.slice()}
-            fill="#8884d8"
+            fill="#00fc08" // Bright green
             line
-            shape="cross"
+            // shape="cross"
           />
-          <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-          <XAxis type="number" dataKey="x" name="stature" unit="cm" />
-          <YAxis type="number" dataKey="y" name="weight" unit="kg" />
+          <CartesianGrid stroke="#555" strokeDasharray="5 5" />
+          <XAxis type="number" dataKey="x" name="stature" stroke="#ccc" label={{ value: xVarLabel, position: "insideBottom", dy: 10 }} />
+          <YAxis type="number" dataKey="y" name="weight" stroke="#ccc" label={{ value: yVarLabel, position: "insideLeft", angle: -90, dx: 20 }} />
         </ScatterChart>
       {/* </ResponsiveContainer> */}
     </div>

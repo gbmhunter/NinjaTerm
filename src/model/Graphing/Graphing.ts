@@ -32,6 +32,8 @@ class Graphing {
     'In Data',
   ]
 
+  xVarUnit = 's';
+
   /**
    * Holds data that has been received but no data separator has been found yet.
    */
@@ -153,6 +155,7 @@ class Graphing {
       // console.log('key: ' + key, 'value: ' + value);
       value.appliedValue = value.dispValue;
     })
+
     this.isApplyable = false;
   }
 
