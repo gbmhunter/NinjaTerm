@@ -164,6 +164,10 @@ class Graphing {
       value.appliedValue = value.dispValue;
     })
 
+    // User could have reduced number of data points,
+    // so limit if needed
+    this.limitNumDataPoints();
+
     this.isApplyable = false;
   }
 
@@ -219,11 +223,7 @@ class Graphing {
         // Add data point to array of points
         this.graphData.push({ x: xVal, y: yVal });
 
-        // Check if we have exceeded the max number of data points,
-        // and if so, remove the oldest point
-        if (this.graphData.length > parseInt(this.settings.maxNumDataPoints.appliedValue)) {
-          this.graphData.shift();
-        }
+        this.limitNumDataPoints();
 
         // Since data separator has been received and line has been parsed,
         // now clear the buffer
@@ -241,6 +241,14 @@ class Graphing {
     }
 
     // console.log('graphData: ' + JSON.stringify(this.graphData));
+  }
+
+  limitNumDataPoints = () => {
+    // Check if we have exceeded the max number of data points,
+    // and if so, remove the oldest point
+    while (this.graphData.length > parseInt(this.settings.maxNumDataPoints.appliedValue)) {
+      this.graphData.shift();
+    }
   }
 }
 
