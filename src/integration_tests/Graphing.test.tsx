@@ -101,4 +101,20 @@ describe('Graphing tests', () => {
     expect(appTestHarness.app.graphing.graphData[1].y).toEqual(7);
   });
 
+  it.only('should extract both x and y values', async () => {
+    let appTestHarness = await AppTestHarness.build();
+    await appTestHarness.enableGraphing();
+
+    // Set max. num. data points to 2
+    let showGraphingPaneButton = await screen.findByTestId('show-graphing-pane-button');
+    fireEvent.click(showGraphingPaneButton);
+
+    let xVariableSourceSelect = await screen.findByTestId('xVarSource');
+
+    expect(appTestHarness.app.graphing.graphData.length).toEqual(0);
+    // await appTestHarness.sendData('x=2,y=3\n');
+    // expect(appTestHarness.app.graphing.graphData.length).toEqual(1);
+    // expect(appTestHarness.app.graphing.graphData[0].y).toEqual(5);
+  });
+
 });

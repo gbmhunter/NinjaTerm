@@ -162,13 +162,23 @@ export default observer((props: Props) => {
           {/* X VAR SOURCE */}
           {/* ============================================================== */}
           <Tooltip
-            title="The source of data for the X-axis variable."
+            title=
+              {<div>The source of data for the X-axis variable.<br/>
+              Changing this resets the graph.
+              <ul>
+                <li>Received Time: Time is seconds that the data points was received at since the graph was last reset. NOTE: Don't rely on this for accurate timing (millisecond or lower range), as timing is dependent on OS buffering and CPU usage. Instead, record the time on the microcontroller and use "In Data".</li>
+                <li>Counter: X value is just a 0-based counter on the number of received points.</li>
+                <li>In Data: Extract the x value from the data, just like the y-value.</li>
+              </ul>
+              </div>}
             followCursor
             arrow
+            placement="right"
           >
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>X Variable Source</InputLabel>
               <Select
+                data-testid="xVarSource"
                 name="xVarSource"
                 value={app.graphing.settings.xVarSource.dispValue}
                 onChange={(e) => {
@@ -184,6 +194,30 @@ export default observer((props: Props) => {
                 })}
               </Select>
             </FormControl>
+          </Tooltip>
+
+          {/* X VAR PREFIX */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="The string that precedes each x value in the input data stream."
+            followCursor
+            arrow
+            placement="right"
+          >
+            <TextField
+              label="X Variable Prefix"
+              name="xVarPrefix" // Must match the name of the field in the graphing settings
+              size="small"
+              variant="outlined"
+              value={app.graphing.settings.xVarPrefix.dispValue}
+              onChange={(e) => {
+                app.graphing.setSetting(e.target.name, e.target.value);
+              }}
+              disabled={app.graphing.settings.xVarSource.dispValue !== "In Data"}
+              error={app.graphing.settings.xVarPrefix.hasError}
+              helperText={app.graphing.settings.xVarPrefix.errorMsg}
+              sx={{ width: "200px" }}
+            />
           </Tooltip>
 
           {/* Y VAR PREFIX */}

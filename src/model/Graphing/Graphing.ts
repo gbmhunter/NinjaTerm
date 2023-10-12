@@ -28,9 +28,9 @@ class Graphing {
   ]
 
   xVarSources = [
-    'Received Time',
-    'Counter',
-    'In Data',
+    'Received Time', // Received time since last reset
+    'Counter', // Monotonically increasing counter
+    'In Data', // X values extracted from data, just like y values
   ]
 
   xVarUnit = 's';
@@ -80,7 +80,18 @@ class Graphing {
     },
 
     /**
-     * The string to search for in the RX data to find the Y value for the graph.
+     * The string to search for in the RX data to find the X value for a specific data point.
+     */
+    xVarPrefix: {
+      dispValue: 'x=',
+      appliedValue: 'x=',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    /**
+     * The string to search for in the RX data to find the Y value for a specific data point.
      */
     yVarPrefix: {
       dispValue: 'y=',
@@ -166,9 +177,14 @@ class Graphing {
   }
 
   applyChanges = () => {
-    // console.log('applyChanges() called.');
     Object.entries(this.settings).forEach(([key, value]) => {
-      // console.log('key: ' + key, 'value: ' + value);
+      // Check if the user changed the x variable source
+      if (key === 'xVarSource') {
+        if (value.dispValue !== value.appliedValue) {
+          // User changed the X variable source, so reset the data
+          this.resetData();
+        }
+      }
       value.appliedValue = value.dispValue;
     })
 
@@ -217,17 +233,52 @@ class Graphing {
           yValStr += this.rxDataBuffer[j];
         }
         const yVal = parseFloat(yValStr);
-        // console.log('yVal: ' + yVal);
+        // Bail if y value is NaN
+        if (isNaN(yVal)) {
+          this.snackbar.sendToSnackbar(
+            'Graphing received NaN value for y-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+            'warning');
+          this.rxDataBuffer = '';
+          continue;
+        }
 
+        // Get the X value
         let xVal;
         if (this.settings.xVarSource.appliedValue === 'Received Time') {
           // Get the time since the last reset in ms, then convert to s
           xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
+        } else if (this.settings.xVarSource.appliedValue === 'Counter') {
+          // Use the number of data points as the X value
+          xVal = this.graphData.length;
+        } else if (this.settings.xVarSource.appliedValue === 'In Data') {
+          const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.settings.xVarPrefix.appliedValue);
+          if (xVarPrefixIdx === -1) {
+            // This line does not contain the X variable prefix, so skip it
+            this.rxDataBuffer = '';
+            continue;
+          }
+          // Get the X value. Grab the entire line after the X variable prefix,
+          // and call parseFloat on it. This will stop at the first non-numeric
+          // character (but will allow things like "."), which is what we want.
+          let xValStr = '';
+          for (let j = xVarPrefixIdx + this.settings.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+            xValStr += this.rxDataBuffer[j];
+          }
+          xVal = parseFloat(xValStr);
+          // Bail if y value is NaN
+          if (isNaN(xVal)) {
+            this.snackbar.sendToSnackbar(
+              'Graphing received NaN value for x-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+              'warning');
+            this.rxDataBuffer = '';
+            continue;
+          }
+
         } else {
           throw new Error('Unsupported X variable source: ' + this.settings.xVarSource.appliedValue);
         }
-        // console.log('xVal: ' + xVal);
 
+        // If we get here both x and y values should be valid
         this.addDataPoint(xVal, yVal);
 
         // Since data separator has been received and line has been parsed,

@@ -150,7 +150,7 @@ export class App {
     console.log('Started NinjaTerm.')
 
     // this.runTestModeBytes0To255();
-    this.runTestModeGraphData();
+    // this.runTestModeGraphData();
 
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
@@ -208,7 +208,7 @@ export class App {
     this.settings.dataProcessing.applyChanges();
     let testCharIdx = 0;
     setInterval(() => {
-      const rxData = new TextEncoder().encode('y=10\n');
+      const rxData = new TextEncoder().encode('x=2,y=10\n');
       this.parseRxData(rxData);
       testCharIdx += 1;
       if (testCharIdx === 256) {
