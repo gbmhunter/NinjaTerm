@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import Validator from 'validatorjs';
+import { AxisDomain } from "recharts/types/util/types";
 
 import Snackbar from "model/Snackbar";
 
@@ -33,6 +34,9 @@ class Graphing {
   ]
 
   xVarUnit = 's';
+
+  xDomain: AxisDomain = [0, 10];
+  yDomain: AxisDomain = [0, 10];
 
   /**
    * Holds data that has been received but no data separator has been found yet.
@@ -224,10 +228,7 @@ class Graphing {
         }
         // console.log('xVal: ' + xVal);
 
-        // Add data point to array of points
-        this.graphData.push({ x: xVal, y: yVal });
-
-        this.limitNumDataPoints();
+        this.addDataPoint(xVal, yVal);
 
         // Since data separator has been received and line has been parsed,
         // now clear the buffer
@@ -247,6 +248,17 @@ class Graphing {
     // console.log('graphData: ' + JSON.stringify(this.graphData));
   }
 
+  addDataPoint = (x: number, y: number) => {
+    // If this is the first point, switch from fixed domain (so
+    // graph is shown when there is no data) to auto
+    if (this.graphData.length === 0) {
+      this.xDomain = ['auto', 'auto'];
+      this.yDomain = ['auto', 'auto'];
+    }
+    this.graphData.push({ x: x, y: y });
+    this.limitNumDataPoints();
+  }
+
   limitNumDataPoints = () => {
     // Check if we have exceeded the max number of data points,
     // and if so, remove the oldest point
@@ -259,6 +271,8 @@ class Graphing {
    * Clears all existing data points and sets the start time back to 0.
    */
   resetData = () => {
+    this.xDomain = [0, 10];
+    this.yDomain = [0, 10];
     this.graphData = [];
     this.timeAtReset_ms = Date.now();
   }

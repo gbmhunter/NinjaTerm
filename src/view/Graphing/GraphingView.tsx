@@ -260,6 +260,7 @@ export default observer((props: Props) => {
           <XAxis
             type="number"
             dataKey="x"
+            domain={app.graphing.xDomain}
             name="stature"
             stroke="#ccc"
             label={{ value: xVarLabel, position: "insideBottom", dy: 10 }}
@@ -267,6 +268,7 @@ export default observer((props: Props) => {
           <YAxis
             type="number"
             dataKey="y"
+            domain={app.graphing.yDomain}
             name="weight"
             stroke="#ccc"
             label={{
