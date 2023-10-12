@@ -72,7 +72,7 @@ describe('Graphing tests', () => {
     expect(appTestHarness.app.graphing.graphData[0].y).toEqual(5);
   });
 
-  it.only('should limit max. num of data points', async () => {
+  it('should limit max. num of data points', async () => {
     let appTestHarness = await AppTestHarness.build();
     await appTestHarness.enableGraphing();
     expect(appTestHarness.app.graphing.graphData.length).toEqual(0);
