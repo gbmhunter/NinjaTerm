@@ -23,6 +23,18 @@ import {
 import { App } from "model/App";
 import styles from "./GraphingView.module.css";
 
+import {
+  Chart as ChartJS,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip as Tooltip2,
+  Legend,
+} from "chart.js";
+import { Scatter as Scatter2 } from "react-chartjs-2";
+
+ChartJS.register(LinearScale, PointElement, LineElement, Tooltip2, Legend);
+
 interface Props {
   app: App;
 }
@@ -163,15 +175,31 @@ export default observer((props: Props) => {
           {/* X VAR SOURCE */}
           {/* ============================================================== */}
           <Tooltip
-            title=
-              {<div>The source of data for the X-axis variable.<br/>
-              Changing this resets the graph.
-              <ul>
-                <li>Received Time: Time is seconds that the data points was received at since the graph was last reset. NOTE: Don't rely on this for accurate timing (millisecond or lower range), as timing is dependent on OS buffering and CPU usage. Instead, record the time on the microcontroller, send it along with the y value and use "In Data".</li>
-                <li>Counter: X value is a 0-based counter that increments when a new data point is received.</li>
-                <li>In Data: Extract the x value from the data, just like the y-value.</li>
-              </ul>
-              </div>}
+            title={
+              <div>
+                The source of data for the X-axis variable.
+                <br />
+                Changing this resets the graph.
+                <ul>
+                  <li>
+                    Received Time: Time is seconds that the data points was
+                    received at since the graph was last reset. NOTE: Don't rely
+                    on this for accurate timing (millisecond or lower range), as
+                    timing is dependent on OS buffering and CPU usage. Instead,
+                    record the time on the microcontroller, send it along with
+                    the y value and use "In Data".
+                  </li>
+                  <li>
+                    Counter: X value is a 0-based counter that increments when a
+                    new data point is received.
+                  </li>
+                  <li>
+                    In Data: Extract the x value from the data, just like the
+                    y-value.
+                  </li>
+                </ul>
+              </div>
+            }
             followCursor
             arrow
             placement="right"
@@ -216,7 +244,9 @@ export default observer((props: Props) => {
               onChange={(e) => {
                 app.graphing.setSetting(e.target.name, e.target.value);
               }}
-              disabled={app.graphing.settings.xVarSource.dispValue !== "In Data"}
+              disabled={
+                app.graphing.settings.xVarSource.dispValue !== "In Data"
+              }
               error={app.graphing.settings.xVarPrefix.hasError}
               helperText={app.graphing.settings.xVarPrefix.errorMsg}
               sx={{ width: "200px" }}
@@ -247,11 +277,13 @@ export default observer((props: Props) => {
         </div>
       </div>
 
-      <div aria-label="row-of-buttons"
+      <div
+        aria-label="row-of-buttons"
         style={{
           display: "flex",
-          gap: '20px',
-        }}>
+          gap: "20px",
+        }}
+      >
         {/* APPLY BUTTON */}
         {/* ============================================================== */}
         <Button
@@ -284,7 +316,7 @@ export default observer((props: Props) => {
       {/* ============================================================== */}
       {/* ResponsiveContainer was causing problems with tests, but
       fixed with ResizeObserver mocked */}
-      <ResponsiveContainer width="100%" height={500}>
+      {/* <ResponsiveContainer width="100%" height={500}>
         <ScatterChart>
           <Scatter
             name="A school"
@@ -317,7 +349,59 @@ export default observer((props: Props) => {
             }}
           />
         </ScatterChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer> */}
+
+      {/* This sets the height of the graph */}
+      <div style={{
+        height: "500px",
+        // backgroundColor: '#111'
+      }}>
+        <Scatter2
+          data={{
+            datasets: [
+              {
+                label: "A dataset",
+                data: app.graphing.graphData.slice(), // Convert MobX observable to JS object
+                animation: false,
+                showLine: true, // Scatter plots by default don't show the line
+                borderColor: "#0af20e", // Line colour
+                borderWidth: 1, // Line width
+                // backgroundColor: "rgba(255, 99, 132, 1)",
+              },
+            ],
+          }}
+          options={{
+            maintainAspectRatio: false,
+            backgroundColor: "#fff",
+            scales: {
+              x: {
+                ticks: {
+                  color: '#fff', // Color of the x-axis labels
+                },
+                grid: {
+                  color: '#ffffff44', // Color of the x-axis grid lines
+                },
+                border: {
+                  width: 2,
+                  color: '#fff', // <-------------- Color of the x-axis
+                },
+              },
+              y: {
+                ticks: {
+                  color: '#fff', // Color of the x-axis labels
+                },
+                grid: {
+                  color: '#ffffff44', // Color of the x-axis grid lines
+                },
+                border: {
+                  width: 2,
+                  color: '#fff', // <-------------- Color of the x-axis
+                },
+              },
+            }
+          }}
+        />
+      </div>
     </div>
   );
 });
