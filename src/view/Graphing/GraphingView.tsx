@@ -10,6 +10,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
+import { toJS } from "mobx";
 import {
   CartesianGrid,
   XAxis,
@@ -290,6 +291,7 @@ export default observer((props: Props) => {
             data={app.graphing.graphData.slice()}
             fill="#00fc08" // Bright green
             line
+            isAnimationActive={false} // Disable animation, too CPU intensive and looks bad with a high data rate
             // shape="cross"
           />
           <CartesianGrid stroke="#555" strokeDasharray="5 5" />
