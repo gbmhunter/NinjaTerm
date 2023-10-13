@@ -541,13 +541,16 @@ export class App {
     this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
     this.settings.dataProcessing.applyChanges();
     let testCharIdx = 0;
+
     setInterval(() => {
-      const rxData = new TextEncoder().encode('x=2,y=10\n');
+      // const yVal = Math.sin(2*Math.PI*(testCharIdx/256));
+      const yVal = Math.random();
+      const rxData = new TextEncoder().encode(`y=${yVal}\n`);
       this.parseRxData(rxData);
       testCharIdx += 1;
       if (testCharIdx === 256) {
         testCharIdx = 0;
       }
-    }, 2000);
+    }, 100);
   }
 }
