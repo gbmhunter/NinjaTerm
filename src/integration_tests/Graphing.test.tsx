@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-unnecessary-act */
 import '@testing-library/jest-dom';
 import {
   render,
@@ -7,6 +8,7 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { AppTestHarness } from './Util';
 
@@ -101,7 +103,7 @@ describe('Graphing tests', () => {
     expect(appTestHarness.app.graphing.graphData[1].y).toEqual(7);
   });
 
-  it.only('should extract both x and y values', async () => {
+  it('should extract both x and y values', async () => {
     let appTestHarness = await AppTestHarness.build();
     await appTestHarness.enableGraphing();
 
@@ -110,11 +112,38 @@ describe('Graphing tests', () => {
     fireEvent.click(showGraphingPaneButton);
 
     let xVariableSourceSelect = await screen.findByTestId('xVarSource');
+    let button = within(xVariableSourceSelect).getByRole("button");
 
-    expect(appTestHarness.app.graphing.graphData.length).toEqual(0);
-    // await appTestHarness.sendData('x=2,y=3\n');
-    // expect(appTestHarness.app.graphing.graphData.length).toEqual(1);
-    // expect(appTestHarness.app.graphing.graphData[0].y).toEqual(5);
+    await act(() => {
+      userEvent.click(button);
+    });
+
+    // The dropdown is not contained within the parent select element!!!
+    // It's right at the bottom of the page, outside normal doc flow
+    // Best I could do was find a listbox, hopefully there is only
+    // ever one on the page (the opened dropdown!).
+    let inData: HTMLElement;
+    await waitFor(() => {
+      inData = within(screen.getByRole('listbox')).getByText("In Data");
+    });
+
+    await act(() => {
+      userEvent.click(inData);
+    });
+
+    expect(appTestHarness.app.graphing.settings.xVarSource.dispValue).toEqual('In Data');
+
+    // Make sure to apply changes
+    let applyButton = await screen.findByRole('button', {
+      name: /Apply/i
+    })
+    fireEvent.click(applyButton);
+
+    // Give it a data point with both an x and y value
+    await appTestHarness.sendData('x=2,y=3\n');
+    expect(appTestHarness.app.graphing.graphData.length).toEqual(1);
+    expect(appTestHarness.app.graphing.graphData[0].x).toEqual(2);
+    expect(appTestHarness.app.graphing.graphData[0].y).toEqual(3);
   });
 
 });

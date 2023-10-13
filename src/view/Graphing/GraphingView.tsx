@@ -179,6 +179,8 @@ export default observer((props: Props) => {
               <InputLabel>X Variable Source</InputLabel>
               <Select
                 data-testid="xVarSource"
+                label="X Variable Source"
+                labelId="label-id"
                 name="xVarSource"
                 value={app.graphing.settings.xVarSource.dispValue}
                 onChange={(e) => {
