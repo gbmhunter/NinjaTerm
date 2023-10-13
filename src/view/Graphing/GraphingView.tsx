@@ -166,8 +166,8 @@ export default observer((props: Props) => {
               {<div>The source of data for the X-axis variable.<br/>
               Changing this resets the graph.
               <ul>
-                <li>Received Time: Time is seconds that the data points was received at since the graph was last reset. NOTE: Don't rely on this for accurate timing (millisecond or lower range), as timing is dependent on OS buffering and CPU usage. Instead, record the time on the microcontroller and use "In Data".</li>
-                <li>Counter: X value is just a 0-based counter on the number of received points.</li>
+                <li>Received Time: Time is seconds that the data points was received at since the graph was last reset. NOTE: Don't rely on this for accurate timing (millisecond or lower range), as timing is dependent on OS buffering and CPU usage. Instead, record the time on the microcontroller, send it along with the y value and use "In Data".</li>
+                <li>Counter: X value is a 0-based counter that increments when a new data point is received.</li>
                 <li>In Data: Extract the x value from the data, just like the y-value.</li>
               </ul>
               </div>}
@@ -283,7 +283,7 @@ export default observer((props: Props) => {
       {/* ============================================================== */}
       {/* ResponsiveContainer was causing problems with tests, but
       fixed with ResizeObserver mocked */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={500}>
         <ScatterChart>
           <Scatter
             name="A school"
