@@ -28,7 +28,7 @@ function DataProcessingView(props: Props) {
   const { appStore } = props;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       {/* =============================================================================== */}
       {/* ANSI ESCAPE CODE PARSING ENABLED */}
       {/* =============================================================================== */}
@@ -254,7 +254,7 @@ function DataProcessingView(props: Props) {
       >
         Apply
       </Button>
-    </Box>
+    </div>
   );
 }
 

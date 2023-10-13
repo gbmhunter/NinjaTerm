@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added basic graphing functionality, closes #234.
+- Added fake port easter egg for testing/demos. Press "d" when the serial port config. settings are visible.
 
 ## [4.4.2] - 2023-10-09
 

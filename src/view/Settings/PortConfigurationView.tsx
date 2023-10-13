@@ -15,6 +15,7 @@ import { observer } from 'mobx-react-lite';
 
 import { App, portStateToButtonProps, PortState } from '../../model/App';
 import { StopBits } from '../../model/Settings/Settings';
+import styles from './PortConfigurationView.module.css';
 
 interface Props {
   appStore: App;
@@ -24,8 +25,12 @@ function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
   return (
-    <Box>
-
+    <div onKeyDown={(e) => {
+      appStore.settings.onKeyDown(e);
+    }}
+      tabIndex={-1}
+      className={styles.noOutline}
+    >
       <div style={{ height: '10px' }}></div>
 
       {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
@@ -257,7 +262,7 @@ function PortConfigurationView(props: Props) {
       <Typography>
         Status: {PortState[appStore.portState]}
       </Typography>
-    </Box>
+    </div>
   );
 }
 

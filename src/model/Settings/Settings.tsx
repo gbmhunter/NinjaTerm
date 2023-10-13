@@ -86,4 +86,11 @@ export class Settings {
   setSelectedStopBits(stopBits: StopBits) {
     this.selectedStopBits = stopBits;
   }
+
+  onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    console.log(event);
+    if (event.key === 'd') {
+      this.app.openFakePort();
+    }
+  }
 }

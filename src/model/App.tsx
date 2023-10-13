@@ -114,6 +114,8 @@ export class App {
 
   graphing: Graphing;
 
+  fakePortOpen = false;
+
   constructor(
     testing = false
   ) {
@@ -292,7 +294,6 @@ export class App {
       // cannot be considered open
       return;
     }
-    console.log('Serial port opened.');
     this.snackbar.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
@@ -530,5 +531,23 @@ export class App {
    */
   setShownMainPane(newPane: MainPanes) {
     this.shownMainPane = newPane;
+  }
+
+  openFakePort() {
+    this.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
+    this.setPortState(PortState.OPENED);
+    this.fakePortOpen = true;
+
+    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 0;
+    setInterval(() => {
+      const rxData = new TextEncoder().encode('x=2,y=10\n');
+      this.parseRxData(rxData);
+      testCharIdx += 1;
+      if (testCharIdx === 256) {
+        testCharIdx = 0;
+      }
+    }, 2000);
   }
 }
