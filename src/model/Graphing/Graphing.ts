@@ -64,9 +64,9 @@ class Graphing {
     },
 
     maxNumDataPoints: {
-      dispValue: '100',
-      appliedValue: '100',
-      rule: 'required|integer|min:1|max:1000',
+      dispValue: '500',
+      appliedValue: '500',
+      rule: 'required|integer|min:1|max:2000',
       hasError: false,
       errorMsg: '',
     },

@@ -151,7 +151,7 @@ export default observer((props: Props) => {
           {/* MAX NUM. DATA POINTS */}
           {/* ============================================================== */}
           <Tooltip
-            title="The max. number of previous data points to display. Must be an integer in the range [1-1000]."
+            title="The max. number of previous data points to display. Must be an integer in the range [1-2000]. Increasing this will increase the CPU usage."
             followCursor
             arrow
           >
@@ -366,15 +366,18 @@ export default observer((props: Props) => {
                 showLine: true, // Scatter plots by default don't show the line
                 borderColor: "#0af20e", // Line colour
                 borderWidth: 1, // Line width
-                // backgroundColor: "rgba(255, 99, 132, 1)",
+                pointBackgroundColor: "#0af20e", // Point colour
               },
             ],
           }}
           options={{
-            maintainAspectRatio: false,
-            backgroundColor: "#fff",
+            maintainAspectRatio: false, // This is needed to chart to assume size of parent div
             scales: {
               x: {
+                title: {
+                  display: true,
+                  text: xVarLabel,
+                },
                 ticks: {
                   color: '#fff', // Color of the x-axis labels
                 },
@@ -387,6 +390,10 @@ export default observer((props: Props) => {
                 },
               },
               y: {
+                title: {
+                  display: true,
+                  text: yVarLabel,
+                },
                 ticks: {
                   color: '#fff', // Color of the x-axis labels
                 },
@@ -397,6 +404,11 @@ export default observer((props: Props) => {
                   width: 2,
                   color: '#fff', // <-------------- Color of the x-axis
                 },
+              },
+            },
+            plugins: {
+              legend: {
+                display: false, // Hide the legend
               },
             }
           }}
