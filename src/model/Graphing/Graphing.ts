@@ -1,6 +1,5 @@
 import { makeAutoObservable } from "mobx";
 import Validator from 'validatorjs';
-import { AxisDomain } from "recharts/types/util/types";
 
 import Snackbar from "model/Snackbar";
 
@@ -35,8 +34,8 @@ class Graphing {
 
   xVarUnit = 's';
 
-  xDomain: AxisDomain = [0, 10];
-  yDomain: AxisDomain = [0, 10];
+  xDomain = [0, 10];
+  yDomain = [0, 10];
 
   /**
    * Holds data that has been received but no data separator has been found yet.
@@ -303,8 +302,8 @@ class Graphing {
     // If this is the first point, switch from fixed domain (so
     // graph is shown when there is no data) to auto
     if (this.graphData.length === 0) {
-      this.xDomain = ['auto', 'auto'];
-      this.yDomain = ['auto', 'auto'];
+      // this.xDomain = ['auto', 'auto'];
+      // this.yDomain = ['auto', 'auto'];
     }
     this.graphData.push({ x: x, y: y });
     this.limitNumDataPoints();

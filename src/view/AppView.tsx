@@ -181,7 +181,7 @@ const AppView = observer((props: Props) => {
             display: 'flex',
             flexDirection: 'column',
             // flex: 1,
-            // width: '100%',
+            width: '100%',
             height: '100%',
             // margin: '30px',
             padding: '0 0 0 10px',

@@ -10,15 +10,6 @@ import {
   Tooltip,
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import { toJS } from "mobx";
-import {
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-} from "recharts";
 
 import { App } from "model/App";
 import styles from "./GraphingView.module.css";
@@ -28,12 +19,12 @@ import {
   LinearScale,
   PointElement,
   LineElement,
-  Tooltip as Tooltip2,
+  Tooltip as ChartJsTooltip,
   Legend,
 } from "chart.js";
-import { Scatter as Scatter2 } from "react-chartjs-2";
+import { Scatter } from "react-chartjs-2";
 
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip2, Legend);
+ChartJS.register(LinearScale, PointElement, LineElement, ChartJsTooltip, Legend);
 
 interface Props {
   app: App;
@@ -66,6 +57,7 @@ export default observer((props: Props) => {
       style={{
         flexGrow: 1, // Make sure it fills the available space, to keep the app header and footer at the top and bottom of the window
         height: "100%",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         gap: "20px",
@@ -312,51 +304,16 @@ export default observer((props: Props) => {
         </Button>
       </div>
 
-      {/* GRAPH (uses recharts) */}
+      {/* GRAPH (uses chart.js) */}
       {/* ============================================================== */}
-      {/* ResponsiveContainer was causing problems with tests, but
-      fixed with ResizeObserver mocked */}
-      {/* <ResponsiveContainer width="100%" height={500}>
-        <ScatterChart>
-          <Scatter
-            name="A school"
-            data={app.graphing.graphData.slice()}
-            fill="#00fc08" // Bright green
-            line
-            isAnimationActive={false} // Disable animation, too CPU intensive and looks bad with a high data rate
-            // shape="cross"
-          />
-          <CartesianGrid stroke="#555" strokeDasharray="5 5" />
-          <XAxis
-            type="number"
-            dataKey="x"
-            domain={app.graphing.xDomain}
-            name="stature"
-            stroke="#ccc"
-            label={{ value: xVarLabel, position: "insideBottom", dy: 10 }}
-          />
-          <YAxis
-            type="number"
-            dataKey="y"
-            domain={app.graphing.yDomain}
-            name="weight"
-            stroke="#ccc"
-            label={{
-              value: yVarLabel,
-              position: "insideLeft",
-              angle: -90,
-              dx: 20,
-            }}
-          />
-        </ScatterChart>
-      </ResponsiveContainer> */}
 
       {/* This sets the height of the graph */}
       <div style={{
+        width: "100%",
         height: "500px",
         // backgroundColor: '#111'
       }}>
-        <Scatter2
+        <Scatter
           data={{
             datasets: [
               {
