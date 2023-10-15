@@ -6,6 +6,7 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { setupJestCanvasMock } from 'jest-canvas-mock';
 
 import { App } from 'model/App';
@@ -246,5 +247,33 @@ export class AppTestHarness {
     let enableGraphingButton = await screen.findByLabelText('Enable Graphing');
     fireEvent.click(enableGraphingButton);
     expect(this.app.graphing.graphingEnabled).toBe(true);
+  }
+
+  /**
+   * MUI select inputs are notorously difficult to test. This helper
+   * function makes it easier to select an option from a select input.
+   *
+   * @param select The select element you want to click an option on.
+   * @param optionText The text of the option you want to click.
+   */
+  async chooseMuiSelectOption(select: HTMLElement, optionText: string) {
+    let button = within(select).getByRole("button");
+
+    await act(() => {
+      userEvent.click(button);
+    });
+
+    // The dropdown is not contained within the parent select element!!!
+    // It's right at the bottom of the page, outside normal doc flow
+    // Best I could do was find a listbox, hopefully there is only
+    // ever one on the page (the opened dropdown!).
+    let optionElement: HTMLElement;
+    await waitFor(() => {
+      optionElement = within(screen.getByRole('listbox')).getByText(optionText);
+    });
+
+    await act(() => {
+      userEvent.click(optionElement);
+    });
   }
 }

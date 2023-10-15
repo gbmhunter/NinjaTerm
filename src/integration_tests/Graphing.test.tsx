@@ -112,24 +112,8 @@ describe('Graphing tests', () => {
     fireEvent.click(showGraphingPaneButton);
 
     let xVariableSourceSelect = await screen.findByTestId('xVarSource');
-    let button = within(xVariableSourceSelect).getByRole("button");
 
-    await act(() => {
-      userEvent.click(button);
-    });
-
-    // The dropdown is not contained within the parent select element!!!
-    // It's right at the bottom of the page, outside normal doc flow
-    // Best I could do was find a listbox, hopefully there is only
-    // ever one on the page (the opened dropdown!).
-    let inData: HTMLElement;
-    await waitFor(() => {
-      inData = within(screen.getByRole('listbox')).getByText("In Data");
-    });
-
-    await act(() => {
-      userEvent.click(inData);
-    });
+    await appTestHarness.chooseMuiSelectOption(xVariableSourceSelect, 'In Data');
 
     expect(appTestHarness.app.graphing.settings.xVarSource.dispValue).toEqual('In Data');
 

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added basic graphing functionality, closes #234.
 - Added fake port easter egg for testing/demos. Press "d" when the serial port config. settings are visible.
+- Added a function to make it easier to select options from MUI selects during testing.
 
 ### Changed
 
