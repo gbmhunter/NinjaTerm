@@ -543,8 +543,9 @@ export class App {
     let testCharIdx = 0;
 
     setInterval(() => {
-      // const yVal = Math.sin(2*Math.PI*(testCharIdx/256));
-      const yVal = Math.random();
+      // Noisy sine wave
+      let yVal = Math.sin(2*Math.PI*(testCharIdx/256));
+      yVal += 0.2*Math.random();
       const rxData = new TextEncoder().encode(`y=${yVal}\n`);
       this.parseRxData(rxData);
       testCharIdx += 1;

@@ -450,7 +450,7 @@ export default observer((props: Props) => {
           >
             <TextField
               label="Y-Axis Range Max."
-              name="YAxisRangeMax" // Must match the name of the field in the graphing settings
+              name="yAxisRangeMax" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
               value={app.graphing.settings.yAxisRangeMax.dispValue}
@@ -574,6 +574,8 @@ export default observer((props: Props) => {
                   width: 2,
                   color: '#fff', // <-------------- Color of the x-axis
                 },
+                min: app.graphing.settings.yAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.yAxisRangeMin.appliedValue) : undefined,
+                max: app.graphing.settings.yAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.yAxisRangeMax.appliedValue) : undefined,
               },
             },
             plugins: {
