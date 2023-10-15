@@ -6,6 +6,7 @@ import {
   waitFor,
   act,
 } from '@testing-library/react';
+import { setupJestCanvasMock } from 'jest-canvas-mock';
 
 import { App } from 'model/App';
 import AppView from 'view/AppView';
@@ -92,7 +93,9 @@ export async function createAppWithMockSerialPort() {
     disconnect: jest.fn(),
   }));
 
-  HTMLCanvasElement.prototype.getContext = jest.fn();
+  // Setup mocking for HTML canvas, this is required for the graphing pane
+  // to work
+  setupJestCanvasMock();
 
   const app = new App(true);
   render(<AppView app={app} />);
