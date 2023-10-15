@@ -15,6 +15,7 @@ import { observer } from 'mobx-react-lite';
 
 import { App, portStateToButtonProps, PortState } from '../../model/App';
 import { StopBits } from '../../model/Settings/Settings';
+import styles from './PortConfigurationView.module.css';
 
 interface Props {
   appStore: App;
@@ -24,7 +25,14 @@ function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
   return (
-    <Box>
+    <div onKeyDown={(e) => {
+      appStore.settings.onKeyDown(e);
+    }}
+      tabIndex={-1}
+      className={styles.noOutline}
+    >
+      <div style={{ height: '10px' }}></div>
+
       {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
       <Button
         variant="outlined"
@@ -250,27 +258,11 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: '20px' }}></div>
 
-      <Box display="flex" flexDirection="row">
-        {/*  ====================== CLOSE WINDOW CHECKBOX ============================= */}
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={appStore.closeSettingsDialogOnPortOpenOrClose}
-              onChange={(e) => {
-                appStore.setCloseSettingsDialogOnPortOpenOrClose(
-                  e.target.checked
-                );
-              }}
-            />
-          }
-          label="Close this dialog on successful port open or close."
-        />
-      </Box>
       {/*  ====================== PORT STATUS MSG ============================= */}
       <Typography>
         Status: {PortState[appStore.portState]}
       </Typography>
-    </Box>
+    </div>
   );
 }
 

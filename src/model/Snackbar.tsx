@@ -25,6 +25,7 @@ export default class Snackbar {
       msg,
       {
         variant: variant,
+        preventDuplicate: true, // Prevents duplicate messages from being displayed. This is useful for things like "break" errors from the serial port, many of these can occur in quick succession
         style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
       });
   }

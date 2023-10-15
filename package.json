@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.4.2",
+  "version": "4.5.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -16,11 +16,13 @@
     "@types/react-dom": "^18.2.7",
     "@types/react-transition-group": "^4.4.6",
     "@types/w3c-web-serial": "^1.0.3",
+    "chart.js": "^4.4.0",
     "kofi-button": "^1.1.1",
     "mobx": "^6.10.2",
     "mobx-react-lite": "^4.0.4",
     "notistack": "^3.0.1",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-ga4": "^2.1.0",
     "react-router-dom": "^6.16.0",
@@ -69,6 +71,8 @@
     ]
   },
   "devDependencies": {
-    "@types/react-window": "^1.8.5"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/react-window": "^1.8.5",
+    "jest-canvas-mock": "^2.5.2"
   }
 }

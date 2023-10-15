@@ -28,7 +28,9 @@
     "*.{css,sass,scss}.d.ts": true
   },
   "cSpell.words": [
+    "chartjs",
     "ninjaterm",
-    "notistack"
+    "notistack",
+    "validatorjs"
   ]
 }

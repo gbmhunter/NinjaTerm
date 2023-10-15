@@ -8,8 +8,9 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import packageDotJson from '../../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
-import Terminal from './Terminal/Terminal';
+import Terminal from './Terminal/SingleTerminal';
 import Snackbar from './Snackbar';
+import Graphing from './Graphing/Graphing';
 
 declare global {
   interface String {
@@ -49,6 +50,16 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
     icon: <StopIcon />,
   },
 };
+
+/**
+ * Enumerates the possible things to display as the "main pane".
+ * This is the large pane that takes up most of the screen.
+ */
+export enum MainPanes {
+  SETTINGS,
+  TERMINAL,
+  GRAPHING,
+}
 
 export class App {
 
@@ -99,11 +110,21 @@ export class App {
 
   snackbar: Snackbar;
 
+  shownMainPane: MainPanes;
+
+  graphing: Graphing;
+
+  fakePortOpen = false;
+
   constructor(
     testing = false
   ) {
     this.testing = testing;
+    if (this.testing) {
+      console.log('Warning, testing mode is enabled.');
+    }
 
+    // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
     this.settings = new Settings(this);
@@ -122,9 +143,17 @@ export class App {
     this.reader = null;
     this.closedPromise = null;
 
+    // Show the terminal by default
+    this.shownMainPane = MainPanes.TERMINAL;
+
+    // Create graphing instance. Graphing is disabled by default.
+    this.graphing = new Graphing(this.snackbar);
+
     console.log('Started NinjaTerm.')
 
     // this.runTestModeBytes0To255();
+    // this.runTestModeGraphData();
+
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -157,9 +186,7 @@ export class App {
     }, 200);
   }
 
-  /** Function used for testing when you don't have an Arduino handy.
-   * Sets up a interval timer to add fake RX data.
-   * Change as needed for testing!
+  /** Send bytes 0 thru to 255 as RX data.
    */
   runTestModeBytes0To255() {
     console.log('runTestMode2() called.');
@@ -173,6 +200,23 @@ export class App {
         testCharIdx = 0;
       }
     }, 200);
+  }
+
+  /** Test mode for graphs
+   */
+  runTestModeGraphData() {
+    console.log('runTestModeGraphData() called.');
+    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 0;
+    setInterval(() => {
+      const rxData = new TextEncoder().encode('x=2,y=10\n');
+      this.parseRxData(rxData);
+      testCharIdx += 1;
+      if (testCharIdx === 256) {
+        testCharIdx = 0;
+      }
+    }, 2000);
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -250,7 +294,6 @@ export class App {
       // cannot be considered open
       return;
     }
-    console.log('Serial port opened.');
     this.snackbar.sendToSnackbar('Serial port opened.', 'success');
     this.setPortState(PortState.OPENED);
     // This will automatically close the settings window if the user is currently in it,
@@ -355,6 +398,7 @@ export class App {
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
     this.rxTerminal.parseData(rxData);
+    this.graphing.parseData(rxData);
     this.numBytesReceived += rxData.length;
   }
 
@@ -480,5 +524,34 @@ export class App {
 
   setStatusMsgScrollLock(trueFalse: boolean) {
     this.statusMsgScrollLock = trueFalse;
+  }
+
+  /**
+   * Sets the main pane to be shown.
+   */
+  setShownMainPane(newPane: MainPanes) {
+    this.shownMainPane = newPane;
+  }
+
+  openFakePort() {
+    this.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
+    this.setPortState(PortState.OPENED);
+    this.fakePortOpen = true;
+
+    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    this.settings.dataProcessing.applyChanges();
+    let testCharIdx = 0;
+
+    setInterval(() => {
+      // Noisy sine wave
+      let yVal = Math.sin(2*Math.PI*(testCharIdx/256));
+      yVal += 0.2*Math.random();
+      const rxData = new TextEncoder().encode(`y=${yVal}\n`);
+      this.parseRxData(rxData);
+      testCharIdx += 1;
+      if (testCharIdx === 256) {
+        testCharIdx = 0;
+      }
+    }, 100);
   }
 }
