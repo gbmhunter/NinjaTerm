@@ -206,6 +206,9 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
+
+            <div>{ app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}</div>
+
             {/* TX/RX ACTIVITY INDICATORS */}
             {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
             <Box>
