@@ -267,6 +267,217 @@ export default observer((props: Props) => {
             />
           </Tooltip>
         </div>
+
+        {/* CONTROL PANEL 3: X-AXIS RANGE */}
+        {/* ======================================================================== */}
+        <div id="group-3" className={styles.controlPanel}>
+          {/* X-AXIS RANGE MODE */}
+          {/* ============================================================== */}
+          <Tooltip
+            title={
+              <div>
+
+                <ul>
+                  <li>
+                    Auto: Limits change to accommodate all data.
+                  </li>
+                  <li>
+                    Fixed: Specify the limits in the below inputs.
+                  </li>
+                </ul>
+              </div>
+            }
+            followCursor
+            arrow
+            placement="right"
+          >
+            <FormControl sx={{ width: 160 }} size="small">
+              <InputLabel>X Axis Range Mode</InputLabel>
+              <Select
+                data-testid="xAxisRangeMode"
+                label="X Axis Range Mode"
+                name="xAxisRangeMode"
+                value={app.graphing.settings.xAxisRangeMode.dispValue}
+                onChange={(e) => {
+                  app.graphing.setSetting(e.target.name, e.target.value);
+                }}
+              >
+                {app.graphing.axisRangeModes.map((axisRangeMode) => {
+                  return (
+                    <MenuItem key={axisRangeMode} value={axisRangeMode}>
+                      {axisRangeMode}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Tooltip>
+
+          {/* X-AXIS RANGE MIN */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Minimum X axis value."
+            followCursor
+            arrow
+          >
+            <TextField
+              label="X-Axis Range Min."
+              name="xAxisRangeMin" // Must match the name of the field in the graphing settings
+              size="small"
+              variant="outlined"
+              value={app.graphing.settings.xAxisRangeMin.dispValue}
+              disabled={app.graphing.settings.xAxisRangeMode.dispValue !== "Fixed"}
+              onChange={(e) => {
+                app.graphing.setSetting(e.target.name, e.target.value);
+              }}
+              error={app.graphing.settings.xAxisRangeMin.hasError}
+              helperText={app.graphing.settings.xAxisRangeMin.errorMsg}
+              sx={{ width: "200px" }}
+            />
+          </Tooltip>
+
+          {/* X-AXIS RANGE MAX */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Maximum X axis value."
+            followCursor
+            arrow
+          >
+            <TextField
+              label="X-Axis Range Max."
+              name="xAxisRangeMax" // Must match the name of the field in the graphing settings
+              size="small"
+              variant="outlined"
+              value={app.graphing.settings.xAxisRangeMax.dispValue}
+              disabled={app.graphing.settings.xAxisRangeMode.dispValue !== "Fixed"}
+              onChange={(e) => {
+                app.graphing.setSetting(e.target.name, e.target.value);
+              }}
+              error={app.graphing.settings.xAxisRangeMax.hasError}
+              helperText={app.graphing.settings.xAxisRangeMax.errorMsg}
+              sx={{ width: "200px" }}
+            />
+          </Tooltip>
+
+          {/* SET RANGE TO DATA BUTTON */}
+          {/* ============================================================== */}
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={() => {
+              app.graphing.updateXRangeFromData();
+            }}
+          >
+            Update X Range From Data
+          </Button>
+
+        </div> {/* CONTROL PANEL 3: X AXIS LIMITS */}
+
+        {/* CONTROL PANEL 4: Y-AXIS RANGE */}
+        {/* ======================================================================== */}
+        <div id="group-4" className={styles.controlPanel}>
+          {/* Y-AXIS RANGE MODE */}
+          {/* ============================================================== */}
+          <Tooltip
+            title={
+              <div>
+
+                <ul>
+                  <li>
+                    Auto: Limits change to accommodate all data.
+                  </li>
+                  <li>
+                    Fixed: Specify the limits in the below inputs.
+                  </li>
+                </ul>
+              </div>
+            }
+            followCursor
+            arrow
+            placement="right"
+          >
+            <FormControl sx={{ width: 160 }} size="small">
+              <InputLabel>Y Axis Range Mode</InputLabel>
+              <Select
+                data-testid="yAxisRangeMode"
+                label="Y Axis Range Mode"
+                name="yAxisRangeMode"
+                value={app.graphing.settings.yAxisRangeMode.dispValue}
+                onChange={(e) => {
+                  app.graphing.setSetting(e.target.name, e.target.value);
+                }}
+              >
+                {app.graphing.axisRangeModes.map((axisRangeMode) => {
+                  return (
+                    <MenuItem key={axisRangeMode} value={axisRangeMode}>
+                      {axisRangeMode}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Tooltip>
+
+          {/* Y-AXIS RANGE MIN */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Minimum Y axis value."
+            followCursor
+            arrow
+          >
+            <TextField
+              label="Y-Axis Range Min."
+              name="yAxisRangeMin" // Must match the name of the field in the graphing settings
+              size="small"
+              variant="outlined"
+              value={app.graphing.settings.yAxisRangeMin.dispValue}
+              disabled={app.graphing.settings.yAxisRangeMode.dispValue !== "Fixed"}
+              onChange={(e) => {
+                app.graphing.setSetting(e.target.name, e.target.value);
+              }}
+              error={app.graphing.settings.yAxisRangeMin.hasError}
+              helperText={app.graphing.settings.yAxisRangeMin.errorMsg}
+              sx={{ width: "200px" }}
+            />
+          </Tooltip>
+
+          {/* Y-AXIS RANGE MAX */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Maximum Y axis value."
+            followCursor
+            arrow
+          >
+            <TextField
+              label="Y-Axis Range Max."
+              name="YAxisRangeMax" // Must match the name of the field in the graphing settings
+              size="small"
+              variant="outlined"
+              value={app.graphing.settings.yAxisRangeMax.dispValue}
+              disabled={app.graphing.settings.yAxisRangeMode.dispValue !== "Fixed"}
+              onChange={(e) => {
+                app.graphing.setSetting(e.target.name, e.target.value);
+              }}
+              error={app.graphing.settings.yAxisRangeMax.hasError}
+              helperText={app.graphing.settings.yAxisRangeMax.errorMsg}
+              sx={{ width: "200px" }}
+            />
+          </Tooltip>
+
+          {/* SET RANGE TO DATA BUTTON */}
+          {/* ============================================================== */}
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={() => {
+              app.graphing.updateYRangeFromData();
+            }}
+          >
+            Update Y Range From Data
+          </Button>
+
+        </div> {/* CONTROL PANEL 4: Y AXIS LIMITS */}
+
       </div>
 
       <div
@@ -345,6 +556,8 @@ export default observer((props: Props) => {
                   width: 2,
                   color: '#fff', // <-------------- Color of the x-axis
                 },
+                min: app.graphing.settings.xAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.xAxisRangeMin.appliedValue) : undefined,
+                max: app.graphing.settings.xAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.xAxisRangeMax.appliedValue) : undefined,
               },
               y: {
                 title: {

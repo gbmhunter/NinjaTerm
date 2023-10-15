@@ -32,10 +32,12 @@ class Graphing {
     'In Data', // X values extracted from data, just like y values
   ]
 
-  xVarUnit = 's';
+  axisRangeModes = [
+    'Auto',
+    'Fixed',
+  ]
 
-  xDomain = [0, 10];
-  yDomain = [0, 10];
+  xVarUnit = 's';
 
   /**
    * Holds data that has been received but no data separator has been found yet.
@@ -100,6 +102,53 @@ class Graphing {
       errorMsg: '',
     },
 
+    xAxisRangeMode: {
+      dispValue: 'Auto',
+      appliedValue: 'Auto',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    xAxisRangeMin: {
+      dispValue: '0',
+      appliedValue: '0',
+      rule: 'required|numeric',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    xAxisRangeMax: {
+      dispValue: '100',
+      appliedValue: '100',
+      rule: 'required|numeric',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    yAxisRangeMode: {
+      dispValue: 'Auto',
+      appliedValue: 'Auto',
+      rule: 'required|string',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    yAxisRangeMin: {
+      dispValue: '0',
+      appliedValue: '0',
+      rule: 'required|numeric',
+      hasError: false,
+      errorMsg: '',
+    },
+
+    yAxisRangeMax: {
+      dispValue: '100',
+      appliedValue: '100',
+      rule: 'required|numeric',
+      hasError: false,
+      errorMsg: '',
+    },
 
   }
 
@@ -321,10 +370,36 @@ class Graphing {
    * Clears all existing data points and sets the start time back to 0.
    */
   resetData = () => {
-    this.xDomain = [0, 10];
-    this.yDomain = [0, 10];
     this.graphData = [];
     this.timeAtReset_ms = Date.now();
+  }
+
+  updateXRangeFromData = () => {
+    if (this.graphData.length === 0) {
+      return;
+    }
+    const xMin = Math.min(...this.graphData.map(point => point.x));
+    const xMax = Math.max(...this.graphData.map(point => point.x));
+    this.settings.xAxisRangeMin.dispValue = xMin.toString();
+    this.settings.xAxisRangeMax.dispValue = xMax.toString();
+    // Also set applied values, by pass apply button as these were not set by the user,
+    // they do not need validation
+    this.settings.xAxisRangeMin.appliedValue = this.settings.xAxisRangeMin.dispValue;
+    this.settings.xAxisRangeMax.appliedValue = this.settings.xAxisRangeMax.dispValue;
+  }
+
+  updateYRangeFromData = () => {
+    if (this.graphData.length === 0) {
+      return;
+    }
+    const yMin = Math.min(...this.graphData.map(point => point.y));
+    const yMax = Math.max(...this.graphData.map(point => point.y));
+    this.settings.yAxisRangeMin.dispValue = yMin.toString();
+    this.settings.yAxisRangeMax.dispValue = yMax.toString();
+    // Also set applied values, by pass apply button as these were not set by the user,
+    // they do not need validation
+    this.settings.yAxisRangeMin.appliedValue = this.settings.yAxisRangeMin.dispValue;
+    this.settings.yAxisRangeMax.appliedValue = this.settings.yAxisRangeMax.dispValue;
   }
 }
 
