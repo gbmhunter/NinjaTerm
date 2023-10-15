@@ -480,10 +480,14 @@ export default observer((props: Props) => {
 
       </div>
 
+      {/* BUTTON ROW */}
+      {/* ============================================================== */}
       <div
         aria-label="row-of-buttons"
         style={{
           display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
           gap: "20px",
         }}
       >
@@ -513,7 +517,9 @@ export default observer((props: Props) => {
         >
           Reset
         </Button>
-      </div>
+
+        <span>Num. data points: {app.graphing.graphData.length}</span>
+      </div> {/* BUTTON ROW */}
 
       {/* GRAPH (uses chart.js) */}
       {/* ============================================================== */}
