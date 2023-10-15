@@ -14,6 +14,7 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 
 import GitHubReadmeLogo from "./github-readme-logo.png";
 import AnsiEscapeCodeColours from "./ansi-escape-code-colours.gif";
+import GraphingGif from "./graphing.gif";
 import SmartScrollGif from "./smart-scroll.gif";
 
 import "./HomepageView.css";
@@ -132,6 +133,8 @@ export default observer((props: Props) => {
           <Typography variant="h2" style={{ marginBottom: '20px' }}>Features</Typography>
 
           <Grid container xs={12} spacing={2.0} sx={{ marginBottom: '20px' }}>
+            {/* ANSI Escape Code Support */}
+            {/* ========================================================================== */}
             <Grid xs={12}>
               <div
                 style={{
@@ -150,6 +153,30 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
+
+            {/* Graphing */}
+            {/* ========================================================================== */}
+            <Grid xs={12}>
+              <div
+                style={{
+                  backgroundColor: "#202020",
+                  border: "1px solid #dc3545",
+                  borderRadius: "10px",
+                  padding: "20px",
+                }}
+              >
+                <Typography variant="h6" style={{ marginBottom: '20px' }}>Graphing</Typography>
+
+                <Typography style={{ marginBottom: '20px' }}>Extract data from your stream of debug data and graph it! Flexible options to extract data from text based serial streams, or dedicate the serial port for data only!</Typography>
+
+                <div style={{ display: 'flex' }}>
+                  <img src={GraphingGif} alt="Demonstration of graphing in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                </div>
+              </div>
+            </Grid>
+
+            {/* Smart Scrolling */}
+            {/* ========================================================================== */}
             <Grid xs={12}>
               <div
                 style={{

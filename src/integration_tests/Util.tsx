@@ -92,6 +92,8 @@ export async function createAppWithMockSerialPort() {
     disconnect: jest.fn(),
   }));
 
+  HTMLCanvasElement.prototype.getContext = jest.fn();
+
   const app = new App(true);
   render(<AppView app={app} />);
 
