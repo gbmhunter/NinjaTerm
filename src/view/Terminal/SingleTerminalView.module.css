@@ -68,10 +68,10 @@ it */
   }
 }
 
-/* @font-face {
+@font-face {
   font-family: testFont;
-  src: url(Consolas-Regular.woff2);
-} */
+  src: url(../../fonts/Consolas-Regular.woff2);
+}
 
 /* This is to prevent text with spaces in it from wrapping when the terminal pane width shrinks
 smaller than the width of the rows. The fixedSizeList class is applied to the FixedSizeList React
@@ -79,7 +79,8 @@ component. Two divs down is the div's which make up each row in the Terminal, an
 which contain the text */
 .fixedSizeList div div {
   white-space: nowrap;
-  font-family: Consolas, monospace;
+  font-family: testFont, Consolas, monospace;
+  font-size: 30px;
 }
 
 
