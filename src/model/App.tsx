@@ -433,7 +433,7 @@ export class App {
    * @returns
    */
   async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    // console.log('handleKeyDown() called. event=', event, this);
+    console.log('handleKeyDown() called. event=', event, this);
 
     // Prevent Tab press from moving focus to another element on screen
     // Do this even if port is not opened
@@ -451,12 +451,11 @@ export class App {
       // List of allowed symbols, includes space char also
       const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
       const alphaNumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789'
-      if (event.ctrlKey || event.shiftKey) {
-        // Don't send anything if a control key/shift key was pressed
+      if (event.key === 'Control' || event.key === 'Shift') {
+        // Don't send anything if a control key/shift key was pressed by itself
         return;
-      }
-
-      if (event.key === 'Enter') {
+      } else if (event.key === 'Enter') {
+        // TODO: Add support for sending different things on enter
         bytesToWrite.push(13);
         bytesToWrite.push(10);
       } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
@@ -538,20 +537,22 @@ export class App {
     this.setPortState(PortState.OPENED);
     this.fakePortOpen = true;
 
-    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
-    this.settings.dataProcessing.applyChanges();
-    let testCharIdx = 0;
+    this.runTestModeBytes0To255();
 
-    setInterval(() => {
-      // Noisy sine wave
-      let yVal = Math.sin(2*Math.PI*(testCharIdx/256));
-      yVal += 0.2*Math.random();
-      const rxData = new TextEncoder().encode(`y=${yVal}\n`);
-      this.parseRxData(rxData);
-      testCharIdx += 1;
-      if (testCharIdx === 256) {
-        testCharIdx = 0;
-      }
-    }, 100);
+    // this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
+    // this.settings.dataProcessing.applyChanges();
+    // let testCharIdx = 0;
+
+    // setInterval(() => {
+    //   // Noisy sine wave
+    //   let yVal = Math.sin(2*Math.PI*(testCharIdx/256));
+    //   yVal += 0.2*Math.random();
+    //   const rxData = new TextEncoder().encode(`y=${yVal}\n`);
+    //   this.parseRxData(rxData);
+    //   testCharIdx += 1;
+    //   if (testCharIdx === 256) {
+    //     testCharIdx = 0;
+    //   }
+    // }, 100);
   }
 }

@@ -71,6 +71,10 @@ Both recharts and chart.js was trialed for graphing data coming in on a serial p
 
 chart.js was chosen as it offered much better performance when the data update rate was fast. rechart could handle about 100 points, any more than that at the render time per new point started to take more than 50ms. chart.js can re-render 1000 points and stay under that limit.
 
+## Fonts
+
+In FontCreator, make sure the setting _Tools->Options->Fonts->Exclude unused glyphs_ is unchecked, otherwise glyphs at code points like `0x0001` will not be generated.
+
 ## Theme Colors
 
 * `#DC3545` (red): Primary colour, used for logo.

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.5.1] - 2023-10-16
+
+### Fixed
+
+- Fixed bug where capital letters can't be sent in terminal, closes #275.
+
 ## [4.5.0] - 2023-10-15
 
 ### Added

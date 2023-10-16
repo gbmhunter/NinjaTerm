@@ -25,7 +25,7 @@ import { createAppWithMockSerialPort, ExpectedTerminalChar, checkExpectedAgainst
 
 Object.assign(global, { TextDecoder, TextEncoder });
 
-describe('App', () => {
+describe('RxData', () => {
 
   //==========================================================================
   // RX TESTS
@@ -477,49 +477,6 @@ describe('App', () => {
     ];
     await waitFor(() => {
       checkExpectedAgainstActualDisplay(expectedDisplay, terminalRows);
-    });
-  });
-
-  //==========================================================================
-  // TX TESTS
-  //==========================================================================
-
-  it('app should send basic A char', async () => {
-    let {app, writtenData} = await createAppWithMockSerialPort();
-
-    const terminal = screen.getByTestId('tx-rx-terminal-view');
-    // Simulate a key press
-    fireEvent.keyDown(terminal, {key: 'A', code: 'KeyA'})
-    const utf8EncodeText = new TextEncoder();
-    const expectedText = utf8EncodeText.encode('A');
-    await waitFor(() => {
-      // Comparing Uint8Array's does not work, so convert to
-      // number[] and compare those instead
-      expect(writtenData).toEqual(Array.from(expectedText));
-    });
-  });
-
-  it('app should send BS (0x08) when Backspace key is pressed', async () => {
-    let {app, writtenData} = await createAppWithMockSerialPort();
-
-    const terminal = screen.getByTestId('tx-rx-terminal-view');
-    // Simulate a key press
-    fireEvent.keyDown(terminal, {key: 'Backspace'})
-    const expectedData = [ 0x08 ];
-    await waitFor(() => {
-      expect(writtenData).toEqual(expectedData);
-    });
-  });
-
-  it('app should send Horizontal Tab, HT (0x09) when Tab key is pressed', async () => {
-    let {app, writtenData} = await createAppWithMockSerialPort();
-
-    const terminal = screen.getByTestId('tx-rx-terminal-view');
-    // Simulate a key press
-    fireEvent.keyDown(terminal, {key: 'Tab'})
-    const expectedData = [ 0x09 ];
-    await waitFor(() => {
-      expect(writtenData).toEqual(expectedData);
     });
   });
 });
