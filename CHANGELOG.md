@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.5.2] - 2023-10-17
+
+### Fixed
+
+- Fixed bug where terminal font was too large.
+
 ## [4.5.1] - 2023-10-16
 
 ### Fixed
@@ -446,7 +452,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.2...HEAD
+[4.5.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.1...v4.5.2
+[4.5.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.2...v4.5.0
 [4.4.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.1...v4.4.2
 [4.4.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.0...v4.4.1
