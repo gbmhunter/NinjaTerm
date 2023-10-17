@@ -136,6 +136,45 @@ function DataProcessingView(props: Props) {
         />
       </Tooltip>
       {/* =============================================================================== */}
+      {/* CHAR SIZE */}
+      {/* =============================================================================== */}
+      <Tooltip title="."
+        followCursor
+        arrow
+      >
+        <TextField
+          id="outlined-basic"
+          name="charSizePx"
+          label="Char Size"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">px</InputAdornment>
+            ),
+          }}
+          value={
+            appStore.settings.dataProcessing.visibleData.fields
+              .charSizePx.value
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            appStore.settings.dataProcessing.onFieldChange(
+              event.target.name,
+              event.target.value
+            );
+          }}
+          error={
+            appStore.settings.dataProcessing.visibleData.fields
+              .charSizePx.hasError
+          }
+          helperText={
+            appStore.settings.dataProcessing.visibleData.fields
+              .charSizePx.errorMsg
+          }
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
+      {/* =============================================================================== */}
       {/* SCROLLBACK BUFFER SIZE */}
       {/* =============================================================================== */}
       <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).

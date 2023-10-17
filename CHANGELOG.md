@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added ability to change terminal font size.
+
 ## [4.5.2] - 2023-10-17
 
 ### Fixed

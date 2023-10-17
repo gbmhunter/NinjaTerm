@@ -160,9 +160,10 @@ export default observer((props: Props) => {
           height: '100%',
           // This sets the font for displayed data in the terminal
           fontFamily: 'Consolas, Menlo, monospace',
-          // whiteSpace: 'pre-wrap', // This allows \n to create new lines
-          // padding: '10px',
-          // marginBottom: '10px',
+
+          // This sets the font size for data displayed in the terminal
+          fontSize: appStore.settings.dataProcessing.appliedData.fields.charSizePx.value + 'px',
+
           position: 'relative', // This is so we can use position: absolute for the down icon
           // flexBasis: '0',
           // overflowY: hidden is important so that that it ignores the height of the child
@@ -179,7 +180,7 @@ export default observer((props: Props) => {
           className={styles.fixedSizeList}
           height={heightDebug}
           itemCount={terminal.terminalRows.length}
-          itemSize={20}
+          itemSize={parseFloat(appStore.settings.dataProcessing.appliedData.fields.charSizePx.value)}
           width="100%"
           itemData={terminal.terminalRows}
           onScroll={(scrollProps) => {

@@ -43,6 +43,12 @@ class Data {
       errorMsg: '',
       rule: 'required|integer|min:1',
     },
+    charSizePx: {
+      value: '16', // 16px is a good default size for the terminal text
+      hasError: false,
+      errorMsg: '',
+      rule: 'required|numeric|min:1',
+    },
     scrollbackBufferSizeRows: {
       value: 2000,
       hasError: false,

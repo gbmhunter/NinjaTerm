@@ -480,7 +480,7 @@ export default class Terminal {
    * @param char Must be a single printable character only.
    */
   addVisibleChar(rxByte: number) {
-    // assert(char.length === 1);
+    console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 
     // if (rxByte === 0x00) {
@@ -489,6 +489,7 @@ export default class Terminal {
     //   terminalChar.char = String.fromCharCode(rxByte);
     // }
     terminalChar.char = String.fromCharCode(rxByte);
+    console.log(terminalChar.char)
 
     // Calculate the foreground color CSS
     let foregroundColorCss = '';
