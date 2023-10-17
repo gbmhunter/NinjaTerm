@@ -79,8 +79,9 @@ component. Two divs down is the div's which make up each row in the Terminal, an
 which contain the text */
 .fixedSizeList div div {
   white-space: nowrap;
-  font-family: testFont, Consolas, monospace;
-  font-size: 30px;
+  /* font-family: testFont, Consolas, monospace; */
+  font-family: Consolas, monospace;
+  font-size: 14px;
 }
 
 
