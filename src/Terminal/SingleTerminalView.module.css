@@ -70,7 +70,7 @@ it */
 
 @font-face {
   font-family: testFont;
-  src: url(../../fonts/ConsolasControlChars-Regular.woff2);
+  src: url(../fonts/ConsolasControlChars-Regular.woff2);
 }
 
 /* This is to prevent text with spaces in it from wrapping when the terminal pane width shrinks

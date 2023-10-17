@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import { App } from "model/App";
+import { App } from "App";
 import styles from "./GraphingView.module.css";
 
 import {

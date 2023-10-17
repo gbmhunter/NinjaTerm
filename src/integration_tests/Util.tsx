@@ -9,8 +9,8 @@ import {
 import userEvent from '@testing-library/user-event';
 import { setupJestCanvasMock } from 'jest-canvas-mock';
 
-import { App } from 'model/App';
-import AppView from 'view/AppView';
+import { App } from 'App';
+import AppView from 'AppView';
 
 /**
  * Setup function that is re-used by all tests in this file.

@@ -1,8 +1,8 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable } from 'mobx';
 
-import { Settings } from 'model/Settings/Settings';
-import Snackbar from 'model/Snackbar';
+import { Settings } from 'Settings/Settings';
+import Snackbar from 'Snackbar';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 

@@ -5,9 +5,9 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 import { toJS } from 'mobx';
 
-import { App } from '../../model/App';
-import Terminal from '../../model/Terminal/SingleTerminal';
-import TerminalRow from '../../model/Terminal/SingleTerminalRow';
+import { App } from '../App';
+import Terminal from './SingleTerminal';
+import TerminalRow from './SingleTerminalRow';
 import styles from './SingleTerminalView.module.css';
 
 interface Props {

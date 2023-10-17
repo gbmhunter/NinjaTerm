@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added ability to change terminal font size.
 
+### Changed
+
+- Combined view and model files together into a single directory tree.
+
 ## [4.5.2] - 2023-10-17
 
 ### Fixed

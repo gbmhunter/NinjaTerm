@@ -22,12 +22,12 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, MainPanes, PortState, portStateToButtonProps } from '../model/App';
+import { App, MainPanes, PortState, portStateToButtonProps } from './App';
 import './App.css';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from '../model/Settings/DataProcessingSettings';
+} from './Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminal/TerminalView';
 import GraphView from './Graphing/GraphingView';

@@ -12,11 +12,11 @@ import {
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { App } from '../../model/App';
-import { SettingsCategories } from '../../model/Settings/Settings';
+import { App } from '../App';
+import { SettingsCategories } from './Settings';
 
 import PortConfigurationView from './PortConfigurationView';
-import DataProcessingView from './DataProcessingView';
+import DataProcessingView from './DataProcessingSettingsView';
 
 interface Props {
   appStore: App;

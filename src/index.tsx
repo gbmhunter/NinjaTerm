@@ -9,9 +9,9 @@ import {
 } from "react-router-dom";
 import ReactGA from "react-ga4";
 
-import { App } from './model/App';
-import AppView from './view/AppView';
-import HomepageView from './view/Homepage/HomepageView';
+import { App } from './App';
+import AppView from './AppView';
+import HomepageView from './Homepage/HomepageView';
 
 // Google Analytics
 ReactGA.initialize("G-SDMMGN71FN");

@@ -5,7 +5,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-import packageDotJson from '../../package.json'
+import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings } from './Settings/Settings';
 import Terminal from './Terminal/SingleTerminal';
