@@ -80,10 +80,9 @@ export default observer((props: Props) => {
     }
     if (terminal.scrollLock) {
       reactWindowRef.current.scrollToItem(
-        terminal.terminalRows.length - 1,
+        terminal.terminalRows.length,
         "end"
       );
-      // reactWindowRef.current.scrollTo(9999999999999);
     } else {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);

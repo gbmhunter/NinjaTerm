@@ -83,7 +83,7 @@ export default class DataProcessingSettings {
     appliedValue: 16,
     hasError: false,
     errorMsg: '',
-    rule: 'required|numeric|min:1',
+    rule: 'required|integer|min:1',
   };
 
   // Set to true if the visible data has been changed from the applied
@@ -92,9 +92,6 @@ export default class DataProcessingSettings {
 
   constructor(app: App) {
     this.app = app;
-    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

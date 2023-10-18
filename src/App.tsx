@@ -176,8 +176,8 @@ export class App {
     let testCharIdx = 65;
     setInterval(() => {
       const te = new TextEncoder();
-      // const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
-      const data = te.encode(String.fromCharCode(testCharIdx));
+      const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
+      // const data = te.encode(String.fromCharCode(testCharIdx));
       this.parseRxData(Uint8Array.from(data));
       testCharIdx += 1;
       if (testCharIdx === 90) {
@@ -436,7 +436,7 @@ export class App {
    * @returns
    */
   async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    console.log('handleKeyDown() called. event=', event, this);
+    // console.log('handleKeyDown() called. event=', event, this);
 
     // Prevent Tab press from moving focus to another element on screen
     // Do this even if port is not opened
@@ -497,7 +497,7 @@ export class App {
       const writer = this.port?.writable?.getWriter();
 
       const data = Uint8Array.from(bytesToWrite);
-      console.log('Calling writer.write() with data=', data);
+      // console.log('Calling writer.write() with data=', data);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
@@ -540,7 +540,8 @@ export class App {
     this.setPortState(PortState.OPENED);
     this.fakePortOpen = true;
 
-    this.runTestModeBytes0To255();
+    // this.runTestModeBytes0To255();
+    this.runTestMode();
 
     // this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
     // this.settings.dataProcessing.applyChanges();

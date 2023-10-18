@@ -176,7 +176,8 @@ const AppView = observer((props: Props) => {
           {mainPaneComponent}
 
 
-          {/* ================== BOTTOM TOOLBAR BAR ==================== */}
+          {/* BOTTOM APP TOOLBAR */}
+          {/* =================================================================================== */}
           <Box
             id="bottom-status-bar"
             sx={{
@@ -189,7 +190,7 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
-
+            {/* GRAPHING ON/OFF */}
             <div>{ app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}</div>
 
             {/* TX/RX ACTIVITY INDICATORS */}
@@ -200,8 +201,10 @@ const AppView = observer((props: Props) => {
             <Box>
               <Box key={app.numBytesReceived} className={styles.ledyellow}>RX</Box>
             </Box>
+            {/* PORT CONFIG */}
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
+            {/* PORT STATE */}
             <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
