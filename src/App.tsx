@@ -191,7 +191,8 @@ export class App {
   runTestModeBytes0To255() {
     console.log('runTestMode2() called.');
     this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
-    this.settings.dataProcessing.visibleData.fields.charSizePx.value = '30';
+    this.settings.dataProcessing.setCharSizePxDisp('30');
+    this.settings.dataProcessing.applyCharSizePx();
     this.settings.dataProcessing.applyChanges();
     let testCharIdx = 0;
     setInterval(() => {

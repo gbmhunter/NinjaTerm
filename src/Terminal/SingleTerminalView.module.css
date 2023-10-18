@@ -81,6 +81,8 @@ which contain the text */
   white-space: nowrap;
   font-family: testFont, Consolas, monospace;
   /* font-family: Consolas, monospace; */
+  display: flex;
+  align-items: center;
 }
 
 

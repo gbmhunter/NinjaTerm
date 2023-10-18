@@ -4,10 +4,12 @@ import {
   ButtonPropsColorOverrides,
   FormControl,
   FormControlLabel,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   Switch,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -17,7 +19,6 @@ import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
 import { App, portStateToButtonProps, PortState } from "App";
-import Terminal from "Terminal/SingleTerminal";
 import SingleTerminalView from "./SingleTerminalView";
 import {
   DataViewConfiguration,
@@ -37,7 +38,12 @@ export default observer((props: Props) => {
   let terminals;
   if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
-    terminals = <SingleTerminalView appStore={app} terminal={app.txRxTerminal} testId='tx-rx-terminal-view' />;
+    terminals = <SingleTerminalView
+                  appStore={app}
+                  terminal={app.txRxTerminal}
+                  testId='tx-rx-terminal-view'
+                  useWindowing={true}
+                />;
   } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -143,6 +149,45 @@ export default observer((props: Props) => {
               })}
           </Select>
         </FormControl>
+      </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* CHAR SIZE */}
+      {/* =============================================================================== */}
+      <Tooltip title="The font size (in pixels) of characters displayed in the terminal."
+        followCursor
+        arrow
+      >
+        <TextField
+          id="outlined-basic"
+          name="charSizePx"
+          label="Char Size"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">px</InputAdornment>
+            ),
+          }}
+          value={
+            app.settings.dataProcessing.charSizePx.dispValue
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
+          }}
+          onBlur={() => {
+            app.settings.dataProcessing.applyCharSizePx();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              app.settings.dataProcessing.applyCharSizePx();
+            }
+          }}
+          error={
+            app.settings.dataProcessing.charSizePx.hasError
+          }
+          sx={{ width: "80px" }}
+        />
       </Tooltip>
 
       {/* ============================ LOCAL TX ECHO SWITCH =========================== */}

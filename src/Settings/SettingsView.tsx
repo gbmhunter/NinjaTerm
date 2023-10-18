@@ -1,15 +1,9 @@
 import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
   List,
   ListItemText,
   ListItemButton,
 } from '@mui/material';
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { App } from '../App';
@@ -30,7 +24,7 @@ function SettingsDialog(props: Props) {
       <PortConfigurationView appStore={appStore} />
     ),
     [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessingView appStore={appStore} />
+      <DataProcessingView app={appStore} />
     ),
   };
 
