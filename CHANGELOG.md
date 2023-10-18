@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Combined view and model files together into a single directory tree.
 
+### Fixed
+
+- Fixed an issue regarding clipping in terminal with autoscroll.
+
 ## [4.5.2] - 2023-10-17
 
 ### Fixed

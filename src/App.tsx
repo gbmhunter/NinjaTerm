@@ -523,9 +523,9 @@ export class App {
     this.txRxTextScrollLock = trueFalse;
   }
 
-  setStatusMsgScrollLock(trueFalse: boolean) {
-    this.statusMsgScrollLock = trueFalse;
-  }
+  // setStatusMsgScrollLock(trueFalse: boolean) {
+  //   this.statusMsgScrollLock = trueFalse;
+  // }
 
   /**
    * Sets the main pane to be shown.

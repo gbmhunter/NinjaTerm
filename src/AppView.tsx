@@ -2,19 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import {
   Box,
-  Button,
-  ButtonPropsColorOverrides,
-  FormControl,
-  FormControlLabel,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  Tooltip,
-  Typography,
 } from '@mui/material';
-import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -22,19 +11,13 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, MainPanes, PortState, portStateToButtonProps } from './App';
+import { App, MainPanes, PortState } from './App';
 import './App.css';
-import {
-  DataViewConfiguration,
-  dataViewConfigEnumToDisplayName,
-} from './Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminal/TerminalView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
-
-import KofiButton from "kofi-button"
 
 // Create dark theme for MUI
 const darkTheme = createTheme({

@@ -71,7 +71,8 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(terminal.terminalRows.length - 1);
+      reactWindowRef.current.scrollToItem(terminal.terminalRows.length - 1, "end");
+      // reactWindowRef.current.scrollTo(9999999999999);
     } else {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
@@ -162,7 +163,10 @@ export default observer((props: Props) => {
           fontFamily: 'Consolas, Menlo, monospace',
 
           // This sets the font size for data displayed in the terminal
-          fontSize: appStore.settings.dataProcessing.appliedData.fields.charSizePx.value + 'px',
+          fontSize: appStore.settings.dataProcessing.appliedData.fields.charSizePx.value +  'px',
+
+          // Line height needs to be set to 1.0 for autoscroll to work well
+          lineHeight: 1.0,
 
           position: 'relative', // This is so we can use position: absolute for the down icon
           // flexBasis: '0',
@@ -180,7 +184,8 @@ export default observer((props: Props) => {
           className={styles.fixedSizeList}
           height={heightDebug}
           itemCount={terminal.terminalRows.length}
-          itemSize={parseFloat(appStore.settings.dataProcessing.appliedData.fields.charSizePx.value)}
+          // Add a bit of padding to the height, this allows the cursors full outline to be displayed
+          itemSize={parseFloat(appStore.settings.dataProcessing.appliedData.fields.charSizePx.value) + 1}
           width="100%"
           itemData={terminal.terminalRows}
           onScroll={(scrollProps) => {
