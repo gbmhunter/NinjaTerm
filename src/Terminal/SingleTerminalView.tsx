@@ -79,9 +79,10 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
+      console.log('res')
       reactWindowRef.current.scrollToItem(
         terminal.terminalRows.length,
-        "end"
+        "auto"
       );
     } else {
       // Scroll to the position determined by the Terminal model
@@ -142,14 +143,14 @@ export default observer((props: Props) => {
         height={heightDebug}
         itemCount={terminal.terminalRows.length}
         // Add a bit of padding to the height
-        itemSize={appStore.settings.dataProcessing.charSizePx.appliedValue + 1}
+        itemSize={appStore.settings.dataProcessing.charSizePx.appliedValue + 5}
         width="100%"
         itemData={terminal.terminalRows}
         onScroll={(scrollProps) => {
           const { scrollOffset } = scrollProps;
           terminal.setScrollPos(scrollOffset);
         }}
-        overscanCount={2}
+        overscanCount={5}
       >
         {Row}
       </FixedSizeList>

@@ -79,8 +79,8 @@ export default class DataProcessingSettings {
   appliedData = new Data();
 
   charSizePx =  {
-    dispValue: '16', // 16px is a good default size for the terminal text
-    appliedValue: 16,
+    dispValue: '14', // 14px is a good default size for the terminal text
+    appliedValue: 14,
     hasError: false,
     errorMsg: '',
     rule: 'required|integer|min:1',

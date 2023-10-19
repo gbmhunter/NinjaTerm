@@ -18,6 +18,7 @@ import TerminalView from './Terminal/TerminalView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
+import FakePortDialogView from 'FakePorts/FakePortDialogView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -175,7 +176,6 @@ const AppView = observer((props: Props) => {
           {/* =================================================================================== */}
           {mainPaneComponent}
 
-
           {/* BOTTOM APP TOOLBAR */}
           {/* =================================================================================== */}
           <Box
@@ -209,9 +209,12 @@ const AppView = observer((props: Props) => {
           </Box>
         </div>
 
+        <FakePortDialogView app={app} />
+
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
         Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}
         <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} />
+
       </div>
     </ThemeProvider>
   );

@@ -88,9 +88,9 @@ export class Settings {
   }
 
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log(event);
-    if (event.key === 'd') {
-      this.app.openFakePort();
+    // console.log(event);
+    if (event.key === 'f') {
+      this.app.fakePortController.setIsDialogOpen(true);
     }
   }
 }

@@ -18,7 +18,7 @@ import { OverridableStringUnion } from '@mui/types';
 import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortState } from "App";
+import { App, portStateToButtonProps, PortState, PortType } from "App";
 import SingleTerminalView from "./SingleTerminalView";
 import {
   DataViewConfiguration,
@@ -97,7 +97,7 @@ export default observer((props: Props) => {
           }
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
-        disabled={app.port === null}
+        disabled={(app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
         sx={{ width: "150px" }}
       >
         {" "}

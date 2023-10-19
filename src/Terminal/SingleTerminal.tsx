@@ -656,7 +656,7 @@ export default class Terminal {
     // space as the rows we removed, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.settings.dataProcessing.charSizePx.appliedValue + 1)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.settings.dataProcessing.charSizePx.appliedValue + 5)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }
