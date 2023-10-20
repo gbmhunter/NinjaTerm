@@ -44,6 +44,31 @@ export default class FakePortsController {
   constructor(app: App) {
     this.app = app;
 
+    // hello world, 0.2lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "hello world, 0.2lps",
+        () => {
+          const intervalId = setInterval(() => {
+            const textToSend = "Hello, world!\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }, 5000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     // hello world, 5lps
     //=================================================================================
     this.fakePorts.push(
@@ -103,6 +128,7 @@ export default class FakePortsController {
           const intervalId = setInterval(() => {
             console.time();
             const textToSend = generateRandomString(80) + "\n";
+            console.log(textToSend);
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));

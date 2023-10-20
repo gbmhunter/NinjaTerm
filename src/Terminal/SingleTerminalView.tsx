@@ -38,36 +38,64 @@ export default observer((props: Props) => {
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
     const terminalRow = data[index];
-    const spans: ReactElement[] = [];
 
-    for (
-      let colIdx = 0;
-      colIdx < terminalRow.terminalChars.length;
-      colIdx += 1
-    ) {
+    // Only create spans if we need to change style, because creating
+    // a span per char is very performance intensive
+    const spans: ReactElement[] = [];
+    let text = ''
+    let prevClassName = '';
+
+    for (let colIdx = 0; colIdx < terminalRow.terminalChars.length; colIdx += 1) {
       const terminalChar = terminalRow.terminalChars[colIdx];
-      let className = "";
+      let thisCharsClassName = terminalChar.className;
       if (
         index === terminal.cursorPosition[0] &&
         colIdx === terminal.cursorPosition[1]
       ) {
         // Found the cursor position!
         if (terminal.isFocused) {
-          className = styles.cursorFocused;
+          thisCharsClassName += ' ' + styles.cursorFocused;
         } else {
-          className = styles.cursorUnfocused;
+          thisCharsClassName += ' ' + styles.cursorUnfocused;
         }
       }
-      spans.push(
-        <span
-          key={colIdx}
-          className={className}
-          style={toJS(terminalChar.style)}
-        >
-          {terminalChar.char}
-        </span>
-      );
+
+      if (colIdx === 0) {
+        // First char in row, so set the prev class name
+        // equal to this one so we don't create a new span
+        // below
+        prevClassName = thisCharsClassName;
+      }
+
+      if (thisCharsClassName !== prevClassName) {
+        // Class name has changed. Dump all existing text into a span
+        // and reset the text buffer
+        spans.push(
+          <span
+            key={spans.length}
+            className={prevClassName}
+          >
+            {text}
+          </span>
+        );
+        text = '';
+        prevClassName = thisCharsClassName;
+      }
+
+      text += terminalChar.char
     }
+
+    // Add the last span. This will always at least contain
+    // the last char in the row, maybe more previous ones if the
+    // class name hasn't changed
+    spans.push(
+      <span
+        key={spans.length}
+        className={prevClassName}
+      >
+        {text}
+      </span>
+    );
     return <div style={style}>{spans}</div>;
   });
 
