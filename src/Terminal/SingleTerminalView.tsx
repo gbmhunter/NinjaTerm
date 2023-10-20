@@ -102,7 +102,11 @@ export default observer((props: Props) => {
   // Run this after every render, even though we only need to do it if
   // a new row has been added. It's too computationally expensive to
   // do a deep compare of the text segments
-  useEffect(() => {
+  // Must be useLayoutEffect(), not useEffect(). If useEffect()
+  // is used, user sees jerky motion if scroll lock is applied
+  // or they are in the middle of the data and data is being
+  // removed from the start (buffer is full).
+  useLayoutEffect(() => {
     if (reactWindowRef.current === null) {
       return;
     }
