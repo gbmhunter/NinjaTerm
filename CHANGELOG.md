@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added ability to change terminal font size to both settings menu and terminal toolbar.
 - Added dialog window for selecting fake serial ports (for testing and demos), along with a flexible fake port controller class. Press "f" on the port settings pane to open the dialog.
+- Performance improvements when processing large amounts of RX data.
 
 ### Changed
 
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed an issue regarding clipping in terminal with autoscroll.
+- Fixed rendering glitch with scroll lock or in the middle of data with data being removed at the start (buffer is full) by replacing `useEffect()` with `useLayoutEffect()`.
 
 ## [4.5.2] - 2023-10-17
 
