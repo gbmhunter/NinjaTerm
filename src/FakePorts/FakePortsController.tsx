@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import { App, PortState, PortType } from "App";
+import { generateRandomString } from "Util/Util";
 
 class FakePort {
   name: string;
@@ -42,6 +43,84 @@ export default class FakePortsController {
 
   constructor(app: App) {
     this.app = app;
+
+    // hello world, 5lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "hello world, 5lps",
+        () => {
+          const intervalId = setInterval(() => {
+            const textToSend = "Hello, world!\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // hello world, 10lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "hello world, 10lps",
+        () => {
+          const intervalId = setInterval(() => {
+            const textToSend = "Hello, world!\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }, 100);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // random chars, 80pl, 10lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "random chars, 80pl, 10lps",
+        () => {
+          const intervalId = setInterval(() => {
+            console.time();
+            const textToSend = generateRandomString(80) + "\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+            console.timeEnd();
+
+          }, 100);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
 
     // ALPHABETIC CHARS, 1 BY 1
     //=================================================================================
