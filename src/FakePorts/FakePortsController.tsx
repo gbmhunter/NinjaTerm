@@ -119,6 +119,42 @@ export default class FakePortsController {
       )
     );
 
+    // red-green, 0.2lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "red-green, 0.2lps",
+        () => {
+          let stringIdx = 0;
+          const strings =
+            [
+              "\x1b[31mred\n",
+              "\x1b[32mgreen\n",
+            ];
+          const intervalId = setInterval(() => {
+            const textToSend = strings[stringIdx];
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+
+            stringIdx += 1;
+            if (stringIdx === strings.length) {
+              stringIdx = 0;
+            }
+          }, 5000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     // random chars, 80pl, 10lps
     //=================================================================================
     this.fakePorts.push(

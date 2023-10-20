@@ -493,16 +493,22 @@ export default class Terminal {
 
     // Calculate the foreground color CSS
     let foregroundColorCss = '';
+    let classList = [];
     if (this.currForegroundColorNum !== null) {
       if (this.currForegroundColorNum >= 30 && this.currForegroundColorNum <= 37) {
         if (this.boldOrIncreasedIntensity) {
-          foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 30];
+          // foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 30];
+          classList.push(`b`); // b for bold
+          classList.push(`f${this.currForegroundColorNum}`)
         } else {
-          foregroundColorCss = this.sgaCodeToColorMapVga[this.currForegroundColorNum - 30];
+          // foregroundColorCss = this.sgaCodeToColorMapVga[this.currForegroundColorNum - 30];
+          classList.push(`f${this.currForegroundColorNum}`)
         }
       } else if (this.currForegroundColorNum >= 90 && this.currForegroundColorNum <= 97) {
         // Bright foreground colors
-        foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 90];
+        // foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 90];
+        classList.push(`f${this.currForegroundColorNum}`); // b for bold
+
       };
     }
 
@@ -523,10 +529,11 @@ export default class Terminal {
 
     // We need to make a copy of the current style, so that future updates won't
     // effect all previous styles
-    terminalChar.style = {
-      'color': foregroundColorCss,
-      'backgroundColor': backgroundColorCss,
-    };
+    // terminalChar.style = {
+    //   'color': foregroundColorCss,
+    //   'backgroundColor': backgroundColorCss,
+    // };
+    terminalChar.className = classList.join(' ');
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position

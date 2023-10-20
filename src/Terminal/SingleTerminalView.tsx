@@ -3,19 +3,18 @@ import { observer } from "mobx-react-lite";
 import {
   WheelEvent,
   useRef,
-  useEffect,
   ReactElement,
   useState,
   useLayoutEffect,
 } from "react";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { FixedSizeList } from "react-window";
-import { toJS } from "mobx";
 
 import { App } from "../App";
 import Terminal from "./SingleTerminal";
 import TerminalRow from "./SingleTerminalRow";
 import styles from "./SingleTerminalView.module.css";
+import './SingleTerminalView.css'
 
 interface Props {
   appStore: App;
