@@ -139,9 +139,9 @@ describe('RxData', () => {
     // Red should be "bright red"
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f31 b' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f31 b' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f31 b' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
@@ -169,9 +169,9 @@ describe('RxData', () => {
     // Red should be "bright red"
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f91' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f91' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f91' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
