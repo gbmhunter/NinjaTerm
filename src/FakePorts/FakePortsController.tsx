@@ -119,11 +119,11 @@ export default class FakePortsController {
       )
     );
 
-    // red-green, 0.2lps
+    // red green, 0.2lps
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "red-green, 0.2lps",
+        "red green, 0.2lps",
         () => {
           let stringIdx = 0;
           const strings =
@@ -144,6 +144,85 @@ export default class FakePortsController {
               stringIdx = 0;
             }
           }, 5000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // all colours, 0.2lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        "all colours, 1lps",
+        () => {
+          let stringIdx = 0;
+          const strings =
+            [
+              // FOREGROUNDS
+              // Reset all styles
+              '\x1B[0m\x1B[30mnormal black',
+              '\x1B[31mnormal red',
+              '\x1B[32mnormal green',
+              '\x1B[33mnormal brown/yellow',
+              '\x1B[34mnormal blue',
+              '\x1B[35mnormal magenta',
+              '\x1B[36mnormal cyan',
+              '\x1B[37mnormal grey',
+              // Set to bold mode
+              // This may give either bold text or bright colours
+              // depending on terminal implementation
+              '\x1B[1m\x1B[30mbold black',
+              '\x1B[31mbold red',
+              '\x1B[32mbold green',
+              '\x1B[33mbold brown/yellow',
+              '\x1B[34mbold blue',
+              '\x1B[35mbold magenta',
+              '\x1B[36mbold cyan',
+              '\x1B[37mbold grey',
+
+              // BACKGROUNDS
+              // Reset all styles
+              '\x1B[0m\x1B[40mblack bg',
+              '\x1B[41mred bg',
+              '\x1B[42mgreen bg',
+              '\x1B[43mbrown/yellow bg',
+              '\x1B[44mblue bg',
+              '\x1B[45mmagenta bg',
+              '\x1B[46mcyan bg',
+              '\x1B[47mwhite bg',
+
+              // Set to bold mode
+              // This may give either bold text or bright colours
+              // depending on terminal implementation
+              '\x1B[1m\x1B[40mbold black bg',
+              '\x1B[41;30mbold red bg',
+              '\x1B[42;30mbold green bg',
+              '\x1B[43;30mbold yellow bg',
+              '\x1B[44;37mbold blue bg',
+              '\x1B[45mbold magneta bg',
+              '\x1B[46mbold cyan bg',
+              '\x1B[47;30mbold white bg',
+
+            ];
+          const intervalId = setInterval(() => {
+            const textToSend = strings[stringIdx];
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+
+            stringIdx += 1;
+            if (stringIdx === strings.length) {
+              stringIdx = 0;
+            }
+          }, 1000);
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {

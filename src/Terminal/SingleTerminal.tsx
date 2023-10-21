@@ -513,17 +513,21 @@ export default class Terminal {
     }
 
     // Calculate the background color CSS
-    let backgroundColorCss = '';
+    // let backgroundColorCss = '';
     if (this.currBackgroundColorNum !== null) {
       if (this.currBackgroundColorNum >= 40 && this.currBackgroundColorNum <= 47) {
         if (this.boldOrIncreasedIntensity) {
-          backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 40];
+          // backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 40];
+          classList.push(`b`); // b for bold
+          classList.push(`f${this.currBackgroundColorNum}`)
         } else {
-          backgroundColorCss = this.sgaCodeToColorMapVga[this.currBackgroundColorNum - 40];
+          // backgroundColorCss = this.sgaCodeToColorMapVga[this.currBackgroundColorNum - 40];
+          classList.push(`f${this.currBackgroundColorNum}`)
         }
       } else if (this.currBackgroundColorNum >= 100 && this.currBackgroundColorNum <= 107) {
         // Bright background colors
-        backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 100];
+        // backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 100];
+        classList.push(`f${this.currBackgroundColorNum}`)
       }
     }
 
