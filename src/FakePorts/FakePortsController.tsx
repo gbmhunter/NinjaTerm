@@ -155,16 +155,16 @@ export default class FakePortsController {
       )
     );
 
-    // all colours, 0.2lps
+    // all colours, 5cps
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "all colours, 1lps",
+        "all colours, 5cps",
         () => {
           let stringIdx = 0;
           const strings =
             [
-              // FOREGROUNDS
+              // STANDARD FOREGROUNDS
               // Reset all styles
               '\x1B[0m\x1B[30mnormal black',
               '\x1B[31mnormal red',
@@ -174,8 +174,9 @@ export default class FakePortsController {
               '\x1B[35mnormal magenta',
               '\x1B[36mnormal cyan',
               '\x1B[37mnormal grey',
-              // Set to bold mode
-              // This may give either bold text or bright colours
+
+              // BOLD FOREGROUNDS
+              // This may give either bold text or bright colors
               // depending on terminal implementation
               '\x1B[1m\x1B[30mbold black',
               '\x1B[31mbold red',
@@ -186,8 +187,20 @@ export default class FakePortsController {
               '\x1B[36mbold cyan',
               '\x1B[37mbold grey',
 
-              // BACKGROUNDS
+              // BRIGHT FOREGROUNDS
+              '\x1B[0m\x1B[90mbright black',
+              '\x1B[91mbright red',
+              '\x1B[92mbright green',
+              '\x1B[93mbright brown/yellow',
+              '\x1B[94mbright blue',
+              '\x1B[95mbright magenta',
+              '\x1B[96mbright cyan',
+              '\x1B[97mbright white',
+
+              // STANDARD BACKGROUNDS
               // Reset all styles
+              // For the lighter backgrounds, the text color is changed
+              // to black
               '\x1B[0m\x1B[40mblack bg',
               '\x1B[41mred bg',
               '\x1B[42mgreen bg',
@@ -195,20 +208,31 @@ export default class FakePortsController {
               '\x1B[44mblue bg',
               '\x1B[45mmagenta bg',
               '\x1B[46mcyan bg',
-              '\x1B[47mwhite bg',
+              '\x1B[47m;30mwhite bg',
 
+              // BOLD BACKGROUNDS
               // Set to bold mode
-              // This may give either bold text or bright colours
+              // This may give either bold text or bright colors
               // depending on terminal implementation
+              // NinjaTerm just makes it bright
               '\x1B[1m\x1B[40mbold black bg',
               '\x1B[41;30mbold red bg',
               '\x1B[42;30mbold green bg',
               '\x1B[43;30mbold yellow bg',
               '\x1B[44;37mbold blue bg',
-              '\x1B[45mbold magneta bg',
+              '\x1B[45mbold magenta bg',
               '\x1B[46mbold cyan bg',
               '\x1B[47;30mbold white bg',
 
+              // BRIGHT BACKGROUNDS
+              '\x1B[0m\x1B[100mbright black bg',
+              '\x1B[101;30mbright red bg',
+              '\x1B[102;30mbright green bg',
+              '\x1B[103;30mbright brown/yellow bg',
+              '\x1B[104mbright blue bg',
+              '\x1B[105mbright magenta bg',
+              '\x1B[106mbright cyan bg',
+              '\x1B[107;30mbright white bg',
             ];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
@@ -222,7 +246,7 @@ export default class FakePortsController {
             if (stringIdx === strings.length) {
               stringIdx = 0;
             }
-          }, 1000);
+          }, 200);
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {

@@ -113,25 +113,6 @@ export default class Terminal {
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
 
-    // Populate the map with data
-    this.sgaCodeToColorMapVga[0] = 'rgb(0, 0, 0)';
-    this.sgaCodeToColorMapVga[1] = 'rgb(170, 0, 0)';
-    this.sgaCodeToColorMapVga[2] = 'rgb(0, 170, 0)';
-    this.sgaCodeToColorMapVga[3] = 'rgb(170, 85, 0)';
-    this.sgaCodeToColorMapVga[4] = 'rgb(0, 0, 170)';
-    this.sgaCodeToColorMapVga[5] = 'rgb(170, 0, 170)';
-    this.sgaCodeToColorMapVga[6] = 'rgb(0, 170, 170)';
-    this.sgaCodeToColorMapVga[7] = 'rgb(170, 170, 170)';
-
-    this.sgaCodeToBrightColorMapVga[0] = 'rgb(85, 85, 85)';
-    this.sgaCodeToBrightColorMapVga[1] = 'rgb(255, 85, 85)';
-    this.sgaCodeToBrightColorMapVga[2] = 'rgb(85, 255, 85)';
-    this.sgaCodeToBrightColorMapVga[3] = 'rgb(255, 255, 85)';
-    this.sgaCodeToBrightColorMapVga[4] = 'rgb(85, 85, 255)';
-    this.sgaCodeToBrightColorMapVga[5] = 'rgb(255, 85, 255)';
-    this.sgaCodeToBrightColorMapVga[6] = 'rgb(85, 255, 255)';
-    this.sgaCodeToBrightColorMapVga[7] = 'rgb(255, 255, 255)';
-
     this.isFocused = false;
 
     makeAutoObservable(this);
@@ -489,54 +470,44 @@ export default class Terminal {
     //   terminalChar.char = String.fromCharCode(rxByte);
     // }
     terminalChar.char = String.fromCharCode(rxByte);
-    // console.log(terminalChar.char)
 
-    // Calculate the foreground color CSS
-    let foregroundColorCss = '';
+    // This stores all classes we wish to apply to the char
     let classList = [];
+    // Calculate the foreground class
+    // Should be in the form: "f<number", e.g. "f30" or "f90"
     if (this.currForegroundColorNum !== null) {
       if (this.currForegroundColorNum >= 30 && this.currForegroundColorNum <= 37) {
         if (this.boldOrIncreasedIntensity) {
-          // foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 30];
           classList.push(`b`); // b for bold
           classList.push(`f${this.currForegroundColorNum}`)
         } else {
-          // foregroundColorCss = this.sgaCodeToColorMapVga[this.currForegroundColorNum - 30];
           classList.push(`f${this.currForegroundColorNum}`)
         }
       } else if (this.currForegroundColorNum >= 90 && this.currForegroundColorNum <= 97) {
         // Bright foreground colors
-        // foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 90];
-        classList.push(`f${this.currForegroundColorNum}`); // b for bold
+        classList.push(`f${this.currForegroundColorNum}`);
 
       };
     }
 
-    // Calculate the background color CSS
-    // let backgroundColorCss = '';
+    // Calculate the background color class
+    // Should be in the form: "b<number", e.g. "b40" or "b100"
     if (this.currBackgroundColorNum !== null) {
       if (this.currBackgroundColorNum >= 40 && this.currBackgroundColorNum <= 47) {
         if (this.boldOrIncreasedIntensity) {
-          // backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 40];
-          classList.push(`b`); // b for bold
-          classList.push(`f${this.currBackgroundColorNum}`)
+          // b for bold. Note that we may have already applied this in the foreground
+          // above, but two "b" classes does not matter
+          classList.push(`b`);
+          classList.push(`b${this.currBackgroundColorNum}`)
         } else {
-          // backgroundColorCss = this.sgaCodeToColorMapVga[this.currBackgroundColorNum - 40];
-          classList.push(`f${this.currBackgroundColorNum}`)
+          classList.push(`b${this.currBackgroundColorNum}`)
         }
       } else if (this.currBackgroundColorNum >= 100 && this.currBackgroundColorNum <= 107) {
         // Bright background colors
-        // backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 100];
-        classList.push(`f${this.currBackgroundColorNum}`)
+        classList.push(`b${this.currBackgroundColorNum}`)
       }
     }
 
-    // We need to make a copy of the current style, so that future updates won't
-    // effect all previous styles
-    // terminalChar.style = {
-    //   'color': foregroundColorCss,
-    //   'backgroundColor': backgroundColorCss,
-    // };
     terminalChar.className = classList.join(' ');
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];

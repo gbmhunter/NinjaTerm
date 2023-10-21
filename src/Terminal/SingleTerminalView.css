@@ -1,83 +1,152 @@
+:root {
+  --vga-black: rgb(0, 0, 0);
+  --vga-red: rgb(170, 0, 0);
+  --vga-green: rgb(0, 170, 0);
+  --vga-yellow: rgb(170, 85, 0);
+  --vga-blue: rgb(0, 0, 170);
+  --vga-magenta: rgb(170, 0, 170);
+  --vga-cyan: rgb(0, 170, 170);
+  --vga-white: rgb(170, 170, 170);
+  --vga-bright-black: rgb(85, 85, 85);
+  --vga-bright-red: rgb(255, 85, 85);
+  --vga-bright-green: rgb(85, 255, 85);
+  --vga-bright-yellow: rgb(255, 255, 85);
+  --vga-bright-blue: rgb(85, 85, 255);
+  --vga-bright-magenta: rgb(255, 85, 255);
+  --vga-bright-cyan: rgb(85, 255, 255);
+  --vga-bright-white: rgb(255, 255, 255);
+}
+
+/* NON-BRIGHT COLORS */
+/*================================================================*/
+
+.f30 {
+  color: var(--vga-black);
+}
+
 .f31 {
-  color: rgb(170, 0, 0);
+  color: var(--vga-red);
 }
 
 .f32 {
-  color: rgb(0, 170, 0);
+  color: var(--vga-green);
 }
 
 .f33 {
-  color: rgb(170, 85, 0);
+  color: var(--vga-yellow);
 }
 
 .f34 {
-  color: rgb(0, 0, 170);
+  color: var(--vga-blue);
 }
 
 .f35 {
-  color: rgb(170, 0, 170);
+  color: var(--vga-magenta);
 }
 
 .f36 {
-  color: rgb(0, 170, 170);
+  color: var(--vga-cyan);
 }
 
 .f37 {
-  color: rgb(170, 170, 170);
+  color: var(--vga-white);
 }
 
-.b31 {
-  color: rgb(170, 0, 0);
+.b40 {
+  background-color: var(--vga-black);
 }
 
-.b32 {
-  color: rgb(0, 170, 0);
+.b41 {
+  background-color: var(--vga-red);
 }
 
-.b33 {
-  color: rgb(170, 85, 0);
+.b42 {
+  background-color: var(--vga-green);
 }
 
-.b34 {
-  color: rgb(0, 0, 170);
+.b43 {
+  background-color: var(--vga-yellow);
 }
 
-.b35 {
-  color: rgb(170, 0, 170);
+.b44 {
+  background-color: var(--vga-blue);
 }
 
-.b36 {
-  color: rgb(0, 170, 170);
+.b45 {
+  background-color: var(--vga-magenta);
 }
 
-.b37 {
-  color: rgb(170, 170, 170);
+.b46 {
+  background-color: var(--vga-cyan);
 }
 
-.f31.b {
-  color: rgb(255, 85, 85);
+.b47 {
+  background-color: var(--vga-white);
 }
 
-.f32.b {
-  color: rgb(85, 255, 85);
+/* BRIGHT COLORS */
+/*================================================================*/
+
+.f30.b, .f90 {
+  color: var(--vga-bright-black);
 }
 
-.f33.b {
-  color: rgb(255, 255, 85);
+.f31.b, .f91 {
+  color: var(--vga-bright-red);
 }
 
-.f34.b {
-  color: rgb(85, 85, 255);
+.f32.b, .f92 {
+  color: var(--vga-bright-green);
 }
 
-.f35.b {
-  color: rgb(255, 85, 255);
+.f33.b, .f93 {
+  color: var(--vga-bright-yellow);
 }
 
-.f36.b {
-  color: rgb(85, 255, 255);
+.f34.b, .f94 {
+  color: var(--vga-bright-blue);
 }
 
-.f37.b {
-  color: rgb(255, 255, 255);
+.f35.b, .f95 {
+  color: var(--vga-bright-magenta);
+}
+
+.f36.b, .f96 {
+  color: var(--vga-bright-cyan);
+}
+
+.f37.b, .f97 {
+  color: var(--vga-bright-white);
+}
+
+.b40.b, .b100 {
+  background-color: var(--vga-bright-black);
+}
+
+.b41.b, .b101 {
+  background-color: var(--vga-bright-red);
+}
+
+.b42.b, .b102 {
+  background-color: var(--vga-bright-green);
+}
+
+.b43.b, .b103 {
+  background-color: var(--vga-bright-yellow);
+}
+
+.b44.b, .b104 {
+  background-color: var(--vga-bright-blue);
+}
+
+.b45.b, .b105 {
+  background-color: var(--vga-bright-magenta);
+}
+
+.b46.b, .b106 {
+  background-color: var(--vga-bright-cyan);
+}
+
+.b47.b, .b107 {
+  background-color: var(--vga-bright-white);
 }
