@@ -110,7 +110,6 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
-      console.log('res')
       reactWindowRef.current.scrollToItem(
         terminal.terminalRows.length,
         "auto"
