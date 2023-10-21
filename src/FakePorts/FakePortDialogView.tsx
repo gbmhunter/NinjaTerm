@@ -33,7 +33,7 @@ export default observer((props: Props) => {
     >
       <DialogTitle>{"Select fake port to connect to."}</DialogTitle>
       <DialogContent>
-        <List dense={true}>
+        <List dense={true} sx={{ maxHeight: '600px', scroll: 'auto' }}>
           {app.fakePortController.fakePorts.map((fakePort, idx) => {
             return (
               <ListItem key={idx}>
@@ -65,6 +65,13 @@ export default observer((props: Props) => {
         </List>
       </DialogContent>
       <DialogActions>
+      <Button
+          onClick={() => {
+            app.fakePortController.setIsDialogOpen(false);
+          }}
+        >
+          Close
+        </Button>
         <Button
           onClick={() => {
             app.fakePortController.openPort();
