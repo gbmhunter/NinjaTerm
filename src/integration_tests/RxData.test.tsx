@@ -110,9 +110,9 @@ describe('RxData', () => {
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f31' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f31' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f31' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];

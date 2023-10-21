@@ -193,6 +193,9 @@ export function checkExpectedAgainstActualDisplay(
       const actualRow = actualDisplay.children[rowIdx];
       const actualChar = getInfoAboutActualChar(actualRow, colIdx);
       expect(actualChar.text).toEqual(expectedTerminalChar.char);
+      if (expectedTerminalChar.classNames !== null) {
+        expect(actualChar.span).toHaveClass(expectedTerminalChar.classNames);
+      }
       // toHaveStyle doesn't work well if you pass it an empty object
       // if (expectedTerminalChar.style !== null) {
         // eslint-disable-next-line jest/no-conditional-expect
@@ -205,7 +208,8 @@ export function checkExpectedAgainstActualDisplay(
   }
 }
 
-const getInfoAboutActualChar = (rowDiv: Element, colIdx: number): {text: string, style: any} => {
+const getInfoAboutActualChar = (rowDiv: Element, colIdx: number):
+    {text: string, span: Element, style: any} => {
   console.log('getInfoAboutActualChar() called with colIdx=', colIdx);
   // Move through the spans in this row div, finding the span that
   // contains the char at specified colId
@@ -227,9 +231,10 @@ const getInfoAboutActualChar = (rowDiv: Element, colIdx: number): {text: string,
   }
 
   const text = currSpan.textContent![currIdxInSpanString];
+  const style = window.getComputedStyle(currSpan);
 
-  console.log('currIdxInSpanString=', currIdxInSpanString, 'char=', text);
-  return { text, style: {} };
+  console.log('currIdxInSpanString=', currIdxInSpanString, 'char=', text, 'computedStyle=', style);
+  return { text, span: currSpan, style: {} };
 }
 
 /**
