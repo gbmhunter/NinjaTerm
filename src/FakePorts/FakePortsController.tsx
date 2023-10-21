@@ -5,16 +5,19 @@ import { generateRandomString } from "Util/Util";
 
 class FakePort {
   name: string;
+  description: string;
   intervalId: NodeJS.Timer | null;
   connectFunction: () => NodeJS.Timer;
   disconnectFunction: (intervalId: NodeJS.Timer | null) => void;
 
   constructor(
     name: string,
+    description: string,
     connectFunction: () => NodeJS.Timer,
     disconnectFunction: (intervalId: NodeJS.Timer | null) => void
   ) {
     this.name = name;
+    this.description = description;
     this.intervalId = null;
     this.connectFunction = connectFunction;
     this.disconnectFunction = disconnectFunction;
@@ -48,7 +51,8 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "hello world, 0.2lps",
+        'hello world, 0.2lps',
+        'Sends "Hello, world!" every 5 seconds.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -73,7 +77,8 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "hello world, 5lps",
+        'hello world, 5lps',
+        'Sends "Hello, world!" every 200ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -98,7 +103,8 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "hello world, 10lps",
+        'hello world, 10lps',
+        'Sends "Hello, world!" every 100ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -123,13 +129,14 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "red green, 0.2lps",
+        'red green, 0.2items/s',
+        'Sends red and green colored text every 5 seconds.',
         () => {
           let stringIdx = 0;
           const strings =
             [
-              "\x1b[31mred\n",
-              "\x1b[32mgreen\n",
+              "\x1b[31mred",
+              "\x1b[32mgreen",
             ];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
@@ -155,11 +162,12 @@ export default class FakePortsController {
       )
     );
 
-    // all colours, 5cps
+    // all colors, 5cps
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "all colours, 5cps",
+        'all colors, 5items/s',
+        'Iterates through all possible ANSI foreground and background colors at 5 items per second.',
         () => {
           let stringIdx = 0;
           const strings =
@@ -258,11 +266,12 @@ export default class FakePortsController {
       )
     );
 
-    // random chars, 80pl, 10lps
+    // random chars, 80chars/line, 10lines/s
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "random chars, 80pl, 10lps",
+        'random chars, 80chars/line, 10lines/s',
+        'Sends 80 random characters in a line, at a rate of 10 lines per second.',
         () => {
           const intervalId = setInterval(() => {
             console.time();
@@ -287,11 +296,12 @@ export default class FakePortsController {
       )
     );
 
-    // ALPHABETIC CHARS, 1 BY 1
+    // alphabetic chars, 1 by 1, 5char/s
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "alphabetic chars, 1 by 1",
+        'alphabetic chars, 1 by 1, 5char/s',
+        'Sends all alphabetic characters, one by one, at a rate of 5 characters per second.',
         () => {
           app.settings.dataProcessing.visibleData.fields.scrollbackBufferSizeRows.value = 300;
           app.settings.dataProcessing.applyChanges();
@@ -317,11 +327,12 @@ export default class FakePortsController {
       )
     );
 
-    // BYTES 0x00-0xFF
+    // bytes 0x00-0xFF, 5chars/s
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "bytes 0x00-0xFF",
+        'bytes 0x00-0xFF, 5chars/s',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters.',
         () => {
           app.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
             false;
@@ -352,7 +363,8 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        "graph data",
+        'graph data',
+        'Sends data that can be graphed.',
         () => {
           app.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
             false;

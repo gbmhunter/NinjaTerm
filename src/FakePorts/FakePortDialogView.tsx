@@ -33,7 +33,7 @@ export default observer((props: Props) => {
     >
       <DialogTitle>{"Select fake port to connect to."}</DialogTitle>
       <DialogContent>
-        <List>
+        <List dense={true}>
           {app.fakePortController.fakePorts.map((fakePort, idx) => {
             return (
               <ListItem key={idx}>
@@ -43,6 +43,8 @@ export default observer((props: Props) => {
                     app.fakePortController.onClick(idx);
                   }}
                   dense
+                  sx={{ py: 0, minHeight: 22 }}
+
                 >
                   <ListItemIcon>
                     <Checkbox
@@ -54,6 +56,7 @@ export default observer((props: Props) => {
                   </ListItemIcon>
                   <ListItemText
                     primary={fakePort.name}
+                    secondary={fakePort.description}
                   />
                 </ListItemButton>
               </ListItem>
