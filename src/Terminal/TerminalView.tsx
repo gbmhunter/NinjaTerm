@@ -13,7 +13,6 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
 import KofiButton from "kofi-button";
