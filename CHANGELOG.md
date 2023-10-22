@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fixed an issue regarding clipping in terminal with autoscroll.
 - Fixed rendering glitch with scroll lock or in the middle of data with data being removed at the start (buffer is full) by replacing `useEffect()` with `useLayoutEffect()`.
+- Fixed bug where new port could be selected while one is already opening, resulting in app crash when trying to use it.
 
 ## [4.5.2] - 2023-10-17
 

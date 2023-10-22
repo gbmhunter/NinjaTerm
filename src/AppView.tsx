@@ -104,10 +104,15 @@ const AppView = observer((props: Props) => {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div id="outer-border"
+        onKeyDown={(e) => {
+          app.handleKeyDown(e);
+        }}
+        tabIndex={-1}
         style={{
           height: '100%',
           display: 'flex',
           padding: '10px 10px 10px 0px', // No padding on left
+          outline: 'none', // Prevent weird white border when selected
         }}
       >
         <div className="left-hand-app-bar"

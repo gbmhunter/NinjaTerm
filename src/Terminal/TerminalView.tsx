@@ -19,7 +19,7 @@ import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
 import { App, portStateToButtonProps, PortState, PortType } from "App";
-import SingleTerminalView from "./SingleTerminalView";
+import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,

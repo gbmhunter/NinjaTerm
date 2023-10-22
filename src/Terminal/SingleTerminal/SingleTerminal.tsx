@@ -5,11 +5,15 @@ import { Settings } from 'Settings/Settings';
 import Snackbar from 'Snackbar';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
+import { App } from 'App';
 
 /**
  * Represents a single terminal-style user interface.
  */
 export default class Terminal {
+
+  app: App;
+
   // This represents the current style active on the terminal
   currentStyle: {};
 
@@ -64,7 +68,8 @@ export default class Terminal {
 
   snackbar: Snackbar;
 
-  constructor(settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
+  constructor(app: App, settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
+    this.app = app;
     this.settings = settings;
     this.snackbar = snackbar;
     this.isFocusable = isFocusable;
@@ -658,5 +663,9 @@ export default class Terminal {
       return;
     }
     this.isFocused = trueFalse;
+  }
+
+  handleKeyDown(event: React.KeyboardEvent) {
+    this.app.handleTerminalKeyDown(event);
   }
 }

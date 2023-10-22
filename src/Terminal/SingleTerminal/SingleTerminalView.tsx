@@ -10,7 +10,7 @@ import {
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { FixedSizeList } from "react-window";
 
-import { App } from "../App";
+import { App } from "../../App";
 import Terminal from "./SingleTerminal";
 import TerminalRow from "./SingleTerminalRow";
 import styles from "./SingleTerminalView.module.css";
@@ -223,7 +223,7 @@ export default observer((props: Props) => {
         terminal.setIsFocused(false);
       }}
       onKeyDown={(e) => {
-        appStore.handleKeyDown(e);
+        terminal.handleKeyDown(e);
       }}
     >
       <div

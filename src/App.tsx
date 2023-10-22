@@ -7,8 +7,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
-import { Settings } from './Settings/Settings';
-import Terminal from './Terminal/SingleTerminal';
+import { Settings, SettingsCategories } from './Settings/Settings';
+import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 import FakePortsController from 'FakePorts/FakePortsController';
@@ -141,9 +141,9 @@ export class App {
 
     this.snackbar = new Snackbar();
 
-    this.txRxTerminal = new Terminal(this.settings, this.snackbar, true);
-    this.rxTerminal = new Terminal(this.settings, this.snackbar, false); // Not focusable
-    this.txTerminal = new Terminal(this.settings, this.snackbar, true);
+    this.txRxTerminal = new Terminal(this, this.settings, this.snackbar, true);
+    this.rxTerminal = new Terminal(this, this.settings, this.snackbar, false); // Not focusable
+    this.txTerminal = new Terminal(this, this.settings, this.snackbar, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -392,19 +392,18 @@ export class App {
 
   /**
    * This is called from either the TX/RX terminal or TX terminal
-   * (i.e. any terminal pane that is allowed to send data)
+   * (i.e. any terminal pane that is allowed to send data).
    *
-   * @param event
-   * @returns
+   * @param event The React keydown event.
+   * @returns Nothing.
    */
-  async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    // console.log('handleKeyDown() called. event=', event, this);
+  async handleTerminalKeyDown(event: React.KeyboardEvent) {
+    // console.log('handleTerminalKeyDown() called. event=', event, this);
 
-    // Prevent Tab press from moving focus to another element on screen
-    // Do this even if port is not opened
-    if (event.key === 'Tab') {
-      event.preventDefault();
-    }
+    // Capture all key presses and prevent default actions or bubbling.
+    // preventDefault() prevents a Tab press from moving focus to another element on screen
+    event.preventDefault();
+    event.stopPropagation();
 
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
@@ -491,5 +490,17 @@ export class App {
    */
   setShownMainPane(newPane: MainPanes) {
     this.shownMainPane = newPane;
+  }
+
+  /** Handles any stray key press that was not caught by a child node.
+   * For example, pressing "f" while on the Port Configuration settings
+   * this cause this function to be called.
+   */
+  handleKeyDown(event: React.KeyboardEvent) {
+    console.log('handleKeyDown() called. event=', event, this);
+
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION) {
+      this.fakePortController.setIsDialogOpen(true);
+    }
   }
 }

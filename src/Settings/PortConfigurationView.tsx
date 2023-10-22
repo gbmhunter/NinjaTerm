@@ -23,10 +23,7 @@ function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
   return (
-    <div onKeyDown={(e) => {
-      appStore.settings.onKeyDown(e);
-    }}
-      tabIndex={-1}
+    <div
       className={styles.noOutline}
     >
       <div style={{ height: '10px' }}></div>
