@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Combined view and model files together into a single directory tree.
 - Setting inputs can now apply on loss of focus or enter rather than a Submit button.
+- Tidied up the way key presses are handled.
 
 ### Fixed
 

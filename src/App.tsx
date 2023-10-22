@@ -141,9 +141,9 @@ export class App {
 
     this.snackbar = new Snackbar();
 
-    this.txRxTerminal = new Terminal(this, this.settings, this.snackbar, true);
-    this.rxTerminal = new Terminal(this, this.settings, this.snackbar, false); // Not focusable
-    this.txTerminal = new Terminal(this, this.settings, this.snackbar, true);
+    this.txRxTerminal = new Terminal(this, true);
+    this.rxTerminal = new Terminal(this, false); // Not focusable
+    this.txTerminal = new Terminal(this, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -195,20 +195,21 @@ export class App {
 
       // If the user clicks cancel, a DOMException is thrown
       try {
+        // This makes a browser controlled modal pop-up in
+        // where the user selects a serial port
         localPort = await navigator.serial.requestPort();
       } catch (error) {
-          console.log('Error occurred. error=', error);
-          this.snackbar.sendToSnackbar('User cancelled port selection.', 'error');
+          // The only reason I know of that occurs an error to be thrown is
+          // when the user clicks cancel.
+          this.snackbar.sendToSnackbar('User cancelled port selection.', 'warning');
           return;
       }
-      console.log('Got local port, now setting state...');
       runInAction(() => {
-        console.log('Setting this.port and this.serialPortInfo...');
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
       })
     } else {
-      console.log('Not supported!');
+      console.error('Browser not supported, it does not provide the navigator.serial API.');
     }
   }
 
@@ -392,7 +393,9 @@ export class App {
 
   /**
    * This is called from either the TX/RX terminal or TX terminal
-   * (i.e. any terminal pane that is allowed to send data).
+   * (i.e. any terminal pane that is allowed to send data). This function
+   * determines what the user has pressed and what data to send out the
+   * serial port because of it.
    *
    * @param event The React keydown event.
    * @returns Nothing.
@@ -495,6 +498,9 @@ export class App {
   /** Handles any stray key press that was not caught by a child node.
    * For example, pressing "f" while on the Port Configuration settings
    * this cause this function to be called.
+   *
+   * This is not the function that sends data out the serial port, that
+   * is handleTerminalKeyDown(), which is called by the Terminals.
    */
   handleKeyDown(event: React.KeyboardEvent) {
     console.log('handleKeyDown() called. event=', event, this);

@@ -1,8 +1,6 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable } from 'mobx';
 
-import { Settings } from 'Settings/Settings';
-import Snackbar from 'Snackbar';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'App';
@@ -12,6 +10,9 @@ import { App } from 'App';
  */
 export default class Terminal {
 
+  /**
+   * The App object which owns this Terminal.
+   */
   app: App;
 
   // This represents the current style active on the terminal
@@ -45,18 +46,9 @@ export default class Terminal {
 
   partialEscapeCode: string;
 
-  sgaCodeToColorMapVga: { [key: number]: string } = {};
-
-  sgaCodeToBrightColorMapVga: { [key: number]: string } = {};
-
-  // The max. number of chars to display per row
-  // charWidth: number;
-
   currForegroundColorNum: number | null;
 
   currBackgroundColorNum: number | null;
-
-  settings: Settings;
 
   // Set to true when the user clicks within the Terminals bounding box
   // Used to know when to capture key strokes for the Terminal
@@ -66,16 +58,12 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  snackbar: Snackbar;
-
-  constructor(app: App, settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
+  constructor(app: App, isFocusable: boolean) {
     this.app = app;
-    this.settings = settings;
-    this.snackbar = snackbar;
     this.isFocusable = isFocusable;
 
     autorun(() => {
-      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -164,7 +152,7 @@ export default class Terminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(rxByte);
         // this.limitNumRows();
         continue;
@@ -210,10 +198,10 @@ export default class Terminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
+      const maxEscapeCodeLengthChars = this.app.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-        this.snackbar.sendToSnackbar(
+        this.app.snackbar.sendToSnackbar(
           `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
           'warning');
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
@@ -411,7 +399,7 @@ export default class Terminal {
     // Go right one character at a time and perform various checks along the way
     for (let numColsGoneRight = 0; numColsGoneRight < numColsToGoRight; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
-      if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
+      if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
         return;
       }
       // If we reach here, we can go right by at least 1
@@ -523,7 +511,7 @@ export default class Terminal {
     // Increment cursor, move to next row if we have hit max char width
     // NOTE: Max. width may change at any time, and may reduce to a smaller value even
     // when chars are currently being inserted beyond the end. Thus the >= comparison here.
-    if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
+    if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       this.moveToNewLine(); // This adds the " " if needed for the cursor
@@ -613,7 +601,7 @@ export default class Terminal {
   }
 
   limitNumRows() {
-    const maxRows = this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
+    const maxRows = this.app.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
     // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
@@ -643,7 +631,7 @@ export default class Terminal {
     // space as the rows we removed, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.settings.dataProcessing.charSizePx.appliedValue + 5)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.app.settings.dataProcessing.charSizePx.appliedValue + 5)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }

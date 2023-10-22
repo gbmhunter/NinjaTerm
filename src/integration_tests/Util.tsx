@@ -208,9 +208,21 @@ export function checkExpectedAgainstActualDisplay(
   }
 }
 
+/**
+ * Use this to extract information about an actual displayed char at the
+ * given column index in a particular row div in the terminal pane.
+ *
+ * This walks through the one or more spans in the row div, and finds the
+ * span that contains the char at the specified column index.
+ *
+ * @param rowDiv The row div to look in.
+ * @param colIdx The column index of the char you want to find.
+ * @returns The text of the char, the span element that contains it, and
+ * the computed style of the span.
+ */
 const getInfoAboutActualChar = (rowDiv: Element, colIdx: number):
     {text: string, span: Element, style: any} => {
-  console.log('getInfoAboutActualChar() called with colIdx=', colIdx);
+  // console.log('getInfoAboutActualChar() called with colIdx=', colIdx);
   // Move through the spans in this row div, finding the span that
   // contains the char at specified colId
   // <div>
@@ -233,8 +245,8 @@ const getInfoAboutActualChar = (rowDiv: Element, colIdx: number):
   const text = currSpan.textContent![currIdxInSpanString];
   const style = window.getComputedStyle(currSpan);
 
-  console.log('currIdxInSpanString=', currIdxInSpanString, 'char=', text, 'computedStyle=', style);
-  return { text, span: currSpan, style: {} };
+  // console.log('currIdxInSpanString=', currIdxInSpanString, 'char=', text, 'computedStyle=', style);
+  return { text, span: currSpan, style };
 }
 
 /**

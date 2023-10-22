@@ -116,7 +116,15 @@ export default observer((props: Props) => {
       </Button>
       {/* ============================ DATA VIEW CONFIGURATION =========================== */}
       <Tooltip
-        title="Controls how to display the TX and RX data. Different use cases required different view configurations."
+        title={
+          <div>
+            Controls how to display the TX and RX data. Different use cases require different view configurations.
+            <ul>
+              <li>Single terminal: TX and RX data is combined in the same pane. Useful for terminal style applications when escape codes are used.</li>
+              <li>Separate TX/RX terminals: TX and RX data are kept in separate panes. Useful for when you have a lot of incoming basic RX data and what to still see the data you are sending.</li>
+            </ul>
+          </div>
+        }
         placement="left"
       >
         <FormControl size="small" sx={{ minWidth: "210px" }}>
