@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
 import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
@@ -104,10 +105,11 @@ export default observer((props: Props) => {
         {/* Specify a width to prevent it resizing when the text changes */}
         {portStateToButtonProps[app.portState].text}
       </Button>
-      {/* ================== CLEAR DATA BUTTON ==================== */}
+      {/* CLEAR DATA BUTTON */}
+      {/* ==================================================================== */}
       <Button
         variant="outlined"
-        startIcon={<ClearIcon />}
+        startIcon={<DeleteIcon />}
         onClick={() => {
           app.clearAllData();
         }}
