@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.6.0] - 2023-10-23
+
 ### Added
 
 - Added ability to change terminal font size to both settings menu and terminal toolbar.
 - Added dialog window for selecting fake serial ports (for testing and demos), along with a flexible fake port controller class. Press "f" on the port settings pane to open the dialog.
 - Performance improvements when processing large amounts of RX data.
+- Added some initial Playwright e2e tests.
 
 ### Changed
 
@@ -19,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Setting inputs can now apply on loss of focus or enter rather than a Submit button.
 - Tidied up the way key presses are handled.
 - Changed the "Clear Data" button icon from a cross to a trash can.
+- Changed software license from MIT to GNU GPLv3.
 
 ### Fixed
 
@@ -471,7 +475,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.2...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.0...HEAD
+[4.6.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.2...v4.6.0
 [4.5.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.1...v4.5.2
 [4.5.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.5.0...v4.5.1
 [4.5.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.4.2...v4.5.0
