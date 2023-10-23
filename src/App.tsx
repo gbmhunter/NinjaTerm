@@ -188,7 +188,7 @@ export class App {
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    if ("serial" in navigator) {
+    if ("serial" in window.navigator) {
       // The Web Serial API is supported.
 
       let localPort: SerialPort;
@@ -197,7 +197,8 @@ export class App {
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
-        localPort = await navigator.serial.requestPort();
+        console.log(window.navigator.serial)
+        localPort = await window.navigator.serial.requestPort();
       } catch (error) {
           // The only reason I know of that occurs an error to be thrown is
           // when the user clicks cancel.
