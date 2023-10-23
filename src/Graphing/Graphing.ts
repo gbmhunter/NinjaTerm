@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import Validator from 'validatorjs';
 
-import Snackbar from "model/Snackbar";
+import Snackbar from "Snackbar";
 
 class Point {
   x: number = 0;

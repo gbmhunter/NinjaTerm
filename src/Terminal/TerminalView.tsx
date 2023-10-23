@@ -4,25 +4,26 @@ import {
   ButtonPropsColorOverrides,
   FormControl,
   FormControlLabel,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   Switch,
+  TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
 import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortState } from "model/App";
-import Terminal from "model/Terminal/SingleTerminal";
-import SingleTerminalView from "./SingleTerminalView";
+import { App, portStateToButtonProps, PortState, PortType } from "App";
+import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'model/Settings/DataProcessingSettings';
+} from 'Settings/DataProcessingSettings';
 
 interface Props {
   app: App;
@@ -37,7 +38,12 @@ export default observer((props: Props) => {
   let terminals;
   if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
-    terminals = <SingleTerminalView appStore={app} terminal={app.txRxTerminal} testId='tx-rx-terminal-view' />;
+    terminals = <SingleTerminalView
+                  appStore={app}
+                  terminal={app.txRxTerminal}
+                  testId='tx-rx-terminal-view'
+                  useWindowing={true}
+                />;
   } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -91,17 +97,18 @@ export default observer((props: Props) => {
           }
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
-        disabled={app.port === null}
+        disabled={(app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
         sx={{ width: "150px" }}
       >
         {" "}
         {/* Specify a width to prevent it resizing when the text changes */}
         {portStateToButtonProps[app.portState].text}
       </Button>
-      {/* ================== CLEAR DATA BUTTON ==================== */}
+      {/* CLEAR DATA BUTTON */}
+      {/* ==================================================================== */}
       <Button
         variant="outlined"
-        startIcon={<ClearIcon />}
+        startIcon={<DeleteIcon />}
         onClick={() => {
           app.clearAllData();
         }}
@@ -110,7 +117,15 @@ export default observer((props: Props) => {
       </Button>
       {/* ============================ DATA VIEW CONFIGURATION =========================== */}
       <Tooltip
-        title="Controls how to display the TX and RX data. Different use cases required different view configurations."
+        title={
+          <div>
+            Controls how to display the TX and RX data. Different use cases require different view configurations.
+            <ul>
+              <li>Single terminal: TX and RX data is combined in the same pane. Useful for terminal style applications when escape codes are used.</li>
+              <li>Separate TX/RX terminals: TX and RX data are kept in separate panes. Useful for when you have a lot of incoming basic RX data and what to still see the data you are sending.</li>
+            </ul>
+          </div>
+        }
         placement="left"
       >
         <FormControl size="small" sx={{ minWidth: "210px" }}>
@@ -143,6 +158,45 @@ export default observer((props: Props) => {
               })}
           </Select>
         </FormControl>
+      </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* CHAR SIZE */}
+      {/* =============================================================================== */}
+      <Tooltip title="The font size (in pixels) of characters displayed in the terminal."
+        followCursor
+        arrow
+      >
+        <TextField
+          id="outlined-basic"
+          name="charSizePx"
+          label="Char Size"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">px</InputAdornment>
+            ),
+          }}
+          value={
+            app.settings.dataProcessing.charSizePx.dispValue
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
+          }}
+          onBlur={() => {
+            app.settings.dataProcessing.applyCharSizePx();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              app.settings.dataProcessing.applyCharSizePx();
+            }
+          }}
+          error={
+            app.settings.dataProcessing.charSizePx.hasError
+          }
+          sx={{ width: "80px" }}
+        />
       </Tooltip>
 
       {/* ============================ LOCAL TX ECHO SWITCH =========================== */}

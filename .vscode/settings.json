@@ -28,9 +28,12 @@
     "*.{css,sass,scss}.d.ts": true
   },
   "cSpell.words": [
+    "autorun",
+    "autoscroll",
     "chartjs",
     "ninjaterm",
     "notistack",
+    "scrollback",
     "validatorjs"
   ]
 }

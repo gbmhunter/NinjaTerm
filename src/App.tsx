@@ -5,12 +5,13 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-import packageDotJson from '../../package.json'
+import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
-import { Settings } from './Settings/Settings';
-import Terminal from './Terminal/SingleTerminal';
+import { Settings, SettingsCategories } from './Settings/Settings';
+import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
+import FakePortsController from 'FakePorts/FakePortsController';
 
 declare global {
   interface String {
@@ -59,6 +60,11 @@ export enum MainPanes {
   SETTINGS,
   TERMINAL,
   GRAPHING,
+}
+
+export enum PortType {
+  REAL,
+  FAKE,
 }
 
 export class App {
@@ -114,7 +120,11 @@ export class App {
 
   graphing: Graphing;
 
-  fakePortOpen = false;
+  // Remembers the last selected port type, so open() and close()
+  // know what type of port to operate on
+  lastSelectedPortType = PortType.REAL;
+
+  fakePortController: FakePortsController = new FakePortsController(this);
 
   constructor(
     testing = false
@@ -131,9 +141,9 @@ export class App {
 
     this.snackbar = new Snackbar();
 
-    this.txRxTerminal = new Terminal(this.settings, this.snackbar, true);
-    this.rxTerminal = new Terminal(this.settings, this.snackbar, false); // Not focusable
-    this.txTerminal = new Terminal(this.settings, this.snackbar, true);
+    this.txRxTerminal = new Terminal(this, true);
+    this.rxTerminal = new Terminal(this, false); // Not focusable
+    this.txTerminal = new Terminal(this, true);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -149,8 +159,6 @@ export class App {
     // Create graphing instance. Graphing is disabled by default.
     this.graphing = new Graphing(this.snackbar);
 
-    console.log('Started NinjaTerm.')
-
     // this.runTestModeBytes0To255();
     // this.runTestModeGraphData();
 
@@ -163,60 +171,6 @@ export class App {
     // });
 
     makeAutoObservable(this); // Make sure this near the end
-  }
-
-  /** Function used for testing when you don't have an Arduino handy.
-   * Sets up a interval timer to add fake RX data.
-   * Change as needed for testing!
-   */
-  runTestMode() {
-    console.log('runTestMode() called.');
-    this.settings.dataProcessing.visibleData.fields.scrollbackBufferSizeRows.value = 300;
-    this.settings.dataProcessing.applyChanges();
-    let testCharIdx = 65;
-    setInterval(() => {
-      const te = new TextEncoder();
-      // const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
-      const data = te.encode(String.fromCharCode(testCharIdx));
-      this.parseRxData(Uint8Array.from(data));
-      testCharIdx += 1;
-      if (testCharIdx === 90) {
-        testCharIdx = 65;
-      }
-    }, 200);
-  }
-
-  /** Send bytes 0 thru to 255 as RX data.
-   */
-  runTestModeBytes0To255() {
-    console.log('runTestMode2() called.');
-    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
-    this.settings.dataProcessing.applyChanges();
-    let testCharIdx = 0;
-    setInterval(() => {
-      this.parseRxData(Uint8Array.from([ testCharIdx ]));
-      testCharIdx += 1;
-      if (testCharIdx === 256) {
-        testCharIdx = 0;
-      }
-    }, 200);
-  }
-
-  /** Test mode for graphs
-   */
-  runTestModeGraphData() {
-    console.log('runTestModeGraphData() called.');
-    this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
-    this.settings.dataProcessing.applyChanges();
-    let testCharIdx = 0;
-    setInterval(() => {
-      const rxData = new TextEncoder().encode('x=2,y=10\n');
-      this.parseRxData(rxData);
-      testCharIdx += 1;
-      if (testCharIdx === 256) {
-        testCharIdx = 0;
-      }
-    }, 2000);
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -241,69 +195,76 @@ export class App {
 
       // If the user clicks cancel, a DOMException is thrown
       try {
+        // This makes a browser controlled modal pop-up in
+        // where the user selects a serial port
         localPort = await navigator.serial.requestPort();
       } catch (error) {
-          console.log('Error occurred. error=', error);
-          this.snackbar.sendToSnackbar('User cancelled port selection.', 'error');
+          // The only reason I know of that occurs an error to be thrown is
+          // when the user clicks cancel.
+          this.snackbar.sendToSnackbar('User cancelled port selection.', 'warning');
           return;
       }
-      console.log('Got local port, now setting state...');
       runInAction(() => {
-        console.log('Setting this.port and this.serialPortInfo...');
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
       })
     } else {
-      console.log('Not supported!');
+      console.error('Browser not supported, it does not provide the navigator.serial API.');
     }
   }
 
   async openPort() {
-    try {
-      await this.port?.open({
-        baudRate: this.settings.selectedBaudRate,
-        dataBits: this.settings.selectedNumDataBits,
-        parity: this.settings.selectedParity as ParityType,
-        stopBits: this.settings.selectedStopBits,
-        bufferSize: 1000000}); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
-    } catch (error) {
-      if (error instanceof DOMException) {
-        if (error.name === 'NetworkError') {
-          const msg = 'Serial port is already in use by another program.\n'
-                    + 'Reported error from port.open():\n'
-                    + `${error}`
-          this.snackbar.sendToSnackbar(msg, 'error');
-          console.log(msg);
+    if (this.lastSelectedPortType === PortType.REAL) {
+      try {
+        await this.port?.open({
+          baudRate: this.settings.selectedBaudRate,
+          dataBits: this.settings.selectedNumDataBits,
+          parity: this.settings.selectedParity as ParityType,
+          stopBits: this.settings.selectedStopBits,
+          bufferSize: 10000}); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
+      } catch (error) {
+        if (error instanceof DOMException) {
+          if (error.name === 'NetworkError') {
+            const msg = 'Serial port is already in use by another program.\n'
+                      + 'Reported error from port.open():\n'
+                      + `${error}`
+            this.snackbar.sendToSnackbar(msg, 'error');
+            console.log(msg);
+          } else {
+            const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
+            + 'Reported error from port.open():\n'
+            + `${error}`
+            this.snackbar.sendToSnackbar(msg, 'error');
+            console.log(msg);
+          }
         } else {
-          const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
+          // Type of error not recognized or seen before
+          const msg = `Unrecognized error occurred when trying to open serial port.\n`
           + 'Reported error from port.open():\n'
           + `${error}`
           this.snackbar.sendToSnackbar(msg, 'error');
           console.log(msg);
         }
-      } else {
-        // Type of error not recognized or seen before
-        const msg = `Unrecognized error occurred when trying to open serial port.\n`
-        + 'Reported error from port.open():\n'
-        + `${error}`
-        this.snackbar.sendToSnackbar(msg, 'error');
-        console.log(msg);
+
+        // An error occurred whilst calling port.open(), so DO NOT continue, port
+        // cannot be considered open
+        return;
+      }
+      this.snackbar.sendToSnackbar('Serial port opened.', 'success');
+      this.setPortState(PortState.OPENED);
+      // This will automatically close the settings window if the user is currently in it,
+      // clicks "Open" and the port opens successfully.
+      if (this.closeSettingsDialogOnPortOpenOrClose) {
+        this.setSettingsDialogOpen(false);
       }
 
-      // An error occurred whilst calling port.open(), so DO NOT continue, port
-      // cannot be considered open
-      return;
+      this.keepReading = true;
+      this.closedPromise = this.readUntilClosed();
+    } else if (this.lastSelectedPortType === PortType.FAKE) {
+      this.fakePortController.openPort();
+    } else {
+      throw Error('Unsupported port type!');
     }
-    this.snackbar.sendToSnackbar('Serial port opened.', 'success');
-    this.setPortState(PortState.OPENED);
-    // This will automatically close the settings window if the user is currently in it,
-    // clicks "Open" and the port opens successfully.
-    if (this.closeSettingsDialogOnPortOpenOrClose) {
-      this.setSettingsDialogOpen(false);
-    }
-
-    this.keepReading = true;
-    this.closedPromise = this.readUntilClosed();
   }
 
   /** Continuously reads from the serial port until:
@@ -403,22 +364,27 @@ export class App {
   }
 
   async closePort() {
-    console.log('closePort() called.');
-    this.keepReading = false;
-    // Force reader.read() to resolve immediately and subsequently
-    // call reader.releaseLock() in the loop example above.
-    this.reader?.cancel();
+    if (this.lastSelectedPortType === PortType.REAL) {
+      this.keepReading = false;
+      // Force reader.read() to resolve immediately and subsequently
+      // call reader.releaseLock() in the loop example above.
+      this.reader?.cancel();
 
-    if (this.closedPromise === null) {
-      console.log('was null.');
-      throw Error('jfjfjf')
+      if (this.closedPromise === null) {
+        console.log('was null.');
+        throw Error('jfjfjf')
+      }
+      await this.closedPromise;
+
+      this.setPortState(PortState.CLOSED);
+      this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      this.reader = null;
+      this.closedPromise = null;
+    } else if (this.lastSelectedPortType === PortType.FAKE) {
+      this.fakePortController.closePort();
+    } else {
+      throw Error('Unsupported port type!');
     }
-    await this.closedPromise;
-
-    this.setPortState(PortState.CLOSED);
-    this.snackbar.sendToSnackbar('Serial port closed.', 'success');
-    this.reader = null;
-    this.closedPromise = null;
   }
 
   setPortState(newPortState: PortState) {
@@ -427,19 +393,20 @@ export class App {
 
   /**
    * This is called from either the TX/RX terminal or TX terminal
-   * (i.e. any terminal pane that is allowed to send data)
+   * (i.e. any terminal pane that is allowed to send data). This function
+   * determines what the user has pressed and what data to send out the
+   * serial port because of it.
    *
-   * @param event
-   * @returns
+   * @param event The React keydown event.
+   * @returns Nothing.
    */
-  async handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    console.log('handleKeyDown() called. event=', event, this);
+  async handleTerminalKeyDown(event: React.KeyboardEvent) {
+    // console.log('handleTerminalKeyDown() called. event=', event, this);
 
-    // Prevent Tab press from moving focus to another element on screen
-    // Do this even if port is not opened
-    if (event.key === 'Tab') {
-      event.preventDefault();
-    }
+    // Capture all key presses and prevent default actions or bubbling.
+    // preventDefault() prevents a Tab press from moving focus to another element on screen
+    event.preventDefault();
+    event.stopPropagation();
 
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
@@ -494,7 +461,7 @@ export class App {
       const writer = this.port?.writable?.getWriter();
 
       const data = Uint8Array.from(bytesToWrite);
-      console.log('Calling writer.write() with data=', data);
+      // console.log('Calling writer.write() with data=', data);
       await writer?.write(data);
 
       // Allow the serial port to be closed later.
@@ -521,10 +488,6 @@ export class App {
     this.txRxTextScrollLock = trueFalse;
   }
 
-  setStatusMsgScrollLock(trueFalse: boolean) {
-    this.statusMsgScrollLock = trueFalse;
-  }
-
   /**
    * Sets the main pane to be shown.
    */
@@ -532,27 +495,18 @@ export class App {
     this.shownMainPane = newPane;
   }
 
-  openFakePort() {
-    this.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
-    this.setPortState(PortState.OPENED);
-    this.fakePortOpen = true;
+  /** Handles any stray key press that was not caught by a child node.
+   * For example, pressing "f" while on the Port Configuration settings
+   * this cause this function to be called.
+   *
+   * This is not the function that sends data out the serial port, that
+   * is handleTerminalKeyDown(), which is called by the Terminals.
+   */
+  handleKeyDown(event: React.KeyboardEvent) {
+    console.log('handleKeyDown() called. event=', event, this);
 
-    this.runTestModeBytes0To255();
-
-    // this.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value = false;
-    // this.settings.dataProcessing.applyChanges();
-    // let testCharIdx = 0;
-
-    // setInterval(() => {
-    //   // Noisy sine wave
-    //   let yVal = Math.sin(2*Math.PI*(testCharIdx/256));
-    //   yVal += 0.2*Math.random();
-    //   const rxData = new TextEncoder().encode(`y=${yVal}\n`);
-    //   this.parseRxData(rxData);
-    //   testCharIdx += 1;
-    //   if (testCharIdx === 256) {
-    //     testCharIdx = 0;
-    //   }
-    // }, 100);
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION) {
+      this.fakePortController.setIsDialogOpen(true);
+    }
   }
 }

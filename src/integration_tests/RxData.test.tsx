@@ -18,8 +18,8 @@ import {
 } from '@testing-library/react';
 import { TextEncoder, TextDecoder } from 'util';
 
-import { App } from 'model/App';
-import AppView from 'view/AppView';
+import { App } from 'App';
+import AppView from 'AppView';
 
 import { createAppWithMockSerialPort, ExpectedTerminalChar, checkExpectedAgainstActualDisplay } from './Util';
 
@@ -110,9 +110,9 @@ describe('RxData', () => {
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f31' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f31' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f31' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
@@ -139,9 +139,9 @@ describe('RxData', () => {
     // Red should be "bright red"
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f31 b' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f31 b' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f31 b' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];
@@ -169,9 +169,9 @@ describe('RxData', () => {
     // Red should be "bright red"
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 85, 85)' } }),
-        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(255, 85, 85)' } }),
+        new ExpectedTerminalChar({ char: 'r' , classNames: 'f91' }),
+        new ExpectedTerminalChar({ char: 'e' , classNames: 'f91' }),
+        new ExpectedTerminalChar({ char: 'd' , classNames: 'f91' }),
         new ExpectedTerminalChar({ char: ' ' }),
       ],
     ];

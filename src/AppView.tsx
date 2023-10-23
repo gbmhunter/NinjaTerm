@@ -2,19 +2,8 @@ import { observer } from 'mobx-react-lite';
 
 import {
   Box,
-  Button,
-  ButtonPropsColorOverrides,
-  FormControl,
-  FormControlLabel,
   IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  Tooltip,
-  Typography,
 } from '@mui/material';
-import { OverridableStringUnion } from '@mui/types';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -22,19 +11,14 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-import { App, MainPanes, PortState, portStateToButtonProps } from '../model/App';
+import { App, MainPanes, PortState } from './App';
 import './App.css';
-import {
-  DataViewConfiguration,
-  dataViewConfigEnumToDisplayName,
-} from '../model/Settings/DataProcessingSettings';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminal/TerminalView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
-
-import KofiButton from "kofi-button"
+import FakePortDialogView from 'FakePorts/FakePortDialogView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -120,10 +104,15 @@ const AppView = observer((props: Props) => {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <div id="outer-border"
+        onKeyDown={(e) => {
+          app.handleKeyDown(e);
+        }}
+        tabIndex={-1}
         style={{
           height: '100%',
           display: 'flex',
           padding: '10px 10px 10px 0px', // No padding on left
+          outline: 'none', // Prevent weird white border when selected
         }}
       >
         <div className="left-hand-app-bar"
@@ -192,8 +181,8 @@ const AppView = observer((props: Props) => {
           {/* =================================================================================== */}
           {mainPaneComponent}
 
-
-          {/* ================== BOTTOM TOOLBAR BAR ==================== */}
+          {/* BOTTOM APP TOOLBAR */}
+          {/* =================================================================================== */}
           <Box
             id="bottom-status-bar"
             sx={{
@@ -206,7 +195,7 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
-
+            {/* GRAPHING ON/OFF */}
             <div>{ app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}</div>
 
             {/* TX/RX ACTIVITY INDICATORS */}
@@ -217,15 +206,20 @@ const AppView = observer((props: Props) => {
             <Box>
               <Box key={app.numBytesReceived} className={styles.ledyellow}>RX</Box>
             </Box>
+            {/* PORT CONFIG */}
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
+            {/* PORT STATE */}
             <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
           </Box>
         </div>
 
+        <FakePortDialogView app={app} />
+
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
         Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}
         <SnackbarProvider anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }} />
+
       </div>
     </ThemeProvider>
   );

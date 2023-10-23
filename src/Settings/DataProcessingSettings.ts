@@ -78,16 +78,38 @@ export default class DataProcessingSettings {
   // The valid data which is committed once "Apply" is clicked
   appliedData = new Data();
 
+  charSizePx =  {
+    dispValue: '14', // 14px is a good default size for the terminal text
+    appliedValue: 14,
+    hasError: false,
+    errorMsg: '',
+    rule: 'required|integer|min:1',
+  };
+
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
   constructor(app: App) {
     this.app = app;
-    // this.app.txRxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    // this.app.rxTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
-    // this.app.txTerminal.setCharWidth(this.appliedData.fields.wrappingWidthChars.value);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
+
+  setCharSizePxDisp = (value: string) => {
+    this.charSizePx.dispValue = value;
+    const validation = new Validator({charSizePx: value}, {charSizePx: this.charSizePx.rule});
+    this.charSizePx.hasError = validation.fails();
+    if (this.charSizePx.hasError) {
+      this.charSizePx.errorMsg = validation.errors.first('charSizePx');
+    } else {
+      this.charSizePx.errorMsg = '';
+    }
+  }
+
+  applyCharSizePx = () => {
+    if (!this.charSizePx.hasError) {
+      this.charSizePx.appliedValue = parseFloat(this.charSizePx.dispValue);
+    }
   }
 
   onFieldChange = (field: any, value: any) => {

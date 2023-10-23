@@ -1,15 +1,20 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable } from 'mobx';
 
-import { Settings } from 'model/Settings/Settings';
-import Snackbar from 'model/Snackbar';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
+import { App } from 'App';
 
 /**
  * Represents a single terminal-style user interface.
  */
 export default class Terminal {
+
+  /**
+   * The App object which owns this Terminal.
+   */
+  app: App;
+
   // This represents the current style active on the terminal
   currentStyle: {};
 
@@ -41,18 +46,9 @@ export default class Terminal {
 
   partialEscapeCode: string;
 
-  sgaCodeToColorMapVga: { [key: number]: string } = {};
-
-  sgaCodeToBrightColorMapVga: { [key: number]: string } = {};
-
-  // The max. number of chars to display per row
-  // charWidth: number;
-
   currForegroundColorNum: number | null;
 
   currBackgroundColorNum: number | null;
-
-  settings: Settings;
 
   // Set to true when the user clicks within the Terminals bounding box
   // Used to know when to capture key strokes for the Terminal
@@ -62,15 +58,12 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  snackbar: Snackbar;
-
-  constructor(settings: Settings, snackbar: Snackbar, isFocusable: boolean) {
-    this.settings = settings;
-    this.snackbar = snackbar;
+  constructor(app: App, isFocusable: boolean) {
+    this.app = app;
     this.isFocusable = isFocusable;
 
     autorun(() => {
-      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -112,25 +105,6 @@ export default class Terminal {
 
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
-
-    // Populate the map with data
-    this.sgaCodeToColorMapVga[0] = 'rgb(0, 0, 0)';
-    this.sgaCodeToColorMapVga[1] = 'rgb(170, 0, 0)';
-    this.sgaCodeToColorMapVga[2] = 'rgb(0, 170, 0)';
-    this.sgaCodeToColorMapVga[3] = 'rgb(170, 85, 0)';
-    this.sgaCodeToColorMapVga[4] = 'rgb(0, 0, 170)';
-    this.sgaCodeToColorMapVga[5] = 'rgb(170, 0, 170)';
-    this.sgaCodeToColorMapVga[6] = 'rgb(0, 170, 170)';
-    this.sgaCodeToColorMapVga[7] = 'rgb(170, 170, 170)';
-
-    this.sgaCodeToBrightColorMapVga[0] = 'rgb(85, 85, 85)';
-    this.sgaCodeToBrightColorMapVga[1] = 'rgb(255, 85, 85)';
-    this.sgaCodeToBrightColorMapVga[2] = 'rgb(85, 255, 85)';
-    this.sgaCodeToBrightColorMapVga[3] = 'rgb(255, 255, 85)';
-    this.sgaCodeToBrightColorMapVga[4] = 'rgb(85, 85, 255)';
-    this.sgaCodeToBrightColorMapVga[5] = 'rgb(255, 85, 255)';
-    this.sgaCodeToBrightColorMapVga[6] = 'rgb(85, 255, 255)';
-    this.sgaCodeToBrightColorMapVga[7] = 'rgb(255, 255, 255)';
 
     this.isFocused = false;
 
@@ -178,7 +152,7 @@ export default class Terminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(rxByte);
         // this.limitNumRows();
         continue;
@@ -224,10 +198,10 @@ export default class Terminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
+      const maxEscapeCodeLengthChars = this.app.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-        this.snackbar.sendToSnackbar(
+        this.app.snackbar.sendToSnackbar(
           `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
           'warning');
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
@@ -425,7 +399,7 @@ export default class Terminal {
     // Go right one character at a time and perform various checks along the way
     for (let numColsGoneRight = 0; numColsGoneRight < numColsToGoRight; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
-      if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
+      if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
         return;
       }
       // If we reach here, we can go right by at least 1
@@ -480,7 +454,7 @@ export default class Terminal {
    * @param char Must be a single printable character only.
    */
   addVisibleChar(rxByte: number) {
-    // assert(char.length === 1);
+    // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 
     // if (rxByte === 0x00) {
@@ -490,42 +464,44 @@ export default class Terminal {
     // }
     terminalChar.char = String.fromCharCode(rxByte);
 
-    // Calculate the foreground color CSS
-    let foregroundColorCss = '';
+    // This stores all classes we wish to apply to the char
+    let classList = [];
+    // Calculate the foreground class
+    // Should be in the form: "f<number", e.g. "f30" or "f90"
     if (this.currForegroundColorNum !== null) {
       if (this.currForegroundColorNum >= 30 && this.currForegroundColorNum <= 37) {
         if (this.boldOrIncreasedIntensity) {
-          foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 30];
+          classList.push(`b`); // b for bold
+          classList.push(`f${this.currForegroundColorNum}`)
         } else {
-          foregroundColorCss = this.sgaCodeToColorMapVga[this.currForegroundColorNum - 30];
+          classList.push(`f${this.currForegroundColorNum}`)
         }
       } else if (this.currForegroundColorNum >= 90 && this.currForegroundColorNum <= 97) {
         // Bright foreground colors
-        foregroundColorCss = this.sgaCodeToBrightColorMapVga[this.currForegroundColorNum - 90];
+        classList.push(`f${this.currForegroundColorNum}`);
+
       };
     }
 
-    // Calculate the background color CSS
-    let backgroundColorCss = '';
+    // Calculate the background color class
+    // Should be in the form: "b<number", e.g. "b40" or "b100"
     if (this.currBackgroundColorNum !== null) {
       if (this.currBackgroundColorNum >= 40 && this.currBackgroundColorNum <= 47) {
         if (this.boldOrIncreasedIntensity) {
-          backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 40];
+          // b for bold. Note that we may have already applied this in the foreground
+          // above, but two "b" classes does not matter
+          classList.push(`b`);
+          classList.push(`b${this.currBackgroundColorNum}`)
         } else {
-          backgroundColorCss = this.sgaCodeToColorMapVga[this.currBackgroundColorNum - 40];
+          classList.push(`b${this.currBackgroundColorNum}`)
         }
       } else if (this.currBackgroundColorNum >= 100 && this.currBackgroundColorNum <= 107) {
         // Bright background colors
-        backgroundColorCss = this.sgaCodeToBrightColorMapVga[this.currBackgroundColorNum - 100];
+        classList.push(`b${this.currBackgroundColorNum}`)
       }
     }
 
-    // We need to make a copy of the current style, so that future updates won't
-    // effect all previous styles
-    terminalChar.style = {
-      'color': foregroundColorCss,
-      'backgroundColor': backgroundColorCss,
-    };
+    terminalChar.className = classList.join(' ');
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position
@@ -535,7 +511,7 @@ export default class Terminal {
     // Increment cursor, move to next row if we have hit max char width
     // NOTE: Max. width may change at any time, and may reduce to a smaller value even
     // when chars are currently being inserted beyond the end. Thus the >= comparison here.
-    if (this.cursorPosition[1] >= this.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
+    if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       this.moveToNewLine(); // This adds the " " if needed for the cursor
@@ -625,7 +601,7 @@ export default class Terminal {
   }
 
   limitNumRows() {
-    const maxRows = this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
+    const maxRows = this.app.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
     // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
@@ -653,8 +629,9 @@ export default class Terminal {
     // Need to update scroll position for view to use if we are not scroll locked
     // to the bottom. Move the scroll position back the same amount of vertical
     // space as the rows we removed, so the user sees the same data on the screen
+    // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - 20*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.app.settings.dataProcessing.charSizePx.appliedValue + 5)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }
@@ -674,5 +651,9 @@ export default class Terminal {
       return;
     }
     this.isFocused = trueFalse;
+  }
+
+  handleKeyDown(event: React.KeyboardEvent) {
+    this.app.handleTerminalKeyDown(event);
   }
 }

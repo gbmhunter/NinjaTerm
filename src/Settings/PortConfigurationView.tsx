@@ -1,20 +1,18 @@
 import {
   Button,
-  Checkbox,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
   Box,
   ButtonPropsColorOverrides,
-  FormControlLabel,
   Typography,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
-import { App, portStateToButtonProps, PortState } from '../../model/App';
-import { StopBits } from '../../model/Settings/Settings';
+import { App, portStateToButtonProps, PortState, PortType } from '../App';
+import { StopBits } from './Settings';
 import styles from './PortConfigurationView.module.css';
 
 interface Props {
@@ -25,20 +23,20 @@ function PortConfigurationView(props: Props) {
   const { appStore } = props;
 
   return (
-    <div onKeyDown={(e) => {
-      appStore.settings.onKeyDown(e);
-    }}
-      tabIndex={-1}
+    <div
       className={styles.noOutline}
     >
       <div style={{ height: '10px' }}></div>
 
-      {/*  ====================== SCAN FOR PORTS BUTTON ============================= */}
+      {/* SELECT PORTS */}
+      {/* =============================================================== */}
       <Button
         variant="outlined"
         onClick={() => {
           appStore.scanForPorts();
         }}
+        // Only let user select a new port if current one is closed
+        disabled={appStore.portState !== PortState.CLOSED}
         sx={{ marginBottom: '10px' }}
         data-testid="request-port-access"
       >
@@ -251,7 +249,7 @@ function PortConfigurationView(props: Props) {
               throw Error('Invalid port state.');
             }
           }}
-          disabled={appStore.port === null}
+          disabled={appStore.port === null && appStore.lastSelectedPortType !== PortType.FAKE}
         >
           {portStateToButtonProps[appStore.portState].text}
         </Button>

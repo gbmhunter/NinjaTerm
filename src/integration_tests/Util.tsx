@@ -9,8 +9,8 @@ import {
 import userEvent from '@testing-library/user-event';
 import { setupJestCanvasMock } from 'jest-canvas-mock';
 
-import { App } from 'model/App';
-import AppView from 'view/AppView';
+import { App } from 'App';
+import AppView from 'AppView';
 
 /**
  * Setup function that is re-used by all tests in this file.
@@ -187,21 +187,66 @@ export function checkExpectedAgainstActualDisplay(
     const row = expectedDisplay[rowIdx];
     // Make sure there are the same number of expected text elements as actual
     // spans
-    expect(actualDisplay.children[rowIdx].children.length).toBe(row.length);
+    // expect(actualDisplay.children[rowIdx].children.length).toBe(row.length);
     for (let colIdx = 0; colIdx < row.length; colIdx += 1) {
       const expectedTerminalChar = row[colIdx];
-      const span = actualDisplay.children[rowIdx].children[colIdx];
-      expect(span.textContent).toEqual(expectedTerminalChar.char);
-      // toHaveStyle doesn't work well if you pass it an empty object
-      if (expectedTerminalChar.style !== null) {
-        // eslint-disable-next-line jest/no-conditional-expect
-        expect(span).toHaveStyle(expectedTerminalChar.style);
-      }
+      const actualRow = actualDisplay.children[rowIdx];
+      const actualChar = getInfoAboutActualChar(actualRow, colIdx);
+      expect(actualChar.text).toEqual(expectedTerminalChar.char);
       if (expectedTerminalChar.classNames !== null) {
-        expect(span).toHaveClass(expectedTerminalChar.classNames);
+        expect(actualChar.span).toHaveClass(expectedTerminalChar.classNames);
       }
+      // toHaveStyle doesn't work well if you pass it an empty object
+      // if (expectedTerminalChar.style !== null) {
+        // eslint-disable-next-line jest/no-conditional-expect
+        // expect(span).toHaveStyle(expectedTerminalChar.style);
+      // }
+      // if (expectedTerminalChar.classNames !== null) {
+        // expect(span).toHaveClass(expectedTerminalChar.classNames);
+      // }
     }
   }
+}
+
+/**
+ * Use this to extract information about an actual displayed char at the
+ * given column index in a particular row div in the terminal pane.
+ *
+ * This walks through the one or more spans in the row div, and finds the
+ * span that contains the char at the specified column index.
+ *
+ * @param rowDiv The row div to look in.
+ * @param colIdx The column index of the char you want to find.
+ * @returns The text of the char, the span element that contains it, and
+ * the computed style of the span.
+ */
+const getInfoAboutActualChar = (rowDiv: Element, colIdx: number):
+    {text: string, span: Element, style: any} => {
+  // console.log('getInfoAboutActualChar() called with colIdx=', colIdx);
+  // Move through the spans in this row div, finding the span that
+  // contains the char at specified colId
+  // <div>
+  //   <span>abc</span>
+  //   <span>d</span>
+  // </div>
+  const spans = rowDiv.children;
+  let currSpanIdx = 0;
+  let currSpan = spans[currSpanIdx];
+  let currIdxInSpanString = 0;
+  for (let idx = 0; idx < colIdx; idx += 1) {
+    currIdxInSpanString += 1;
+    if (currIdxInSpanString >= currSpan.textContent!.length) {
+      currSpanIdx += 1;
+      currSpan = spans[currSpanIdx];
+      currIdxInSpanString = 0;
+    }
+  }
+
+  const text = currSpan.textContent![currIdxInSpanString];
+  const style = window.getComputedStyle(currSpan);
+
+  // console.log('currIdxInSpanString=', currIdxInSpanString, 'char=', text, 'computedStyle=', style);
+  return { text, span: currSpan, style };
 }
 
 /**

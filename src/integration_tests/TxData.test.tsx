@@ -18,8 +18,8 @@ import {
 } from '@testing-library/react';
 import { TextEncoder, TextDecoder } from 'util';
 
-import { App } from 'model/App';
-import AppView from 'view/AppView';
+import { App } from 'App';
+import AppView from 'AppView';
 
 import { createAppWithMockSerialPort, ExpectedTerminalChar, checkExpectedAgainstActualDisplay } from './Util';
 

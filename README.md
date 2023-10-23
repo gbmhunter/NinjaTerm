@@ -39,7 +39,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Releasing
 
-1. Update the version number in `package.json`.
+1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or compete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
 1. Commit changes and push to `develop`.
 1. Create pull request on GitHub merging `develop` into `main`.

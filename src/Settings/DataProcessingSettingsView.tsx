@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Box,
   Button,
   Checkbox,
   FormControl,
@@ -14,18 +13,18 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { App } from 'model/App';
+import { App } from 'App';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'model/Settings/DataProcessingSettings';
+} from 'Settings/DataProcessingSettings';
 
 interface Props {
-  appStore: App;
+  app: App;
 }
 
 function DataProcessingView(props: Props) {
-  const { appStore } = props;
+  const { app } = props;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -43,11 +42,11 @@ function DataProcessingView(props: Props) {
             <Checkbox
               name="ansiEscapeCodeParsingEnabled"
               checked={
-                appStore.settings.dataProcessing.visibleData.fields
+                app.settings.dataProcessing.visibleData.fields
                   .ansiEscapeCodeParsingEnabled.value
               }
               onChange={(e) => {
-                appStore.settings.dataProcessing.onFieldChange(
+                app.settings.dataProcessing.onFieldChange(
                   e.target.name,
                   e.target.checked
                 );
@@ -76,21 +75,21 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .maxEscapeCodeLengthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            appStore.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessing.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .maxEscapeCodeLengthChars.hasError
           }
           helperText={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .maxEscapeCodeLengthChars.errorMsg
           }
           sx={{ marginBottom: '20px' }}
@@ -115,22 +114,63 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .terminalWidthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            appStore.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessing.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .terminalWidthChars.hasError
           }
           helperText={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .terminalWidthChars.errorMsg
+          }
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
+      {/* =============================================================================== */}
+      {/* CHAR SIZE */}
+      {/* =============================================================================== */}
+      <Tooltip title="The font size (in pixels) of characters displayed in the terminal."
+        followCursor
+        arrow
+      >
+        <TextField
+          id="outlined-basic"
+          name="charSizePx"
+          label="Char Size"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">px</InputAdornment>
+            ),
+          }}
+          value={
+            app.settings.dataProcessing.charSizePx.dispValue
+          }
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
+          }}
+          onBlur={() => {
+            app.settings.dataProcessing.applyCharSizePx();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              app.settings.dataProcessing.applyCharSizePx();
+            }
+          }}
+          error={
+            app.settings.dataProcessing.charSizePx.hasError
+          }
+          helperText={
+            app.settings.dataProcessing.charSizePx.errorMsg
           }
           sx={{ marginBottom: '20px' }}
         />
@@ -154,21 +194,21 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeRows.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            appStore.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessing.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeRows.hasError
           }
           helperText={
-            appStore.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeRows.errorMsg
           }
           sx={{ marginBottom: '20px' }}
@@ -188,11 +228,11 @@ function DataProcessingView(props: Props) {
           <Select
             name="dataViewConfiguration"
             value={
-              appStore.settings.dataProcessing.visibleData.fields
+              app.settings.dataProcessing.visibleData.fields
                 .dataViewConfiguration.value
             }
             onChange={(e) => {
-              appStore.settings.dataProcessing.onFieldChange(
+              app.settings.dataProcessing.onFieldChange(
                 e.target.name,
                 Number(e.target.value)
               );
@@ -227,11 +267,11 @@ function DataProcessingView(props: Props) {
           <Checkbox
             name="localTxEcho"
             checked={
-              appStore.settings.dataProcessing.visibleData.fields
+              app.settings.dataProcessing.visibleData.fields
                 .localTxEcho.value
             }
             onChange={(e) => {
-              appStore.settings.dataProcessing.onFieldChange(
+              app.settings.dataProcessing.onFieldChange(
                 e.target.name,
                 e.target.checked
               );
@@ -247,9 +287,9 @@ function DataProcessingView(props: Props) {
       <Button
         variant="contained"
         color="success"
-        disabled={!appStore.settings.dataProcessing.isApplyable}
+        disabled={!app.settings.dataProcessing.isApplyable}
         onClick={() => {
-          appStore.settings.dataProcessing.applyChanges();
+          app.settings.dataProcessing.applyChanges();
         }}
       >
         Apply
