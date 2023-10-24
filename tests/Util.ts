@@ -244,4 +244,10 @@ export class AppTestHarness {
 
     return { text, span: currSpan };
   };
+
+  enableGraphing = async () => {
+    await this.page.getByTestId('show-graphing-pane-button').click();
+    await this.page.getByLabel('Enable Graphing').click();
+    // expect(this.app.graphing.graphingEnabled).toBe(true);
+  };
 }
