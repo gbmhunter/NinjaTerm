@@ -1,5 +1,8 @@
-import { test, expect, Page, Locator } from "@playwright/test";
+import { expect, Page, Locator } from "@playwright/test";
 
+// This import is so we can grab window.app without typescript complaining
+// Complains it's unused though...
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { App } from "../src/App";
 
 export class ExpectedTerminalChar {
@@ -120,25 +123,37 @@ export class AppTestHarness {
 
     // Expect the "Go to app" button to be visible on the homepage.
     await this.page.getByText(/Go to app/).click();
-
     await this.page.getByTestId("settings-button").click();
-
     await this.page.getByTestId("request-port-access").click();
-
     await this.page.getByText("Open Port").click();
-
     await this.page.getByTestId("show-terminal-button").click();
   };
 
-  checkTerminalText = async (expectedDisplay: ExpectedTerminalChar[][]) => {
+  checkTerminalTextAgainstExpected = async (expectedDisplay: ExpectedTerminalChar[][]) => {
     for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
       for (let colIdx = 0; colIdx < expectedDisplay[rowIdx].length; colIdx += 1) {
+        const expectedTerminalChar = expectedDisplay[rowIdx][colIdx];
         const actualTerminalRow = await this.page
           .getByTestId("tx-rx-terminal-view")
           .locator(".terminal-row")
           .nth(rowIdx);
-        let { text } = await this.getInfoAboutActualChar(actualTerminalRow, colIdx);
+        let { text, span } = await this.getInfoAboutActualChar(actualTerminalRow, colIdx);
+
+        // Check the string (text) of each character is identical
         expect(text).toEqual(expectedDisplay[rowIdx][colIdx].char);
+
+        // Grab the computed style for the span element the text char was contained in
+        const computedStyle = await span.evaluate((element) =>
+          window.getComputedStyle(element)
+        );
+
+        // For each property in the expected style, check that it's the same value in the
+        // computed style
+        if (expectedTerminalChar.style !== null) {
+          Object.keys(expectedTerminalChar.style).forEach(function(key, index) {
+            expect(computedStyle[key]).toEqual(expectedTerminalChar.style![key]);
+          });
+        }
       }
     }
   };
@@ -158,7 +173,7 @@ export class AppTestHarness {
   getInfoAboutActualChar = async (
     rowDiv: Locator,
     colIdx: number
-  ): Promise<{ text: string }> => {
+  ): Promise<{ text: string, span: Locator }> => {
     // console.log('getInfoAboutActualChar() called with colIdx=', colIdx);
     // Move through the spans in this row div, finding the span that
     // contains the char at specified colId
@@ -190,6 +205,6 @@ export class AppTestHarness {
 
     const text = currSpanTextContent[currIdxInSpanString];
 
-    return { text };
+    return { text, span: currSpan };
   };
 }

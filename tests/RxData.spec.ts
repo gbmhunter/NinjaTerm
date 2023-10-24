@@ -1,5 +1,5 @@
 /* eslint-disable testing-library/prefer-screen-queries */
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test } from '@playwright/test';
 
 import { ExpectedTerminalChar, AppTestHarness } from './Util';
 
@@ -41,6 +41,35 @@ test.describe('RX data', () => {
       [new ExpectedTerminalChar({ char: ' ' })],
     ];
 
-    await appTestHarness.checkTerminalText(expectedDisplay);
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
+
+  test('should render red text', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.evaluate(() => {
+      let textToSend = '\x1B[31mred';
+      let dataToSend: number[] = [];
+      for (let i = 0; i < textToSend.length; i += 1) {
+        dataToSend.push(textToSend.charCodeAt(i));
+      }
+      window.app.parseRxData(Uint8Array.from(dataToSend));
+    });
+
+    // Check that all data is displayed correctly in terminal
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)'} }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)'} }),
+        new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)'} }),
+        new ExpectedTerminalChar({ char: ' ' }),
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+
+
 });
