@@ -129,6 +129,22 @@ export class AppTestHarness {
     await this.page.getByTestId("show-terminal-button").click();
   };
 
+  /**
+   * Use this to send data to NinjaTerm when testing. For the most
+   * part NinjaTerm thinks this came from the serial port.
+   *
+   * @param textToSend The data you want to send as a string.
+   */
+  sendTextToTerminal = async (textToSend: string) => {
+    await this.page.evaluate((textToSend) => {
+      let dataToSend: number[] = [];
+      for (let i = 0; i < textToSend.length; i += 1) {
+        dataToSend.push(textToSend.charCodeAt(i));
+      }
+      window.app.parseRxData(Uint8Array.from(dataToSend));
+    }, textToSend);
+  }
+
   checkTerminalTextAgainstExpected = async (expectedDisplay: ExpectedTerminalChar[][]) => {
     for (let rowIdx = 0; rowIdx < expectedDisplay.length; rowIdx += 1) {
       for (let colIdx = 0; colIdx < expectedDisplay[rowIdx].length; colIdx += 1) {

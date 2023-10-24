@@ -10,15 +10,16 @@ test.describe('RX data', () => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
+    await appTestHarness.sendTextToTerminal('Hello, world!\n');
 
-    await page.evaluate(() => {
-      let textToSend = 'Hello, world!\n';
-      let dataToSend: number[] = [];
-      for (let i = 0; i < textToSend.length; i += 1) {
-        dataToSend.push(textToSend.charCodeAt(i));
-      }
-      window.app.parseRxData(Uint8Array.from(dataToSend));
-    });
+    // await page.evaluate(() => {
+    //   let textToSend = 'Hello, world!\n';
+    //   let dataToSend: number[] = [];
+    //   for (let i = 0; i < textToSend.length; i += 1) {
+    //     dataToSend.push(textToSend.charCodeAt(i));
+    //   }
+    //   window.app.parseRxData(Uint8Array.from(dataToSend));
+    // });
 
     // Check that all data is displayed correctly in terminal
     const expectedDisplay: ExpectedTerminalChar[][] = [
