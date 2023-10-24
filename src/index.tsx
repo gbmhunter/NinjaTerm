@@ -22,6 +22,12 @@ const root = ReactDOM.createRoot(
 
 const app = new App();
 
+declare global {
+  interface Window { app: App; }
+}
+
+window.app = app;
+
 // Create routes. Only 2 routes. The root is the
 // landing page which is static, and then
 // at /app is the main NinjaTerm application

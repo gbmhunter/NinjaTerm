@@ -17,6 +17,12 @@ declare global {
   interface String {
     insert(index: number, string: string): string;
   }
+
+  // We save the created app instance to window.app (done in index.tsx) so that
+  // the test framework Playwright can access it. One use case
+  // is to insert data, as it's hard to mock the async serial
+  // read bytes function
+  interface Window { app: App; }
 }
 
 // eslint-disable-next-line no-extend-native, func-names
@@ -356,6 +362,7 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
+    console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
