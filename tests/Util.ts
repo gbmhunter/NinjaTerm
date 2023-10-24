@@ -27,6 +27,11 @@ export class ExpectedTerminalChar {
   }
 }
 
+// To make typescript happy about the exposeFunction below.
+declare global {
+  interface Window { writeData: (data: number) =>{}; }
+}
+
 export class AppTestHarness {
   writtenData: number[] = [];
 
@@ -45,16 +50,17 @@ export class AppTestHarness {
     // the browser context to this node.js test context
     await this.page.exposeFunction('writeData', (data) => {
       console.log('exposeFunction() called with data=', data);
-      this.writtenData.push(data['0']);
+      this.writtenData.push(data);
     });
     await this.page.addInitScript(() => {
       const mockWriter = {
         write: (data: Uint8Array) => {
           console.log('mock write() called with data=', data);
-
+          // Uint8Array's are serialized a bit weirdly,
+          // so do the loop client side and just send back numbers
           for (let i = 0; i < data.length; i += 1) {
             console.log('mock write() pushing data[i]=', data[i]);
-            writeData(data);
+            window.writeData(data[i]);
           }
           return Promise.resolve();
         },
