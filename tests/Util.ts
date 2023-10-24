@@ -41,11 +41,20 @@ export class AppTestHarness {
     // to the Playwright terminal
     this.page.on("console", (msg) => console.log(msg.text()));
 
+    // We need expose a function to pass the written data back from
+    // the browser context to this node.js test context
+    await this.page.exposeFunction('writeData', (data) => {
+      console.log('exposeFunction() called with data=', data);
+      this.writtenData.push(data['0']);
+    });
     await this.page.addInitScript(() => {
       const mockWriter = {
         write: (data: Uint8Array) => {
+          console.log('mock write() called with data=', data);
+
           for (let i = 0; i < data.length; i += 1) {
-            this.writtenData.push(data[i]);
+            console.log('mock write() pushing data[i]=', data[i]);
+            writeData(data);
           }
           return Promise.resolve();
         },
@@ -169,6 +178,12 @@ export class AppTestHarness {
           Object.keys(expectedTerminalChar.style).forEach(function(key, index) {
             expect(computedStyle[key]).toEqual(expectedTerminalChar.style![key]);
           });
+        }
+
+        // Check the class names are the same
+        if (expectedTerminalChar.classNames !== null) {
+          const actualClassNames = await span.evaluate((element) => element.className);
+          expect(actualClassNames).toContain(expectedTerminalChar.classNames);
         }
       }
     }

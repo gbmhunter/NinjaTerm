@@ -409,7 +409,7 @@ export class App {
    * @returns Nothing.
    */
   async handleTerminalKeyDown(event: React.KeyboardEvent) {
-    // console.log('handleTerminalKeyDown() called. event=', event, this);
+    console.log('handleTerminalKeyDown() called. event=', event, this);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen

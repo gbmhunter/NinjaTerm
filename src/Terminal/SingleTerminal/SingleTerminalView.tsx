@@ -208,6 +208,7 @@ export default observer((props: Props) => {
       className={`${styles.outerTerminalWrapper} ${
         terminal.isFocusable ? styles.focusable : ""
       }`}
+      data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
         marginBottom: "10px",
