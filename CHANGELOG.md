@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.6.2] - 2023-10-25
+
+### Changed
+
+- Version number bump to test PWA new content prompt.
+
 ## [4.6.1] - 2023-10-25
 
 ### Changed
