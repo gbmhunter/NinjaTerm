@@ -31,6 +31,8 @@
     "autorun",
     "autoscroll",
     "chartjs",
+    "mred",
+    "mreset",
     "ninjaterm",
     "notistack",
     "scrollback",

@@ -22,6 +22,12 @@ const root = ReactDOM.createRoot(
 
 const app = new App();
 
+declare global {
+  interface Window { app: App; }
+}
+
+window.app = app;
+
 // Create routes. Only 2 routes. The root is the
 // landing page which is static, and then
 // at /app is the main NinjaTerm application
@@ -46,9 +52,9 @@ root.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
 // serviceWorkerRegistration.unregister();
-serviceWorkerRegistration.register();
+// serviceWorkerRegistration.register();
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+// reportWebVitals();

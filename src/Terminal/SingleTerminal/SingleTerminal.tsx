@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
-import { App } from 'App';
+import { App } from 'src/App';
 
 /**
  * Represents a single terminal-style user interface.

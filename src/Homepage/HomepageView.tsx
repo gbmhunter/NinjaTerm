@@ -102,7 +102,7 @@ export default observer((props: Props) => {
             }}
           >
             <Button
-              href="/app/"
+              href="/app"
               variant="contained"
               size="large"
               startIcon={<TerminalIcon />}

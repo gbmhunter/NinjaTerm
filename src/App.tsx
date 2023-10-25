@@ -4,6 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+// import '@types/dom-serial';
 
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
@@ -11,12 +12,18 @@ import { Settings, SettingsCategories } from './Settings/Settings';
 import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
-import FakePortsController from 'FakePorts/FakePortsController';
+import FakePortsController from './FakePorts/FakePortsController';
 
 declare global {
   interface String {
     insert(index: number, string: string): string;
   }
+
+  // We save the created app instance to window.app (done in index.tsx) so that
+  // the test framework Playwright can access it. One use case
+  // is to insert data, as it's hard to mock the async serial
+  // read bytes function
+  interface Window { app: App; }
 }
 
 // eslint-disable-next-line no-extend-native, func-names
@@ -103,7 +110,7 @@ export class App {
 
   port: SerialPort | null;
 
-  serialPortInfo: SerialPortInfo | null;
+  serialPortInfo: Partial<SerialPortInfo> | null;
 
   keepReading: boolean = true;
 
@@ -188,7 +195,7 @@ export class App {
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    if ("serial" in navigator) {
+    if ("serial" in window.navigator) {
       // The Web Serial API is supported.
 
       let localPort: SerialPort;
@@ -197,7 +204,8 @@ export class App {
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
-        localPort = await navigator.serial.requestPort();
+        console.log(window.navigator.serial)
+        localPort = await window.navigator.serial.requestPort();
       } catch (error) {
           // The only reason I know of that occurs an error to be thrown is
           // when the user clicks cancel.
@@ -355,6 +363,7 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
+    console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
@@ -401,7 +410,7 @@ export class App {
    * @returns Nothing.
    */
   async handleTerminalKeyDown(event: React.KeyboardEvent) {
-    // console.log('handleTerminalKeyDown() called. event=', event, this);
+    console.log('handleTerminalKeyDown() called. event.key=', event.key);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen

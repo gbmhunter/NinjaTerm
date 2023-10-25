@@ -95,7 +95,7 @@ export default observer((props: Props) => {
         {text}
       </span>
     );
-    return <div style={style}>{spans}</div>;
+    return <div className="terminal-row" style={style}>{spans}</div>;
   });
 
   // Run this after every render, even though we only need to do it if
@@ -208,6 +208,7 @@ export default observer((props: Props) => {
       className={`${styles.outerTerminalWrapper} ${
         terminal.isFocusable ? styles.focusable : ""
       }`}
+      data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
         marginBottom: "10px",

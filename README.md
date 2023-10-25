@@ -35,6 +35,20 @@ npm start
 
 ## Testing
 
+### E2E Tests
+
+End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](https://playwright.dev/). The Playwright tests are located in the `tests/` directory, and the Playwright config is at `playwright.config.ts`.
+
+To run Playwright E2E tests from command line:
+
+```bash
+npx playwright test
+```
+
+The Playwright plug-in for VS Code is recommended if interacting with these tests, as it makes running and debugging of them easy!
+
+### Real Tests With An Arduino 
+
 Arduino sketches in `arduino-serial` allow you to program different applications onto an Arduino for testing the serial port with.
 
 ## Releasing
@@ -83,6 +97,7 @@ In FontCreator, make sure the setting _Tools->Options->Fonts->Exclude unused gly
 ## Extensions
 
 * Prettier ESLint: Provides formatting of .tsx files.
+* Playwright: Provides useful add-ons for running and debugging the Playwright E2E tests.
 
 [github-actions-status]: https://github.com/gbmhunter/NinjaTerm/workflows/Test/badge.svg
 [github-actions-url]: https://github.com/gbmhunter/NinjaTerm/actions

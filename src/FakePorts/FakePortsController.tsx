@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
-import { App, PortState, PortType } from "App";
-import { generateRandomString } from "Util/Util";
+import { App, PortState, PortType } from "src/App";
+import { generateRandomString } from "src/Util/Util";
 
 class FakePort {
   name: string;
