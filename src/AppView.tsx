@@ -18,7 +18,7 @@ import TerminalView from './Terminal/TerminalView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
-import FakePortDialogView from 'FakePorts/FakePortDialogView';
+import FakePortDialogView from './FakePorts/FakePortDialogView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({

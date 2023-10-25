@@ -13,11 +13,11 @@ import {
 } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import { App } from 'App';
+import { App } from 'src/App';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'Settings/DataProcessingSettings';
+} from 'src/Settings/DataProcessingSettings';
 
 interface Props {
   app: App;

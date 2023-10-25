@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- All e2e tests are now run using Playwright rather than RTL.
+- Application is now built using Vite rather than Webpack.
+
 ## [4.6.0] - 2023-10-23
 
 ### Added

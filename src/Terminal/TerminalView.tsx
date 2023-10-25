@@ -18,12 +18,12 @@ import { OverridableStringUnion } from '@mui/types';
 import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortState, PortType } from "App";
+import { App, portStateToButtonProps, PortState, PortType } from "src/App";
 import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'Settings/DataProcessingSettings';
+} from 'src/Settings/DataProcessingSettings';
 
 interface Props {
   app: App;

@@ -4,6 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+// import '@types/dom-serial';
 
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
@@ -11,7 +12,7 @@ import { Settings, SettingsCategories } from './Settings/Settings';
 import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
-import FakePortsController from 'FakePorts/FakePortsController';
+import FakePortsController from './FakePorts/FakePortsController';
 
 declare global {
   interface String {
@@ -109,7 +110,7 @@ export class App {
 
   port: SerialPort | null;
 
-  serialPortInfo: SerialPortInfo | null;
+  serialPortInfo: Partial<SerialPortInfo> | null;
 
   keepReading: boolean = true;
 
