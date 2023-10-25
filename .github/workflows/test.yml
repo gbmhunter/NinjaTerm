@@ -7,6 +7,7 @@ env:
 
 jobs:
   test:
+    timeout-minutes: 60
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -27,9 +28,20 @@ jobs:
         run: |
           npm install
 
-      - name: npm test
+      - name: Build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run build
-          npm run test
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
