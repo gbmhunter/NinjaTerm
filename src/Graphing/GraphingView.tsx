@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import { App } from "App";
+import { App } from "src/App";
 import styles from "./GraphingView.module.css";
 
 import {
@@ -107,7 +107,7 @@ export default observer((props: Props) => {
                   app.graphing.setSetting(e.target.name, e.target.value);
                 }}
               >
-                {app.graphing.dataSeparators.map((dataSeparator) => {
+                {app.graphing.dataSeparators.map((dataSeparator: string) => {
                   return (
                     <MenuItem key={dataSeparator} value={dataSeparator}>
                       {dataSeparator}
