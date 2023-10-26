@@ -10,6 +10,7 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
+import { registerSW } from 'virtual:pwa-register';
 
 import { App, MainPanes, PortState } from './App';
 import './App.css';
@@ -19,6 +20,7 @@ import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
 import FakePortDialogView from './FakePorts/FakePortDialogView';
+import { useEffect } from 'react';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -62,11 +64,41 @@ const portStateToBackgroundColor: { [key in PortState]: string; } = {
 };
 
 interface Props {
-  app: App;
+  // app: App;
 }
 
+const app = new App();
+
+declare global {
+  interface Window { app: App; }
+}
+
+window.app = app;
+
 const AppView = observer((props: Props) => {
-  const { app } = props;
+  // const { app } = props;
+
+  useEffect(() => {
+    // We need to register the service worker AFTER the app
+    // has rendered, because it we do it before we won't
+    // be able to enqueue a snackbar to tell the user there
+    // is an update available
+    const updateSW = registerSW({
+      onNeedRefresh() {
+        app.swOnNeedRefresh(updateSW);
+      },
+      onOfflineReady() {
+        app.swOnOfflineReady();
+      },
+      onRegisterError(error) {
+        app.swOnRegisterError(error);
+      }
+    })
+
+    app.swOnNeedRefresh((reloadPage) => {
+      return Promise.resolve();
+    })
+  }, []);
 
   // SELECT CORRECT MAIN PANE
   // ==========================================================================

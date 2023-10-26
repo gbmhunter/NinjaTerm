@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable, runInAction } from 'mobx';
-
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-// import '@types/dom-serial';
+import { closeSnackbar }  from 'notistack';
+
 
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
@@ -13,6 +13,7 @@ import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 import FakePortsController from './FakePorts/FakePortsController';
+import { Button } from '@mui/material';
 
 declare global {
   interface String {
@@ -166,9 +167,6 @@ export class App {
     // Create graphing instance. Graphing is disabled by default.
     this.graphing = new Graphing(this.snackbar);
 
-    // this.runTestModeBytes0To255();
-    // this.runTestModeGraphData();
-
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -200,11 +198,13 @@ export class App {
 
       let localPort: SerialPort;
 
+
       // If the user clicks cancel, a DOMException is thrown
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
         console.log(window.navigator.serial)
+        // return;
         localPort = await window.navigator.serial.requestPort();
       } catch (error) {
           // The only reason I know of that occurs an error to be thrown is
@@ -512,10 +512,47 @@ export class App {
    * is handleTerminalKeyDown(), which is called by the Terminals.
    */
   handleKeyDown(event: React.KeyboardEvent) {
-    console.log('handleKeyDown() called. event=', event, this);
-
-    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION) {
+    if (this.shownMainPane === MainPanes.SETTINGS
+        && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION
+        && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
     }
+  }
+
+  swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {
+    console.log('onNeedRefresh() called.');
+    this.snackbar.sendToSnackbar(
+      'A new version of NinjaTerm is available. Click Reload to update.',
+      'info',
+      (snackbarId) => <>
+        <Button
+          onClick={() => {
+            updateSw(true);
+          }}
+          color='success'
+          variant='contained'
+        >
+          Reload
+        </Button>
+        <Button
+          onClick={() => {
+            closeSnackbar(snackbarId);
+          }}
+          color='success'
+          variant='outline'
+        >Close</Button>
+      </>,
+      true, // Make this snackbar persist until the user clicks either of the buttons
+    );
+  }
+
+  swOnOfflineReady() {
+    console.log('onOfflineReady() called.');
+    this.snackbar.sendToSnackbar('NinjaTerm is offline ready.', 'info');
+  }
+
+  swOnRegisterError(error: any) {
+    console.log('onRegisterError() called.');
+    console.error(error.message);
   }
 }

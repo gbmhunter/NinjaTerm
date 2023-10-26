@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where fake port dialog could be opened by any key press, now only opened with 'f'.
+
+### Changed
+
+- Service worked is now only registered when the URL /app is opened, which should allow for UI notifications when the app needs updating.
+- The "Update available" snackbar has better coloured buttons.
+
 ## [4.6.6] - 2023-10-26
 
 ### Changed
