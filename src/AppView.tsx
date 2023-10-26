@@ -64,19 +64,11 @@ const portStateToBackgroundColor: { [key in PortState]: string; } = {
 };
 
 interface Props {
-  // app: App;
+  app: App;
 }
-
-const app = new App();
-
-declare global {
-  interface Window { app: App; }
-}
-
-window.app = app;
 
 const AppView = observer((props: Props) => {
-  // const { app } = props;
+  const { app } = props;
 
   useEffect(() => {
     // We need to register the service worker AFTER the app
