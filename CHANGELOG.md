@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.6.4] - 2023-10-26
+
+### Changed
+
+- Version number bump to test PWA new content prompt.
+
 ## [4.6.3] - 2023-10-26
 
 ### Added
@@ -494,7 +500,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.3...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.4...HEAD
+[4.6.4]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.3...v4.6.4
 [4.6.3]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.2...v4.6.3
 [4.6.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.1...v4.6.2
 [4.6.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.0...v4.6.1
