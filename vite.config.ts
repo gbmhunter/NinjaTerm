@@ -13,7 +13,8 @@ export default defineConfig({
       react(),
       viteTsconfigPaths(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt', // We want to prompt the user to reload, we don't want it to autoupdate
+        injectRegister: null, // We register it ourselves in index.tsx
         devOptions: {
           enabled: true
         },
