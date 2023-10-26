@@ -18,13 +18,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-const app = new App();
 
-declare global {
-  interface Window { app: App; }
-}
-
-window.app = app;
 
 
 
@@ -38,7 +32,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/app",
-    element: <AppView app={app} />,
+    element: <AppView />,
   },
 ]);
 

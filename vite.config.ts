@@ -59,8 +59,8 @@ export default defineConfig({
         src: "/src",
       },
     },
-    // optimizeDeps: {
-    //   include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
-    // },
+    optimizeDeps: {
+      include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
+    },
 })
 
