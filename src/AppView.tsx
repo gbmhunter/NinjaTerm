@@ -95,6 +95,8 @@ const AppView = observer((props: Props) => {
       }
     })
 
+    // Uncomment this if you want to test out the snackbar
+    // for development reasons
     // app.swOnNeedRefresh((reloadPage) => {
     //   return Promise.resolve();
     // })

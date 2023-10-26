@@ -529,8 +529,12 @@ export class App {
           onClick={() => {
             updateSw(true);
           }}
-          color='success'
-          variant='contained'
+          color='info'
+          variant='text'
+          sx={{
+            color: 'rgb(33, 150, 243)',
+            backgroundColor: 'white'
+          }}
         >
           Reload
         </Button>
@@ -538,8 +542,12 @@ export class App {
           onClick={() => {
             closeSnackbar(snackbarId);
           }}
-          color='success'
-          variant='outlined'
+          color='info'
+          variant='text'
+          sx={{
+            color: 'white',
+            // backgroundColor: 'white'
+          }}
         >Close</Button>
       </>,
       true, // Make this snackbar persist until the user clicks either of the buttons
