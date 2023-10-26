@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed bug where fake port dialog could be opened by any key press, now only opened with 'f'.
+- Fixed issue where sometimes loading the URL `/app` would cause a 404 by adding a redirect to the Netlify config file.
 
 ### Changed
 
