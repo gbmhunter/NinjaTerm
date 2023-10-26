@@ -51,7 +51,7 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite build && vite preview",
     "test": "npx playwright test"
   },

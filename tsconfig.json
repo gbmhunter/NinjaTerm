@@ -31,6 +31,6 @@
     "rootDir": "./", // Allow code to back out of src/ if needed, e.g. to access package.json
   },
   "include": [
-    "src"
+    "src",
   ]
 }
