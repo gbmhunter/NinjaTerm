@@ -42,6 +42,12 @@ End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](htt
 To run Playwright E2E tests from command line:
 
 ```bash
+npm run test
+```
+
+or:
+
+```bash
 npx playwright test
 ```
 
@@ -75,9 +81,15 @@ Create React App (CRA) with the typescript PWA template [docs here](https://crea
 npx create-react-app my-app --template cra-template-pwa-typescript
 ```
 
+NOTE: Since then, the app has been migrated from using create-react-app (which uses the Webpack compiler) to using the Vite compiler.
+
 The React based user interface code is under `src/view`.
 
 MobX is used to store the application state (model). The React component redraw themselves based on the state of the model. The application model is under `src/model/`.
+
+## Progressive Web App (PWA)
+
+NinjaTerm is a progressive web app (PWA). This means it can be "installed" by the user and can run offline. Most of this functionality is provided by "Vite PWA". The configuration for the PWA is defined in `vite.config.ts`.
 
 ## Graphing
 
