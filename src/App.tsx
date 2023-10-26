@@ -539,7 +539,7 @@ export class App {
             closeSnackbar(snackbarId);
           }}
           color='success'
-          variant='outline'
+          variant='outlined'
         >Close</Button>
       </>,
       true, // Make this snackbar persist until the user clicks either of the buttons
