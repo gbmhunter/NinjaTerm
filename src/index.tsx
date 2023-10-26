@@ -6,7 +6,6 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import ReactGA from "react-ga4";
-import { registerSW } from 'virtual:pwa-register';
 
 import { App } from './App';
 import AppView from './AppView';

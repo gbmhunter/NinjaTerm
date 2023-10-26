@@ -95,9 +95,9 @@ const AppView = observer((props: Props) => {
       }
     })
 
-    app.swOnNeedRefresh((reloadPage) => {
-      return Promise.resolve();
-    })
+    // app.swOnNeedRefresh((reloadPage) => {
+    //   return Promise.resolve();
+    // })
   }, []);
 
   // SELECT CORRECT MAIN PANE
