@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { VariantType, enqueueSnackbar } from 'notistack';
+import { SnackbarAction, VariantType, enqueueSnackbar } from 'notistack';
+import React from 'react';
 
 export default class Snackbar {
 
@@ -20,12 +21,14 @@ export default class Snackbar {
    * @param msg The message you want to display. Use "\n" to insert new lines.
    * @param variant The variant (e.g. error, warning) of snackbar you want to display.
    */
-  sendToSnackbar(msg: string, variant: VariantType) {
+  sendToSnackbar(msg: string, variant: VariantType, action?: SnackbarAction, persist?: boolean) {
     enqueueSnackbar(
       msg,
       {
         variant: variant,
         preventDuplicate: true, // Prevents duplicate messages from being displayed. This is useful for things like "break" errors from the serial port, many of these can occur in quick succession
+        action: action,
+        persist: persist,
         style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
       });
   }

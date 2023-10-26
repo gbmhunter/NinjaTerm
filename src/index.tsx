@@ -8,10 +8,13 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import ReactGA from "react-ga4";
+import { registerSW } from 'virtual:pwa-register';
+import { closeSnackbar }  from 'notistack';
 
 import { App } from './App';
 import AppView from './AppView';
 import HomepageView from './Homepage/HomepageView';
+import { Button } from '@mui/material';
 
 // Google Analytics
 ReactGA.initialize("G-SDMMGN71FN");
@@ -27,6 +30,40 @@ declare global {
 }
 
 window.app = app;
+
+// This would be better suited to be done inside the App class, but the Vite PWA
+// docs at https://vite-pwa-org.netlify.app/guide/prompt-for-update say
+// to put it in your "main.ts or main.js file:".
+const updateSW = registerSW({
+  onNeedRefresh() {
+    console.log('onNeedRefresh() called.');
+    app.snackbar.sendToSnackbar(
+      'A new version of NinjaTerm is available. Click Reload to update.',
+      'info',
+      (snackbarId) => <>
+        <Button onClick={() => {
+          updateSW(true);
+        }}>
+          Reload
+        </Button>
+        <Button
+          onClick={() => {
+            closeSnackbar(snackbarId);
+          }}
+        >Close</Button>
+      </>,
+      true, // Make this snackbar persist until the user clicks either of the buttons
+    );
+  },
+  onOfflineReady() {
+    console.log('onOfflineReady() called.');
+    app.snackbar.sendToSnackbar('NinjaTerm is offline ready.', 'info');
+  },
+  onRegisterError(error) {
+    console.log('onRegisterError() called.');
+    console.error(error.message);
+  }
+})
 
 // Create routes. Only 2 routes. The root is the
 // landing page which is static, and then
