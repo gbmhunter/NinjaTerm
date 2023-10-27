@@ -10,6 +10,12 @@ import TimelineIcon from '@mui/icons-material/Timeline';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
+
+// I got the following error here:
+// error TS2307: Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
+// even with "vite-plugin-pwa/client" in the types array inside tsconfig.json. So getting typescript
+// to ignore this import for now.
+// @ts-ignore:next-line
 import { registerSW } from 'virtual:pwa-register';
 
 import { App, MainPanes, PortState } from './App';
@@ -90,6 +96,7 @@ const AppView = observer((props: Props) => {
       onOfflineReady() {
         app.swOnOfflineReady();
       },
+      // @ts-ignore:next-line
       onRegisterError(error) {
         app.swOnRegisterError(error);
       }

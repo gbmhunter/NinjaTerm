@@ -1,8 +1,7 @@
 import React from "react";
 import SvgIcon from "@mui/material/SvgIcon";
-import styles from "./BorederedSection.module.css";
+import styles from "./BorderedSection.module.css";
 
-import { ReactElement } from "react";
 import { SvgIconTypeMap } from "@mui/material/SvgIcon";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 
@@ -12,6 +11,13 @@ type BorderedSectionProps = {
   children: React.ReactNode;
 };
 
+/**
+ * React component to show a border section with optional title and icon embedded
+ * into the border (similar to how MUI does a TextField)
+ *
+ * @param param0 Props.
+ * @returns React component.
+ */
 function BorderedSection({ icon, title, children }: BorderedSectionProps): JSX.Element {
     return (
         <div className={styles.mainContainer}>
