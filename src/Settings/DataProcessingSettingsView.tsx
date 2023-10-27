@@ -18,6 +18,7 @@ import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'src/Settings/DataProcessingSettings';
+import BorderedSection from 'src/Components/BorderedSection';
 
 interface Props {
   app: App;
@@ -294,6 +295,9 @@ function DataProcessingView(props: Props) {
       >
         Apply
       </Button>
+
+      <BorderedSection title="Advanced"><div>test</div></BorderedSection>
+
     </div>
   );
 }

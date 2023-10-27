@@ -332,7 +332,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'bytes 0x00-0xFF, 5chars/s',
-        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters.',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px.',
         () => {
           app.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
             false;
@@ -341,8 +341,7 @@ export default class FakePortsController {
           app.settings.dataProcessing.applyChanges();
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            // this.parseRxData(Uint8Array.from([ testCharIdx ]));
-            app.parseRxData(Uint8Array.from([0x08]));
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;

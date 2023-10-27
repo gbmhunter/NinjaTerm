@@ -78,6 +78,8 @@
     "@playwright/test": "^1.39.0",
     "@types/react-window": "^1.8.5",
     "jest-canvas-mock": "^2.5.2",
+    "postcss": "^8.4.31",
+    "postcss-nesting": "^12.0.1",
     "vite-plugin-pwa": "^0.16.5"
   }
 }
