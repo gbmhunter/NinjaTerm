@@ -310,8 +310,8 @@ function DataProcessingView(props: Props) {
               control={
                 <Checkbox
                   name="enableNewLineParsing"
-                  checked={app.settings.dataProcessing.enableNewLineParsing}
-                  onChange={(e) => { app.settings.dataProcessing.setEnableNewLineParsing(e.target.checked)}}
+                  checked={app.settings.dataProcessing.newLineParsingEnabled}
+                  onChange={(e) => { app.settings.dataProcessing.setNewLineParsingEnabled(e.target.checked)}}
                 />
               }
               label="Enable newline parsing"
@@ -330,7 +330,7 @@ function DataProcessingView(props: Props) {
                   name="enableNewLineParsing"
                   checked={true}
                   onChange={(e) => {}}
-                  disabled={!app.settings.dataProcessing.enableNewLineParsing}
+                  disabled={!app.settings.dataProcessing.newLineParsingEnabled}
                 />
               }
               label="Implicit \r with every \n"
@@ -349,7 +349,7 @@ function DataProcessingView(props: Props) {
                   name="enableNewLineParsing"
                   checked={true}
                   onChange={(e) => {}}
-                  disabled={!app.settings.dataProcessing.enableNewLineParsing}
+                  disabled={!app.settings.dataProcessing.newLineParsingEnabled}
                 />
               }
               label="Swallow \n"

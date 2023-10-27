@@ -135,6 +135,7 @@ export default class Terminal {
       // Remove char from start of remaining data
       let rxByte = remainingData.shift();
       if (rxByte === undefined) {
+        // We've processed all received bytes, let's get outta here!
         break;
       }
 
@@ -142,19 +143,18 @@ export default class Terminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
-      // Don't want to interpret new lines if we are half-way
-      // through processing an ANSI escape code
-      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
+      // Don't want to interpret new lines if:
+      // 1. New line parsing is disabled OR
+      // 2. We are half-way through processing an ANSI escape code
+      const newLineParsingEnabled = this.app.settings.dataProcessing.newLineParsingEnabled;
+      if (newLineParsingEnabled && this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
         this.moveToNewLine();
-        // this.limitNumRows();
-        // eslint-disable-next-line no-continue
         continue;
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(rxByte);
-        // this.limitNumRows();
         continue;
       }
 
@@ -559,6 +559,9 @@ export default class Terminal {
     this.scrollLock = trueFalse;
   }
 
+  /**
+   * Moves the cursor to the start of the next line. Equivalent to \r\n.
+   */
   moveToNewLine() {
     // Delete char at current cursor location if specifically for cursor
     if (
