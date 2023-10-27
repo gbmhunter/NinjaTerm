@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Button,
   Checkbox,
@@ -10,15 +10,15 @@ import {
   Select,
   TextField,
   Tooltip,
-} from '@mui/material';
-import { observer } from 'mobx-react-lite';
+} from "@mui/material";
+import { observer } from "mobx-react-lite";
 
-import { App } from 'src/App';
+import { App } from "src/App";
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'src/Settings/DataProcessingSettings';
-import BorderedSection from 'src/Components/BorderedSection';
+} from "src/Settings/DataProcessingSettings";
+import BorderedSection from "src/Components/BorderedSection";
 
 interface Props {
   app: App;
@@ -28,7 +28,9 @@ function DataProcessingView(props: Props) {
   const { app } = props;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
+    >
       {/* =============================================================================== */}
       {/* ANSI ESCAPE CODE PARSING ENABLED */}
       {/* =============================================================================== */}
@@ -55,12 +57,14 @@ function DataProcessingView(props: Props) {
             />
           }
           label="ANSI Escape Code Parsing"
-          sx={{ marginBottom: '10px' }}/>
+          sx={{ marginBottom: "10px" }}
+        />
       </Tooltip>
       {/* =============================================================================== */}
       {/* MAX. ESCAPE CODE LENGTH */}
       {/* =============================================================================== */}
-      <Tooltip title="The max. length of escape code allowed (in characters). Certain malformed escape codes (or data interruptions) could cause the escape code parser to get stuck thinking the incoming data stream is part of an escape code. This limit is so that at a certain length the parser rejects the partial code and goes back to the IDLE state. This includes all characters in the escape code, including the starting \x1B byte. Must be a least 2 chars."
+      <Tooltip
+        title="The max. length of escape code allowed (in characters). Certain malformed escape codes (or data interruptions) could cause the escape code parser to get stuck thinking the incoming data stream is part of an escape code. This limit is so that at a certain length the parser rejects the partial code and goes back to the IDLE state. This includes all characters in the escape code, including the starting \x1B byte. Must be a least 2 chars."
         followCursor
         arrow
       >
@@ -93,13 +97,14 @@ function DataProcessingView(props: Props) {
             app.settings.dataProcessing.visibleData.fields
               .maxEscapeCodeLengthChars.errorMsg
           }
-          sx={{ marginBottom: '20px' }}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
       {/* =============================================================================== */}
       {/* DATA WIDTH */}
       {/* =============================================================================== */}
-      <Tooltip title="The max. number of characters to display per line in the terminal before wrapping to the next line. Must be a positive integer. New line characters also cause text to jump to the next line."
+      <Tooltip
+        title="The max. number of characters to display per line in the terminal before wrapping to the next line. Must be a positive integer. New line characters also cause text to jump to the next line."
         followCursor
         arrow
       >
@@ -115,8 +120,8 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            app.settings.dataProcessing.visibleData.fields
-              .terminalWidthChars.value
+            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+              .value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             app.settings.dataProcessing.onFieldChange(
@@ -125,20 +130,21 @@ function DataProcessingView(props: Props) {
             );
           }}
           error={
-            app.settings.dataProcessing.visibleData.fields
-              .terminalWidthChars.hasError
+            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+              .hasError
           }
           helperText={
-            app.settings.dataProcessing.visibleData.fields
-              .terminalWidthChars.errorMsg
+            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+              .errorMsg
           }
-          sx={{ marginBottom: '20px' }}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
       {/* =============================================================================== */}
       {/* CHAR SIZE */}
       {/* =============================================================================== */}
-      <Tooltip title="The font size (in pixels) of characters displayed in the terminal."
+      <Tooltip
+        title="The font size (in pixels) of characters displayed in the terminal."
         followCursor
         arrow
       >
@@ -149,13 +155,9 @@ function DataProcessingView(props: Props) {
           variant="outlined"
           size="small"
           InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">px</InputAdornment>
-            ),
+            endAdornment: <InputAdornment position="start">px</InputAdornment>,
           }}
-          value={
-            app.settings.dataProcessing.charSizePx.dispValue
-          }
+          value={app.settings.dataProcessing.charSizePx.dispValue}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
           }}
@@ -167,19 +169,16 @@ function DataProcessingView(props: Props) {
               app.settings.dataProcessing.applyCharSizePx();
             }
           }}
-          error={
-            app.settings.dataProcessing.charSizePx.hasError
-          }
-          helperText={
-            app.settings.dataProcessing.charSizePx.errorMsg
-          }
-          sx={{ marginBottom: '20px' }}
+          error={app.settings.dataProcessing.charSizePx.hasError}
+          helperText={app.settings.dataProcessing.charSizePx.errorMsg}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
       {/* =============================================================================== */}
       {/* SCROLLBACK BUFFER SIZE */}
       {/* =============================================================================== */}
-      <Tooltip title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
+      <Tooltip
+        title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
         Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer."
         followCursor
         arrow
@@ -212,7 +211,7 @@ function DataProcessingView(props: Props) {
             app.settings.dataProcessing.visibleData.fields
               .scrollbackBufferSizeRows.errorMsg
           }
-          sx={{ marginBottom: '20px' }}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
       {/* =============================================================================== */}
@@ -224,7 +223,7 @@ function DataProcessingView(props: Props) {
         followCursor
         arrow
       >
-        <FormControl size="small" sx={{ minWidth: '210px' }}>
+        <FormControl size="small" sx={{ minWidth: "210px" }}>
           <InputLabel>Data View Configuration</InputLabel>
           <Select
             name="dataViewConfiguration"
@@ -238,7 +237,7 @@ function DataProcessingView(props: Props) {
                 Number(e.target.value)
               );
             }}
-            sx={{ marginBottom: '20px' }}
+            sx={{ marginBottom: "20px" }}
           >
             {Object.keys(DataViewConfiguration)
               .filter((key) => !Number.isNaN(Number(key)))
@@ -263,24 +262,24 @@ function DataProcessingView(props: Props) {
         followCursor
         arrow
       >
-      <FormControlLabel
-        control={
-          <Checkbox
-            name="localTxEcho"
-            checked={
-              app.settings.dataProcessing.visibleData.fields
-                .localTxEcho.value
-            }
-            onChange={(e) => {
-              app.settings.dataProcessing.onFieldChange(
-                e.target.name,
-                e.target.checked
-              );
-            }}
-          />
-        }
-        label="Local TX Echo"
-        sx={{ marginBottom: '10px' }}/>
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="localTxEcho"
+              checked={
+                app.settings.dataProcessing.visibleData.fields.localTxEcho.value
+              }
+              onChange={(e) => {
+                app.settings.dataProcessing.onFieldChange(
+                  e.target.name,
+                  e.target.checked
+                );
+              }}
+            />
+          }
+          label="Local TX Echo"
+          sx={{ marginBottom: "10px" }}
+        />
       </Tooltip>
       {/* =============================================================================== */}
       {/* APPLY BUTTON */}
@@ -296,8 +295,67 @@ function DataProcessingView(props: Props) {
         Apply
       </Button>
 
-      <BorderedSection title="Advanced"><div>test</div></BorderedSection>
-
+      {/* =============================================================================== */}
+      {/* NEW LINE SECTION */}
+      {/* =============================================================================== */}
+      <BorderedSection title="New Lines">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* ENABLE NEWLINE PARSING */}
+          <Tooltip
+            title="If enabled, new line characters will be detected and new lines inserted in the terminal."
+            placement="top"
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="enableNewLineParsing"
+                  checked={true}
+                  onChange={(e) => {}}
+                />
+              }
+              label="Enable newline parsing"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          {/* IMPLICIT \r WITH EVERY \n */}
+          <Tooltip
+            title="If enabled, the cursor will be returned to the start of the line (carriage return, \r) every time a new line character is received."
+            placement="top"
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="enableNewLineParsing"
+                  checked={true}
+                  onChange={(e) => {}}
+                />
+              }
+              label="Implicit \r with every \n"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          {/* SWALLOW \n */}
+          <Tooltip
+            title="If enabled, new line characters will not be printed to the terminal display."
+            placement="top"
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="enableNewLineParsing"
+                  checked={true}
+                  onChange={(e) => {}}
+                />
+              }
+              label="Swallow \n"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+        </div>
+      </BorderedSection>
     </div>
   );
 }
