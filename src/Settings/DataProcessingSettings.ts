@@ -86,6 +86,10 @@ export default class DataProcessingSettings {
     rule: 'required|integer|min:1',
   };
 
+  // If enabled, the RX data parser will look for new line characters and insert new lines
+  // in the terminal display accordingly
+  enableNewLineParsing = true;
+
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
@@ -110,6 +114,10 @@ export default class DataProcessingSettings {
     if (!this.charSizePx.hasError) {
       this.charSizePx.appliedValue = parseFloat(this.charSizePx.dispValue);
     }
+  }
+
+  setEnableNewLineParsing = (value: boolean) => {
+    this.enableNewLineParsing = value;
   }
 
   onFieldChange = (field: any, value: any) => {
