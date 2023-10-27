@@ -16,7 +16,9 @@ export default defineConfig({
         registerType: 'prompt', // We want to prompt the user to reload, we don't want it to autoupdate
         injectRegister: null, // We register it ourselves in index.tsx
         devOptions: {
-          enabled: true
+          // Set to true if you want to have the PWA code enabled when running
+          // npm run start (dev. mode)
+          enabled: false
         },
         includeAssets: [
           icon192Url,
