@@ -154,10 +154,15 @@ export default class Terminal {
         } else if (newLineBehavior == NewLineBehaviors.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
+          this.cursorDown(1);
           continue;
         } else if (newLineBehavior == NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN) {
-            // TODO
-          this.moveToNewLine();
+          // this.moveToNewLine();
+          // Move left FIRST, then down. This is slightly more efficient
+          // as moving down first will typically mean padding with spaces if the row
+          // is empty to put the cursor at the correct column position
+          this.cursorLeft(this.cursorPosition[1]);
+          this.cursorDown(1);
         } else {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
         }
@@ -592,7 +597,8 @@ export default class Terminal {
     if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
-      this.moveToNewLine(); // This adds the " " if needed for the cursor
+      // this.moveToNewLine(); // This adds the " " if needed for the cursor
+      this.cursorDown(1);
     } else {
       this.cursorPosition[1] += 1;
       // Add space here is there is no text
@@ -639,37 +645,40 @@ export default class Terminal {
 
   /**
    * Moves the cursor to the start of the next line. Equivalent to \r\n.
+   *
+   * TODO: Delete this now we have cursorDown and cursorLeft, use those
+   * instead.
    */
-  moveToNewLine() {
-    // Delete char at current cursor location if specifically for cursor
-    if (
-      this.terminalRows[this.cursorPosition[0]].terminalChars[
-        this.cursorPosition[1]
-      ].forCursor
-    ) {
-      this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
-        this.cursorPosition[1],
-        1
-      );
-    }
-    if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
-      this.cursorPosition[0] += 1;
-      this.cursorPosition[1] = 0;
-    } else {
-      const terminalRow = new TerminalRow();
-      this.terminalRows.push(terminalRow);
-      this.cursorPosition[0] += 1;
-      this.cursorPosition[1] = 0;
-      this.rowToScrollLockTo = this.terminalRows.length - 1;
-    }
-    // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
-    const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
-    if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
-      const terminalChar = new TerminalChar();
-      terminalChar.char = ' ';
-      rowCursorIsNowOn.terminalChars.push(terminalChar);
-    }
-  }
+  // moveToNewLine() {
+  //   // Delete char at current cursor location if specifically for cursor
+  //   if (
+  //     this.terminalRows[this.cursorPosition[0]].terminalChars[
+  //       this.cursorPosition[1]
+  //     ].forCursor
+  //   ) {
+  //     this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
+  //       this.cursorPosition[1],
+  //       1
+  //     );
+  //   }
+  //   if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
+  //     this.cursorPosition[0] += 1;
+  //     this.cursorPosition[1] = 0;
+  //   } else {
+  //     const terminalRow = new TerminalRow();
+  //     this.terminalRows.push(terminalRow);
+  //     this.cursorPosition[0] += 1;
+  //     this.cursorPosition[1] = 0;
+  //     this.rowToScrollLockTo = this.terminalRows.length - 1;
+  //   }
+  //   // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
+  //   const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
+  //   if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
+  //     const terminalChar = new TerminalChar();
+  //     terminalChar.char = ' ';
+  //     rowCursorIsNowOn.terminalChars.push(terminalChar);
+  //   }
+  // }
 
   resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
