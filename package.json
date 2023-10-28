@@ -80,6 +80,7 @@
     "jest-canvas-mock": "^2.5.2",
     "postcss": "^8.4.31",
     "postcss-nesting": "^12.0.1",
-    "vite-plugin-pwa": "^0.16.5"
+    "vite-plugin-pwa": "^0.16.5",
+    "vitest": "^0.34.6"
   }
 }

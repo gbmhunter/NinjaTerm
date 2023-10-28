@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- vitest has been setup for running unit tests (Playwright is still used for E2E tests).
+
 ### Fixed
 
 - Fixed bug where fake port dialog could be opened by any key press, now only opened with 'f'.
