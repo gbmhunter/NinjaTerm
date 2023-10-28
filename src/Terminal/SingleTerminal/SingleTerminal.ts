@@ -162,6 +162,10 @@ export default class Terminal {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
         }
 
+        if (this.app.settings.dataProcessing.swallowNewLine) {
+          // Don't print the new line character
+          continue;
+        }
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing

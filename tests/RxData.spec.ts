@@ -280,4 +280,27 @@ test.describe('RX data', () => {
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
+  test('do nothing new line cursor behavior should work', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('settings-button').click();
+    await page.getByText('Data Processing').click();
+    await page.getByText('Don\'t move the cursor').click();
+    await page.getByTestId('show-terminal-button').click();
+
+    await appTestHarness.sendTextToTerminal('1\n2\n3');
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
 });
