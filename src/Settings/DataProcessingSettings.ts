@@ -13,6 +13,12 @@ export enum DataViewConfiguration {
   SEPARATE_TX_RX_TERMINALS,
 }
 
+export enum NewLineBehaviors {
+  DO_NOTHING,
+  NEW_LINE,
+  NEW_LINE_AND_CARRIAGE_RETURN,
+}
+
 // Maps the enums to human-readable names for display
 export const dataViewConfigEnumToDisplayName: {
   [key: string]: string;
@@ -86,9 +92,11 @@ export default class DataProcessingSettings {
     rule: 'required|integer|min:1',
   };
 
-  // If enabled, the RX data parser will look for new line characters and insert new lines
-  // in the terminal display accordingly
-  newLineParsingEnabled = true;
+  newLineBehavior = NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN;
+
+  // If set to true, \n bytes will be swallowed and not displayed
+  // on the terminal UI (which is generally what you want)
+  swallowNewLine = true;
 
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
@@ -116,8 +124,12 @@ export default class DataProcessingSettings {
     }
   }
 
-  setNewLineParsingEnabled = (value: boolean) => {
-    this.newLineParsingEnabled = value;
+  setNewLineBehavior = (value: NewLineBehaviors) => {
+    this.newLineBehavior = value;
+  }
+
+  setSwallowNewLine = (value: boolean) => {
+    this.swallowNewLine = value;
   }
 
   onFieldChange = (field: any, value: any) => {

@@ -341,7 +341,7 @@ export default class FakePortsController {
 
           app.settings.dataProcessing.visibleData.fields.terminalWidthChars.value = 40;
           // We want to see how all bytes look sent to the screen, so disable new line parsing
-          app.settings.dataProcessing.setNewLineParsingEnabled(false);
+          // app.settings.dataProcessing.setNewLineParsingEnabled(false);
           app.settings.dataProcessing.applyChanges();
           let testCharIdx = 0;
           const intervalId = setInterval(() => {

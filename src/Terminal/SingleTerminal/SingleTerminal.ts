@@ -4,6 +4,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
+import { NewLineBehaviors } from 'src/Settings/DataProcessingSettings';
 
 /**
  * Represents a single terminal-style user interface.
@@ -143,13 +144,24 @@ export default class Terminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
-      // Don't want to interpret new lines if:
-      // 1. New line parsing is disabled OR
-      // 2. We are half-way through processing an ANSI escape code
-      const newLineParsingEnabled = this.app.settings.dataProcessing.newLineParsingEnabled;
-      if (newLineParsingEnabled && this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
-        this.moveToNewLine();
-        continue;
+      const newLineBehavior = this.app.settings.dataProcessing.newLineBehavior;
+      // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
+      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
+        // Based of the set new line behavior in the settings, perform the appropriate action
+        if (newLineBehavior == NewLineBehaviors.DO_NOTHING) {
+          // Don't move the cursor anywhere. We still may want to swallow or allow
+          // new line to be printed, that is a separate setting and handled down below
+        } else if (newLineBehavior == NewLineBehaviors.NEW_LINE) {
+          // Just move the cursor down 1 line, do not move the cursor
+          // back to the beginning of the line (strict new line only)
+          this.moveToNewLine();
+          continue;
+        } else if (newLineBehavior == NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN) {
+            // TODO
+        } else {
+          throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
+        }
+
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing

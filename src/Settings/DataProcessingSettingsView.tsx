@@ -4,9 +4,12 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormLabel,
   InputAdornment,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
   TextField,
   Tooltip,
@@ -16,6 +19,7 @@ import { observer } from "mobx-react-lite";
 import { App } from "src/App";
 import {
   DataViewConfiguration,
+  NewLineBehaviors,
   dataViewConfigEnumToDisplayName,
 } from "src/Settings/DataProcessingSettings";
 import BorderedSection from "src/Components/BorderedSection";
@@ -299,44 +303,21 @@ function DataProcessingView(props: Props) {
       {/* NEW LINE SECTION */}
       {/* =============================================================================== */}
       <BorderedSection title="New Lines">
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {/* ENABLE NEWLINE PARSING */}
-          <Tooltip
-            title="If enabled, new line characters will be detected and new lines inserted in the terminal."
-            placement="top"
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="enableNewLineParsing"
-                  checked={app.settings.dataProcessing.newLineParsingEnabled}
-                  onChange={(e) => { app.settings.dataProcessing.setNewLineParsingEnabled(e.target.checked)}}
-                />
-              }
-              label="Enable newline parsing"
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* IMPLICIT \r WITH EVERY \n */}
-          <Tooltip
-            title="If enabled, the cursor will be returned to the start of the line (carriage return, \r) every time a new line character is received."
-            placement="top"
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="enableNewLineParsing"
-                  checked={true}
-                  onChange={(e) => {}}
-                  disabled={!app.settings.dataProcessing.newLineParsingEnabled}
-                />
-              }
-              label="Implicit \r with every \n"
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
+        <div style={{ display: "flex", flexDirection: "column", maxWidth: '300px', gap: '20px' }}>
+          {/* NEW LINE BEHAVIOR */}
+          <FormControl>
+            <FormLabel>When a \n byte is received:</FormLabel>
+            <RadioGroup
+              value={app.settings.dataProcessing.newLineBehavior}
+              onChange={(e) => {
+                app.settings.dataProcessing.setNewLineBehavior(e.target.value as any);
+              }}
+            >
+              <FormControlLabel value={NewLineBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
+              <FormControlLabel value={NewLineBehaviors.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
+              <FormControlLabel value={NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN} control={<Radio />} label="Move cursor down and to start of line (new line and carriage return)." />
+            </RadioGroup>
+          </FormControl>
           {/* SWALLOW \n */}
           <Tooltip
             title="If enabled, new line characters will not be printed to the terminal display."
@@ -346,13 +327,14 @@ function DataProcessingView(props: Props) {
             <FormControlLabel
               control={
                 <Checkbox
-                  name="enableNewLineParsing"
-                  checked={true}
-                  onChange={(e) => {}}
-                  disabled={!app.settings.dataProcessing.newLineParsingEnabled}
+                  name="swallowNewLine"
+                  checked={app.settings.dataProcessing.swallowNewLine}
+                  onChange={(e) => {
+                    app.settings.dataProcessing.setSwallowNewLine(e.target.checked);
+                  }}
                 />
               }
-              label="Swallow \n"
+              label="Swallow \n bytes"
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
