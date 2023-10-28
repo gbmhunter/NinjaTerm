@@ -52,7 +52,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 0.2lps',
-        'Sends "Hello, world!" every 5 seconds.',
+        'Sends "Hello, world!\\n" every 5 seconds.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -78,7 +78,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 5lps',
-        'Sends "Hello, world!" every 200ms.',
+        'Sends "Hello, world!\\n" every 200ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -104,7 +104,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 10lps',
-        'Sends "Hello, world!" every 100ms.',
+        'Sends "Hello, world!\\n" every 100ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";

@@ -154,10 +154,10 @@ export default class Terminal {
         } else if (newLineBehavior == NewLineBehaviors.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
-          this.moveToNewLine();
           continue;
         } else if (newLineBehavior == NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN) {
             // TODO
+          this.moveToNewLine();
         } else {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
         }
