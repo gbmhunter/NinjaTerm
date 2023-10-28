@@ -411,9 +411,29 @@ export default class Terminal {
     }
   }
 
-  cursorRight(numColsToGoRight: number) {
+  cursorLeft(numRows: number) {
+    // Cap number columns to go left
+    const currCursorColIdx = this.cursorPosition[1];
+    let numColsToLeftAdjusted = numRows;
+    if (numRows > currCursorColIdx) {
+      numColsToLeftAdjusted = currCursorColIdx;
+    }
+    // Check if we actually need to move
+    if (numColsToLeftAdjusted === 0) {
+      return;
+    }
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    // Check if terminal char we are moving from is only for cursor, and
+    // is so, delete it
+    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
+      currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    }
+    this.cursorPosition[1] -= numColsToLeftAdjusted;
+  }
+
+  cursorRight(numRows: number) {
     // Go right one character at a time and perform various checks along the way
-    for (let numColsGoneRight = 0; numColsGoneRight < numColsToGoRight; numColsGoneRight += 1) {
+    for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
       if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
         return;
@@ -438,24 +458,66 @@ export default class Terminal {
     }
   }
 
-  cursorLeft(numColsToGoLeft: number) {
-    // Cap number columns to go left
-    const currCursorColIdx = this.cursorPosition[1];
-    let numColsToLeftAdjusted = numColsToGoLeft;
-    if (numColsToGoLeft > currCursorColIdx) {
-      numColsToLeftAdjusted = currCursorColIdx;
+  cursorUp(numRows: number) {
+    // Go up one row at a time and perform various checks along the way
+    for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
+      // Never go above the first row!
+      if (this.cursorPosition[0] === 0) {
+        return;
+      }
+      // If we reach here, we can go up by at least 1
+
+      // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
+      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
+      if (existingChar.forCursor) {
+        existingChar.forCursor = false;
+      }
+
+      this.cursorPosition[0] -= 1;
+      const newRow = this.terminalRows[this.cursorPosition[0]];
+      // Add empty spaces in this new row (if needed) up to the current cursor column position
+      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
+        const newTerminalChar = new TerminalChar();
+        newTerminalChar.char = ' ';
+        // newTerminalChar.forCursor = true;
+        newRow.terminalChars.push(newTerminalChar);
+      }
     }
-    // Check if we actually need to move
-    if (numColsToLeftAdjusted === 0) {
-      return;
+  }
+
+  /**
+   * Moves the cursor down the specified number of rows, creating new rows if need if passing the last
+   * existing row, and adding empty spaces in the new rows up to the current cursor column position.
+   *
+   * @param numRows The number of rows to move down.
+   */
+  cursorDown(numRows: number) {
+    // Go down one row at a time and perform various checks along the way
+    for (let numRowsGoneDown = 0; numRowsGoneDown < numRows; numRowsGoneDown += 1) {
+      // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
+      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
+      if (existingChar.forCursor) {
+        existingChar.forCursor = false;
+      }
+
+      this.cursorPosition[0] += 1;
+
+      // If this pushes us past the last existing row, add a new one
+      if (this.cursorPosition[0] === this.terminalRows.length) {
+        const newRow = new TerminalRow();
+        this.terminalRows.push(newRow);
+      }
+
+      const newRow = this.terminalRows[this.cursorPosition[0]];
+      // Add empty spaces in this new row (if needed) up to the current cursor column position
+      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
+        const newTerminalChar = new TerminalChar();
+        newTerminalChar.char = ' ';
+        newRow.terminalChars.push(newTerminalChar);
+      }
     }
-    const currRow = this.terminalRows[this.cursorPosition[0]];
-    // Check if terminal char we are moving from is only for cursor, and
-    // is so, delete it
-    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
-      currRow.terminalChars.splice(this.cursorPosition[1], 1);
-    }
-    this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
   addVisibleChars(rxBytes: number[]) {
