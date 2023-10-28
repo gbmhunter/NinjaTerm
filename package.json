@@ -53,7 +53,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite build && vite preview",
-    "test": "npx playwright test"
+    "test": "tsc && vitest run && playwright test"
   },
   "eslintConfig": {
     "extends": [
