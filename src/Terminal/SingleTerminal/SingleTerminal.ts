@@ -147,10 +147,20 @@ export default class Terminal {
       const newLineBehavior = this.app.settings.dataProcessing.newLineBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
+
+        // If swallow is disabled, print the new line character. Do this before
+        // performing any cursor movements, as we want the new line char to
+        // at the end of the existing line, rather than the start of the new
+        // line
+        if (!this.app.settings.dataProcessing.swallowNewLine) {
+          this.addVisibleChar(rxByte);
+        }
+
         // Based of the set new line behavior in the settings, perform the appropriate action
         if (newLineBehavior == NewLineBehaviors.DO_NOTHING) {
           // Don't move the cursor anywhere. We still may want to swallow or allow
           // new line to be printed, that is a separate setting and handled down below
+          continue;
         } else if (newLineBehavior == NewLineBehaviors.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
@@ -163,13 +173,9 @@ export default class Terminal {
           // is empty to put the cursor at the correct column position
           this.cursorLeft(this.cursorPosition[1]);
           this.cursorDown(1);
+          continue;
         } else {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
-        }
-
-        if (this.app.settings.dataProcessing.swallowNewLine) {
-          // Don't print the new line character
-          continue;
         }
       }
 

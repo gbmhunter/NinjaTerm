@@ -303,24 +303,57 @@ function DataProcessingView(props: Props) {
       {/* NEW LINE SECTION */}
       {/* =============================================================================== */}
       <BorderedSection title="New Lines">
-        <div style={{ display: "flex", flexDirection: "column", maxWidth: '300px', gap: '20px' }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "300px",
+            gap: "20px",
+          }}
+        >
           {/* NEW LINE BEHAVIOR */}
           <FormControl>
             <FormLabel>When a \n byte is received:</FormLabel>
             <RadioGroup
               value={app.settings.dataProcessing.newLineBehavior}
               onChange={(e) => {
-                app.settings.dataProcessing.setNewLineBehavior(e.target.value as any);
+                app.settings.dataProcessing.setNewLineBehavior(
+                  e.target.value as any
+                );
               }}
             >
-              <FormControlLabel value={NewLineBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
-              <FormControlLabel value={NewLineBehaviors.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
-              <FormControlLabel value={NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN} control={<Radio />} label="Move cursor down and to start of line (new line and carriage return)." />
+              <Tooltip
+                title="Don't move to a new line neither perform a carriage return when a new line character is received.."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NewLineBehaviors.DO_NOTHING}
+                  control={<Radio />}
+                  label="Don't move the cursor"
+                />
+              </Tooltip>
+              <Tooltip
+                title="Move the cursor directly down one line. A separate carriage return is required if you want to move the cursor to the start of the new line."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NewLineBehaviors.NEW_LINE}
+                  control={<Radio />}
+                  label="Move cursor down one line (new line)"
+                />
+              </Tooltip>
+              <FormControlLabel
+                value={NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN}
+                control={<Radio />}
+                label="Move cursor down and to start of line (new line and carriage return)."
+              />
             </RadioGroup>
           </FormControl>
           {/* SWALLOW \n */}
           <Tooltip
-            title="If enabled, new line characters will not be printed to the terminal display."
+            title="If enabled, new line characters will not be printed to the terminal display. If disabled, new line characters will be printed before any cursor movement occurs because of the new line, such that the new line character will be printed at the end of the existing line, not the start of the new line."
             placement="top"
             arrow
           >
@@ -330,7 +363,9 @@ function DataProcessingView(props: Props) {
                   name="swallowNewLine"
                   checked={app.settings.dataProcessing.swallowNewLine}
                   onChange={(e) => {
-                    app.settings.dataProcessing.setSwallowNewLine(e.target.checked);
+                    app.settings.dataProcessing.setSwallowNewLine(
+                      e.target.checked
+                    );
                   }}
                 />
               }
