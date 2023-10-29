@@ -11,6 +11,13 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
+// I got the following error here:
+// error TS2307: Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
+// even with "vite-plugin-pwa/client" in the types array inside tsconfig.json. So getting typescript
+// to ignore this import for now.
+// @ts-ignore:next-line
+import { registerSW } from 'virtual:pwa-register';
+
 import { App, MainPanes, PortState } from './App';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
@@ -19,6 +26,7 @@ import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
 import FakePortDialogView from './FakePorts/FakePortDialogView';
+import { useEffect } from 'react';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -62,11 +70,44 @@ const portStateToBackgroundColor: { [key in PortState]: string; } = {
 };
 
 interface Props {
-  app: App;
+  // app: App;
 }
 
+const app = new App();
+
+declare global {
+  interface Window { app: App; }
+}
+
+window.app = app;
+
 const AppView = observer((props: Props) => {
-  const { app } = props;
+  // const { app } = props;
+
+  useEffect(() => {
+    // We need to register the service worker AFTER the app
+    // has rendered, because it we do it before we won't
+    // be able to enqueue a snackbar to tell the user there
+    // is an update available
+    const updateSW = registerSW({
+      onNeedRefresh() {
+        app.swOnNeedRefresh(updateSW);
+      },
+      onOfflineReady() {
+        app.swOnOfflineReady();
+      },
+      // @ts-ignore:next-line
+      onRegisterError(error) {
+        app.swOnRegisterError(error);
+      }
+    })
+
+    // Uncomment this if you want to test out the snackbar
+    // for development reasons
+    // app.swOnNeedRefresh((reloadPage) => {
+    //   return Promise.resolve();
+    // })
+  }, []);
 
   // SELECT CORRECT MAIN PANE
   // ==========================================================================

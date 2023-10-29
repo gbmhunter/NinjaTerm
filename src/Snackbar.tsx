@@ -22,6 +22,10 @@ export default class Snackbar {
    * @param variant The variant (e.g. error, warning) of snackbar you want to display.
    */
   sendToSnackbar(msg: string, variant: VariantType, action?: SnackbarAction, persist?: boolean) {
+    if (!(enqueueSnackbar instanceof Function)) {
+      console.error('enqueueSnackbar is not a function. Cannot send message: ' + msg)
+      return;
+    }
     enqueueSnackbar(
       msg,
       {

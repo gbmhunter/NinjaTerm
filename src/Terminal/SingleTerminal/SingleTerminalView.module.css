@@ -69,7 +69,7 @@ it */
 }
 
 @font-face {
-  font-family: testFont;
+  font-family: ConsolasControlChars;
   src: url(../../fonts/ConsolasControlChars-Regular.woff2);
 }
 
@@ -82,8 +82,8 @@ it */
   "white-space: nowrap" worked, but made spaces collapse when flex was applied, as flex turns all children into
   block elements. "whitespace: pre" prevents that. */
   white-space: pre;
-  /* font-family: testFont, Consolas, monospace; */
-  font-family: Consolas, monospace;
+  font-family: ConsolasControlChars, Consolas, monospace;
+  /* font-family: Consolas, monospace; */
 
   /* This is to center the chars in the middle of their row, prevents clipping of the cursor when on the first row */
   display: flex;

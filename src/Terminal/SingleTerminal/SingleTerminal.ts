@@ -4,6 +4,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
+import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors } from 'src/Settings/DataProcessingSettings';
 
 /**
  * Represents a single terminal-style user interface.
@@ -135,6 +136,7 @@ export default class Terminal {
       // Remove char from start of remaining data
       let rxByte = remainingData.shift();
       if (rxByte === undefined) {
+        // We've processed all received bytes, let's get outta here!
         break;
       }
 
@@ -142,19 +144,79 @@ export default class Terminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
-      // Don't want to interpret new lines if we are half-way
-      // through processing an ANSI escape code
+      // NEW LINE HANDLING
+      //========================================================================
+
+      const newLineBehavior = this.app.settings.dataProcessing.newLineCursorBehavior;
+      // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
-        this.moveToNewLine();
-        // this.limitNumRows();
-        // eslint-disable-next-line no-continue
-        continue;
+
+        // If swallow is disabled, print the new line character. Do this before
+        // performing any cursor movements, as we want the new line char to
+        // at the end of the existing line, rather than the start of the new
+        // line
+        if (!this.app.settings.dataProcessing.swallowNewLine) {
+          this.addVisibleChar(rxByte);
+        }
+
+        // Based of the set new line behavior in the settings, perform the appropriate action
+        if (newLineBehavior == NewLineCursorBehaviors.DO_NOTHING) {
+          // Don't move the cursor anywhere.
+          continue;
+        } else if (newLineBehavior == NewLineCursorBehaviors.NEW_LINE) {
+          // Just move the cursor down 1 line, do not move the cursor
+          // back to the beginning of the line (strict new line only)
+          this.cursorDown(1);
+          continue;
+        } else if (newLineBehavior == NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
+          // this.moveToNewLine();
+          // Move left FIRST, then down. This is slightly more efficient
+          // as moving down first will typically mean padding with spaces if the row
+          // is empty to put the cursor at the correct column position
+          this.cursorLeft(this.cursorPosition[1]);
+          this.cursorDown(1);
+          continue;
+        } else {
+          throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
+        }
+      }
+
+      // CARRIAGE RETURN HANDLING
+      //========================================================================
+
+      const carriageReturnCursorBehavior = this.app.settings.dataProcessing.carriageReturnCursorBehavior;
+      // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
+      if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
+
+        // If swallow is disabled, print the carriage return character. Do this before
+        // performing any cursor movements, as we want the carriage return char to
+        // at the end line, rather than at the start
+        if (!this.app.settings.dataProcessing.swallowCarriageReturn) {
+          this.addVisibleChar(rxByte);
+        }
+
+        // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
+        if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.DO_NOTHING) {
+          // Don't move the cursor anywhere.
+          continue;
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN) {
+          this.cursorLeft(this.cursorPosition[1]);
+          continue;
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
+          // Move left FIRST, then down. This is slightly more efficient
+          // as moving down first will typically mean padding with spaces if the row
+          // is empty to put the cursor at the correct column position
+          this.cursorLeft(this.cursorPosition[1]);
+          this.cursorDown(1);
+          continue;
+        } else {
+          throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
+        }
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
         this.addVisibleChar(rxByte);
-        // this.limitNumRows();
         continue;
       }
 
@@ -395,9 +457,29 @@ export default class Terminal {
     }
   }
 
-  cursorRight(numColsToGoRight: number) {
+  cursorLeft(numRows: number) {
+    // Cap number columns to go left
+    const currCursorColIdx = this.cursorPosition[1];
+    let numColsToLeftAdjusted = numRows;
+    if (numRows > currCursorColIdx) {
+      numColsToLeftAdjusted = currCursorColIdx;
+    }
+    // Check if we actually need to move
+    if (numColsToLeftAdjusted === 0) {
+      return;
+    }
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    // Check if terminal char we are moving from is only for cursor, and
+    // is so, delete it
+    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
+      currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    }
+    this.cursorPosition[1] -= numColsToLeftAdjusted;
+  }
+
+  cursorRight(numRows: number) {
     // Go right one character at a time and perform various checks along the way
-    for (let numColsGoneRight = 0; numColsGoneRight < numColsToGoRight; numColsGoneRight += 1) {
+    for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
       if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
         return;
@@ -422,24 +504,66 @@ export default class Terminal {
     }
   }
 
-  cursorLeft(numColsToGoLeft: number) {
-    // Cap number columns to go left
-    const currCursorColIdx = this.cursorPosition[1];
-    let numColsToLeftAdjusted = numColsToGoLeft;
-    if (numColsToGoLeft > currCursorColIdx) {
-      numColsToLeftAdjusted = currCursorColIdx;
+  cursorUp(numRows: number) {
+    // Go up one row at a time and perform various checks along the way
+    for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
+      // Never go above the first row!
+      if (this.cursorPosition[0] === 0) {
+        return;
+      }
+      // If we reach here, we can go up by at least 1
+
+      // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
+      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
+      if (existingChar.forCursor) {
+        existingChar.forCursor = false;
+      }
+
+      this.cursorPosition[0] -= 1;
+      const newRow = this.terminalRows[this.cursorPosition[0]];
+      // Add empty spaces in this new row (if needed) up to the current cursor column position
+      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
+        const newTerminalChar = new TerminalChar();
+        newTerminalChar.char = ' ';
+        // newTerminalChar.forCursor = true;
+        newRow.terminalChars.push(newTerminalChar);
+      }
     }
-    // Check if we actually need to move
-    if (numColsToLeftAdjusted === 0) {
-      return;
+  }
+
+  /**
+   * Moves the cursor down the specified number of rows, creating new rows if need if passing the last
+   * existing row, and adding empty spaces in the new rows up to the current cursor column position.
+   *
+   * @param numRows The number of rows to move down.
+   */
+  cursorDown(numRows: number) {
+    // Go down one row at a time and perform various checks along the way
+    for (let numRowsGoneDown = 0; numRowsGoneDown < numRows; numRowsGoneDown += 1) {
+      // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
+      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
+      if (existingChar.forCursor) {
+        existingChar.forCursor = false;
+      }
+
+      this.cursorPosition[0] += 1;
+
+      // If this pushes us past the last existing row, add a new one
+      if (this.cursorPosition[0] === this.terminalRows.length) {
+        const newRow = new TerminalRow();
+        this.terminalRows.push(newRow);
+      }
+
+      const newRow = this.terminalRows[this.cursorPosition[0]];
+      // Add empty spaces in this new row (if needed) up to the current cursor column position
+      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
+        const newTerminalChar = new TerminalChar();
+        newTerminalChar.char = ' ';
+        newRow.terminalChars.push(newTerminalChar);
+      }
     }
-    const currRow = this.terminalRows[this.cursorPosition[0]];
-    // Check if terminal char we are moving from is only for cursor, and
-    // is so, delete it
-    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
-      currRow.terminalChars.splice(this.cursorPosition[1], 1);
-    }
-    this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
   addVisibleChars(rxBytes: number[]) {
@@ -514,7 +638,8 @@ export default class Terminal {
     if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
-      this.moveToNewLine(); // This adds the " " if needed for the cursor
+      // this.moveToNewLine(); // This adds the " " if needed for the cursor
+      this.cursorDown(1);
     } else {
       this.cursorPosition[1] += 1;
       // Add space here is there is no text
@@ -559,36 +684,42 @@ export default class Terminal {
     this.scrollLock = trueFalse;
   }
 
-  moveToNewLine() {
-    // Delete char at current cursor location if specifically for cursor
-    if (
-      this.terminalRows[this.cursorPosition[0]].terminalChars[
-        this.cursorPosition[1]
-      ].forCursor
-    ) {
-      this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
-        this.cursorPosition[1],
-        1
-      );
-    }
-    if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
-      this.cursorPosition[0] += 1;
-      this.cursorPosition[1] = 0;
-    } else {
-      const terminalRow = new TerminalRow();
-      this.terminalRows.push(terminalRow);
-      this.cursorPosition[0] += 1;
-      this.cursorPosition[1] = 0;
-      this.rowToScrollLockTo = this.terminalRows.length - 1;
-    }
-    // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
-    const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
-    if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
-      const terminalChar = new TerminalChar();
-      terminalChar.char = ' ';
-      rowCursorIsNowOn.terminalChars.push(terminalChar);
-    }
-  }
+  /**
+   * Moves the cursor to the start of the next line. Equivalent to \r\n.
+   *
+   * TODO: Delete this now we have cursorDown and cursorLeft, use those
+   * instead.
+   */
+  // moveToNewLine() {
+  //   // Delete char at current cursor location if specifically for cursor
+  //   if (
+  //     this.terminalRows[this.cursorPosition[0]].terminalChars[
+  //       this.cursorPosition[1]
+  //     ].forCursor
+  //   ) {
+  //     this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
+  //       this.cursorPosition[1],
+  //       1
+  //     );
+  //   }
+  //   if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
+  //     this.cursorPosition[0] += 1;
+  //     this.cursorPosition[1] = 0;
+  //   } else {
+  //     const terminalRow = new TerminalRow();
+  //     this.terminalRows.push(terminalRow);
+  //     this.cursorPosition[0] += 1;
+  //     this.cursorPosition[1] = 0;
+  //     this.rowToScrollLockTo = this.terminalRows.length - 1;
+  //   }
+  //   // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
+  //   const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
+  //   if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
+  //     const terminalChar = new TerminalChar();
+  //     terminalChar.char = ' ';
+  //     rowCursorIsNowOn.terminalChars.push(terminalChar);
+  //   }
+  // }
 
   resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;

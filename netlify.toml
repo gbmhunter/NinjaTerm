@@ -1,3 +1,10 @@
 [build]
   command = "npm run build"
   publish = "dist"
+
+# This is needed for react-router to work,
+# otherwise you get 404s
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

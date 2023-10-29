@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.7.0] - 2023-10-29
+
+### Added
+
+- vitest has been setup for running unit tests (Playwright is still used for E2E tests).
+- Added ability to configure cursor behavior when new line and carriage return characters are received.
+
+### Fixed
+
+- Fixed bug where fake port dialog could be opened by any key press, now only opened with 'f'.
+- Fixed issue where sometimes loading the URL `/app` would cause a 404 by adding a redirect to the Netlify config file.
+
+### Changed
+
+- Service worked is now only registered when the URL /app is opened, which should allow for UI notifications when the app needs updating.
+- The "Update available" snackbar has better coloured buttons.
+
 ## [4.6.6] - 2023-10-26
 
 ### Changed
@@ -513,7 +530,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.5...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.7.0...HEAD
+[4.7.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.5...v4.7.0
 [4.6.5]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.4...v4.6.5
 [4.6.4]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.3...v4.6.4
 [4.6.3]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.2...v4.6.3

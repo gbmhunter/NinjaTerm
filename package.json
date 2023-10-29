@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.6.6",
+  "version": "4.7.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -51,9 +51,9 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite build && vite preview",
-    "test": "npx playwright test"
+    "test": "tsc && vitest run && playwright test"
   },
   "eslintConfig": {
     "extends": [
@@ -78,6 +78,9 @@
     "@playwright/test": "^1.39.0",
     "@types/react-window": "^1.8.5",
     "jest-canvas-mock": "^2.5.2",
-    "vite-plugin-pwa": "^0.16.5"
+    "postcss": "^8.4.31",
+    "postcss-nesting": "^12.0.1",
+    "vite-plugin-pwa": "^0.16.5",
+    "vitest": "^0.34.6"
   }
 }

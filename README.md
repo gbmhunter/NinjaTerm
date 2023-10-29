@@ -35,6 +35,10 @@ npm start
 
 ## Testing
 
+### Unit Tests
+
+Unit tests are run with `vitest`, which has good integration with Vite.
+
 ### E2E Tests
 
 End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](https://playwright.dev/). The Playwright tests are located in the `tests/` directory, and the Playwright config is at `playwright.config.ts`.

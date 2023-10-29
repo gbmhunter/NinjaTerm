@@ -52,7 +52,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 0.2lps',
-        'Sends "Hello, world!" every 5 seconds.',
+        'Sends "Hello, world!\\n" every 5 seconds.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -78,7 +78,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 5lps',
-        'Sends "Hello, world!" every 200ms.',
+        'Sends "Hello, world!\\n" every 200ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -104,7 +104,7 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'hello world, 10lps',
-        'Sends "Hello, world!" every 100ms.',
+        'Sends "Hello, world!\\n" every 100ms.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -332,17 +332,20 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'bytes 0x00-0xFF, 5chars/s',
-        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters.',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
           app.settings.dataProcessing.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
             false;
           app.settings.dataProcessing.setCharSizePxDisp("30");
           app.settings.dataProcessing.applyCharSizePx();
+
+          app.settings.dataProcessing.visibleData.fields.terminalWidthChars.value = 40;
+          // We want to see how all bytes look sent to the screen, so disable new line parsing
+          // app.settings.dataProcessing.setNewLineParsingEnabled(false);
           app.settings.dataProcessing.applyChanges();
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            // this.parseRxData(Uint8Array.from([ testCharIdx ]));
-            app.parseRxData(Uint8Array.from([0x08]));
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
