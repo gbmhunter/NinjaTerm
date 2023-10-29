@@ -25,6 +25,17 @@ export enum CarriageReturnCursorBehaviors {
   CARRIAGE_RETURN_AND_NEW_LINE,
 }
 
+/**
+ * Enumerates the possible behaviors for displaying non-visible
+ * characters in the terminal. Non-visible is any byte from 0x00-0xFF
+ * which is not a visible ASCII character.
+ */
+export enum NonVisibleCharDisplayBehaviors {
+  SWALLOW,
+  ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS,
+  HEX_GLYPHS,
+}
+
 // Maps the enums to human-readable names for display
 export const dataViewConfigEnumToDisplayName: {
   [key: string]: string;
@@ -112,6 +123,10 @@ export default class DataProcessingSettings {
   // on the terminal UI (which is generally what you want)
   swallowCarriageReturn = true;
 
+  // I assume most people by default will want non-visible bytes to be hidden
+  // when in text mode.
+  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.SWALLOW;
+
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
@@ -152,6 +167,10 @@ export default class DataProcessingSettings {
 
   setSwallowCarriageReturn = (value: boolean) => {
     this.swallowCarriageReturn = value;
+  }
+
+  setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
+    this.nonVisibleCharDisplayBehavior = value;
   }
 
   onFieldChange = (field: any, value: any) => {

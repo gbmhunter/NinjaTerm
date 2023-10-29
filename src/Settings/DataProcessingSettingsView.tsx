@@ -21,6 +21,7 @@ import {
   CarriageReturnCursorBehaviors,
   DataViewConfiguration,
   NewLineCursorBehaviors,
+  NonVisibleCharDisplayBehaviors,
   dataViewConfigEnumToDisplayName,
 } from "src/Settings/DataProcessingSettings";
 import BorderedSection from "src/Components/BorderedSection";
@@ -475,7 +476,73 @@ function DataProcessingView(props: Props) {
         </div>
       </BorderedSection>
 
-      </div>
+      </div> {/* End of row with new line and carriage return settings */}
+
+
+      {/* =============================================================================== */}
+      {/* NON-VISIBLE CHAR DISPLAY */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Non-visible Character Display">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "600px",
+            gap: "20px",
+          }}
+        >
+          {/* RADIO GROUP */}
+          <FormControl>
+            <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
+            <RadioGroup
+              value={app.settings.dataProcessing.nonVisibleCharDisplayBehavior}
+              onChange={(e) => {
+                app.settings.dataProcessing.setNonVisibleCharDisplayBehavior(
+                  e.target.value as any
+                );
+              }}
+            >
+              {/* SWALLOW */}
+              <Tooltip
+                title=""
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NonVisibleCharDisplayBehaviors.SWALLOW}
+                  control={<Radio />}
+                  label="Swallow"
+                />
+              </Tooltip>
+              {/* ASCII CONTROL CODES GLYPHS AND HEX GLYPHS */}
+              <Tooltip
+                title=""
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS}
+                  control={<Radio />}
+                  label="Convert ASCII control codes to control code glyphs, and all others to hex code glyphs"
+                />
+              </Tooltip>
+              {/* ALL TO HEX CODE GLYPHS */}
+              <Tooltip
+                title=""
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NonVisibleCharDisplayBehaviors.HEX_GLYPHS}
+                  control={<Radio />}
+                  label="Convert all to hex code glyphs"
+                />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
+        </div>
+      </BorderedSection>
+
 
     </div>
   );
