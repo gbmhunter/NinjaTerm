@@ -5,14 +5,6 @@ import * as Validator from 'validatorjs';
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
 
-/** Enumerates the different possible ways the TX and RX data
- * can be displayed. One of these may be active at any one time.
- */
-export enum DataViewConfiguration {
-  SINGLE_TERMINAL, // TX echo
-  SEPARATE_TX_RX_TERMINALS,
-}
-
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
   NEW_LINE,
@@ -35,14 +27,6 @@ export enum NonVisibleCharDisplayBehaviors {
   ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS,
   HEX_GLYPHS,
 }
-
-// Maps the enums to human-readable names for display
-export const dataViewConfigEnumToDisplayName: {
-  [key: string]: string;
-} = {
-  [DataViewConfiguration.SINGLE_TERMINAL]: 'Single terminal',
-  [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
-};
 
 /** This class represents all the data which is stored in the data processing setting category.
  * One instance is created for the visible data, and another for the applied (and validated) data */
