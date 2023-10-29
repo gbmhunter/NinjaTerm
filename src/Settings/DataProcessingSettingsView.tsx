@@ -18,8 +18,9 @@ import { observer } from "mobx-react-lite";
 
 import { App } from "src/App";
 import {
+  CarriageReturnCursorBehaviors,
   DataViewConfiguration,
-  NewLineBehaviors,
+  NewLineCursorBehaviors,
   dataViewConfigEnumToDisplayName,
 } from "src/Settings/DataProcessingSettings";
 import BorderedSection from "src/Components/BorderedSection";
@@ -299,8 +300,10 @@ function DataProcessingView(props: Props) {
         Apply
       </Button>
 
+      {/* Row with new line and carriage return settings */}
+      <div style={{ display: 'flex' }}>
       {/* =============================================================================== */}
-      {/* NEW LINE SECTION */}
+      {/* NEW LINE SETTINGS */}
       {/* =============================================================================== */}
       <BorderedSection title="New Lines">
         <div
@@ -315,40 +318,50 @@ function DataProcessingView(props: Props) {
           <FormControl>
             <FormLabel>When a \n byte is received:</FormLabel>
             <RadioGroup
-              value={app.settings.dataProcessing.newLineBehavior}
+              value={app.settings.dataProcessing.newLineCursorBehavior}
               onChange={(e) => {
                 app.settings.dataProcessing.setNewLineBehavior(
                   e.target.value as any
                 );
               }}
             >
+              {/* DO NOTHING */}
               <Tooltip
-                title="Don't move to a new line neither perform a carriage return when a new line character is received.."
+                title="Don't move the cursor at all when a new line character is received."
                 placement="right"
                 arrow
               >
                 <FormControlLabel
-                  value={NewLineBehaviors.DO_NOTHING}
+                  value={NewLineCursorBehaviors.DO_NOTHING}
                   control={<Radio />}
                   label="Don't move the cursor"
+                  data-testid="new-line-dont-move-cursor"
                 />
               </Tooltip>
+              {/* MOVE DOWN ONE LINE */}
               <Tooltip
                 title="Move the cursor directly down one line. A separate carriage return is required if you want to move the cursor to the start of the new line."
                 placement="right"
                 arrow
               >
                 <FormControlLabel
-                  value={NewLineBehaviors.NEW_LINE}
+                  value={NewLineCursorBehaviors.NEW_LINE}
                   control={<Radio />}
                   label="Move cursor down one line (new line)"
                 />
               </Tooltip>
-              <FormControlLabel
-                value={NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN}
-                control={<Radio />}
-                label="Move cursor down and to start of line (new line and carriage return)."
-              />
+              {/* NEW LINE AND CARRIAGE RETURN */}
+              <Tooltip
+                title="Move the cursor back to the start of the line and then down one line. This is the most common behavior for receiving a new line character."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE}
+                  control={<Radio />}
+                  label="Move cursor to the start of line and then down one line."
+                />
+              </Tooltip>
             </RadioGroup>
           </FormControl>
           {/* SWALLOW \n */}
@@ -375,6 +388,95 @@ function DataProcessingView(props: Props) {
           </Tooltip>
         </div>
       </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* CARRIAGE RETURN SETTINGS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Carriage Returns">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "300px",
+            gap: "20px",
+          }}
+        >
+          {/* CARRIAGE RETURN CURSOR BEHAVIOR */}
+          <FormControl>
+            <FormLabel>When a \r byte is received:</FormLabel>
+            <RadioGroup
+              value={app.settings.dataProcessing.carriageReturnCursorBehavior}
+              onChange={(e) => {
+                app.settings.dataProcessing.setCarriageReturnBehavior(
+                  e.target.value as any
+                );
+              }}
+            >
+              {/* DO NOTHING */}
+              <Tooltip
+                title="Don't move the cursor at all when a carriage return character is received."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={CarriageReturnCursorBehaviors.DO_NOTHING}
+                  control={<Radio />}
+                  label="Don't move the cursor"
+                />
+              </Tooltip>
+              {/* MOVE CURSOR TO START OF LINE */}
+              <Tooltip
+                title="Move the cursor to the start of the current line. A separate new line character is required if you want to move the cursor down one line."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN}
+                  control={<Radio />}
+                  label="Move cursor to the start of the current line"
+                />
+              </Tooltip>
+              {/* CARRIAGE RETURN AND NEW LINE */}
+              <Tooltip
+                title="Move the cursor back to the start of the line and then down one line."
+                placement="right"
+                arrow
+              >
+                <FormControlLabel
+                  value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE}
+                  control={<Radio />}
+                  label="Move cursor to the start and then down one line."
+                />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
+          {/* SWALLOW \r */}
+          <Tooltip
+            title="If enabled, carriage return characters will not be printed to the terminal display. If disabled, carriage return characters will be printed before any cursor movement occurs because of the carriage return, such that the carriage return character will be printed at the end of the row, not the start of the row."
+            placement="top"
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="swallowCarriageReturn"
+                  checked={app.settings.dataProcessing.swallowCarriageReturn}
+                  onChange={(e) => {
+                    app.settings.dataProcessing.setSwallowCarriageReturn(
+                      e.target.checked
+                    );
+                  }}
+                />
+              }
+              label="Swallow \r bytes"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+        </div>
+      </BorderedSection>
+
+      </div>
+
     </div>
   );
 }

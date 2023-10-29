@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - vitest has been setup for running unit tests (Playwright is still used for E2E tests).
+- Added ability to configure cursor behavior when new line and carriage return characters are received.
 
 ### Fixed
 

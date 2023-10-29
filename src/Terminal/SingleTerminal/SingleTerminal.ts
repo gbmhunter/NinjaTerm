@@ -4,7 +4,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
-import { NewLineBehaviors } from 'src/Settings/DataProcessingSettings';
+import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors } from 'src/Settings/DataProcessingSettings';
 
 /**
  * Represents a single terminal-style user interface.
@@ -144,7 +144,10 @@ export default class Terminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
-      const newLineBehavior = this.app.settings.dataProcessing.newLineBehavior;
+      // NEW LINE HANDLING
+      //========================================================================
+
+      const newLineBehavior = this.app.settings.dataProcessing.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
 
@@ -157,16 +160,15 @@ export default class Terminal {
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
-        if (newLineBehavior == NewLineBehaviors.DO_NOTHING) {
-          // Don't move the cursor anywhere. We still may want to swallow or allow
-          // new line to be printed, that is a separate setting and handled down below
+        if (newLineBehavior == NewLineCursorBehaviors.DO_NOTHING) {
+          // Don't move the cursor anywhere.
           continue;
-        } else if (newLineBehavior == NewLineBehaviors.NEW_LINE) {
+        } else if (newLineBehavior == NewLineCursorBehaviors.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
           this.cursorDown(1);
           continue;
-        } else if (newLineBehavior == NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN) {
+        } else if (newLineBehavior == NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
           // this.moveToNewLine();
           // Move left FIRST, then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
@@ -176,6 +178,39 @@ export default class Terminal {
           continue;
         } else {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
+        }
+      }
+
+      // CARRIAGE RETURN HANDLING
+      //========================================================================
+
+      const carriageReturnCursorBehavior = this.app.settings.dataProcessing.carriageReturnCursorBehavior;
+      // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
+      if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
+
+        // If swallow is disabled, print the carriage return character. Do this before
+        // performing any cursor movements, as we want the carriage return char to
+        // at the end line, rather than at the start
+        if (!this.app.settings.dataProcessing.swallowCarriageReturn) {
+          this.addVisibleChar(rxByte);
+        }
+
+        // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
+        if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.DO_NOTHING) {
+          // Don't move the cursor anywhere.
+          continue;
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN) {
+          this.cursorLeft(this.cursorPosition[1]);
+          continue;
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
+          // Move left FIRST, then down. This is slightly more efficient
+          // as moving down first will typically mean padding with spaces if the row
+          // is empty to put the cursor at the correct column position
+          this.cursorLeft(this.cursorPosition[1]);
+          this.cursorDown(1);
+          continue;
+        } else {
+          throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
         }
       }
 

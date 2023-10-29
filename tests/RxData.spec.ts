@@ -287,7 +287,8 @@ test.describe('RX data', () => {
 
     await page.getByTestId('settings-button').click();
     await page.getByText('Data Processing').click();
-    await page.getByText('Don\'t move the cursor').click();
+    // await page.getByLabel('Don\'t move the cursor at all when a new line character is received.').click();
+    await page.getByTestId('new-line-dont-move-cursor').click();
     await page.getByTestId('show-terminal-button').click();
 
     await appTestHarness.sendTextToTerminal('1\n2\n3');

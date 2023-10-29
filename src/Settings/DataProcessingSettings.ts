@@ -13,10 +13,16 @@ export enum DataViewConfiguration {
   SEPARATE_TX_RX_TERMINALS,
 }
 
-export enum NewLineBehaviors {
+export enum NewLineCursorBehaviors {
   DO_NOTHING,
   NEW_LINE,
-  NEW_LINE_AND_CARRIAGE_RETURN,
+  CARRIAGE_RETURN_AND_NEW_LINE,
+}
+
+export enum CarriageReturnCursorBehaviors {
+  DO_NOTHING,
+  CARRIAGE_RETURN,
+  CARRIAGE_RETURN_AND_NEW_LINE,
 }
 
 // Maps the enums to human-readable names for display
@@ -92,11 +98,19 @@ export default class DataProcessingSettings {
     rule: 'required|integer|min:1',
   };
 
-  newLineBehavior = NewLineBehaviors.NEW_LINE_AND_CARRIAGE_RETURN;
+  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
 
   // If set to true, \n bytes will be swallowed and not displayed
   // on the terminal UI (which is generally what you want)
   swallowNewLine = true;
+
+  // By default set the \n behavior to do new line and carriage return
+  // and \r to do nothing. This works for both \n and \r\n line endings
+  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
+
+  // If set to true, \r bytes will be swallowed and not displayed
+  // on the terminal UI (which is generally what you want)
+  swallowCarriageReturn = true;
 
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
@@ -124,12 +138,20 @@ export default class DataProcessingSettings {
     }
   }
 
-  setNewLineBehavior = (value: NewLineBehaviors) => {
-    this.newLineBehavior = value;
+  setNewLineBehavior = (value: NewLineCursorBehaviors) => {
+    this.newLineCursorBehavior = value;
   }
 
   setSwallowNewLine = (value: boolean) => {
     this.swallowNewLine = value;
+  }
+
+  setCarriageReturnBehavior = (value: CarriageReturnCursorBehaviors) => {
+    this.carriageReturnCursorBehavior = value;
+  }
+
+  setSwallowCarriageReturn = (value: boolean) => {
+    this.swallowCarriageReturn = value;
   }
 
   onFieldChange = (field: any, value: any) => {
