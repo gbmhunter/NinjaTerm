@@ -173,7 +173,7 @@ export default observer((props: Props) => {
         height={heightDebug}
         itemCount={terminal.terminalRows.length}
         // Add a bit of padding to the height
-        itemSize={appStore.settings.dataProcessing.charSizePx.appliedValue + 5}
+        itemSize={appStore.settings.displaySettings.charSizePx.appliedValue + 5}
         width="100%"
         itemData={terminal.terminalRows}
         onScroll={(scrollProps) => {
@@ -243,7 +243,7 @@ export default observer((props: Props) => {
           fontFamily: "Consolas, Menlo, monospace",
 
           // This sets the font size for data displayed in the terminal
-          fontSize: appStore.settings.dataProcessing.charSizePx.appliedValue + "px",
+          fontSize: appStore.settings.displaySettings.charSizePx.appliedValue + "px",
 
           // Line height needs to be set to 1.0 for autoscroll to work well
           lineHeight: 1.0,

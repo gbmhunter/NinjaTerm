@@ -36,7 +36,7 @@ export default observer((props: Props) => {
   // ==========================================================================
   // Create terminals based on selected configuration
   let terminals;
-  if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
+  if (app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
     terminals = <SingleTerminalView
                   appStore={app}
@@ -44,7 +44,7 @@ export default observer((props: Props) => {
                   testId='tx-rx-terminal-view'
                   useWindowing={true}
                 />;
-  } else if (app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+  } else if (app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
@@ -56,7 +56,7 @@ export default observer((props: Props) => {
     </div>;
   } else {
     throw Error(
-      `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessing.appliedData.fields.dataViewConfiguration.value}`
+      `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value}`
     );
   }
 
@@ -133,17 +133,17 @@ export default observer((props: Props) => {
           <Select
             name="dataViewConfiguration"
             value={
-              app.settings.dataProcessing.visibleData.fields
+              app.settings.dataProcessingSettings.visibleData.fields
                 .dataViewConfiguration.value
             }
             onChange={(e) => {
-              app.settings.dataProcessing.onFieldChange(
+              app.settings.dataProcessingSettings.onFieldChange(
                 e.target.name,
                 Number(e.target.value)
               );
               // In the settings dialog, this same setting is under the influence of
               // an Apply button. But on the main screen, lets just apply changes automatically
-              app.settings.dataProcessing.applyChanges();
+              app.settings.dataProcessingSettings.applyChanges();
             }}
             sx={{ fontSize: "0.8rem" }}
           >
@@ -179,21 +179,21 @@ export default observer((props: Props) => {
             ),
           }}
           value={
-            app.settings.dataProcessing.charSizePx.dispValue
+            app.settings.displaySettings.charSizePx.dispValue
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
+            app.settings.displaySettings.setCharSizePxDisp(event.target.value);
           }}
           onBlur={() => {
-            app.settings.dataProcessing.applyCharSizePx();
+            app.settings.displaySettings.applyCharSizePx();
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              app.settings.dataProcessing.applyCharSizePx();
+              app.settings.displaySettings.applyCharSizePx();
             }
           }}
           error={
-            app.settings.dataProcessing.charSizePx.hasError
+            app.settings.displaySettings.charSizePx.hasError
           }
           sx={{ width: "80px" }}
         />
@@ -205,16 +205,16 @@ export default observer((props: Props) => {
           <Switch
             name="localTxEcho"
             checked={
-              app.settings.dataProcessing.appliedData.fields.localTxEcho.value
+              app.settings.dataProcessingSettings.appliedData.fields.localTxEcho.value
             }
             onChange={(e) => {
-              app.settings.dataProcessing.onFieldChange(
+              app.settings.dataProcessingSettings.onFieldChange(
                 e.target.name,
                 e.target.checked
               );
               // In the settings dialog, this same setting is under the influence of
               // an Apply button. But on the main screen, lets just apply changes automatically
-              app.settings.dataProcessing.applyChanges();
+              app.settings.dataProcessingSettings.applyChanges();
             }}
           />
         }

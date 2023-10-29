@@ -39,7 +39,7 @@ test('new line printing occurs before cursor is moved', () => {
   const singleTerminal = new SingleTerminal(app, true);
 
   // Disable swallowing of new line
-  app.settings.dataProcessing.setSwallowNewLine(false);
+  app.settings.dataProcessingSettings.setSwallowNewLine(false);
 
   singleTerminal.parseData(stringToUint8Array('123\n'));
 

@@ -5,12 +5,14 @@ import { makeAutoObservable } from 'mobx';
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
 import DataProcessingSettings from './DataProcessingSettings';
+import DisplaySettings from './Display/DisplaySettings';
 
 export type StopBits = 1 | 1.5 | 2;
 
 export enum SettingsCategories {
   PORT_CONFIGURATION,
   DATA_PROCESSING,
+  DISPLAY,
 }
 
 export class Settings {
@@ -19,7 +21,9 @@ export class Settings {
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
-  dataProcessing: DataProcessingSettings;
+  dataProcessingSettings: DataProcessingSettings;
+
+  displaySettings: DisplaySettings;
 
   selectedPortPath = '';
 
@@ -46,7 +50,8 @@ export class Settings {
 
   constructor(app: App) {
     this.app = app;
-    this.dataProcessing = new DataProcessingSettings(app);
+    this.dataProcessingSettings = new DataProcessingSettings(app);
+    this.displaySettings = new DisplaySettings(app);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

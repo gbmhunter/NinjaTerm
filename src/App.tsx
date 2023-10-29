@@ -478,7 +478,7 @@ export class App {
       this.txTerminal.parseData(Uint8Array.from(bytesToWrite));
       // Check if local TX echo is enabled, and if so, send the data to
       // the combined single terminal.
-      if (this.settings.dataProcessing.appliedData.fields.localTxEcho.value) {
+      if (this.settings.dataProcessingSettings.appliedData.fields.localTxEcho.value) {
         this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
       }
       runInAction(() => {

@@ -51,11 +51,11 @@ function DataProcessingView(props: Props) {
             <Checkbox
               name="ansiEscapeCodeParsingEnabled"
               checked={
-                app.settings.dataProcessing.visibleData.fields
+                app.settings.dataProcessingSettings.visibleData.fields
                   .ansiEscapeCodeParsingEnabled.value
               }
               onChange={(e) => {
-                app.settings.dataProcessing.onFieldChange(
+                app.settings.dataProcessingSettings.onFieldChange(
                   e.target.name,
                   e.target.checked
                 );
@@ -86,21 +86,21 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .maxEscapeCodeLengthChars.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessingSettings.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .maxEscapeCodeLengthChars.hasError
           }
           helperText={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .maxEscapeCodeLengthChars.errorMsg
           }
           sx={{ marginBottom: "20px" }}
@@ -126,60 +126,27 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
               .value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessingSettings.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
               .hasError
           }
           helperText={
-            app.settings.dataProcessing.visibleData.fields.terminalWidthChars
+            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
               .errorMsg
           }
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
-      {/* =============================================================================== */}
-      {/* CHAR SIZE */}
-      {/* =============================================================================== */}
-      <Tooltip
-        title="The font size (in pixels) of characters displayed in the terminal."
-        followCursor
-        arrow
-      >
-        <TextField
-          id="outlined-basic"
-          name="charSizePx"
-          label="Char Size"
-          variant="outlined"
-          size="small"
-          InputProps={{
-            endAdornment: <InputAdornment position="start">px</InputAdornment>,
-          }}
-          value={app.settings.dataProcessing.charSizePx.dispValue}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessing.setCharSizePxDisp(event.target.value);
-          }}
-          onBlur={() => {
-            app.settings.dataProcessing.applyCharSizePx();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              app.settings.dataProcessing.applyCharSizePx();
-            }
-          }}
-          error={app.settings.dataProcessing.charSizePx.hasError}
-          helperText={app.settings.dataProcessing.charSizePx.errorMsg}
-          sx={{ marginBottom: "20px" }}
-        />
-      </Tooltip>
+
       {/* =============================================================================== */}
       {/* SCROLLBACK BUFFER SIZE */}
       {/* =============================================================================== */}
@@ -200,21 +167,21 @@ function DataProcessingView(props: Props) {
             ),
           }}
           value={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .scrollbackBufferSizeRows.value
           }
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessing.onFieldChange(
+            app.settings.dataProcessingSettings.onFieldChange(
               event.target.name,
               event.target.value
             );
           }}
           error={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .scrollbackBufferSizeRows.hasError
           }
           helperText={
-            app.settings.dataProcessing.visibleData.fields
+            app.settings.dataProcessingSettings.visibleData.fields
               .scrollbackBufferSizeRows.errorMsg
           }
           sx={{ marginBottom: "20px" }}
@@ -234,11 +201,11 @@ function DataProcessingView(props: Props) {
           <Select
             name="dataViewConfiguration"
             value={
-              app.settings.dataProcessing.visibleData.fields
+              app.settings.dataProcessingSettings.visibleData.fields
                 .dataViewConfiguration.value
             }
             onChange={(e) => {
-              app.settings.dataProcessing.onFieldChange(
+              app.settings.dataProcessingSettings.onFieldChange(
                 e.target.name,
                 Number(e.target.value)
               );
@@ -273,10 +240,10 @@ function DataProcessingView(props: Props) {
             <Checkbox
               name="localTxEcho"
               checked={
-                app.settings.dataProcessing.visibleData.fields.localTxEcho.value
+                app.settings.dataProcessingSettings.visibleData.fields.localTxEcho.value
               }
               onChange={(e) => {
-                app.settings.dataProcessing.onFieldChange(
+                app.settings.dataProcessingSettings.onFieldChange(
                   e.target.name,
                   e.target.checked
                 );
@@ -293,9 +260,9 @@ function DataProcessingView(props: Props) {
       <Button
         variant="contained"
         color="success"
-        disabled={!app.settings.dataProcessing.isApplyable}
+        disabled={!app.settings.dataProcessingSettings.isApplyable}
         onClick={() => {
-          app.settings.dataProcessing.applyChanges();
+          app.settings.dataProcessingSettings.applyChanges();
         }}
       >
         Apply
@@ -319,9 +286,9 @@ function DataProcessingView(props: Props) {
           <FormControl>
             <FormLabel>When a \n byte is received:</FormLabel>
             <RadioGroup
-              value={app.settings.dataProcessing.newLineCursorBehavior}
+              value={app.settings.dataProcessingSettings.newLineCursorBehavior}
               onChange={(e) => {
-                app.settings.dataProcessing.setNewLineBehavior(
+                app.settings.dataProcessingSettings.setNewLineBehavior(
                   e.target.value as any
                 );
               }}
@@ -375,9 +342,9 @@ function DataProcessingView(props: Props) {
               control={
                 <Checkbox
                   name="swallowNewLine"
-                  checked={app.settings.dataProcessing.swallowNewLine}
+                  checked={app.settings.dataProcessingSettings.swallowNewLine}
                   onChange={(e) => {
-                    app.settings.dataProcessing.setSwallowNewLine(
+                    app.settings.dataProcessingSettings.setSwallowNewLine(
                       e.target.checked
                     );
                   }}
@@ -406,9 +373,9 @@ function DataProcessingView(props: Props) {
           <FormControl>
             <FormLabel>When a \r byte is received:</FormLabel>
             <RadioGroup
-              value={app.settings.dataProcessing.carriageReturnCursorBehavior}
+              value={app.settings.dataProcessingSettings.carriageReturnCursorBehavior}
               onChange={(e) => {
-                app.settings.dataProcessing.setCarriageReturnBehavior(
+                app.settings.dataProcessingSettings.setCarriageReturnBehavior(
                   e.target.value as any
                 );
               }}
@@ -461,9 +428,9 @@ function DataProcessingView(props: Props) {
               control={
                 <Checkbox
                   name="swallowCarriageReturn"
-                  checked={app.settings.dataProcessing.swallowCarriageReturn}
+                  checked={app.settings.dataProcessingSettings.swallowCarriageReturn}
                   onChange={(e) => {
-                    app.settings.dataProcessing.setSwallowCarriageReturn(
+                    app.settings.dataProcessingSettings.setSwallowCarriageReturn(
                       e.target.checked
                     );
                   }}
@@ -495,9 +462,9 @@ function DataProcessingView(props: Props) {
           <FormControl>
             <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
             <RadioGroup
-              value={app.settings.dataProcessing.nonVisibleCharDisplayBehavior}
+              value={app.settings.dataProcessingSettings.nonVisibleCharDisplayBehavior}
               onChange={(e) => {
-                app.settings.dataProcessing.setNonVisibleCharDisplayBehavior(
+                app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(
                   e.target.value as any
                 );
               }}
