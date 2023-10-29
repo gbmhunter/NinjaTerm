@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Glyphs to the Unicode PUA range of the custom font to show control characters.
+
 ### Changed
 
 - Removed old unused files including the `assets_old` directory and `public/manifest.json`.
