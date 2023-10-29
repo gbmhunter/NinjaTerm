@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Removed old unused files including the `assets_old` directory and `public/manifest.json`.
+
 ## [4.7.0] - 2023-10-29
 
 ### Added
