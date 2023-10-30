@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Glyphs to the Unicode PUA range of the custom font to show control characters.
+- A new "Display" section in the Settings pane.
+- More outlines around subsets of settings to visually group related things together. 
 
 ### Changed
 
