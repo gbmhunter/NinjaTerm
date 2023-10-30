@@ -4,7 +4,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
-import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors } from 'src/Settings/DataProcessingSettings';
+import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
 
 /**
  * Represents a single terminal-style user interface.
@@ -586,7 +586,31 @@ export default class Terminal {
     // } else {
     //   terminalChar.char = String.fromCharCode(rxByte);
     // }
-    terminalChar.char = String.fromCharCode(rxByte);
+    // fromCharCode() works with all Unicode code points that
+    // are representable with one UTF-16 code unit
+
+    const nonVisibleCharDisplayBehavior = this.app.settings.dataProcessingSettings.nonVisibleCharDisplayBehavior;
+
+    if (rxByte >= 0x20 && rxByte <= 0x7E) {
+      // Is printable ASCII character, no shifting needed
+      terminalChar.char = String.fromCharCode(rxByte);
+    } else {
+      // We have either a control char or not in ASCII range (0x80 and above).
+      // What we do depends on data processing setting
+      if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.SWALLOW) {
+        // Do nothing, don't display any non-visible characters
+        return;
+      } else if ((nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) || nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
+        // Shift up to the PUA (starts at 0xE000)
+        // where our special font has visible glyphs for these.
+        // A different font is applied depending on whether we display
+        // ASCII control glyphs/hex glyphs or just hex glyphs, we don't have
+        // to worry about that here
+        terminalChar.char = String.fromCharCode(rxByte + 0xE000);
+      } else {
+        throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
+      }
+    }
 
     // This stores all classes we wish to apply to the char
     let classList = [];
