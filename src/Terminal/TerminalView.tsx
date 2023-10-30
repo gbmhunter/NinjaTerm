@@ -23,7 +23,7 @@ import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'src/Settings/DataProcessingSettings';
+} from 'src/Settings/Display/DisplaySettings';
 
 interface Props {
   app: App;
@@ -36,7 +36,7 @@ export default observer((props: Props) => {
   // ==========================================================================
   // Create terminals based on selected configuration
   let terminals;
-  if (app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SINGLE_TERMINAL) {
+  if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
     terminals = <SingleTerminalView
                   appStore={app}
@@ -44,7 +44,7 @@ export default observer((props: Props) => {
                   testId='tx-rx-terminal-view'
                   useWindowing={true}
                 />;
-  } else if (app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+  } else if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
@@ -56,7 +56,7 @@ export default observer((props: Props) => {
     </div>;
   } else {
     throw Error(
-      `Unsupported data view configuration. dataViewConfiguration=${app.settings.dataProcessingSettings.appliedData.fields.dataViewConfiguration.value}`
+      `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}`
     );
   }
 
@@ -132,18 +132,9 @@ export default observer((props: Props) => {
           <InputLabel>Data View Configuration</InputLabel>
           <Select
             name="dataViewConfiguration"
-            value={
-              app.settings.dataProcessingSettings.visibleData.fields
-                .dataViewConfiguration.value
-            }
+            value={app.settings.displaySettings.dataViewConfiguration}
             onChange={(e) => {
-              app.settings.dataProcessingSettings.onFieldChange(
-                e.target.name,
-                Number(e.target.value)
-              );
-              // In the settings dialog, this same setting is under the influence of
-              // an Apply button. But on the main screen, lets just apply changes automatically
-              app.settings.dataProcessingSettings.applyChanges();
+              app.settings.displaySettings.setDataViewConfiguration(e.target.value as DataViewConfiguration);
             }}
             sx={{ fontSize: "0.8rem" }}
           >
@@ -204,17 +195,9 @@ export default observer((props: Props) => {
         control={
           <Switch
             name="localTxEcho"
-            checked={
-              app.settings.dataProcessingSettings.appliedData.fields.localTxEcho.value
-            }
+            checked={app.settings.dataProcessingSettings.localTxEcho}
             onChange={(e) => {
-              app.settings.dataProcessingSettings.onFieldChange(
-                e.target.name,
-                e.target.checked
-              );
-              // In the settings dialog, this same setting is under the influence of
-              // an Apply button. But on the main screen, lets just apply changes automatically
-              app.settings.dataProcessingSettings.applyChanges();
+              app.settings.dataProcessingSettings.setLocalTxEcho(e.target.checked);
             }}
           />
         }

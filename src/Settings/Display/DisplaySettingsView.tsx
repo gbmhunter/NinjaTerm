@@ -11,7 +11,7 @@ export default function DataProcessingView(props: Props) {
   const { app } = props;
 
   return (
-    <div style={{ paddingTop: '20px' }}>
+    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column' }}>
       {/* =============================================================================== */}
       {/* CHAR SIZE */}
       {/* =============================================================================== */}
@@ -66,24 +66,12 @@ export default function DataProcessingView(props: Props) {
               <InputAdornment position="start">chars</InputAdornment>
             ),
           }}
-          value={
-            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
-              .value
-          }
+          value={app.settings.displaySettings.terminalWidthChars.dispValue}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessingSettings.onFieldChange(
-              event.target.name,
-              event.target.value
-            );
+            app.settings.displaySettings.setTerminalWidthCharsDisp(event.target.value);
           }}
-          error={
-            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
-              .hasError
-          }
-          helperText={
-            app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars
-              .errorMsg
-          }
+          error={app.settings.displaySettings.terminalWidthChars.hasError}
+          helperText={app.settings.displaySettings.terminalWidthChars.errorMsg}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
@@ -107,24 +95,12 @@ export default function DataProcessingView(props: Props) {
               <InputAdornment position="start">rows</InputAdornment>
             ),
           }}
-          value={
-            app.settings.dataProcessingSettings.visibleData.fields
-              .scrollbackBufferSizeRows.value
-          }
+          value={app.settings.displaySettings.scrollbackBufferSizeRows.dispValue}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.dataProcessingSettings.onFieldChange(
-              event.target.name,
-              event.target.value
-            );
+            app.settings.displaySettings.setScrollbackBufferSizeRowsDisp(event.target.value);
           }}
-          error={
-            app.settings.dataProcessingSettings.visibleData.fields
-              .scrollbackBufferSizeRows.hasError
-          }
-          helperText={
-            app.settings.dataProcessingSettings.visibleData.fields
-              .scrollbackBufferSizeRows.errorMsg
-          }
+          error={app.settings.displaySettings.scrollbackBufferSizeRows.hasError}
+          helperText={app.settings.displaySettings.scrollbackBufferSizeRows.errorMsg}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
@@ -141,15 +117,9 @@ export default function DataProcessingView(props: Props) {
           <InputLabel>Data View Configuration</InputLabel>
           <Select
             name="dataViewConfiguration"
-            value={
-              app.settings.dataProcessingSettings.visibleData.fields
-                .dataViewConfiguration.value
-            }
+            value={app.settings.displaySettings.dataViewConfiguration}
             onChange={(e) => {
-              app.settings.dataProcessingSettings.onFieldChange(
-                e.target.name,
-                Number(e.target.value)
-              );
+              app.settings.displaySettings.setDataViewConfiguration(e.target.value as DataViewConfiguration);
             }}
             sx={{ marginBottom: "20px" }}
           >

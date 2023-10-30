@@ -303,8 +303,8 @@ export default class FakePortsController {
         'alphabetic chars, 1 by 1, 5char/s',
         'Sends all alphabetic characters, one by one, at a rate of 5 characters per second.',
         () => {
-          app.settings.dataProcessingSettings.visibleData.fields.scrollbackBufferSizeRows.value = 300;
-          app.settings.dataProcessingSettings.applyChanges();
+          app.settings.displaySettings.setScrollbackBufferSizeRowsDisp('300');
+          app.settings.displaySettings.applyScrollbackBufferSizeRows();
           let testCharIdx = 65;
           const intervalId = setInterval(() => {
             const te = new TextEncoder();
@@ -334,15 +334,13 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, 5chars/s',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.dataProcessingSettings.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
-            false;
+          app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
           app.settings.displaySettings.setCharSizePxDisp("30");
           app.settings.displaySettings.applyCharSizePx();
 
-          app.settings.dataProcessingSettings.visibleData.fields.terminalWidthChars.value = 40;
-          // We want to see how all bytes look sent to the screen, so disable new line parsing
-          // app.settings.dataProcessing.setNewLineParsingEnabled(false);
-          app.settings.dataProcessingSettings.applyChanges();
+          app.settings.displaySettings.setTerminalWidthCharsDisp('40');
+          app.settings.displaySettings.applyTerminalWidthChars();
+
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             app.parseRxData(Uint8Array.from([ testCharIdx ]));
@@ -369,9 +367,7 @@ export default class FakePortsController {
         'graph data',
         'Sends data that can be graphed.',
         () => {
-          app.settings.dataProcessingSettings.visibleData.fields.ansiEscapeCodeParsingEnabled.value =
-            false;
-          app.settings.dataProcessingSettings.applyChanges();
+          app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode("x=2,y=10\n");
