@@ -363,7 +363,7 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
-    console.log('parseRxData() called. rxData=', rxData);
+    // console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
     this.txRxTerminal.parseData(rxData);
@@ -410,7 +410,7 @@ export class App {
    * @returns Nothing.
    */
   async handleTerminalKeyDown(event: React.KeyboardEvent) {
-    console.log('handleTerminalKeyDown() called. event.key=', event.key);
+    // console.log('handleTerminalKeyDown() called. event.key=', event.key);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen

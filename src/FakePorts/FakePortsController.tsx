@@ -1,19 +1,20 @@
 import { makeAutoObservable } from "mobx";
 
 import { App, PortState, PortType } from "src/App";
+import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings";
 import { generateRandomString } from "src/Util/Util";
 
 class FakePort {
   name: string;
   description: string;
   intervalId: NodeJS.Timer | null;
-  connectFunction: () => NodeJS.Timer;
+  connectFunction: () => NodeJS.Timer | null;
   disconnectFunction: (intervalId: NodeJS.Timer | null) => void;
 
   constructor(
     name: string,
     description: string,
-    connectFunction: () => NodeJS.Timer,
+    connectFunction: () => NodeJS.Timer | null,
     disconnectFunction: (intervalId: NodeJS.Timer | null) => void
   ) {
     this.name = name;
@@ -327,19 +328,22 @@ export default class FakePortsController {
       )
     );
 
-    // bytes 0x00-0xFF, 5chars/s
+    // bytes 0x00-0xFF, 5chars/s, control and hex glyphs
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'bytes 0x00-0xFF, 5chars/s',
+        'bytes 0x00-0xFF, 5chars/s, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
           app.settings.displaySettings.setCharSizePxDisp("30");
           app.settings.displaySettings.applyCharSizePx();
 
           app.settings.displaySettings.setTerminalWidthCharsDisp('40');
           app.settings.displaySettings.applyTerminalWidthChars();
+
+          app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
+          app.settings.dataProcessingSettings.setNewLineBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
@@ -360,11 +364,47 @@ export default class FakePortsController {
       )
     );
 
-    // GRAPH DATA
+    // bytes 0x00-0xFF, all at once, control and hex glyphs
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'graph data',
+        'bytes 0x00-0xFF, all at once, control and hex glyphs',
+        'Sends all bytes from 0x00 to 0xFF, all at once. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
+        () => {
+          app.settings.displaySettings.setCharSizePxDisp("30");
+          app.settings.displaySettings.applyCharSizePx();
+
+          app.settings.displaySettings.setTerminalWidthCharsDisp('40');
+          app.settings.displaySettings.applyTerminalWidthChars();
+
+          app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
+          app.settings.dataProcessingSettings.setNewLineBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
+
+          // Create all the bytes and send them immediately
+          const data = new Uint8Array(256);
+          for (let idx = 0; idx < 256; idx++) {
+            data[idx] = idx;
+          }
+          app.parseRxData(data);
+
+          // No timer needed
+          return null;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // graph data, x=2, y=10, 0.5points/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
           app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
