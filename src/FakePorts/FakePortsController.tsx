@@ -342,7 +342,7 @@ export default class FakePortsController {
           app.settings.displaySettings.applyTerminalWidthChars();
 
           app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.dataProcessingSettings.setNewLineBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
           app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           let testCharIdx = 0;
@@ -378,7 +378,7 @@ export default class FakePortsController {
           app.settings.displaySettings.applyTerminalWidthChars();
 
           app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.dataProcessingSettings.setNewLineBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
           app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           // Create all the bytes and send them immediately

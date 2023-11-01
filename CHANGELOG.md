@@ -9,9 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Glyphs to the Unicode PUA range of the custom font to show control characters.
+- Added glyphs to the Unicode PUA range of the NinjaTerm font to show control characters and hex codes.
+- Added option in data processing settings to select whether to display control character glyphs or hex code glyphs.
 - A new "Display" section in the Settings pane.
-- More outlines around subsets of settings to visually group related things together. 
+- Added more outlines around subsets of settings to visually group related things together.
+- Added more unit tests for testing new line and carriage return behavior.
 
 ### Changed
 

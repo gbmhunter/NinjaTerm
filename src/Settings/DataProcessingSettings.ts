@@ -96,7 +96,7 @@ export default class DataProcessingSettings {
     this.localTxEcho = value;
   }
 
-  setNewLineBehavior = (value: NewLineCursorBehaviors) => {
+  setNewLineCursorBehavior = (value: NewLineCursorBehaviors) => {
     this.newLineCursorBehavior = value;
   }
 

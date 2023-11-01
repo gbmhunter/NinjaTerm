@@ -149,7 +149,7 @@ function DataProcessingView(props: Props) {
                   app.settings.dataProcessingSettings.newLineCursorBehavior
                 }
                 onChange={(e) => {
-                  app.settings.dataProcessingSettings.setNewLineBehavior(
+                  app.settings.dataProcessingSettings.setNewLineCursorBehavior(
                     e.target.value as any
                   );
                 }}

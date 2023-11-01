@@ -6,6 +6,9 @@ import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
 import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
 
+const START_OF_CONTROL_GLYPHS = 0xE000;
+const START_OF_HEX_GLYPHS = 0xE100;
+
 /**
  * Represents a single terminal-style user interface.
  */
@@ -600,13 +603,16 @@ export default class Terminal {
       if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.SWALLOW) {
         // Do nothing, don't display any non-visible characters
         return;
-      } else if ((nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) || nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
-        // Shift up to the PUA (starts at 0xE000)
-        // where our special font has visible glyphs for these.
-        // A different font is applied depending on whether we display
-        // ASCII control glyphs/hex glyphs or just hex glyphs, we don't have
-        // to worry about that here
-        terminalChar.char = String.fromCharCode(rxByte + 0xE000);
+      } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) {
+        // If the char is a control char (any value <= 0x7F, given we have already matched against visible chars), shift up to the PUA (starts at 0xE000) where our special font has visible glyphs for these.
+        if (rxByte <= 0x7F) {
+          terminalChar.char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
+        } else {
+          // Must be a non-ASCII char, so display as hex glyph. These start at 0xE100
+          terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+        }
+      } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
+        terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
       } else {
         throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
       }
