@@ -105,6 +105,11 @@ chart.js was chosen as it offered much better performance when the data update r
 
 In FontCreator, make sure the setting _Tools->Options->Fonts->Exclude unused glyphs_ is unchecked, otherwise glyphs at code points like `0x0001` will not be generated.
 
+The PUA (Personal Use Area) is used to add custom glyphs to represent control characters and generic hex bytes. The following code point ranges are used:
+
+* `U+E000` - `U+E07F`: Contains control character glyphs were applicable. Add `0xE000` to a byte which contains a control character to get the equivalent glyph.
+* `U+E100` - `U+E1FF`: Contains a glyph for each byte from `0x00` to `0xFF` containing the byte as a hex number. For example, `U+E100` contains a glyph that says `00`, and `U+E1FF` contains a glyph that says `FF`. Add `0xE100` to a normal byte to get the corresponding glyph.
+
 ## Theme Colors
 
 * `#DC3545` (red): Primary colour, used for logo.
