@@ -58,9 +58,9 @@ export default class DataProcessingSettings {
   // on the terminal UI (which is generally what you want)
   swallowCarriageReturn = true;
 
-  // I assume most people by default will want non-visible bytes to be hidden
-  // when in text mode.
-  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.SWALLOW;
+  // I assume most people by default might want to see unexpected invisible chars? If not
+  // this might be better defaulting to SWALLOW?
+  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)

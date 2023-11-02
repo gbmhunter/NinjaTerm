@@ -142,7 +142,6 @@ export default observer((props: Props) => {
       return () => {};
     }
     const handleResize = () => {
-      console.log('handleResize() called. offsetHeight=', terminalDiv?.current?.offsetHeight);
       if (!terminalDiv?.current?.offsetHeight) {
         return;
       }

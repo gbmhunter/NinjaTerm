@@ -49,17 +49,15 @@ export class AppTestHarness {
     // We need expose a function to pass the written data back from
     // the browser context to this node.js test context
     await this.page.exposeFunction('writeData', (data) => {
-      console.log('exposeFunction() called with data=', data);
       this.writtenData.push(data);
     });
     await this.page.addInitScript(() => {
       const mockWriter = {
         write: (data: Uint8Array) => {
-          console.log('mock write() called with data=', data);
           // Uint8Array's are serialized a bit weirdly,
-          // so do the loop client side and just send back numbers
+          // so do the loop client side and just send back the
+          // individual numbers in the array
           for (let i = 0; i < data.length; i += 1) {
-            console.log('mock write() pushing data[i]=', data[i]);
             window.writeData(data[i]);
           }
           return Promise.resolve();
@@ -78,7 +76,6 @@ export class AppTestHarness {
           });
         },
         releaseLock: () => {
-          // console.log('mock releaseLock() called.');
           return;
         },
       };
@@ -91,22 +88,18 @@ export class AppTestHarness {
           };
         },
         open: () => {
-          // console.log('mock open() called.');
           return Promise.resolve();
         },
         close: () => {
-          // console.log('mock open() called.');
           return Promise.resolve();
         },
         writable: {
           getWriter: () => {
-            // console.log('mock writable() called.');
             return mockWriter;
           },
         },
         readable: {
           getReader: () => {
-            // console.log('mock readable() called.');
             return mockReader;
           },
         },
@@ -114,7 +107,6 @@ export class AppTestHarness {
 
       const mockSerial = {
         requestPort: () => {
-          // console.log("mock requestPort() called.");
           return Promise.resolve(mockPort);
         },
       };
