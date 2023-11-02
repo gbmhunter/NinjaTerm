@@ -11,6 +11,7 @@ import { SettingsCategories } from './Settings';
 
 import PortConfigurationView from './PortConfigurationView';
 import DataProcessingView from './DataProcessingSettingsView';
+import DisplaySettingsView from './Display/DisplaySettingsView';
 
 interface Props {
   appStore: App;
@@ -26,13 +27,14 @@ function SettingsDialog(props: Props) {
     [SettingsCategories.DATA_PROCESSING]: (
       <DataProcessingView app={appStore} />
     ),
+    [SettingsCategories.DISPLAY]: (
+      <DisplaySettingsView app={appStore} />
+    ),
   };
 
   return (
       <div data-testid="settings-pane" style={{ height: '100%', display: 'flex' }}>
-        {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width
-        colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from
-        top to bottom */}
+        {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from top to bottom */}
         <Box id="test" sx={{ display: 'flex', flexDirection: 'row' }}>
           {/* Add a little border to the right-hand side to separate from sub-category settings */}
           <Box
@@ -70,6 +72,19 @@ function SettingsDialog(props: Props) {
                   }
                 >
                   <ListItemText>Data Processing</ListItemText>
+                </ListItemButton>
+                <ListItemButton
+                  onClick={() => {
+                    appStore.settings.setActiveSettingsCategory(
+                      SettingsCategories.DISPLAY
+                    );
+                  }}
+                  selected={
+                    appStore.settings.activeSettingsCategory ===
+                    SettingsCategories.DISPLAY
+                  }
+                >
+                  <ListItemText>Display</ListItemText>
                 </ListItemButton>
               </List>
             </nav>

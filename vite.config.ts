@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 import { VitePWA } from 'vite-plugin-pwa'
+import pluginChecker from 'vite-plugin-checker';
 
 let icon192Url = '/logo192.png'
 let icon512Url = '/logo512.png'
@@ -12,6 +13,7 @@ export default defineConfig({
     plugins: [
       react(),
       viteTsconfigPaths(),
+      pluginChecker({ typescript: true }),
       VitePWA({
         registerType: 'prompt', // We want to prompt the user to reload, we don't want it to autoupdate
         injectRegister: null, // We register it ourselves in index.tsx

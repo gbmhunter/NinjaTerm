@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.8.0] - 2023-11-03
+
+### Added
+
+- Added glyphs to the Unicode PUA range of the NinjaTerm font to show control characters and hex codes.
+- Added option in data processing settings to select whether to display control character glyphs or hex code glyphs.
+- A new "Display" section in the Settings pane.
+- Added more outlines around subsets of settings to visually group related things together.
+- Added more unit tests for testing new line and carriage return behavior.
+
+### Fixed
+
+- Fixed issue where resizing the window (esp. making it smaller) caused the terminal to not resize correctly, closes #288.
+
+### Changed
+
+- Removed old unused files including the `assets_old` directory and `public/manifest.json`.
+
 ## [4.7.0] - 2023-10-29
 
 ### Added
@@ -530,7 +548,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.7.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.8.0...HEAD
+[4.8.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.7.0...v4.8.0
 [4.7.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.5...v4.7.0
 [4.6.5]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.4...v4.6.5
 [4.6.4]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.3...v4.6.4

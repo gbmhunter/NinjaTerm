@@ -4,7 +4,10 @@ import { autorun, makeAutoObservable } from 'mobx';
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import { App } from 'src/App';
-import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors } from 'src/Settings/DataProcessingSettings';
+import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
+
+const START_OF_CONTROL_GLYPHS = 0xE000;
+const START_OF_HEX_GLYPHS = 0xE100;
 
 /**
  * Represents a single terminal-style user interface.
@@ -64,7 +67,7 @@ export default class Terminal {
     this.isFocusable = isFocusable;
 
     autorun(() => {
-      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -147,7 +150,7 @@ export default class Terminal {
       // NEW LINE HANDLING
       //========================================================================
 
-      const newLineBehavior = this.app.settings.dataProcessing.newLineCursorBehavior;
+      const newLineBehavior = this.app.settings.dataProcessingSettings.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
 
@@ -155,7 +158,7 @@ export default class Terminal {
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
         // line
-        if (!this.app.settings.dataProcessing.swallowNewLine) {
+        if (!this.app.settings.dataProcessingSettings.swallowNewLine) {
           this.addVisibleChar(rxByte);
         }
 
@@ -184,14 +187,14 @@ export default class Terminal {
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
-      const carriageReturnCursorBehavior = this.app.settings.dataProcessing.carriageReturnCursorBehavior;
+      const carriageReturnCursorBehavior = this.app.settings.dataProcessingSettings.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
 
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
-        if (!this.app.settings.dataProcessing.swallowCarriageReturn) {
+        if (!this.app.settings.dataProcessingSettings.swallowCarriageReturn) {
           this.addVisibleChar(rxByte);
         }
 
@@ -215,7 +218,7 @@ export default class Terminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.app.settings.dataProcessing.appliedData.fields.ansiEscapeCodeParsingEnabled.value) {
+      if (!this.app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
         this.addVisibleChar(rxByte);
         continue;
       }
@@ -260,7 +263,7 @@ export default class Terminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.app.settings.dataProcessing.appliedData.fields.maxEscapeCodeLengthChars.value;
+      const maxEscapeCodeLengthChars = this.app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.appliedValue;
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
         this.app.snackbar.sendToSnackbar(
@@ -481,7 +484,7 @@ export default class Terminal {
     // Go right one character at a time and perform various checks along the way
     for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
-      if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value) {
+      if (this.cursorPosition[1] >= this.app.settings.displaySettings.terminalWidthChars.appliedValue) {
         return;
       }
       // If we reach here, we can go right by at least 1
@@ -586,7 +589,34 @@ export default class Terminal {
     // } else {
     //   terminalChar.char = String.fromCharCode(rxByte);
     // }
-    terminalChar.char = String.fromCharCode(rxByte);
+    // fromCharCode() works with all Unicode code points that
+    // are representable with one UTF-16 code unit
+
+    const nonVisibleCharDisplayBehavior = this.app.settings.dataProcessingSettings.nonVisibleCharDisplayBehavior;
+
+    if (rxByte >= 0x20 && rxByte <= 0x7E) {
+      // Is printable ASCII character, no shifting needed
+      terminalChar.char = String.fromCharCode(rxByte);
+    } else {
+      // We have either a control char or not in ASCII range (0x80 and above).
+      // What we do depends on data processing setting
+      if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.SWALLOW) {
+        // Do nothing, don't display any non-visible characters
+        return;
+      } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) {
+        // If the char is a control char (any value <= 0x7F, given we have already matched against visible chars), shift up to the PUA (starts at 0xE000) where our special font has visible glyphs for these.
+        if (rxByte <= 0x7F) {
+          terminalChar.char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
+        } else {
+          // Must be a non-ASCII char, so display as hex glyph. These start at 0xE100
+          terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+        }
+      } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
+        terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+      } else {
+        throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
+      }
+    }
 
     // This stores all classes we wish to apply to the char
     let classList = [];
@@ -635,7 +665,7 @@ export default class Terminal {
     // Increment cursor, move to next row if we have hit max char width
     // NOTE: Max. width may change at any time, and may reduce to a smaller value even
     // when chars are currently being inserted beyond the end. Thus the >= comparison here.
-    if (this.cursorPosition[1] >= this.app.settings.dataProcessing.appliedData.fields.terminalWidthChars.value - 1) {
+    if (this.cursorPosition[1] >= this.app.settings.displaySettings.terminalWidthChars.appliedValue - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       // this.moveToNewLine(); // This adds the " " if needed for the cursor
@@ -732,7 +762,7 @@ export default class Terminal {
   }
 
   limitNumRows() {
-    const maxRows = this.app.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value;
+    const maxRows = this.app.settings.displaySettings.scrollbackBufferSizeRows.appliedValue;
     // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
@@ -762,7 +792,7 @@ export default class Terminal {
     // space as the rows we removed, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.app.settings.dataProcessing.charSizePx.appliedValue + 5)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.app.settings.displaySettings.charSizePx.appliedValue + 5)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }

@@ -8,6 +8,7 @@ import { OverridableComponent } from "@mui/material/OverridableComponent";
 type BorderedSectionProps = {
   icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { props: { className?: string } };
   title?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 };
 
@@ -18,7 +19,7 @@ type BorderedSectionProps = {
  * @param param0 Props.
  * @returns React component.
  */
-function BorderedSection({ icon, title, children }: BorderedSectionProps): JSX.Element {
+function BorderedSection({ icon, title, style, children }: BorderedSectionProps): JSX.Element {
     return (
         <div className={styles.mainContainer}>
             <div className={styles.header}>
@@ -31,7 +32,7 @@ function BorderedSection({ icon, title, children }: BorderedSectionProps): JSX.E
                 )}
                 <div className={styles.headerBorderAfter}></div>
             </div>
-            <div className={styles.childrenContainer}>{children}</div>
+            <div className={styles.childrenContainer} style={style}>{children}</div>
         </div>
     );
 }
