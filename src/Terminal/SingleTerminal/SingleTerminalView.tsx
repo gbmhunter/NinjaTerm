@@ -180,6 +180,8 @@ export default observer((props: Props) => {
         boxSizing: "border-box",
         overflowY: "hidden",
         backgroundColor: "#000000",
+        // margin: '-15px',
+        // padding: '10px',
       }}
       onFocus={(e) => {
         terminal.setIsFocused(true);
@@ -218,6 +220,7 @@ export default observer((props: Props) => {
           // react-window List when calculating what size it should be. Then the List
           // height is set from the height of this div.
           overflowY: "hidden",
+
           boxSizing: "border-box",
         }}
         data-testid={testId}

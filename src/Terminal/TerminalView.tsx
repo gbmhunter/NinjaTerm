@@ -67,9 +67,14 @@ export default observer((props: Props) => {
         display: 'flex',
         flexDirection: 'column',
 
-        // This is important so that the single terminal panes get smaller when the
-        // window height is made smaller. Without this, scrollbars appear
+        // overflowY: hidden important so that the single terminal panes get smaller when the
+        // window height is made smaller. Without this, scrollbars appear.
+        // The negative margin and then positive padding cancel each over out...BUT they
+        // do let the outer glow on a focused terminal still show. Without this, it would
+        // be clipped because we set the overflow to be hidden
         overflowY: 'hidden',
+        margin: '-10px',
+        padding: '10px',
       }}
     >
     <Box
