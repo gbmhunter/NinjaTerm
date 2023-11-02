@@ -144,7 +144,7 @@ export default observer((props: Props) => {
             name="dataViewConfiguration"
             value={app.settings.displaySettings.dataViewConfiguration}
             onChange={(e) => {
-              app.settings.displaySettings.setDataViewConfiguration(e.target.value as DataViewConfiguration);
+              app.settings.displaySettings.setDataViewConfiguration(Number(e.target.value));
             }}
             sx={{ fontSize: "0.8rem" }}
           >

@@ -174,7 +174,7 @@ export default observer((props: Props) => {
       data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
-        flexShrink: 1,
+        // flexShrink: 1,
         marginBottom: "10px",
         padding: "15px", // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
         boxSizing: "border-box",
