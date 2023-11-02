@@ -17,6 +17,7 @@ import GitHubReadmeLogo from "./github-readme-logo.png";
 import AnsiEscapeCodeColours from "./ansi-escape-code-colours.gif";
 import GraphingGif from "./graphing.gif";
 import SmartScrollGif from "./smart-scroll.gif";
+import ControlCharAndHexCodeGlyphs from './control-char-and-hex-code-glyphs.gif';
 
 import "./HomepageView.css";
 
@@ -196,6 +197,29 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
+
+            {/* Show Invisible Characters */}
+            {/* ========================================================================== */}
+            <Grid xs={12}>
+              <div
+                style={{
+                  backgroundColor: "#202020",
+                  border: "1px solid #dc3545",
+                  borderRadius: "10px",
+                  padding: "20px",
+                }}
+              >
+                <Typography variant="h6" style={{ marginBottom: '20px' }}>Show Invisible Characters</Typography>
+
+                <Typography style={{ marginBottom: '20px' }}>When debugging ASCII based data, sometimes unexpected "invisible" characters such as ASCII control characters or bytes above 0x7F &#40;which are not part of ASCII&#41; cause weird things to happen to your data! NinjaTerm contains a special font with glyphs for all ASCII control chars and all hex codes from 0x00 to 0xFF. Enable this mode from the settings to "see" any received byte of data!</Typography>
+
+                <div style={{ display: 'flex' }}>
+                  <img src={ControlCharAndHexCodeGlyphs} alt="Demonstration of ASCII control character and hex code glyphs in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                </div>
+              </div>
+            </Grid>
+
+
           </Grid>
 
           <Typography variant="h2">Coming Soon...</Typography>
@@ -216,7 +240,7 @@ export default observer((props: Props) => {
           <Typography>Thanks to Zac Frank for user-interaction guidance and tips!</Typography>
           <Typography>Thanks to testing done by William Hunter.</Typography>
           <Typography>Thanks to <a href="https://github.com/johnhofman">John Hofman</a> for helping port the project to Maven and setup TravisCI (back when NinjaTerm was written in Java).</Typography>
-          <Typography>Big ups to "utopian" to creating the NinjaTerm logo!</Typography>
+          <Typography>Big ups to "utopian" to creating the new NinjaTerm logo!</Typography>
 
           <hr style={{ width: '100%' }}/>
 
