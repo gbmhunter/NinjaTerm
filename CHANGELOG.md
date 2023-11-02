@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added more outlines around subsets of settings to visually group related things together.
 - Added more unit tests for testing new line and carriage return behavior.
 
+### Fixed
+
+- Fixed issue where resizing the window (esp. making it smaller) caused the terminal to not resize correctly, closes #288.
+
 ### Changed
 
 - Removed old unused files including the `assets_old` directory and `public/manifest.json`.

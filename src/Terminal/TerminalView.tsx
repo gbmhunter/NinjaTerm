@@ -61,7 +61,17 @@ export default observer((props: Props) => {
   }
 
   return (
-    <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+    <div id="terminal-view-outer"
+      style={{
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+
+        // This is important so that the single terminal panes get smaller when the
+        // window height is made smaller. Without this, scrollbars appear
+        overflowY: 'hidden',
+      }}
+    >
     <Box
       id="menu"
       sx={{

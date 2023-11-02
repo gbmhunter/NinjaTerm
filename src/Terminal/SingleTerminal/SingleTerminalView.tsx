@@ -142,6 +142,7 @@ export default observer((props: Props) => {
       return () => {};
     }
     const handleResize = () => {
+      console.log('handleResize() called. offsetHeight=', terminalDiv?.current?.offsetHeight);
       if (!terminalDiv?.current?.offsetHeight) {
         return;
       }
@@ -163,44 +164,6 @@ export default observer((props: Props) => {
     heightDebug = height;
   }
 
-  // Create windowed or non-windowed element to render data
-  let dataElement;
-  if (useWindowing) {
-    dataElement = (
-      <FixedSizeList
-        ref={reactWindowRef}
-        className={styles.fixedSizeList}
-        height={heightDebug}
-        itemCount={terminal.terminalRows.length}
-        // Add a bit of padding to the height
-        itemSize={appStore.settings.displaySettings.charSizePx.appliedValue + 5}
-        width="100%"
-        itemData={terminal.terminalRows}
-        onScroll={(scrollProps) => {
-          const { scrollOffset } = scrollProps;
-          terminal.setScrollPos(scrollOffset);
-        }}
-        overscanCount={5}
-      >
-        {Row}
-      </FixedSizeList>
-    );
-  } else {
-    // Don't use windowing
-    dataElement = (
-      <div
-        style={{
-          height: "100%",
-          overflowY: "auto",
-        }}
-      >
-        {terminal.terminalRows.map((terminalRow, index) => {
-          return <Row key={index} data={terminal.terminalRows} index={index} style={{}} />;
-        })}
-      </div>
-    );
-  }
-
   return (
     // This is the outer terminal div which sets the background colour
     <div
@@ -211,6 +174,7 @@ export default observer((props: Props) => {
       data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
+        flexShrink: 1,
         marginBottom: "10px",
         padding: "15px", // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
         boxSizing: "border-box",
@@ -259,7 +223,23 @@ export default observer((props: Props) => {
         data-testid={testId}
         className={styles.terminal}
       >
-        {dataElement}
+        <FixedSizeList
+        ref={reactWindowRef}
+        className={styles.fixedSizeList}
+        height={heightDebug}
+        itemCount={terminal.terminalRows.length}
+        // Add a bit of padding to the height
+        itemSize={appStore.settings.displaySettings.charSizePx.appliedValue + 5}
+        width="100%"
+        itemData={terminal.terminalRows}
+        onScroll={(scrollProps) => {
+          const { scrollOffset } = scrollProps;
+          terminal.setScrollPos(scrollOffset);
+        }}
+        overscanCount={5}
+      >
+        {Row}
+      </FixedSizeList>
         {/* ================== SCROLL LOCK ARROW ==================== */}
         <IconButton
           onClick={() => {
