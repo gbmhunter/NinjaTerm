@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   Box,
   IconButton,
+  Tooltip,
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -173,35 +174,41 @@ const AppView = observer((props: Props) => {
 
           {/* SETTINGS BUTTON */}
           {/* ==================================================== */}
-          <IconButton
-            onClick={() => {
-              app.setShownMainPane(MainPanes.SETTINGS);
-            }}
-            color="primary"
-            data-testid="settings-button">
-            <SettingsIcon />
-          </IconButton>
+          <Tooltip title="Show settings." placement='right' enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.SETTINGS);
+              }}
+              color="primary"
+              data-testid="settings-button">
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
 
           {/* TERMINAL BUTTON */}
           {/* ==================================================== */}
-          <IconButton
-            onClick={() => {
-              app.setShownMainPane(MainPanes.TERMINAL);
-            }}
-            color="primary"
-            data-testid="show-terminal-button">
-              <TerminalIcon />
-          </IconButton>
+          <Tooltip title="Show the terminal" placement='right' enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.TERMINAL);
+              }}
+              color="primary"
+              data-testid="show-terminal-button">
+                <TerminalIcon />
+            </IconButton>
+          </Tooltip>
           {/* GRAPHING BUTTON */}
           {/* ==================================================== */}
-          <IconButton
-            onClick={() => {
-              app.setShownMainPane(MainPanes.GRAPHING);
-            }}
-            color="primary"
-            data-testid="show-graphing-pane-button">
-              <TimelineIcon />
-          </IconButton>
+          <Tooltip title="Show the graphing pane." placement='right' enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.GRAPHING);
+              }}
+              color="primary"
+              data-testid="show-graphing-pane-button">
+                <TimelineIcon />
+            </IconButton>
+          </Tooltip>
 
         </div>
         <div

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added tooltips for the left toolbar clickable navigation icons.
+
 ## [4.8.0] - 2023-11-03
 
 ### Added
