@@ -1,6 +1,58 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
+import * as Validator from 'validatorjs';
+
+import en from 'validatorjs/src/lang/en';
+
+Validator.setMessages('en', en);
 
 import { App } from 'src/App';
+import BorderedSection from "src/Components/BorderedSection";
+
+class ApplyableTextField {
+  dispValue: string;
+  rule: string | string[];
+  appliedValue: string;
+
+  isValid = false;
+  friendlyName = '';
+  errorMsg = '';
+
+  constructor(dispValue: string, rules: string | string[], friendlyName: string) {
+    this.rule = rules;
+    this.dispValue = '';
+    this.appliedValue = '';
+    this.friendlyName = friendlyName;
+    this.setDispValue(dispValue);
+    this.apply();
+    makeAutoObservable(this);
+  }
+
+  setDispValue = (value: string) => {
+    this.dispValue = value;
+    const validator = new Validator(
+      {var: value},
+      {var: this.rule}
+    );
+    validator.setAttributeNames({ var: this.friendlyName });
+    this.isValid = !validator.fails();
+    if (this.isValid) {
+      this.errorMsg = '';
+    } else {
+      this.errorMsg = validator.errors.first('var');
+    }
+  }
+
+  apply() {
+    if (this.isValid) {
+      this.appliedValue = this.dispValue;
+    }
+  }
+}
+
+export enum WhatToNameTheFile {
+  CURRENT_DATETIME,
+  CUSTOM,
+}
 
 /**
  * Ths class used the PWA directory/file API. Best resource for info is
@@ -26,21 +78,42 @@ export default class Logging {
    */
   bufferedData: number[] = [];
 
+  whatToNameTheFile = WhatToNameTheFile.CURRENT_DATETIME;
+
+  customFileName = new ApplyableTextField(
+    'custom-file-name.log',
+    ['required', 'regex:/^[\\w,\\s\.-]+$/'],
+    'file name',
+  );
+
   constructor(app: App) {
     this.app = app;
 
     makeAutoObservable(this);
   }
 
+  /**
+   * Opens a dir picker provided by the browser to the user can select a directory
+   * to save logs to.
+   *
+   * @returns
+   */
   async openDirPicker() {
     try {
-      this.dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      runInAction(() => {
+        this.dirHandle = dirHandle;
+      });
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') {
         // User canceled the picker
         return;
       }
     }
+  }
+
+  setWhatToNameTheFile(value: WhatToNameTheFile) {
+    this.whatToNameTheFile = value;
   }
 
   async startLogging() {
@@ -50,9 +123,12 @@ export default class Logging {
 
     // Create file with name based on current datetime
     // In this new directory, create a file named "My Notes.txt".
-    this.fileHandle = await this.dirHandle.getFileHandle('test.txt', { create: true });
+    const fileHandle = await this.dirHandle.getFileHandle('test.txt', { create: true });
 
-    this.isLogging = true;
+    runInAction(() => {
+      this.fileHandle = fileHandle;
+      this.isLogging = true;
+    });
 
     this.intervalId = setInterval(() => {
       this.writeBufferedDataToDisk();
@@ -94,6 +170,8 @@ export default class Logging {
     // Write the last of the buffered data to disk
     await this.writeBufferedDataToDisk();
 
-    this.isLogging = false;
+    runInAction(() => {
+      this.isLogging = false;
+    });
   }
 }
