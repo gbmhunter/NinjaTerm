@@ -375,6 +375,7 @@ export class App {
     this.txRxTerminal.parseData(rxData);
     this.rxTerminal.parseData(rxData);
     this.graphing.parseData(rxData);
+    this.logging.parseData(rxData);
     this.numBytesReceived += rxData.length;
   }
 
