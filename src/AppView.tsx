@@ -9,6 +9,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TerminalIcon from '@mui/icons-material/Terminal';
+import SaveAsIcon from '@mui/icons-material/SaveAs';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
@@ -28,6 +29,7 @@ import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
 import FakePortDialogView from './FakePorts/FakePortDialogView';
 import { useEffect } from 'react';
+import LoggingView from './Logging/LoggingView';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -119,6 +121,8 @@ const AppView = observer((props: Props) => {
     mainPaneComponent = <TerminalView app={app} />;
   } else if (app.shownMainPane === MainPanes.GRAPHING) {
     mainPaneComponent = <GraphView app={app} />;
+  } else if (app.shownMainPane === MainPanes.LOGGING) {
+    mainPaneComponent = <LoggingView app={app} />;
   } else {
     throw Error(
       `Unsupported main pane. mainPane=${app.shownMainPane}`
@@ -209,6 +213,18 @@ const AppView = observer((props: Props) => {
                 <TimelineIcon />
             </IconButton>
           </Tooltip>
+          {/* LOGGING BUTTON */}
+          {/* ==================================================== */}
+          <Tooltip title="Show the logging pane." placement='right' enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.LOGGING);
+              }}
+              color="primary"
+              data-testid="show-logging-pane-button">
+                <SaveAsIcon />
+            </IconButton>
+          </Tooltip>
 
         </div>
         <div
@@ -243,8 +259,15 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
+            {/* LOGGING ON/OFF */}
+            <div style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}>
+              { app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
+            </div>
+
             {/* GRAPHING ON/OFF */}
-            <div>{ app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}</div>
+            <div style={{ backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '', padding: '0 10px' }}>
+              { app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
+            </div>
 
             {/* TX/RX ACTIVITY INDICATORS */}
             {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}

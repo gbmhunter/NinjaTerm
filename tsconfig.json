@@ -12,7 +12,8 @@
       "vite/client",
       "node",
       "dom-serial",
-      "vite-plugin-pwa/client"
+      "vite-plugin-pwa/client",
+      "@types/wicg-file-system-access",
     ],
     "allowJs": true,
     "skipLibCheck": true,

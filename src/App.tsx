@@ -12,6 +12,7 @@ import { Settings, SettingsCategories } from './Settings/Settings';
 import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
+import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
 import { Button } from '@mui/material';
 
@@ -68,6 +69,7 @@ export enum MainPanes {
   SETTINGS,
   TERMINAL,
   GRAPHING,
+  LOGGING,
 }
 
 export enum PortType {
@@ -128,6 +130,8 @@ export class App {
 
   graphing: Graphing;
 
+  logging: Logging;
+
   // Remembers the last selected port type, so open() and close()
   // know what type of port to operate on
   lastSelectedPortType = PortType.REAL;
@@ -166,6 +170,8 @@ export class App {
 
     // Create graphing instance. Graphing is disabled by default.
     this.graphing = new Graphing(this.snackbar);
+
+    this.logging = new Logging(this);
 
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
