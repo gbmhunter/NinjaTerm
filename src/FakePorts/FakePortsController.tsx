@@ -275,16 +275,12 @@ export default class FakePortsController {
         'Sends 80 random characters in a line, at a rate of 10 lines per second.',
         () => {
           const intervalId = setInterval(() => {
-            console.time();
             const textToSend = generateRandomString(80) + "\n";
-            console.log(textToSend);
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
             app.parseRxData(Uint8Array.from(bytesToSend));
-            console.timeEnd();
-
           }, 100);
           return intervalId;
         },

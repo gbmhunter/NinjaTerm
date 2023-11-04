@@ -54,6 +54,11 @@ export enum WhatToNameTheFile {
   CUSTOM,
 }
 
+export enum ExistingFileBehaviors {
+  APPEND,
+  OVERWRITE,
+}
+
 /**
  * Ths class used the PWA directory/file API. Best resource for info is
  * https://developer.chrome.com/articles/file-system-access/#stored-file-or-directory-handles-and-permissions
@@ -86,6 +91,14 @@ export default class Logging {
     'file name',
   );
 
+  existingFileBehavior = ExistingFileBehaviors.APPEND;
+
+  activeFilename: string | null = null;
+
+  numBytesWritten: number | null = null;
+
+  fileSizeBytes: number | null = null;
+
   constructor(app: App) {
     this.app = app;
 
@@ -116,20 +129,62 @@ export default class Logging {
     this.whatToNameTheFile = value;
   }
 
+  setExistingFileBehavior(value: ExistingFileBehaviors) {
+    this.existingFileBehavior = value;
+  }
+
+  get canStartStopLogging() {
+    return this.dirHandle !== null && (this.whatToNameTheFile === WhatToNameTheFile.CUSTOM ? this.customFileName.isValid : true);
+  }
+
   async startLogging() {
     if (this.dirHandle === null) {
       throw Error('startLogging() called but dirHandle is null');
     }
 
-    // Create file with name based on current datetime
-    // In this new directory, create a file named "My Notes.txt".
-    const fileHandle = await this.dirHandle.getFileHandle('test.txt', { create: true });
+    if (this.whatToNameTheFile === WhatToNameTheFile.CURRENT_DATETIME) {
+      // Generate a file name based on the current datetime
+      const now = new Date();
+      const year = now.getFullYear().toString();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const date = now.getDate().toString().padStart(2, '0');
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      this.activeFilename = `${year}-${month}-${date} ${hours}-${minutes}-${seconds}.log`;
+    } else if (this.whatToNameTheFile === WhatToNameTheFile.CUSTOM) {
+      this.activeFilename = this.customFileName.appliedValue;
+    } else {
+      throw Error('Unknown value for whatToNameTheFile');
+    }
+
+    // Create file in the directory we have be allowed to read/write to
+    const fileHandle = await this.dirHandle.getFileHandle(this.activeFilename, { create: true });
+
+    if (this.existingFileBehavior === ExistingFileBehaviors.APPEND) {
+      // Do nothing, the interval will append data anyway
+    } else if (this.existingFileBehavior === ExistingFileBehaviors.OVERWRITE) {
+      // Clear the file by creating a new writable stream with keepExistingData set to false
+      // (but don't actually write anything to it)
+      console.log('SSS')
+      const writeable = await fileHandle.createWritable({ keepExistingData: false });
+      // await writeable.write(Uint8Array.from([ 0x21, 0x21, 0x21 ]));
+      await writeable.close();
+    } else {
+      throw Error('Unknown value for existingFileBehavior');
+    }
+
+    const fileSizeBytes = (await fileHandle!.getFile()).size;
 
     runInAction(() => {
       this.fileHandle = fileHandle;
       this.isLogging = true;
+      this.numBytesWritten = 0;
+      this.fileSizeBytes = fileSizeBytes;
     });
 
+    // Setup regular 1s interval to write buffered data
+    // to this file
     this.intervalId = setInterval(() => {
       this.writeBufferedDataToDisk();
     }, 1000);
@@ -150,14 +205,21 @@ export default class Logging {
     const writeable = await this.fileHandle!.createWritable({ keepExistingData: true });
 
     // Seek to the end of the file, to append data rather than overwrite existing stuff
+    // from the last time this function was called
     let offset = (await this.fileHandle!.getFile()).size
     writeable.seek(offset)
 
-    // Write the contents of the file to the stream.
-    await writeable.write(new Uint8Array(this.bufferedData));
+    const dataAsUint8Array = new Uint8Array(this.bufferedData)
 
-    // Clear the buffer
-    this.bufferedData = [];
+    // Write the contents of the file to the stream.
+    await writeable.write(dataAsUint8Array);
+
+    runInAction(() => {
+      this.numBytesWritten! += dataAsUint8Array.length;
+      this.fileSizeBytes! += dataAsUint8Array.length;
+      // Clear the buffer
+      this.bufferedData = [];
+    });
 
     // Close the file and write the contents to disk.
     await writeable.close();
@@ -172,6 +234,9 @@ export default class Logging {
 
     runInAction(() => {
       this.isLogging = false;
+      this.activeFilename = null;
+      this.numBytesWritten = null;
+      this.fileSizeBytes = null;
     });
   }
 }
