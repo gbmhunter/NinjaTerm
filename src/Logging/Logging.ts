@@ -99,6 +99,10 @@ export default class Logging {
 
   fileSizeBytes: number | null = null;
 
+  logRawTxData = false;
+
+  logRawRxData = true;
+
   constructor(app: App) {
     this.app = app;
 
@@ -131,6 +135,14 @@ export default class Logging {
 
   setExistingFileBehavior(value: ExistingFileBehaviors) {
     this.existingFileBehavior = value;
+  }
+
+  setLogRawTxData(value: boolean) {
+    this.logRawTxData = value;
+  }
+
+  setLogRawRxData(value: boolean) {
+    this.logRawRxData = value;
   }
 
   get canStartStopLogging() {
@@ -189,17 +201,23 @@ export default class Logging {
     }, 1000);
   }
 
-  parseData(rxData: Uint8Array) {
-    // Only buffer data if logging is enabled
-    if (this.isLogging === false) {
+  handleRxData(rxData: Uint8Array) {
+    // Only buffer data if logging is enabled AND user has enabled logging of RX data
+    if (this.isLogging === false || this.logRawRxData === false) {
       return;
     }
-
     this.bufferedData.push(...rxData);
   }
 
+  handleTxData(txData: Uint8Array) {
+    // Only buffer data if logging is enabled AND user has enabled logging of TX data
+    if (this.isLogging === false || this.logRawTxData === false) {
+      return;
+    }
+    this.bufferedData.push(...txData);
+  }
+
   async writeBufferedDataToDisk() {
-    console.log('writeBufferedDataToDisk() called.');
     // Create a FileSystemWritableFileStream to write to.
     const writeable = await this.fileHandle!.createWritable({ keepExistingData: true });
 

@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -36,55 +37,62 @@ export default observer((props: Props) => {
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
+        // alignItems: "flex-start",
         gap: "5px",
       }}
     >
-      <h2 style={{ marginLeft: '20px' }}>LOGGING</h2>
-
-      <BorderedSection
-        title="Directory and Permissions"
+      <h2 style={{ marginLeft: "20px" }}>LOGGING</h2>
+      <div
         style={{
-          width: "500px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          alignItems: "flex-start",
+          maxWidth: "800px",
+          display: "grid",
+          gridTemplateColumns: "auto auto",
+          gridTemplateRows: "auto auto",
         }}
       >
-        <Button
-          variant="contained"
-          // size="small"
-          disabled={app.logging.isLogging}
-          onClick={() => {
-            app.logging.openDirPicker();
+        <BorderedSection
+          title="Directory and Permissions"
+          style={{
+            gridColumn: "1 / 3",
+            gridRow: "1 / 2",
+          }}
+          childStyle={{
+            minWidth: "200px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+            alignItems: "flex-start",
           }}
         >
-          Select log directory
-        </Button>
-
-        <div>
-          Folder permissions:&nbsp;
-          <span
-            style={{
-              color: app.logging.dirHandle == null ? "#f44336" : "#66bb6a",
-              fontWeight: "bold",
+          <Button
+            variant="contained"
+            // size="small"
+            disabled={app.logging.isLogging}
+            onClick={() => {
+              app.logging.openDirPicker();
             }}
           >
-            {app.logging.dirHandle == null ? "NOT GRANTED" : "GRANTED"}
-          </span>
-        </div>
-      </BorderedSection>
+            Select log directory
+          </Button>
 
-      {/* ROW CONTAINING FILE NAMING AND EXISTING FILE BEHAVIOR */}
-      {/* ======================================================================= */}
-      {/* ======================================================================= */}
-      <div style={{ display: "flex" }}>
+          <div>
+            Folder permissions:&nbsp;
+            <span
+              style={{
+                color: app.logging.dirHandle == null ? "#f44336" : "#66bb6a",
+                fontWeight: "bold",
+              }}
+            >
+              {app.logging.dirHandle == null ? "NOT GRANTED" : "GRANTED"}
+            </span>
+          </div>
+        </BorderedSection>
+
         {/* WHAT TO NAME THE FILE */}
         {/* ======================================================================= */}
         <BorderedSection
           title="File Naming"
-          style={{
+          childStyle={{
             width: "500px",
             display: "flex",
             flexDirection: "column",
@@ -108,7 +116,9 @@ export default observer((props: Props) => {
                 <FormControlLabel
                   value={WhatToNameTheFile.CURRENT_DATETIME}
                   control={<Radio />}
-                  label={"Save in the form \"NinjaTerm Logs - <DATETIME>.txt\". The current local datetime when logging is started will be used in the form \"YYYY-MM-DD HH-MM-SS\"."}
+                  label={
+                    'Save in the form "NinjaTerm Logs - <DATETIME>.txt". The current local datetime when logging is started will be used in the form "YYYY-MM-DD HH-MM-SS".'
+                  }
                 />
               </Tooltip>
               {/* CUSTOM */}
@@ -157,7 +167,7 @@ export default observer((props: Props) => {
         {/* ======================================================================= */}
         <BorderedSection
           title="Existing File Behavior"
-          style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+          childStyle={{ display: "flex", flexDirection: "column", gap: "20px" }}
         >
           <FormControl disabled={app.logging.isLogging}>
             <FormLabel>
@@ -196,63 +206,102 @@ export default observer((props: Props) => {
             </RadioGroup>
           </FormControl>
         </BorderedSection>
-      </div>
 
-      <BorderedSection title="Enabling and Status" style={{ width: "500px" }}>
-        {/* ENABLE LOGGING */}
-        {/* ============================================================== */}
-        <FormControlLabel
-          control={
-            <Switch
-              name="enableGraphing"
-              checked={app.logging.isLogging}
-              disabled={!app.logging.canStartStopLogging}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  app.logging.startLogging();
-                } else {
-                  app.logging.stopLogging();
-                }
-              }}
-            />
-          }
-          label="Enable Logging"
-          sx={{
-            marginLeft: "20px",
-          }}
-        />
-
-        {/* STATUS (GRID) */}
-        {/* ============================================================== */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '180px auto',
-            gridTemplateRows: 'auto auto',
-          }}
+        <BorderedSection
+          title="What To Log?"
+          childStyle={{ display: "flex", flexDirection: "column" }}
         >
-          <div>Writing to file named:</div>
-          <div>
-            {app.logging.activeFilename !== null
-              ? app.logging.activeFilename
-              : "n/a"}
-          </div>
+          <Tooltip title="Log the raw bytes being received from the serial port to the log file.">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={app.logging.logRawTxData}
+                  disabled={app.logging.isLogging}
+                  onChange={(e) => {
+                    app.logging.setLogRawTxData(e.target.checked);
+                  }}
+                />
+              }
+              label="Raw TX data"
+            />
+          </Tooltip>
+          <Tooltip title="Log the raw bytes being sent out the serial port to the log file.">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={app.logging.logRawRxData}
+                  disabled={app.logging.isLogging}
+                  onChange={(e) => {
+                    app.logging.setLogRawRxData(e.target.checked);
+                  }}
+                />
+              }
+              label="Raw RX data"
+              checked={app.logging.logRawRxData}
+            />
+          </Tooltip>
+        </BorderedSection>
 
-          <div>Amount of data written:</div>
-          <div>
-            {app.logging.numBytesWritten !== null
-              ? `${app.logging.numBytesWritten}bytes`
-              : "n/a"}
-          </div>
+        <BorderedSection
+          title="Enabling and Status"
+          childStyle={{ width: "500px" }}
+        >
+          {/* ENABLE LOGGING */}
+          {/* ============================================================== */}
+          <FormControlLabel
+            control={
+              <Switch
+                name="enableGraphing"
+                checked={app.logging.isLogging}
+                disabled={!app.logging.canStartStopLogging}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    app.logging.startLogging();
+                  } else {
+                    app.logging.stopLogging();
+                  }
+                }}
+              />
+            }
+            label="Enable Logging"
+            sx={{
+              marginLeft: "20px",
+            }}
+          />
 
-          <div>File size (approx.):</div>
-          <div>
-            {app.logging.fileSizeBytes !== null
-              ? `${app.logging.fileSizeBytes}bytes`
-              : "n/a"}
+          {/* STATUS (GRID) */}
+          {/* ============================================================== */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "180px auto",
+              gridTemplateRows: "auto auto",
+            }}
+          >
+            <div>Writing to file named:</div>
+            <div>
+              {app.logging.activeFilename !== null
+                ? app.logging.activeFilename
+                : "n/a"}
+            </div>
+
+            <div>Amount of data written:</div>
+            <div>
+              {app.logging.numBytesWritten !== null
+                ? `${app.logging.numBytesWritten}bytes`
+                : "n/a"}
+            </div>
+
+            <div>File size (approx.):</div>
+            <div>
+              {app.logging.fileSizeBytes !== null
+                ? `${app.logging.fileSizeBytes}bytes`
+                : "n/a"}
+            </div>
           </div>
-        </div>
-      </BorderedSection>
+        </BorderedSection>
+      </div>{" "}
+      {/* END OF GRID */}
     </div>
   );
 });

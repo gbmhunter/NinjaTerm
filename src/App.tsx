@@ -375,7 +375,7 @@ export class App {
     this.txRxTerminal.parseData(rxData);
     this.rxTerminal.parseData(rxData);
     this.graphing.parseData(rxData);
-    this.logging.parseData(rxData);
+    this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
   }
 
@@ -476,18 +476,21 @@ export class App {
       }
       const writer = this.port?.writable?.getWriter();
 
-      const data = Uint8Array.from(bytesToWrite);
-      // console.log('Calling writer.write() with data=', data);
-      await writer?.write(data);
+      const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
+      await writer?.write(txDataAsUint8Array);
 
       // Allow the serial port to be closed later.
       writer?.releaseLock();
-      this.txTerminal.parseData(Uint8Array.from(bytesToWrite));
+      this.txTerminal.parseData(txDataAsUint8Array);
       // Check if local TX echo is enabled, and if so, send the data to
       // the combined single terminal.
       if (this.settings.dataProcessingSettings.localTxEcho) {
-        this.txRxTerminal.parseData(Uint8Array.from(bytesToWrite));
+        this.txRxTerminal.parseData(txDataAsUint8Array);
       }
+
+      // Also send this data to the logger, it may need it
+      this.logging.handleTxData(txDataAsUint8Array);
+
       runInAction(() => {
         this.numBytesTransmitted += bytesToWrite.length;
       })

@@ -9,6 +9,7 @@ type BorderedSectionProps = {
   icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { props: { className?: string } };
   title?: string;
   style?: React.CSSProperties;
+  childStyle?: React.CSSProperties;
   children: React.ReactNode;
 };
 
@@ -19,9 +20,9 @@ type BorderedSectionProps = {
  * @param param0 Props.
  * @returns React component.
  */
-function BorderedSection({ icon, title, style, children }: BorderedSectionProps): JSX.Element {
+function BorderedSection({ icon, title, style, childStyle, children }: BorderedSectionProps): JSX.Element {
     return (
-        <div className={styles.mainContainer}>
+        <div className={styles.mainContainer} style={style}>
             <div className={styles.header}>
                 <div className={styles.headerBorderBefore}></div>
                 {(icon || title) && (
@@ -32,7 +33,7 @@ function BorderedSection({ icon, title, style, children }: BorderedSectionProps)
                 )}
                 <div className={styles.headerBorderAfter}></div>
             </div>
-            <div className={styles.childrenContainer} style={style}>{children}</div>
+            <div className={styles.childrenContainer} style={childStyle}>{children}</div>
         </div>
     );
 }
