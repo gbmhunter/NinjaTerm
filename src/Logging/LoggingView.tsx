@@ -108,7 +108,7 @@ export default observer((props: Props) => {
                 <FormControlLabel
                   value={WhatToNameTheFile.CURRENT_DATETIME}
                   control={<Radio />}
-                  label="Use the current local datetime when logging is started (in the form YYYY-MM-DD HH-MM-SS.log)"
+                  label={"Save in the form \"NinjaTerm Logs - <DATETIME>.txt\". The current local datetime when logging is started will be used in the form \"YYYY-MM-DD HH-MM-SS\"."}
                 />
               </Tooltip>
               {/* CUSTOM */}

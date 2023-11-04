@@ -151,7 +151,7 @@ export default class Logging {
       const hours = now.getHours().toString().padStart(2, '0');
       const minutes = now.getMinutes().toString().padStart(2, '0');
       const seconds = now.getSeconds().toString().padStart(2, '0');
-      this.activeFilename = `${year}-${month}-${date} ${hours}-${minutes}-${seconds}.log`;
+      this.activeFilename = `NinjaTerm Logs - ${year}-${month}-${date} ${hours}-${minutes}-${seconds}.txt`;
     } else if (this.whatToNameTheFile === WhatToNameTheFile.CUSTOM) {
       this.activeFilename = this.customFileName.appliedValue;
     } else {
@@ -166,7 +166,6 @@ export default class Logging {
     } else if (this.existingFileBehavior === ExistingFileBehaviors.OVERWRITE) {
       // Clear the file by creating a new writable stream with keepExistingData set to false
       // (but don't actually write anything to it)
-      console.log('SSS')
       const writeable = await fileHandle.createWritable({ keepExistingData: false });
       // await writeable.write(Uint8Array.from([ 0x21, 0x21, 0x21 ]));
       await writeable.close();
