@@ -233,7 +233,7 @@ export default observer((props: Props) => {
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>Logging</Typography>
 
-                <Typography style={{ marginBottom: '20px' }}>Log your data to the file system for future retrieval or post analysis with other software.</Typography>
+                <Typography style={{ marginBottom: '20px' }}>Log your data to the file system for future retrieval or post analysis with other software. The file is written to once per second so your previous data should still be there even if the computer crashes/resets!</Typography>
 
                 <div style={{ display: 'flex' }}>
                   <img src={LoggingGif} alt="Demonstration of logging functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />

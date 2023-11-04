@@ -300,8 +300,8 @@ export default observer((props: Props) => {
             </div>
           </div>
         </BorderedSection>
-      </div>{" "}
-      {/* END OF GRID */}
+      </div> {/* END OF GRID */}
+      <p style={{ maxWidth: '600px' }}>The log file is written to once per second, so your data should still be there even if something unexpected happens (e.g. computer battery runs flat, Windows decides it's a good time to update).</p>
     </div>
   );
 });
