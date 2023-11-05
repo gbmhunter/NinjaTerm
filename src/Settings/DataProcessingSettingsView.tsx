@@ -43,7 +43,7 @@ function DataProcessingView(props: Props) {
         {/* =============================================================================== */}
         {/* ANSI ESCAPE CODES */}
         {/* =============================================================================== */}
-        <BorderedSection title="ANSI Escape Codes" style={{ display: 'flex', flexDirection: 'column' }}>
+        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: 'flex', flexDirection: 'column' }}>
           {/* =============================================================================== */}
           {/* ANSI ESCAPE CODE PARSING ENABLED */}
           {/* =============================================================================== */}
@@ -97,7 +97,7 @@ function DataProcessingView(props: Props) {
           </Tooltip>
         </BorderedSection>
 
-        <BorderedSection title="Echo" style={{ display: 'flex', flexDirection: 'column' }}>
+        <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>
 
         {/* =============================================================================== */}
         {/* LOCAL TX ECHO */}

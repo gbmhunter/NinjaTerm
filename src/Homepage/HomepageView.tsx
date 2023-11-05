@@ -13,11 +13,12 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from '@mui/icons-material/Twitter';
 import Grid from "@mui/material/Unstable_Grid2";
 
-import GitHubReadmeLogo from "./github-readme-logo.png";
-import AnsiEscapeCodeColours from "./ansi-escape-code-colours.gif";
+import GitHubReadmeLogoPng from "./github-readme-logo.png";
+import AnsiEscapeCodeColoursGif from "./ansi-escape-code-colours.gif";
 import GraphingGif from "./graphing.gif";
 import SmartScrollGif from "./smart-scroll.gif";
-import ControlCharAndHexCodeGlyphs from './control-char-and-hex-code-glyphs.gif';
+import ControlCharAndHexCodeGlyphsGif from './control-char-and-hex-code-glyphs.gif';
+import LoggingGif from './logging.gif';
 
 import "./HomepageView.css";
 
@@ -85,7 +86,7 @@ export default observer((props: Props) => {
           <Grid xs={12} sx={{ height: "20px" }} />
 
           <Grid xs={12} sx={{ display: "flex", justifyContent: "center" }}>
-            <img src={GitHubReadmeLogo} alt="NinjaTerm logo." width="600px" />
+            <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." width="600px" />
           </Grid>
           <Grid xs={12} sx={{ height: "20px" }} />
           <Grid xs={12} sx={{ display: "flex", justifyContent: "center" }}>
@@ -151,7 +152,7 @@ export default observer((props: Props) => {
                 <Typography style={{ marginBottom: '20px' }}>Rich support for ANSI CSI colour codes, giving you ability to express information however you see fit! (e.g. colour errors red, warnings yellow).</Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={AnsiEscapeCodeColours} alt="Demonstration of ANSI escape codes in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <img src={AnsiEscapeCodeColoursGif} alt="Demonstration of ANSI escape codes in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
                 </div>
               </div>
             </Grid>
@@ -214,11 +215,31 @@ export default observer((props: Props) => {
                 <Typography style={{ marginBottom: '20px' }}>When debugging ASCII based data, sometimes unexpected "invisible" characters such as ASCII control characters or bytes above 0x7F &#40;which are not part of ASCII&#41; cause weird things to happen to your data! NinjaTerm contains a special font with glyphs for all ASCII control chars and all hex codes from 0x00 to 0xFF. Enable this mode from the settings to "see" any received byte of data!</Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={ControlCharAndHexCodeGlyphs} alt="Demonstration of ASCII control character and hex code glyphs in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <img src={ControlCharAndHexCodeGlyphsGif} alt="Demonstration of ASCII control character and hex code glyphs in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
                 </div>
               </div>
             </Grid>
 
+            {/* Logging */}
+            {/* ========================================================================== */}
+            <Grid xs={12}>
+              <div
+                style={{
+                  backgroundColor: "#202020",
+                  border: "1px solid #dc3545",
+                  borderRadius: "10px",
+                  padding: "20px",
+                }}
+              >
+                <Typography variant="h6" style={{ marginBottom: '20px' }}>Logging</Typography>
+
+                <Typography style={{ marginBottom: '20px' }}>Log your data to the file system for future retrieval or post analysis with other software. The file is written to once per second so your previous data should still be there even if the computer crashes/resets!</Typography>
+
+                <div style={{ display: 'flex' }}>
+                  <img src={LoggingGif} alt="Demonstration of logging functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                </div>
+              </div>
+            </Grid>
 
           </Grid>
 
@@ -232,7 +253,6 @@ export default observer((props: Props) => {
           <ul>
             <li>Timestamping</li>
             <li>Mode to send data only on enter</li>
-            <li>Logging</li>
             <li>Filtering</li>
           </ul>
 

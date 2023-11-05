@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.8.0",
+  "version": "4.9.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -47,7 +47,8 @@
     "workbox-range-requests": "^6.6.0",
     "workbox-routing": "^6.6.0",
     "workbox-strategies": "^6.6.0",
-    "workbox-streams": "^6.6.0"
+    "workbox-streams": "^6.6.0",
+    "zod": "^3.22.4"
   },
   "scripts": {
     "start": "vite",
@@ -77,6 +78,7 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@playwright/test": "^1.39.0",
     "@types/react-window": "^1.8.5",
+    "@types/wicg-file-system-access": "^2023.10.2",
     "jest-canvas-mock": "^2.5.2",
     "postcss": "^8.4.31",
     "postcss-nesting": "^12.0.1",
