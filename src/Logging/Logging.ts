@@ -1,27 +1,22 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import * as Validator from 'validatorjs';
-
-import en from 'validatorjs/src/lang/en';
-
-Validator.setMessages('en', en);
+import { ZodString, z } from "zod";
 
 import { App } from 'src/App';
 import BorderedSection from "src/Components/BorderedSection";
 
 class ApplyableTextField {
   dispValue: string;
-  rule: string | string[];
+  schema: ZodString;
   appliedValue: string;
 
   isValid = false;
   friendlyName = '';
   errorMsg = '';
 
-  constructor(dispValue: string, rules: string | string[], friendlyName: string) {
-    this.rule = rules;
+  constructor(dispValue: string, schema: ZodString) {
+    this.schema = schema;
     this.dispValue = '';
     this.appliedValue = '';
-    this.friendlyName = friendlyName;
     this.setDispValue(dispValue);
     this.apply();
     makeAutoObservable(this);
@@ -29,16 +24,13 @@ class ApplyableTextField {
 
   setDispValue = (value: string) => {
     this.dispValue = value;
-    const validator = new Validator(
-      {var: value},
-      {var: this.rule}
-    );
-    validator.setAttributeNames({ var: this.friendlyName });
-    this.isValid = !validator.fails();
-    if (this.isValid) {
+    const validation = this.schema.safeParse(this.dispValue);
+    this.isValid = validation.success;
+    console.log(validation);
+    if (validation.success) {
       this.errorMsg = '';
     } else {
-      this.errorMsg = validator.errors.first('var');
+      this.errorMsg = validation.error.errors[0].message;
     }
   }
 
@@ -87,8 +79,7 @@ export default class Logging {
 
   customFileName = new ApplyableTextField(
     'custom-file-name.log',
-    ['required', 'regex:/^[\\w,\\s\.-]+$/'],
-    'file name',
+    z.string().min(1).regex(new RegExp(/^[\w,\s\.-]+$/), 'Filename should contain only alphanumeric characters, spaces, periods, and dashes.'),
   );
 
   existingFileBehavior = ExistingFileBehaviors.APPEND;
