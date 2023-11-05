@@ -7,10 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.9.0] - 2023-11-05
+
 ### Added
 
 - Added tooltips for the left toolbar clickable navigation icons.
 - Added logging functionality.
+
+### Changes
+
+- Starting to use zod instead of validator.js for input validation. zod has a design which works well for custom input classes, and doesn't cause the same import errors when running in vitest.
 
 ## [4.8.0] - 2023-11-03
 
@@ -553,7 +559,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.8.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.9.0...HEAD
+[4.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.8.0...v4.9.0
 [4.8.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.7.0...v4.8.0
 [4.7.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.5...v4.7.0
 [4.6.5]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.4...v4.6.5

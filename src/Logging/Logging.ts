@@ -4,6 +4,12 @@ import { ZodString, z } from "zod";
 import { App } from 'src/App';
 import BorderedSection from "src/Components/BorderedSection";
 
+/**
+ * Re-usable class that backs a UI input text field. It has a display
+ * value which is what the user sees, and an applied value which is
+ * typically updated on Enter or loss of focus, and can be
+ * validated using Zod.
+ */
 class ApplyableTextField {
   dispValue: string;
   schema: ZodString;
@@ -30,6 +36,8 @@ class ApplyableTextField {
     if (validation.success) {
       this.errorMsg = '';
     } else {
+      // We want to keep this simple, just show the first
+      // error message
       this.errorMsg = validation.error.errors[0].message;
     }
   }
