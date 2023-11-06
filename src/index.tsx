@@ -7,20 +7,20 @@ import {
 } from "react-router-dom";
 import ReactGA from "react-ga4";
 
-import { App } from './App';
 import AppView from './AppView';
 import HomepageView from './Homepage/HomepageView';
 
-// Google Analytics
-ReactGA.initialize("G-SDMMGN71FN");
+// Google Analytics. Only initialize in production, otherwise things like
+// Playwright tests can spam GA and skew data
+if (import.meta.env.PROD) {
+  ReactGA.initialize("G-SDMMGN71FN");
+} else {
+  console.log('Detected dev. environment, not initializing Google Analytics.');
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
-
-
-
-
 
 // Create routes. Only 2 routes. The root is the
 // landing page which is static, and then

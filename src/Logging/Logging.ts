@@ -32,7 +32,6 @@ class ApplyableTextField {
     this.dispValue = value;
     const validation = this.schema.safeParse(this.dispValue);
     this.isValid = validation.success;
-    console.log(validation);
     if (validation.success) {
       this.errorMsg = '';
     } else {

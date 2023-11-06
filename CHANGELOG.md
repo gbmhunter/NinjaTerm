@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Google Analytics is now only initialized in production builds, to prevent things like Playwright e2e tests from spamming GA and skewing data.
+
 ## [4.9.0] - 2023-11-05
 
 ### Added
@@ -14,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added tooltips for the left toolbar clickable navigation icons.
 - Added logging functionality.
 
-### Changes
+### Changed
 
 - Starting to use zod instead of validator.js for input validation. zod has a design which works well for custom input classes, and doesn't cause the same import errors when running in vitest.
 
