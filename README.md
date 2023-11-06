@@ -30,7 +30,7 @@ npm install
 Start the app in the `dev` environment:
 
 ```bash
-npm start
+npm run start
 ```
 
 ## Testing
