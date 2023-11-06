@@ -4,7 +4,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { closeSnackbar }  from 'notistack';
-
+import ReactGA from "react-ga4";
 
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
@@ -274,6 +274,9 @@ export class App {
 
       this.keepReading = true;
       this.closedPromise = this.readUntilClosed();
+      // Create custom GA4 event to see how many ports have
+      // been opened in NinjaTerm :-)
+      ReactGA.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {

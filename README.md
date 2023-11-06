@@ -85,11 +85,9 @@ Create React App (CRA) with the typescript PWA template [docs here](https://crea
 npx create-react-app my-app --template cra-template-pwa-typescript
 ```
 
-NOTE: Since then, the app has been migrated from using create-react-app (which uses the Webpack compiler) to using the Vite compiler.
+NOTE: Since then, the app has been migrated from using `create-react-app`` (which uses the Webpack compiler) to using the Vite compiler.
 
-The React based user interface code is under `src/view`.
-
-MobX is used to store the application state (model). The React component redraw themselves based on the state of the model. The application model is under `src/model/`.
+The source code is under `src/`. The React-based user interfaces are in `.tsx` files, and the MobX "models" (you could kind of call them stores) are typically in `.ts` files. There is generally 1 model file per React view to store all the stateful information relating to that view. 
 
 ## Progressive Web App (PWA)
 
