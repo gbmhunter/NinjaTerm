@@ -23,6 +23,7 @@ import {
   NonVisibleCharDisplayBehaviors,
 } from "src/Settings/DataProcessingSettings";
 import BorderedSection from "src/Components/BorderedSection";
+import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 
 interface Props {
   app: App;
@@ -75,7 +76,7 @@ function DataProcessingView(props: Props) {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               id="outlined-basic"
               name="maxEscapeCodeLengthChars"
               label="Max. Escape Code Length"
@@ -86,15 +87,11 @@ function DataProcessingView(props: Props) {
                   <InputAdornment position="start">chars</InputAdornment>
                 ),
               }}
-              value={app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.dispValue}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                app.settings.dataProcessingSettings.setMaxEscapeCodeLengthCharsDisp(event.target.value);
-              }}
-              error={app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.hasError}
-              helperText={app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.errorMsg}
+              applyableTextField={app.settings.dataProcessingSettings.maxEscapeCodeLengthChars}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
+
         </BorderedSection>
 
         <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>

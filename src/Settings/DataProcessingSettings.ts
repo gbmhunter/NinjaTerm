@@ -1,9 +1,11 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import * as Validator from 'validatorjs';
+import { ZodString, z } from 'zod';
 
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
+import { ApplyableNumberField } from 'src/Components/ApplyableTextField';
 
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
@@ -33,13 +35,15 @@ export default class DataProcessingSettings {
 
   ansiEscapeCodeParsingEnabled = true;
 
-  maxEscapeCodeLengthChars = {
-    dispValue: '10',
-    appliedValue: 10,
-    hasError: false,
-    errorMsg: '',
-    rule: 'required|integer|min:2', // Min. is two, one for the escape byte and then a single char.
-  };
+  // maxEscapeCodeLengthChars = {
+  //   dispValue: '10',
+  //   appliedValue: 10,
+  //   hasError: false,
+  //   errorMsg: '',
+  //   rule: 'required|integer|min:2', // Min. is two, one for the escape byte and then a single char.
+  // };
+
+  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
 
   // If true, local TX data will be echoed to RX
   localTxEcho = false;
@@ -73,23 +77,6 @@ export default class DataProcessingSettings {
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.ansiEscapeCodeParsingEnabled = value;
-  }
-
-  setMaxEscapeCodeLengthCharsDisp = (value: string) => {
-    this.maxEscapeCodeLengthChars.dispValue = value;
-    const validation = new Validator({maxEscapeCodeLengthChars: value}, {maxEscapeCodeLengthChars: this.maxEscapeCodeLengthChars.rule});
-    this.maxEscapeCodeLengthChars.hasError = validation.fails();
-    if (this.maxEscapeCodeLengthChars.hasError) {
-      this.maxEscapeCodeLengthChars.errorMsg = validation.errors.first('terminalWidthChars');
-    } else {
-      this.maxEscapeCodeLengthChars.errorMsg = '';
-    }
-  }
-
-  applyTerminalWidthChars = () => {
-    if (!this.maxEscapeCodeLengthChars.hasError) {
-      this.maxEscapeCodeLengthChars.appliedValue = parseInt(this.maxEscapeCodeLengthChars.dispValue);
-    }
   }
 
   setLocalTxEcho = (value: boolean) => {
