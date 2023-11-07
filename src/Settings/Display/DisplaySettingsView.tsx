@@ -1,6 +1,7 @@
 import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
 
 import { App } from 'src/App';
+import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/Settings/Display/DisplaySettings';
 
 interface Props {
@@ -20,7 +21,7 @@ export default function DataProcessingView(props: Props) {
         followCursor
         arrow
       >
-        <TextField
+        <ApplyableTextFieldView
           id="outlined-basic"
           name="charSizePx"
           label="Char Size"
@@ -29,33 +30,20 @@ export default function DataProcessingView(props: Props) {
           InputProps={{
             endAdornment: <InputAdornment position="start">px</InputAdornment>,
           }}
-          value={app.settings.displaySettings.charSizePx.dispValue}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.displaySettings.setCharSizePxDisp(event.target.value);
-          }}
-          onBlur={() => {
-            app.settings.displaySettings.applyCharSizePx();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              app.settings.displaySettings.applyCharSizePx();
-            }
-          }}
-          error={app.settings.displaySettings.charSizePx.hasError}
-          helperText={app.settings.displaySettings.charSizePx.errorMsg}
+          applyableTextField={app.settings.displaySettings.charSizePx}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
 
       {/* =============================================================================== */}
-      {/* DATA WIDTH */}
+      {/* TERMINAL WIDTH (IN CHARS) */}
       {/* =============================================================================== */}
       <Tooltip
         title="The max. number of characters to display per line in the terminal before wrapping to the next line. Must be a positive integer. New line characters also cause text to jump to the next line."
         followCursor
         arrow
       >
-        <TextField
+        {/* <TextField
           id="outlined-basic"
           name="terminalWidthChars"
           label="Terminal Width"
@@ -73,6 +61,20 @@ export default function DataProcessingView(props: Props) {
           error={app.settings.displaySettings.terminalWidthChars.hasError}
           helperText={app.settings.displaySettings.terminalWidthChars.errorMsg}
           sx={{ marginBottom: "20px" }}
+        /> */}
+        <ApplyableTextFieldView
+          id="outlined-basic"
+          name="terminalWidthChars"
+          label="Terminal Width"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">chars</InputAdornment>
+            ),
+          }}
+          applyableTextField={app.settings.displaySettings.terminalWidthChars}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
 
@@ -85,7 +87,7 @@ export default function DataProcessingView(props: Props) {
         followCursor
         arrow
       >
-        <TextField
+        <ApplyableTextFieldView
           name="scrollbackBufferSizeRows"
           label="Scrollback Buffer Size"
           variant="outlined"
@@ -95,12 +97,7 @@ export default function DataProcessingView(props: Props) {
               <InputAdornment position="start">rows</InputAdornment>
             ),
           }}
-          value={app.settings.displaySettings.scrollbackBufferSizeRows.dispValue}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.displaySettings.setScrollbackBufferSizeRowsDisp(event.target.value);
-          }}
-          error={app.settings.displaySettings.scrollbackBufferSizeRows.hasError}
-          helperText={app.settings.displaySettings.scrollbackBufferSizeRows.errorMsg}
+          applyableTextField={app.settings.displaySettings.scrollbackBufferSizeRows}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>

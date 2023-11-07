@@ -1,7 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
-import * as Validator from 'validatorjs';
-import { ZodString, z } from 'zod';
+import { z } from 'zod';
 
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';

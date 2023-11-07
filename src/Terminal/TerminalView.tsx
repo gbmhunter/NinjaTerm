@@ -24,6 +24,7 @@ import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'src/Settings/Display/DisplaySettings';
+import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 
 interface Props {
   app: App;
@@ -173,7 +174,7 @@ export default observer((props: Props) => {
         followCursor
         arrow
       >
-        <TextField
+        <ApplyableTextFieldView
           id="outlined-basic"
           name="charSizePx"
           label="Char Size"
@@ -184,23 +185,7 @@ export default observer((props: Props) => {
               <InputAdornment position="start">px</InputAdornment>
             ),
           }}
-          value={
-            app.settings.displaySettings.charSizePx.dispValue
-          }
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.displaySettings.setCharSizePxDisp(event.target.value);
-          }}
-          onBlur={() => {
-            app.settings.displaySettings.applyCharSizePx();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              app.settings.displaySettings.applyCharSizePx();
-            }
-          }}
-          error={
-            app.settings.displaySettings.charSizePx.hasError
-          }
+          applyableTextField={app.settings.displaySettings.charSizePx}
           sx={{ width: "80px" }}
         />
       </Tooltip>
