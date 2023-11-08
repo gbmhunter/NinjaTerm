@@ -1,7 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import Validator from 'validatorjs';
+import { z } from 'zod';
 
 import Snackbar from 'src/Snackbar';
+import { ApplyableTextField, ApplyableNumberField } from 'src/Components/ApplyableTextField';
 
 class Point {
   x: number = 0;
@@ -26,16 +28,43 @@ class Graphing {
     'Custom',
   ]
 
+  dataSeparator = this.dataSeparators[0];
+
+  /**
+     * The maximum size of the receive buffer before it is cleared.
+     */
+  maxBufferSize = new ApplyableNumberField('100', z.coerce.number().int().min(1).max(1000));
+
+  maxNumDataPoints = new ApplyableNumberField('500', z.coerce.number().int().min(1).max(2000));
+
   xVarSources = [
     'Received Time', // Received time since last reset
     'Counter', // Monotonically increasing counter
     'In Data', // X values extracted from data, just like y values
   ]
 
+  xVarSource = this.xVarSources[0]
+
+  xVarPrefix = new ApplyableTextField('x=', z.string());
+
+  yVarPrefix = new ApplyableTextField('y=', z.string());
+
   axisRangeModes = [
     'Auto',
     'Fixed',
   ]
+
+  xAxisRangeMode = this.axisRangeModes[0];
+
+  xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+
+  xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
+
+  yAxisRangeMode = this.axisRangeModes[0];
+
+  yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+
+  yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
 
   xVarUnit = 's';
 
@@ -43,114 +72,6 @@ class Graphing {
    * Holds data that has been received but no data separator has been found yet.
    */
   rxDataBuffer: string = '';
-
-  settings = {
-    /**
-     * The maximum size of the receive buffer before it is cleared.
-     */
-    maxBufferSize: {
-      dispValue: '100',
-      appliedValue: '100',
-      rule: 'required|integer|min:1|max:1000',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    dataSeparator: {
-      dispValue: 'LF (\\n)',
-      appliedValue: 'LF (\\n)',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    maxNumDataPoints: {
-      dispValue: '500',
-      appliedValue: '500',
-      rule: 'required|integer|min:1|max:2000',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    xVarSource: {
-      dispValue: 'Received Time',
-      appliedValue: 'Received Time',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    /**
-     * The string to search for in the RX data to find the X value for a specific data point.
-     */
-    xVarPrefix: {
-      dispValue: 'x=',
-      appliedValue: 'x=',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    /**
-     * The string to search for in the RX data to find the Y value for a specific data point.
-     */
-    yVarPrefix: {
-      dispValue: 'y=',
-      appliedValue: 'y=',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    xAxisRangeMode: {
-      dispValue: 'Auto',
-      appliedValue: 'Auto',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    xAxisRangeMin: {
-      dispValue: '0',
-      appliedValue: '0',
-      rule: 'required|numeric',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    xAxisRangeMax: {
-      dispValue: '100',
-      appliedValue: '100',
-      rule: 'required|numeric',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    yAxisRangeMode: {
-      dispValue: 'Auto',
-      appliedValue: 'Auto',
-      rule: 'required|string',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    yAxisRangeMin: {
-      dispValue: '0',
-      appliedValue: '0',
-      rule: 'required|numeric',
-      hasError: false,
-      errorMsg: '',
-    },
-
-    yAxisRangeMax: {
-      dispValue: '100',
-      appliedValue: '100',
-      rule: 'required|numeric',
-      hasError: false,
-      errorMsg: '',
-    },
-
-  }
 
   /**
    * Tracks the time when the reset button was pressed. This is used to calculate
@@ -172,75 +93,20 @@ class Graphing {
     this.graphingEnabled = graphingEnabled;
   }
 
-  /**
-   * General purpose function that can set any parameter in the settings object.
-   *
-   * Always runs validation.
-   *
-   * @param settingName
-   * @param settingValue
-   */
-  setSetting = (settingName: string, settingValue: string) => {
-    // console.log('setSetting() called. settingName: ' + settingName + ', settingValue: ' + settingValue);
-    if (this.settings.hasOwnProperty(settingName) === false) {
-      throw new Error('Unsupported setting name: ' + settingName);
-    }
-    (this.settings as any)[settingName].dispValue = settingValue;
-    this.onSettingsChange();
+  setDataSeparator = (value: string) => {
+    this.dataSeparator = value;
   }
 
-  onSettingsChange = () => {
-    // Iterate over every key-value pair in settings
-    const validatorValues: { [key: string]: any } = {};
-    const validatorRules: { [key: string]: string } = {};
-    Object.entries(this.settings).forEach(([paramName, paramData]) => {
-      // console.log('key: ' + paramName, 'value: ' + paramData);
-      validatorValues[paramName] = paramData.dispValue;
-      validatorRules[paramName] = paramData.rule;
-    })
-    // Check if settings are valid
-    const validation = new Validator(validatorValues, validatorRules);
-
-    // Calling passes() is needed to run the validation logic. This also assigns the result
-    // to enable/disable the apply button
-    this.isApplyable = validation.passes();
-
-    // console.log('isApplyable: ' + this.isApplyable);
-
-    // Now set individual error states and error messages (to display
-    // to the user)
-    Object.entries(this.settings).forEach(
-      ([paramName, paramData]) => {
-        const hasError = validation.errors.has(paramName);
-        // Convert to any type so we can assign to it
-        // const paramDataAny = paramData as any;
-        paramData.hasError = hasError;
-        if (hasError) {
-          paramData.errorMsg = validation.errors.first(paramName);
-        } else {
-          paramData.errorMsg = '';
-        }
-      }
-    );
+  setXVarSource = (value: string) => {
+    this.xVarSource = value;
   }
 
-  applyChanges = () => {
-    Object.entries(this.settings).forEach(([key, value]) => {
-      // Check if the user changed the x variable source
-      if (key === 'xVarSource') {
-        if (value.dispValue !== value.appliedValue) {
-          // User changed the X variable source, so reset the data
-          this.resetData();
-        }
-      }
-      value.appliedValue = value.dispValue;
-    })
+  setXAxisRangeMode = (value: string) => {
+    this.xAxisRangeMode = value;
+  }
 
-    // User could have reduced number of data points,
-    // so limit if needed
-    this.limitNumDataPoints();
-
-    this.isApplyable = false;
+  setYAxisRangeMode = (value: string) => {
+    this.yAxisRangeMode = value;
   }
 
   /**
@@ -266,7 +132,7 @@ class Graphing {
       if (char === '\n') {
         // console.log('Found data separator.')
         // Found a data separator, so parse the data
-        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.settings.yVarPrefix.appliedValue);
+        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
         if (yVarPrefixIdx === -1) {
           // This line does not contain the Y variable prefix, so skip it
           this.rxDataBuffer = '';
@@ -277,7 +143,7 @@ class Graphing {
         // and call parseFloat on it. This will stop at the first non-numeric
         // character (but will allow things like "."), which is what we want.
         let yValStr = '';
-        for (let j = yVarPrefixIdx + this.settings.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+        for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
           yValStr += this.rxDataBuffer[j];
         }
         const yVal = parseFloat(yValStr);
@@ -292,14 +158,14 @@ class Graphing {
 
         // Get the X value
         let xVal;
-        if (this.settings.xVarSource.appliedValue === 'Received Time') {
+        if (this.xVarSource === 'Received Time') {
           // Get the time since the last reset in ms, then convert to s
           xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
-        } else if (this.settings.xVarSource.appliedValue === 'Counter') {
+        } else if (this.xVarSource === 'Counter') {
           // Use the number of data points as the X value
           xVal = this.graphData.length;
-        } else if (this.settings.xVarSource.appliedValue === 'In Data') {
-          const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.settings.xVarPrefix.appliedValue);
+        } else if (this.xVarSource === 'In Data') {
+          const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
           if (xVarPrefixIdx === -1) {
             // This line does not contain the X variable prefix, so skip it
             this.rxDataBuffer = '';
@@ -309,7 +175,7 @@ class Graphing {
           // and call parseFloat on it. This will stop at the first non-numeric
           // character (but will allow things like "."), which is what we want.
           let xValStr = '';
-          for (let j = xVarPrefixIdx + this.settings.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+          for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
             xValStr += this.rxDataBuffer[j];
           }
           xVal = parseFloat(xValStr);
@@ -323,7 +189,7 @@ class Graphing {
           }
 
         } else {
-          throw new Error('Unsupported X variable source: ' + this.settings.xVarSource.appliedValue);
+          throw new Error('Unsupported X variable source: ' + this.xVarSource);
         }
 
         // If we get here both x and y values should be valid
@@ -334,7 +200,7 @@ class Graphing {
         this.rxDataBuffer = '';
       }
 
-      if (this.rxDataBuffer.length > parseInt(this.settings.maxBufferSize.appliedValue)) {
+      if (this.rxDataBuffer.length > this.maxBufferSize.appliedValue) {
         // Buffer is getting too big, so clear it
         this.rxDataBuffer = '';
         this.snackbar.sendToSnackbar(
@@ -361,7 +227,7 @@ class Graphing {
   limitNumDataPoints = () => {
     // Check if we have exceeded the max number of data points,
     // and if so, remove the oldest point
-    while (this.graphData.length > parseInt(this.settings.maxNumDataPoints.appliedValue)) {
+    while (this.graphData.length > this.maxNumDataPoints.appliedValue) {
       this.graphData.shift();
     }
   }
@@ -380,12 +246,11 @@ class Graphing {
     }
     const xMin = Math.min(...this.graphData.map(point => point.x));
     const xMax = Math.max(...this.graphData.map(point => point.x));
-    this.settings.xAxisRangeMin.dispValue = xMin.toString();
-    this.settings.xAxisRangeMax.dispValue = xMax.toString();
-    // Also set applied values, by pass apply button as these were not set by the user,
-    // they do not need validation
-    this.settings.xAxisRangeMin.appliedValue = this.settings.xAxisRangeMin.dispValue;
-    this.settings.xAxisRangeMax.appliedValue = this.settings.xAxisRangeMax.dispValue;
+    this.xAxisRangeMin.dispValue = xMin.toString();
+    this.xAxisRangeMax.dispValue = xMax.toString();
+
+    this.xAxisRangeMin.apply();
+    this.xAxisRangeMax.apply();
   }
 
   updateYRangeFromData = () => {
@@ -394,12 +259,11 @@ class Graphing {
     }
     const yMin = Math.min(...this.graphData.map(point => point.y));
     const yMax = Math.max(...this.graphData.map(point => point.y));
-    this.settings.yAxisRangeMin.dispValue = yMin.toString();
-    this.settings.yAxisRangeMax.dispValue = yMax.toString();
-    // Also set applied values, by pass apply button as these were not set by the user,
-    // they do not need validation
-    this.settings.yAxisRangeMin.appliedValue = this.settings.yAxisRangeMin.dispValue;
-    this.settings.yAxisRangeMax.appliedValue = this.settings.yAxisRangeMax.dispValue;
+    this.yAxisRangeMin.dispValue = yMin.toString();
+    this.yAxisRangeMax.dispValue = yMax.toString();
+
+    this.yAxisRangeMin.apply();
+    this.yAxisRangeMax.apply();
   }
 }
 

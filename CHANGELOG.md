@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Google Analytics is now only initialized in production builds, to prevent things like Playwright e2e tests from spamming GA and skewing data.
 - Refactored "ApplyableTextField" into it's own classes.
+- All user input fields (e.g. text inputs) now "apply" their changes on either loss of focus or by pressing the Enter key, no "Apply" button is needed.
 
 ## [4.9.0] - 2023-11-05
 
