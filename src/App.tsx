@@ -225,8 +225,13 @@ export class App {
         runInAction(async () => {
           this.port = approvedPort;
           this.serialPortInfo = approvedPortInfo;
-          await this.openPort(false);
-          this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
+
+          if(this.appStorage.data.lastUsedSerialPort.portState === PortState.OPENED) {
+            await this.openPort(false);
+            this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
+          } else if(this.appStorage.data.lastUsedSerialPort.portState === PortState.CLOSED) {
+            this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
+          }
         });
         return;
       }
@@ -326,6 +331,10 @@ export class App {
 
       this.keepReading = true;
       this.closedPromise = this.readUntilClosed();
+
+      this.appStorage.data.lastUsedSerialPort.portState = PortState.OPENED;
+      this.appStorage.saveData();
+
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
       ReactGA.event('port_open');
@@ -451,6 +460,8 @@ export class App {
       this.snackbar.sendToSnackbar('Serial port closed.', 'success');
       this.reader = null;
       this.closedPromise = null;
+      this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
+      this.appStorage.saveData();
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
