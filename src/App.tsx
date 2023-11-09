@@ -192,9 +192,45 @@ export class App {
     makeAutoObservable(this); // Make sure this near the end
   }
 
-  async init() {
-    let ports = await navigator.serial.getPorts();
-    console.log('ports: ', ports);
+  async onAppUiLoaded() {
+    // getPorts() returns ports that the user has previously approved
+    // this app to be able to access
+    let approvedPorts = await navigator.serial.getPorts();
+    console.log('ports: ', approvedPorts);
+
+    const lastUsedPortInfo = this.appStorage.getLastUsedPortInfo();
+
+    if (lastUsedPortInfo === null) {
+      return;
+    }
+
+    const lastUsedPortInfoStr = JSON.stringify(lastUsedPortInfo);
+    console.log('lastUsedPortInfoStr=', lastUsedPortInfoStr);
+    // If the JSON representation of the last used port is just "{}",
+    // it means that the last used port didn't contain any valuable
+    // information to uniquely identify it, so don't bother trying to
+    // find it again!
+    if (lastUsedPortInfoStr === '{}') {
+      return;
+    }
+    // Check list of approved ports to see if any match the last opened ports
+    // USB vendor ID and product ID. If so, open.
+    for (let i = 0; i < approvedPorts.length; i += 1) {
+      const approvedPort = approvedPorts[i];
+      const approvedPortInfo = approvedPort.getInfo();
+      const approvedPortInfoStr = JSON.stringify(approvedPort.getInfo());
+      if (approvedPortInfoStr === lastUsedPortInfoStr) {
+        console.log('Found a match, opening port. portInfo=', approvedPortInfoStr);
+        // Found a match, open it
+        runInAction(async () => {
+          this.port = approvedPort;
+          this.serialPortInfo = approvedPortInfo;
+          await this.openPort(false);
+          this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
+        });
+        return;
+      }
+    }
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -232,14 +268,16 @@ export class App {
       runInAction(() => {
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
-        this.appStorage.saveSettings();
+        // Save the info for this port, so we can automatically re-open
+        // it on app re-open in the future
+        this.appStorage.setLastUsedPortInfo(this.serialPortInfo);
       })
     } else {
       console.error('Browser not supported, it does not provide the navigator.serial API.');
     }
   }
 
-  async openPort() {
+  async openPort(printSuccessMsg = true) {
     if (this.lastSelectedPortType === PortType.REAL) {
       try {
         await this.port?.open({
@@ -276,7 +314,9 @@ export class App {
         // cannot be considered open
         return;
       }
-      this.snackbar.sendToSnackbar('Serial port opened.', 'success');
+      if (printSuccessMsg) {
+        this.snackbar.sendToSnackbar('Serial port opened.', 'success');
+      }
       this.setPortState(PortState.OPENED);
       // This will automatically close the settings window if the user is currently in it,
       // clicks "Open" and the port opens successfully.

@@ -77,7 +77,6 @@ interface Props {
 }
 
 const app = new App();
-await app.init();
 
 declare global {
   interface Window { app: App; }
@@ -85,10 +84,12 @@ declare global {
 
 window.app = app;
 
+console.log('TEST')
+
 const AppView = observer((props: Props) => {
-  // const { app } = props;
 
   useEffect(() => {
+    console.log('useEffect1() called.');
     // We need to register the service worker AFTER the app
     // has rendered, because it we do it before we won't
     // be able to enqueue a snackbar to tell the user there
@@ -111,6 +112,16 @@ const AppView = observer((props: Props) => {
     // app.swOnNeedRefresh((reloadPage) => {
     //   return Promise.resolve();
     // })
+  }, []);
+
+  useEffect(() => {
+    console.log('useEffect2() called.');
+    const initFn = async () => {
+      console.log('Calling init()...');
+      await app.onAppUiLoaded();
+    }
+
+    initFn().catch(console.error);
   }, []);
 
   // SELECT CORRECT MAIN PANE
