@@ -77,6 +77,7 @@ interface Props {
 }
 
 const app = new App();
+await app.init();
 
 declare global {
   interface Window { app: App; }

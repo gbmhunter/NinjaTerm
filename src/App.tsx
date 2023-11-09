@@ -5,7 +5,9 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { closeSnackbar }  from 'notistack';
 import ReactGA from "react-ga4";
+import { Button } from '@mui/material';
 
+// Import package.json to read out the version number
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
@@ -14,7 +16,7 @@ import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { Button } from '@mui/material';
+import AppStorage from './Storage/AppStorage';
 
 declare global {
   interface String {
@@ -138,6 +140,8 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
+  appStorage: AppStorage = new AppStorage(this);
+
   constructor(
     testing = false
   ) {
@@ -173,6 +177,10 @@ export class App {
 
     this.logging = new Logging(this);
 
+
+    // Load settings from local storage
+    this.appStorage.loadDefaultSettings();
+
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -182,6 +190,11 @@ export class App {
     // });
 
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  async init() {
+    let ports = await navigator.serial.getPorts();
+    console.log('ports: ', ports);
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -209,8 +222,6 @@ export class App {
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
-        console.log(window.navigator.serial)
-        // return;
         localPort = await window.navigator.serial.requestPort();
       } catch (error) {
           // The only reason I know of that occurs an error to be thrown is
@@ -221,6 +232,7 @@ export class App {
       runInAction(() => {
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
+        this.appStorage.saveSettings();
       })
     } else {
       console.error('Browser not supported, it does not provide the navigator.serial API.');
