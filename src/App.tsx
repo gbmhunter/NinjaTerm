@@ -177,10 +177,6 @@ export class App {
 
     this.logging = new Logging(this);
 
-
-    // Load settings from local storage
-    this.appStorage.loadDefaultSettings();
-
     // This is fired whenever a serial port that has been allowed access
     // dissappears (i.e. USB serial), even if we are not connected to it.
     // navigator.serial.addEventListener("disconnect", (event) => {
@@ -198,13 +194,13 @@ export class App {
     let approvedPorts = await navigator.serial.getPorts();
     console.log('ports: ', approvedPorts);
 
-    const lastUsedPortInfo = this.appStorage.getLastUsedPortInfo();
-
-    if (lastUsedPortInfo === null) {
+    const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
+    if (lastUsedSerialPort === undefined) {
+      console.log('Did not find last used serial port in local storage.');
       return;
     }
 
-    const lastUsedPortInfoStr = JSON.stringify(lastUsedPortInfo);
+    const lastUsedPortInfoStr = JSON.stringify(lastUsedSerialPort.serialPortInfo);
     console.log('lastUsedPortInfoStr=', lastUsedPortInfoStr);
     // If the JSON representation of the last used port is just "{}",
     // it means that the last used port didn't contain any valuable
@@ -275,7 +271,8 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        this.appStorage.setLastUsedPortInfo(this.serialPortInfo);
+        this.appStorage.data.lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
+        this.appStorage.saveData();
       })
     } else {
       console.error('Browser not supported, it does not provide the navigator.serial API.');
