@@ -14,7 +14,8 @@ import {
 import { OverridableStringUnion } from "@mui/types";
 import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortState, PortType } from "../../App";
+import { App, portStateToButtonProps, PortType } from "../../App";
+import { PortState } from './PortConfiguration';
 import { StopBits } from "../Settings";
 import styles from "./PortConfigurationView.module.css";
 
@@ -119,9 +120,9 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: "20px" }}></div>
 
-      {/* CONNECT AND GO TO TERMINAL CHECKBOX */}
+      {/* OPEN AND GO TO TERMINAL CHECKBOX */}
       {/* =============================================================== */}
-      <Tooltip title="Connect to the serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!">
+      <Tooltip title="Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!">
         <FormControlLabel
           control={
             <Checkbox
@@ -137,7 +138,7 @@ function PortConfigurationView(props: Props) {
               data-testid="connect-and-go-to-terminal-checkbox"
             />
           }
-          label="Connect to serial port and go to the terminal as soon as it is selected"
+          label="Open serial port and go to the terminal as soon as it is selected"
         />
       </Tooltip>
 
@@ -159,6 +160,27 @@ function PortConfigurationView(props: Props) {
             />
           }
           label="Resume connection to last serial port on app startup"
+        />
+      </Tooltip>
+
+      {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
+      {/* =============================================================== */}
+      <Tooltip title="If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again.">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={
+                app.settings.portConfiguration
+                  .reopenSerialPortIfUnexpectedlyClosed
+              }
+              onChange={(e) => {
+                app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(
+                  e.target.checked
+                );
+              }}
+            />
+          }
+          label="Reopen serial port when available if it unexpectedly closes"
         />
       </Tooltip>
 

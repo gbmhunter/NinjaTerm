@@ -2,6 +2,12 @@ import { makeAutoObservable } from 'mobx';
 
 import { App } from 'src/App';
 
+export enum PortState {
+  CLOSED,
+  CLOSED_BUT_WILL_REOPEN,
+  OPENED
+}
+
 export default class PortConfiguration {
 
   app: App;
@@ -9,6 +15,8 @@ export default class PortConfiguration {
   connectToSerialPortAsSoonAsItIsSelected = true;
 
   resumeConnectionToLastSerialPortOnStartup = true;
+
+  reopenSerialPortIfUnexpectedlyClosed = true;
 
   constructor(app: App) {
     this.app = app;
@@ -26,22 +34,37 @@ export default class PortConfiguration {
     this.saveConfig();
   }
 
+  setReopenSerialPortIfUnexpectedlyClosed = (value: boolean) => {
+    this.reopenSerialPortIfUnexpectedlyClosed = value;
+    this.saveConfig();
+  }
+
   saveConfig = () => {
     const config = {
       connectToSerialPortAsSoonAsItIsSelected: this.connectToSerialPortAsSoonAsItIsSelected,
       resumeConnectionToLastSerialPortOnStartup: this.resumeConnectionToLastSerialPortOnStartup,
+      reopenSerialPortIfUnexpectedlyClosed: this.reopenSerialPortIfUnexpectedlyClosed,
     };
 
-    this.app.appStorage.saveConfig2(['settings', 'portConfiguration'], config);
+    this.app.appStorage.saveConfig(['settings', 'portConfiguration'], config);
   }
 
   loadConfig = () => {
-    const config = this.app.appStorage.getConfig2(['settings', 'portConfiguration']);
+    const config = this.app.appStorage.getConfig(['settings', 'portConfiguration']);
     if (config === null) {
       return;
     }
+    if (config.connectToSerialPortAsSoonAsItIsSelected !== undefined) {
     this.connectToSerialPortAsSoonAsItIsSelected = config.connectToSerialPortAsSoonAsItIsSelected;
+    }
+    if (config.resumeConnectionToLastSerialPortOnStartup !== undefined) {
     this.resumeConnectionToLastSerialPortOnStartup = config.resumeConnectionToLastSerialPortOnStartup;
+    }
+    if (config.reopenSerialPortIfUnexpectedlyClosed !== undefined) {
+    this.reopenSerialPortIfUnexpectedlyClosed = config.reopenSerialPortIfUnexpectedlyClosed;
+    }
   }
 
 }
+
+

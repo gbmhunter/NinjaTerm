@@ -17,6 +17,7 @@ import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
 import AppStorage from './Storage/AppStorage';
+import { PortState } from './Settings/PortConfiguration/PortConfiguration';
 
 declare global {
   interface String {
@@ -39,11 +40,6 @@ String.prototype.insert = function (index, string) {
   return string + this;
 };
 
-export enum PortState {
-  CLOSED,
-  OPENED,
-}
-
 export type PortStateToButtonPropsItem = {
   text: string;
   color: string;
@@ -55,6 +51,11 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
     text: 'Open Port',
     color: 'success',
     icon: <PlayArrowIcon />,
+  },
+  [PortState.CLOSED_BUT_WILL_REOPEN]: {
+    text: 'Close Port',
+    color: 'warning',
+    icon: <StopIcon />,
   },
   [PortState.OPENED]: {
     text: 'Close Port',

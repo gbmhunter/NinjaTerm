@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
-import { App, PortState, PortType } from "src/App";
+import { App, PortType } from "src/App";
+import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
 import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings";
 import { generateRandomString } from "src/Util/Util";
 

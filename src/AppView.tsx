@@ -20,7 +20,8 @@ import { SnackbarProvider } from 'notistack';
 // @ts-ignore:next-line
 import { registerSW } from 'virtual:pwa-register';
 
-import { App, MainPanes, PortState } from './App';
+import { App, MainPanes } from './App';
+import { PortState } from './Settings/PortConfiguration/PortConfiguration';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminal/TerminalView';
@@ -69,6 +70,7 @@ const darkTheme = createTheme({
  */
 const portStateToBackgroundColor: { [key in PortState]: string; } = {
   [PortState.CLOSED]: 'red',
+  [PortState.CLOSED_BUT_WILL_REOPEN]: 'orange',
   [PortState.OPENED]: 'green',
 };
 

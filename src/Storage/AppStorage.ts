@@ -1,4 +1,5 @@
-import { App, PortState } from "src/App";
+import { App } from "src/App";
+import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
 
 class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -46,8 +47,8 @@ export default class AppStorage {
     // Only support the 1 active config for now
     this.activeConfig = this.configs[0];
 
-    this.saveConfig2(['test1', 'test2'], 'hello');
-    const test = this.getConfig2(['test1', 'test2']);
+    this.saveConfig(['test1', 'test2'], 'hello');
+    const test = this.getConfig(['test1', 'test2']);
     console.log('test:', test);
   }
 
@@ -67,7 +68,7 @@ export default class AppStorage {
   //   return null;
   // }
 
-  saveConfig2(keys: string[], data: any) {
+  saveConfig(keys: string[], data: any) {
     console.log('saveConfig() called with keys:', keys, 'and data:', data);
     let obj = this.activeConfig.configData;
     // Walk down the active config object using
@@ -87,7 +88,7 @@ export default class AppStorage {
     window.localStorage.setItem('configs', JSON.stringify(this.configs));
   }
 
-  getConfig2(keys: string[]): any {
+  getConfig(keys: string[]): any {
     console.log('getConfig() called with keys:', keys);
     let obj = this.activeConfig.configData;
     // Walk down the active config object using
