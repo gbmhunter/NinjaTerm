@@ -188,6 +188,11 @@ export class App {
     makeAutoObservable(this); // Make sure this near the end
   }
 
+  /**
+   * Called once when the React UI is loaded (specifically, when the App is rendered, by using a useEffect()).
+   *
+   * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
+   */
   async onAppUiLoaded() {
     if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
@@ -279,7 +284,13 @@ export class App {
         // it on app re-open in the future
         this.appStorage.data.lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
         this.appStorage.saveData();
-      })
+
+      });
+      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+        await this.openPort();
+        // Goto the terminal pane
+        this.setShownMainPane(MainPanes.TERMINAL);
+      }
     } else {
       console.error('Browser not supported, it does not provide the navigator.serial API.');
     }

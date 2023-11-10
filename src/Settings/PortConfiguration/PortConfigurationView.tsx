@@ -26,129 +26,11 @@ function PortConfigurationView(props: Props) {
   const { app } = props;
 
   return (
-    <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={{ height: "10px" }}></div>
-
-      {/* SELECT PORTS */}
-      {/* =============================================================== */}
-      <Button
-        variant="outlined"
-        onClick={() => {
-          app.scanForPorts();
-        }}
-        // Only let user select a new port if current one is closed
-        disabled={app.portState !== PortState.CLOSED}
-        sx={{ marginBottom: "10px" }}
-        data-testid="request-port-access"
-      >
-        Select Port
-      </Button>
-
+    <div
+      className={styles.noOutline}
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <div style={{ height: "20px" }}></div>
-
-      <Typography
-        sx={{
-          color: (theme) =>
-            app.port !== null
-              ? theme.palette.text.primary
-              : theme.palette.text.disabled,
-        }}
-      >
-        Selected Port Product ID: {app.serialPortInfo?.usbProductId}
-      </Typography>
-      <Typography
-        sx={{
-          color: (theme) =>
-            app.port !== null
-              ? theme.palette.text.primary
-              : theme.palette.text.disabled,
-        }}
-      >
-        Selected Port Vendor ID: {app.serialPortInfo?.usbVendorId}
-      </Typography>
-
-      <div style={{ height: "20px" }}></div>
-
-      {/* ====================== Table showing the serial ports and their properties ============================== */}
-      {/* <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
-        <Table
-          sx={{ minWidth: 650 }}
-          size="small"
-          aria-label="a dense table"
-          data-testid="found-serial-ports-table"
-        >
-          <TableHead>
-            <TableRow>
-              <TableCell>Selected</TableCell>
-              <TableCell>Path</TableCell>
-              <TableCell>Friendly Name</TableCell>
-              <TableCell style={{ maxWidth: '50px' }}>Location ID</TableCell>
-              <TableCell>Manufacturer</TableCell>
-              <TableCell style={{ maxWidth: '200px' }}>PNP ID</TableCell>
-              <TableCell>Product ID</TableCell>
-              <TableCell>Serial Number</TableCell>
-              <TableCell>Vendor ID</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {/* {appStore.settings.availablePortInfos.map((portInfo) => (
-              <TableRow
-                hover // This gives the row a mouse hover-over effect
-                onClick={() => {
-                  // Only change the selected port if the serial port is closed
-                  if (appStore.portState === PortState.CLOSED) {
-                    appStore.settings.setSelectedPortPath(portInfo.path);
-                  }
-                }}
-                key={portInfo.path}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    color="primary"
-                    checked={
-                      portInfo.path === appStore.settings.selectedPortPath
-                    }
-                    disabled={appStore.portState !== PortState.CLOSED}
-                    inputProps={
-                      {
-                        // 'aria-labelledby': labelId,
-                      }
-                    }
-                  />
-                </TableCell>
-                <TableCell component="th" scope="row" sx={{ color: textColor }}>
-                  {portInfo.path}
-                </TableCell>
-                <TableCell sx={{ color: textColor }}>
-                  {(portInfo as any).friendlyName}
-                </TableCell>
-                <TableCell sx={{ color: textColor, wordBreak: 'break-all' }}>
-                  {portInfo.locationId}
-                </TableCell>
-                <TableCell sx={{ color: textColor }}>
-                  {portInfo.manufacturer}
-                </TableCell>
-                <TableCell
-                  sx={{ color: textColor, fontSize: '0.7rem' }}
-                  style={{ maxWidth: '200px', wordBreak: 'break-all' }}
-                >
-                  {portInfo.pnpId}
-                </TableCell>
-                <TableCell sx={{ color: textColor }}>
-                  {portInfo.productId}
-                </TableCell>
-                <TableCell sx={{ color: textColor, wordBreak: 'break-all' }}>
-                  {portInfo.serialNumber}
-                </TableCell>
-                <TableCell sx={{ color: textColor }}>
-                  {portInfo.vendorId}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer> */}
 
       <Box display="flex" flexDirection="row">
         {/*  ====================== BAUD RATE  ============================= */}
@@ -181,9 +63,7 @@ function PortConfigurationView(props: Props) {
             label="Num. Data Bits"
             disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              app.settings.setSelectedNumDataBits(
-                e.target.value as number
-              );
+              app.settings.setSelectedNumDataBits(e.target.value as number);
             }}
           >
             {app.settings.numDataBitsOptions.map((numDataBits) => {
@@ -239,17 +119,22 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: "20px" }}></div>
 
-      <Tooltip title="Connect to the serial port as soon as it is selected from the modal, saving you a button press!">
+      <Tooltip title="Connect to the serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!">
         <FormControlLabel
           control={
             <Checkbox
-              checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
+              checked={
+                app.settings.portConfiguration
+                  .connectToSerialPortAsSoonAsItIsSelected
+              }
               onChange={(e) => {
-                app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
+                app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(
+                  e.target.checked
+                );
               }}
             />
           }
-          label="Connect to serial port as soon as it is selected"
+          label="Connect to serial port and go to the terminal as soon as it is selected"
         />
       </Tooltip>
 
@@ -257,9 +142,14 @@ function PortConfigurationView(props: Props) {
         <FormControlLabel
           control={
             <Checkbox
-              checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
+              checked={
+                app.settings.portConfiguration
+                  .resumeConnectionToLastSerialPortOnStartup
+              }
               onChange={(e) => {
-                app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
+                app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(
+                  e.target.checked
+                );
               }}
             />
           }
@@ -269,42 +159,86 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: "20px" }}></div>
 
-      {/*  ====================== OPEN/CLOSE BUTTON ============================= */}
-      <Button
-        variant="outlined"
-        color={
-          portStateToButtonProps[app.portState]
-            .color as OverridableStringUnion<
-            | "inherit"
-            | "primary"
-            | "secondary"
-            | "success"
-            | "error"
-            | "info"
-            | "warning",
-            ButtonPropsColorOverrides
-          >
-        }
-        onClick={() => {
-          if (app.portState === PortState.CLOSED) {
-            app.openPort();
-          } else if (app.portState === PortState.OPENED) {
-            app.closePort();
-          } else {
-            throw Error("Invalid port state.");
+      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', gap: '20px' }}>
+        {/* SELECT PORT BUTTON */}
+        {/* =============================================================== */}
+        <Button
+          variant="outlined"
+          onClick={() => {
+            app.scanForPorts();
+          }}
+          // Only let user select a new port if current one is closed
+          disabled={app.portState !== PortState.CLOSED}
+          data-testid="request-port-access"
+          sx={{ width: '150px' }}
+        >
+          Select Port
+        </Button>
+
+        {/* OPEN/CLOSE BUTTON */}
+        {/* =============================================================== */}
+        <Button
+          variant="contained"
+          color={
+            portStateToButtonProps[app.portState]
+              .color as OverridableStringUnion<
+              | "inherit"
+              | "primary"
+              | "secondary"
+              | "success"
+              | "error"
+              | "info"
+              | "warning",
+              ButtonPropsColorOverrides
+            >
           }
-        }}
-        disabled={
-          app.port === null &&
-          app.lastSelectedPortType !== PortType.FAKE
-        }
-      >
-        {portStateToButtonProps[app.portState].text}
-      </Button>
+          onClick={() => {
+            if (app.portState === PortState.CLOSED) {
+              app.openPort();
+            } else if (app.portState === PortState.OPENED) {
+              app.closePort();
+            } else {
+              throw Error("Invalid port state.");
+            }
+          }}
+          disabled={
+            app.port === null && app.lastSelectedPortType !== PortType.FAKE
+          }
+          sx={{ width: '150px' }}
+        >
+          {portStateToButtonProps[app.portState].text}
+        </Button>
+      </div>
 
       <div style={{ height: "20px" }}></div>
 
-      {/*  ====================== PORT STATUS MSG ============================= */}
+      {/* INFO ON SELECTED SERIAL PORT */}
+      {/* =============================================================== */}
+      <Typography
+        sx={{
+          color: (theme) =>
+            app.port !== null
+              ? theme.palette.text.primary
+              : theme.palette.text.disabled,
+        }}
+      >
+        Selected Port Product ID: {app.serialPortInfo?.usbProductId}
+      </Typography>
+      <Typography
+        sx={{
+          color: (theme) =>
+            app.port !== null
+              ? theme.palette.text.primary
+              : theme.palette.text.disabled,
+        }}
+      >
+        Selected Port Vendor ID: {app.serialPortInfo?.usbVendorId}
+      </Typography>
+
+      <div style={{ height: "20px" }}></div>
+
+      {/* PORT CONNECTED/DISCONNECTED STATUS */}
+      {/* =============================================================== */}
       <Typography>Status: {PortState[app.portState]}</Typography>
     </div>
   );

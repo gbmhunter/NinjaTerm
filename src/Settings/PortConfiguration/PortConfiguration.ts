@@ -13,7 +13,6 @@ export default class PortConfiguration {
   constructor(app: App) {
     this.app = app;
     makeAutoObservable(this);
-    // console.log('DEBUG', JSON.stringify(this));
     this.loadConfig();
   }
 
