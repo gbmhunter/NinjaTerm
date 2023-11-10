@@ -10,5 +10,9 @@ export default defineConfig({
       '**/dist/**',
     ],
     testTimeout: 20000,
+    // browser: {
+    //   enabled: true,
+    //   name: 'chrome', // browser name is required
+    // },
   },
 })

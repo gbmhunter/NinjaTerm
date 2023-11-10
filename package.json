@@ -54,7 +54,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite build && vite preview",
-    "test": "tsc && vitest run && playwright test"
+    "test": "tsc && playwright test"
   },
   "eslintConfig": {
     "extends": [

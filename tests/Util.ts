@@ -131,6 +131,7 @@ export class AppTestHarness {
     // Expect the "Go to app" button to be visible on the homepage.
     await this.page.getByText(/Go to app/).click();
     await this.page.getByTestId("settings-button").click();
+    await this.page.getByTestId('connect-and-go-to-terminal-checkbox').uncheck();
     await this.page.getByTestId("request-port-access").click();
     await this.page.getByText("Open Port").click();
     await this.page.getByTestId("show-terminal-button").click();

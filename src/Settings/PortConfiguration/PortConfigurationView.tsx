@@ -119,6 +119,8 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: "20px" }}></div>
 
+      {/* CONNECT AND GO TO TERMINAL CHECKBOX */}
+      {/* =============================================================== */}
       <Tooltip title="Connect to the serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!">
         <FormControlLabel
           control={
@@ -132,12 +134,15 @@ function PortConfigurationView(props: Props) {
                   e.target.checked
                 );
               }}
+              data-testid="connect-and-go-to-terminal-checkbox"
             />
           }
           label="Connect to serial port and go to the terminal as soon as it is selected"
         />
       </Tooltip>
 
+      {/* RECONNECT ON STARTUP CHECKBOX */}
+      {/* =============================================================== */}
       <Tooltip title="On startup, if NinjaTerm can find last used serial port it will reselect it. If it was previously in the CONNECTED state, the port will also be re-opened.">
         <FormControlLabel
           control={
