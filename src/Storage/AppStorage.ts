@@ -31,4 +31,16 @@ export default class AppStorage {
     window.localStorage.setItem('data', JSON.stringify(this.data));
   }
 
+  saveConfig(key: string, data: any) {
+    window.localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  getConfig(key: string): any {
+    const dataStr = window.localStorage.getItem(key);
+    if (dataStr !== null) {
+      return JSON.parse(dataStr);
+    }
+    return null;
+  }
+
 }

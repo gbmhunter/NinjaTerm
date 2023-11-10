@@ -107,21 +107,18 @@ const AppView = observer((props: Props) => {
       }
     })
 
-    // Uncomment this if you want to test out the snackbar
-    // for development reasons
-    // app.swOnNeedRefresh((reloadPage) => {
-    //   return Promise.resolve();
-    // })
-  }, []);
-
-  useEffect(() => {
-    console.log('useEffect2() called.');
     const initFn = async () => {
       console.log('Calling init()...');
       await app.onAppUiLoaded();
     }
 
     initFn().catch(console.error);
+
+    // Uncomment this if you want to test out the snackbar
+    // for development reasons
+    // app.swOnNeedRefresh((reloadPage) => {
+    //   return Promise.resolve();
+    // })
   }, []);
 
   // SELECT CORRECT MAIN PANE

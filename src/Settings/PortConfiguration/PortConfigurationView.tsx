@@ -7,52 +7,67 @@ import {
   Box,
   ButtonPropsColorOverrides,
   Typography,
-} from '@mui/material';
-import { OverridableStringUnion } from '@mui/types';
-import { observer } from 'mobx-react-lite';
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
+} from "@mui/material";
+import { OverridableStringUnion } from "@mui/types";
+import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortState, PortType } from '../App';
-import { StopBits } from './Settings';
-import styles from './PortConfigurationView.module.css';
+import { App, portStateToButtonProps, PortState, PortType } from "../../App";
+import { StopBits } from "../Settings";
+import styles from "./PortConfigurationView.module.css";
 
 interface Props {
-  appStore: App;
+  app: App;
 }
 
 function PortConfigurationView(props: Props) {
-  const { appStore } = props;
+  const { app } = props;
 
   return (
-    <div
-      className={styles.noOutline}
-    >
-      <div style={{ height: '10px' }}></div>
+    <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ height: "10px" }}></div>
 
       {/* SELECT PORTS */}
       {/* =============================================================== */}
       <Button
         variant="outlined"
         onClick={() => {
-          appStore.scanForPorts();
+          app.scanForPorts();
         }}
         // Only let user select a new port if current one is closed
-        disabled={appStore.portState !== PortState.CLOSED}
-        sx={{ marginBottom: '10px' }}
+        disabled={app.portState !== PortState.CLOSED}
+        sx={{ marginBottom: "10px" }}
         data-testid="request-port-access"
       >
         Select Port
       </Button>
 
-      <div style={{ height: '20px' }}></div>
+      <div style={{ height: "20px" }}></div>
 
-      <Typography sx={{ color: (theme) => appStore.port !== null ? theme.palette.text.primary : theme.palette.text.disabled }}>
-        Selected Port Product ID: {appStore.serialPortInfo?.usbProductId}
+      <Typography
+        sx={{
+          color: (theme) =>
+            app.port !== null
+              ? theme.palette.text.primary
+              : theme.palette.text.disabled,
+        }}
+      >
+        Selected Port Product ID: {app.serialPortInfo?.usbProductId}
       </Typography>
-      <Typography sx={{ color: (theme) => appStore.port !== null ? theme.palette.text.primary : theme.palette.text.disabled }}>
-        Selected Port Vendor ID: {appStore.serialPortInfo?.usbVendorId}
+      <Typography
+        sx={{
+          color: (theme) =>
+            app.port !== null
+              ? theme.palette.text.primary
+              : theme.palette.text.disabled,
+        }}
+      >
+        Selected Port Vendor ID: {app.serialPortInfo?.usbVendorId}
       </Typography>
 
-      <div style={{ height: '20px' }}></div>
+      <div style={{ height: "20px" }}></div>
 
       {/* ====================== Table showing the serial ports and their properties ============================== */}
       {/* <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
@@ -142,14 +157,14 @@ function PortConfigurationView(props: Props) {
           <Select
             labelId="demo-select-small-label"
             id="demo-select-small"
-            value={appStore.settings.selectedBaudRate}
+            value={app.settings.selectedBaudRate}
             label="Baud Rate"
-            disabled={appStore.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              appStore.settings.setSelectedBaudRate(e.target.value as number);
+              app.settings.setSelectedBaudRate(e.target.value as number);
             }}
           >
-            {appStore.settings.baudRates.map((baudRate) => {
+            {app.settings.baudRates.map((baudRate) => {
               return (
                 <MenuItem key={baudRate} value={baudRate}>
                   {baudRate}
@@ -162,16 +177,16 @@ function PortConfigurationView(props: Props) {
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Num. Data Bits</InputLabel>
           <Select
-            value={appStore.settings.selectedNumDataBits}
+            value={app.settings.selectedNumDataBits}
             label="Num. Data Bits"
-            disabled={appStore.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              appStore.settings.setSelectedNumDataBits(
+              app.settings.setSelectedNumDataBits(
                 e.target.value as number
               );
             }}
           >
-            {appStore.settings.numDataBitsOptions.map((numDataBits) => {
+            {app.settings.numDataBitsOptions.map((numDataBits) => {
               return (
                 <MenuItem key={numDataBits} value={numDataBits}>
                   {numDataBits}
@@ -184,14 +199,14 @@ function PortConfigurationView(props: Props) {
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Parity</InputLabel>
           <Select
-            value={appStore.settings.selectedParity}
+            value={app.settings.selectedParity}
             label="Parity"
-            disabled={appStore.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              appStore.settings.setSelectedParity(e.target.value);
+              app.settings.setSelectedParity(e.target.value);
             }}
           >
-            {appStore.settings.parityOptions.map((parity) => {
+            {app.settings.parityOptions.map((parity) => {
               return (
                 <MenuItem key={parity} value={parity}>
                   {parity}
@@ -204,14 +219,14 @@ function PortConfigurationView(props: Props) {
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Stop Bits</InputLabel>
           <Select
-            value={appStore.settings.selectedStopBits}
+            value={app.settings.selectedStopBits}
             label="Stop Bits"
-            disabled={appStore.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              appStore.settings.setSelectedStopBits(e.target.value as StopBits);
+              app.settings.setSelectedStopBits(e.target.value as StopBits);
             }}
           >
-            {appStore.settings.stopBitOptions.map((stopBits) => {
+            {app.settings.stopBitOptions.map((stopBits) => {
               return (
                 <MenuItem key={stopBits} value={stopBits}>
                   {stopBits}
@@ -222,44 +237,75 @@ function PortConfigurationView(props: Props) {
         </FormControl>
       </Box>
 
-      <div style={{ height: '20px' }}></div>
+      <div style={{ height: "20px" }}></div>
+
+      <Tooltip title="Connect to the serial port as soon as it is selected from the modal, saving you a button press!">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
+              onChange={(e) => {
+                app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
+              }}
+            />
+          }
+          label="Connect to serial port as soon as it is selected"
+        />
+      </Tooltip>
+
+      <Tooltip title="On startup, if NinjaTerm can find last used serial port it will reselect it. If it was previously in the CONNECTED state, the port will also be re-opened.">
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
+              onChange={(e) => {
+                app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
+              }}
+            />
+          }
+          label="Resume connection to last serial port on app startup"
+        />
+      </Tooltip>
+
+      <div style={{ height: "20px" }}></div>
 
       {/*  ====================== OPEN/CLOSE BUTTON ============================= */}
       <Button
-          variant="outlined"
-          color={
-            portStateToButtonProps[appStore.portState]
-              .color as OverridableStringUnion<
-              | 'inherit'
-              | 'primary'
-              | 'secondary'
-              | 'success'
-              | 'error'
-              | 'info'
-              | 'warning',
-              ButtonPropsColorOverrides
-            >
+        variant="outlined"
+        color={
+          portStateToButtonProps[app.portState]
+            .color as OverridableStringUnion<
+            | "inherit"
+            | "primary"
+            | "secondary"
+            | "success"
+            | "error"
+            | "info"
+            | "warning",
+            ButtonPropsColorOverrides
+          >
+        }
+        onClick={() => {
+          if (app.portState === PortState.CLOSED) {
+            app.openPort();
+          } else if (app.portState === PortState.OPENED) {
+            app.closePort();
+          } else {
+            throw Error("Invalid port state.");
           }
-          onClick={() => {
-            if (appStore.portState === PortState.CLOSED) {
-              appStore.openPort();
-            } else if (appStore.portState === PortState.OPENED) {
-              appStore.closePort();
-            } else {
-              throw Error('Invalid port state.');
-            }
-          }}
-          disabled={appStore.port === null && appStore.lastSelectedPortType !== PortType.FAKE}
-        >
-          {portStateToButtonProps[appStore.portState].text}
-        </Button>
+        }}
+        disabled={
+          app.port === null &&
+          app.lastSelectedPortType !== PortType.FAKE
+        }
+      >
+        {portStateToButtonProps[app.portState].text}
+      </Button>
 
-      <div style={{ height: '20px' }}></div>
+      <div style={{ height: "20px" }}></div>
 
       {/*  ====================== PORT STATUS MSG ============================= */}
-      <Typography>
-        Status: {PortState[appStore.portState]}
-      </Typography>
+      <Typography>Status: {PortState[app.portState]}</Typography>
     </div>
   );
 }

@@ -189,7 +189,13 @@ export class App {
   }
 
   async onAppUiLoaded() {
-    // getPorts() returns ports that the user has previously approved
+    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
+      await this.tryToLoadPreviouslyUsedPort();
+    }
+  }
+
+  async tryToLoadPreviouslyUsedPort() {
+// getPorts() returns ports that the user has previously approved
     // this app to be able to access
     let approvedPorts = await navigator.serial.getPorts();
     console.log('ports: ', approvedPorts);

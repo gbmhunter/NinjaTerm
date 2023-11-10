@@ -6,6 +6,7 @@ import { makeAutoObservable } from 'mobx';
 import { App } from '../App';
 import DataProcessingSettings from './DataProcessingSettings';
 import DisplaySettings from './Display/DisplaySettings';
+import PortConfiguration from './PortConfiguration/PortConfiguration';
 
 export type StopBits = 1 | 1.5 | 2;
 
@@ -20,6 +21,8 @@ export class Settings {
 
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
+
+  portConfiguration: PortConfiguration;
 
   dataProcessingSettings: DataProcessingSettings;
 
@@ -50,6 +53,7 @@ export class Settings {
 
   constructor(app: App) {
     this.app = app;
+    this.portConfiguration = new PortConfiguration(app);
     this.dataProcessingSettings = new DataProcessingSettings(app);
     this.displaySettings = new DisplaySettings(app);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
