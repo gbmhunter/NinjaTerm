@@ -47,23 +47,25 @@ export default class AppStorage {
     this.activeConfig = this.configs[0];
 
     this.saveConfig2(['test1', 'test2'], 'hello');
+    const test = this.getConfig2(['test1', 'test2']);
+    console.log('test:', test);
   }
 
   saveData = () => {
     window.localStorage.setItem('data', JSON.stringify(this.data));
   }
 
-  saveConfig(key: string, data: any) {
-    window.localStorage.setItem(key, JSON.stringify(data));
-  }
+  // saveConfig(key: string, data: any) {
+  //   window.localStorage.setItem(key, JSON.stringify(data));
+  // }
 
-  getConfig(key: string): any {
-    const dataStr = window.localStorage.getItem(key);
-    if (dataStr !== null) {
-      return JSON.parse(dataStr);
-    }
-    return null;
-  }
+  // getConfig(key: string): any {
+  //   const dataStr = window.localStorage.getItem(key);
+  //   if (dataStr !== null) {
+  //     return JSON.parse(dataStr);
+  //   }
+  //   return null;
+  // }
 
   saveConfig2(keys: string[], data: any) {
     console.log('saveConfig() called with keys:', keys, 'and data:', data);
@@ -82,7 +84,26 @@ export default class AppStorage {
     }
     obj[keys[keys.length - 1]] = data;
     console.log('configData:', JSON.stringify(this.activeConfig.configData));
-    // window.localStorage.setItem(key, JSON.stringify(data));
+    window.localStorage.setItem('configs', JSON.stringify(this.configs));
+  }
+
+  getConfig2(keys: string[]): any {
+    console.log('getConfig() called with keys:', keys);
+    let obj = this.activeConfig.configData;
+    // Walk down the active config object using
+    // the array of keys
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      console.log('key:', key);
+      // Make sure key exists, if not
+      // create it
+      if (obj[key] === undefined) {
+        return null;
+      }
+      obj = obj[key];
+    }
+    console.log('Returning obj:', obj);
+    return obj;
   }
 
 

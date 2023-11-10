@@ -32,11 +32,11 @@ export default class PortConfiguration {
       resumeConnectionToLastSerialPortOnStartup: this.resumeConnectionToLastSerialPortOnStartup,
     };
 
-    this.app.appStorage.saveConfig('settings.portConfiguration', config);
+    this.app.appStorage.saveConfig2(['settings', 'portConfiguration'], config);
   }
 
   loadConfig = () => {
-    const config = this.app.appStorage.getConfig('settings.portConfiguration');
+    const config = this.app.appStorage.getConfig2(['settings', 'portConfiguration']);
     if (config === null) {
       return;
     }
