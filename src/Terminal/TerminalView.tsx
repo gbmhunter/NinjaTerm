@@ -111,18 +111,14 @@ export default observer((props: Props) => {
           } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
             app.stopWaitingToReopenPort();
           } else if (app.portState === PortState.OPENED) {
-            if (app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
-              app.closePort(true);
-            } else {
-              app.closePort(false);
-            }
+            app.closePort(false);
           } else {
             throw Error(`Unsupported port state. portState=${app.portState}`);
           }
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
         disabled={(app.portState === PortState.CLOSED) && (app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
-        sx={{ width: "150px" }}
+        sx={{ width: "180px" }}
       >
         {" "}
         {/* Specify a width to prevent it resizing when the text changes */}

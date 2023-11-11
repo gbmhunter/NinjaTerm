@@ -162,6 +162,11 @@ export class App {
     //   console.log('Serial port removed.');
     // });
 
+    navigator.serial.addEventListener('connect', (event) => {
+      console.log('connect. event: ', event);
+      this.onSerialPortConnected(event.target as SerialPort);
+    });
+
     makeAutoObservable(this); // Make sure this near the end
   }
 
@@ -173,6 +178,25 @@ export class App {
   async onAppUiLoaded() {
     if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
+    }
+  }
+
+  onSerialPortConnected(serialPort: SerialPort) {
+    console.log('onSerialPortConnected() called.');
+
+    if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+      // Check to see if this is the serial port we want to reopen
+      const lastUsedPortInfoStr = JSON.stringify(this.appStorage.data.lastUsedSerialPort.serialPortInfo);
+      const serialPortInfoStr = JSON.stringify(serialPort.getInfo());
+
+      if (lastUsedPortInfoStr === serialPortInfoStr) {
+        console.log('Found previously used port, reopening it.');
+        runInAction(() => {
+          this.port = serialPort;
+          this.serialPortInfo = serialPort.getInfo();
+        });
+        this.openPort();
+      }
     }
   }
 

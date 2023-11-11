@@ -223,15 +223,15 @@ function PortConfigurationView(props: Props) {
           onClick={() => {
             if (app.portState === PortState.CLOSED) {
               app.openPort();
+            } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+              app.stopWaitingToReopenPort();
             } else if (app.portState === PortState.OPENED) {
               app.closePort();
             } else {
               throw Error("Invalid port state.");
             }
           }}
-          disabled={
-            app.port === null && app.lastSelectedPortType !== PortType.FAKE
-          }
+          disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE}
           sx={{ width: '150px' }}
         >
           {portStateToButtonProps[app.portState].text}

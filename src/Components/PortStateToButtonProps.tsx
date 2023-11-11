@@ -16,7 +16,7 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
     icon: <PlayArrowIcon />,
   },
   [PortState.CLOSED_BUT_WILL_REOPEN]: {
-    text: 'Close Port',
+    text: 'Stop Waiting',
     color: 'warning',
     icon: <StopIcon />,
   },
