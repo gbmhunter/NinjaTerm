@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Last serial port details and connection state are remember across App reloads, and NinjaTerm can automatically reconnect.
+- Last serial port details and connection state are remembered across App reloads, and NinjaTerm can automatically reconnect to previously used serial port.
+- Added ability for NinjaTerm to reopen serial port (when available) after unexpected closure.
 
 ### Changed
 
