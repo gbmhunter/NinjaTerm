@@ -54,7 +54,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite build && vite preview",
-    "test": "tsc && playwright test"
+    "test": "tsc && vitest && playwright test"
   },
   "eslintConfig": {
     "extends": [
@@ -80,6 +80,7 @@
     "@types/react-window": "^1.8.5",
     "@types/wicg-file-system-access": "^2023.10.2",
     "jest-canvas-mock": "^2.5.2",
+    "jsdom": "^22.1.0",
     "postcss": "^8.4.31",
     "postcss-nesting": "^12.0.1",
     "vite-plugin-checker": "^0.6.2",

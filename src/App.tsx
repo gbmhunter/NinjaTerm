@@ -117,7 +117,7 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
-  appStorage: AppStorage = new AppStorage(this);
+  appStorage: AppStorage = new AppStorage();
 
   constructor(
     testing = false
@@ -154,18 +154,12 @@ export class App {
 
     this.logging = new Logging(this);
 
-    // This is fired whenever a serial port that has been allowed access
-    // dissappears (i.e. USB serial), even if we are not connected to it.
-    // navigator.serial.addEventListener("disconnect", (event) => {
-    //   // TODO: Remove |event.target| from the UI.
-    //   // If the serial port was opened, a stream error would be observed as well.
-    //   console.log('Serial port removed.');
-    // });
-
-    navigator.serial.addEventListener('connect', (event) => {
-      console.log('connect. event: ', event);
-      this.onSerialPortConnected(event.target as SerialPort);
-    });
+    if(navigator.serial !== undefined) {
+      navigator.serial.addEventListener('connect', (event) => {
+        console.log('connect. event: ', event);
+        this.onSerialPortConnected(event.target as SerialPort);
+      });
+    }
 
     makeAutoObservable(this); // Make sure this near the end
   }

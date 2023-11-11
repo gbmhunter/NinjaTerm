@@ -1,5 +1,4 @@
-import { App } from "src/App";
-import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
+import { PortState } from '../Settings/PortConfiguration/PortConfiguration';
 
 class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -17,16 +16,13 @@ class Config {
 
 export default class AppStorage {
 
-  app: App;
-
   data: Data = new Data();
 
   configs: Config[] = [];
 
   activeConfig: Config;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor() {
 
     const dataStr = window.localStorage.getItem('data');
     if (dataStr !== null) {
