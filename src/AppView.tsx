@@ -66,12 +66,21 @@ const darkTheme = createTheme({
 });
 
 /**
- * Maps a port state to a colour used in the port state status background on the bottom toolbar.
+ * Maps a port state to the UI elements that should be used to represent it.
  */
-const portStateToBackgroundColor: { [key in PortState]: string; } = {
-  [PortState.CLOSED]: 'red',
-  [PortState.CLOSED_BUT_WILL_REOPEN]: 'orange',
-  [PortState.OPENED]: 'green',
+const portStateToToolbarStatusProperties: { [key in PortState]: any; } = {
+  [PortState.CLOSED]: {
+    color: 'red',
+    text: 'Port CLOSED',
+  },
+  [PortState.CLOSED_BUT_WILL_REOPEN]: {
+    color: 'orange',
+    text: 'Port CLOSED (will reopen)',
+  },
+  [PortState.OPENED]: {
+    color: 'green',
+    text: 'Port OPENED',
+  }
 };
 
 interface Props {
@@ -292,7 +301,7 @@ const AppView = observer((props: Props) => {
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <Box>{app.settings.shortSerialConfigName}</Box>
             {/* PORT STATE */}
-            <Box sx={{ backgroundColor: portStateToBackgroundColor[app.portState], padding: '0 10px' }}>Port {PortState[app.portState]}</Box>
+            <Box sx={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}>{portStateToToolbarStatusProperties[app.portState].text}</Box>
           </Box>
         </div>
 

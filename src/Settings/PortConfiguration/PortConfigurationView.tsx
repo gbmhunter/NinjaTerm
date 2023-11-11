@@ -14,9 +14,10 @@ import {
 import { OverridableStringUnion } from "@mui/types";
 import { observer } from "mobx-react-lite";
 
-import { App, portStateToButtonProps, PortType } from "../../App";
+import { App, PortType } from "../../App";
 import { PortState } from './PortConfiguration';
 import { StopBits } from "../Settings";
+import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
 import styles from "./PortConfigurationView.module.css";
 
 interface Props {

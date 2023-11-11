@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable, runInAction } from 'mobx';
-import StopIcon from '@mui/icons-material/Stop';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { closeSnackbar }  from 'notistack';
 import ReactGA from "react-ga4";
 import { Button } from '@mui/material';
@@ -40,29 +38,7 @@ String.prototype.insert = function (index, string) {
   return string + this;
 };
 
-export type PortStateToButtonPropsItem = {
-  text: string;
-  color: string;
-  icon: any;
-};
 
-export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
-  [PortState.CLOSED]: {
-    text: 'Open Port',
-    color: 'success',
-    icon: <PlayArrowIcon />,
-  },
-  [PortState.CLOSED_BUT_WILL_REOPEN]: {
-    text: 'Close Port',
-    color: 'warning',
-    icon: <StopIcon />,
-  },
-  [PortState.OPENED]: {
-    text: 'Close Port',
-    color: 'error',
-    icon: <StopIcon />,
-  },
-};
 
 /**
  * Enumerates the possible things to display as the "main pane".
@@ -289,6 +265,7 @@ export class App {
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
+        this.portState = PortState.OPENED;
         // Goto the terminal pane
         this.setShownMainPane(MainPanes.TERMINAL);
       }
@@ -337,7 +314,7 @@ export class App {
       if (printSuccessMsg) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
-      this.setPortState(PortState.OPENED);
+      this.portState = PortState.OPENED;
       // This will automatically close the settings window if the user is currently in it,
       // clicks "Open" and the port opens successfully.
       if (this.closeSettingsDialogOnPortOpenOrClose) {
@@ -380,8 +357,6 @@ export class App {
           this.parseRxData(value);
         }
       } catch (error) {
-          // This is called if the USB serial device is removed whilst
-          // reading
           console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
           // These error are described at https://wicg.github.io/serial/
           // @ts-ignore:
@@ -435,8 +410,30 @@ export class App {
       }
     }
 
-    console.log('Closing port...');
-    await this.port?.close();
+    console.log('GOT HERE! Closing port.... keepReading: ', this.keepReading);
+    await this.port!.close();
+
+    // If keepReading is true, this means close() was not called, and it's an unexpected
+    // fatal error from the serial port which has caused us to close. In this case, handle
+    // the clean-up and state transition here.
+    if (this.keepReading === true) {
+      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+        this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+      } else {
+        this.setPortState(PortState.CLOSED);
+      }
+      this.reader = null;
+      this.closedPromise = null;
+      // Set port to null as we might have "lost" it, i.e. might
+      // have been removed/disappeared
+      this.port = null;
+    }
+
+    console.log('readUntilClosed() finished.');
+  }
+
+  setPortState(newPortState: PortState) {
+    this.portState = newPortState;
   }
 
   /**
@@ -458,7 +455,8 @@ export class App {
     this.numBytesReceived += rxData.length;
   }
 
-  async closePort() {
+  async closePort(goToReopenState = false) {
+    console.log('closePort() called.')
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -471,7 +469,13 @@ export class App {
       }
       await this.closedPromise;
 
-      this.setPortState(PortState.CLOSED);
+      if (goToReopenState) {
+        // this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+        this.portState = PortState.CLOSED_BUT_WILL_REOPEN
+      } else {
+        // this.setPortState(PortState.CLOSED);
+        this.portState = PortState.CLOSED
+      }
       this.snackbar.sendToSnackbar('Serial port closed.', 'success');
       this.reader = null;
       this.closedPromise = null;
@@ -484,9 +488,21 @@ export class App {
     }
   }
 
-  setPortState(newPortState: PortState) {
-    this.portState = newPortState;
+  stopWaitingToReopenPort() {
+    this.portState = PortState.CLOSED;
   }
+
+  // async setPortState(newPortState: PortState) {
+  //   if (newPortState === PortState.CLOSED) {
+  //     await this.closePort();
+  //   } else if (newPortState === PortState.CLOSED_BUT_WILL_REOPEN) {
+  //     // this.closeButWillReopenPort();
+  //   } else if (newPortState === PortState.OPENED) {
+  //     await this.openPort();
+  //   } else {
+  //     throw Error('Unsupported port state!');
+  //   }
+  // }
 
   /**
    * This is called from either the TX/RX terminal or TX terminal

@@ -12,20 +12,21 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
-import KofiButton from "kofi-button";
-import { observer } from "mobx-react-lite";
+import KofiButton from 'kofi-button';
+import { observer } from 'mobx-react-lite';
 
-import { App, portStateToButtonProps, PortType } from "src/App";
+import { App, PortType } from 'src/App';
 import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
-import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
+import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'src/Settings/Display/DisplaySettings';
-import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
+import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
+import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
 
 interface Props {
   app: App;
@@ -107,14 +108,20 @@ export default observer((props: Props) => {
         onClick={() => {
           if (app.portState === PortState.CLOSED) {
             app.openPort();
+          } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+            app.stopWaitingToReopenPort();
           } else if (app.portState === PortState.OPENED) {
-            app.closePort();
+            if (app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+              app.closePort(true);
+            } else {
+              app.closePort(false);
+            }
           } else {
             throw Error(`Unsupported port state. portState=${app.portState}`);
           }
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
-        disabled={(app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
+        disabled={(app.portState === PortState.CLOSED) && (app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
         sx={{ width: "150px" }}
       >
         {" "}
