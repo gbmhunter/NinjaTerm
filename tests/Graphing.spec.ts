@@ -68,9 +68,8 @@ test.describe('Graphing', () => {
     await appTestHarness.enableGraphing();
 
     await page.getByLabel('Max. Num. Data Points').fill('2');
-    await page.getByRole('button', {
-      name: /Apply/i
-    }).click();
+    // Press enter to "apply" change
+    await page.getByLabel('Max. Num. Data Points').press('Enter');
 
     // Send 3 data points
     await appTestHarness.sendTextToTerminal('y=5\ny=6\ny=7\n');
@@ -91,10 +90,6 @@ test.describe('Graphing', () => {
 
     await page.getByTestId('xVarSource').click();
     await page.click('li[data-value="In Data"]');
-
-    await page.getByRole('button', {
-      name: /Apply/i
-    }).click();
 
     await appTestHarness.sendTextToTerminal('x=2,y=3\n');
 

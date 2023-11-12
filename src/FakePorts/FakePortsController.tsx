@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
-import { App, PortState, PortType } from "src/App";
+import { App, PortType } from "src/App";
+import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
 import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings";
 import { generateRandomString } from "src/Util/Util";
 
@@ -300,8 +301,8 @@ export default class FakePortsController {
         'alphabetic chars, 1 by 1, 5char/s',
         'Sends all alphabetic characters, one by one, at a rate of 5 characters per second.',
         () => {
-          app.settings.displaySettings.setScrollbackBufferSizeRowsDisp('300');
-          app.settings.displaySettings.applyScrollbackBufferSizeRows();
+          app.settings.displaySettings.scrollbackBufferSizeRows.setDispValue('300');
+          app.settings.displaySettings.scrollbackBufferSizeRows.apply();
           let testCharIdx = 65;
           const intervalId = setInterval(() => {
             const te = new TextEncoder();
@@ -331,11 +332,11 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, 5chars/s, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.setCharSizePxDisp("30");
-          app.settings.displaySettings.applyCharSizePx();
+          app.settings.displaySettings.charSizePx.setDispValue("30");
+          app.settings.displaySettings.charSizePx.apply();
 
-          app.settings.displaySettings.setTerminalWidthCharsDisp('40');
-          app.settings.displaySettings.applyTerminalWidthChars();
+          app.settings.displaySettings.terminalWidthChars.setDispValue('40');
+          app.settings.displaySettings.terminalWidthChars.apply();
 
           app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
@@ -367,11 +368,11 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, all at once, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, all at once. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.setCharSizePxDisp("30");
-          app.settings.displaySettings.applyCharSizePx();
+          app.settings.displaySettings.charSizePx.setDispValue("30");
+          app.settings.displaySettings.charSizePx.apply();
 
-          app.settings.displaySettings.setTerminalWidthCharsDisp('40');
-          app.settings.displaySettings.applyTerminalWidthChars();
+          app.settings.displaySettings.terminalWidthChars.setDispValue('40');
+          app.settings.displaySettings.terminalWidthChars.apply();
 
           app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
@@ -438,7 +439,7 @@ export default class FakePortsController {
 
   openPort() {
     this.fakePorts[this.selFakePortIdx].connect();
-    this.app.setPortState(PortState.OPENED);
+    this.app.portState = PortState.OPENED;
     this.fakePortOpen = true;
     this.app.lastSelectedPortType = PortType.FAKE;
     this.app.snackbar.sendToSnackbar("Fake serial port opened.", "success");
@@ -446,7 +447,7 @@ export default class FakePortsController {
 
   closePort() {
     this.fakePorts[this.selFakePortIdx].disconnect();
-    this.app.setPortState(PortState.CLOSED);
+    this.app.portState = PortState.CLOSED;
     this.fakePortOpen = false;
     this.app.snackbar.sendToSnackbar("Fake serial port closed.", "success");
   }

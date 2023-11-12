@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.10.0] - 2023-11-12
+
+### Added
+
+- Last serial port details and connection state are remembered across App reloads, and NinjaTerm can automatically reconnect to previously used serial port.
+- Added ability for NinjaTerm to reopen serial port (when available) after unexpected closure.
+
+### Fixed
+
+- Fixed bug where NinjaTerm would not disconnect when a USB serial cable was removed, closes #289.
+
+### Changed
+
+- Google Analytics is now only initialized in production builds, to prevent things like Playwright e2e tests from spamming GA and skewing data.
+- Refactored "ApplyableTextField" into it's own classes.
+- All user input fields (e.g. text inputs) now "apply" their changes on either loss of focus or by pressing the Enter key, no "Apply" button is needed.
+
 ## [4.9.0] - 2023-11-05
 
 ### Added
@@ -14,7 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added tooltips for the left toolbar clickable navigation icons.
 - Added logging functionality.
 
-### Changes
+### Changed
 
 - Starting to use zod instead of validator.js for input validation. zod has a design which works well for custom input classes, and doesn't cause the same import errors when running in vitest.
 
@@ -559,7 +576,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.9.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.0...HEAD
+[4.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.9.0...v4.10.0
 [4.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.8.0...v4.9.0
 [4.8.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.7.0...v4.8.0
 [4.7.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.6.5...v4.7.0

@@ -286,8 +286,11 @@ test.describe('RX data', () => {
     await appTestHarness.openPortAndGoToTerminalView();
 
     await page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block the click on the
+    // Data Processing tab!
+    await page.keyboard.press('Escape');
     await page.getByText('Data Processing').click();
-    // await page.getByLabel('Don\'t move the cursor at all when a new line character is received.').click();
     await page.getByTestId('new-line-dont-move-cursor').click();
     await page.getByTestId('show-terminal-button').click();
 

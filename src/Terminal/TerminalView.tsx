@@ -12,18 +12,21 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
-import KofiButton from "kofi-button";
-import { observer } from "mobx-react-lite";
+import KofiButton from 'kofi-button';
+import { observer } from 'mobx-react-lite';
 
-import { App, portStateToButtonProps, PortState, PortType } from "src/App";
-import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
+import { App, PortType } from 'src/App';
+import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
+import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
 } from 'src/Settings/Display/DisplaySettings';
+import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
+import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
 
 interface Props {
   app: App;
@@ -105,15 +108,17 @@ export default observer((props: Props) => {
         onClick={() => {
           if (app.portState === PortState.CLOSED) {
             app.openPort();
+          } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+            app.stopWaitingToReopenPort();
           } else if (app.portState === PortState.OPENED) {
-            app.closePort();
+            app.closePort(false);
           } else {
             throw Error(`Unsupported port state. portState=${app.portState}`);
           }
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
-        disabled={(app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
-        sx={{ width: "150px" }}
+        disabled={(app.portState === PortState.CLOSED) && (app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
+        sx={{ width: "180px" }}
       >
         {" "}
         {/* Specify a width to prevent it resizing when the text changes */}
@@ -173,7 +178,7 @@ export default observer((props: Props) => {
         followCursor
         arrow
       >
-        <TextField
+        <ApplyableTextFieldView
           id="outlined-basic"
           name="charSizePx"
           label="Char Size"
@@ -184,23 +189,7 @@ export default observer((props: Props) => {
               <InputAdornment position="start">px</InputAdornment>
             ),
           }}
-          value={
-            app.settings.displaySettings.charSizePx.dispValue
-          }
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.displaySettings.setCharSizePxDisp(event.target.value);
-          }}
-          onBlur={() => {
-            app.settings.displaySettings.applyCharSizePx();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              app.settings.displaySettings.applyCharSizePx();
-            }
-          }}
-          error={
-            app.settings.displaySettings.charSizePx.hasError
-          }
+          applyableTextField={app.settings.displaySettings.charSizePx}
           sx={{ width: "80px" }}
         />
       </Tooltip>

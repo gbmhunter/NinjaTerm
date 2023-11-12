@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable, runInAction } from 'mobx';
-import StopIcon from '@mui/icons-material/Stop';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { closeSnackbar }  from 'notistack';
+import ReactGA from "react-ga4";
+import { Button } from '@mui/material';
 
-
+// Import package.json to read out the version number
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
@@ -14,7 +14,8 @@ import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { Button } from '@mui/material';
+import AppStorage from './Storage/AppStorage';
+import { PortState } from './Settings/PortConfiguration/PortConfiguration';
 
 declare global {
   interface String {
@@ -37,29 +38,7 @@ String.prototype.insert = function (index, string) {
   return string + this;
 };
 
-export enum PortState {
-  CLOSED,
-  OPENED,
-}
 
-export type PortStateToButtonPropsItem = {
-  text: string;
-  color: string;
-  icon: any;
-};
-
-export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
-  [PortState.CLOSED]: {
-    text: 'Open Port',
-    color: 'success',
-    icon: <PlayArrowIcon />,
-  },
-  [PortState.OPENED]: {
-    text: 'Close Port',
-    color: 'error',
-    icon: <StopIcon />,
-  },
-};
 
 /**
  * Enumerates the possible things to display as the "main pane".
@@ -75,6 +54,11 @@ export enum MainPanes {
 export enum PortType {
   REAL,
   FAKE,
+}
+
+class LastUsedSerialPort {
+  serialPortInfo: Partial<SerialPortInfo> = {};
+  portState: PortState = PortState.CLOSED;
 }
 
 export class App {
@@ -138,6 +122,8 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
+  appStorage: AppStorage = new AppStorage();
+
   constructor(
     testing = false
   ) {
@@ -173,15 +159,97 @@ export class App {
 
     this.logging = new Logging(this);
 
-    // This is fired whenever a serial port that has been allowed access
-    // dissappears (i.e. USB serial), even if we are not connected to it.
-    // navigator.serial.addEventListener("disconnect", (event) => {
-    //   // TODO: Remove |event.target| from the UI.
-    //   // If the serial port was opened, a stream error would be observed as well.
-    //   console.log('Serial port removed.');
-    // });
+    if(navigator.serial !== undefined) {
+      navigator.serial.addEventListener('connect', (event) => {
+        console.log('connect. event: ', event);
+        this.onSerialPortConnected(event.target as SerialPort);
+      });
+    }
 
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  /**
+   * Called once when the React UI is loaded (specifically, when the App is rendered, by using a useEffect()).
+   *
+   * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
+   */
+  async onAppUiLoaded() {
+    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
+      await this.tryToLoadPreviouslyUsedPort();
+    }
+  }
+
+  onSerialPortConnected(serialPort: SerialPort) {
+    console.log('onSerialPortConnected() called.');
+
+    if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+      // Check to see if this is the serial port we want to reopen
+
+      const lastUsedPortInfo: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      if (lastUsedPortInfo === null) {
+        return;
+      }
+
+      const lastUsedPortInfoStr = JSON.stringify(lastUsedPortInfo.serialPortInfo);
+      const serialPortInfoStr = JSON.stringify(serialPort.getInfo());
+
+      if (lastUsedPortInfoStr === serialPortInfoStr) {
+        console.log('Found previously used port, reopening it.');
+        runInAction(() => {
+          this.port = serialPort;
+          this.serialPortInfo = serialPort.getInfo();
+        });
+        this.openPort();
+      }
+    }
+  }
+
+  async tryToLoadPreviouslyUsedPort() {
+    // getPorts() returns ports that the user has previously approved
+    // this app to be able to access
+    let approvedPorts = await navigator.serial.getPorts();
+    console.log('ports: ', approvedPorts);
+
+    // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
+    const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort') as LastUsedSerialPort;
+    if (lastUsedSerialPort === null) {
+      console.log('Did not find last used serial port in local storage.');
+      return;
+    }
+
+    const lastUsedPortInfoStr = JSON.stringify(lastUsedSerialPort.serialPortInfo);
+    console.log('lastUsedPortInfoStr=', lastUsedPortInfoStr);
+    // If the JSON representation of the last used port is just "{}",
+    // it means that the last used port didn't contain any valuable
+    // information to uniquely identify it, so don't bother trying to
+    // find it again!
+    if (lastUsedPortInfoStr === '{}') {
+      return;
+    }
+    // Check list of approved ports to see if any match the last opened ports
+    // USB vendor ID and product ID. If so, open.
+    for (let i = 0; i < approvedPorts.length; i += 1) {
+      const approvedPort = approvedPorts[i];
+      const approvedPortInfo = approvedPort.getInfo();
+      const approvedPortInfoStr = JSON.stringify(approvedPort.getInfo());
+      if (approvedPortInfoStr === lastUsedPortInfoStr) {
+        console.log('Found a match, opening port. portInfo=', approvedPortInfoStr);
+        // Found a match, open it
+        runInAction(async () => {
+          this.port = approvedPort;
+          this.serialPortInfo = approvedPortInfo;
+
+          if(lastUsedSerialPort.portState === PortState.OPENED) {
+            await this.openPort(false);
+            this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
+          } else if(lastUsedSerialPort.portState === PortState.CLOSED) {
+            this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
+          }
+        });
+        return;
+      }
+    }
   }
 
   setSettingsDialogOpen(trueFalse: boolean) {
@@ -209,8 +277,6 @@ export class App {
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
-        console.log(window.navigator.serial)
-        // return;
         localPort = await window.navigator.serial.requestPort();
       } catch (error) {
           // The only reason I know of that occurs an error to be thrown is
@@ -221,13 +287,25 @@ export class App {
       runInAction(() => {
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
-      })
+        // Save the info for this port, so we can automatically re-open
+        // it on app re-open in the future
+        const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+        lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
+        this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+
+      });
+      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+        await this.openPort();
+        this.portState = PortState.OPENED;
+        // Goto the terminal pane
+        this.setShownMainPane(MainPanes.TERMINAL);
+      }
     } else {
       console.error('Browser not supported, it does not provide the navigator.serial API.');
     }
   }
 
-  async openPort() {
+  async openPort(printSuccessMsg = true) {
     if (this.lastSelectedPortType === PortType.REAL) {
       try {
         await this.port?.open({
@@ -264,8 +342,10 @@ export class App {
         // cannot be considered open
         return;
       }
-      this.snackbar.sendToSnackbar('Serial port opened.', 'success');
-      this.setPortState(PortState.OPENED);
+      if (printSuccessMsg) {
+        this.snackbar.sendToSnackbar('Serial port opened.', 'success');
+      }
+      this.portState = PortState.OPENED;
       // This will automatically close the settings window if the user is currently in it,
       // clicks "Open" and the port opens successfully.
       if (this.closeSettingsDialogOnPortOpenOrClose) {
@@ -274,6 +354,17 @@ export class App {
 
       this.keepReading = true;
       this.closedPromise = this.readUntilClosed();
+
+      // this.appStorage.data.lastUsedSerialPort.portState = PortState.OPENED;
+      // this.appStorage.saveData();
+
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      lastUsedSerialPort.portState = PortState.OPENED;
+      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+
+      // Create custom GA4 event to see how many ports have
+      // been opened in NinjaTerm :-)
+      ReactGA.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {
@@ -301,8 +392,6 @@ export class App {
           this.parseRxData(value);
         }
       } catch (error) {
-          // This is called if the USB serial device is removed whilst
-          // reading
           console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
           // These error are described at https://wicg.github.io/serial/
           // @ts-ignore:
@@ -331,7 +420,12 @@ export class App {
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
-            }  else {
+            } else if (error.name === 'NetworkError') {
+              this.snackbar.sendToSnackbar('Encountered network error. This usually means the a USB serial port was unplugged from the computer.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'error'); // This is a fatal error
+            } else {
               const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
                           + 'Reported error from port.read():\n'
                           + `${error}`;
@@ -356,8 +450,30 @@ export class App {
       }
     }
 
-    console.log('Closing port...');
-    await this.port?.close();
+    console.log('GOT HERE! Closing port.... keepReading: ', this.keepReading);
+    await this.port!.close();
+
+    // If keepReading is true, this means close() was not called, and it's an unexpected
+    // fatal error from the serial port which has caused us to close. In this case, handle
+    // the clean-up and state transition here.
+    if (this.keepReading === true) {
+      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+        this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+      } else {
+        this.setPortState(PortState.CLOSED);
+      }
+      this.reader = null;
+      this.closedPromise = null;
+      // Set port to null as we might have "lost" it, i.e. might
+      // have been removed/disappeared
+      this.port = null;
+    }
+
+    console.log('readUntilClosed() finished.');
+  }
+
+  setPortState(newPortState: PortState) {
+    this.portState = newPortState;
   }
 
   /**
@@ -379,7 +495,8 @@ export class App {
     this.numBytesReceived += rxData.length;
   }
 
-  async closePort() {
+  async closePort(goToReopenState = false) {
+    console.log('closePort() called.')
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -392,10 +509,21 @@ export class App {
       }
       await this.closedPromise;
 
-      this.setPortState(PortState.CLOSED);
+      if (goToReopenState) {
+        // this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+        this.portState = PortState.CLOSED_BUT_WILL_REOPEN
+      } else {
+        // this.setPortState(PortState.CLOSED);
+        this.portState = PortState.CLOSED
+      }
       this.snackbar.sendToSnackbar('Serial port closed.', 'success');
       this.reader = null;
       this.closedPromise = null;
+      // this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
+      // this.appStorage.saveData();
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      lastUsedSerialPort.portState = PortState.CLOSED;
+      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
@@ -403,9 +531,21 @@ export class App {
     }
   }
 
-  setPortState(newPortState: PortState) {
-    this.portState = newPortState;
+  stopWaitingToReopenPort() {
+    this.portState = PortState.CLOSED;
   }
+
+  // async setPortState(newPortState: PortState) {
+  //   if (newPortState === PortState.CLOSED) {
+  //     await this.closePort();
+  //   } else if (newPortState === PortState.CLOSED_BUT_WILL_REOPEN) {
+  //     // this.closeButWillReopenPort();
+  //   } else if (newPortState === PortState.OPENED) {
+  //     await this.openPort();
+  //   } else {
+  //     throw Error('Unsupported port state!');
+  //   }
+  // }
 
   /**
    * This is called from either the TX/RX terminal or TX terminal

@@ -28,9 +28,11 @@
     "*.{css,sass,scss}.d.ts": true
   },
   "cSpell.words": [
+    "Applyable",
     "autorun",
     "autoscroll",
     "chartjs",
+    "Consolas",
     "DATETIME",
     "microcontroller",
     "mred",
@@ -39,6 +41,8 @@
     "notistack",
     "Overridable",
     "scrollback",
+    "SDMMGN",
+    "testid",
     "validatorjs"
   ]
 }

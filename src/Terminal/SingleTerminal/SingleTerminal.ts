@@ -264,6 +264,8 @@ export default class Terminal {
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
       const maxEscapeCodeLengthChars = this.app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.appliedValue;
+      // const maxEscapeCodeLengthChars = 10;
+
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
         this.app.snackbar.sendToSnackbar(

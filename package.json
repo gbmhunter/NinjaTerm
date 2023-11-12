@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -80,6 +80,7 @@
     "@types/react-window": "^1.8.5",
     "@types/wicg-file-system-access": "^2023.10.2",
     "jest-canvas-mock": "^2.5.2",
+    "jsdom": "^22.1.0",
     "postcss": "^8.4.31",
     "postcss-nesting": "^12.0.1",
     "vite-plugin-checker": "^0.6.2",

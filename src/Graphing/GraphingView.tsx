@@ -23,6 +23,7 @@ import {
   Legend,
 } from "chart.js";
 import { Scatter } from "react-chartjs-2";
+import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 
 ChartJS.register(LinearScale, PointElement, LineElement, ChartJsTooltip, Legend);
 
@@ -37,7 +38,7 @@ export default observer((props: Props) => {
   const { app } = props;
 
   // Calculate x-axis label based on x variable source
-  const xVarSource = app.graphing.settings.xVarSource.appliedValue;
+  const xVarSource = app.graphing.xVarSource;
   let xVarLabel = "";
   if (xVarSource === "Received Time") {
     xVarLabel = "Time [s]";
@@ -100,11 +101,10 @@ export default observer((props: Props) => {
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>Data Separator</InputLabel>
               <Select
-                value={app.graphing.settings.dataSeparator.dispValue}
+                value={app.graphing.dataSeparator}
                 label="Data Separator"
-                name="dataSeparator" // Must match the name of the field in the graphing settings
                 onChange={(e) => {
-                  app.graphing.setSetting(e.target.name, e.target.value);
+                  app.graphing.setDataSeparator(e.target.value);
                 }}
               >
                 {app.graphing.dataSeparators.map((dataSeparator: string) => {
@@ -125,17 +125,12 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="Max. Buffer Size"
               name="maxBufferSize" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.maxBufferSize.dispValue}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.maxBufferSize.hasError}
-              helperText={app.graphing.settings.maxBufferSize.errorMsg}
+              applyableTextField={app.graphing.maxBufferSize}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -147,17 +142,12 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="Max. Num. Data Points"
               name="maxNumDataPoints" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.maxNumDataPoints.dispValue}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.maxNumDataPoints.hasError}
-              helperText={app.graphing.settings.maxNumDataPoints.errorMsg}
+              applyableTextField={app.graphing.maxNumDataPoints}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -202,10 +192,9 @@ export default observer((props: Props) => {
                 data-testid="xVarSource"
                 label="X Variable Source"
                 labelId="label-id"
-                name="xVarSource"
-                value={app.graphing.settings.xVarSource.dispValue}
+                value={app.graphing.xVarSource}
                 onChange={(e) => {
-                  app.graphing.setSetting(e.target.name, e.target.value);
+                  app.graphing.setXVarSource(e.target.value);
                 }}
               >
                 {app.graphing.xVarSources.map((xVarSource) => {
@@ -227,20 +216,12 @@ export default observer((props: Props) => {
             arrow
             placement="right"
           >
-            <TextField
+            <ApplyableTextFieldView
               label="X Variable Prefix"
               name="xVarPrefix" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.xVarPrefix.dispValue}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              disabled={
-                app.graphing.settings.xVarSource.dispValue !== "In Data"
-              }
-              error={app.graphing.settings.xVarPrefix.hasError}
-              helperText={app.graphing.settings.xVarPrefix.errorMsg}
+              applyableTextField={app.graphing.xVarPrefix}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -252,17 +233,12 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="Y Variable Prefix"
               name="yVarPrefix" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.yVarPrefix.dispValue}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.yVarPrefix.hasError}
-              helperText={app.graphing.settings.yVarPrefix.errorMsg}
+              applyableTextField={app.graphing.yVarPrefix}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -297,9 +273,9 @@ export default observer((props: Props) => {
                 data-testid="xAxisRangeMode"
                 label="X Axis Range Mode"
                 name="xAxisRangeMode"
-                value={app.graphing.settings.xAxisRangeMode.dispValue}
+                value={app.graphing.xAxisRangeMode}
                 onChange={(e) => {
-                  app.graphing.setSetting(e.target.name, e.target.value);
+                  app.graphing.setXAxisRangeMode(e.target.value);
                 }}
               >
                 {app.graphing.axisRangeModes.map((axisRangeMode) => {
@@ -320,18 +296,12 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="X-Axis Range Min."
               name="xAxisRangeMin" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.xAxisRangeMin.dispValue}
-              disabled={app.graphing.settings.xAxisRangeMode.dispValue !== "Fixed"}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.xAxisRangeMin.hasError}
-              helperText={app.graphing.settings.xAxisRangeMin.errorMsg}
+              applyableTextField={app.graphing.xAxisRangeMin}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -343,18 +313,12 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="X-Axis Range Max."
               name="xAxisRangeMax" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.xAxisRangeMax.dispValue}
-              disabled={app.graphing.settings.xAxisRangeMode.dispValue !== "Fixed"}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.xAxisRangeMax.hasError}
-              helperText={app.graphing.settings.xAxisRangeMax.errorMsg}
+              applyableTextField={app.graphing.xAxisRangeMax}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -401,10 +365,9 @@ export default observer((props: Props) => {
               <Select
                 data-testid="yAxisRangeMode"
                 label="Y Axis Range Mode"
-                name="yAxisRangeMode"
-                value={app.graphing.settings.yAxisRangeMode.dispValue}
+                value={app.graphing.yAxisRangeMode}
                 onChange={(e) => {
-                  app.graphing.setSetting(e.target.name, e.target.value);
+                  app.graphing.setYAxisRangeMode(e.target.value);
                 }}
               >
                 {app.graphing.axisRangeModes.map((axisRangeMode) => {
@@ -425,18 +388,11 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="Y-Axis Range Min."
-              name="yAxisRangeMin" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.yAxisRangeMin.dispValue}
-              disabled={app.graphing.settings.yAxisRangeMode.dispValue !== "Fixed"}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.yAxisRangeMin.hasError}
-              helperText={app.graphing.settings.yAxisRangeMin.errorMsg}
+              applyableTextField={app.graphing.yAxisRangeMin}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -448,18 +404,11 @@ export default observer((props: Props) => {
             followCursor
             arrow
           >
-            <TextField
+            <ApplyableTextFieldView
               label="Y-Axis Range Max."
-              name="yAxisRangeMax" // Must match the name of the field in the graphing settings
               size="small"
               variant="outlined"
-              value={app.graphing.settings.yAxisRangeMax.dispValue}
-              disabled={app.graphing.settings.yAxisRangeMode.dispValue !== "Fixed"}
-              onChange={(e) => {
-                app.graphing.setSetting(e.target.name, e.target.value);
-              }}
-              error={app.graphing.settings.yAxisRangeMax.hasError}
-              helperText={app.graphing.settings.yAxisRangeMax.errorMsg}
+              applyableTextField={app.graphing.yAxisRangeMax}
               sx={{ width: "200px" }}
             />
           </Tooltip>
@@ -491,20 +440,6 @@ export default observer((props: Props) => {
           gap: "20px",
         }}
       >
-        {/* APPLY BUTTON */}
-        {/* ============================================================== */}
-        <Button
-          variant="contained"
-          color="success"
-          disabled={!app.graphing.isApplyable}
-          onClick={() => {
-            app.graphing.applyChanges();
-          }}
-          sx={{ width: "150px" }}
-        >
-          Apply
-        </Button>
-
         {/* RESET BUTTON */}
         {/* ============================================================== */}
         <Button
@@ -562,8 +497,8 @@ export default observer((props: Props) => {
                   width: 2,
                   color: '#fff', // <-------------- Color of the x-axis
                 },
-                min: app.graphing.settings.xAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.xAxisRangeMin.appliedValue) : undefined,
-                max: app.graphing.settings.xAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.xAxisRangeMax.appliedValue) : undefined,
+                min: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMin.appliedValue : undefined,
+                max: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMax.appliedValue : undefined,
               },
               y: {
                 title: {
@@ -580,8 +515,8 @@ export default observer((props: Props) => {
                   width: 2,
                   color: '#fff', // <-------------- Color of the x-axis
                 },
-                min: app.graphing.settings.yAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.yAxisRangeMin.appliedValue) : undefined,
-                max: app.graphing.settings.yAxisRangeMode.appliedValue === "Fixed" ? parseFloat(app.graphing.settings.yAxisRangeMax.appliedValue) : undefined,
+                min: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMin.appliedValue : undefined,
+                max: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMax.appliedValue : undefined,
               },
             },
             plugins: {
