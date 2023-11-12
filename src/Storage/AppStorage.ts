@@ -60,7 +60,13 @@ export default class AppStorage {
       }
       obj = obj[key];
     }
-    obj[keys[keys.length - 1]] = data;
+    // If no keys were provided, we are writing to the entire
+    // config object
+    if (keys.length === 0) {
+      this.activeConfig.configData = data;
+    } else {
+      obj[keys[keys.length - 1]] = data;
+    }
     window.localStorage.setItem('configs', JSON.stringify(this.configs));
   }
 
