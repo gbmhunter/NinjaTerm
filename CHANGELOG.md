@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- If no configs exist in the browser's local store, default-created config will be saved back to store even if no changes are made.
+
 ## [4.10.0] - 2023-11-12
 
 ### Added
