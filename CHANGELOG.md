@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Last serial port details and connection state are remembered across App reloads, and NinjaTerm can automatically reconnect to previously used serial port.
 - Added ability for NinjaTerm to reopen serial port (when available) after unexpected closure.
 
+### Fixed
+
+- Fixed bug where NinjaTerm would not disconnect when a USB serial cable was removed, closes #289.
+
 ### Changed
 
 - Google Analytics is now only initialized in production builds, to prevent things like Playwright e2e tests from spamming GA and skewing data.

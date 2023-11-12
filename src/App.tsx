@@ -420,7 +420,12 @@ export class App {
                                   + 'Returned error from reader.read():\n'
                                   + `${error}`,
                                   'warning');
-            }  else {
+            } else if (error.name === 'NetworkError') {
+              this.snackbar.sendToSnackbar('Encountered network error. This usually means the a USB serial port was unplugged from the computer.\n'
+                                  + 'Returned error from reader.read():\n'
+                                  + `${error}`,
+                                  'error'); // This is a fatal error
+            } else {
               const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
                           + 'Reported error from port.read():\n'
                           + `${error}`;
