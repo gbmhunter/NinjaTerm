@@ -56,6 +56,11 @@ export enum PortType {
   FAKE,
 }
 
+class LastUsedSerialPort {
+  serialPortInfo: Partial<SerialPortInfo> = {};
+  portState: PortState = PortState.CLOSED;
+}
+
 export class App {
 
   settings: Settings;
@@ -180,7 +185,13 @@ export class App {
 
     if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
       // Check to see if this is the serial port we want to reopen
-      const lastUsedPortInfoStr = JSON.stringify(this.appStorage.data.lastUsedSerialPort.serialPortInfo);
+
+      const lastUsedPortInfo: LastUsedSerialPort = this.appStorage.getData2('lastUsedSerialPort');
+      if (lastUsedPortInfo === null) {
+        return;
+      }
+
+      const lastUsedPortInfoStr = JSON.stringify(lastUsedPortInfo.serialPortInfo);
       const serialPortInfoStr = JSON.stringify(serialPort.getInfo());
 
       if (lastUsedPortInfoStr === serialPortInfoStr) {
@@ -195,13 +206,14 @@ export class App {
   }
 
   async tryToLoadPreviouslyUsedPort() {
-// getPorts() returns ports that the user has previously approved
+    // getPorts() returns ports that the user has previously approved
     // this app to be able to access
     let approvedPorts = await navigator.serial.getPorts();
     console.log('ports: ', approvedPorts);
 
-    const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    if (lastUsedSerialPort === undefined) {
+    // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
+    const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData2('lastUsedSerialPort') as LastUsedSerialPort;
+    if (lastUsedSerialPort === null) {
       console.log('Did not find last used serial port in local storage.');
       return;
     }
@@ -228,10 +240,10 @@ export class App {
           this.port = approvedPort;
           this.serialPortInfo = approvedPortInfo;
 
-          if(this.appStorage.data.lastUsedSerialPort.portState === PortState.OPENED) {
+          if(lastUsedSerialPort.portState === PortState.OPENED) {
             await this.openPort(false);
             this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
-          } else if(this.appStorage.data.lastUsedSerialPort.portState === PortState.CLOSED) {
+          } else if(lastUsedSerialPort.portState === PortState.CLOSED) {
             this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
           }
         });
@@ -277,8 +289,9 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        this.appStorage.data.lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
-        this.appStorage.saveData();
+        const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData2('lastUsedSerialPort');
+        lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
+        this.appStorage.saveData2('lastUsedSerialPort', lastUsedSerialPort);
 
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
@@ -342,8 +355,12 @@ export class App {
       this.keepReading = true;
       this.closedPromise = this.readUntilClosed();
 
-      this.appStorage.data.lastUsedSerialPort.portState = PortState.OPENED;
-      this.appStorage.saveData();
+      // this.appStorage.data.lastUsedSerialPort.portState = PortState.OPENED;
+      // this.appStorage.saveData();
+
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData2('lastUsedSerialPort');
+      lastUsedSerialPort.portState = PortState.OPENED;
+      this.appStorage.saveData2('lastUsedSerialPort', lastUsedSerialPort);
 
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
@@ -497,8 +514,11 @@ export class App {
       this.snackbar.sendToSnackbar('Serial port closed.', 'success');
       this.reader = null;
       this.closedPromise = null;
-      this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
-      this.appStorage.saveData();
+      // this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
+      // this.appStorage.saveData();
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData2('lastUsedSerialPort');
+      lastUsedSerialPort.portState = PortState.CLOSED;
+      this.appStorage.saveData2('lastUsedSerialPort', lastUsedSerialPort);
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {

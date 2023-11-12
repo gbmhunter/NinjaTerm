@@ -1,13 +1,3 @@
-import { PortState } from '../Settings/PortConfiguration/PortConfiguration';
-
-class LastUsedSerialPort {
-  serialPortInfo: Partial<SerialPortInfo> = {};
-  portState: PortState = PortState.CLOSED;
-}
-
-class Data {
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
-}
 
 class Config {
   name: string = '';
@@ -16,22 +6,11 @@ class Config {
 
 export default class AppStorage {
 
-  data: Data = new Data();
-
   configs: Config[] = [];
 
   activeConfig: Config;
 
   constructor() {
-
-    const dataStr = window.localStorage.getItem('data');
-    if (dataStr !== null) {
-      this.data = JSON.parse(dataStr);
-      if (this.data.lastUsedSerialPort === undefined) {
-        this.data.lastUsedSerialPort = new LastUsedSerialPort();
-      }
-    }
-
     // Read in configurations
     const configsStr = window.localStorage.getItem('configs');
     if (configsStr === null) {
@@ -43,26 +22,23 @@ export default class AppStorage {
     // Only support the 1 active config for now
     this.activeConfig = this.configs[0];
 
-    this.saveConfig(['test1', 'test2'], 'hello');
-    const test = this.getConfig(['test1', 'test2']);
-    console.log('test:', test);
   }
 
-  saveData = () => {
-    window.localStorage.setItem('data', JSON.stringify(this.data));
+  saveData2 = (key: string, data: any) => {
+    console.log('saveData2() called with key:', key, 'and data:', data);
+    window.localStorage.setItem(key, JSON.stringify(data));
   }
 
-  // saveConfig(key: string, data: any) {
-  //   window.localStorage.setItem(key, JSON.stringify(data));
-  // }
-
-  // getConfig(key: string): any {
-  //   const dataStr = window.localStorage.getItem(key);
-  //   if (dataStr !== null) {
-  //     return JSON.parse(dataStr);
-  //   }
-  //   return null;
-  // }
+  getData2 = (key: string): any => {
+    console.log('getData2() called with key:', key);
+    const value = window.localStorage.getItem(key);
+    if (value === null) {
+      console.log('Returning null.');
+      return null;
+    }
+    console.log('Returning value:', value);
+    return JSON.parse(value);
+  }
 
   saveConfig(keys: string[], data: any) {
     console.log('saveConfig() called with keys:', keys, 'and data:', data);
