@@ -88,7 +88,7 @@ test.describe('Graphing', () => {
     await appTestHarness.openPortAndGoToTerminalView();
     await appTestHarness.enableGraphing();
 
-    await page.getByTestId('xVarSource').click();
+    await page.getByTestId('x-var-source').click();
     await page.click('li[data-value="In Data"]');
 
     await appTestHarness.sendTextToTerminal('x=2,y=3\n');
