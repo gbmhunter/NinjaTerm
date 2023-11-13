@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug which caused fatal error in JS if app was opened after local storage was cleared.
+- Fixed MobX console warning.
+
 ### Changed
 
 - If no configs exist in the browser's local store, default-created config will be saved back to store even if no changes are made.
+- Removed unneeded console.log messages.
 
 ## [4.10.0] - 2023-11-12
 
