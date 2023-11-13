@@ -95,12 +95,9 @@ declare global {
 
 window.app = app;
 
-console.log('TEST')
-
 const AppView = observer((props: Props) => {
 
   useEffect(() => {
-    console.log('useEffect1() called.');
     // We need to register the service worker AFTER the app
     // has rendered, because it we do it before we won't
     // be able to enqueue a snackbar to tell the user there
@@ -119,7 +116,6 @@ const AppView = observer((props: Props) => {
     })
 
     const initFn = async () => {
-      console.log('Calling init()...');
       await app.onAppUiLoaded();
     }
 

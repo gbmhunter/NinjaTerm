@@ -4,6 +4,11 @@ class Config {
   configData: any = {};
 }
 
+/**
+ * This class manages the local storage (persistance browser based key/object data store)
+ * for the application. It is used to store both general data (saveData/getData) and configurations
+ * (saveConfig/getConfig).
+ */
 export default class AppStorage {
 
   configs: Config[] = [];
@@ -14,8 +19,13 @@ export default class AppStorage {
     // Read in configurations
     const configsStr = window.localStorage.getItem('configs');
     if (configsStr === null) {
+      // No config key found in users store, create one!
       const defaultConfig = new Config();
       this.configs.push(defaultConfig);
+      // Save just-created config back to store. Not strictly needed as it
+      // will be saved as soon as any changes are made, but this feels
+      // cleaner.
+      window.localStorage.setItem('configs', JSON.stringify(this.configs));
     } else {
       this.configs = JSON.parse(configsStr);
     }
@@ -50,7 +60,13 @@ export default class AppStorage {
       }
       obj = obj[key];
     }
-    obj[keys[keys.length - 1]] = data;
+    // If no keys were provided, we are writing to the entire
+    // config object
+    if (keys.length === 0) {
+      this.activeConfig.configData = data;
+    } else {
+      obj[keys[keys.length - 1]] = data;
+    }
     window.localStorage.setItem('configs', JSON.stringify(this.configs));
   }
 

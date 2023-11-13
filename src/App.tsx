@@ -209,17 +209,15 @@ export class App {
     // getPorts() returns ports that the user has previously approved
     // this app to be able to access
     let approvedPorts = await navigator.serial.getPorts();
-    console.log('ports: ', approvedPorts);
 
     // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
     const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort') as LastUsedSerialPort;
     if (lastUsedSerialPort === null) {
-      console.log('Did not find last used serial port in local storage.');
+      // Did not find last used serial port data in local storage, so do nothing
       return;
     }
 
     const lastUsedPortInfoStr = JSON.stringify(lastUsedSerialPort.serialPortInfo);
-    console.log('lastUsedPortInfoStr=', lastUsedPortInfoStr);
     // If the JSON representation of the last used port is just "{}",
     // it means that the last used port didn't contain any valuable
     // information to uniquely identify it, so don't bother trying to
@@ -234,7 +232,6 @@ export class App {
       const approvedPortInfo = approvedPort.getInfo();
       const approvedPortInfoStr = JSON.stringify(approvedPort.getInfo());
       if (approvedPortInfoStr === lastUsedPortInfoStr) {
-        console.log('Found a match, opening port. portInfo=', approvedPortInfoStr);
         // Found a match, open it
         runInAction(async () => {
           this.port = approvedPort;
@@ -289,14 +286,19 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+        let lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+        if (lastUsedSerialPort === null) {
+          lastUsedSerialPort = new LastUsedSerialPort();
+        }
         lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
         this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
 
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
-        this.portState = PortState.OPENED;
+        runInAction(() => {
+          this.portState = PortState.OPENED;
+        });
         // Goto the terminal pane
         this.setShownMainPane(MainPanes.TERMINAL);
       }
@@ -345,18 +347,17 @@ export class App {
       if (printSuccessMsg) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
-      this.portState = PortState.OPENED;
       // This will automatically close the settings window if the user is currently in it,
       // clicks "Open" and the port opens successfully.
       if (this.closeSettingsDialogOnPortOpenOrClose) {
         this.setSettingsDialogOpen(false);
       }
 
-      this.keepReading = true;
-      this.closedPromise = this.readUntilClosed();
-
-      // this.appStorage.data.lastUsedSerialPort.portState = PortState.OPENED;
-      // this.appStorage.saveData();
+      runInAction(() => {
+        this.portState = PortState.OPENED;
+        this.keepReading = true;
+        this.closedPromise = this.readUntilClosed();
+      });
 
       const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
       lastUsedSerialPort.portState = PortState.OPENED;
@@ -435,22 +436,12 @@ export class App {
           } else {
             this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
           }
-
-          // this.setPortState(PortState.CLOSED);
-          // runInAction(() => {
-          //   // Setting this.port to null means the port needs to be
-          //   // reselected in the UI (which makes sense because we just
-          //   // lost it)
-          //   // this.port = null;
-          //   // this.closedPromise = null;
-          // });
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
       }
     }
 
-    console.log('GOT HERE! Closing port.... keepReading: ', this.keepReading);
     await this.port!.close();
 
     // If keepReading is true, this means close() was not called, and it's an unexpected
@@ -468,8 +459,6 @@ export class App {
       // have been removed/disappeared
       this.port = null;
     }
-
-    console.log('readUntilClosed() finished.');
   }
 
   setPortState(newPortState: PortState) {
@@ -496,7 +485,6 @@ export class App {
   }
 
   async closePort(goToReopenState = false) {
-    console.log('closePort() called.')
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -534,18 +522,6 @@ export class App {
   stopWaitingToReopenPort() {
     this.portState = PortState.CLOSED;
   }
-
-  // async setPortState(newPortState: PortState) {
-  //   if (newPortState === PortState.CLOSED) {
-  //     await this.closePort();
-  //   } else if (newPortState === PortState.CLOSED_BUT_WILL_REOPEN) {
-  //     // this.closeButWillReopenPort();
-  //   } else if (newPortState === PortState.OPENED) {
-  //     await this.openPort();
-  //   } else {
-  //     throw Error('Unsupported port state!');
-  //   }
-  // }
 
   /**
    * This is called from either the TX/RX terminal or TX terminal
