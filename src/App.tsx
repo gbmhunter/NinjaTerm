@@ -9,13 +9,13 @@ import { Button } from '@mui/material';
 import packageDotJson from '../package.json'
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
-import Terminal from './Terminal/SingleTerminal/SingleTerminal';
 import Snackbar from './Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
 import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfiguration/PortConfiguration';
+import Terminals from './Terminals/Terminals';
 
 declare global {
   interface String {
@@ -74,12 +74,6 @@ export class App {
 
   rxData = '';
 
-  txRxTerminal: Terminal;
-
-  rxTerminal: Terminal;
-
-  txTerminal: Terminal;
-
   numBytesReceived: number;
 
   numBytesTransmitted: number;
@@ -112,6 +106,8 @@ export class App {
 
   shownMainPane: MainPanes;
 
+  terminals: Terminals;
+
   graphing: Graphing;
 
   logging: Logging;
@@ -139,9 +135,7 @@ export class App {
 
     this.snackbar = new Snackbar();
 
-    this.txRxTerminal = new Terminal(this, true);
-    this.rxTerminal = new Terminal(this, false); // Not focusable
-    this.txTerminal = new Terminal(this, true);
+    this.terminals = new Terminals(this);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -477,8 +471,8 @@ export class App {
     // console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
-    this.txRxTerminal.parseData(rxData);
-    this.rxTerminal.parseData(rxData);
+    this.terminals.txRxTerminal.parseData(rxData);
+    this.terminals.rxTerminal.parseData(rxData);
     this.graphing.parseData(rxData);
     this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
@@ -597,11 +591,11 @@ export class App {
 
       // Allow the serial port to be closed later.
       writer?.releaseLock();
-      this.txTerminal.parseData(txDataAsUint8Array);
+      this.terminals.txTerminal.parseData(txDataAsUint8Array);
       // Check if local TX echo is enabled, and if so, send the data to
       // the combined single terminal.
       if (this.settings.dataProcessingSettings.localTxEcho) {
-        this.txRxTerminal.parseData(txDataAsUint8Array);
+        this.terminals.txRxTerminal.parseData(txDataAsUint8Array);
       }
 
       // Also send this data to the logger, it may need it
@@ -614,9 +608,9 @@ export class App {
   }
 
   clearAllData() {
-    this.txRxTerminal.clearData();
-    this.txTerminal.clearData();
-    this.rxTerminal.clearData();
+    this.terminals.txRxTerminal.clearData();
+    this.terminals.txTerminal.clearData();
+    this.terminals.rxTerminal.clearData();
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

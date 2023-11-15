@@ -43,7 +43,7 @@ export default observer((props: Props) => {
     // Show only 1 terminal
     terminals = <SingleTerminalView
                   appStore={app}
-                  terminal={app.txRxTerminal}
+                  terminal={app.terminals.txRxTerminal}
                   testId='tx-rx-terminal-view'
                   useWindowing={true}
                 />;
@@ -51,10 +51,10 @@ export default observer((props: Props) => {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
-        <SingleTerminalView appStore={app} terminal={app.txTerminal} testId='tx-terminal-view'/>
+        <SingleTerminalView appStore={app} terminal={app.terminals.txTerminal} testId='tx-terminal-view'/>
       </div>
       <div style={{ height: '50%', display: 'flex' }}>
-        <SingleTerminalView appStore={app} terminal={app.rxTerminal} testId='rx-terminal-view' />
+        <SingleTerminalView appStore={app} terminal={app.terminals.rxTerminal} testId='rx-terminal-view' />
       </div>
     </div>;
   } else {
@@ -135,7 +135,29 @@ export default observer((props: Props) => {
       >
         Clear Data
       </Button>
-      {/* ============================ DATA VIEW CONFIGURATION =========================== */}
+      {/* FILTER */}
+      {/* ======================================================= */}
+      <Tooltip
+        title={
+          <div>
+            Filters the rows of data from the terminal based on the specified search pattern. Useful when you have lots of data and want to focus on a specific subset of information.
+          </div>
+        }
+        placement="left"
+      >
+        <TextField
+          size="small"
+          label="Filter"
+          variant="outlined"
+          // value={app.settings.dataProcessingSettings.filterRegex}
+          // onChange={(e) => {
+          //   app.settings.dataProcessingSettings.setFilterRegex(e.target.value);
+          // }}
+          sx={{ width: "200px" }}
+        />
+      </Tooltip>
+      {/* DATA VIEW CONFIGURATION */}
+      {/* ======================================================= */}
       <Tooltip
         title={
           <div>
