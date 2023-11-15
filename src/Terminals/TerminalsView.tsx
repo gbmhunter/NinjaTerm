@@ -135,7 +135,7 @@ export default observer((props: Props) => {
       >
         Clear Data
       </Button>
-      {/* FILTER */}
+      {/* FILTER TEXT INPUT */}
       {/* ======================================================= */}
       <Tooltip
         title={
@@ -145,14 +145,11 @@ export default observer((props: Props) => {
         }
         placement="left"
       >
-        <TextField
+        <ApplyableTextFieldView
           size="small"
           label="Filter"
           variant="outlined"
-          // value={app.settings.dataProcessingSettings.filterRegex}
-          // onChange={(e) => {
-          //   app.settings.dataProcessingSettings.setFilterRegex(e.target.value);
-          // }}
+          applyableTextField={app.terminals.filterText}
           sx={{ width: "200px" }}
         />
       </Tooltip>

@@ -14,6 +14,8 @@ export default abstract class ApplyableField {
   isValid = false;
   errorMsg = '';
 
+  onApplyChanged: () => void = () => {};
+
   constructor(dispValue: string, schema: ZodType) {
     this.schema = schema;
     this.dispValue = '';
@@ -40,6 +42,14 @@ export default abstract class ApplyableField {
     }
   }
 
+  /**
+   * Sets a callback to be called when a new value is applied, that is also different
+   * to the previous value. Called once appliedValue has been updated.
+   */
+  setOnApplyChanged(onApply: () => void) {
+    this.onApplyChanged = onApply;
+  }
+
   abstract apply(): void;
 }
 
@@ -58,8 +68,9 @@ export class ApplyableTextField extends ApplyableField {
   }
 
   apply() {
-    if (this.isValid) {
+    if (this.isValid && this.dispValue !== this.appliedValue) {
       this.appliedValue = this.dispValue;
+      this.onApplyChanged();
     }
   }
 }
@@ -82,5 +93,6 @@ export class ApplyableNumberField extends ApplyableField {
     if (this.isValid) {
       this.appliedValue = Number(this.dispValue);
     }
+    this.onApplyChanged();
   }
 }
