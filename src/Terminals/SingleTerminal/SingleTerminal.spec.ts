@@ -148,4 +148,59 @@ describe('single terminal tests', () => {
     // We haven't provided any filter text, so both rows should have passed the filter
     expect(singleTerminal.filteredTerminalRows).toEqual([0, 1]);
   });
+
+  test('filter text "1" works', () => {
+    singleTerminal.setFilterText('1');
+    // No data yet, even though this empty row won't match "1", it should still be included
+    // because the cursor is on it
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
+    singleTerminal.parseData(stringToUint8Array('1\n'));
+    // First row contains "1", so should pass filter, second row contains cursor, so
+    // should also pass filter
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 1]);
+
+    singleTerminal.parseData(stringToUint8Array('2\n'));
+    // 2nd row containing "2" should not pass filter
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 2]);
+
+    singleTerminal.parseData(stringToUint8Array('3\n'));
+    // 2nd row containing "2" should not pass filter
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 3]);
+  });
+
+  test('changing the filter text after data is present works', () => {
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
+    singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
+
+    // All rows should pass filter
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 1, 2, 3]);
+
+    singleTerminal.setFilterText('1');
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 3]);
+
+    singleTerminal.setFilterText('2');
+    expect(singleTerminal.filteredTerminalRows).toEqual([1, 3]);
+
+    singleTerminal.setFilterText('3');
+    expect(singleTerminal.filteredTerminalRows).toEqual([2, 3]);
+
+    // There is no "4" in the data, so just the cursor row should be shown
+    singleTerminal.setFilterText('4');
+    expect(singleTerminal.filteredTerminalRows).toEqual([3]);
+  });
+
+  test('clearing the filter should work', () => {
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
+    singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
+
+    // All rows should pass filter
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 1, 2, 3]);
+
+    singleTerminal.setFilterText('1');
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 3]);
+
+    // Clearing the filter should restore all rows
+    singleTerminal.setFilterText('');
+    expect(singleTerminal.filteredTerminalRows).toEqual([0, 1, 2, 3]);
+  });
 });

@@ -27,6 +27,8 @@ export default class Terminals {
   }
 
   onFilterTextApply() {
-    console.log('onFilterTextApply() called');
+    // Apply filter text to the two terminals which contain RX data
+    this.txRxTerminal.setFilterText(this.filterText.appliedValue);
+    this.rxTerminal.setFilterText(this.filterText.appliedValue);
   }
 }

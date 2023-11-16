@@ -833,6 +833,15 @@ export default class Terminal {
    */
   setFilterText(filterText: string) {
     this.filterText = filterText;
+
+    // Because the filter text has changed, we need to recheck every single row of
+    // data
+    // Clear the rows first, this should be more efficient than removing
+    // them 1 by 1.
+    this.filteredTerminalRows = [];
+    for (let rowIdx = 0; rowIdx < this.terminalRows.length; rowIdx += 1) {
+      this._filterRowAsNeeded(rowIdx);
+    }
   }
 
   /**
