@@ -21,7 +21,7 @@ export default class Terminal {
 
   displaySettings: DisplaySettings;
 
-  onTerminalKeyDown: (event: React.KeyboardEvent) => void;
+  onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null;
 
   // OTHER VARIABLES
   //======================================================================
@@ -79,7 +79,7 @@ export default class Terminal {
    */
   filteredTerminalRows: number[] = [];
 
-  constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: (event: React.KeyboardEvent) => void) {
+  constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
     this.isFocusable = isFocusable;
     this.dataProcessingSettings = dataProcessingSettings;
@@ -820,8 +820,10 @@ export default class Terminal {
     this.isFocused = trueFalse;
   }
 
-  handleKeyDown(event: React.KeyboardEvent) {
-    this.onTerminalKeyDown(event);
+  async handleKeyDown(event: React.KeyboardEvent) {
+    if (this.onTerminalKeyDown !== null) {
+      await this.onTerminalKeyDown(event);
+    }
   }
 
   /**

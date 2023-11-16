@@ -20,7 +20,7 @@ describe('single terminal tests', () => {
       true,
       dataProcessingSettings,
       displaySettings,
-      () => {}
+      null
     );
   });
 

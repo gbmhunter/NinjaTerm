@@ -523,10 +523,13 @@ export class App {
    * determines what the user has pressed and what data to send out the
    * serial port because of it.
    *
+   * This needs to use an arrow function because it's being passed around
+   * as a callback. Tried to bind to this in constructor, didn't work.
+   *
    * @param event The React keydown event.
    * @returns Nothing.
    */
-  async handleTerminalKeyDown(event: React.KeyboardEvent) {
+  handleTerminalKeyDown = async (event: React.KeyboardEvent) => {
     // console.log('handleTerminalKeyDown() called. event.key=', event.key);
 
     // Capture all key presses and prevent default actions or bubbling.
@@ -534,6 +537,7 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
+    console.log('this.portState=', this.portState);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port
@@ -587,6 +591,7 @@ export class App {
       const writer = this.port?.writable?.getWriter();
 
       const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
+      console.log('Sending', txDataAsUint8Array);
       await writer?.write(txDataAsUint8Array);
 
       // Allow the serial port to be closed later.
