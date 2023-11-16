@@ -49,12 +49,12 @@ export default class FakePortsController {
   constructor(app: App) {
     this.app = app;
 
-    // hello world, 0.2lps
+    // hello world, 0.1lps
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'hello world, 0.2lps',
-        'Sends "Hello, world!\\n" every 5 seconds.',
+        'hello world, 0.1lps',
+        'Sends "Hello, world!\\n" every 10 seconds.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -63,7 +63,33 @@ export default class FakePortsController {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
             app.parseRxData(Uint8Array.from(bytesToSend));
-          }, 5000);
+          }, 10000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // hello world, 1lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'hello world, 1lps',
+        'Sends "Hello, world!\\n" every 1 second.',
+        () => {
+          const intervalId = setInterval(() => {
+            const textToSend = "Hello, world!\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }, 1000);
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {

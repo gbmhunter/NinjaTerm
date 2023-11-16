@@ -26,7 +26,10 @@ export default class Terminals {
     makeAutoObservable(this); // Make sure this near the end
   }
 
-  onFilterTextApply() {
+  /**
+   * Needs to be arrow function, passed around as a callback
+   */
+  onFilterTextApply = () => {
     // Apply filter text to the two terminals which contain RX data
     this.txRxTerminal.setFilterText(this.filterText.appliedValue);
     this.rxTerminal.setFilterText(this.filterText.appliedValue);

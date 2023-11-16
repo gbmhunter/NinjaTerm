@@ -14,7 +14,7 @@ import { App } from "../../App";
 import Terminal from "./SingleTerminal";
 import TerminalRow from "./SingleTerminalRow";
 import styles from "./SingleTerminalView.module.css";
-import './SingleTerminalView.css'
+import "./SingleTerminalView.css";
 
 interface Props {
   appStore: App;
@@ -24,8 +24,8 @@ interface Props {
 }
 
 interface RowProps {
-  data: TerminalRow[];
-  index: number;
+  data: number[]; // This is the array of indexes into the terminalRows array
+  index: number; // This is the index into the data array above
   style: {};
 }
 
@@ -36,15 +36,20 @@ export default observer((props: Props) => {
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
-    const terminalRow = data[index];
+    const terminalRowIdx = data[index];
+    const terminalRow = terminal.terminalRows[terminalRowIdx];
 
     // Only create spans if we need to change style, because creating
     // a span per char is very performance intensive
     const spans: ReactElement[] = [];
-    let text = ''
-    let prevClassName = '';
+    let text = "";
+    let prevClassName = "";
 
-    for (let colIdx = 0; colIdx < terminalRow.terminalChars.length; colIdx += 1) {
+    for (
+      let colIdx = 0;
+      colIdx < terminalRow.terminalChars.length;
+      colIdx += 1
+    ) {
       const terminalChar = terminalRow.terminalChars[colIdx];
       let thisCharsClassName = terminalChar.className;
       if (
@@ -53,9 +58,9 @@ export default observer((props: Props) => {
       ) {
         // Found the cursor position!
         if (terminal.isFocused) {
-          thisCharsClassName += ' ' + styles.cursorFocused;
+          thisCharsClassName += " " + styles.cursorFocused;
         } else {
-          thisCharsClassName += ' ' + styles.cursorUnfocused;
+          thisCharsClassName += " " + styles.cursorUnfocused;
         }
       }
 
@@ -70,32 +75,30 @@ export default observer((props: Props) => {
         // Class name has changed. Dump all existing text into a span
         // and reset the text buffer
         spans.push(
-          <span
-            key={spans.length}
-            className={prevClassName}
-          >
+          <span key={spans.length} className={prevClassName}>
             {text}
           </span>
         );
-        text = '';
+        text = "";
         prevClassName = thisCharsClassName;
       }
 
-      text += terminalChar.char
+      text += terminalChar.char;
     }
 
     // Add the last span. This will always at least contain
     // the last char in the row, maybe more previous ones if the
     // class name hasn't changed
     spans.push(
-      <span
-        key={spans.length}
-        className={prevClassName}
-      >
+      <span key={spans.length} className={prevClassName}>
         {text}
       </span>
     );
-    return <div className="terminal-row" style={style}>{spans}</div>;
+    return (
+      <div className="terminal-row" style={style}>
+        {spans}
+      </div>
+    );
   });
 
   // Run this after every render, even though we only need to do it if
@@ -110,10 +113,7 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(
-        terminal.terminalRows.length,
-        "auto"
-      );
+      reactWindowRef.current.scrollToItem(terminal.terminalRows.length, "auto");
     } else {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
@@ -170,7 +170,7 @@ export default observer((props: Props) => {
       className={`${styles.outerTerminalWrapper} ${
         terminal.isFocusable ? styles.focusable : ""
       }`}
-      data-testid={testId + '-outer'}
+      data-testid={testId + "-outer"}
       style={{
         flexGrow: 1,
         // flexShrink: 1,
@@ -208,7 +208,8 @@ export default observer((props: Props) => {
           fontFamily: "Consolas, Menlo, monospace",
 
           // This sets the font size for data displayed in the terminal
-          fontSize: appStore.settings.displaySettings.charSizePx.appliedValue + "px",
+          fontSize:
+            appStore.settings.displaySettings.charSizePx.appliedValue + "px",
 
           // Line height needs to be set to 1.0 for autoscroll to work well
           lineHeight: 1.0,
@@ -226,22 +227,24 @@ export default observer((props: Props) => {
         className={styles.terminal}
       >
         <FixedSizeList
-        ref={reactWindowRef}
-        className={styles.fixedSizeList}
-        height={heightDebug}
-        itemCount={terminal.terminalRows.length}
-        // Add a bit of padding to the height
-        itemSize={appStore.settings.displaySettings.charSizePx.appliedValue + 5}
-        width="100%"
-        itemData={terminal.terminalRows}
-        onScroll={(scrollProps) => {
-          const { scrollOffset } = scrollProps;
-          terminal.setScrollPos(scrollOffset);
-        }}
-        overscanCount={5}
-      >
-        {Row}
-      </FixedSizeList>
+          ref={reactWindowRef}
+          className={styles.fixedSizeList}
+          height={heightDebug}
+          // Add a bit of padding to the height
+          itemSize={
+            appStore.settings.displaySettings.charSizePx.appliedValue + 5
+          }
+          width="100%"
+          itemData={terminal.filteredTerminalRows}
+          itemCount={terminal.filteredTerminalRows.length}
+          onScroll={(scrollProps) => {
+            const { scrollOffset } = scrollProps;
+            terminal.setScrollPos(scrollOffset);
+          }}
+          overscanCount={5}
+        >
+          {Row}
+        </FixedSizeList>
         {/* ================== SCROLL LOCK ARROW ==================== */}
         <IconButton
           onClick={() => {
