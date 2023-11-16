@@ -30,7 +30,6 @@ export enum NonVisibleCharDisplayBehaviors {
 }
 
 export default class DataProcessingSettings {
-  app: App;
 
   ansiEscapeCodeParsingEnabled = true;
 
@@ -69,8 +68,7 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
-  constructor(app: App) {
-    this.app = app;
+  constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

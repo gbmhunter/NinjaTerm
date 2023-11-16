@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added more unit tests for the terminals.
+- Added new performance profile before adding Filtering capability.
+
+### Fixed
+
+- Improved the modularity of the SingleTerminal class by removing it's dependency on the entire App class. This makes it easier to unit test.
+
 ## [4.10.1] - 2023-11-13
 
 ### Fixed

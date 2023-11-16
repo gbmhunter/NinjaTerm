@@ -3,8 +3,8 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
-import { App } from 'src/App';
-import { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
+import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
+import DisplaySettings from 'src/Settings/Display/DisplaySettings';
 
 const START_OF_CONTROL_GLYPHS = 0xE000;
 const START_OF_HEX_GLYPHS = 0xE100;
@@ -14,10 +14,17 @@ const START_OF_HEX_GLYPHS = 0xE100;
  */
 export default class Terminal {
 
-  /**
-   * The App object which owns this Terminal.
-   */
-  app: App;
+  // PASSED IN VARIABLES
+  //======================================================================
+
+  dataProcessingSettings: DataProcessingSettings;
+
+  displaySettings: DisplaySettings;
+
+  onTerminalKeyDown: (event: React.KeyboardEvent) => void;
+
+  // OTHER VARIABLES
+  //======================================================================
 
   // This represents the current style active on the terminal
   currentStyle: {};
@@ -62,12 +69,25 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  constructor(app: App, isFocusable: boolean) {
-    this.app = app;
+  // The filter text to apply to the terminal. If an empty string, no filtering is
+  // applied
+  filterText: string = '';
+
+  /**
+   * The array of terminal rows which should be included in the filtered view
+   * due to the filter text. This is an array of indexes into the terminalRows.
+   */
+  filteredTerminalRows: number[] = [];
+
+  constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: (event: React.KeyboardEvent) => void) {
+    // Save passed in variables and dependencies
     this.isFocusable = isFocusable;
+    this.dataProcessingSettings = dataProcessingSettings;
+    this.displaySettings = displaySettings;
+    this.onTerminalKeyDown = onTerminalKeyDown;
 
     autorun(() => {
-      if (!this.app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
+      if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -150,7 +170,7 @@ export default class Terminal {
       // NEW LINE HANDLING
       //========================================================================
 
-      const newLineBehavior = this.app.settings.dataProcessingSettings.newLineCursorBehavior;
+      const newLineBehavior = this.dataProcessingSettings.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
 
@@ -158,7 +178,7 @@ export default class Terminal {
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
         // line
-        if (!this.app.settings.dataProcessingSettings.swallowNewLine) {
+        if (!this.dataProcessingSettings.swallowNewLine) {
           this.addVisibleChar(rxByte);
         }
 
@@ -187,14 +207,14 @@ export default class Terminal {
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
-      const carriageReturnCursorBehavior = this.app.settings.dataProcessingSettings.carriageReturnCursorBehavior;
+      const carriageReturnCursorBehavior = this.dataProcessingSettings.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
 
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
-        if (!this.app.settings.dataProcessingSettings.swallowCarriageReturn) {
+        if (!this.dataProcessingSettings.swallowCarriageReturn) {
           this.addVisibleChar(rxByte);
         }
 
@@ -218,7 +238,7 @@ export default class Terminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
+      if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
         this.addVisibleChar(rxByte);
         continue;
       }
@@ -263,14 +283,14 @@ export default class Terminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.app.settings.dataProcessingSettings.maxEscapeCodeLengthChars.appliedValue;
+      const maxEscapeCodeLengthChars = this.dataProcessingSettings.maxEscapeCodeLengthChars.appliedValue;
       // const maxEscapeCodeLengthChars = 10;
 
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
         console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-        this.app.snackbar.sendToSnackbar(
-          `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
-          'warning');
+        // this.app.snackbar.sendToSnackbar(
+        //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
+        //   'warning');
         // Remove the ESC byte, and then prepend the rest onto the data to be processed
         // Got to shift them in backwards
         for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
@@ -482,11 +502,17 @@ export default class Terminal {
     this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
 
+  /**
+   * Moves the cursor right the specified number of columns. Does not move the cursor any further
+   * if it reaches the end of the terminal width.
+   *
+   * @param numRows Number of rows to move right.
+   */
   cursorRight(numRows: number) {
     // Go right one character at a time and perform various checks along the way
     for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
-      if (this.cursorPosition[1] >= this.app.settings.displaySettings.terminalWidthChars.appliedValue) {
+      if (this.cursorPosition[1] >= this.displaySettings.terminalWidthChars.appliedValue) {
         return;
       }
       // If we reach here, we can go right by at least 1
@@ -538,8 +564,8 @@ export default class Terminal {
   }
 
   /**
-   * Moves the cursor down the specified number of rows, creating new rows if need if passing the last
-   * existing row, and adding empty spaces in the new rows up to the current cursor column position.
+   * Moves the cursor down the specified number of rows, creating new rows if needed (if passing the last
+   * existing row), and adding empty spaces in the new rows up (padding) to the current cursor column position.
    *
    * @param numRows The number of rows to move down.
    */
@@ -553,7 +579,15 @@ export default class Terminal {
         existingChar.forCursor = false;
       }
 
+      // Now move cursor position down 1 row
       this.cursorPosition[0] += 1;
+
+      // We could have just been showing the row the cursor position was on
+      // just because the cursor was on it. Check to see if it actually matches
+      // the filter text (this function uses cursorPosition, so we make sure this
+      // code is below the cursorPosition update)
+      this._filterRowAsNeeded(this.cursorPosition[0] - 1);
+
 
       // If this pushes us past the last existing row, add a new one
       if (this.cursorPosition[0] === this.terminalRows.length) {
@@ -568,6 +602,9 @@ export default class Terminal {
         newTerminalChar.char = ' ';
         newRow.terminalChars.push(newTerminalChar);
       }
+
+      // Check if this new row passes the filter
+      this._filterRowAsNeeded(this.cursorPosition[0]);
     }
   }
 
@@ -580,6 +617,7 @@ export default class Terminal {
   /**
    * Adds a single printable character to the terminal at the current cursor position.
    * Cursor is also incremented to next suitable position.
+   *
    * @param char Must be a single printable character only.
    */
   addVisibleChar(rxByte: number) {
@@ -594,7 +632,7 @@ export default class Terminal {
     // fromCharCode() works with all Unicode code points that
     // are representable with one UTF-16 code unit
 
-    const nonVisibleCharDisplayBehavior = this.app.settings.dataProcessingSettings.nonVisibleCharDisplayBehavior;
+    const nonVisibleCharDisplayBehavior = this.dataProcessingSettings.nonVisibleCharDisplayBehavior;
 
     if (rxByte >= 0x20 && rxByte <= 0x7E) {
       // Is printable ASCII character, no shifting needed
@@ -667,7 +705,7 @@ export default class Terminal {
     // Increment cursor, move to next row if we have hit max char width
     // NOTE: Max. width may change at any time, and may reduce to a smaller value even
     // when chars are currently being inserted beyond the end. Thus the >= comparison here.
-    if (this.cursorPosition[1] >= this.app.settings.displaySettings.terminalWidthChars.appliedValue - 1) {
+    if (this.cursorPosition[1] >= this.displaySettings.terminalWidthChars.appliedValue - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       // this.moveToNewLine(); // This adds the " " if needed for the cursor
@@ -697,6 +735,9 @@ export default class Terminal {
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
     this.rowToScrollLockTo = 0;
+    // Reset the filtered rows to just show the one row
+    // we have created
+    this.filteredTerminalRows = [ 0 ];
   }
 
   setStyle(style: {}) {
@@ -716,43 +757,6 @@ export default class Terminal {
     this.scrollLock = trueFalse;
   }
 
-  /**
-   * Moves the cursor to the start of the next line. Equivalent to \r\n.
-   *
-   * TODO: Delete this now we have cursorDown and cursorLeft, use those
-   * instead.
-   */
-  // moveToNewLine() {
-  //   // Delete char at current cursor location if specifically for cursor
-  //   if (
-  //     this.terminalRows[this.cursorPosition[0]].terminalChars[
-  //       this.cursorPosition[1]
-  //     ].forCursor
-  //   ) {
-  //     this.terminalRows[this.cursorPosition[0]].terminalChars.splice(
-  //       this.cursorPosition[1],
-  //       1
-  //     );
-  //   }
-  //   if (this.cursorPosition[0] !== this.terminalRows.length - 1) {
-  //     this.cursorPosition[0] += 1;
-  //     this.cursorPosition[1] = 0;
-  //   } else {
-  //     const terminalRow = new TerminalRow();
-  //     this.terminalRows.push(terminalRow);
-  //     this.cursorPosition[0] += 1;
-  //     this.cursorPosition[1] = 0;
-  //     this.rowToScrollLockTo = this.terminalRows.length - 1;
-  //   }
-  //   // If there is no char at current cursor position in the row it's now in, insert empty space for cursor
-  //   const rowCursorIsNowOn = this.terminalRows[this.cursorPosition[0]];
-  //   if (this.cursorPosition[1] >= rowCursorIsNowOn.terminalChars.length) {
-  //     const terminalChar = new TerminalChar();
-  //     terminalChar.char = ' ';
-  //     rowCursorIsNowOn.terminalChars.push(terminalChar);
-  //   }
-  // }
-
   resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = '';
@@ -764,7 +768,7 @@ export default class Terminal {
   }
 
   limitNumRows() {
-    const maxRows = this.app.settings.displaySettings.scrollbackBufferSizeRows.appliedValue;
+    const maxRows = this.displaySettings.scrollbackBufferSizeRows.appliedValue;
     // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
@@ -794,7 +798,7 @@ export default class Terminal {
     // space as the rows we removed, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.app.settings.displaySettings.charSizePx.appliedValue + 5)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + 5)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }
@@ -817,6 +821,80 @@ export default class Terminal {
   }
 
   handleKeyDown(event: React.KeyboardEvent) {
-    this.app.handleTerminalKeyDown(event);
+    this.onTerminalKeyDown(event);
+  }
+
+  /**
+   * Call this to set filter text to apply to each row in the terminals buffer. Only
+   * rows containing the filter text will be displayed.
+   * @param filterText
+   */
+  setFilterText(filterText: string) {
+    this.filterText = filterText;
+  }
+
+  /**
+   * Checks if the row at the index passes the filter or not, and then
+   * updates the filtered terminal rows array as required.
+   *
+   * @param rowIdx The index of the row to check.
+   */
+  _filterRowAsNeeded(rowIdx: number) {
+    const rowPassesFilter = this._doesRowPassFilter(rowIdx);
+
+    if (rowPassesFilter) {
+      console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
+      // Add row to filtered rows array if it is not already there. Make
+      // sure it is added in order
+      const filteredRowIdx = this.filteredTerminalRows.indexOf(rowIdx);
+      if (filteredRowIdx !== -1) {
+        // Row is already in filtered rows array, so do nothing
+        return;
+      }
+      // Add row to filtered rows array,
+      for (let idx = 0; idx < this.filteredTerminalRows.length; idx += 1) {
+        if (this.filteredTerminalRows[idx] > rowIdx) {
+          // Insert before this index
+          this.filteredTerminalRows.splice(idx, 0, rowIdx);
+          console.log('filteredTerminalRows=', this.filteredTerminalRows);
+          return;
+        }
+      }
+      // If we get here, we need to add to the end
+      this.filteredTerminalRows.push(rowIdx);
+      console.log('filteredTerminalRows=', this.filteredTerminalRows);
+
+    } else {
+      console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
+      // If we get here, the row does not match the filter, so remove it from the
+      // filtered rows array
+      // NOTE: Because most of the time it will be the last/second to last row which
+      // is removed, it might be better to start the search from the last entry
+      const filteredRowIdx = this.filteredTerminalRows.indexOf(rowIdx);
+      if (filteredRowIdx === -1) {
+        // Row is not in filtered rows array, so do nothing
+        return;
+      }
+      // Remove row from filtered rows array
+      this.filteredTerminalRows.splice(filteredRowIdx, 1);
+      console.log('filteredTerminalRows=', this.filteredTerminalRows);
+    }
+  }
+
+  _doesRowPassFilter(rowIdx: number) {
+    const row = this.terminalRows[rowIdx];
+    const rowText = row.getText();
+    if (this.filterText === '') {
+      // No filter text, so all rows pass
+      return true;
+    }
+    if (rowIdx === this.cursorPosition[0]) {
+      // The cursor row always passes the filter
+      return true;
+    }
+    if (rowText.includes(this.filterText)) {
+      return true;
+    }
+    return false;
   }
 }
