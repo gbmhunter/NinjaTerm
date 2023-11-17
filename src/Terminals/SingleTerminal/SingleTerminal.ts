@@ -77,7 +77,7 @@ export default class Terminal {
    * The array of terminal rows which should be included in the filtered view
    * due to the filter text. This is an array of indexes into the terminalRows.
    */
-  filteredTerminalRows: number[] = [];
+  filteredTerminalRowIndexes: number[] = [];
 
   constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
@@ -331,27 +331,28 @@ export default class Terminal {
         );
         return;
       }
-      // Check if we can't go up the full amount, and if so, only
-      // go up to the first line
-      if (numRowsToGoUp > this.cursorPosition[0]) {
-        [numRowsToGoUp] = this.cursorPosition;
-      }
-      // There is a row above us, so safe to go up.
-      this.cursorPosition[0] -= numRowsToGoUp;
-      // Need to pad out this row with spaces " " if cursor
-      // is beyond end of existing text on row
-      const row = this.terminalRows[this.cursorPosition[0]];
-      while (this.cursorPosition[1] > row.terminalChars.length - 1) {
-        const space = new TerminalChar();
-        space.char = ' ';
-        row.terminalChars.push(space);
-        // If this is the last ' ' to insert, set it to a special "for cursor"
-        // space which will get deleted if the cursor moves. Note that we don't
-        // do this for any of the other spaces added (should we?)
-        if (this.cursorPosition[1] === row.terminalChars.length - 1) {
-          row.terminalChars[this.cursorPosition[1]].forCursor = true;
-        }
-      }
+      // // Check if we can't go up the full amount, and if so, only
+      // // go up to the first line
+      // if (numRowsToGoUp > this.cursorPosition[0]) {
+      //   [numRowsToGoUp] = this.cursorPosition;
+      // }
+      // // There is a row above us, so safe to go up.
+      // this.cursorPosition[0] -= numRowsToGoUp;
+      // // Need to pad out this row with spaces " " if cursor
+      // // is beyond end of existing text on row
+      // const row = this.terminalRows[this.cursorPosition[0]];
+      // while (this.cursorPosition[1] > row.terminalChars.length - 1) {
+      //   const space = new TerminalChar();
+      //   space.char = ' ';
+      //   row.terminalChars.push(space);
+      //   // If this is the last ' ' to insert, set it to a special "for cursor"
+      //   // space which will get deleted if the cursor moves. Note that we don't
+      //   // do this for any of the other spaces added (should we?)
+      //   if (this.cursorPosition[1] === row.terminalChars.length - 1) {
+      //     row.terminalChars[this.cursorPosition[1]].forCursor = true;
+      //   }
+      // }
+      this.cursorUp(numRowsToGoUp);
     } else if (lastChar === 'C') {
       //============================================================
       // CUC - Cursor Forward
@@ -536,6 +537,7 @@ export default class Terminal {
   }
 
   cursorUp(numRows: number) {
+    console.log('cursorUp() called. numRows=', numRows);
     // Go up one row at a time and perform various checks along the way
     for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
       // Never go above the first row!
@@ -543,6 +545,7 @@ export default class Terminal {
         return;
       }
       // If we reach here, we can go up by at least 1
+      const oldRowIdx = this.cursorPosition[0];
 
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
       const currRow = this.terminalRows[this.cursorPosition[0]];
@@ -552,6 +555,11 @@ export default class Terminal {
       }
 
       this.cursorPosition[0] -= 1;
+
+      // The row we are moving off might no longer pass the filter, if it was only
+      // passing because the cursor was on it
+      this._filterRowAsNeeded(this.cursorPosition[0] + 1);
+
       const newRow = this.terminalRows[this.cursorPosition[0]];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
@@ -560,6 +568,9 @@ export default class Terminal {
         // newTerminalChar.forCursor = true;
         newRow.terminalChars.push(newTerminalChar);
       }
+
+      // This new row might now pass the filter, because the cursor is now on it
+      this._filterRowAsNeeded(this.cursorPosition[0]);
     }
   }
 
@@ -737,7 +748,7 @@ export default class Terminal {
     this.rowToScrollLockTo = 0;
     // Reset the filtered rows to just show the one row
     // we have created
-    this.filteredTerminalRows = [ 0 ];
+    this.filteredTerminalRowIndexes = [ 0 ];
   }
 
   setStyle(style: {}) {
@@ -838,7 +849,7 @@ export default class Terminal {
     // data
     // Clear the rows first, this should be more efficient than removing
     // them 1 by 1.
-    this.filteredTerminalRows = [];
+    this.filteredTerminalRowIndexes = [];
     for (let rowIdx = 0; rowIdx < this.terminalRows.length; rowIdx += 1) {
       this._filterRowAsNeeded(rowIdx);
     }
@@ -857,23 +868,23 @@ export default class Terminal {
       console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
       // Add row to filtered rows array if it is not already there. Make
       // sure it is added in order
-      const filteredRowIdx = this.filteredTerminalRows.indexOf(rowIdx);
+      const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
       if (filteredRowIdx !== -1) {
         // Row is already in filtered rows array, so do nothing
         return;
       }
       // Add row to filtered rows array,
-      for (let idx = 0; idx < this.filteredTerminalRows.length; idx += 1) {
-        if (this.filteredTerminalRows[idx] > rowIdx) {
+      for (let idx = 0; idx < this.filteredTerminalRowIndexes.length; idx += 1) {
+        if (this.filteredTerminalRowIndexes[idx] > rowIdx) {
           // Insert before this index
-          this.filteredTerminalRows.splice(idx, 0, rowIdx);
-          console.log('filteredTerminalRows=', this.filteredTerminalRows);
+          this.filteredTerminalRowIndexes.splice(idx, 0, rowIdx);
+          console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
           return;
         }
       }
       // If we get here, we need to add to the end
-      this.filteredTerminalRows.push(rowIdx);
-      console.log('filteredTerminalRows=', this.filteredTerminalRows);
+      this.filteredTerminalRowIndexes.push(rowIdx);
+      console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
 
     } else {
       console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
@@ -881,14 +892,14 @@ export default class Terminal {
       // filtered rows array
       // NOTE: Because most of the time it will be the last/second to last row which
       // is removed, it might be better to start the search from the last entry
-      const filteredRowIdx = this.filteredTerminalRows.indexOf(rowIdx);
+      const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
       if (filteredRowIdx === -1) {
         // Row is not in filtered rows array, so do nothing
         return;
       }
       // Remove row from filtered rows array
-      this.filteredTerminalRows.splice(filteredRowIdx, 1);
-      console.log('filteredTerminalRows=', this.filteredTerminalRows);
+      this.filteredTerminalRowIndexes.splice(filteredRowIdx, 1);
+      console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
     }
   }
 

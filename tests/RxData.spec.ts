@@ -228,7 +228,9 @@ test.describe('RX data', () => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
-    // ESC[m should be interpreted as ESC[0m
+    // 2D go back 2, 1A go up 1, J clear to end of screen
+    // row1
+    // row2
     await appTestHarness.sendTextToTerminal('row1\nrow2\x1B[2D\x1B[1A\x1B[J');
 
     // Check that all data is displayed correctly in terminal

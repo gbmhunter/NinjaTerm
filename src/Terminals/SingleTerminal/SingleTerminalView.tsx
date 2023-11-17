@@ -235,8 +235,8 @@ export default observer((props: Props) => {
             appStore.settings.displaySettings.charSizePx.appliedValue + 5
           }
           width="100%"
-          itemData={terminal.filteredTerminalRows}
-          itemCount={terminal.filteredTerminalRows.length}
+          itemData={terminal.filteredTerminalRowIndexes}
+          itemCount={terminal.filteredTerminalRowIndexes.length}
           onScroll={(scrollProps) => {
             const { scrollOffset } = scrollProps;
             terminal.setScrollPos(scrollOffset);
