@@ -29,20 +29,20 @@ describe('single terminal tests', () => {
     expect(singleTerminal.cursorPosition[0]).toBe(0);
     expect(singleTerminal.cursorPosition[1]).toBe(3);
 
-    singleTerminal.cursorDown(1);
+    singleTerminal._cursorDown(1);
     expect(singleTerminal.cursorPosition[0]).toBe(1);
     expect(singleTerminal.cursorPosition[1]).toBe(3);
     // We should have four spaces in the second row, the last one holding the
     // cursor
     expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(4);
 
-    singleTerminal.cursorUp(1);
+    singleTerminal._cursorUp(1);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
     expect(singleTerminal.cursorPosition[1]).toBe(3);
   });
 
   test('cursor up can\'t go above first row', () => {
-    singleTerminal.cursorUp(1);
+    singleTerminal._cursorUp(1);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
   });

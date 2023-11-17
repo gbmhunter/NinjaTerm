@@ -189,15 +189,15 @@ export default class Terminal {
         } else if (newLineBehavior == NewLineCursorBehaviors.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
-          this.cursorDown(1);
+          this._cursorDown(1);
           continue;
         } else if (newLineBehavior == NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
           // this.moveToNewLine();
           // Move left FIRST, then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
           // is empty to put the cursor at the correct column position
-          this.cursorLeft(this.cursorPosition[1]);
-          this.cursorDown(1);
+          this._cursorLeft(this.cursorPosition[1]);
+          this._cursorDown(1);
           continue;
         } else {
           throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
@@ -223,14 +223,14 @@ export default class Terminal {
           // Don't move the cursor anywhere.
           continue;
         } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN) {
-          this.cursorLeft(this.cursorPosition[1]);
+          this._cursorLeft(this.cursorPosition[1]);
           continue;
         } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
           // Move left FIRST, then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
           // is empty to put the cursor at the correct column position
-          this.cursorLeft(this.cursorPosition[1]);
-          this.cursorDown(1);
+          this._cursorLeft(this.cursorPosition[1]);
+          this._cursorDown(1);
           continue;
         } else {
           throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
@@ -331,7 +331,7 @@ export default class Terminal {
         );
         return;
       }
-      this.cursorUp(numRowsToGoUp);
+      this._cursorUp(numRowsToGoUp);
     } else if (lastChar === 'C') {
       //============================================================
       // CUC - Cursor Forward
@@ -347,7 +347,7 @@ export default class Terminal {
         console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
         return;
       }
-      this.cursorRight(numColsToGoRight);
+      this._cursorRight(numColsToGoRight);
     } else if (lastChar === 'D') {
       //============================================================
       // CUB Cursor Back
@@ -365,7 +365,7 @@ export default class Terminal {
         );
         return;
       }
-      this.cursorLeft(numColsToGoLeft);
+      this._cursorLeft(numColsToGoLeft);
     } else if (lastChar === 'J') {
       //============================================================
     // ED Erase in Display
@@ -472,7 +472,7 @@ export default class Terminal {
     }
   }
 
-  cursorLeft(numRows: number) {
+  _cursorLeft(numRows: number) {
     // Cap number columns to go left
     const currCursorColIdx = this.cursorPosition[1];
     let numColsToLeftAdjusted = numRows;
@@ -498,7 +498,7 @@ export default class Terminal {
    *
    * @param numRows Number of rows to move right.
    */
-  cursorRight(numRows: number) {
+  _cursorRight(numRows: number) {
     // Go right one character at a time and perform various checks along the way
     for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
@@ -525,8 +525,7 @@ export default class Terminal {
     }
   }
 
-  cursorUp(numRows: number) {
-    console.log('cursorUp() called. numRows=', numRows);
+  _cursorUp(numRows: number) {
     // Go up one row at a time and perform various checks along the way
     for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
       // Never go above the first row!
@@ -571,7 +570,7 @@ export default class Terminal {
    *
    * @param numRows The number of rows to move down.
    */
-  cursorDown(numRows: number) {
+  _cursorDown(numRows: number) {
     // Go down one row at a time and perform various checks along the way
     for (let numRowsGoneDown = 0; numRowsGoneDown < numRows; numRowsGoneDown += 1) {
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
@@ -625,14 +624,6 @@ export default class Terminal {
   addVisibleChar(rxByte: number) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
-
-    // if (rxByte === 0x00) {
-    //   terminalChar.char = String.fromCharCode(0x2400);
-    // } else {
-    //   terminalChar.char = String.fromCharCode(rxByte);
-    // }
-    // fromCharCode() works with all Unicode code points that
-    // are representable with one UTF-16 code unit
 
     const nonVisibleCharDisplayBehavior = this.dataProcessingSettings.nonVisibleCharDisplayBehavior;
 
@@ -711,7 +702,7 @@ export default class Terminal {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
       // this.moveToNewLine(); // This adds the " " if needed for the cursor
-      this.cursorDown(1);
+      this._cursorDown(1);
     } else {
       this.cursorPosition[1] += 1;
       // Add space here is there is no text
@@ -850,13 +841,13 @@ export default class Terminal {
    * Checks if the row at the index passes the filter or not, and then
    * updates the filtered terminal rows array as required.
    *
-   * @param rowIdx The index of the row to check.
+   * @param rowIdx The index of the row to check. If rowIdx is outside the bounds of the terminalRows array, it is removed from the filtered rows array if it is present (this is useful for escape code commands such as "erase in display".
    */
   _filterRowAsNeeded(rowIdx: number) {
     const rowPassesFilter = this._doesRowPassFilter(rowIdx);
 
     if (rowPassesFilter) {
-      console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
+      // console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
       // Add row to filtered rows array if it is not already there. Make
       // sure it is added in order
       const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
@@ -869,16 +860,16 @@ export default class Terminal {
         if (this.filteredTerminalRowIndexes[idx] > rowIdx) {
           // Insert before this index
           this.filteredTerminalRowIndexes.splice(idx, 0, rowIdx);
-          console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+          // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
           return;
         }
       }
       // If we get here, we need to add to the end
       this.filteredTerminalRowIndexes.push(rowIdx);
-      console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+      // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
 
     } else {
-      console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
+      // console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
       // If we get here, the row does not match the filter, so remove it from the
       // filtered rows array
       // NOTE: Because most of the time it will be the last/second to last row which
@@ -890,7 +881,7 @@ export default class Terminal {
       }
       // Remove row from filtered rows array
       this.filteredTerminalRowIndexes.splice(filteredRowIdx, 1);
-      console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+      // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
     }
   }
 
