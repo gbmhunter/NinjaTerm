@@ -331,27 +331,6 @@ export default class Terminal {
         );
         return;
       }
-      // // Check if we can't go up the full amount, and if so, only
-      // // go up to the first line
-      // if (numRowsToGoUp > this.cursorPosition[0]) {
-      //   [numRowsToGoUp] = this.cursorPosition;
-      // }
-      // // There is a row above us, so safe to go up.
-      // this.cursorPosition[0] -= numRowsToGoUp;
-      // // Need to pad out this row with spaces " " if cursor
-      // // is beyond end of existing text on row
-      // const row = this.terminalRows[this.cursorPosition[0]];
-      // while (this.cursorPosition[1] > row.terminalChars.length - 1) {
-      //   const space = new TerminalChar();
-      //   space.char = ' ';
-      //   row.terminalChars.push(space);
-      //   // If this is the last ' ' to insert, set it to a special "for cursor"
-      //   // space which will get deleted if the cursor moves. Note that we don't
-      //   // do this for any of the other spaces added (should we?)
-      //   if (this.cursorPosition[1] === row.terminalChars.length - 1) {
-      //     row.terminalChars[this.cursorPosition[1]].forCursor = true;
-      //   }
-      // }
       this.cursorUp(numRowsToGoUp);
     } else if (lastChar === 'C') {
       //============================================================
@@ -548,19 +527,21 @@ export default class Terminal {
       const oldRowIdx = this.cursorPosition[0];
 
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
-      const currRow = this.terminalRows[this.cursorPosition[0]];
+      const currRow = this.terminalRows[oldRowIdx];
       const existingChar = currRow.terminalChars[this.cursorPosition[1]];
       if (existingChar.forCursor) {
         existingChar.forCursor = false;
       }
 
-      this.cursorPosition[0] -= 1;
+      const newRowIdx = oldRowIdx - 1;
+      // Update cursor to new row
+      this.cursorPosition[0] = newRowIdx;
 
       // The row we are moving off might no longer pass the filter, if it was only
       // passing because the cursor was on it
-      this._filterRowAsNeeded(this.cursorPosition[0] + 1);
+      this._filterRowAsNeeded(oldRowIdx);
 
-      const newRow = this.terminalRows[this.cursorPosition[0]];
+      const newRow = this.terminalRows[newRowIdx];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
         const newTerminalChar = new TerminalChar();
@@ -570,7 +551,7 @@ export default class Terminal {
       }
 
       // This new row might now pass the filter, because the cursor is now on it
-      this._filterRowAsNeeded(this.cursorPosition[0]);
+      this._filterRowAsNeeded(newRowIdx);
     }
   }
 
