@@ -45,7 +45,6 @@ export default observer((props: Props) => {
                   appStore={app}
                   terminal={app.terminals.txRxTerminal}
                   testId='tx-rx-terminal-view'
-                  useWindowing={true}
                 />;
   } else if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data

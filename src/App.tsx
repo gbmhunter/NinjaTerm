@@ -537,7 +537,6 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    console.log('this.portState=', this.portState);
     if (this.portState === PortState.OPENED) {
       // Serial port is open, let's send it to the serial
       // port

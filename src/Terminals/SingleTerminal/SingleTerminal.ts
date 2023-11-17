@@ -135,6 +135,11 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
+  /**
+   * Called by the React UI when the fixed sized list fires an onScroll event.
+   *
+   * @param scrollPos
+   */
   setScrollPos(scrollPos: number) {
     this.scrollPos = scrollPos;
   }
@@ -760,6 +765,9 @@ export default class Terminal {
     return /^\d$/.test(char);
   }
 
+  /**
+   * Removes the oldest rows of data if needed to make sure it don't exceed the scrollback buffer size.
+   */
   limitNumRows() {
     const maxRows = this.displaySettings.scrollbackBufferSizeRows.appliedValue;
     // console.log('limitNumRows() called. maxRows=', maxRows);
@@ -781,7 +789,7 @@ export default class Terminal {
       this.cursorPosition[0] = newCursorRowIdx;
     } else {
       // This means we deleted the row the cursor was on, in this case, move cursor to
-      // the oldest row, at the start of the row
+      // the oldest row and at it's start
       this.cursorPosition[0] = 0;
       this.cursorPosition[1] = 0;
     }
@@ -791,7 +799,7 @@ export default class Terminal {
     // space as the rows we removed, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + 5)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue)*numRowsToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }

@@ -1,26 +1,25 @@
-import { IconButton } from "@mui/material";
-import { observer } from "mobx-react-lite";
+import { IconButton } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 import {
   WheelEvent,
   useRef,
   ReactElement,
   useState,
   useLayoutEffect,
-} from "react";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import { FixedSizeList } from "react-window";
+} from 'react';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { FixedSizeList } from 'react-window';
 
-import { App } from "../../App";
-import Terminal from "./SingleTerminal";
-import TerminalRow from "./SingleTerminalRow";
-import styles from "./SingleTerminalView.module.css";
-import "./SingleTerminalView.css";
+import { App } from '../../App';
+import Terminal from './SingleTerminal';
+import TerminalRow from './SingleTerminalRow';
+import styles from './SingleTerminalView.module.css';
+import './SingleTerminalView.css';
 
 interface Props {
   appStore: App;
   terminal: Terminal;
   testId: string;
-  useWindowing?: boolean;
 }
 
 interface RowProps {
@@ -30,7 +29,7 @@ interface RowProps {
 }
 
 export default observer((props: Props) => {
-  const { appStore, terminal, testId, useWindowing = true } = props;
+  const { appStore, terminal, testId = true } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -42,8 +41,8 @@ export default observer((props: Props) => {
     // Only create spans if we need to change style, because creating
     // a span per char is very performance intensive
     const spans: ReactElement[] = [];
-    let text = "";
-    let prevClassName = "";
+    let text = '';
+    let prevClassName = '';
 
     for (
       let colIdx = 0;
@@ -58,9 +57,9 @@ export default observer((props: Props) => {
       ) {
         // Found the cursor position!
         if (terminal.isFocused) {
-          thisCharsClassName += " " + styles.cursorFocused;
+          thisCharsClassName += ' ' + styles.cursorFocused;
         } else {
-          thisCharsClassName += " " + styles.cursorUnfocused;
+          thisCharsClassName += ' ' + styles.cursorUnfocused;
         }
       }
 
@@ -79,7 +78,7 @@ export default observer((props: Props) => {
             {text}
           </span>
         );
-        text = "";
+        text = '';
         prevClassName = thisCharsClassName;
       }
 
@@ -95,7 +94,7 @@ export default observer((props: Props) => {
       </span>
     );
     return (
-      <div className="terminal-row" style={style}>
+      <div className='terminal-row' style={style}>
         {spans}
       </div>
     );
@@ -113,7 +112,7 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(terminal.terminalRows.length, "auto");
+      reactWindowRef.current.scrollToItem(terminal.terminalRows.length, 'auto');
     } else {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
@@ -148,10 +147,10 @@ export default observer((props: Props) => {
       setHeight(terminalDiv?.current?.offsetHeight);
     };
     handleResize();
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -168,17 +167,17 @@ export default observer((props: Props) => {
     <div
       tabIndex={terminal.isFocusable ? 0 : undefined}
       className={`${styles.outerTerminalWrapper} ${
-        terminal.isFocusable ? styles.focusable : ""
+        terminal.isFocusable ? styles.focusable : ''
       }`}
-      data-testid={testId + "-outer"}
+      data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
         // flexShrink: 1,
-        marginBottom: "10px",
-        padding: "15px", // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
-        boxSizing: "border-box",
-        overflowY: "hidden",
-        backgroundColor: "#000000",
+        marginBottom: '10px',
+        padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+        boxSizing: 'border-box',
+        overflowY: 'hidden',
+        backgroundColor: '#000000',
         // margin: '-15px',
         // padding: '10px',
       }}
@@ -203,25 +202,25 @@ export default observer((props: Props) => {
         ref={terminalDiv}
         style={{
           // flexGrow: '1',
-          height: "100%",
+          height: '100%',
           // This sets the font for displayed data in the terminal
-          fontFamily: "Consolas, Menlo, monospace",
+          fontFamily: 'Consolas, Menlo, monospace',
 
           // This sets the font size for data displayed in the terminal
           fontSize:
-            appStore.settings.displaySettings.charSizePx.appliedValue + "px",
+            appStore.settings.displaySettings.charSizePx.appliedValue + 'px',
 
           // Line height needs to be set to 1.0 for autoscroll to work well
           lineHeight: 1.0,
 
-          position: "relative", // This is so we can use position: absolute for the down icon
+          position: 'relative', // This is so we can use position: absolute for the down icon
           // flexBasis: '0',
           // overflowY: hidden is important so that that it ignores the height of the child
           // react-window List when calculating what size it should be. Then the List
           // height is set from the height of this div.
-          overflowY: "hidden",
+          overflowY: 'hidden',
 
-          boxSizing: "border-box",
+          boxSizing: 'border-box',
         }}
         data-testid={testId}
         className={styles.terminal}
@@ -232,7 +231,7 @@ export default observer((props: Props) => {
           height={heightDebug}
           // Add a bit of padding to the height
           itemSize={
-            appStore.settings.displaySettings.charSizePx.appliedValue + 5
+            appStore.settings.displaySettings.charSizePx.appliedValue + appStore.settings.displaySettings.verticalRowPadding.appliedValue
           }
           width="100%"
           itemData={terminal.filteredTerminalRowIndexes}
@@ -251,17 +250,17 @@ export default observer((props: Props) => {
             terminal.setScrollLock(true);
           }}
           sx={{
-            display: terminal.scrollLock ? "none" : "block",
-            position: "absolute", // Fix it to the bottom right of the TX/RX view port
-            bottom: "20px",
-            right: "30px",
-            color: "rgba(255, 255, 255, 0.4)",
+            display: terminal.scrollLock ? 'none' : 'block',
+            position: 'absolute', // Fix it to the bottom right of the TX/RX view port
+            bottom: '20px',
+            right: '30px',
+            color: 'rgba(255, 255, 255, 0.4)',
           }}
         >
           <ArrowDownwardIcon
             sx={{
-              width: "40px",
-              height: "40px",
+              width: '40px',
+              height: '40px',
             }}
           />
         </IconButton>

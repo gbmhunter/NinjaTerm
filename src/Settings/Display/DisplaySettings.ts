@@ -20,14 +20,17 @@ export const dataViewConfigEnumToDisplayName: {
 };
 export default class DisplaySettings {
 
+  // 14px is a good default size for the terminal text
+  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
+
+  verticalRowPadding = new ApplyableNumberField('5', z.coerce.number().int().min(1));
+
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
 
   scrollbackBufferSizeRows = new ApplyableNumberField('2000', z.coerce.number().int().min(1));
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-  // 14px is a good default size for the terminal text
-  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
 
   constructor() {
     makeAutoObservable(this);
