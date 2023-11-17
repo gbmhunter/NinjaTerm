@@ -794,18 +794,27 @@ export default class Terminal {
       this.cursorPosition[1] = 0;
     }
 
-    // Need to update scroll position for view to use if we are not scroll locked
-    // to the bottom. Move the scroll position back the same amount of vertical
-    // space as the rows we removed, so the user sees the same data on the screen
+    // Work out how many of the rows we just deleted are visible, and then remove them
+    // from the filtered row indexes array.
+    let numFilteredIndexesToRemove = 0;
+    for (let idx = 0; idx < numRowsToRemove; idx += 1) {
+      if (this.filteredTerminalRowIndexes.indexOf(idx) !== -1) {
+        numFilteredIndexesToRemove += 1;
+      }
+    }
+    this.filteredTerminalRowIndexes.splice(0, numFilteredIndexesToRemove);
+
+    // Need to update scroll position for view to use if we are not scroll locked to the bottom. Move the scroll position back the same amount of rows we deleted which were visible, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue)*numRowsToRemove;
+      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue)*numFilteredIndexesToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }
       this.scrollPos = newScrollPos;
     }
   }
+
 
   /**
    * Use this to set whether the terminal is considered focused or not. If focused, the

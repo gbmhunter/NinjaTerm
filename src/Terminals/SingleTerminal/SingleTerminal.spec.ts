@@ -235,4 +235,18 @@ describe('single terminal tests', () => {
     // the cursor 1 right of the "o"
     expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
   });
+
+  test('filter should work with scrollback buffer', () => {
+    // Set a scrollback buffer of just 1 row
+    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+    displaySettings.scrollbackBufferSizeRows.apply();
+
+    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+
+    singleTerminal.parseData(stringToUint8Array('row1\n'));
+
+    // We should only have 1 row, which is empty and has the cursor in it
+    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+
+  });
 });

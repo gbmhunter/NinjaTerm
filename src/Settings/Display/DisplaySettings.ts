@@ -23,6 +23,9 @@ export default class DisplaySettings {
   // 14px is a good default size for the terminal text
   charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
 
+  /**
+   * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
+   */
   verticalRowPadding = new ApplyableNumberField('5', z.coerce.number().int().min(1));
 
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
