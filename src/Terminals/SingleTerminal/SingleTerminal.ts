@@ -400,8 +400,18 @@ export default class Terminal {
         cursorChar.char = ' ';
         cursorChar.forCursor = true;
         currRow.terminalChars.push(cursorChar);
+        // Context has been modified on the current row, need to run it through
+        // the filter again
+        this._filterRowAsNeeded(this.cursorPosition[0]);
+        // Save the length of the terminalRows array before we remove rows, so
+        // we can use it for the filtering loop below
+        const prevRowsLength = this.terminalRows.length;
         // Now remove all rows past the one the cursor is on
         this.terminalRows.splice(this.cursorPosition[0] + 1);
+        // Remove all deleted rows from the filtered rows array (if they are present)
+        for (let idx = this.cursorPosition[0] + 1; idx < prevRowsLength; idx += 1) {
+          this._filterRowAsNeeded(idx);
+        }
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
@@ -884,7 +894,19 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Checks if the row at the specified index passes the filter.
+   *
+   * @param rowIdx If rowIdx is outside the bounds of the terminalRows array, this function returns false.
+   * @returns True if row passes filter, otherwise false.
+   */
   _doesRowPassFilter(rowIdx: number) {
+    if (rowIdx >= this.terminalRows.length) {
+      // Row does not exist, so it does not pass the filter
+      // This functionality allows the "erase in display" command to easily
+      // remove row indexes of removed rows from the filtered list
+      return false;
+    }
     const row = this.terminalRows[rowIdx];
     const rowText = row.getText();
     console.log('Checking if row text: ', rowText, 'passes filter: ', this.filterText);

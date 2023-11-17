@@ -216,5 +216,23 @@ describe('single terminal tests', () => {
     // row and does not match the filter text
     expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
 
+    singleTerminal.setFilterText('');
+
+    // All rows should now pass filter
+    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1]);
+  });
+
+  test('filter should work with clear escape code', () => {
+    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+
+    // singleTerminal.setFilterText('');
+
+    // 2D go back 2, 1A go up 1, J clear to end of screen
+    //
+    singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[2D\x1B[1A\x1B[J'));
+
+    // Should be left with a single row in the terminal with the text "ro" and
+    // the cursor 1 right of the "o"
+    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
   });
 });
