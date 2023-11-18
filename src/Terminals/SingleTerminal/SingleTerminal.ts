@@ -77,7 +77,15 @@ export default class Terminal {
    * The array of terminal rows which should be included in the filtered view
    * due to the filter text. This is an array of indexes into the terminalRows.
    */
-  filteredTerminalRowIndexes: number[] = [];
+  filteredTerminalRows: TerminalRow[] = [];
+
+  /**
+   * This is used to keep track of the order in which rows are received so that
+   * we can work out where to add terminal rows into the filtered rows array when
+   * they are not at the start or the end. This is incremented by one for each
+   * received row and assigned to the terminal row object.
+   */
+  uniqueRowIndexCount: number = 0;
 
   constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
@@ -407,16 +415,18 @@ export default class Terminal {
         currRow.terminalChars.push(cursorChar);
         // Context has been modified on the current row, need to run it through
         // the filter again
-        this._filterRowAsNeeded(this.cursorPosition[0]);
+        // TODO
+        // this._filterRowAsNeeded(this.cursorPosition[0]);
         // Save the length of the terminalRows array before we remove rows, so
         // we can use it for the filtering loop below
         const prevRowsLength = this.terminalRows.length;
         // Now remove all rows past the one the cursor is on
         this.terminalRows.splice(this.cursorPosition[0] + 1);
         // Remove all deleted rows from the filtered rows array (if they are present)
-        for (let idx = this.cursorPosition[0] + 1; idx < prevRowsLength; idx += 1) {
-          this._filterRowAsNeeded(idx);
-        }
+        // TODO:
+        // for (let idx = this.cursorPosition[0] + 1; idx < prevRowsLength; idx += 1) {
+        //   this._filterRowAsNeeded(idx);
+        // }
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
@@ -553,7 +563,10 @@ export default class Terminal {
 
       // The row we are moving off might no longer pass the filter, if it was only
       // passing because the cursor was on it
-      this._filterRowAsNeeded(oldRowIdx);
+      if (!this._doesRowPassFilter(oldRowIdx)) {
+        const idxOfRowToRemove = this.filteredTerminalRows.indexOf(this.terminalRows[oldRowIdx]);
+        this.filteredTerminalRows.splice(idxOfRowToRemove, 1);
+      }
 
       const newRow = this.terminalRows[newRowIdx];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
@@ -564,8 +577,9 @@ export default class Terminal {
         newRow.terminalChars.push(newTerminalChar);
       }
 
-      // This new row might now pass the filter, because the cursor is now on it
-      this._filterRowAsNeeded(newRowIdx);
+      // Because the cursor is now on the row above what it used to be on,
+      // we need to make sure it is in the filtered rows array
+      this._addToFilteredRows(this.terminalRows[newRowIdx]);
     }
   }
 
@@ -592,13 +606,31 @@ export default class Terminal {
       // just because the cursor was on it. Check to see if it actually matches
       // the filter text (this function uses cursorPosition, so we make sure this
       // code is below the cursorPosition update)
-      this._filterRowAsNeeded(this.cursorPosition[0] - 1);
+      // We don't need to handle the situation in where it does pass the filter, because
+      // we now the tow already exists in filteredTerminalRows
+      if (!this._doesRowPassFilter(this.cursorPosition[0] - 1)) {
+        const idxOfRowToRemove = this.filteredTerminalRows.indexOf(this.terminalRows[this.cursorPosition[0] - 1]);
+        this.filteredTerminalRows.splice(idxOfRowToRemove, 1);
+      }
 
 
       // If this pushes us past the last existing row, add a new one
       if (this.cursorPosition[0] === this.terminalRows.length) {
-        const newRow = new TerminalRow();
+        const newRow = new TerminalRow(this.uniqueRowIndexCount);
+        this.uniqueRowIndexCount += 1;
         this.terminalRows.push(newRow);
+        // Because we are the end of the terminal rows, we can just add the row to the
+        // end of the filtered terminal rows. This is an optimization which is faster than
+        // using the unique IDs to find the correct position in the filteredTerminalRows array
+        // and this is a very common operation
+        this.filteredTerminalRows.push(newRow);
+      } else {
+        // We need to add this row into the filtered rows array if it's not already
+        // in it. Also, because we are not at the end of the terminal rows, we can't
+        // just add the row to the end of the filteredTerminalRows array, we need to
+        // find the correct position using the unique IDs
+        // TODO
+        // this._filterRowAsNeeded(this.cursorPosition[0]);
       }
 
       const newRow = this.terminalRows[this.cursorPosition[0]];
@@ -609,8 +641,7 @@ export default class Terminal {
         newRow.terminalChars.push(newTerminalChar);
       }
 
-      // Check if this new row passes the filter
-      this._filterRowAsNeeded(this.cursorPosition[0]);
+
     }
   }
 
@@ -726,7 +757,9 @@ export default class Terminal {
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
-    const terminalRow = new TerminalRow();
+    this.uniqueRowIndexCount = 0;
+    const terminalRow = new TerminalRow(this.uniqueRowIndexCount);
+    this.uniqueRowIndexCount += 1;
     const terminalChar = new TerminalChar();
     terminalChar.char = ' ';
     terminalChar.forCursor = true;
@@ -735,7 +768,7 @@ export default class Terminal {
     this.rowToScrollLockTo = 0;
     // Reset the filtered rows to just show the one row
     // we have created
-    this.filteredTerminalRowIndexes = [ 0 ];
+    this.filteredTerminalRows = [ terminalRow ];
   }
 
   setStyle(style: {}) {
@@ -778,7 +811,7 @@ export default class Terminal {
     }
     // console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
     // Remove oldest rows (rows from start of array)
-    this.terminalRows.splice(0, numRowsToRemove);
+    const deletedRows = this.terminalRows.splice(0, numRowsToRemove);
     // console.log(`Now has ${this.terminalRows.length} rows.`)
 
     // We need to update the cursor position to point to the
@@ -798,11 +831,12 @@ export default class Terminal {
     // from the filtered row indexes array.
     let numFilteredIndexesToRemove = 0;
     for (let idx = 0; idx < numRowsToRemove; idx += 1) {
-      if (this.filteredTerminalRowIndexes.indexOf(idx) !== -1) {
+      const deletedRow = deletedRows[idx];
+      if (this.filteredTerminalRows.indexOf(deletedRow) !== -1) {
         numFilteredIndexesToRemove += 1;
       }
     }
-    this.filteredTerminalRowIndexes.splice(0, numFilteredIndexesToRemove);
+    this.filteredTerminalRows.splice(0, numFilteredIndexesToRemove);
 
     // Need to update scroll position for view to use if we are not scroll locked to the bottom. Move the scroll position back the same amount of rows we deleted which were visible, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
@@ -848,9 +882,11 @@ export default class Terminal {
     // data
     // Clear the rows first, this should be more efficient than removing
     // them 1 by 1.
-    this.filteredTerminalRowIndexes = [];
+    this.filteredTerminalRows = [];
     for (let rowIdx = 0; rowIdx < this.terminalRows.length; rowIdx += 1) {
-      this._filterRowAsNeeded(rowIdx);
+      if (this._doesRowPassFilter(rowIdx)) {
+        this.filteredTerminalRows.push(this.terminalRows[rowIdx]);
+      }
     }
   }
 
@@ -860,47 +896,47 @@ export default class Terminal {
    *
    * @param rowIdx The index of the row to check. If rowIdx is outside the bounds of the terminalRows array, it is removed from the filtered rows array if it is present (this is useful for escape code commands such as "erase in display".
    */
-  _filterRowAsNeeded(rowIdx: number) {
-    const rowPassesFilter = this._doesRowPassFilter(rowIdx);
+  // _filterRowAsNeeded(rowIdx: number) {
+  //   const rowPassesFilter = this._doesRowPassFilter(rowIdx);
 
-    if (rowPassesFilter) {
-      // console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
-      // Add row to filtered rows array if it is not already there. Make
-      // sure it is added in order
-      const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
-      if (filteredRowIdx !== -1) {
-        // Row is already in filtered rows array, so do nothing
-        return;
-      }
-      // Add row to filtered rows array,
-      for (let idx = 0; idx < this.filteredTerminalRowIndexes.length; idx += 1) {
-        if (this.filteredTerminalRowIndexes[idx] > rowIdx) {
-          // Insert before this index
-          this.filteredTerminalRowIndexes.splice(idx, 0, rowIdx);
-          // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
-          return;
-        }
-      }
-      // If we get here, we need to add to the end
-      this.filteredTerminalRowIndexes.push(rowIdx);
-      // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+  //   if (rowPassesFilter) {
+  //     // console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
+  //     // Add row to filtered rows array if it is not already there. Make
+  //     // sure it is added in order
+  //     const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
+  //     if (filteredRowIdx !== -1) {
+  //       // Row is already in filtered rows array, so do nothing
+  //       return;
+  //     }
+  //     // Add row to filtered rows array,
+  //     for (let idx = 0; idx < this.filteredTerminalRowIndexes.length; idx += 1) {
+  //       if (this.filteredTerminalRowIndexes[idx] > rowIdx) {
+  //         // Insert before this index
+  //         this.filteredTerminalRowIndexes.splice(idx, 0, rowIdx);
+  //         // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+  //         return;
+  //       }
+  //     }
+  //     // If we get here, we need to add to the end
+  //     this.filteredTerminalRowIndexes.push(rowIdx);
+  //     // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
 
-    } else {
-      // console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
-      // If we get here, the row does not match the filter, so remove it from the
-      // filtered rows array
-      // NOTE: Because most of the time it will be the last/second to last row which
-      // is removed, it might be better to start the search from the last entry
-      const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
-      if (filteredRowIdx === -1) {
-        // Row is not in filtered rows array, so do nothing
-        return;
-      }
-      // Remove row from filtered rows array
-      this.filteredTerminalRowIndexes.splice(filteredRowIdx, 1);
-      // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
-    }
-  }
+  //   } else {
+  //     // console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
+  //     // If we get here, the row does not match the filter, so remove it from the
+  //     // filtered rows array
+  //     // NOTE: Because most of the time it will be the last/second to last row which
+  //     // is removed, it might be better to start the search from the last entry
+  //     const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
+  //     if (filteredRowIdx === -1) {
+  //       // Row is not in filtered rows array, so do nothing
+  //       return;
+  //     }
+  //     // Remove row from filtered rows array
+  //     this.filteredTerminalRowIndexes.splice(filteredRowIdx, 1);
+  //     // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
+  //   }
+  // }
 
   /**
    * Checks if the row at the specified index passes the filter.
@@ -930,5 +966,29 @@ export default class Terminal {
       return true;
     }
     return false;
+  }
+
+  /**
+   *
+   *
+   * @param rowIdx
+   * @returns
+   */
+  _addToFilteredRows(terminalRowToInsert: TerminalRow) {
+    if (this.filteredTerminalRows.indexOf(terminalRowToInsert) === -1) {
+      // The row is not already in the filtered rows array, so we need to insert
+      // it at the correct location. We need to insert it in order given by it's
+      // uniqueRowId. Begin search from the end of the array, as this is where
+      // we'll be normally be doing these sorts of operations (e.g. it will be more
+      // efficient most of the time)
+      console.log('Row is not in filtered rows, need to insert it at the correct location');
+      for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
+        if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
+          // Insert after this index
+          this.filteredTerminalRows.splice(idx + 1, 0, terminalRowToInsert);
+          return;
+        }
+      }
+    }
   }
 }

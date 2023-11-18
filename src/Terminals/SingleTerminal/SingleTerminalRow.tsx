@@ -9,8 +9,11 @@ export default class TerminalRow {
   // The chars in this row.
   terminalChars: TerminalChar[];
 
-  constructor() {
+  uniqueRowId: number;
+
+  constructor(uniqueRowId: number) {
     this.terminalChars = [];
+    this.uniqueRowId = uniqueRowId;
     makeAutoObservable(this);
   }
 

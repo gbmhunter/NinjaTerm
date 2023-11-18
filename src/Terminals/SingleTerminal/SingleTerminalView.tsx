@@ -23,7 +23,7 @@ interface Props {
 }
 
 interface RowProps {
-  data: number[]; // This is the array of indexes into the terminalRows array
+  data: TerminalRow[]; // This is the array of indexes into the terminalRows array
   index: number; // This is the index into the data array above
   style: {};
 }
@@ -35,8 +35,8 @@ export default observer((props: Props) => {
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
-    const terminalRowIdx = data[index];
-    const terminalRow = terminal.terminalRows[terminalRowIdx];
+    const terminalRow = data[index];
+    // const terminalRow = terminal.terminalRows[terminalRowIdx];
 
     // Only create spans if we need to change style, because creating
     // a span per char is very performance intensive
@@ -234,8 +234,8 @@ export default observer((props: Props) => {
             appStore.settings.displaySettings.charSizePx.appliedValue + appStore.settings.displaySettings.verticalRowPadding.appliedValue
           }
           width="100%"
-          itemData={terminal.filteredTerminalRowIndexes}
-          itemCount={terminal.filteredTerminalRowIndexes.length}
+          itemData={terminal.filteredTerminalRows}
+          itemCount={terminal.filteredTerminalRows.length}
           onScroll={(scrollProps) => {
             const { scrollOffset } = scrollProps;
             terminal.setScrollPos(scrollOffset);

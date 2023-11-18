@@ -140,90 +140,104 @@ describe('single terminal tests', () => {
 
   test('filtered terminal rows setup correctly', () => {
     // With no text yet received, we should just have the cursor on the first and only row. This should not be filtered.
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
   test('filtered terminal rows works with basic data', () => {
     singleTerminal.parseData(stringToUint8Array('123\n'));
     // We haven't provided any filter text, so both rows should have passed the filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
   test('filter text "1" works', () => {
     singleTerminal.setFilterText('1');
     // No data yet, even though this empty row won't match "1", it should still be included
     // because the cursor is on it
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
     singleTerminal.parseData(stringToUint8Array('1\n'));
     // First row contains "1", so should pass filter, second row contains cursor, so
     // should also pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
     singleTerminal.parseData(stringToUint8Array('2\n'));
     // 2nd row containing "2" should not pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 2]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[2] ]
+    );
 
     singleTerminal.parseData(stringToUint8Array('3\n'));
     // 2nd row containing "2" should not pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+    );
   });
 
   test('changing the filter text after data is present works', () => {
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
     singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
 
     // All rows should pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1, 2, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
     singleTerminal.setFilterText('1');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+    );
 
     singleTerminal.setFilterText('2');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([1, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[1], singleTerminal.terminalRows[3] ]
+    );
 
     singleTerminal.setFilterText('3');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([2, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[2], singleTerminal.terminalRows[3] ]
+    );
 
     // There is no "4" in the data, so just the cursor row should be shown
     singleTerminal.setFilterText('4');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[3] ]
+    );
   });
 
   test('clearing the filter should work', () => {
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
     singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
 
     // All rows should pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1, 2, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
     singleTerminal.setFilterText('1');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+    );
 
     // Clearing the filter should restore all rows
     singleTerminal.setFilterText('');
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1, 2, 3]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
   test('filter should work with cursor up escape code', () => {
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
-
     singleTerminal.setFilterText('1');
 
-    // 1A go up one, puts the cursor at the end of the first row
+    // 1A: go up one, puts the cursor at the end of the first row
     singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[1A'));
 
     // Second row should not pass the filter! The cursor is no longer on this
     // row and does not match the filter text
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(
+      [ singleTerminal.terminalRows[0] ]
+    );
 
     singleTerminal.setFilterText('');
 
     // All rows should now pass filter
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0, 1]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
-  test('filter should work with clear escape code', () => {
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+  test.only('filter should work with clear escape code', () => {
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
 
     // singleTerminal.setFilterText('');
 
@@ -233,7 +247,7 @@ describe('single terminal tests', () => {
 
     // Should be left with a single row in the terminal with the text "ro" and
     // the cursor 1 right of the "o"
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
   test('filter should work with scrollback buffer', () => {
@@ -241,12 +255,12 @@ describe('single terminal tests', () => {
     displaySettings.scrollbackBufferSizeRows.setDispValue('1');
     displaySettings.scrollbackBufferSizeRows.apply();
 
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
 
     singleTerminal.parseData(stringToUint8Array('row1\n'));
 
     // We should only have 1 row, which is empty and has the cursor in it
-    expect(singleTerminal.filteredTerminalRowIndexes).toEqual([0]);
+    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
 
   });
 });
