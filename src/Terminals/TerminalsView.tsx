@@ -4,6 +4,7 @@ import {
   ButtonPropsColorOverrides,
   FormControl,
   FormControlLabel,
+  IconButton,
   InputAdornment,
   InputLabel,
   MenuItem,
@@ -13,6 +14,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { OverridableStringUnion } from '@mui/types';
 import KofiButton from 'kofi-button';
@@ -154,6 +156,20 @@ export default observer((props: Props) => {
           label="Filter"
           variant="outlined"
           applyableTextField={app.terminals.filterText}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton edge="end" color="primary"
+                  onClick={() => {
+                    app.terminals.filterText.setDispValue('');
+                    app.terminals.filterText.apply();
+                  }}
+                >
+                  <CancelIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
           sx={{ width: "200px" }}
         />
       </Tooltip>
