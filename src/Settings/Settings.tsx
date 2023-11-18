@@ -55,7 +55,7 @@ export class Settings {
     this.app = app;
     this.portConfiguration = new PortConfiguration(app);
     this.dataProcessingSettings = new DataProcessingSettings();
-    this.displaySettings = new DisplaySettings();
+    this.displaySettings = new DisplaySettings(app.appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

@@ -7,15 +7,17 @@ import DataProcessingSettings, {
   NonVisibleCharDisplayBehaviors,
 } from 'src/Settings/DataProcessingSettings';
 import DisplaySettings from 'src/Settings/Display/DisplaySettings';
-import exp from 'constants';
+import AppStorage from 'src/Storage/AppStorage';
 
 describe('single terminal tests', () => {
+  let appStorage: AppStorage;
   let dataProcessingSettings: DataProcessingSettings;
   let displaySettings: DisplaySettings;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
+    appStorage = new AppStorage();
     dataProcessingSettings = new DataProcessingSettings();
-    displaySettings = new DisplaySettings();
+    displaySettings = new DisplaySettings(appStorage);
     singleTerminal = new SingleTerminal(
       true,
       dataProcessingSettings,

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added more unit tests for the terminals.
 - Added new performance profile before adding Filtering capability.
 - Added input to change the vertical row padding.
+- Display settings now persist across app restarts.
 
 ### Fixed
 
