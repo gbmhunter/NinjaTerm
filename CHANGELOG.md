@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added ability to filter rows of terminal text.
 - Added more unit tests for the terminals.
 - Added new performance profile before adding Filtering capability.
 - Added input to change the vertical row padding.

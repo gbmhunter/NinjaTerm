@@ -845,7 +845,6 @@ export default class Terminal {
     }
   }
 
-
   /**
    * Use this to set whether the terminal is considered focused or not. If focused, the
    * terminal will be given a glow border and the cursor will go solid.
@@ -887,54 +886,6 @@ export default class Terminal {
   }
 
   /**
-   * Checks if the row at the index passes the filter or not, and then
-   * updates the filtered terminal rows array as required.
-   *
-   * @param rowIdx The index of the row to check. If rowIdx is outside the bounds of the terminalRows array, it is removed from the filtered rows array if it is present (this is useful for escape code commands such as "erase in display".
-   */
-  // _filterRowAsNeeded(rowIdx: number) {
-  //   const rowPassesFilter = this._doesRowPassFilter(rowIdx);
-
-  //   if (rowPassesFilter) {
-  //     // console.log('Adding row to filtered rows array. rowIdx=', rowIdx);
-  //     // Add row to filtered rows array if it is not already there. Make
-  //     // sure it is added in order
-  //     const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
-  //     if (filteredRowIdx !== -1) {
-  //       // Row is already in filtered rows array, so do nothing
-  //       return;
-  //     }
-  //     // Add row to filtered rows array,
-  //     for (let idx = 0; idx < this.filteredTerminalRowIndexes.length; idx += 1) {
-  //       if (this.filteredTerminalRowIndexes[idx] > rowIdx) {
-  //         // Insert before this index
-  //         this.filteredTerminalRowIndexes.splice(idx, 0, rowIdx);
-  //         // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
-  //         return;
-  //       }
-  //     }
-  //     // If we get here, we need to add to the end
-  //     this.filteredTerminalRowIndexes.push(rowIdx);
-  //     // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
-
-  //   } else {
-  //     // console.log('Removing row from filtered rows array. rowIdx=', rowIdx);
-  //     // If we get here, the row does not match the filter, so remove it from the
-  //     // filtered rows array
-  //     // NOTE: Because most of the time it will be the last/second to last row which
-  //     // is removed, it might be better to start the search from the last entry
-  //     const filteredRowIdx = this.filteredTerminalRowIndexes.indexOf(rowIdx);
-  //     if (filteredRowIdx === -1) {
-  //       // Row is not in filtered rows array, so do nothing
-  //       return;
-  //     }
-  //     // Remove row from filtered rows array
-  //     this.filteredTerminalRowIndexes.splice(filteredRowIdx, 1);
-  //     // console.log('filteredTerminalRows=', this.filteredTerminalRowIndexes);
-  //   }
-  // }
-
-  /**
    * Checks if the row at the specified index passes the filter.
    *
    * @param rowIdx If rowIdx is outside the bounds of the terminalRows array, this function returns false.
@@ -965,10 +916,11 @@ export default class Terminal {
   }
 
   /**
+   * Adds the provided row the the filtered rows array. It is inserted at the correct
+   * position in the array based on it's uniqueRowId. If row already exists in the
+   * filtered rows array, this function does nothing.
    *
-   *
-   * @param rowIdx
-   * @returns
+   * @param terminalRowToInsert The row to insert into the filtered rows array.
    */
   _addToFilteredRows(terminalRowToInsert: TerminalRow) {
     if (this.filteredTerminalRows.indexOf(terminalRowToInsert) === -1) {
@@ -988,6 +940,11 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Removes the provided row from the filtered rows array, if it is present.
+   *
+   * @param terminalRowToRemove The row to remove.
+   */
   _removeFromFilteredRows(terminalRowToRemove: TerminalRow) {
     const idx = this.filteredTerminalRows.indexOf(terminalRowToRemove);
     if (idx !== -1) {

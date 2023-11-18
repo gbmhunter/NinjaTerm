@@ -139,7 +139,12 @@ export default observer((props: Props) => {
       <Tooltip
         title={
           <div>
-            Filters the rows of data from the terminal based on the specified search pattern. Useful when you have lots of data and want to focus on a specific subset of information.
+            Filters the rows of data from the terminal based on the specified search pattern. Useful when you have lots of data and want to focus on a specific subset of information.<br/>
+            <ul>
+              <li>The row that the cursor is on is always shown.</li>
+              <li>Delete all text to disable filtering.</li>
+            </ul>
+
           </div>
         }
         placement="left"
