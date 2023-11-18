@@ -381,8 +381,8 @@ export default class Terminal {
       this._cursorLeft(numColsToGoLeft);
     } else if (lastChar === 'J') {
       //============================================================
-    // ED Erase in Display
-    //============================================================
+      // ED Erase in Display
+      //============================================================
       // console.log('Erase in display');
       // Extract number in the form ESC[nJ
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
@@ -413,20 +413,16 @@ export default class Terminal {
         cursorChar.char = ' ';
         cursorChar.forCursor = true;
         currRow.terminalChars.push(cursorChar);
-        // Context has been modified on the current row, need to run it through
-        // the filter again
-        // TODO
-        // this._filterRowAsNeeded(this.cursorPosition[0]);
-        // Save the length of the terminalRows array before we remove rows, so
-        // we can use it for the filtering loop below
-        const prevRowsLength = this.terminalRows.length;
+        // The cursor has not changed row so we do not need to check if this row
+        // still passes the filter
+
+        // Remove all soon to be deleted rows from the filtered rows array (if they are present)
+        for (let idx = this.cursorPosition[0] + 1; idx < this.terminalRows.length; idx += 1) {
+          this._removeFromFilteredRows(this.terminalRows[idx]);
+        }
         // Now remove all rows past the one the cursor is on
         this.terminalRows.splice(this.cursorPosition[0] + 1);
-        // Remove all deleted rows from the filtered rows array (if they are present)
-        // TODO:
-        // for (let idx = this.cursorPosition[0] + 1; idx < prevRowsLength; idx += 1) {
-        //   this._filterRowAsNeeded(idx);
-        // }
+
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
@@ -989,6 +985,13 @@ export default class Terminal {
           return;
         }
       }
+    }
+  }
+
+  _removeFromFilteredRows(terminalRowToRemove: TerminalRow) {
+    const idx = this.filteredTerminalRows.indexOf(terminalRowToRemove);
+    if (idx !== -1) {
+      this.filteredTerminalRows.splice(idx, 1);
     }
   }
 }

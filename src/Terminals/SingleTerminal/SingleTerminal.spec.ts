@@ -236,11 +236,7 @@ describe('single terminal tests', () => {
     expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
   });
 
-  test.only('filter should work with clear escape code', () => {
-    expect(singleTerminal.filteredTerminalRows).toEqual([0]);
-
-    // singleTerminal.setFilterText('');
-
+  test.only('filter should work with erase in display escape code', () => {
     // 2D go back 2, 1A go up 1, J clear to end of screen
     //
     singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[2D\x1B[1A\x1B[J'));
