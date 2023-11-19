@@ -1,38 +1,39 @@
-import { observer } from "mobx-react-lite";
-import CssBaseline from "@mui/material/CssBaseline";
+import { observer } from 'mobx-react-lite';
+import CssBaseline from '@mui/material/CssBaseline';
 import {
   Box,
   Button,
   IconButton,
   Typography,
   // Grid,
-} from "@mui/material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import TerminalIcon from "@mui/icons-material/Terminal";
-import GitHubIcon from "@mui/icons-material/GitHub";
+} from '@mui/material';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import Grid from "@mui/material/Unstable_Grid2";
+import Grid from '@mui/material/Unstable_Grid2';
 
-import GitHubReadmeLogoPng from "./github-readme-logo.png";
-import AnsiEscapeCodeColoursGif from "./ansi-escape-code-colours.gif";
-import GraphingGif from "./graphing.gif";
-import SmartScrollGif from "./smart-scroll.gif";
+import GitHubReadmeLogoPng from './github-readme-logo.png';
+import AnsiEscapeCodeColoursGif from './ansi-escape-code-colours.gif';
+import GraphingGif from './graphing.gif';
+import SmartScrollGif from './smart-scroll.gif';
 import ControlCharAndHexCodeGlyphsGif from './control-char-and-hex-code-glyphs.gif';
 import LoggingGif from './logging.gif';
+import FilteringGif from './filtering.gif';
 
-import "./HomepageView.css";
+import './HomepageView.css';
 
-const primaryColor = "#E47F37";
-const logoColor = "#DC3545";
+const primaryColor = '#E47F37';
+const logoColor = '#DC3545';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
   spacing: 10,
   palette: {
-    mode: "dark",
+    mode: 'dark',
     background: {
-      default: "#202020",
-      paper: "#202020",
+      default: '#202020',
+      paper: '#202020',
       // paper: deepOrange[900],
     },
     primary: {
@@ -40,7 +41,7 @@ const darkTheme = createTheme({
       main: primaryColor, // your primary color
     },
     secondary: {
-      main: "#35dccb", // your secondary color
+      main: '#35dccb', // your secondary color
     },
   },
   typography: {
@@ -58,7 +59,7 @@ const darkTheme = createTheme({
         tooltip: {
           // Override default font size for all tool-tips, as default is a little
           // to small
-          fontSize: "0.8rem",
+          fontSize: '0.8rem',
         },
       },
     },
@@ -73,35 +74,35 @@ export default observer((props: Props) => {
       <CssBaseline />
       <Box
         sx={{
-          boxSizing: "border-box",
+          boxSizing: 'border-box',
           // backgroundColor: '#000000',
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
         <Grid container sx={{ maxWidth: '1000px', display: 'flex', flexDirection: 'column' }}>
-          <Grid xs={12} sx={{ height: "20px" }} />
+          <Grid xs={12} sx={{ height: '20px' }} />
 
-          <Grid xs={12} sx={{ display: "flex", justifyContent: "center" }}>
+          <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
             <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." width="600px" />
           </Grid>
-          <Grid xs={12} sx={{ height: "20px" }} />
-          <Grid xs={12} sx={{ display: "flex", justifyContent: "center" }}>
-            <span style={{ fontFamily: "monospace", fontSize: "30px" }}>
+          <Grid xs={12} sx={{ height: '20px' }} />
+          <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <span style={{ fontFamily: 'monospace', fontSize: '30px' }}>
               A serial port terminal that's got your back.
               <span className="cursor">&nbsp;</span>
             </span>
           </Grid>
-          <Grid xs={12} sx={{ height: "20px" }} />
+          <Grid xs={12} sx={{ height: '20px' }} />
           <Grid
             xs={12}
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '20px',
             }}
           >
             <Button
@@ -122,7 +123,7 @@ export default observer((props: Props) => {
               GitHub
             </Button>
           </Grid>
-          <Grid xs={12} sx={{ height: "20px" }} />
+          <Grid xs={12} sx={{ height: '20px' }} />
 
           <Grid xs={12}>
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
@@ -130,7 +131,7 @@ export default observer((props: Props) => {
             </Typography>
           </Grid>
 
-          <Grid xs={12} sx={{ height: "20px" }} />
+          <Grid xs={12} sx={{ height: '20px' }} />
 
 
           <Typography variant="h2" style={{ marginBottom: '20px' }}>Features</Typography>
@@ -141,10 +142,10 @@ export default observer((props: Props) => {
             <Grid xs={12}>
               <div
                 style={{
-                  backgroundColor: "#202020",
-                  border: "1px solid #dc3545",
-                  borderRadius: "10px",
-                  padding: "20px",
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
                 }}
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>ANSI Escape Code Support</Typography>
@@ -162,10 +163,10 @@ export default observer((props: Props) => {
             <Grid xs={12}>
               <div
                 style={{
-                  backgroundColor: "#202020",
-                  border: "1px solid #dc3545",
-                  borderRadius: "10px",
-                  padding: "20px",
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
                 }}
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>Graphing</Typography>
@@ -183,10 +184,10 @@ export default observer((props: Props) => {
             <Grid xs={12}>
               <div
                 style={{
-                  backgroundColor: "#202020",
-                  border: "1px solid #dc3545",
-                  borderRadius: "10px",
-                  padding: "20px",
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
                 }}
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>Smart Scrolling</Typography>
@@ -204,10 +205,10 @@ export default observer((props: Props) => {
             <Grid xs={12}>
               <div
                 style={{
-                  backgroundColor: "#202020",
-                  border: "1px solid #dc3545",
-                  borderRadius: "10px",
-                  padding: "20px",
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
                 }}
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>Show Invisible Characters</Typography>
@@ -225,10 +226,10 @@ export default observer((props: Props) => {
             <Grid xs={12}>
               <div
                 style={{
-                  backgroundColor: "#202020",
-                  border: "1px solid #dc3545",
-                  borderRadius: "10px",
-                  padding: "20px",
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
                 }}
               >
                 <Typography variant="h6" style={{ marginBottom: '20px' }}>Logging</Typography>
@@ -237,6 +238,27 @@ export default observer((props: Props) => {
 
                 <div style={{ display: 'flex' }}>
                   <img src={LoggingGif} alt="Demonstration of logging functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                </div>
+              </div>
+            </Grid>
+
+            {/* Filtering */}
+            {/* ========================================================================== */}
+            <Grid xs={12}>
+              <div
+                style={{
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
+                }}
+              >
+                <Typography variant="h6" style={{ marginBottom: '20px' }}>Filtering</Typography>
+
+                <Typography style={{ marginBottom: '20px' }}>Narrow down on the info you want by using filtering! Great for quickly finding errors, warnings, or debug prints from specific modules. Only rows of received data matching the filter text are shown. Clear the filter text to show all rows again.</Typography>
+
+                <div style={{ display: 'flex' }}>
+                  <img src={FilteringGif} alt="Demonstration of filtering functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
                 </div>
               </div>
             </Grid>
@@ -253,7 +275,7 @@ export default observer((props: Props) => {
           <ul>
             <li>Timestamping</li>
             <li>Mode to send data only on enter</li>
-            <li>Filtering</li>
+            <li>Render data in different ways (e.g. as hex bytes or uint8s).</li>
           </ul>
 
           <Typography variant="h2">Bugs and Features</Typography>

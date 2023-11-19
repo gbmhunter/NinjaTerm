@@ -22,7 +22,7 @@ export default defineConfig({
       devOptions: {
         // Set to true if you want to have the PWA code enabled when running
         // npm run start (dev. mode)
-        enabled: true
+        enabled: false
       },
       includeAssets: [
         icon192Url,

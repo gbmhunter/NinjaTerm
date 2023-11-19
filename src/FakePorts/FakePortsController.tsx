@@ -463,15 +463,18 @@ export default class FakePortsController {
           const messages = [
             'TEMP: Measured temperature = 21C.',
             'TEMP: Measured temperature = 24C.',
+            '\x1B[31;1mTEMP: ERROR - Temperature (56C) is too high.\x1B[0m',
             '\x1B[31;1mGPS: ERROR - GPS signal has been lost.\x1B[0m',
             '\x1B[31;1mSLEEP: ERROR - Requested sleep while peripherals still active.\x1B[0m',
             'CLOCK: Time is now 14:23:45',
             'CLOCK: Time is now 09:12:24',
+            'CLOCK: Time is now 03:02:54',
             'WATCHDOG: Watchdog fed.',
-            '\x1B[31;1mWATCHDOG: Watchdog expired. Resetting micro...\x1B[0m',
+            '\x1B[31;1mWATCHDOG: ERROR - Watchdog expired. Resetting micro...\x1B[0m',
             'BLU: New device found.',
             'BLU: Connecting to new device...',
             'BLU: Bluetooth connection refreshed.',
+            'BLU: Starting advertising...',
             'SLEEP: In low power mode.',
             'SLEEP: In medium power mode.',
             'SLEEP: In high power mode.',
@@ -480,6 +483,7 @@ export default class FakePortsController {
             'XTAL: External crystal frequency changed to 40MHz.',
             'LED: Status LED set to mode: FLASHING.',
             'LED: Status LED set to mode: CONTINUOUS.',
+            'LED: Status LED set to mode: OFF.',
           ];
 
           const onTimeoutFn = () => {
