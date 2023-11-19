@@ -189,7 +189,7 @@ export default observer((props: Props) => {
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>X Variable Source</InputLabel>
               <Select
-                data-testid="xVarSource"
+                data-testid="x-var-source"
                 label="X Variable Source"
                 labelId="label-id"
                 value={app.graphing.xVarSource}
@@ -270,7 +270,7 @@ export default observer((props: Props) => {
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>X Axis Range Mode</InputLabel>
               <Select
-                data-testid="xAxisRangeMode"
+                data-testid="x-axis-range-mode"
                 label="X Axis Range Mode"
                 name="xAxisRangeMode"
                 value={app.graphing.xAxisRangeMode}
@@ -363,7 +363,7 @@ export default observer((props: Props) => {
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>Y Axis Range Mode</InputLabel>
               <Select
-                data-testid="yAxisRangeMode"
+                data-testid="y-axis-range-mode"
                 label="Y Axis Range Mode"
                 value={app.graphing.yAxisRangeMode}
                 onChange={(e) => {

@@ -24,7 +24,7 @@ import { App, MainPanes } from './App';
 import { PortState } from './Settings/PortConfiguration/PortConfiguration';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
-import TerminalView from './Terminal/TerminalView';
+import TerminalView from './Terminals/TerminalsView';
 import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css'
@@ -62,6 +62,8 @@ const darkTheme = createTheme({
         },
       },
     },
+    MuiButtonBase: {
+    }
   },
 });
 

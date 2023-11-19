@@ -1,9 +1,9 @@
-import { expect, Page, Locator } from "@playwright/test";
+import { expect, Page, Locator } from '@playwright/test';
 
 // This import is so we can grab window.app without typescript complaining
 // Complains it's unused though...
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { App } from "../src/App";
+import { App } from '../src/App';
 
 export class ExpectedTerminalChar {
   char: string;
@@ -44,7 +44,7 @@ export class AppTestHarness {
   setupPage = async () => {
     // Listen for all console logs in browser and print them
     // to the Playwright terminal
-    this.page.on("console", (msg) => console.log(msg.text()));
+    this.page.on('console', (msg) => console.log(msg.text()));
 
     // We need expose a function to pass the written data back from
     // the browser context to this node.js test context
@@ -83,8 +83,8 @@ export class AppTestHarness {
       const mockPort = {
         getInfo: () => {
           return {
-            usbProductId: "123",
-            usbVendorId: "456",
+            usbProductId: '123',
+            usbVendorId: '456',
           };
         },
         open: () => {
@@ -126,15 +126,15 @@ export class AppTestHarness {
   };
 
   openPortAndGoToTerminalView = async () => {
-    await this.page.goto("/");
+    await this.page.goto('/');
 
-    // Expect the "Go to app" button to be visible on the homepage.
+    // Expect the 'Go to app' button to be visible on the homepage.
     await this.page.getByText(/Go to app/).click();
-    await this.page.getByTestId("settings-button").click();
+    await this.page.getByTestId('settings-button').click();
     await this.page.getByTestId('connect-and-go-to-terminal-checkbox').uncheck();
-    await this.page.getByTestId("request-port-access").click();
-    await this.page.getByText("Open Port").click();
-    await this.page.getByTestId("show-terminal-button").click();
+    await this.page.getByTestId('request-port-access').click();
+    await this.page.getByTestId('open-close-button').click();
+    await this.page.getByTestId('show-terminal-button').click();
   };
 
   /**
@@ -158,8 +158,8 @@ export class AppTestHarness {
       for (let colIdx = 0; colIdx < expectedDisplay[rowIdx].length; colIdx += 1) {
         const expectedTerminalChar = expectedDisplay[rowIdx][colIdx];
         const actualTerminalRow = await this.page
-          .getByTestId("tx-rx-terminal-view")
-          .locator(".terminal-row")
+          .getByTestId('tx-rx-terminal-view')
+          .locator('.terminal-row')
           .nth(rowIdx);
         let { text, span } = await this.getInfoAboutActualChar(actualTerminalRow, colIdx);
 
@@ -213,11 +213,11 @@ export class AppTestHarness {
     // </div>
     // const spans = rowDiv.children;
     let currSpanIdx = 0;
-    let spans = await rowDiv.locator("span").all();
+    let spans = await rowDiv.locator('span').all();
     let currSpan = spans[0];
     let currSpanTextContent = await currSpan.textContent();
     if (currSpanTextContent === null) {
-      throw new Error("currSpanTextContent is null");
+      throw new Error('currSpanTextContent is null');
     }
     let currIdxInSpanString = 0;
     for (let idx = 0; idx < colIdx; idx += 1) {
@@ -227,7 +227,7 @@ export class AppTestHarness {
         currSpan = spans[currSpanIdx];
         currSpanTextContent = await currSpan.textContent();
         if (currSpanTextContent === null) {
-          throw new Error("currSpanTextContent is null");
+          throw new Error('currSpanTextContent is null');
         }
         currIdxInSpanString = 0;
       }

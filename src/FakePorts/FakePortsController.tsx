@@ -49,12 +49,12 @@ export default class FakePortsController {
   constructor(app: App) {
     this.app = app;
 
-    // hello world, 0.2lps
+    // hello world, 0.1lps
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'hello world, 0.2lps',
-        'Sends "Hello, world!\\n" every 5 seconds.',
+        'hello world, 0.1lps',
+        'Sends "Hello, world!\\n" every 10 seconds.',
         () => {
           const intervalId = setInterval(() => {
             const textToSend = "Hello, world!\n";
@@ -63,7 +63,33 @@ export default class FakePortsController {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
             app.parseRxData(Uint8Array.from(bytesToSend));
-          }, 5000);
+          }, 10000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // hello world, 1lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'hello world, 1lps',
+        'Sends "Hello, world!\\n" every 1 second.',
+        () => {
+          const intervalId = setInterval(() => {
+            const textToSend = "Hello, world!\n";
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }, 1000);
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {
@@ -417,6 +443,64 @@ export default class FakePortsController {
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // mcu modules
+    //=================================================================================
+    // This intervalId is a hacky way of allowing for variable intervals
+    let intervalId: NodeJS.Timer | null = null;
+    this.fakePorts.push(
+      new FakePort(
+        'mcu modules',
+        'Fake MCU data from different modules.',
+        () => {
+          const messages = [
+            'TEMP: Measured temperature = 21C.',
+            'TEMP: Measured temperature = 24C.',
+            '\x1B[31;1mTEMP: ERROR - Temperature (56C) is too high.\x1B[0m',
+            '\x1B[31;1mGPS: ERROR - GPS signal has been lost.\x1B[0m',
+            '\x1B[31;1mSLEEP: ERROR - Requested sleep while peripherals still active.\x1B[0m',
+            'CLOCK: Time is now 14:23:45',
+            'CLOCK: Time is now 09:12:24',
+            'CLOCK: Time is now 03:02:54',
+            'WATCHDOG: Watchdog fed.',
+            '\x1B[31;1mWATCHDOG: ERROR - Watchdog expired. Resetting micro...\x1B[0m',
+            'BLU: New device found.',
+            'BLU: Connecting to new device...',
+            'BLU: Bluetooth connection refreshed.',
+            'BLU: Starting advertising...',
+            'SLEEP: In low power mode.',
+            'SLEEP: In medium power mode.',
+            'SLEEP: In high power mode.',
+            'SLEEP: Sleeping...',
+            'XTAL: External crystal frequency changed to 20MHz.',
+            'XTAL: External crystal frequency changed to 40MHz.',
+            'LED: Status LED set to mode: FLASHING.',
+            'LED: Status LED set to mode: CONTINUOUS.',
+            'LED: Status LED set to mode: OFF.',
+          ];
+
+          const onTimeoutFn = () => {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const rxData = new TextEncoder().encode(messages[randomIndex] + '\n');
+            app.parseRxData(rxData);
+            if (intervalId !== null) {
+              clearInterval(intervalId);
+            }
+            const randomWaitTime = Math.random()*1000;
+            intervalId = setInterval(onTimeoutFn, randomWaitTime);
+          }
+
+          intervalId = setInterval(onTimeoutFn, 1000);
+          return null;
+        },
+        (_: NodeJS.Timer | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);

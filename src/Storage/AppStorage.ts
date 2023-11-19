@@ -34,10 +34,23 @@ export default class AppStorage {
 
   }
 
+  /**
+   * Saves arbitrary data to local storage. Settings should be stored using
+   * saveConfig/getConfig instead.
+   * @param key The key to save the data at.
+   * @param data The data to save.
+   */
   saveData = (key: string, data: any) => {
     window.localStorage.setItem(key, JSON.stringify(data));
   }
 
+  /**
+   * Gets arbitrary data from local storage. Settings should be retrieved using
+   * saveConfig/getConfig instead.
+   *
+   * @param key The key to retrieve data from.
+   * @returns The data, or null if not found.
+   */
   getData = (key: string): any => {
     const value = window.localStorage.getItem(key);
     if (value === null) {
@@ -46,13 +59,20 @@ export default class AppStorage {
     return JSON.parse(value);
   }
 
+  /**
+   * Saves a particular setting to the active config. This is stored
+   * in the local storage of the browser.
+   *
+   * @param keys Array of strings the defines the "path" to the setting. If various
+   * parts of the key do not exist, empty objects will be created.
+   * @param data Value of the setting.
+   */
   saveConfig(keys: string[], data: any) {
     let obj = this.activeConfig.configData;
     // Walk down the active config object using
     // the array of keys
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
-      console.log('key:', key);
       // Make sure key exists, if not
       // create it
       if (obj[key] === undefined) {
@@ -70,6 +90,12 @@ export default class AppStorage {
     window.localStorage.setItem('configs', JSON.stringify(this.configs));
   }
 
+  /**
+   * Gets a particular setting from the active config.
+   *
+   * @param keys Array of strings the defines the "path" to the setting.
+   * @returns The value of the setting, or null if not found.
+   */
   getConfig(keys: string[]): any {
     let obj = this.activeConfig.configData;
     // Walk down the active config object using

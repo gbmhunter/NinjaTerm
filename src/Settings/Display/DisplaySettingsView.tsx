@@ -36,6 +36,27 @@ export default function DataProcessingView(props: Props) {
       </Tooltip>
 
       {/* =============================================================================== */}
+      {/* VERTICAL ROW PADDING */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data."
+        followCursor
+        arrow
+      >
+        <ApplyableTextFieldView
+          id="outlined-basic"
+          label="Vertical Row Padding"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: <InputAdornment position="start">px</InputAdornment>,
+          }}
+          applyableTextField={app.settings.displaySettings.verticalRowPadding}
+          sx={{ marginBottom: "20px" }}
+        />
+      </Tooltip>
+
+      {/* =============================================================================== */}
       {/* TERMINAL WIDTH (IN CHARS) */}
       {/* =============================================================================== */}
       <Tooltip

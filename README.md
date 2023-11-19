@@ -115,6 +115,23 @@ In FontCreator, make sure the setting _Tools->Options->Fonts->Exclude unused gly
 * `#DC3545` (red): Primary colour, used for logo.
 * `#E47F37` (orange): Secondary colour, used for buttons on homepage.
 
+## styled_default is not a function
+
+If you get the error:
+
+```
+Grid2.js:7 Uncaught TypeError: styled_default is not a function
+    at Grid2.js:7:26
+```
+
+Comment out the line:
+
+```
+include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
+```
+
+in `vite.config.ts`. This should fix it. You can then uncomment the line again. Toggling this seems to fix this bug, which after reading online might be due to Vite.
+
 ## Extensions
 
 * Prettier ESLint: Provides formatting of .tsx files.

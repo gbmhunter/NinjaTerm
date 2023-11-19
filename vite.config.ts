@@ -69,7 +69,6 @@ export default defineConfig({
     include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
   },
 
-
   test: {
     // Match all test files in src/, these are unit tests. Do not
     // match any files in test/, these are E2E tests run with Playwright

@@ -11,7 +11,7 @@ type PortStateToButtonPropsItem = {
 
 export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
   [PortState.CLOSED]: {
-    text: 'Open Port',
+    text: 'Open',
     color: 'success',
     icon: <PlayArrowIcon />,
   },
@@ -21,7 +21,7 @@ export const portStateToButtonProps: { [key in PortState]: PortStateToButtonProp
     icon: <StopIcon />,
   },
   [PortState.OPENED]: {
-    text: 'Close Port',
+    text: 'Close',
     color: 'error',
     icon: <StopIcon />,
   },

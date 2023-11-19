@@ -33,8 +33,11 @@
     "autorun",
     "autoscroll",
     "chartjs",
+    "colour",
+    "colours",
     "Consolas",
     "DATETIME",
+    "Kofi",
     "microcontroller",
     "mred",
     "mreset",
@@ -44,6 +47,7 @@
     "scrollback",
     "SDMMGN",
     "testid",
-    "validatorjs"
+    "validatorjs",
+    "XTAL"
   ]
 }

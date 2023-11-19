@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { App } from 'src/App';
 import { ApplyableNumberField } from 'src/Components/ApplyableTextField';
+import AppStorage from 'src/Storage/AppStorage';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -21,7 +21,15 @@ export const dataViewConfigEnumToDisplayName: {
 };
 export default class DisplaySettings {
 
-  app: App;
+  appStorage: AppStorage;
+
+  // 14px is a good default size for the terminal text
+  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
+
+  /**
+   * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
+   */
+  verticalRowPadding = new ApplyableNumberField('5', z.coerce.number().int().min(1));
 
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
 
@@ -29,15 +37,65 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-  // 14px is a good default size for the terminal text
-  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
 
-  constructor(app: App) {
-    this.app = app;
+  constructor(appStorage: AppStorage) {
+    this.appStorage = appStorage;
+    this.charSizePx.setOnApplyChanged(() => {
+      this.saveConfig();
+    });
+    this.verticalRowPadding.setOnApplyChanged(() => {
+      this.saveConfig();
+    });
+    this.terminalWidthChars.setOnApplyChanged(() => {
+      this.saveConfig();
+    });
+    this.scrollbackBufferSizeRows.setOnApplyChanged(() => {
+      this.saveConfig();
+    });
     makeAutoObservable(this);
+    this.loadConfig();
   }
 
   setDataViewConfiguration = (value: DataViewConfiguration) => {
     this.dataViewConfiguration = value;
+    this.saveConfig();
+  }
+
+  saveConfig = () => {
+    const config = {
+      charSizePx: this.charSizePx.dispValue,
+      verticalRowPadding: this.verticalRowPadding.dispValue,
+      terminalWidthChars: this.terminalWidthChars.dispValue,
+      scrollbackBufferSizeRows: this.scrollbackBufferSizeRows.dispValue,
+      dataViewConfiguration: this.dataViewConfiguration,
+    };
+
+    this.appStorage.saveConfig(['settings', 'display'], config);
+  }
+
+  loadConfig = () => {
+    const config = this.appStorage.getConfig(['settings', 'display']);
+    if (config === null) {
+      return;
+    }
+    if (config.charSizePx !== undefined) {
+      this.charSizePx.dispValue = config.charSizePx;
+      this.charSizePx.apply();
+    }
+    if (config.verticalRowPadding !== undefined) {
+      this.verticalRowPadding.dispValue = config.verticalRowPadding;
+      this.verticalRowPadding.apply();
+    }
+    if (config.terminalWidthChars !== undefined) {
+      this.terminalWidthChars.dispValue = config.terminalWidthChars;
+      this.terminalWidthChars.apply();
+    }
+    if (config.scrollbackBufferSizeRows !== undefined) {
+      this.scrollbackBufferSizeRows.dispValue = config.scrollbackBufferSizeRows;
+      this.scrollbackBufferSizeRows.apply();
+    }
+    if (config.dataViewConfiguration !== undefined) {
+      this.dataViewConfiguration = config.dataViewConfiguration;
+    }
   }
 }
