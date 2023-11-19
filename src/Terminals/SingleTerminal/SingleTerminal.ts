@@ -747,6 +747,9 @@ export default class Terminal {
     }
   }
 
+  /**
+   * Clears all data from the terminal, resets all styles and resets cursor position.
+   */
   clearData() {
     this.currentStyle = {};
 
@@ -763,7 +766,7 @@ export default class Terminal {
     this.terminalRows.push(terminalRow);
     this.rowToScrollLockTo = 0;
     // Reset the filtered rows to just show the one row
-    // we have created
+    // we have created above
     this.filteredTerminalRows = [ terminalRow ];
   }
 
@@ -849,14 +852,14 @@ export default class Terminal {
    * Use this to set whether the terminal is considered focused or not. If focused, the
    * terminal will be given a glow border and the cursor will go solid.
    *
-   * @param trueFalse True to set as focused.
+   * @param value True to set as focused, false to not be focused.
    */
-  setIsFocused(trueFalse: boolean) {
+  setIsFocused(value: boolean) {
     // Only let this be set if terminal is focusable
     if (!this.isFocusable) {
       return;
     }
-    this.isFocused = trueFalse;
+    this.isFocused = value;
   }
 
   async handleKeyDown(event: React.KeyboardEvent) {
@@ -883,6 +886,13 @@ export default class Terminal {
         this.filteredTerminalRows.push(this.terminalRows[rowIdx]);
       }
     }
+    // We could get smart here and modify the scroll position to try
+    // and keep the user in roughly the same "position" as before, i.e.
+    // one way to do it would be to:
+    // 1) Find row at top of terminal before filter text is changed
+    // 2) After filter text is changed, find the closest row that passes the filter to the
+    //    one found in 1) that occurs after (in time).
+    // 3) Set this to the row at the top of the terminal
   }
 
   /**

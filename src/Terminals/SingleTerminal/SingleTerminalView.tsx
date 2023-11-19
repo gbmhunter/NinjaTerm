@@ -35,8 +35,9 @@ export default observer((props: Props) => {
 
   const Row = observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
-    const terminalRow = data[index];
+    const terminalRowToRender = data[index];
     // const terminalRow = terminal.terminalRows[terminalRowIdx];
+    const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
 
     // Only create spans if we need to change style, because creating
     // a span per char is very performance intensive
@@ -46,13 +47,17 @@ export default observer((props: Props) => {
 
     for (
       let colIdx = 0;
-      colIdx < terminalRow.terminalChars.length;
+      colIdx < terminalRowToRender.terminalChars.length;
       colIdx += 1
     ) {
-      const terminalChar = terminalRow.terminalChars[colIdx];
+      const terminalChar = terminalRowToRender.terminalChars[colIdx];
       let thisCharsClassName = terminalChar.className;
+      // Check if this is the row and column position that the cursor
+      // is sitting on. For the row, we do an object comparison between
+      // the terminalRows and filteredTerminalRows array to make sure
+      // they are the same
       if (
-        index === terminal.cursorPosition[0] &&
+        terminalRowToRender === terminalRowCursorIsOn &&
         colIdx === terminal.cursorPosition[1]
       ) {
         // Found the cursor position!
@@ -112,7 +117,7 @@ export default observer((props: Props) => {
       return;
     }
     if (terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(terminal.terminalRows.length, 'auto');
+      reactWindowRef.current.scrollToItem(terminal.filteredTerminalRows.length, 'auto');
     } else {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
