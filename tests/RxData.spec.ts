@@ -6,7 +6,6 @@ import { ExpectedTerminalChar, AppTestHarness } from './Util';
 test.describe('RX data', () => {
 
   test('hello, world!', async ({ page }) => {
-
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();

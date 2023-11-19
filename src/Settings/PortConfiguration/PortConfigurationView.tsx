@@ -233,6 +233,7 @@ function PortConfigurationView(props: Props) {
           }}
           disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE}
           sx={{ width: '150px' }}
+          data-testid="open-close-button"
         >
           {portStateToButtonProps[app.portState].text}
         </Button>

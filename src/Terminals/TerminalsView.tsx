@@ -10,11 +10,9 @@ import {
   MenuItem,
   Select,
   Switch,
-  TextField,
   Tooltip,
   Typography,
   useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -39,9 +37,7 @@ interface Props {
 export default observer((props: Props) => {
   const { app } = props;
 
-  // const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme => (theme as any).breakpoints.down('lg'));
-  console.log('isSmallScreen', isSmallScreen);
 
   // TERMINAL CREATION
   // ==========================================================================
@@ -134,6 +130,7 @@ export default observer((props: Props) => {
         startIcon={portStateToButtonProps[app.portState].icon}
         disabled={(app.portState === PortState.CLOSED) && (app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
         sx={buttonSx}
+        data-testid="open-close-button"
       >
         {/* Specify a width to prevent it resizing when the text changes */}
         {isSmallScreen ? '' : portStateToButtonProps[app.portState].text}
