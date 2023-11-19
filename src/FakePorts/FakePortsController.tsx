@@ -451,6 +451,60 @@ export default class FakePortsController {
       )
     );
 
+    // mcu modules
+    //=================================================================================
+    // This intervalId is a hacky way of allowing for variable intervals
+    let intervalId: NodeJS.Timer | null = null;
+    this.fakePorts.push(
+      new FakePort(
+        'mcu modules',
+        'Fake MCU data from different modules.',
+        () => {
+          const messages = [
+            'TEMP: Measured temperature = 21C.',
+            'TEMP: Measured temperature = 24C.',
+            '\x1B[31;1mGPS: ERROR - GPS signal has been lost.\x1B[0m',
+            '\x1B[31;1mSLEEP: ERROR - Requested sleep while peripherals still active.\x1B[0m',
+            'CLOCK: Time is now 14:23:45',
+            'CLOCK: Time is now 09:12:24',
+            'WATCHDOG: Watchdog fed.',
+            '\x1B[31;1mWATCHDOG: Watchdog expired. Resetting micro...\x1B[0m',
+            'BLU: New device found.',
+            'BLU: Connecting to new device...',
+            'BLU: Bluetooth connection refreshed.',
+            'SLEEP: In low power mode.',
+            'SLEEP: In medium power mode.',
+            'SLEEP: In high power mode.',
+            'SLEEP: Sleeping...',
+            'XTAL: External crystal frequency changed to 20MHz.',
+            'XTAL: External crystal frequency changed to 40MHz.',
+            'LED: Status LED set to mode: FLASHING.',
+            'LED: Status LED set to mode: CONTINUOUS.',
+          ];
+
+          const onTimeoutFn = () => {
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const rxData = new TextEncoder().encode(messages[randomIndex] + '\n');
+            app.parseRxData(rxData);
+            if (intervalId !== null) {
+              clearInterval(intervalId);
+            }
+            const randomWaitTime = Math.random()*1000;
+            intervalId = setInterval(onTimeoutFn, randomWaitTime);
+          }
+
+          intervalId = setInterval(onTimeoutFn, 1000);
+          return null;
+        },
+        (_: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     makeAutoObservable(this);
   }
 

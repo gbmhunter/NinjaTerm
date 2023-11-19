@@ -900,7 +900,6 @@ export default class Terminal {
     }
     const row = this.terminalRows[rowIdx];
     const rowText = row.getText();
-    console.log('Checking if row text: ', rowText, 'passes filter: ', this.filterText);
     if (this.filterText === '') {
       // No filter text, so all rows pass
       return true;

@@ -22,7 +22,7 @@ export default defineConfig({
       devOptions: {
         // Set to true if you want to have the PWA code enabled when running
         // npm run start (dev. mode)
-        enabled: false
+        enabled: true
       },
       includeAssets: [
         icon192Url,
@@ -68,7 +68,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
   },
-
 
   test: {
     // Match all test files in src/, these are unit tests. Do not
