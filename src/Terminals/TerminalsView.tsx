@@ -13,6 +13,8 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -36,6 +38,10 @@ interface Props {
 
 export default observer((props: Props) => {
   const { app } = props;
+
+  // const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme => (theme as any).breakpoints.down('lg'));
+  console.log('isSmallScreen', isSmallScreen);
 
   // TERMINAL CREATION
   // ==========================================================================
@@ -63,6 +69,14 @@ export default observer((props: Props) => {
       `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}`
     );
   }
+
+  const buttonSx = {
+    // minWidth: isSmallScreen ? '10px' : '180px',
+    '& .MuiButton-startIcon': {
+        marginRight: isSmallScreen ? '0px' : undefined,
+        marginLeft: isSmallScreen ? '0px' : undefined,
+    },
+  };
 
   return (
     <div id="terminal-view-outer"
@@ -119,11 +133,10 @@ export default observer((props: Props) => {
         }}
         startIcon={portStateToButtonProps[app.portState].icon}
         disabled={(app.portState === PortState.CLOSED) && (app.port === null) && (app.lastSelectedPortType === PortType.REAL)}
-        sx={{ width: "180px" }}
+        sx={buttonSx}
       >
-        {" "}
         {/* Specify a width to prevent it resizing when the text changes */}
-        {portStateToButtonProps[app.portState].text}
+        {isSmallScreen ? '' : portStateToButtonProps[app.portState].text}
       </Button>
       {/* CLEAR DATA BUTTON */}
       {/* ==================================================================== */}
@@ -133,8 +146,9 @@ export default observer((props: Props) => {
         onClick={() => {
           app.clearAllData();
         }}
+        sx={buttonSx}
       >
-        Clear Data
+        {isSmallScreen ? '' : 'Clear' }
       </Button>
       {/* FILTER TEXT INPUT */}
       {/* ======================================================= */}

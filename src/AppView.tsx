@@ -62,6 +62,8 @@ const darkTheme = createTheme({
         },
       },
     },
+    MuiButtonBase: {
+    }
   },
 });
 
