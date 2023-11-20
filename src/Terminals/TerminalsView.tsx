@@ -21,12 +21,12 @@ import KofiButton from 'kofi-button';
 import { observer } from 'mobx-react-lite';
 
 import { App, PortType } from 'src/App';
-import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
+import { PortState } from 'src/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import {
   DataViewConfiguration,
   dataViewConfigEnumToDisplayName,
-} from 'src/Settings/Display/DisplaySettings';
+} from 'src/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
 import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
 

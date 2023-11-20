@@ -9,9 +9,9 @@ import { observer } from 'mobx-react-lite';
 import { App } from '../App';
 import { SettingsCategories } from './Settings';
 
-import PortConfigurationView from './PortConfiguration/PortConfigurationView';
-import DataProcessingView from './DataProcessingSettingsView';
-import DisplaySettingsView from './Display/DisplaySettingsView';
+import PortConfigurationSettingsView from './PortConfigurationSettings/PortConfigurationSettingsView';
+import DataProcessingSettingsView from './DataProcessingSettings/DataProcessingSettingsView';
+import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 
 interface Props {
   appStore: App;
@@ -22,10 +22,10 @@ function SettingsDialog(props: Props) {
 
   const displayedSettingsCategory = {
     [SettingsCategories.PORT_CONFIGURATION]: (
-      <PortConfigurationView app={appStore} />
+      <PortConfigurationSettingsView app={appStore} />
     ),
     [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessingView app={appStore} />
+      <DataProcessingSettingsView app={appStore} />
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={appStore} />

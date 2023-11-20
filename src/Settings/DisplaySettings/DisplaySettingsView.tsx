@@ -2,7 +2,7 @@ import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, T
 
 import { App } from 'src/App';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/Settings/Display/DisplaySettings';
+import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
   app: App;

@@ -14,7 +14,7 @@ import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
 import AppStorage from './Storage/AppStorage';
-import { PortState } from './Settings/PortConfiguration/PortConfiguration';
+import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 
 declare global {
@@ -65,8 +65,6 @@ export class App {
 
   settings: Settings;
 
-  settingsDialogOpen = false;
-
   // If true, the settings dialog will be automatically closed on port open or close
   closeSettingsDialogOnPortOpenOrClose = true;
 
@@ -77,12 +75,6 @@ export class App {
   numBytesReceived: number;
 
   numBytesTransmitted: number;
-
-  // If true, the TX/RX panel scroll will be locked at the bottom
-  txRxTextScrollLock = true;
-
-  // If true, the status msg panel scroll will be locked at the bottom
-  statusMsgScrollLock = true;
 
   // If true app is being tested by code.
   // Used for force terminal height to value when browser is not
@@ -243,10 +235,6 @@ export class App {
     }
   }
 
-  setSettingsDialogOpen(trueFalse: boolean) {
-    this.settingsDialogOpen = trueFalse;
-  }
-
   setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
     this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
   }
@@ -340,11 +328,6 @@ export class App {
       }
       if (printSuccessMsg) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
-      }
-      // This will automatically close the settings window if the user is currently in it,
-      // clicks "Open" and the port opens successfully.
-      if (this.closeSettingsDialogOnPortOpenOrClose) {
-        this.setSettingsDialogOpen(false);
       }
 
       runInAction(() => {
@@ -590,7 +573,6 @@ export class App {
       const writer = this.port?.writable?.getWriter();
 
       const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
-      console.log('Sending', txDataAsUint8Array);
       await writer?.write(txDataAsUint8Array);
 
       // Allow the serial port to be closed later.
@@ -615,10 +597,6 @@ export class App {
     this.terminals.txRxTerminal.clear();
     this.terminals.txTerminal.clear();
     this.terminals.rxTerminal.clear();
-  }
-
-  setTxRxScrollLock(trueFalse: boolean) {
-    this.txRxTextScrollLock = trueFalse;
   }
 
   /**

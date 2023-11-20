@@ -1,8 +1,8 @@
 import { makeAutoObservable } from "mobx";
 
 import { App, PortType } from "src/App";
-import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
-import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings";
+import { PortState } from 'src/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings/DataProcessingSettings";
 import { generateRandomString } from "src/Util/Util";
 
 class FakePort {

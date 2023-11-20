@@ -5,8 +5,8 @@ import SingleTerminal from './SingleTerminal';
 import DataProcessingSettings, {
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
-} from 'src/Settings/DataProcessingSettings';
-import DisplaySettings from 'src/Settings/Display/DisplaySettings';
+} from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
+import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
 import AppStorage from 'src/Storage/AppStorage';
 
 describe('single terminal tests', () => {

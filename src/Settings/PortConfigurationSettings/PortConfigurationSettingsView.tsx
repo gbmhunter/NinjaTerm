@@ -10,15 +10,15 @@ import {
   Tooltip,
   Checkbox,
   FormControlLabel,
-} from "@mui/material";
-import { OverridableStringUnion } from "@mui/types";
-import { observer } from "mobx-react-lite";
+} from '@mui/material';
+import { OverridableStringUnion } from '@mui/types';
+import { observer } from 'mobx-react-lite';
 
-import { App, PortType } from "../../App";
-import { PortState } from './PortConfiguration';
-import { StopBits } from "../Settings";
+import { App, PortType } from '../../App';
+import { PortState } from './PortConfigurationSettings';
+import { StopBits } from '../Settings';
 import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
-import styles from "./PortConfigurationView.module.css";
+import styles from './PortConfigurationSettingsView.module.css';
 
 interface Props {
   app: App;
@@ -30,9 +30,9 @@ function PortConfigurationView(props: Props) {
   return (
     <div
       className={styles.noOutline}
-      style={{ display: "flex", flexDirection: "column" }}
+      style={{ display: 'flex', flexDirection: 'column' }}
     >
-      <div style={{ height: "20px" }}></div>
+      <div style={{ height: '20px' }}></div>
 
       <Box display="flex" flexDirection="row">
         {/*  ====================== BAUD RATE  ============================= */}
@@ -119,7 +119,7 @@ function PortConfigurationView(props: Props) {
         </FormControl>
       </Box>
 
-      <div style={{ height: "20px" }}></div>
+      <div style={{ height: '20px' }}></div>
 
       {/* OPEN AND GO TO TERMINAL CHECKBOX */}
       {/* =============================================================== */}
@@ -185,7 +185,7 @@ function PortConfigurationView(props: Props) {
         />
       </Tooltip>
 
-      <div style={{ height: "20px" }}></div>
+      <div style={{ height: '20px' }}></div>
 
       <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', gap: '20px' }}>
         {/* SELECT PORT BUTTON */}
@@ -210,13 +210,13 @@ function PortConfigurationView(props: Props) {
           color={
             portStateToButtonProps[app.portState]
               .color as OverridableStringUnion<
-              | "inherit"
-              | "primary"
-              | "secondary"
-              | "success"
-              | "error"
-              | "info"
-              | "warning",
+              | 'inherit'
+              | 'primary'
+              | 'secondary'
+              | 'success'
+              | 'error'
+              | 'info'
+              | 'warning',
               ButtonPropsColorOverrides
             >
           }
@@ -228,7 +228,7 @@ function PortConfigurationView(props: Props) {
             } else if (app.portState === PortState.OPENED) {
               app.closePort();
             } else {
-              throw Error("Invalid port state.");
+              throw Error('Invalid port state.');
             }
           }}
           disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE}
@@ -239,7 +239,7 @@ function PortConfigurationView(props: Props) {
         </Button>
       </div>
 
-      <div style={{ height: "20px" }}></div>
+      <div style={{ height: '20px' }}></div>
 
       {/* INFO ON SELECTED SERIAL PORT */}
       {/* =============================================================== */}
@@ -264,7 +264,7 @@ function PortConfigurationView(props: Props) {
         Selected Port Vendor ID: {app.serialPortInfo?.usbVendorId}
       </Typography>
 
-      <div style={{ height: "20px" }}></div>
+      <div style={{ height: '20px' }}></div>
 
       {/* PORT CONNECTED/DISCONNECTED STATUS */}
       {/* =============================================================== */}

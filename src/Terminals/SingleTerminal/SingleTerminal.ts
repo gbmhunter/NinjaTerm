@@ -3,8 +3,8 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
-import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
-import DisplaySettings from 'src/Settings/Display/DisplaySettings';
+import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
+import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
 
 const START_OF_CONTROL_GLYPHS = 0xE000;
 const START_OF_HEX_GLYPHS = 0xE100;

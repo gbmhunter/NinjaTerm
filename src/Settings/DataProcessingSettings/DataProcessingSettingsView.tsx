@@ -21,7 +21,7 @@ import {
   CarriageReturnCursorBehaviors,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
-} from "src/Settings/DataProcessingSettings";
+} from "src/Settings/DataProcessingSettings/DataProcessingSettings";
 import BorderedSection from "src/Components/BorderedSection";
 import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 

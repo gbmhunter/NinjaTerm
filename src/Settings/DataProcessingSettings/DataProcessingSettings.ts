@@ -2,8 +2,6 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-// eslint-disable-next-line import/no-cycle
-import { App } from '../App';
 import { ApplyableNumberField } from 'src/Components/ApplyableTextField';
 
 export enum NewLineCursorBehaviors {
@@ -32,14 +30,6 @@ export enum NonVisibleCharDisplayBehaviors {
 export default class DataProcessingSettings {
 
   ansiEscapeCodeParsingEnabled = true;
-
-  // maxEscapeCodeLengthChars = {
-  //   dispValue: '10',
-  //   appliedValue: 10,
-  //   hasError: false,
-  //   errorMsg: '',
-  //   rule: 'required|integer|min:2', // Min. is two, one for the escape byte and then a single char.
-  // };
 
   maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
 
