@@ -612,9 +612,9 @@ export class App {
   }
 
   clearAllData() {
-    this.terminals.txRxTerminal.clearData();
-    this.terminals.txTerminal.clearData();
-    this.terminals.rxTerminal.clearData();
+    this.terminals.txRxTerminal.clear();
+    this.terminals.txTerminal.clear();
+    this.terminals.rxTerminal.clear();
   }
 
   setTxRxScrollLock(trueFalse: boolean) {

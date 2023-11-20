@@ -26,9 +26,7 @@ export default class Terminal {
   // OTHER VARIABLES
   //======================================================================
 
-  // This represents the current style active on the terminal
-  currentStyle: {};
-
+  // [ row_idx, col_idx ]
   cursorPosition: [number, number];
 
   // If true, the data pane scroll will be locked at the bottom
@@ -121,13 +119,8 @@ export default class Terminal {
     this.rowToScrollLockTo = 0;
     this.scrollPos = 0;
 
-    // This is just to keep typescript happy, they
-    // are all set in clearData() anyway.
-    this.currentStyle = {
-      color: '#ffffff',
-    };
     this.terminalRows = [];
-    this.clearData();
+    this.clear();
 
     this.inIdleState = true;
     this.inAnsiEscapeCode = false;
@@ -750,9 +743,7 @@ export default class Terminal {
   /**
    * Clears all data from the terminal, resets all styles and resets cursor position.
    */
-  clearData() {
-    this.currentStyle = {};
-
+  clear() {
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
@@ -768,16 +759,12 @@ export default class Terminal {
     // Reset the filtered rows to just show the one row
     // we have created above
     this.filteredTerminalRows = [ terminalRow ];
-  }
 
-  setStyle(style: {}) {
-    // Override any provided style properties
-    this.currentStyle = Object.assign(this.currentStyle, style);
+    this.clearStyle();
   }
 
   clearStyle() {
     // Clear all styles
-    this.currentStyle = {};
     this.boldOrIncreasedIntensity = false;
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;

@@ -140,148 +140,168 @@ describe('single terminal tests', () => {
     expect(singleTerminal.terminalRows[0].terminalChars[4].char).toBe(' ');
   });
 
-  test('filtered terminal rows setup correctly', () => {
-    // With no text yet received, we should just have the cursor on the first and only row. This should not be filtered.
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+
+  describe('escape code tests', () => {
+    test('clear() clears colour styles', () => {
+      singleTerminal.parseData(stringToUint8Array('\x1B[31mred'));
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(4); // "red" + cursor
+      for (let i = 0; i < 3; i++) {
+        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toBe('f31');
+      }
+      singleTerminal.clear();
+      singleTerminal.parseData(stringToUint8Array('default'));
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(8); // "default" + cursor
+      // We expect the class name to be an empty string now, as we have called clear()
+      for (let i = 0; i < 7; i++) {
+        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toBe('');
+      }
+    });
   });
 
-  test('filtered terminal rows works with basic data', () => {
-    singleTerminal.parseData(stringToUint8Array('123\n'));
-    // We haven't provided any filter text, so both rows should have passed the filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-  });
+  describe('filtering tests', () => {
+    test('filtered terminal rows setup correctly', () => {
+      // With no text yet received, we should just have the cursor on the first and only row. This should not be filtered.
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-  test('filter text "1" works', () => {
-    singleTerminal.setFilterText('1');
-    // No data yet, even though this empty row won't match "1", it should still be included
-    // because the cursor is on it
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-    singleTerminal.parseData(stringToUint8Array('1\n'));
-    // First row contains "1", so should pass filter, second row contains cursor, so
-    // should also pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    test('filtered terminal rows works with basic data', () => {
+      singleTerminal.parseData(stringToUint8Array('123\n'));
+      // We haven't provided any filter text, so both rows should have passed the filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-    singleTerminal.parseData(stringToUint8Array('2\n'));
-    // 2nd row containing "2" should not pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[2] ]
-    );
+    test('filter text "1" works', () => {
+      singleTerminal.setFilterText('1');
+      // No data yet, even though this empty row won't match "1", it should still be included
+      // because the cursor is on it
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+      singleTerminal.parseData(stringToUint8Array('1\n'));
+      // First row contains "1", so should pass filter, second row contains cursor, so
+      // should also pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-    singleTerminal.parseData(stringToUint8Array('3\n'));
-    // 2nd row containing "2" should not pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
-    );
-  });
+      singleTerminal.parseData(stringToUint8Array('2\n'));
+      // 2nd row containing "2" should not pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[2] ]
+      );
 
-  test('changing the filter text after data is present works', () => {
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-    singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
+      singleTerminal.parseData(stringToUint8Array('3\n'));
+      // 2nd row containing "2" should not pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+      );
+    });
 
-    // All rows should pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    test('changing the filter text after data is present works', () => {
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+      singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
 
-    singleTerminal.setFilterText('1');
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
-    );
+      // All rows should pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-    singleTerminal.setFilterText('2');
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[1], singleTerminal.terminalRows[3] ]
-    );
+      singleTerminal.setFilterText('1');
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+      );
 
-    singleTerminal.setFilterText('3');
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[2], singleTerminal.terminalRows[3] ]
-    );
+      singleTerminal.setFilterText('2');
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[1], singleTerminal.terminalRows[3] ]
+      );
 
-    // There is no "4" in the data, so just the cursor row should be shown
-    singleTerminal.setFilterText('4');
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[3] ]
-    );
-  });
+      singleTerminal.setFilterText('3');
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[2], singleTerminal.terminalRows[3] ]
+      );
 
-  test('clearing the filter should work', () => {
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-    singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
+      // There is no "4" in the data, so just the cursor row should be shown
+      singleTerminal.setFilterText('4');
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[3] ]
+      );
+    });
 
-    // All rows should pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    test('clearing the filter should work', () => {
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+      singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'));
 
-    singleTerminal.setFilterText('1');
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
-    );
+      // All rows should pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-    // Clearing the filter should restore all rows
-    singleTerminal.setFilterText('');
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-  });
+      singleTerminal.setFilterText('1');
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
+      );
 
-  test('filter should work with cursor up escape code', () => {
-    singleTerminal.setFilterText('1');
+      // Clearing the filter should restore all rows
+      singleTerminal.setFilterText('');
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-    // 1A: go up one, puts the cursor at the end of the first row
-    singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[1A'));
+    test('filter should work with cursor up escape code', () => {
+      singleTerminal.setFilterText('1');
 
-    // Second row should not pass the filter! The cursor is no longer on this
-    // row and does not match the filter text
-    expect(singleTerminal.filteredTerminalRows).toEqual(
-      [ singleTerminal.terminalRows[0] ]
-    );
+      // 1A: go up one, puts the cursor at the end of the first row
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[1A'));
 
-    singleTerminal.setFilterText('');
+      // Second row should not pass the filter! The cursor is no longer on this
+      // row and does not match the filter text
+      expect(singleTerminal.filteredTerminalRows).toEqual(
+        [ singleTerminal.terminalRows[0] ]
+      );
 
-    // All rows should now pass filter
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-  });
+      singleTerminal.setFilterText('');
 
-  test('filter should work with erase in display escape code', () => {
-    // 2D go back 2, 1A go up 1, J clear to end of screen
-    //
-    singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[2D\x1B[1A\x1B[J'));
+      // All rows should now pass filter
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-    // Should be left with a single row in the terminal with the text "ro" and
-    // the cursor 1 right of the "o"
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-  });
+    test('filter should work with erase in display escape code', () => {
+      // 2D go back 2, 1A go up 1, J clear to end of screen
+      //
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[2D\x1B[1A\x1B[J'));
 
-  test('filter should work with scrollback buffer size of 1', () => {
-    // Set a scrollback buffer of just 1 row
-    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
-    displaySettings.scrollbackBufferSizeRows.apply();
+      // Should be left with a single row in the terminal with the text "ro" and
+      // the cursor 1 right of the "o"
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    test('filter should work with scrollback buffer size of 1', () => {
+      // Set a scrollback buffer of just 1 row
+      displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+      displaySettings.scrollbackBufferSizeRows.apply();
 
-    singleTerminal.parseData(stringToUint8Array('row1\n'));
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-    // We should only have 1 row, which is empty and has the cursor in it
-    expect(singleTerminal.terminalRows.length).toBe(1);
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
-  });
+      singleTerminal.parseData(stringToUint8Array('row1\n'));
 
-  test('filter should work with scrollback buffer size of 3', () => {
-    // Set a scrollback buffer of just 1 row
-    displaySettings.scrollbackBufferSizeRows.setDispValue('3');
-    displaySettings.scrollbackBufferSizeRows.apply();
+      // We should only have 1 row, which is empty and has the cursor in it
+      expect(singleTerminal.terminalRows.length).toBe(1);
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+    });
 
-    singleTerminal.parseData(stringToUint8Array('row1\nrow2\n'));
+    test('filter should work with scrollback buffer size of 3', () => {
+      // Set a scrollback buffer of just 1 row
+      displaySettings.scrollbackBufferSizeRows.setDispValue('3');
+      displaySettings.scrollbackBufferSizeRows.apply();
 
-    expect(singleTerminal.terminalRows.length).toBe(3);
-    expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2\n'));
 
-    singleTerminal.setFilterText('row1');
+      expect(singleTerminal.terminalRows.length).toBe(3);
+      expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-    expect(singleTerminal.filteredTerminalRows).toEqual([
-      singleTerminal.terminalRows[0], singleTerminal.terminalRows[2]
-    ]);
+      singleTerminal.setFilterText('row1');
 
-    singleTerminal.parseData(stringToUint8Array('row3\n'));
+      expect(singleTerminal.filteredTerminalRows).toEqual([
+        singleTerminal.terminalRows[0], singleTerminal.terminalRows[2]
+      ]);
 
-    expect(singleTerminal.filteredTerminalRows).toEqual([
-      singleTerminal.terminalRows[2]
-    ]);
+      singleTerminal.parseData(stringToUint8Array('row3\n'));
+
+      expect(singleTerminal.filteredTerminalRows).toEqual([
+        singleTerminal.terminalRows[2]
+      ]);
+    });
   });
 });

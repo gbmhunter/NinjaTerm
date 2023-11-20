@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where colours where not being reset when the "Clear" button was pressed.
+
 ## [4.11.0] - 2023-11-19
 
 ### Added
