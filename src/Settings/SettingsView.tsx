@@ -25,7 +25,7 @@ function SettingsDialog(props: Props) {
       <PortConfigurationSettingsView app={appStore} />
     ),
     [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessingSettingsView app={appStore} />
+      <DataProcessingSettingsView dataProcessingSettings={appStore.settings.dataProcessingSettings} />
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={appStore} />

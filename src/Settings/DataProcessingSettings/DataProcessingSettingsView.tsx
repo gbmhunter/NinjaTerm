@@ -1,23 +1,7 @@
-import React from "react";
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import { App } from "src/App";
-import {
+import DataProcessingSettings, {
   CarriageReturnCursorBehaviors,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
@@ -26,25 +10,89 @@ import BorderedSection from "src/Components/BorderedSection";
 import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 
 interface Props {
-  app: App;
+  dataProcessingSettings: DataProcessingSettings;
 }
 
 function DataProcessingView(props: Props) {
-  const { app } = props;
+  const { dataProcessingSettings } = props;
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+      {/* =============================================================================== */}
+      {/* ROW FOR TX */}
+      {/* =============================================================================== */}
+      <div style={{ display: "flex" }}>
+        {/* =============================================================================== */}
+        {/* BACKSPACE */}
+        {/* =============================================================================== */}
+        <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
+          <Tooltip
+            title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
+          some of the move cursor commands are supported."
+            placement="top"
+            arrow
+          >
+            {/* BACKSPACE */}
+            <FormControl>
+              <FormLabel>When backspace is pressed:</FormLabel>
+              <RadioGroup
+                value={dataProcessingSettings.newLineCursorBehavior}
+                onChange={(e) => {
+                  dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
+                }}
+              >
+                {/* SEND BACKSPACE (0x08) */}
+                <Tooltip title="." placement="right" arrow>
+                  <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Send backspace (0x08)" data-testid="new-line-dont-move-cursor" />
+                </Tooltip>
+                {/* SEND DELETE (0x7F) */}
+                <Tooltip title="." placement="right" arrow>
+                  <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Send delete (0x7F)" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </Tooltip>
+        </BorderedSection>
+        {/* =============================================================================== */}
+        {/* DELETE */}
+        {/* =============================================================================== */}
+        <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
+          <Tooltip
+            title="."
+            placement="top"
+            arrow
+          >
+            {/* BACKSPACE */}
+            <FormControl>
+              <FormLabel>When delete is pressed:</FormLabel>
+              <RadioGroup
+                value={dataProcessingSettings.newLineCursorBehavior}
+                onChange={(e) => {
+                  dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
+                }}
+              >
+                {/* SEND BACKSPACE (0x08) */}
+                <Tooltip title="." placement="right" arrow>
+                  <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Send backspace (0x08)" data-testid="new-line-dont-move-cursor" />
+                </Tooltip>
+                {/* SEND DELETE (0x7F) */}
+                <Tooltip title="." placement="right" arrow>
+                  <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Send delete (0x7F)" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </Tooltip>
+        </BorderedSection>
+      </div> {/* End of row for TX */}
 
       {/* =============================================================================== */}
       {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
       {/* =============================================================================== */}
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
         {/* ANSI ESCAPE CODES */}
         {/* =============================================================================== */}
-        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* =============================================================================== */}
           {/* ANSI ESCAPE CODE PARSING ENABLED */}
           {/* =============================================================================== */}
@@ -58,9 +106,9 @@ function DataProcessingView(props: Props) {
               control={
                 <Checkbox
                   name="ansiEscapeCodeParsingEnabled"
-                  checked={app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled}
+                  checked={dataProcessingSettings.ansiEscapeCodeParsingEnabled}
                   onChange={(e) => {
-                    app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
+                    dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
                   }}
                 />
               }
@@ -83,47 +131,43 @@ function DataProcessingView(props: Props) {
               variant="outlined"
               size="small"
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="start">chars</InputAdornment>
-                ),
+                endAdornment: <InputAdornment position="start">chars</InputAdornment>,
               }}
-              applyableTextField={app.settings.dataProcessingSettings.maxEscapeCodeLengthChars}
+              applyableTextField={dataProcessingSettings.maxEscapeCodeLengthChars}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
-
         </BorderedSection>
 
-        <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>
-
-        {/* =============================================================================== */}
-        {/* LOCAL TX ECHO */}
-        {/* =============================================================================== */}
-        <Tooltip
-          title="If enabled, transmitted data will be treated as received data. Useful in ASCII mode when
+        <BorderedSection title="Echo" childStyle={{ display: "flex", flexDirection: "column" }}>
+          {/* =============================================================================== */}
+          {/* LOCAL TX ECHO */}
+          {/* =============================================================================== */}
+          <Tooltip
+            title="If enabled, transmitted data will be treated as received data. Useful in ASCII mode when
           the device on the other end of the serial port does not echo back characters. Disable this if
           you see two of every character appear."
-          placement="top"
-          followCursor
-          arrow
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                name="localTxEcho"
-                checked={app.settings.dataProcessingSettings.localTxEcho}
-                onChange={(e) => {
-                  app.settings.dataProcessingSettings.setLocalTxEcho(e.target.checked);
-                }}
-              />
-            }
-            label="Local TX Echo"
-            sx={{ marginBottom: "10px" }}
-          />
-        </Tooltip>
+            placement="top"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="localTxEcho"
+                  checked={dataProcessingSettings.localTxEcho}
+                  onChange={(e) => {
+                    dataProcessingSettings.setLocalTxEcho(e.target.checked);
+                  }}
+                />
+              }
+              label="Local TX Echo"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
         </BorderedSection>
-      </div> {/* End of row for ANSI escape codes and echo settings */}
-
+      </div>{" "}
+      {/* End of row for ANSI escape codes and echo settings */}
       {/* Row with new line and carriage return settings */}
       <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
@@ -142,27 +186,14 @@ function DataProcessingView(props: Props) {
             <FormControl>
               <FormLabel>When a \n byte is received:</FormLabel>
               <RadioGroup
-                value={
-                  app.settings.dataProcessingSettings.newLineCursorBehavior
-                }
+                value={dataProcessingSettings.newLineCursorBehavior}
                 onChange={(e) => {
-                  app.settings.dataProcessingSettings.setNewLineCursorBehavior(
-                    e.target.value as any
-                  );
+                  dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
                 }}
               >
                 {/* DO NOTHING */}
-                <Tooltip
-                  title="Don't move the cursor at all when a new line character is received."
-                  placement="right"
-                  arrow
-                >
-                  <FormControlLabel
-                    value={NewLineCursorBehaviors.DO_NOTHING}
-                    control={<Radio />}
-                    label="Don't move the cursor"
-                    data-testid="new-line-dont-move-cursor"
-                  />
+                <Tooltip title="Don't move the cursor at all when a new line character is received." placement="right" arrow>
+                  <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" data-testid="new-line-dont-move-cursor" />
                 </Tooltip>
                 {/* MOVE DOWN ONE LINE */}
                 <Tooltip
@@ -170,11 +201,7 @@ function DataProcessingView(props: Props) {
                   placement="right"
                   arrow
                 >
-                  <FormControlLabel
-                    value={NewLineCursorBehaviors.NEW_LINE}
-                    control={<Radio />}
-                    label="Move cursor down one line (new line)"
-                  />
+                  <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
                 </Tooltip>
                 {/* NEW LINE AND CARRIAGE RETURN */}
                 <Tooltip
@@ -200,11 +227,9 @@ function DataProcessingView(props: Props) {
                 control={
                   <Checkbox
                     name="swallowNewLine"
-                    checked={app.settings.dataProcessingSettings.swallowNewLine}
+                    checked={dataProcessingSettings.swallowNewLine}
                     onChange={(e) => {
-                      app.settings.dataProcessingSettings.setSwallowNewLine(
-                        e.target.checked
-                      );
+                      dataProcessingSettings.setSwallowNewLine(e.target.checked);
                     }}
                   />
                 }
@@ -231,27 +256,14 @@ function DataProcessingView(props: Props) {
             <FormControl>
               <FormLabel>When a \r byte is received:</FormLabel>
               <RadioGroup
-                value={
-                  app.settings.dataProcessingSettings
-                    .carriageReturnCursorBehavior
-                }
+                value={dataProcessingSettings.carriageReturnCursorBehavior}
                 onChange={(e) => {
-                  app.settings.dataProcessingSettings.setCarriageReturnBehavior(
-                    e.target.value as any
-                  );
+                  dataProcessingSettings.setCarriageReturnBehavior(e.target.value as any);
                 }}
               >
                 {/* DO NOTHING */}
-                <Tooltip
-                  title="Don't move the cursor at all when a carriage return character is received."
-                  placement="right"
-                  arrow
-                >
-                  <FormControlLabel
-                    value={CarriageReturnCursorBehaviors.DO_NOTHING}
-                    control={<Radio />}
-                    label="Don't move the cursor"
-                  />
+                <Tooltip title="Don't move the cursor at all when a carriage return character is received." placement="right" arrow>
+                  <FormControlLabel value={CarriageReturnCursorBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
                 </Tooltip>
                 {/* MOVE CURSOR TO START OF LINE */}
                 <Tooltip
@@ -259,22 +271,12 @@ function DataProcessingView(props: Props) {
                   placement="right"
                   arrow
                 >
-                  <FormControlLabel
-                    value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN}
-                    control={<Radio />}
-                    label="Move cursor to the start of the current line"
-                  />
+                  <FormControlLabel value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN} control={<Radio />} label="Move cursor to the start of the current line" />
                 </Tooltip>
                 {/* CARRIAGE RETURN AND NEW LINE */}
-                <Tooltip
-                  title="Move the cursor back to the start of the line and then down one line."
-                  placement="right"
-                  arrow
-                >
+                <Tooltip title="Move the cursor back to the start of the line and then down one line." placement="right" arrow>
                   <FormControlLabel
-                    value={
-                      CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE
-                    }
+                    value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE}
                     control={<Radio />}
                     label="Move cursor to the start and then down one line."
                   />
@@ -291,13 +293,9 @@ function DataProcessingView(props: Props) {
                 control={
                   <Checkbox
                     name="swallowCarriageReturn"
-                    checked={
-                      app.settings.dataProcessingSettings.swallowCarriageReturn
-                    }
+                    checked={dataProcessingSettings.swallowCarriageReturn}
                     onChange={(e) => {
-                      app.settings.dataProcessingSettings.setSwallowCarriageReturn(
-                        e.target.checked
-                      );
+                      dataProcessingSettings.setSwallowCarriageReturn(e.target.checked);
                     }}
                   />
                 }
@@ -323,46 +321,28 @@ function DataProcessingView(props: Props) {
         >
           {/* RADIO GROUP */}
           <FormControl>
-            <FormLabel>
-              For all received bytes in the range 0x00-0xFF that are not visible
-              ASCII characters AND that are not swallowed above:
-            </FormLabel>
+            <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
             <RadioGroup
-              value={
-                app.settings.dataProcessingSettings
-                  .nonVisibleCharDisplayBehavior
-              }
+              value={dataProcessingSettings.nonVisibleCharDisplayBehavior}
               onChange={(e) => {
-                app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(
-                  e.target.value as any
-                );
+                dataProcessingSettings.setNonVisibleCharDisplayBehavior(e.target.value as any);
               }}
             >
               {/* SWALLOW */}
               <Tooltip title="" placement="right" arrow>
-                <FormControlLabel
-                  value={NonVisibleCharDisplayBehaviors.SWALLOW}
-                  control={<Radio />}
-                  label="Swallow"
-                />
+                <FormControlLabel value={NonVisibleCharDisplayBehaviors.SWALLOW} control={<Radio />} label="Swallow" />
               </Tooltip>
               {/* ASCII CONTROL CODES GLYPHS AND HEX GLYPHS */}
               <Tooltip title="" placement="right" arrow>
                 <FormControlLabel
-                  value={
-                    NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS
-                  }
+                  value={NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS}
                   control={<Radio />}
                   label="Convert ASCII control codes to control code glyphs, and all others to hex code glyphs"
                 />
               </Tooltip>
               {/* ALL TO HEX CODE GLYPHS */}
               <Tooltip title="" placement="right" arrow>
-                <FormControlLabel
-                  value={NonVisibleCharDisplayBehaviors.HEX_GLYPHS}
-                  control={<Radio />}
-                  label="Convert all to hex code glyphs"
-                />
+                <FormControlLabel value={NonVisibleCharDisplayBehaviors.HEX_GLYPHS} control={<Radio />} label="Convert all to hex code glyphs" />
               </Tooltip>
             </RadioGroup>
           </FormControl>

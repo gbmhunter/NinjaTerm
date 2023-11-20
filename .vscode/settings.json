@@ -49,5 +49,6 @@
     "testid",
     "validatorjs",
     "XTAL"
-  ]
+  ],
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

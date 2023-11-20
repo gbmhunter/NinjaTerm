@@ -36,7 +36,23 @@ export default class Terminal {
 
   scrollPos: number;
 
+  /**
+   * The arrays of terminal rows, where each element represents a row
+   * of data.
+   */
   terminalRows: TerminalRow[];
+
+  /**
+   * The filter text to apply to the terminal. If an empty string, no filtering is
+   * applied.
+   */
+  filterText: string = '';
+
+  /**
+   * The array of terminal rows which should be included in the filtered view
+   * due to the filter text. This is a subset of the terminalRows array.
+   */
+  filteredTerminalRows: TerminalRow[] = [];
 
   // True if this RX data parser is just processing text as plain text, i.e.
   // no partial escape code has been detected.
@@ -67,16 +83,6 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  // The filter text to apply to the terminal. If an empty string, no filtering is
-  // applied
-  filterText: string = '';
-
-  /**
-   * The array of terminal rows which should be included in the filtered view
-   * due to the filter text. This is an array of indexes into the terminalRows.
-   */
-  filteredTerminalRows: TerminalRow[] = [];
-
   /**
    * This is used to keep track of the order in which rows are received so that
    * we can work out where to add terminal rows into the filtered rows array when
@@ -97,7 +103,7 @@ export default class Terminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this.addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+          this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
         }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
@@ -145,6 +151,11 @@ export default class Terminal {
     this.scrollPos = scrollPos;
   }
 
+  /**
+   * Send data to the terminal to be processed and displayed.
+   *
+   * @param data The array of bytes to process.
+   */
   parseData(data: Uint8Array) {
     // Parse each character
     // console.log('parseData() called. data=', data);
@@ -185,7 +196,7 @@ export default class Terminal {
         // at the end of the existing line, rather than the start of the new
         // line
         if (!this.dataProcessingSettings.swallowNewLine) {
-          this.addVisibleChar(rxByte);
+          this._addVisibleChar(rxByte);
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
@@ -221,7 +232,7 @@ export default class Terminal {
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
         if (!this.dataProcessingSettings.swallowCarriageReturn) {
-          this.addVisibleChar(rxByte);
+          this._addVisibleChar(rxByte);
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
@@ -245,7 +256,7 @@ export default class Terminal {
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
-        this.addVisibleChar(rxByte);
+        this._addVisibleChar(rxByte);
         continue;
       }
 
@@ -283,7 +294,7 @@ export default class Terminal {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.addVisibleChar(rxByte);
+        this._addVisibleChar(rxByte);
       }
 
       // When we get to the end of parsing, check that if we are still
@@ -636,7 +647,7 @@ export default class Terminal {
 
   addVisibleChars(rxBytes: number[]) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
-      this.addVisibleChar(rxBytes[idx]);
+      this._addVisibleChar(rxBytes[idx]);
     }
   }
 
@@ -646,7 +657,7 @@ export default class Terminal {
    *
    * @param char Must be a single printable character only.
    */
-  addVisibleChar(rxByte: number) {
+  _addVisibleChar(rxByte: number) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 

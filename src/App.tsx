@@ -1,21 +1,21 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable, runInAction } from 'mobx';
-import { closeSnackbar }  from 'notistack';
+import { makeAutoObservable, runInAction } from "mobx";
+import { closeSnackbar } from "notistack";
 import ReactGA from "react-ga4";
-import { Button } from '@mui/material';
+import { Button } from "@mui/material";
 
 // Import package.json to read out the version number
-import packageDotJson from '../package.json'
+import packageDotJson from "../package.json";
 // eslint-disable-next-line import/no-cycle
-import { Settings, SettingsCategories } from './Settings/Settings';
-import Snackbar from './Snackbar';
-import Graphing from './Graphing/Graphing';
-import Logging from './Logging/Logging';
-import FakePortsController from './FakePorts/FakePortsController';
-import AppStorage from './Storage/AppStorage';
-import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
-import Terminals from './Terminals/Terminals';
+import { Settings, SettingsCategories } from "./Settings/Settings";
+import Snackbar from "./Snackbar";
+import Graphing from "./Graphing/Graphing";
+import Logging from "./Logging/Logging";
+import FakePortsController from "./FakePorts/FakePortsController";
+import AppStorage from "./Storage/AppStorage";
+import { PortState } from "./Settings/PortConfigurationSettings/PortConfigurationSettings";
+import Terminals from "./Terminals/Terminals";
 
 declare global {
   interface String {
@@ -26,7 +26,9 @@ declare global {
   // the test framework Playwright can access it. One use case
   // is to insert data, as it's hard to mock the async serial
   // read bytes function
-  interface Window { app: App; }
+  interface Window {
+    app: App;
+  }
 }
 
 // eslint-disable-next-line no-extend-native, func-names
@@ -37,8 +39,6 @@ String.prototype.insert = function (index, string) {
 
   return string + this;
 };
-
-
 
 /**
  * Enumerates the possible things to display as the "main pane".
@@ -62,7 +62,6 @@ class LastUsedSerialPort {
 }
 
 export class App {
-
   settings: Settings;
 
   // If true, the settings dialog will be automatically closed on port open or close
@@ -70,7 +69,7 @@ export class App {
 
   portState = PortState.CLOSED;
 
-  rxData = '';
+  rxData = "";
 
   numBytesReceived: number;
 
@@ -112,16 +111,14 @@ export class App {
 
   appStorage: AppStorage = new AppStorage();
 
-  constructor(
-    testing = false
-  ) {
+  constructor(testing = false) {
     this.testing = testing;
     if (this.testing) {
-      console.log('Warning, testing mode is enabled.');
+      console.log("Warning, testing mode is enabled.");
     }
 
     // Read out the version number from package.json
-    this.version = packageDotJson['version'];
+    this.version = packageDotJson["version"];
 
     this.settings = new Settings(this);
 
@@ -145,9 +142,9 @@ export class App {
 
     this.logging = new Logging(this);
 
-    if(navigator.serial !== undefined) {
-      navigator.serial.addEventListener('connect', (event) => {
-        console.log('connect. event: ', event);
+    if (navigator.serial !== undefined) {
+      navigator.serial.addEventListener("connect", (event) => {
+        console.log("connect. event: ", event);
         this.onSerialPortConnected(event.target as SerialPort);
       });
     }
@@ -167,12 +164,12 @@ export class App {
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
-    console.log('onSerialPortConnected() called.');
+    console.log("onSerialPortConnected() called.");
 
     if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
       // Check to see if this is the serial port we want to reopen
 
-      const lastUsedPortInfo: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedPortInfo: LastUsedSerialPort = this.appStorage.getData("lastUsedSerialPort");
       if (lastUsedPortInfo === null) {
         return;
       }
@@ -181,7 +178,7 @@ export class App {
       const serialPortInfoStr = JSON.stringify(serialPort.getInfo());
 
       if (lastUsedPortInfoStr === serialPortInfoStr) {
-        console.log('Found previously used port, reopening it.');
+        console.log("Found previously used port, reopening it.");
         runInAction(() => {
           this.port = serialPort;
           this.serialPortInfo = serialPort.getInfo();
@@ -197,7 +194,7 @@ export class App {
     let approvedPorts = await navigator.serial.getPorts();
 
     // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort') as LastUsedSerialPort;
+    const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData("lastUsedSerialPort") as LastUsedSerialPort;
     if (lastUsedSerialPort === null) {
       // Did not find last used serial port data in local storage, so do nothing
       return;
@@ -208,7 +205,7 @@ export class App {
     // it means that the last used port didn't contain any valuable
     // information to uniquely identify it, so don't bother trying to
     // find it again!
-    if (lastUsedPortInfoStr === '{}') {
+    if (lastUsedPortInfoStr === "{}") {
       return;
     }
     // Check list of approved ports to see if any match the last opened ports
@@ -223,11 +220,11 @@ export class App {
           this.port = approvedPort;
           this.serialPortInfo = approvedPortInfo;
 
-          if(lastUsedSerialPort.portState === PortState.OPENED) {
+          if (lastUsedSerialPort.portState === PortState.OPENED) {
             await this.openPort(false);
-            this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
-          } else if(lastUsedSerialPort.portState === PortState.CLOSED) {
-            this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
+            this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, "success");
+          } else if (lastUsedSerialPort.portState === PortState.CLOSED) {
+            this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, "success");
           }
         });
         return;
@@ -251,30 +248,28 @@ export class App {
 
       let localPort: SerialPort;
 
-
       // If the user clicks cancel, a DOMException is thrown
       try {
         // This makes a browser controlled modal pop-up in
         // where the user selects a serial port
         localPort = await window.navigator.serial.requestPort();
       } catch (error) {
-          // The only reason I know of that occurs an error to be thrown is
-          // when the user clicks cancel.
-          this.snackbar.sendToSnackbar('User cancelled port selection.', 'warning');
-          return;
+        // The only reason I know of that occurs an error to be thrown is
+        // when the user clicks cancel.
+        this.snackbar.sendToSnackbar("User cancelled port selection.", "warning");
+        return;
       }
       runInAction(() => {
         this.port = localPort;
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        let lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+        let lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData("lastUsedSerialPort");
         if (lastUsedSerialPort === null) {
           lastUsedSerialPort = new LastUsedSerialPort();
         }
         lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
-        this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
-
+        this.appStorage.saveData("lastUsedSerialPort", lastUsedSerialPort);
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
@@ -285,7 +280,7 @@ export class App {
         this.setShownMainPane(MainPanes.TERMINAL);
       }
     } else {
-      console.error('Browser not supported, it does not provide the navigator.serial API.');
+      console.error("Browser not supported, it does not provide the navigator.serial API.");
     }
   }
 
@@ -297,28 +292,23 @@ export class App {
           dataBits: this.settings.selectedNumDataBits,
           parity: this.settings.selectedParity as ParityType,
           stopBits: this.settings.selectedStopBits,
-          bufferSize: 10000}); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
+          bufferSize: 10000,
+        }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
       } catch (error) {
         if (error instanceof DOMException) {
-          if (error.name === 'NetworkError') {
-            const msg = 'Serial port is already in use by another program.\n'
-                      + 'Reported error from port.open():\n'
-                      + `${error}`
-            this.snackbar.sendToSnackbar(msg, 'error');
+          if (error.name === "NetworkError") {
+            const msg = "Serial port is already in use by another program.\n" + "Reported error from port.open():\n" + `${error}`;
+            this.snackbar.sendToSnackbar(msg, "error");
             console.log(msg);
           } else {
-            const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n`
-            + 'Reported error from port.open():\n'
-            + `${error}`
-            this.snackbar.sendToSnackbar(msg, 'error');
+            const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n` + "Reported error from port.open():\n" + `${error}`;
+            this.snackbar.sendToSnackbar(msg, "error");
             console.log(msg);
           }
         } else {
           // Type of error not recognized or seen before
-          const msg = `Unrecognized error occurred when trying to open serial port.\n`
-          + 'Reported error from port.open():\n'
-          + `${error}`
-          this.snackbar.sendToSnackbar(msg, 'error');
+          const msg = `Unrecognized error occurred when trying to open serial port.\n` + "Reported error from port.open():\n" + `${error}`;
+          this.snackbar.sendToSnackbar(msg, "error");
           console.log(msg);
         }
 
@@ -327,7 +317,7 @@ export class App {
         return;
       }
       if (printSuccessMsg) {
-        this.snackbar.sendToSnackbar('Serial port opened.', 'success');
+        this.snackbar.sendToSnackbar("Serial port opened.", "success");
       }
 
       runInAction(() => {
@@ -336,17 +326,17 @@ export class App {
         this.closedPromise = this.readUntilClosed();
       });
 
-      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData("lastUsedSerialPort");
       lastUsedSerialPort.portState = PortState.OPENED;
-      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+      this.appStorage.saveData("lastUsedSerialPort", lastUsedSerialPort);
 
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
-      ReactGA.event('port_open');
+      ReactGA.event("port_open");
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {
-      throw Error('Unsupported port type!');
+      throw Error("Unsupported port type!");
     }
   }
 
@@ -363,56 +353,46 @@ export class App {
           const { value, done } = await this.reader.read();
           if (done) {
             // reader.cancel() has been called.
-            console.log('reader.read() returned done.');
+            console.log("reader.read() returned done.");
             break;
           }
           // value is a Uint8Array.
           this.parseRxData(value);
         }
       } catch (error) {
-          console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
-          // These error are described at https://wicg.github.io/serial/
-          // @ts-ignore:
-          if (error instanceof DOMException) {
-            console.log('Exception was DOMException. error.name=', error.name);
-            // BufferOverrunError: Rendering couldn't get up with input data,
-            // potentially make buffer size to port.open() larger or speed up processing/rendering
-            // if this occurs often. This is non-fatal, readable will not be null
-            if (error.name === 'BufferOverrunError') {
-              this.snackbar.sendToSnackbar('RX buffer overrun occurred. Too much data is coming in for the app to handle.\n'
-                                  + 'Returned error from reader.read():\n'
-                                  + `${error}`,
-                                  'warning');
-            } else if (error.name === 'BreakError') {
-              this.snackbar.sendToSnackbar('Encountered break signal.\n'
-                                  + 'Returned error from reader.read():\n'
-                                  + `${error}`,
-                                  'warning');
-            } else if (error.name === 'FramingError') {
-              this.snackbar.sendToSnackbar('Encountered framing error.\n'
-                                  + 'Returned error from reader.read():\n'
-                                  + `${error}`,
-                                  'warning');
-            }  else if (error.name === 'ParityError') {
-              this.snackbar.sendToSnackbar('Encountered parity error.\n'
-                                  + 'Returned error from reader.read():\n'
-                                  + `${error}`,
-                                  'warning');
-            } else if (error.name === 'NetworkError') {
-              this.snackbar.sendToSnackbar('Encountered network error. This usually means the a USB serial port was unplugged from the computer.\n'
-                                  + 'Returned error from reader.read():\n'
-                                  + `${error}`,
-                                  'error'); // This is a fatal error
-            } else {
-              const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n`
-                          + 'Reported error from port.read():\n'
-                          + `${error}`;
-              this.snackbar.sendToSnackbar(msg, 'error');
-              console.log(msg);
-            }
+        console.log("reader.read() threw an error. error=", error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
+        // These error are described at https://wicg.github.io/serial/
+        // @ts-ignore:
+        if (error instanceof DOMException) {
+          console.log("Exception was DOMException. error.name=", error.name);
+          // BufferOverrunError: Rendering couldn't get up with input data,
+          // potentially make buffer size to port.open() larger or speed up processing/rendering
+          // if this occurs often. This is non-fatal, readable will not be null
+          if (error.name === "BufferOverrunError") {
+            this.snackbar.sendToSnackbar(
+              "RX buffer overrun occurred. Too much data is coming in for the app to handle.\n" + "Returned error from reader.read():\n" + `${error}`,
+              "warning"
+            );
+          } else if (error.name === "BreakError") {
+            this.snackbar.sendToSnackbar("Encountered break signal.\n" + "Returned error from reader.read():\n" + `${error}`, "warning");
+          } else if (error.name === "FramingError") {
+            this.snackbar.sendToSnackbar("Encountered framing error.\n" + "Returned error from reader.read():\n" + `${error}`, "warning");
+          } else if (error.name === "ParityError") {
+            this.snackbar.sendToSnackbar("Encountered parity error.\n" + "Returned error from reader.read():\n" + `${error}`, "warning");
+          } else if (error.name === "NetworkError") {
+            this.snackbar.sendToSnackbar(
+              "Encountered network error. This usually means the a USB serial port was unplugged from the computer.\n" + "Returned error from reader.read():\n" + `${error}`,
+              "error"
+            ); // This is a fatal error
           } else {
-            this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
+            const msg =
+              `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n` + "Reported error from port.read():\n" + `${error}`;
+            this.snackbar.sendToSnackbar(msg, "error");
+            console.log(msg);
           }
+        } else {
+          this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, "error");
+        }
       } finally {
         // Allow the serial port to be closed later.
         this.reader.releaseLock();
@@ -469,30 +449,30 @@ export class App {
       this.reader?.cancel();
 
       if (this.closedPromise === null) {
-        console.log('was null.');
-        throw Error('jfjfjf')
+        console.log("was null.");
+        throw Error("jfjfjf");
       }
       await this.closedPromise;
 
       if (goToReopenState) {
         // this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
-        this.portState = PortState.CLOSED_BUT_WILL_REOPEN
+        this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
       } else {
         // this.setPortState(PortState.CLOSED);
-        this.portState = PortState.CLOSED
+        this.portState = PortState.CLOSED;
       }
-      this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      this.snackbar.sendToSnackbar("Serial port closed.", "success");
       this.reader = null;
       this.closedPromise = null;
       // this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
       // this.appStorage.saveData();
-      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData("lastUsedSerialPort");
       lastUsedSerialPort.portState = PortState.CLOSED;
-      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+      this.appStorage.saveData("lastUsedSerialPort", lastUsedSerialPort);
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
-      throw Error('Unsupported port type!');
+      throw Error("Unsupported port type!");
     }
   }
 
@@ -520,78 +500,81 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.portState === PortState.OPENED) {
-      // Serial port is open, let's send it to the serial
-      // port
+    if (this.portState !== PortState.OPENED) {
+      // Serial port is not open, so don't send anything
+      return;
+    }
 
-      // Convert event.key to required ASCII number. This would be easier if we could
-      // use keyCode, but this method is deprecated!
-      const bytesToWrite: number[] = [];
-      // List of allowed symbols, includes space char also
-      const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
-      const alphaNumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789'
-      if (event.key === 'Control' || event.key === 'Shift') {
-        // Don't send anything if a control key/shift key was pressed by itself
-        return;
-      } else if (event.key === 'Enter') {
-        // TODO: Add support for sending different things on enter
-        bytesToWrite.push(13);
-        bytesToWrite.push(10);
-      } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
-        // Pressed key is alphanumeric
-        bytesToWrite.push(event.key.charCodeAt(0));
-      } else if (event.key.length === 1 && symbols.includes(event.key)) {
-        // Pressed key is a symbol (e.g. ';?.,<>)
-        // Do same thing as with alphanumeric cars
-        bytesToWrite.push(event.key.charCodeAt(0));
-      } else if (event.key === 'Backspace') {
-        // Send BS (0x08) or DEL (0x7F)???
-        bytesToWrite.push(0x08);
+    // Serial port is open, let's send it to the serial
+    // port
+
+    // Convert event.key to required ASCII number. This would be easier if we could
+    // use keyCode, but this method is deprecated!
+    const bytesToWrite: number[] = [];
+    // List of allowed symbols, includes space char also
+    const symbols = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? ";
+    const alphaNumericChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789";
+    if (event.key === "Control" || event.key === "Shift") {
+      // Don't send anything if a control key/shift key was pressed by itself
+      return;
+    } else if (event.key === "Enter") {
+      // TODO: Add support for sending different things on enter
+      bytesToWrite.push(13);
+      bytesToWrite.push(10);
+    } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
+      // Pressed key is alphanumeric
+      bytesToWrite.push(event.key.charCodeAt(0));
+    } else if (event.key.length === 1 && symbols.includes(event.key)) {
+      // Pressed key is a symbol (e.g. ';?.,<>)
+      // Do same thing as with alphanumeric cars
+      bytesToWrite.push(event.key.charCodeAt(0));
+    } else if (event.key === "Backspace") {
+      // Send BS (0x08) or DEL (0x7F)???
+      bytesToWrite.push(0x08);
       //===========================================================
       // HANDLE ARROW KEYS
       //===========================================================
-      } else if (event.key === 'ArrowLeft') {
-        // Send "ESC[D" (go back 1)
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'D'.charCodeAt(0));
-      } else if (event.key === 'ArrowRight') {
-        // Send "ESC[C" (go forward 1)
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'C'.charCodeAt(0));
-      } else if (event.key === 'ArrowUp') {
-        // Send "ESC[A" (go up 1)
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'A'.charCodeAt(0));
-      } else if (event.key === 'ArrowDown') {
-        // Send "ESC[B" (go down 1)
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), 'B'.charCodeAt(0));
-      } else if (event.key === 'Tab') {
-        // Send horizontal tab, HT, 0x09
-        bytesToWrite.push(0x09);
-      } else {
-        // If we get here, we don't know what to do with the key press
-        console.log('Unsupported char! event=', event);
-        return;
-      }
-      const writer = this.port?.writable?.getWriter();
+    } else if (event.key === "ArrowLeft") {
+      // Send "ESC[D" (go back 1)
+      bytesToWrite.push(0x1b, "[".charCodeAt(0), "D".charCodeAt(0));
+    } else if (event.key === "ArrowRight") {
+      // Send "ESC[C" (go forward 1)
+      bytesToWrite.push(0x1b, "[".charCodeAt(0), "C".charCodeAt(0));
+    } else if (event.key === "ArrowUp") {
+      // Send "ESC[A" (go up 1)
+      bytesToWrite.push(0x1b, "[".charCodeAt(0), "A".charCodeAt(0));
+    } else if (event.key === "ArrowDown") {
+      // Send "ESC[B" (go down 1)
+      bytesToWrite.push(0x1b, "[".charCodeAt(0), "B".charCodeAt(0));
+    } else if (event.key === "Tab") {
+      // Send horizontal tab, HT, 0x09
+      bytesToWrite.push(0x09);
+    } else {
+      // If we get here, we don't know what to do with the key press
+      console.log("Unsupported char! event=", event);
+      return;
+    }
+    const writer = this.port?.writable?.getWriter();
 
-      const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
-      await writer?.write(txDataAsUint8Array);
+    const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
+    await writer?.write(txDataAsUint8Array);
 
-      // Allow the serial port to be closed later.
-      writer?.releaseLock();
-      this.terminals.txTerminal.parseData(txDataAsUint8Array);
-      // Check if local TX echo is enabled, and if so, send the data to
-      // the combined single terminal.
-      if (this.settings.dataProcessingSettings.localTxEcho) {
-        this.terminals.txRxTerminal.parseData(txDataAsUint8Array);
-      }
+    // Allow the serial port to be closed later.
+    writer?.releaseLock();
+    this.terminals.txTerminal.parseData(txDataAsUint8Array);
+    // Check if local TX echo is enabled, and if so, send the data to
+    // the combined single terminal.
+    if (this.settings.dataProcessingSettings.localTxEcho) {
+      this.terminals.txRxTerminal.parseData(txDataAsUint8Array);
+    }
 
-      // Also send this data to the logger, it may need it
-      this.logging.handleTxData(txDataAsUint8Array);
+    // Also send this data to the logger, it may need it
+    this.logging.handleTxData(txDataAsUint8Array);
 
-      runInAction(() => {
-        this.numBytesTransmitted += bytesToWrite.length;
-      })
-    } // if (this.portState === PortState.OPENED) {
-  }
+    runInAction(() => {
+      this.numBytesTransmitted += bytesToWrite.length;
+    });
+  };
 
   clearAllData() {
     this.terminals.txRxTerminal.clear();
@@ -614,55 +597,57 @@ export class App {
    * is handleTerminalKeyDown(), which is called by the Terminals.
    */
   handleKeyDown(event: React.KeyboardEvent) {
-    if (this.shownMainPane === MainPanes.SETTINGS
-        && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION
-        && event.key === 'f') {
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === "f") {
       this.fakePortController.setIsDialogOpen(true);
     }
   }
 
   swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {
-    console.log('onNeedRefresh() called.');
+    console.log("onNeedRefresh() called.");
     this.snackbar.sendToSnackbar(
-      'A new version of NinjaTerm is available. Click Reload to update.',
-      'info',
-      (snackbarId) => <>
-        <Button
-          onClick={() => {
-            updateSw(true);
-          }}
-          color='info'
-          variant='text'
-          sx={{
-            color: 'rgb(33, 150, 243)',
-            backgroundColor: 'white'
-          }}
-        >
-          Reload
-        </Button>
-        <Button
-          onClick={() => {
-            closeSnackbar(snackbarId);
-          }}
-          color='info'
-          variant='text'
-          sx={{
-            color: 'white',
-            // backgroundColor: 'white'
-          }}
-        >Close</Button>
-      </>,
-      true, // Make this snackbar persist until the user clicks either of the buttons
+      "A new version of NinjaTerm is available. Click Reload to update.",
+      "info",
+      (snackbarId) => (
+        <>
+          <Button
+            onClick={() => {
+              updateSw(true);
+            }}
+            color="info"
+            variant="text"
+            sx={{
+              color: "rgb(33, 150, 243)",
+              backgroundColor: "white",
+            }}
+          >
+            Reload
+          </Button>
+          <Button
+            onClick={() => {
+              closeSnackbar(snackbarId);
+            }}
+            color="info"
+            variant="text"
+            sx={{
+              color: "white",
+              // backgroundColor: 'white'
+            }}
+          >
+            Close
+          </Button>
+        </>
+      ),
+      true // Make this snackbar persist until the user clicks either of the buttons
     );
   }
 
   swOnOfflineReady() {
-    console.log('onOfflineReady() called.');
-    this.snackbar.sendToSnackbar('NinjaTerm is offline ready.', 'info');
+    console.log("onOfflineReady() called.");
+    this.snackbar.sendToSnackbar("NinjaTerm is offline ready.", "info");
   }
 
   swOnRegisterError(error: any) {
-    console.log('onRegisterError() called.');
+    console.log("onRegisterError() called.");
     console.error(error.message);
   }
 }
