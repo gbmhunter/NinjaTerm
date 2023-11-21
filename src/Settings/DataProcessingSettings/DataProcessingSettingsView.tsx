@@ -2,7 +2,9 @@ import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Rad
 import { observer } from "mobx-react-lite";
 
 import DataProcessingSettings, {
+  BackspaceKeyPressBehavior,
   CarriageReturnCursorBehaviors,
+  DeleteKeyPressBehaviors,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
 } from "src/Settings/DataProcessingSettings/DataProcessingSettings";
@@ -27,8 +29,7 @@ function DataProcessingView(props: Props) {
         {/* =============================================================================== */}
         <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
           <Tooltip
-            title="If enabled, ANSI escape codes will be parsed. At present, CSI color codes and
-          some of the move cursor commands are supported."
+            title="Determines what is sent to the serial port when the Backspace key is pressed in the terminal."
             placement="top"
             arrow
           >
@@ -36,18 +37,18 @@ function DataProcessingView(props: Props) {
             <FormControl>
               <FormLabel>When backspace is pressed:</FormLabel>
               <RadioGroup
-                value={dataProcessingSettings.newLineCursorBehavior}
+                value={dataProcessingSettings.backspaceKeyPressBehavior}
                 onChange={(e) => {
-                  dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
+                  dataProcessingSettings.setBackspaceKeyPressBehavior(e.target.value as any);
                 }}
               >
                 {/* SEND BACKSPACE (0x08) */}
-                <Tooltip title="." placement="right" arrow>
-                  <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Send backspace (0x08)" data-testid="new-line-dont-move-cursor" />
+                <Tooltip title="Send the backspace control char (0x08) when the backspace key is pressed." placement="right" arrow>
+                  <FormControlLabel value={BackspaceKeyPressBehavior.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
                 </Tooltip>
                 {/* SEND DELETE (0x7F) */}
-                <Tooltip title="." placement="right" arrow>
-                  <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Send delete (0x7F)" />
+                <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
+                  <FormControlLabel value={BackspaceKeyPressBehavior.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
                 </Tooltip>
               </RadioGroup>
             </FormControl>
@@ -58,26 +59,29 @@ function DataProcessingView(props: Props) {
         {/* =============================================================================== */}
         <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
           <Tooltip
-            title="."
+            title="Determines what is sent to the serial port when the Delete key is pressed in the terminal."
             placement="top"
             arrow
           >
-            {/* BACKSPACE */}
             <FormControl>
               <FormLabel>When delete is pressed:</FormLabel>
               <RadioGroup
-                value={dataProcessingSettings.newLineCursorBehavior}
+                value={dataProcessingSettings.deleteKeyPressBehavior}
                 onChange={(e) => {
-                  dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
+                  dataProcessingSettings.setDeleteKeyPressBehavior(e.target.value as any);
                 }}
               >
                 {/* SEND BACKSPACE (0x08) */}
-                <Tooltip title="." placement="right" arrow>
-                  <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Send backspace (0x08)" data-testid="new-line-dont-move-cursor" />
+                <Tooltip title="Send the backspace control char (0x08) when the delete key is pressed." placement="right" arrow>
+                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
                 </Tooltip>
                 {/* SEND DELETE (0x7F) */}
-                <Tooltip title="." placement="right" arrow>
-                  <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Send delete (0x7F)" />
+                <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
+                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
+                </Tooltip>
+                {/* SEND CSI_3_TILDE ([ESC] [3~) */}
+                <Tooltip title="Send the VT sequence [ESC][3~ when the delete key is pressed. This is probably what you want if you are interacting with something that expects a terminal, such as the Zephyr Shell. This is also what PuTTY and the nRF Serial Terminal send by default." placement="right" arrow>
+                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_VT_SEQUENCE} control={<Radio />} label="Send VT sequence ( ESC [ 3 ~ )" />
                 </Tooltip>
               </RadioGroup>
             </FormControl>

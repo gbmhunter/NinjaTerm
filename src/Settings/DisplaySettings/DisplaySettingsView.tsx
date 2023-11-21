@@ -12,7 +12,7 @@ export default function DataProcessingView(props: Props) {
   const { app } = props;
 
   return (
-    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
       {/* =============================================================================== */}
       {/* CHAR SIZE */}
       {/* =============================================================================== */}

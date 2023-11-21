@@ -27,6 +27,17 @@ export enum NonVisibleCharDisplayBehaviors {
   HEX_GLYPHS,
 }
 
+export enum BackspaceKeyPressBehavior {
+  SEND_BACKSPACE,
+  SEND_DELETE,
+}
+
+export enum DeleteKeyPressBehaviors {
+  SEND_BACKSPACE,
+  SEND_DELETE,
+  SEND_VT_SEQUENCE,
+}
+
 export default class DataProcessingSettings {
 
   ansiEscapeCodeParsingEnabled = true;
@@ -58,6 +69,16 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
+  /**
+   * What to do when the user presses the backspace key.
+   */
+  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+
+  /**
+   * What to do when the user presses the delete key.
+   */
+  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
@@ -88,5 +109,13 @@ export default class DataProcessingSettings {
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
     this.nonVisibleCharDisplayBehavior = value;
+  }
+
+  setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
+    this.backspaceKeyPressBehavior = value;
+  }
+
+  setDeleteKeyPressBehavior = (value: DeleteKeyPressBehaviors) => {
+    this.deleteKeyPressBehavior = value;
   }
 }

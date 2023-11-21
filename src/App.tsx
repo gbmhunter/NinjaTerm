@@ -16,6 +16,7 @@ import FakePortsController from "./FakePorts/FakePortsController";
 import AppStorage from "./Storage/AppStorage";
 import { PortState } from "./Settings/PortConfigurationSettings/PortConfigurationSettings";
 import Terminals from "./Terminals/Terminals";
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from "./Settings/DataProcessingSettings/DataProcessingSettings";
 
 declare global {
   interface String {
@@ -431,7 +432,7 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
-    // console.log('parseRxData() called. rxData=', rxData);
+    console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
     this.terminals.txRxTerminal.parseData(rxData);
@@ -528,13 +529,35 @@ export class App {
       // Pressed key is a symbol (e.g. ';?.,<>)
       // Do same thing as with alphanumeric cars
       bytesToWrite.push(event.key.charCodeAt(0));
-    } else if (event.key === "Backspace") {
-      // Send BS (0x08) or DEL (0x7F)???
-      bytesToWrite.push(0x08);
-      //===========================================================
-      // HANDLE ARROW KEYS
-      //===========================================================
-    } else if (event.key === "ArrowLeft") {
+    }
+    //===========================================================
+    // HANDLE BACKSPACE AND DELETE KEY PRESSES
+    //===========================================================
+    else if (event.key === 'Backspace') {
+      // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
+      if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+        bytesToWrite.push(0x08);
+      } else if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+        bytesToWrite.push(0x7F);
+      } else {
+        throw Error('Unsupported backspace key press behavior!');
+      }
+    } else if (event.key === 'Delete') {
+      // Delete also has the option of sending [ESC][3~
+      if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
+        bytesToWrite.push(0x08);
+      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
+        bytesToWrite.push(0x7F);
+      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
+        bytesToWrite.push(0x1B, "[".charCodeAt(0), "3".charCodeAt(0), "~".charCodeAt(0));
+      } else {
+        throw Error('Unsupported delete key press behavior!');
+      }
+    }
+    //===========================================================
+    // HANDLE ARROW KEY PRESSES
+    //===========================================================
+    else if (event.key === "ArrowLeft") {
       // Send "ESC[D" (go back 1)
       bytesToWrite.push(0x1b, "[".charCodeAt(0), "D".charCodeAt(0));
     } else if (event.key === "ArrowRight") {
@@ -557,6 +580,7 @@ export class App {
     const writer = this.port?.writable?.getWriter();
 
     const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
+    console.log("Sending data to serial port. txDataAsUint8Array=", txDataAsUint8Array);
     await writer?.write(txDataAsUint8Array);
 
     // Allow the serial port to be closed later.

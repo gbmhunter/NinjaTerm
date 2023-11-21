@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added support for the Delete key, closes #297.
+- Added customizable support for the Backspace key.
+
 ### Fixed
 
 - Fixed bug where colours where not being reset when the "Clear" button was pressed.
