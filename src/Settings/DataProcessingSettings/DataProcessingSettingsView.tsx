@@ -1,5 +1,5 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
-import { observer } from "mobx-react-lite";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
 import DataProcessingSettings, {
   BackspaceKeyPressBehavior,
@@ -7,9 +7,9 @@ import DataProcessingSettings, {
   DeleteKeyPressBehaviors,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
-} from "src/Settings/DataProcessingSettings/DataProcessingSettings";
-import BorderedSection from "src/Components/BorderedSection";
-import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
+} from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
+import BorderedSection from 'src/Components/BorderedSection';
+import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
 
 interface Props {
   dataProcessingSettings: DataProcessingSettings;
@@ -19,20 +19,15 @@ function DataProcessingView(props: Props) {
   const { dataProcessingSettings } = props;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       {/* =============================================================================== */}
       {/* ROW FOR TX */}
       {/* =============================================================================== */}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         {/* =============================================================================== */}
         {/* BACKSPACE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
-          <Tooltip
-            title="Determines what is sent to the serial port when the Backspace key is pressed in the terminal."
-            placement="top"
-            arrow
-          >
+        <BorderedSection title="Backspace" childStyle={{ display: 'flex', flexDirection: 'column' }}>
             {/* BACKSPACE */}
             <FormControl>
               <FormLabel>When backspace is pressed:</FormLabel>
@@ -52,17 +47,11 @@ function DataProcessingView(props: Props) {
                 </Tooltip>
               </RadioGroup>
             </FormControl>
-          </Tooltip>
         </BorderedSection>
         {/* =============================================================================== */}
         {/* DELETE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
-          <Tooltip
-            title="Determines what is sent to the serial port when the Delete key is pressed in the terminal."
-            placement="top"
-            arrow
-          >
+        <BorderedSection title="Delete" childStyle={{ display: 'flex', flexDirection: 'column' }}>
             <FormControl>
               <FormLabel>When delete is pressed:</FormLabel>
               <RadioGroup
@@ -85,18 +74,17 @@ function DataProcessingView(props: Props) {
                 </Tooltip>
               </RadioGroup>
             </FormControl>
-          </Tooltip>
         </BorderedSection>
       </div> {/* End of row for TX */}
 
       {/* =============================================================================== */}
       {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
       {/* =============================================================================== */}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         {/* =============================================================================== */}
         {/* ANSI ESCAPE CODES */}
         {/* =============================================================================== */}
-        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: "flex", flexDirection: "column" }}>
+        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: 'flex', flexDirection: 'column' }}>
           {/* =============================================================================== */}
           {/* ANSI ESCAPE CODE PARSING ENABLED */}
           {/* =============================================================================== */}
@@ -117,7 +105,7 @@ function DataProcessingView(props: Props) {
                 />
               }
               label="Enable ANSI Escape Code Parsing"
-              sx={{ marginBottom: "10px" }}
+              sx={{ marginBottom: '10px' }}
             />
           </Tooltip>
           {/* =============================================================================== */}
@@ -138,12 +126,12 @@ function DataProcessingView(props: Props) {
                 endAdornment: <InputAdornment position="start">chars</InputAdornment>,
               }}
               applyableTextField={dataProcessingSettings.maxEscapeCodeLengthChars}
-              sx={{ marginBottom: "20px" }}
+              sx={{ marginBottom: '20px' }}
             />
           </Tooltip>
         </BorderedSection>
 
-        <BorderedSection title="Echo" childStyle={{ display: "flex", flexDirection: "column" }}>
+        <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>
           {/* =============================================================================== */}
           {/* LOCAL TX ECHO */}
           {/* =============================================================================== */}
@@ -166,24 +154,24 @@ function DataProcessingView(props: Props) {
                 />
               }
               label="Local TX Echo"
-              sx={{ marginBottom: "10px" }}
+              sx={{ marginBottom: '10px' }}
             />
           </Tooltip>
         </BorderedSection>
-      </div>{" "}
+      </div>{' '}
       {/* End of row for ANSI escape codes and echo settings */}
       {/* Row with new line and carriage return settings */}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         {/* =============================================================================== */}
         {/* NEW LINE SETTINGS */}
         {/* =============================================================================== */}
         <BorderedSection title="New Lines">
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              maxWidth: "300px",
-              gap: "20px",
+              display: 'flex',
+              flexDirection: 'column',
+              maxWidth: '300px',
+              gap: '20px',
             }}
           >
             {/* NEW LINE BEHAVIOR */}
@@ -224,7 +212,7 @@ function DataProcessingView(props: Props) {
             {/* SWALLOW \n */}
             <Tooltip
               title="If enabled, new line characters will not be printed to the terminal display. If disabled, new line characters will be printed before any cursor movement occurs because of the new line, such that the new line character will be printed at the end of the existing line, not the start of the new line."
-              placement="top"
+              placement="right"
               arrow
             >
               <FormControlLabel
@@ -238,7 +226,7 @@ function DataProcessingView(props: Props) {
                   />
                 }
                 label="Swallow \n bytes"
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: '10px' }}
               />
             </Tooltip>
           </div>
@@ -250,10 +238,10 @@ function DataProcessingView(props: Props) {
         <BorderedSection title="Carriage Returns">
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              maxWidth: "300px",
-              gap: "20px",
+              display: 'flex',
+              flexDirection: 'column',
+              maxWidth: '300px',
+              gap: '20px',
             }}
           >
             {/* CARRIAGE RETURN CURSOR BEHAVIOR */}
@@ -290,7 +278,7 @@ function DataProcessingView(props: Props) {
             {/* SWALLOW \r */}
             <Tooltip
               title="If enabled, carriage return characters will not be printed to the terminal display. If disabled, carriage return characters will be printed before any cursor movement occurs because of the carriage return, such that the carriage return character will be printed at the end of the row, not the start of the row."
-              placement="top"
+              placement="right"
               arrow
             >
               <FormControlLabel
@@ -304,12 +292,12 @@ function DataProcessingView(props: Props) {
                   />
                 }
                 label="Swallow \r bytes"
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: '10px' }}
               />
             </Tooltip>
           </div>
         </BorderedSection>
-      </div>{" "}
+      </div>{' '}
       {/* End of row with new line and carriage return settings */}
       {/* =============================================================================== */}
       {/* NON-VISIBLE CHAR DISPLAY */}
@@ -317,10 +305,10 @@ function DataProcessingView(props: Props) {
       <BorderedSection title="Non-visible Character Display">
         <div
           style={{
-            display: "flex",
-            flexDirection: "column",
-            maxWidth: "600px",
-            gap: "20px",
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '600px',
+            gap: '20px',
           }}
         >
           {/* RADIO GROUP */}
@@ -333,11 +321,11 @@ function DataProcessingView(props: Props) {
               }}
             >
               {/* SWALLOW */}
-              <Tooltip title="" placement="right" arrow>
+              <Tooltip title="Do not display bytes that are not visible ASCII characters." placement="right" arrow>
                 <FormControlLabel value={NonVisibleCharDisplayBehaviors.SWALLOW} control={<Radio />} label="Swallow" />
               </Tooltip>
               {/* ASCII CONTROL CODES GLYPHS AND HEX GLYPHS */}
-              <Tooltip title="" placement="right" arrow>
+              <Tooltip title="Convert bytes that are control chars into control char glyphs, and all other bytes that are not valid ASCII characters ([0x80-0xFF]) into hex code glyphs." placement="right" arrow>
                 <FormControlLabel
                   value={NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS}
                   control={<Radio />}
@@ -345,7 +333,7 @@ function DataProcessingView(props: Props) {
                 />
               </Tooltip>
               {/* ALL TO HEX CODE GLYPHS */}
-              <Tooltip title="" placement="right" arrow>
+              <Tooltip title="Convert all non-visible ASCII characters into hex code glyphs." placement="right" arrow>
                 <FormControlLabel value={NonVisibleCharDisplayBehaviors.HEX_GLYPHS} control={<Radio />} label="Convert all to hex code glyphs" />
               </Tooltip>
             </RadioGroup>
