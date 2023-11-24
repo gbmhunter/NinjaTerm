@@ -57,4 +57,30 @@ test.describe('TX data', () => {
     console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
+
+  test('app should send 0x01 when Ctrl-A is pressed', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('tx-rx-terminal-view').click();
+    await page.getByTestId('tx-rx-terminal-view').press('Control+A');
+
+    const expectedData = [ 0x01 ];
+    console.log(appTestHarness.writtenData);
+    expect(appTestHarness.writtenData).toEqual(expectedData);
+  });
+
+  test('app should not send anything when Ctrl-0 is pressed', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('tx-rx-terminal-view').click();
+    await page.getByTestId('tx-rx-terminal-view').press('Control+0');
+
+    const expectedData = [];
+    console.log(appTestHarness.writtenData);
+    expect(appTestHarness.writtenData).toEqual(expectedData);
+  });
 });

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added support for the Delete key, closes #297.
 - Added customizable support for the Backspace key.
+- Added support for Ctrl-A thru Z, closes #296.
 
 ### Fixed
 

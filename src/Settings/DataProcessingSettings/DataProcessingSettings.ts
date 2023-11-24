@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable } from 'mobx';
-import { z } from 'zod';
+import { makeAutoObservable } from "mobx";
+import { z } from "zod";
 
-import { ApplyableNumberField } from 'src/Components/ApplyableTextField';
+import { ApplyableNumberField } from "src/Components/ApplyableTextField";
 
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
@@ -39,10 +39,33 @@ export enum DeleteKeyPressBehaviors {
 }
 
 export default class DataProcessingSettings {
+  //=================================================================
+  // TX SETTINGS
+  //=================================================================
+
+  /**
+   * What to do when the user presses the backspace key.
+   */
+  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+
+  /**
+   * What to do when the user presses the delete key.
+   */
+  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+
+  /**
+   * If true, hex bytes 0x01-0x1A will be sent when the user
+   * presses Ctrl+A thru Ctrl+Z
+   */
+  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
+
+  //=================================================================
+  // RX SETTINGS
+  //=================================================================
 
   ansiEscapeCodeParsingEnabled = true;
 
-  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
+  maxEscapeCodeLengthChars = new ApplyableNumberField("10", z.coerce.number().min(2));
 
   // If true, local TX data will be echoed to RX
   localTxEcho = false;
@@ -69,53 +92,47 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   isApplyable = false;
 
-  /**
-   * What to do when the user presses the backspace key.
-   */
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-
-  /**
-   * What to do when the user presses the delete key.
-   */
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
-
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
-  setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
-    this.ansiEscapeCodeParsingEnabled = value;
-  }
-
-  setLocalTxEcho = (value: boolean) => {
-    this.localTxEcho = value;
-  }
-
-  setNewLineCursorBehavior = (value: NewLineCursorBehaviors) => {
-    this.newLineCursorBehavior = value;
-  }
-
-  setSwallowNewLine = (value: boolean) => {
-    this.swallowNewLine = value;
-  }
-
-  setCarriageReturnBehavior = (value: CarriageReturnCursorBehaviors) => {
-    this.carriageReturnCursorBehavior = value;
-  }
-
-  setSwallowCarriageReturn = (value: boolean) => {
-    this.swallowCarriageReturn = value;
-  }
-
-  setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
-    this.nonVisibleCharDisplayBehavior = value;
-  }
-
   setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
     this.backspaceKeyPressBehavior = value;
-  }
+  };
 
   setDeleteKeyPressBehavior = (value: DeleteKeyPressBehaviors) => {
     this.deleteKeyPressBehavior = value;
+  };
+
+  setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
+    this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
   }
+
+  setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
+    this.ansiEscapeCodeParsingEnabled = value;
+  };
+
+  setLocalTxEcho = (value: boolean) => {
+    this.localTxEcho = value;
+  };
+
+  setNewLineCursorBehavior = (value: NewLineCursorBehaviors) => {
+    this.newLineCursorBehavior = value;
+  };
+
+  setSwallowNewLine = (value: boolean) => {
+    this.swallowNewLine = value;
+  };
+
+  setCarriageReturnBehavior = (value: CarriageReturnCursorBehaviors) => {
+    this.carriageReturnCursorBehavior = value;
+  };
+
+  setSwallowCarriageReturn = (value: boolean) => {
+    this.swallowCarriageReturn = value;
+  };
+
+  setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
+    this.nonVisibleCharDisplayBehavior = value;
+  };
 }

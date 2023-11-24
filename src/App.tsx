@@ -491,10 +491,9 @@ export class App {
    * as a callback. Tried to bind to this in constructor, didn't work.
    *
    * @param event The React keydown event.
-   * @returns Nothing.
    */
   handleTerminalKeyDown = async (event: React.KeyboardEvent) => {
-    // console.log('handleTerminalKeyDown() called. event.key=', event.key);
+    console.log('handleTerminalKeyDown() called. event=', event);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen
@@ -514,10 +513,25 @@ export class App {
     const bytesToWrite: number[] = [];
     // List of allowed symbols, includes space char also
     const symbols = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? ";
-    const alphaNumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789';
+
+    // List of all alphanumeric chars
+    const alphabeticChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz';
+    const alphaNumericChars = alphabeticChars + '0123456789';
     if (event.key === 'Control' || event.key === 'Shift') {
       // Don't send anything if a control key/shift key was pressed by itself
       return;
+    } else if (event.ctrlKey) {
+      // Most presses with the Ctrl key held down should do nothing. One exception is
+      // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
+      if (this.settings.dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+        // Ctrl-A through Ctrl-Z is pressed along with an alphabetic char
+        // Send 0x01 through 0x1A, which is easily done by getting the char
+        // code and subtracting 64
+        bytesToWrite.push(event.key.charCodeAt(0) - 64);
+      } else {
+        // Ctrl key was pressed, but we don't want to send anything
+        return;
+      }
     } else if (event.key === 'Enter') {
       // TODO: Add support for sending different things on enter
       bytesToWrite.push(13);

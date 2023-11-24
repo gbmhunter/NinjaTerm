@@ -77,6 +77,34 @@ function DataProcessingView(props: Props) {
         </BorderedSection>
       </div> {/* End of row for TX */}
 
+      <div>
+      <BorderedSection title="Ctrl Keys" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+          {/* =============================================================================== */}
+          {/* CTRL KEYS */}
+          {/* =============================================================================== */}
+          <Tooltip
+            title=""
+            placement="top"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="localTxEcho"
+                  checked={dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed}
+                  onChange={(e) => {
+                    dataProcessingSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
+                  }}
+                />
+              }
+              label="Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed"
+              sx={{ marginBottom: '10px' }}
+            />
+          </Tooltip>
+        </BorderedSection>
+      </div>
+
       {/* =============================================================================== */}
       {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
       {/* =============================================================================== */}
