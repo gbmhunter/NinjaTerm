@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Scrolling to the bottom of the terminal locks the scroll, closes #300.
 - Moving the scrollbar upwards in the Terminal pane breaks scroll lock, closes #267.
 - Added cross to each toaster item so it can be closed immediately by user, closes #301.
+- Added a note about banned directories to the Logging window.
 
 ### Fixed
 
