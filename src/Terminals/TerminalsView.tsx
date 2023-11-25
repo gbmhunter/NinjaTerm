@@ -46,7 +46,6 @@ export default observer((props: Props) => {
   if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
     terminals = <SingleTerminalView
-                  appStore={app}
                   terminal={app.terminals.txRxTerminal}
                   testId='tx-rx-terminal-view'
                 />;
@@ -54,10 +53,10 @@ export default observer((props: Props) => {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ height: '50%', display: 'flex' }}>
-        <SingleTerminalView appStore={app} terminal={app.terminals.txTerminal} testId='tx-terminal-view'/>
+        <SingleTerminalView terminal={app.terminals.txTerminal} testId='tx-terminal-view'/>
       </div>
       <div style={{ height: '50%', display: 'flex' }}>
-        <SingleTerminalView appStore={app} terminal={app.terminals.rxTerminal} testId='rx-terminal-view' />
+        <SingleTerminalView terminal={app.terminals.rxTerminal} testId='rx-terminal-view' />
       </div>
     </div>;
   } else {

@@ -99,7 +99,11 @@ export default class Terminal {
    */
   uniqueRowIndexCount: number = 0;
 
-  constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
+  constructor(
+      isFocusable: boolean,
+      dataProcessingSettings: DataProcessingSettings,
+      displaySettings: DisplaySettings,
+      onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
     this.isFocusable = isFocusable;
     this.dataProcessingSettings = dataProcessingSettings;
@@ -119,13 +123,6 @@ export default class Terminal {
         this.inIdleState = true;
       }
     })
-
-    // reaction(
-    //   () => this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value,
-    //   (scrollbackBufferSizeRows) => {
-    //     console.log('scrollbackBufferSizeRows=', scrollbackBufferSizeRows);
-    //   }
-    // )
 
     this.cursorPosition = [0, 0];
 
@@ -150,6 +147,14 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
+  get charSizePx() {
+    return this.displaySettings.charSizePx.appliedValue;
+  }
+
+  get verticalRowPaddingPx() {
+    return this.displaySettings.verticalRowPaddingPx.appliedValue;
+  }
+
   /**
    * Called by the React UI when the fixed sized list fires an onScroll event.
    * Breaks scroll lock if the user scrolls backwards, locks scroll if the
@@ -160,7 +165,7 @@ export default class Terminal {
   fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
 
     // Calculate the total height of all terminal rows
-    const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue);
+    const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue);
 
     // If we are at the bottom of the terminal, lock the scroll position
     // to the bottom
@@ -874,7 +879,7 @@ export default class Terminal {
     // Need to update scroll position for view to use if we are not scroll locked to the bottom. Move the scroll position back the same amount of rows we deleted which were visible, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue)*numFilteredIndexesToRemove;
+      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue)*numFilteredIndexesToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }

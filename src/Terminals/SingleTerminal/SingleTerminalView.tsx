@@ -4,20 +4,17 @@ import {
   WheelEvent,
   useRef,
   ReactElement,
-  useState,
   useLayoutEffect,
 } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 
-import { App } from '../../App';
 import Terminal from './SingleTerminal';
 import TerminalRow from './SingleTerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 
 interface Props {
-  appStore: App;
   terminal: Terminal;
   testId: string;
 }
@@ -29,7 +26,7 @@ interface RowProps {
 }
 
 export default observer((props: Props) => {
-  const { appStore, terminal, testId = true } = props;
+  const { terminal, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -168,14 +165,11 @@ export default observer((props: Props) => {
       data-testid={testId + '-outer'}
       style={{
         flexGrow: 1,
-        // flexShrink: 1,
         marginBottom: '10px',
         padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
         boxSizing: 'border-box',
         overflowY: 'hidden',
         backgroundColor: '#000000',
-        // margin: '-15px',
-        // padding: '10px',
       }}
       onFocus={(e) => {
         terminal.setIsFocused(true);
@@ -188,29 +182,19 @@ export default observer((props: Props) => {
       }}
     >
       <div
-        onWheel={(e: WheelEvent<HTMLDivElement>) => {
-          // Disable scroll lock if enabled and the scroll direction was
-          // up (negative deltaY)
-          // if (e.deltaY < 0 && terminal.scrollLock) {
-          //   terminal.setScrollLock(false);
-          // }
-        }}
         ref={terminalDiv}
         style={{
-          // flexGrow: '1',
           height: '100%',
           // This sets the font for displayed data in the terminal
           fontFamily: 'Consolas, Menlo, monospace',
 
           // This sets the font size for data displayed in the terminal
-          fontSize:
-            appStore.settings.displaySettings.charSizePx.appliedValue + 'px',
+          fontSize: terminal.charSizePx + 'px',
 
           // Line height needs to be set to 1.0 for autoscroll to work well
           lineHeight: 1.0,
 
           position: 'relative', // This is so we can use position: absolute for the down icon
-          // flexBasis: '0',
           // overflowY: hidden is important so that that it ignores the height of the child
           // react-window List when calculating what size it should be. Then the List
           // height is set from the height of this div.
@@ -226,9 +210,7 @@ export default observer((props: Props) => {
           className={styles.fixedSizeList}
           height={terminal.terminalViewHeightPx}
           // Add a bit of padding to the height
-          itemSize={
-            appStore.settings.displaySettings.charSizePx.appliedValue + appStore.settings.displaySettings.verticalRowPadding.appliedValue
-          }
+          itemSize={terminal.charSizePx + terminal.verticalRowPaddingPx}
           width="100%"
           itemData={terminal.filteredTerminalRows}
           itemCount={terminal.filteredTerminalRows.length}

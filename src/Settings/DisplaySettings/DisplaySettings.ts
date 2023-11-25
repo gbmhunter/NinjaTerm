@@ -29,7 +29,7 @@ export default class DisplaySettings {
   /**
    * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
    */
-  verticalRowPadding = new ApplyableNumberField('5', z.coerce.number().int().min(1));
+  verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(1));
 
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
 
@@ -43,7 +43,7 @@ export default class DisplaySettings {
     this.charSizePx.setOnApplyChanged(() => {
       this.saveConfig();
     });
-    this.verticalRowPadding.setOnApplyChanged(() => {
+    this.verticalRowPaddingPx.setOnApplyChanged(() => {
       this.saveConfig();
     });
     this.terminalWidthChars.setOnApplyChanged(() => {
@@ -64,7 +64,7 @@ export default class DisplaySettings {
   saveConfig = () => {
     const config = {
       charSizePx: this.charSizePx.dispValue,
-      verticalRowPadding: this.verticalRowPadding.dispValue,
+      verticalRowPadding: this.verticalRowPaddingPx.dispValue,
       terminalWidthChars: this.terminalWidthChars.dispValue,
       scrollbackBufferSizeRows: this.scrollbackBufferSizeRows.dispValue,
       dataViewConfiguration: this.dataViewConfiguration,
@@ -83,8 +83,8 @@ export default class DisplaySettings {
       this.charSizePx.apply();
     }
     if (config.verticalRowPadding !== undefined) {
-      this.verticalRowPadding.dispValue = config.verticalRowPadding;
-      this.verticalRowPadding.apply();
+      this.verticalRowPaddingPx.dispValue = config.verticalRowPadding;
+      this.verticalRowPaddingPx.apply();
     }
     if (config.terminalWidthChars !== undefined) {
       this.terminalWidthChars.dispValue = config.terminalWidthChars;

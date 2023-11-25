@@ -51,7 +51,7 @@ export default function DataProcessingView(props: Props) {
           InputProps={{
             endAdornment: <InputAdornment position="start">px</InputAdornment>,
           }}
-          applyableTextField={app.settings.displaySettings.verticalRowPadding}
+          applyableTextField={app.settings.displaySettings.verticalRowPaddingPx}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
