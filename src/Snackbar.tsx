@@ -1,6 +1,7 @@
+import { Button, IconButton } from '@mui/material';
 import { makeAutoObservable } from 'mobx';
-import { SnackbarAction, VariantType, enqueueSnackbar } from 'notistack';
-import React from 'react';
+import { SnackbarAction, VariantType, enqueueSnackbar, closeSnackbar } from 'notistack';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default class Snackbar {
 
@@ -26,6 +27,17 @@ export default class Snackbar {
       console.error('enqueueSnackbar is not a function. Cannot send message: ' + msg)
       return;
     }
+
+    if (action === undefined) {
+      action = (snackbarId: any) => (
+        <>
+          <IconButton onClick={() => { closeSnackbar(snackbarId) }}>
+            <CloseIcon />
+          </IconButton>
+        </>
+      );
+    }
+
     enqueueSnackbar(
       msg,
       {
