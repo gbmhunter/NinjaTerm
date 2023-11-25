@@ -125,7 +125,6 @@ export default observer((props: Props) => {
   });
 
   const terminalDiv = useRef<HTMLInputElement>(null);
-  const [height, setHeight] = useState(0);
 
   // This is what I tried to get working to set the
   // react-window height but it didn't work. Leaving it
@@ -149,8 +148,6 @@ export default observer((props: Props) => {
       if (!terminalDiv?.current?.offsetHeight) {
         return;
       }
-      console.log('setting height=', terminalDiv?.current?.offsetHeight);
-      setHeight(terminalDiv?.current?.offsetHeight);
       terminal.setTerminalViewHeightPx(terminalDiv?.current?.offsetHeight);
     };
     handleResize();
@@ -166,7 +163,7 @@ export default observer((props: Props) => {
   if (appStore.testing) {
     heightDebug = 200;
   } else {
-    heightDebug = height;
+    heightDebug = terminal.terminalViewHeightPx;
   }
 
   return (
@@ -244,7 +241,6 @@ export default observer((props: Props) => {
           itemData={terminal.filteredTerminalRows}
           itemCount={terminal.filteredTerminalRows.length}
           onScroll={(scrollProps) => {
-            console.log('onScroll() called. scrollProps=', scrollProps);
             terminal.fixedSizedListOnScroll(scrollProps);
           }}
           overscanCount={5}
