@@ -158,14 +158,6 @@ export default observer((props: Props) => {
     };
   }, []);
 
-  // Use a fake height if testing
-  let heightDebug;
-  if (appStore.testing) {
-    heightDebug = 200;
-  } else {
-    heightDebug = terminal.terminalViewHeightPx;
-  }
-
   return (
     // This is the outer terminal div which sets the background colour
     <div
@@ -232,7 +224,7 @@ export default observer((props: Props) => {
         <FixedSizeList
           ref={reactWindowRef}
           className={styles.fixedSizeList}
-          height={heightDebug}
+          height={terminal.terminalViewHeightPx}
           // Add a bit of padding to the height
           itemSize={
             appStore.settings.displaySettings.charSizePx.appliedValue + appStore.settings.displaySettings.verticalRowPadding.appliedValue
