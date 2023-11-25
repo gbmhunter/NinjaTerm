@@ -5,6 +5,7 @@ import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
 import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
+import { ListOnScrollProps } from 'react-window';
 
 const START_OF_CONTROL_GLYPHS = 0xE000;
 const START_OF_HEX_GLYPHS = 0xE100;
@@ -35,6 +36,13 @@ export default class Terminal {
   rowToScrollLockTo: number;
 
   scrollPos: number;
+
+  /*
+    * The height of the terminal view in pixels. This does not include any padding,
+    * i.e. it's the height that terminal rows will be packed into. Set by the UI.
+  */
+  terminalViewHeightPx: number = 0;
+
 
   /**
    * The arrays of terminal rows, where each element represents a row
@@ -144,11 +152,39 @@ export default class Terminal {
 
   /**
    * Called by the React UI when the fixed sized list fires an onScroll event.
+   * Breaks scroll lock if the user scrolls backwards, locks scroll if the
+   * user scrolls forward to the last row
    *
-   * @param scrollPos
+   * @param scrollProps The scroll props passed from the fixed sized list scroll event.
    */
-  setScrollPos(scrollPos: number) {
-    this.scrollPos = scrollPos;
+  fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
+
+    // Calculate the total height of all terminal rows
+    const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue);
+
+    // If we are at the bottom of the terminal, lock the scroll position
+    // to the bottom
+    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
+      // User has scrolled to the end of the terminal, so lock the scroll position
+      this.scrollLock = true;
+      this.rowToScrollLockTo = this.terminalRows.length - 1;
+      this.scrollPos = totalTerminalRowsHeightPx;
+      return;
+    }
+
+    if (scrollProps.scrollDirection == 'backward' && this.scrollLock) {
+      // User has scrolled up, and we were locked to the bottom,
+      // so unlock the scroll position to allow the user to move freely
+      // back into past terminal data
+      this.scrollLock = false;
+    }
+
+    // User hasn't scrolled to bottom of terminal, so update scroll position
+    this.scrollPos = scrollProps.scrollOffset;
+  }
+
+  setTerminalViewHeightPx(terminalViewHeightPx: number) {
+    this.terminalViewHeightPx = terminalViewHeightPx;
   }
 
   /**

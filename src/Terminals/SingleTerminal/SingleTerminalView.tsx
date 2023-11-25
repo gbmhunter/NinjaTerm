@@ -149,7 +149,9 @@ export default observer((props: Props) => {
       if (!terminalDiv?.current?.offsetHeight) {
         return;
       }
+      console.log('setting height=', terminalDiv?.current?.offsetHeight);
       setHeight(terminalDiv?.current?.offsetHeight);
+      terminal.setTerminalViewHeightPx(terminalDiv?.current?.offsetHeight);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -200,9 +202,9 @@ export default observer((props: Props) => {
         onWheel={(e: WheelEvent<HTMLDivElement>) => {
           // Disable scroll lock if enabled and the scroll direction was
           // up (negative deltaY)
-          if (e.deltaY < 0 && terminal.scrollLock) {
-            terminal.setScrollLock(false);
-          }
+          // if (e.deltaY < 0 && terminal.scrollLock) {
+          //   terminal.setScrollLock(false);
+          // }
         }}
         ref={terminalDiv}
         style={{
@@ -242,8 +244,8 @@ export default observer((props: Props) => {
           itemData={terminal.filteredTerminalRows}
           itemCount={terminal.filteredTerminalRows.length}
           onScroll={(scrollProps) => {
-            const { scrollOffset } = scrollProps;
-            terminal.setScrollPos(scrollOffset);
+            console.log('onScroll() called. scrollProps=', scrollProps);
+            terminal.fixedSizedListOnScroll(scrollProps);
           }}
           overscanCount={5}
         >
