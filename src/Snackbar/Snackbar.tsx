@@ -1,6 +1,7 @@
+import { Button, IconButton } from '@mui/material';
 import { makeAutoObservable } from 'mobx';
-import { SnackbarAction, VariantType, enqueueSnackbar } from 'notistack';
-import React from 'react';
+import { SnackbarAction, VariantType, enqueueSnackbar, closeSnackbar } from 'notistack';
+import CloseIcon from '@mui/icons-material/Close';
 
 export default class Snackbar {
 
@@ -20,12 +21,24 @@ export default class Snackbar {
    *
    * @param msg The message you want to display. Use "\n" to insert new lines.
    * @param variant The variant (e.g. error, warning) of snackbar you want to display.
+   * @param action The action to display on the snackbar (see notistack docs). If undefined, a close button will be displayed.
    */
   sendToSnackbar(msg: string, variant: VariantType, action?: SnackbarAction, persist?: boolean) {
     if (!(enqueueSnackbar instanceof Function)) {
       console.error('enqueueSnackbar is not a function. Cannot send message: ' + msg)
       return;
     }
+
+    if (action === undefined) {
+      action = (snackbarId: any) => (
+        <>
+          <IconButton onClick={() => { closeSnackbar(snackbarId) }}>
+            <CloseIcon />
+          </IconButton>
+        </>
+      );
+    }
+
     enqueueSnackbar(
       msg,
       {

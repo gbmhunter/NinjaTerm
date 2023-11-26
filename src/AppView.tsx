@@ -21,7 +21,7 @@ import { SnackbarProvider } from 'notistack';
 import { registerSW } from 'virtual:pwa-register';
 
 import { App, MainPanes } from './App';
-import { PortState } from './Settings/PortConfiguration/PortConfiguration';
+import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminals/TerminalsView';

@@ -9,9 +9,9 @@ import { observer } from 'mobx-react-lite';
 import { App } from '../App';
 import { SettingsCategories } from './Settings';
 
-import PortConfigurationView from './PortConfiguration/PortConfigurationView';
-import DataProcessingView from './DataProcessingSettingsView';
-import DisplaySettingsView from './Display/DisplaySettingsView';
+import PortConfigurationSettingsView from './PortConfigurationSettings/PortConfigurationSettingsView';
+import DataProcessingSettingsView from './DataProcessingSettings/DataProcessingSettingsView';
+import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 
 interface Props {
   appStore: App;
@@ -22,10 +22,10 @@ function SettingsDialog(props: Props) {
 
   const displayedSettingsCategory = {
     [SettingsCategories.PORT_CONFIGURATION]: (
-      <PortConfigurationView app={appStore} />
+      <PortConfigurationSettingsView app={appStore} />
     ),
     [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessingView app={appStore} />
+      <DataProcessingSettingsView dataProcessingSettings={appStore.settings.dataProcessingSettings} />
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={appStore} />
@@ -33,12 +33,12 @@ function SettingsDialog(props: Props) {
   };
 
   return (
-      <div data-testid="settings-pane" style={{ height: '100%', display: 'flex' }}>
-        {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from top to bottom */}
-        <Box id="test" sx={{ display: 'flex', flexDirection: 'row' }}>
+      <div data-testid="settings-pane" style={{ width: '100%', height: '100%', display: 'flex', flexGrow: 1, flexDirection: 'row', overflowY: 'hidden' }}>
+          {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from top to bottom */}
           {/* Add a little border to the right-hand side to separate from sub-category settings */}
-          <Box
-            sx={{
+          <div
+            id="settings-pane-left"
+            style={{
               minWidth: '180px',
               marginRight: '10px',
               borderRight: 1,
@@ -88,16 +88,15 @@ function SettingsDialog(props: Props) {
                 </ListItemButton>
               </List>
             </nav>
-          </Box>
+          </div>
           {/* Container to wrap scrollable content in right-hand side pane */}
-          <Box sx={{ overflowY: 'auto' }}>
+          <div style={{ flexGrow: 1, overflowY: 'auto', height: '100%' }}>
             {
               displayedSettingsCategory[
                 appStore.settings.activeSettingsCategory
               ]
             }
-          </Box>
-        </Box>
+          </div>
       </div>
   );
 }

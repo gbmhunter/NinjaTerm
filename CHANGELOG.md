@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.12.0] - 2023-11-26
+
+### Added
+
+- Added support for the Delete key, closes #297.
+- Added customizable support for the Backspace key.
+- Added support for Ctrl-A thru Z, closes #296.
+- Scrolling to the bottom of the terminal locks the scroll, closes #300.
+- Moving the scrollbar upwards in the Terminal pane breaks scroll lock, closes #267.
+- Added cross to each toaster item so it can be closed immediately by user, closes #301.
+- Added a note about banned directories to the Logging window.
+- Added labels to each terminal showing their direction (e.g. "TX/RX", "TX", "RX").
+
+### Fixed
+
+- Fixed bug where colours where not being reset when the "Clear" button was pressed.
+
+### Changed
+
+- Tidied up file paths and removed some unused variables from the codebase.
+
 ## [4.11.0] - 2023-11-19
 
 ### Added
@@ -603,7 +624,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.11.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.0...HEAD
+[4.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.11.0...v4.12.0
 [4.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.1...v4.11.0
 [4.10.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.0...v4.10.1
 [4.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.9.0...v4.10.0

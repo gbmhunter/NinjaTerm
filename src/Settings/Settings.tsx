@@ -4,9 +4,9 @@ import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
-import DataProcessingSettings from './DataProcessingSettings';
-import DisplaySettings from './Display/DisplaySettings';
-import PortConfiguration from './PortConfiguration/PortConfiguration';
+import DataProcessingSettings from './DataProcessingSettings/DataProcessingSettings';
+import DisplaySettings from './DisplaySettings/DisplaySettings';
+import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
 
 export type StopBits = 1 | 1.5 | 2;
 

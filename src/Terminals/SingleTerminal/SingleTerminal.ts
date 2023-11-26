@@ -3,8 +3,9 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from './SingleTerminalRow';
 import TerminalChar from './SingleTerminalChar';
-import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings';
-import DisplaySettings from 'src/Settings/Display/DisplaySettings';
+import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
+import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
+import { ListOnScrollProps } from 'react-window';
 
 const START_OF_CONTROL_GLYPHS = 0xE000;
 const START_OF_HEX_GLYPHS = 0xE100;
@@ -26,9 +27,7 @@ export default class Terminal {
   // OTHER VARIABLES
   //======================================================================
 
-  // This represents the current style active on the terminal
-  currentStyle: {};
-
+  // [ row_idx, col_idx ]
   cursorPosition: [number, number];
 
   // If true, the data pane scroll will be locked at the bottom
@@ -38,7 +37,30 @@ export default class Terminal {
 
   scrollPos: number;
 
+  /*
+    * The height of the terminal view in pixels. This does not include any padding,
+    * i.e. it's the height that terminal rows will be packed into. Set by the UI.
+  */
+  terminalViewHeightPx: number = 0;
+
+
+  /**
+   * The arrays of terminal rows, where each element represents a row
+   * of data.
+   */
   terminalRows: TerminalRow[];
+
+  /**
+   * The filter text to apply to the terminal. If an empty string, no filtering is
+   * applied.
+   */
+  filterText: string = '';
+
+  /**
+   * The array of terminal rows which should be included in the filtered view
+   * due to the filter text. This is a subset of the terminalRows array.
+   */
+  filteredTerminalRows: TerminalRow[] = [];
 
   // True if this RX data parser is just processing text as plain text, i.e.
   // no partial escape code has been detected.
@@ -69,16 +91,6 @@ export default class Terminal {
   // glow on hover or click, and the cursor will always outlined, never filled in.
   isFocusable: boolean;
 
-  // The filter text to apply to the terminal. If an empty string, no filtering is
-  // applied
-  filterText: string = '';
-
-  /**
-   * The array of terminal rows which should be included in the filtered view
-   * due to the filter text. This is an array of indexes into the terminalRows.
-   */
-  filteredTerminalRows: TerminalRow[] = [];
-
   /**
    * This is used to keep track of the order in which rows are received so that
    * we can work out where to add terminal rows into the filtered rows array when
@@ -87,7 +99,11 @@ export default class Terminal {
    */
   uniqueRowIndexCount: number = 0;
 
-  constructor(isFocusable: boolean, dataProcessingSettings: DataProcessingSettings, displaySettings: DisplaySettings, onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
+  constructor(
+      isFocusable: boolean,
+      dataProcessingSettings: DataProcessingSettings,
+      displaySettings: DisplaySettings,
+      onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
     this.isFocusable = isFocusable;
     this.dataProcessingSettings = dataProcessingSettings;
@@ -99,7 +115,7 @@ export default class Terminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this.addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+          this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
         }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
@@ -108,26 +124,14 @@ export default class Terminal {
       }
     })
 
-    // reaction(
-    //   () => this.settings.dataProcessing.appliedData.fields.scrollbackBufferSizeRows.value,
-    //   (scrollbackBufferSizeRows) => {
-    //     console.log('scrollbackBufferSizeRows=', scrollbackBufferSizeRows);
-    //   }
-    // )
-
     this.cursorPosition = [0, 0];
 
     this.scrollLock = true;
     this.rowToScrollLockTo = 0;
     this.scrollPos = 0;
 
-    // This is just to keep typescript happy, they
-    // are all set in clearData() anyway.
-    this.currentStyle = {
-      color: '#ffffff',
-    };
     this.terminalRows = [];
-    this.clearData();
+    this.clear();
 
     this.inIdleState = true;
     this.inAnsiEscapeCode = false;
@@ -143,15 +147,56 @@ export default class Terminal {
     makeAutoObservable(this);
   }
 
-  /**
-   * Called by the React UI when the fixed sized list fires an onScroll event.
-   *
-   * @param scrollPos
-   */
-  setScrollPos(scrollPos: number) {
-    this.scrollPos = scrollPos;
+  get charSizePx() {
+    return this.displaySettings.charSizePx.appliedValue;
   }
 
+  get verticalRowPaddingPx() {
+    return this.displaySettings.verticalRowPaddingPx.appliedValue;
+  }
+
+  /**
+   * Called by the React UI when the fixed sized list fires an onScroll event.
+   * Breaks scroll lock if the user scrolls backwards, locks scroll if the
+   * user scrolls forward to the last row
+   *
+   * @param scrollProps The scroll props passed from the fixed sized list scroll event.
+   */
+  fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
+
+    // Calculate the total height of all terminal rows
+    const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue);
+
+    // If we are at the bottom of the terminal, lock the scroll position
+    // to the bottom
+    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
+      // User has scrolled to the end of the terminal, so lock the scroll position
+      this.scrollLock = true;
+      this.rowToScrollLockTo = this.terminalRows.length - 1;
+      this.scrollPos = totalTerminalRowsHeightPx;
+      return;
+    }
+
+    if (scrollProps.scrollDirection == 'backward' && this.scrollLock) {
+      // User has scrolled up, and we were locked to the bottom,
+      // so unlock the scroll position to allow the user to move freely
+      // back into past terminal data
+      this.scrollLock = false;
+    }
+
+    // User hasn't scrolled to bottom of terminal, so update scroll position
+    this.scrollPos = scrollProps.scrollOffset;
+  }
+
+  setTerminalViewHeightPx(terminalViewHeightPx: number) {
+    this.terminalViewHeightPx = terminalViewHeightPx;
+  }
+
+  /**
+   * Send data to the terminal to be processed and displayed.
+   *
+   * @param data The array of bytes to process.
+   */
   parseData(data: Uint8Array) {
     // Parse each character
     // console.log('parseData() called. data=', data);
@@ -192,7 +237,7 @@ export default class Terminal {
         // at the end of the existing line, rather than the start of the new
         // line
         if (!this.dataProcessingSettings.swallowNewLine) {
-          this.addVisibleChar(rxByte);
+          this._addVisibleChar(rxByte);
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
@@ -228,7 +273,7 @@ export default class Terminal {
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
         if (!this.dataProcessingSettings.swallowCarriageReturn) {
-          this.addVisibleChar(rxByte);
+          this._addVisibleChar(rxByte);
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
@@ -252,7 +297,7 @@ export default class Terminal {
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
       if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
-        this.addVisibleChar(rxByte);
+        this._addVisibleChar(rxByte);
         continue;
       }
 
@@ -290,7 +335,7 @@ export default class Terminal {
       } else {
         // Not currently receiving ANSI escape code,
         // so send character to terminal(s)
-        this.addVisibleChar(rxByte);
+        this._addVisibleChar(rxByte);
       }
 
       // When we get to the end of parsing, check that if we are still
@@ -643,7 +688,7 @@ export default class Terminal {
 
   addVisibleChars(rxBytes: number[]) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
-      this.addVisibleChar(rxBytes[idx]);
+      this._addVisibleChar(rxBytes[idx]);
     }
   }
 
@@ -653,7 +698,7 @@ export default class Terminal {
    *
    * @param char Must be a single printable character only.
    */
-  addVisibleChar(rxByte: number) {
+  _addVisibleChar(rxByte: number) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 
@@ -750,9 +795,7 @@ export default class Terminal {
   /**
    * Clears all data from the terminal, resets all styles and resets cursor position.
    */
-  clearData() {
-    this.currentStyle = {};
-
+  clear() {
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
@@ -768,16 +811,12 @@ export default class Terminal {
     // Reset the filtered rows to just show the one row
     // we have created above
     this.filteredTerminalRows = [ terminalRow ];
-  }
 
-  setStyle(style: {}) {
-    // Override any provided style properties
-    this.currentStyle = Object.assign(this.currentStyle, style);
+    this.clearStyle();
   }
 
   clearStyle() {
     // Clear all styles
-    this.currentStyle = {};
     this.boldOrIncreasedIntensity = false;
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
@@ -840,7 +879,7 @@ export default class Terminal {
     // Need to update scroll position for view to use if we are not scroll locked to the bottom. Move the scroll position back the same amount of rows we deleted which were visible, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
     if (!this.scrollLock) {
-      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPadding.appliedValue)*numFilteredIndexesToRemove;
+      let newScrollPos = this.scrollPos - (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue)*numFilteredIndexesToRemove;
       if (newScrollPos < 0) {
         newScrollPos = 0;
       }

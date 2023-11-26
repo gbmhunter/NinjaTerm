@@ -2,7 +2,7 @@ import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, T
 
 import { App } from 'src/App';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/Settings/Display/DisplaySettings';
+import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
   app: App;
@@ -12,7 +12,7 @@ export default function DataProcessingView(props: Props) {
   const { app } = props;
 
   return (
-    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
       {/* =============================================================================== */}
       {/* CHAR SIZE */}
       {/* =============================================================================== */}
@@ -51,7 +51,7 @@ export default function DataProcessingView(props: Props) {
           InputProps={{
             endAdornment: <InputAdornment position="start">px</InputAdornment>,
           }}
-          applyableTextField={app.settings.displaySettings.verticalRowPadding}
+          applyableTextField={app.settings.displaySettings.verticalRowPaddingPx}
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>

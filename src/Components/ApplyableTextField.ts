@@ -1,4 +1,4 @@
-import { makeObservable, observable, computed, action, flow } from "mobx"
+import { makeObservable, observable, action } from 'mobx';
 import { ZodType } from 'zod';
 
 /**
@@ -19,7 +19,6 @@ export default abstract class ApplyableField {
   constructor(dispValue: string, schema: ZodType) {
     this.schema = schema;
     this.dispValue = '';
-    // this.appliedValue = '';
     this.setDispValue(dispValue);
     this.apply();
     makeObservable(this, {
@@ -68,8 +67,14 @@ export class ApplyableTextField extends ApplyableField {
   }
 
   apply() {
-    if (this.isValid && this.dispValue !== this.appliedValue) {
-      this.appliedValue = this.dispValue;
+    if (!this.isValid) {
+      return
+    }
+    const oldAppliedValue = this.appliedValue;
+    // For a text field, we just need to copy the value
+    // no conversion to a different type needed
+    this.appliedValue = this.dispValue;
+    if (this.appliedValue !== oldAppliedValue) {
       this.onApplyChanged();
     }
   }
@@ -90,9 +95,15 @@ export class ApplyableNumberField extends ApplyableField {
   }
 
   apply() {
-    if (this.isValid) {
-      this.appliedValue = Number(this.dispValue);
+    if (!this.isValid) {
+      return
     }
-    this.onApplyChanged();
+
+    const oldAppliedValue = this.appliedValue;
+    // Convert displayed string into a number
+    this.appliedValue = Number(this.dispValue);
+    if (this.appliedValue !== oldAppliedValue) {
+      this.onApplyChanged();
+    }
   }
 }

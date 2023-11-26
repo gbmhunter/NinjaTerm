@@ -64,6 +64,7 @@ export default observer((props: Props) => {
             alignItems: "flex-start",
           }}
         >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Button
             variant="contained"
             // size="small"
@@ -71,9 +72,12 @@ export default observer((props: Props) => {
             onClick={() => {
               app.logging.openDirPicker();
             }}
+            sx={{ width: "350px" }}
           >
             Select log directory
           </Button>
+          <div>NOTE: Directories that browsers consider "System Directories" cannot be selected. This includes your User root directory, C:\ or root mount point, Downloads and Documents directories. Sub-directories of these can be chosen.</div>
+          </div>
 
           <div>
             Folder permissions:&nbsp;

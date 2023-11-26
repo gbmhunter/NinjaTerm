@@ -1,7 +1,7 @@
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-import { PortState } from 'src/Settings/PortConfiguration/PortConfiguration';
+import { PortState } from 'src/Settings/PortConfigurationSettings/PortConfigurationSettings';
 
 type PortStateToButtonPropsItem = {
   text: string;
