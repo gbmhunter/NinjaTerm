@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import Validator from 'validatorjs';
 import { z } from 'zod';
 
-import Snackbar from 'src/Snackbar';
+import Snackbar from 'src/Snackbar/Snackbar';
 import { ApplyableTextField, ApplyableNumberField } from 'src/Components/ApplyableTextField';
 
 class Point {

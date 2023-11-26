@@ -9,7 +9,7 @@ import { Button } from '@mui/material';
 import packageDotJson from '../package.json';
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
-import Snackbar from './Snackbar';
+import Snackbar from './Snackbar/Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';

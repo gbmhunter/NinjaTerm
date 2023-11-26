@@ -21,6 +21,7 @@ export default class Snackbar {
    *
    * @param msg The message you want to display. Use "\n" to insert new lines.
    * @param variant The variant (e.g. error, warning) of snackbar you want to display.
+   * @param action The action to display on the snackbar (see notistack docs). If undefined, a close button will be displayed.
    */
   sendToSnackbar(msg: string, variant: VariantType, action?: SnackbarAction, persist?: boolean) {
     if (!(enqueueSnackbar instanceof Function)) {

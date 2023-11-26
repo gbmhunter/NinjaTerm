@@ -1,11 +1,6 @@
 import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import {
-  WheelEvent,
-  useRef,
-  ReactElement,
-  useLayoutEffect,
-} from 'react';
+import { useRef, ReactElement, useLayoutEffect } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 
@@ -16,6 +11,7 @@ import './SingleTerminalView.css';
 
 interface Props {
   terminal: Terminal;
+  directionLabel: string;
   testId: string;
 }
 
@@ -26,7 +22,7 @@ interface RowProps {
 }
 
 export default observer((props: Props) => {
-  const { terminal, testId } = props;
+  const { terminal, directionLabel, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -42,21 +38,14 @@ export default observer((props: Props) => {
     let text = '';
     let prevClassName = '';
 
-    for (
-      let colIdx = 0;
-      colIdx < terminalRowToRender.terminalChars.length;
-      colIdx += 1
-    ) {
+    for (let colIdx = 0; colIdx < terminalRowToRender.terminalChars.length; colIdx += 1) {
       const terminalChar = terminalRowToRender.terminalChars[colIdx];
       let thisCharsClassName = terminalChar.className;
       // Check if this is the row and column position that the cursor
       // is sitting on. For the row, we do an object comparison between
       // the terminalRows and filteredTerminalRows array to make sure
       // they are the same
-      if (
-        terminalRowToRender === terminalRowCursorIsOn &&
-        colIdx === terminal.cursorPosition[1]
-      ) {
+      if (terminalRowToRender === terminalRowCursorIsOn && colIdx === terminal.cursorPosition[1]) {
         // Found the cursor position!
         if (terminal.isFocused) {
           thisCharsClassName += ' ' + styles.cursorFocused;
@@ -96,7 +85,7 @@ export default observer((props: Props) => {
       </span>
     );
     return (
-      <div className='terminal-row' style={style}>
+      <div className="terminal-row" style={style}>
         {spans}
       </div>
     );
@@ -156,92 +145,114 @@ export default observer((props: Props) => {
   }, []);
 
   return (
-    // This is the outer terminal div which sets the background colour
-    <div
-      tabIndex={terminal.isFocusable ? 0 : undefined}
-      className={`${styles.outerTerminalWrapper} ${
-        terminal.isFocusable ? styles.focusable : ''
-      }`}
-      data-testid={testId + '-outer'}
-      style={{
-        flexGrow: 1,
-        marginBottom: '10px',
-        padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
-        boxSizing: 'border-box',
-        overflowY: 'hidden',
-        backgroundColor: '#000000',
-      }}
-      onFocus={(e) => {
-        terminal.setIsFocused(true);
-      }}
-      onBlur={(e) => {
-        terminal.setIsFocused(false);
-      }}
-      onKeyDown={(e) => {
-        terminal.handleKeyDown(e);
-      }}
-    >
+    <>
+      {/* ======================================================= */}
+      {/* OUTER TERMINAL WRAPPER */}
+      {/* ======================================================= */}
+      {/* This is the outer terminal div which sets the background colour */}
       <div
-        ref={terminalDiv}
+        tabIndex={terminal.isFocusable ? 0 : undefined}
+        className={`${styles.outerTerminalWrapper} ${terminal.isFocusable ? styles.focusable : ''}`}
+        data-testid={testId + '-outer'}
         style={{
-          height: '100%',
-          // This sets the font for displayed data in the terminal
-          fontFamily: 'Consolas, Menlo, monospace',
-
-          // This sets the font size for data displayed in the terminal
-          fontSize: terminal.charSizePx + 'px',
-
-          // Line height needs to be set to 1.0 for autoscroll to work well
-          lineHeight: 1.0,
-
-          position: 'relative', // This is so we can use position: absolute for the down icon
-          // overflowY: hidden is important so that that it ignores the height of the child
-          // react-window List when calculating what size it should be. Then the List
-          // height is set from the height of this div.
-          overflowY: 'hidden',
-
+          flexGrow: 1,
+          marginBottom: '10px',
+          padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
           boxSizing: 'border-box',
+          overflowY: 'hidden',
+          backgroundColor: '#000000',
+          position: 'relative',
         }}
-        data-testid={testId}
-        className={styles.terminal}
+        onFocus={(e) => {
+          terminal.setIsFocused(true);
+        }}
+        onBlur={(e) => {
+          terminal.setIsFocused(false);
+        }}
+        onKeyDown={(e) => {
+          terminal.handleKeyDown(e);
+        }}
       >
-        <FixedSizeList
-          ref={reactWindowRef}
-          className={styles.fixedSizeList}
-          height={terminal.terminalViewHeightPx}
-          // Add a bit of padding to the height
-          itemSize={terminal.charSizePx + terminal.verticalRowPaddingPx}
-          width="100%"
-          itemData={terminal.filteredTerminalRows}
-          itemCount={terminal.filteredTerminalRows.length}
-          onScroll={(scrollProps) => {
-            terminal.fixedSizedListOnScroll(scrollProps);
-          }}
-          overscanCount={5}
-        >
-          {Row}
-        </FixedSizeList>
-        {/* ================== SCROLL LOCK ARROW ==================== */}
-        <IconButton
-          onClick={() => {
-            terminal.setScrollLock(true);
-          }}
-          sx={{
-            display: terminal.scrollLock ? 'none' : 'block',
-            position: 'absolute', // Fix it to the bottom right of the TX/RX view port
-            bottom: '20px',
-            right: '30px',
-            color: 'rgba(255, 255, 255, 0.4)',
+        {/* ======================================================= */}
+        {/* DIRECTION INDICATOR */}
+        {/* ======================================================= */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: '60px',
+            padding: '0px 10px',
+            backgroundColor: 'rgba(40, 40, 40, 0.5)',
+            fontFamily: 'Consolas, Menlo, monospace',
           }}
         >
-          <ArrowDownwardIcon
-            sx={{
-              width: '40px',
-              height: '40px',
+          {directionLabel}
+        </div>
+        {/* ======================================================= */}
+        {/* CONTAINER HOLDING FIXED-SIZE LIST */}
+        {/* ======================================================= */}
+        <div
+          ref={terminalDiv}
+          style={{
+            height: '100%',
+            // This sets the font for displayed data in the terminal
+            fontFamily: 'Consolas, Menlo, monospace',
+
+            // This sets the font size for data displayed in the terminal
+            fontSize: terminal.charSizePx + 'px',
+
+            // Line height needs to be set to 1.0 for autoscroll to work well
+            lineHeight: 1.0,
+
+            position: 'relative', // This is so we can use position: absolute for the down icon
+            // overflowY: hidden is important so that that it ignores the height of the child
+            // react-window List when calculating what size it should be. Then the List
+            // height is set from the height of this div.
+            overflowY: 'hidden',
+
+            boxSizing: 'border-box',
+          }}
+          data-testid={testId}
+          className={styles.terminal}
+        >
+          <FixedSizeList
+            ref={reactWindowRef}
+            className={styles.fixedSizeList}
+            height={terminal.terminalViewHeightPx}
+            // Add a bit of padding to the height
+            itemSize={terminal.charSizePx + terminal.verticalRowPaddingPx}
+            width="100%"
+            itemData={terminal.filteredTerminalRows}
+            itemCount={terminal.filteredTerminalRows.length}
+            onScroll={(scrollProps) => {
+              terminal.fixedSizedListOnScroll(scrollProps);
             }}
-          />
-        </IconButton>
+            overscanCount={5}
+          >
+            {Row}
+          </FixedSizeList>
+          {/* ================== SCROLL LOCK ARROW ==================== */}
+          <IconButton
+            onClick={() => {
+              terminal.setScrollLock(true);
+            }}
+            sx={{
+              display: terminal.scrollLock ? 'none' : 'block',
+              position: 'absolute', // Fix it to the bottom right of the TX/RX view port
+              bottom: '20px',
+              right: '30px',
+              color: 'rgba(255, 255, 255, 0.4)',
+            }}
+          >
+            <ArrowDownwardIcon
+              sx={{
+                width: '40px',
+                height: '40px',
+              }}
+            />
+          </IconButton>
+        </div>
       </div>
-    </div>
+    </>
   );
 });
