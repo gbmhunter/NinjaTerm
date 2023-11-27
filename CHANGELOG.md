@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where Ctrl-A thru Z would not work properly if lowercase letters were used.
+
 ## [4.12.0] - 2023-11-26
 
 ### Added

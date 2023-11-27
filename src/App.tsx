@@ -450,8 +450,7 @@ export class App {
       this.reader?.cancel();
 
       if (this.closedPromise === null) {
-        console.log('was null.');
-        throw Error('jfjfjf');
+        throw Error('this.closedPromise was null when trying to close port.');
       }
       await this.closedPromise;
 
@@ -524,10 +523,10 @@ export class App {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
       if (this.settings.dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
-        // Ctrl-A through Ctrl-Z is pressed along with an alphabetic char
-        // Send 0x01 through 0x1A, which is easily done by getting the char
-        // code and subtracting 64
-        bytesToWrite.push(event.key.charCodeAt(0) - 64);
+        // Ctrl-A through Ctrl-Z is has been pressed
+        // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
+        // uppercase if lowercase and then subtracting 64
+        bytesToWrite.push(event.key.toUpperCase().charCodeAt(0) - 64);
       } else {
         // Ctrl key was pressed, but we don't want to send anything
         return;
@@ -594,7 +593,7 @@ export class App {
     const writer = this.port?.writable?.getWriter();
 
     const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
-    console.log('Sending data to serial port. txDataAsUint8Array=', txDataAsUint8Array);
+    // console.log('Sending data to serial port. txDataAsUint8Array=', txDataAsUint8Array);
     await writer?.write(txDataAsUint8Array);
 
     // Allow the serial port to be closed later.
