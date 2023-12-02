@@ -517,7 +517,6 @@ export default class FakePortsController {
   }
 
   onClick(fakePortIdx: number) {
-    console.log('onClick() called.');
     this.selFakePortIdx = fakePortIdx;
   }
 

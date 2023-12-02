@@ -304,4 +304,17 @@ describe('single terminal tests', () => {
       ]);
     });
   });
+
+  describe('scrolling tests', () => {
+    test('scrolllock reenabled on clear', () => {
+      // Scrolllock should default to enabled
+      expect(singleTerminal.scrollLock).toBe(true);
+
+      singleTerminal.setScrollLock(false);
+      expect(singleTerminal.scrollLock).toBe(false);
+
+      singleTerminal.clear();
+      expect(singleTerminal.scrollLock).toBe(true);
+    });
+  });
 });
