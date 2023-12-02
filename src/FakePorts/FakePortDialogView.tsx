@@ -11,10 +11,10 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-} from "@mui/material";
-import { observer } from "mobx-react-lite";
+} from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
-import { App } from "../App";
+import { App } from '../App';
 
 interface Props {
   app: App;
@@ -31,7 +31,7 @@ export default observer((props: Props) => {
       }}
       aria-describedby="alert-dialog-slide-description"
     >
-      <DialogTitle>{"Select fake port to connect to."}</DialogTitle>
+      <DialogTitle>{'Select fake port to connect to.'}</DialogTitle>
       <DialogContent>
         <List dense={true} sx={{ maxHeight: '600px', scroll: 'auto' }}>
           {app.fakePortController.fakePorts.map((fakePort, idx) => {

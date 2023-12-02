@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added support to capture Alt-<char> key presses and send the correct data across the serial port. Unfortunately some combinations like Alt-F are caught by the browser and not passed to NinjaTerm, so we can't respond to those.
+
 ### Fixed
 
 - Fixed bug where Ctrl-A thru Z would not work properly if lowercase letters were used.

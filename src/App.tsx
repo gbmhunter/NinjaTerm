@@ -492,7 +492,7 @@ export class App {
    * @param event The React keydown event.
    */
   handleTerminalKeyDown = async (event: React.KeyboardEvent) => {
-    // console.log('handleTerminalKeyDown() called. event=', event);
+    console.log('handleTerminalKeyDown() called. event=', event);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen
@@ -516,8 +516,8 @@ export class App {
     // List of all alphanumeric chars
     const alphabeticChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz';
     const alphaNumericChars = alphabeticChars + '0123456789';
-    if (event.key === 'Control' || event.key === 'Shift') {
-      // Don't send anything if a control key/shift key was pressed by itself
+    if (event.key === 'Control' || event.key === 'Shift' || event.key === 'Alt') {
+      // Don't send anything if a control/shift/alt key was pressed by itself
       return;
     } else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
@@ -529,6 +529,16 @@ export class App {
         bytesToWrite.push(event.key.toUpperCase().charCodeAt(0) - 64);
       } else {
         // Ctrl key was pressed, but we don't want to send anything
+        return;
+      }
+    } else if (event.altKey) {
+      if (this.settings.dataProcessingSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+        // Alt-A through Alt-Z is has been pressed
+        // Send ESC char (0x1B) followed by the char
+        bytesToWrite.push(0x1B);
+        bytesToWrite.push(event.key.charCodeAt(0));
+      } else {
+        // Alt key was pressed with another key, but we don't want to do anything with it
         return;
       }
     } else if (event.key === 'Enter') {

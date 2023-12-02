@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable } from "mobx";
-import { z } from "zod";
+import { makeAutoObservable } from 'mobx';
+import { z } from 'zod';
 
-import { ApplyableNumberField } from "src/Components/ApplyableTextField";
+import { ApplyableNumberField } from 'src/Components/ApplyableTextField';
 
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
@@ -59,13 +59,21 @@ export default class DataProcessingSettings {
    */
   send0x01Thru0x1AWhenCtrlAThruZPressed = true;
 
+  /**
+   * If true, [ESC] + <char> will be sent when the user presses
+   * Alt-<char> (e.g. Alt-A will send the bytes 0x1B 0x41).
+   *
+   * This emulates standard meta key behavior in most terminals.
+   */
+  sendEscCharWhenAltKeyPressed = true;
+
   //=================================================================
   // RX SETTINGS
   //=================================================================
 
   ansiEscapeCodeParsingEnabled = true;
 
-  maxEscapeCodeLengthChars = new ApplyableNumberField("10", z.coerce.number().min(2));
+  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
 
   // If true, local TX data will be echoed to RX
   localTxEcho = false;
@@ -106,6 +114,10 @@ export default class DataProcessingSettings {
 
   setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
     this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
+  }
+
+  setSendEscCharWhenAltKeyPressed = (value: boolean) => {
+    this.sendEscCharWhenAltKeyPressed = value;
   }
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {

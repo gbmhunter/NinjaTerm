@@ -83,4 +83,30 @@ test.describe('TX data', () => {
     console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
+
+  test('app should send [ESC]-A when Alt-A is pressed', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('tx-rx-terminal-view').click();
+    await page.getByTestId('tx-rx-terminal-view').press('Alt+A');
+
+    const expectedData = [ 0x1B, 0x41 ];
+    console.log(appTestHarness.writtenData);
+    expect(appTestHarness.writtenData).toEqual(expectedData);
+  });
+
+  test('app should send [ESC]-a when Alt-a is pressed', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('tx-rx-terminal-view').click();
+    await page.getByTestId('tx-rx-terminal-view').press('Alt+a');
+
+    const expectedData = [ 0x1B, 0x61 ];
+    console.log(appTestHarness.writtenData);
+    expect(appTestHarness.writtenData).toEqual(expectedData);
+  });
 });
