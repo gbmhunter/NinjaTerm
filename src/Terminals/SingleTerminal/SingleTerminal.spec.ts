@@ -305,7 +305,7 @@ describe('single terminal tests', () => {
     });
   });
 
-  describe('scrolling tests', () => {
+  describe('scrolling', () => {
     test('scrolllock reenabled on clear', () => {
       // Scrolllock should default to enabled
       expect(singleTerminal.scrollLock).toBe(true);
