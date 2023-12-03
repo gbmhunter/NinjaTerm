@@ -1,9 +1,9 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable } from 'mobx';
 
-import { App, PortType } from "src/App";
+import { App, PortType } from 'src/App';
 import { PortState } from 'src/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from "src/Settings/DataProcessingSettings/DataProcessingSettings";
-import { generateRandomString } from "src/Util/Util";
+import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
+import { generateRandomString } from 'src/Util/Util';
 
 class FakePort {
   name: string;
@@ -57,7 +57,7 @@ export default class FakePortsController {
         'Sends "Hello, world!\\n" every 10 seconds.',
         () => {
           const intervalId = setInterval(() => {
-            const textToSend = "Hello, world!\n";
+            const textToSend = 'Hello, world!\n';
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
@@ -83,7 +83,7 @@ export default class FakePortsController {
         'Sends "Hello, world!\\n" every 1 second.',
         () => {
           const intervalId = setInterval(() => {
-            const textToSend = "Hello, world!\n";
+            const textToSend = 'Hello, world!\n';
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
@@ -109,7 +109,7 @@ export default class FakePortsController {
         'Sends "Hello, world!\\n" every 200ms.',
         () => {
           const intervalId = setInterval(() => {
-            const textToSend = "Hello, world!\n";
+            const textToSend = 'Hello, world!\n';
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
@@ -135,7 +135,7 @@ export default class FakePortsController {
         'Sends "Hello, world!\\n" every 100ms.',
         () => {
           const intervalId = setInterval(() => {
-            const textToSend = "Hello, world!\n";
+            const textToSend = 'Hello, world!\n';
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
@@ -163,8 +163,8 @@ export default class FakePortsController {
           let stringIdx = 0;
           const strings =
             [
-              "\x1b[31mred",
-              "\x1b[32mgreen",
+              '\x1b[31mred',
+              '\x1b[32mgreen',
             ];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
@@ -302,7 +302,7 @@ export default class FakePortsController {
         'Sends 80 random characters in a line, at a rate of 10 lines per second.',
         () => {
           const intervalId = setInterval(() => {
-            const textToSend = generateRandomString(80) + "\n";
+            const textToSend = generateRandomString(80) + '\n';
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
@@ -332,7 +332,7 @@ export default class FakePortsController {
           let testCharIdx = 65;
           const intervalId = setInterval(() => {
             const te = new TextEncoder();
-            const data = te.encode(String.fromCharCode(testCharIdx) + "\n");
+            const data = te.encode(String.fromCharCode(testCharIdx) + '\n');
             // const data = te.encode(String.fromCharCode(testCharIdx));
             app.parseRxData(Uint8Array.from(data));
             testCharIdx += 1;
@@ -358,7 +358,7 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, 5chars/s, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.charSizePx.setDispValue("30");
+          app.settings.displaySettings.charSizePx.setDispValue('30');
           app.settings.displaySettings.charSizePx.apply();
 
           app.settings.displaySettings.terminalWidthChars.setDispValue('40');
@@ -394,7 +394,7 @@ export default class FakePortsController {
         'bytes 0x00-0xFF, all at once, control and hex glyphs',
         'Sends all bytes from 0x00 to 0xFF, all at once. Good for testing unprintable characters. Sets the char size to 30px. Disables new line parsing.',
         () => {
-          app.settings.displaySettings.charSizePx.setDispValue("30");
+          app.settings.displaySettings.charSizePx.setDispValue('30');
           app.settings.displaySettings.charSizePx.apply();
 
           app.settings.displaySettings.terminalWidthChars.setDispValue('40');
@@ -433,7 +433,7 @@ export default class FakePortsController {
           app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            const rxData = new TextEncoder().encode("x=2,y=10\n");
+            const rxData = new TextEncoder().encode('x=2,y=10\n');
             app.parseRxData(rxData);
             testCharIdx += 1;
             if (testCharIdx === 256) {
@@ -517,7 +517,6 @@ export default class FakePortsController {
   }
 
   onClick(fakePortIdx: number) {
-    console.log("onClick() called.");
     this.selFakePortIdx = fakePortIdx;
   }
 
@@ -526,13 +525,13 @@ export default class FakePortsController {
     this.app.portState = PortState.OPENED;
     this.fakePortOpen = true;
     this.app.lastSelectedPortType = PortType.FAKE;
-    this.app.snackbar.sendToSnackbar("Fake serial port opened.", "success");
+    this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
   }
 
   closePort() {
     this.fakePorts[this.selFakePortIdx].disconnect();
     this.app.portState = PortState.CLOSED;
     this.fakePortOpen = false;
-    this.app.snackbar.sendToSnackbar("Fake serial port closed.", "success");
+    this.app.snackbar.sendToSnackbar('Fake serial port closed.', 'success');
   }
 }

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.12.1] - 2023-12-03
+
+### Added
+
+- Added support to capture Alt-<char> key presses and send the correct data across the serial port. Unfortunately some combinations like Alt-F are caught by the browser and not passed to NinjaTerm, so we can't respond to those.
+
+### Fixed
+
+- Fixed bug where Ctrl-A thru Z would not work properly if lowercase letters were used.
+
 ## [4.12.0] - 2023-11-26
 
 ### Added
@@ -624,7 +634,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.1...HEAD
+[4.12.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.0...v4.12.1
 [4.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.11.0...v4.12.0
 [4.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.1...v4.11.0
 [4.10.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.0...v4.10.1

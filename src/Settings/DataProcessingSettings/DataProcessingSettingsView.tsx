@@ -1,5 +1,5 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from '@mui/material';
-import { observer } from 'mobx-react-lite';
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
+import { observer } from "mobx-react-lite";
 
 import DataProcessingSettings, {
   BackspaceKeyPressBehavior,
@@ -7,9 +7,9 @@ import DataProcessingSettings, {
   DeleteKeyPressBehaviors,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
-} from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
-import BorderedSection from 'src/Components/BorderedSection';
-import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
+} from "src/Settings/DataProcessingSettings/DataProcessingSettings";
+import BorderedSection from "src/Components/BorderedSection";
+import ApplyableTextFieldView from "src/Components/ApplyableTextFieldView";
 
 interface Props {
   dataProcessingSettings: DataProcessingSettings;
@@ -19,100 +19,117 @@ function DataProcessingView(props: Props) {
   const { dataProcessingSettings } = props;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       {/* =============================================================================== */}
       {/* ROW FOR TX */}
       {/* =============================================================================== */}
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
         {/* BACKSPACE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Backspace" childStyle={{ display: 'flex', flexDirection: 'column' }}>
-            {/* BACKSPACE */}
-            <FormControl>
-              <FormLabel>When backspace is pressed:</FormLabel>
-              <RadioGroup
-                value={dataProcessingSettings.backspaceKeyPressBehavior}
-                onChange={(e) => {
-                  dataProcessingSettings.setBackspaceKeyPressBehavior(e.target.value as any);
-                }}
-              >
-                {/* SEND BACKSPACE (0x08) */}
-                <Tooltip title="Send the backspace control char (0x08) when the backspace key is pressed." placement="right" arrow>
-                  <FormControlLabel value={BackspaceKeyPressBehavior.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
-                </Tooltip>
-                {/* SEND DELETE (0x7F) */}
-                <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
-                  <FormControlLabel value={BackspaceKeyPressBehavior.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
-                </Tooltip>
-              </RadioGroup>
-            </FormControl>
+        <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
+          {/* BACKSPACE */}
+          <FormControl>
+            <FormLabel>When backspace is pressed:</FormLabel>
+            <RadioGroup
+              value={dataProcessingSettings.backspaceKeyPressBehavior}
+              onChange={(e) => {
+                dataProcessingSettings.setBackspaceKeyPressBehavior(e.target.value as any);
+              }}
+            >
+              {/* SEND BACKSPACE (0x08) */}
+              <Tooltip title="Send the backspace control char (0x08) when the backspace key is pressed." placement="right" arrow>
+                <FormControlLabel value={BackspaceKeyPressBehavior.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
+              </Tooltip>
+              {/* SEND DELETE (0x7F) */}
+              <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
+                <FormControlLabel value={BackspaceKeyPressBehavior.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
         </BorderedSection>
         {/* =============================================================================== */}
         {/* DELETE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Delete" childStyle={{ display: 'flex', flexDirection: 'column' }}>
-            <FormControl>
-              <FormLabel>When delete is pressed:</FormLabel>
-              <RadioGroup
-                value={dataProcessingSettings.deleteKeyPressBehavior}
-                onChange={(e) => {
-                  dataProcessingSettings.setDeleteKeyPressBehavior(e.target.value as any);
-                }}
+        <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
+          <FormControl>
+            <FormLabel>When delete is pressed:</FormLabel>
+            <RadioGroup
+              value={dataProcessingSettings.deleteKeyPressBehavior}
+              onChange={(e) => {
+                dataProcessingSettings.setDeleteKeyPressBehavior(e.target.value as any);
+              }}
+            >
+              {/* SEND BACKSPACE (0x08) */}
+              <Tooltip title="Send the backspace control char (0x08) when the delete key is pressed." placement="right" arrow>
+                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
+              </Tooltip>
+              {/* SEND DELETE (0x7F) */}
+              <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
+                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
+              </Tooltip>
+              {/* SEND CSI_3_TILDE ([ESC] [3~) */}
+              <Tooltip
+                title="Send the VT sequence [ESC][3~ when the delete key is pressed. This is probably what you want if you are interacting with something that expects a terminal, such as the Zephyr Shell. This is also what PuTTY and the nRF Serial Terminal send by default."
+                placement="right"
+                arrow
               >
-                {/* SEND BACKSPACE (0x08) */}
-                <Tooltip title="Send the backspace control char (0x08) when the delete key is pressed." placement="right" arrow>
-                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
-                </Tooltip>
-                {/* SEND DELETE (0x7F) */}
-                <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
-                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
-                </Tooltip>
-                {/* SEND CSI_3_TILDE ([ESC] [3~) */}
-                <Tooltip title="Send the VT sequence [ESC][3~ when the delete key is pressed. This is probably what you want if you are interacting with something that expects a terminal, such as the Zephyr Shell. This is also what PuTTY and the nRF Serial Terminal send by default." placement="right" arrow>
-                  <FormControlLabel value={DeleteKeyPressBehaviors.SEND_VT_SEQUENCE} control={<Radio />} label="Send VT sequence ( ESC [ 3 ~ )" />
-                </Tooltip>
-              </RadioGroup>
-            </FormControl>
+                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_VT_SEQUENCE} control={<Radio />} label="Send VT sequence ( ESC [ 3 ~ )" />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
         </BorderedSection>
-      </div> {/* End of row for TX */}
-
-      <div>
-      <BorderedSection title="Ctrl Keys" childStyle={{ display: 'flex', flexDirection: 'column' }}>
-          {/* =============================================================================== */}
-          {/* CTRL KEYS */}
-          {/* =============================================================================== */}
-          <Tooltip
-            title=""
-            placement="top"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  name="localTxEcho"
-                  checked={dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed}
-                  onChange={(e) => {
-                    dataProcessingSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
-                  }}
-                />
-              }
-              label="Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed"
-              sx={{ marginBottom: '10px' }}
-            />
-          </Tooltip>
-        </BorderedSection>
-      </div>
-
+      </div>{" "}
+      {/* End of row for TX */}
+      <BorderedSection title="Meta Keys" childStyle={{ display: "flex", flexDirection: "column" }}>
+        {/* =============================================================================== */}
+        {/* CTRL KEYS */}
+        {/* =============================================================================== */}
+        <Tooltip title="" placement="top" followCursor arrow>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed}
+                onChange={(e) => {
+                  dataProcessingSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
+                }}
+              />
+            }
+            label="Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed"
+            sx={{ marginBottom: "10px" }}
+          />
+        </Tooltip>
+        {/* =============================================================================== */}
+        {/* ALT KEYS */}
+        {/* =============================================================================== */}
+        <Tooltip
+          title="This emulates terminal Meta key behavior. Some key presses like Alt-F (move cursor forward by 1 word) and Alt-B (move cursor backwards by 1 word) are supported by Zephyr and other shells. Unfortunately a few key combos get caught by the browser and not passed to NinjaTerm so we can't catch them. This includes Alt-F."
+          placement="top"
+          followCursor
+          arrow
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={dataProcessingSettings.sendEscCharWhenAltKeyPressed}
+                onChange={(e) => {
+                  dataProcessingSettings.setSendEscCharWhenAltKeyPressed(e.target.checked);
+                }}
+              />
+            }
+            label="Send [ESC] + <char> when Alt-<char> is pressed (e.g. Alt-A sends 0x1B 0x41)."
+            sx={{ marginBottom: "10px" }}
+          />
+        </Tooltip>
+      </BorderedSection>
       {/* =============================================================================== */}
       {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
       {/* =============================================================================== */}
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
         {/* ANSI ESCAPE CODES */}
         {/* =============================================================================== */}
-        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+        <BorderedSection title="ANSI Escape Codes" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* =============================================================================== */}
           {/* ANSI ESCAPE CODE PARSING ENABLED */}
           {/* =============================================================================== */}
@@ -133,7 +150,7 @@ function DataProcessingView(props: Props) {
                 />
               }
               label="Enable ANSI Escape Code Parsing"
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
           {/* =============================================================================== */}
@@ -154,12 +171,12 @@ function DataProcessingView(props: Props) {
                 endAdornment: <InputAdornment position="start">chars</InputAdornment>,
               }}
               applyableTextField={dataProcessingSettings.maxEscapeCodeLengthChars}
-              sx={{ marginBottom: '20px' }}
+              sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
         </BorderedSection>
 
-        <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+        <BorderedSection title="Echo" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* =============================================================================== */}
           {/* LOCAL TX ECHO */}
           {/* =============================================================================== */}
@@ -182,24 +199,24 @@ function DataProcessingView(props: Props) {
                 />
               }
               label="Local TX Echo"
-              sx={{ marginBottom: '10px' }}
+              sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
         </BorderedSection>
-      </div>{' '}
+      </div>{" "}
       {/* End of row for ANSI escape codes and echo settings */}
       {/* Row with new line and carriage return settings */}
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
         {/* NEW LINE SETTINGS */}
         {/* =============================================================================== */}
         <BorderedSection title="New Lines">
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              maxWidth: '300px',
-              gap: '20px',
+              display: "flex",
+              flexDirection: "column",
+              maxWidth: "300px",
+              gap: "20px",
             }}
           >
             {/* NEW LINE BEHAVIOR */}
@@ -254,7 +271,7 @@ function DataProcessingView(props: Props) {
                   />
                 }
                 label="Swallow \n bytes"
-                sx={{ marginBottom: '10px' }}
+                sx={{ marginBottom: "10px" }}
               />
             </Tooltip>
           </div>
@@ -266,10 +283,10 @@ function DataProcessingView(props: Props) {
         <BorderedSection title="Carriage Returns">
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              maxWidth: '300px',
-              gap: '20px',
+              display: "flex",
+              flexDirection: "column",
+              maxWidth: "300px",
+              gap: "20px",
             }}
           >
             {/* CARRIAGE RETURN CURSOR BEHAVIOR */}
@@ -320,12 +337,12 @@ function DataProcessingView(props: Props) {
                   />
                 }
                 label="Swallow \r bytes"
-                sx={{ marginBottom: '10px' }}
+                sx={{ marginBottom: "10px" }}
               />
             </Tooltip>
           </div>
         </BorderedSection>
-      </div>{' '}
+      </div>{" "}
       {/* End of row with new line and carriage return settings */}
       {/* =============================================================================== */}
       {/* NON-VISIBLE CHAR DISPLAY */}
@@ -333,10 +350,10 @@ function DataProcessingView(props: Props) {
       <BorderedSection title="Non-visible Character Display">
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            maxWidth: '600px',
-            gap: '20px',
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "600px",
+            gap: "20px",
           }}
         >
           {/* RADIO GROUP */}
@@ -353,7 +370,11 @@ function DataProcessingView(props: Props) {
                 <FormControlLabel value={NonVisibleCharDisplayBehaviors.SWALLOW} control={<Radio />} label="Swallow" />
               </Tooltip>
               {/* ASCII CONTROL CODES GLYPHS AND HEX GLYPHS */}
-              <Tooltip title="Convert bytes that are control chars into control char glyphs, and all other bytes that are not valid ASCII characters ([0x80-0xFF]) into hex code glyphs." placement="right" arrow>
+              <Tooltip
+                title="Convert bytes that are control chars into control char glyphs, and all other bytes that are not valid ASCII characters ([0x80-0xFF]) into hex code glyphs."
+                placement="right"
+                arrow
+              >
                 <FormControlLabel
                   value={NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS}
                   control={<Radio />}

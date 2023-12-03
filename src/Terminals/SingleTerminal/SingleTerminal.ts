@@ -177,10 +177,13 @@ export default class Terminal {
       return;
     }
 
-    if (scrollProps.scrollDirection == 'backward' && this.scrollLock) {
+    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'backward' && this.scrollLock) {
       // User has scrolled up, and we were locked to the bottom,
       // so unlock the scroll position to allow the user to move freely
       // back into past terminal data
+      // Need to also make sure scrollUpdateWasRequested, because this handler ALSO gets fired on clear,
+      // if we didn't then you could never set scrollLock back to true on terminal clear
+      console.log('Scrolling backwards, so unlocking scroll position', scrollProps);
       this.scrollLock = false;
     }
 
@@ -303,7 +306,7 @@ export default class Terminal {
 
       if (rxByte === 0x1B) {
         // console.log('Start of escape sequence found!');
-        this.resetEscapeCodeParserState();
+        this._resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
         this.inIdleState = false;
       }
@@ -328,7 +331,7 @@ export default class Terminal {
             //   this.partialEscapeCode
             // );
             this.parseCSISequence(this.partialEscapeCode);
-            this.resetEscapeCodeParserState();
+            this._resetEscapeCodeParserState();
             this.inIdleState = true;
           }
         }
@@ -354,7 +357,7 @@ export default class Terminal {
         for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
           remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
         }
-        this.resetEscapeCodeParserState();
+        this._resetEscapeCodeParserState();
         this.inIdleState = true;
       }
     }
@@ -686,7 +689,7 @@ export default class Terminal {
     }
   }
 
-  addVisibleChars(rxBytes: number[]) {
+  _addVisibleChars(rxBytes: number[]) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
       this._addVisibleChar(rxBytes[idx]);
     }
@@ -793,13 +796,17 @@ export default class Terminal {
   }
 
   /**
-   * Clears all data from the terminal, resets all styles and resets cursor position.
+   * Clears all data from the terminal, resets all styles, resets cursor position,
+   * and re-enables scroll lock.
    */
   clear() {
     this.cursorPosition = [0, 0];
 
     this.terminalRows = [];
     this.uniqueRowIndexCount = 0;
+
+    // Now we've cleared all existing rows, create single row
+    // with one space in it to hold the cursor.
     const terminalRow = new TerminalRow(this.uniqueRowIndexCount);
     this.uniqueRowIndexCount += 1;
     const terminalChar = new TerminalChar();
@@ -807,11 +814,21 @@ export default class Terminal {
     terminalChar.forCursor = true;
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
+
     this.rowToScrollLockTo = 0;
+
+    // Always re-enable scroll lock when clearing
+    // (this is probably what the users wants most of
+    // the time)
+    this.setScrollLock(true);
+
     // Reset the filtered rows to just show the one row
-    // we have created above
+    // we have created above (but don't clear/reset the
+    // filter)
     this.filteredTerminalRows = [ terminalRow ];
 
+    // Clear all styles that ANSI escape codes might
+    // have applied
     this.clearStyle();
   }
 
@@ -826,13 +843,13 @@ export default class Terminal {
     this.scrollLock = trueFalse;
   }
 
-  resetEscapeCodeParserState() {
+  _resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = '';
     this.inCSISequence = false;
   }
 
-  static isNumber(char: string) {
+  static _isNumber(char: string) {
     return /^\d$/.test(char);
   }
 
