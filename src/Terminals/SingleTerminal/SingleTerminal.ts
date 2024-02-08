@@ -163,12 +163,14 @@ export default class Terminal {
    * @param scrollProps The scroll props passed from the fixed sized list scroll event.
    */
   fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
-
+    console.log('fixedSizedListOnScroll() called. scrollProps=', scrollProps);
     // Calculate the total height of all terminal rows
     const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue);
 
     // If we are at the bottom of the terminal, lock the scroll position
     // to the bottom
+    // scrollUpdateWasRequested seems to be true if the list scrolls because of a programmatic call to
+    // .scrollToItem(), false if it was because the user moves the mouse wheel
     if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
       // User has scrolled to the end of the terminal, so lock the scroll position
       this.scrollLock = true;
