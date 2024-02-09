@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug which caused app to crash if you tried to change the Data View Configuration through the Settings->Display menu.
+
 ## [4.12.1] - 2023-12-03
 
 ### Added

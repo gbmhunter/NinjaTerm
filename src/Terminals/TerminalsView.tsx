@@ -62,7 +62,7 @@ export default observer((props: Props) => {
     </div>;
   } else {
     throw Error(
-      `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}`
+      `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}.`
     );
   }
 

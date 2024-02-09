@@ -1,4 +1,5 @@
 import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
 import { App } from 'src/App';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
@@ -8,7 +9,7 @@ interface Props {
   app: App;
 }
 
-export default function DataProcessingView(props: Props) {
+export default observer((props: Props) => {
   const { app } = props;
 
   return (
@@ -137,7 +138,7 @@ export default function DataProcessingView(props: Props) {
             name="dataViewConfiguration"
             value={app.settings.displaySettings.dataViewConfiguration}
             onChange={(e) => {
-              app.settings.displaySettings.setDataViewConfiguration(e.target.value as DataViewConfiguration);
+              app.settings.displaySettings.setDataViewConfiguration(parseInt(e.target.value as string));
             }}
             sx={{ marginBottom: "20px" }}
           >
@@ -155,4 +156,4 @@ export default function DataProcessingView(props: Props) {
       </Tooltip>
     </div>
   );
-}
+});
