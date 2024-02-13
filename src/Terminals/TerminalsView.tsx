@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   ButtonPropsColorOverrides,
+  Checkbox,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -29,6 +30,7 @@ import {
 } from 'src/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
 import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
+import { forwardRef } from 'react';
 
 interface Props {
   app: App;
@@ -62,7 +64,7 @@ export default observer((props: Props) => {
     </div>;
   } else {
     throw Error(
-      `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}`
+      `Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}.`
     );
   }
 

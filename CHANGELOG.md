@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.12.2] - 2024-02-13
+
+### Changed
+
+- Added the ability to toggle scroll lock (not just lock but also unlock) using the on terminal button. Changed the button icons to lock symbols.
+
+### Fixed
+
+- Fixed bug which caused app to crash if you tried to change the Data View Configuration through the Settings->Display menu.
+- Fixed a bug which caused scroll lock to incorrectly turn off on some computers.
+
 ## [4.12.1] - 2023-12-03
 
 ### Added
@@ -634,7 +645,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.2...HEAD
+[4.12.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.1...v4.12.2
 [4.12.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.0...v4.12.1
 [4.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.11.0...v4.12.0
 [4.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.10.1...v4.11.0

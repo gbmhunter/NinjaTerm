@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.12.1",
+  "version": "4.12.2",
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",

@@ -19,6 +19,7 @@ export const dataViewConfigEnumToDisplayName: {
   [DataViewConfiguration.SINGLE_TERMINAL]: 'Single terminal',
   [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
 };
+
 export default class DisplaySettings {
 
   appStorage: AppStorage;

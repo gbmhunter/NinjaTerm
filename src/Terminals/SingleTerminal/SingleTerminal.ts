@@ -157,38 +157,36 @@ export default class Terminal {
 
   /**
    * Called by the React UI when the fixed sized list fires an onScroll event.
-   * Breaks scroll lock if the user scrolls backwards, locks scroll if the
-   * user scrolls forward to the last row
+   * Locks scroll if the user scrolls forward to the last row. Does not break scroll lock
+   * if it is a backwards scroll, as I discovered that this function gets called with the scroll direction
+   * = backwards on some computers without the user ever scrolling, causing a big bug. Instead, now we
+   * use a onWheel event on a outer list wrapper in the view.
    *
    * @param scrollProps The scroll props passed from the fixed sized list scroll event.
    */
   fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
-
+    // console.log('fixedSizedListOnScroll() called. scrollProps=', scrollProps);
     // Calculate the total height of all terminal rows
     const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue);
 
     // If we are at the bottom of the terminal, lock the scroll position
     // to the bottom
-    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
+    // scrollUpdateWasRequested seems to be true if the list scrolls because of a programmatic call to
+    // .scrollToItem(), false if it was because the user moves the mouse wheel
+    if (!scrollProps.scrollUpdateWasRequested
+          && scrollProps.scrollDirection == 'forward'
+          && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
       // User has scrolled to the end of the terminal, so lock the scroll position
       this.scrollLock = true;
-      this.rowToScrollLockTo = this.terminalRows.length - 1;
-      this.scrollPos = totalTerminalRowsHeightPx;
+      // this.rowToScrollLockTo = this.terminalRows.length - 1;
+      this.scrollPos = totalTerminalRowsHeightPx - this.terminalViewHeightPx;
+      // console.log('User reached end, locking scroll to this.scrollPos: ', this.scrollPos, 'scrollOffset: ', scrollProps.scrollOffset);
       return;
-    }
-
-    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'backward' && this.scrollLock) {
-      // User has scrolled up, and we were locked to the bottom,
-      // so unlock the scroll position to allow the user to move freely
-      // back into past terminal data
-      // Need to also make sure scrollUpdateWasRequested, because this handler ALSO gets fired on clear,
-      // if we didn't then you could never set scrollLock back to true on terminal clear
-      console.log('Scrolling backwards, so unlocking scroll position', scrollProps);
-      this.scrollLock = false;
     }
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
+    // console.log('scrollPos set to:', this.scrollPos);
   }
 
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
