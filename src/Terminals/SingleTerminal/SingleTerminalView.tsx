@@ -2,6 +2,8 @@ import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useRef, ReactElement, useLayoutEffect, forwardRef, useEffect, useCallback, useMemo } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { FixedSizeList } from 'react-window';
 
 import Terminal from './SingleTerminal';
@@ -181,6 +183,24 @@ export default observer((props: Props) => {
     ))
   }, []);
 
+
+  let scrollLockUnlockIcon;
+  if (terminal.scrollLock) {
+    scrollLockUnlockIcon = <LockIcon
+      sx={{
+        width: '40px',
+        height: '40px',
+      }}
+    />
+  } else {
+    scrollLockUnlockIcon = <LockOpenIcon
+      sx={{
+        width: '40px',
+        height: '40px',
+      }}
+    />
+  }
+
   return (
     <>
       {/* ======================================================= */}
@@ -269,25 +289,24 @@ export default observer((props: Props) => {
           >
             {Row}
           </FixedSizeList>
-          {/* ================== SCROLL LOCK ARROW ==================== */}
+          {/* ================== SCROLL LOCK/UNLOCK BUTTON ==================== */}
           <IconButton
             onClick={() => {
-              terminal.setScrollLock(true);
+              if (terminal.scrollLock) {
+                terminal.setScrollLock(false);
+              } else {
+                terminal.setScrollLock(true);
+              }
             }}
             sx={{
-              display: terminal.scrollLock ? 'none' : 'block',
+              // display: terminal.scrollLock ? 'none' : 'block',
               position: 'absolute', // Fix it to the bottom right of the TX/RX view port
-              bottom: '20px',
+              bottom: '10px',
               right: '30px',
               color: 'rgba(255, 255, 255, 0.4)',
             }}
           >
-            <ArrowDownwardIcon
-              sx={{
-                width: '40px',
-                height: '40px',
-              }}
-            />
+            {scrollLockUnlockIcon}
           </IconButton>
         </div>
       </div>

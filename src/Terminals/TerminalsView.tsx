@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   ButtonPropsColorOverrides,
+  Checkbox,
   FormControl,
   FormControlLabel,
   IconButton,
