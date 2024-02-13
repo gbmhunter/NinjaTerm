@@ -29,6 +29,7 @@ import {
 } from 'src/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/Components/ApplyableTextFieldView';
 import { portStateToButtonProps } from 'src/Components/PortStateToButtonProps';
+import { forwardRef } from 'react';
 
 interface Props {
   app: App;

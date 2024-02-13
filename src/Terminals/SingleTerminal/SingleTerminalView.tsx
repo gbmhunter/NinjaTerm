@@ -1,6 +1,6 @@
 import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useRef, ReactElement, useLayoutEffect } from 'react';
+import { useRef, ReactElement, useLayoutEffect, forwardRef, useEffect, useCallback, useMemo } from 'react';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { FixedSizeList } from 'react-window';
 
@@ -21,8 +21,24 @@ interface RowProps {
   style: {};
 }
 
+// const outerListElement = forwardRef((props, ref: any) => (
+//   <div
+//     className="outerListElement"
+//     ref={ref}
+//     onWheel={(event) => {
+//       console.log('onWheel! event: ', event);
+//       if (event.deltaY < 0) {
+//         globalTerminal?.setScrollLock(false);
+//       }
+//     }}
+//     {...props} />
+// ))
+
+// let globalTerminal: Terminal | null = null;
+
 export default observer((props: Props) => {
   const { terminal, directionLabel, testId } = props;
+  // globalTerminal = terminal;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -98,14 +114,19 @@ export default observer((props: Props) => {
   // is used, user sees jerky motion if scroll lock is applied
   // or they are in the middle of the data and data is being
   // removed from the start (buffer is full).
+  // This needs to be done because when we recreate the list it does not
+  // remember it's scroll position
   useLayoutEffect(() => {
     if (reactWindowRef.current === null) {
       return;
     }
     if (terminal.scrollLock) {
-      reactWindowRef.current.scrollToItem(terminal.filteredTerminalRows.length - 1, 'end');
-    } else {
+      reactWindowRef.current.scrollToItem(terminal.filteredTerminalRows.length - 1, 'auto');
+      console.log('useLayoutEffect() called. Scroll to length: ', terminal.filteredTerminalRows.length - 1);
+    } else
+    {
       // Scroll to the position determined by the Terminal model
+      console.log('useLayoutEffect() called. Scroll to position: ', terminal.scrollPos);
       reactWindowRef.current.scrollTo(terminal.scrollPos);
     }
   });
@@ -142,6 +163,22 @@ export default observer((props: Props) => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
+  }, []);
+
+  // WARNING: Must use memoized component here, if not, it gets recreated on each render of
+  // the terminal and the scroll gets messed up. Spent a lot of time working this out :-
+  const outerListElementMemoized = useMemo(() => {
+    return forwardRef((props, ref: any) => (
+      <div
+        ref={ref}
+        onWheel={(event) => {
+          // Disable scroll lock if the user scrolled upwards
+          if (event.deltaY < 0) {
+            terminal.setScrollLock(false);
+          }
+        }}
+        {...props} />
+    ))
   }, []);
 
   return (
@@ -228,6 +265,7 @@ export default observer((props: Props) => {
               terminal.fixedSizedListOnScroll(scrollProps);
             }}
             overscanCount={5}
+            outerElementType={outerListElementMemoized}
           >
             {Row}
           </FixedSizeList>
