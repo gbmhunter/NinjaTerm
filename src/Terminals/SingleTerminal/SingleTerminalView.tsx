@@ -124,11 +124,9 @@ export default observer((props: Props) => {
     }
     if (terminal.scrollLock) {
       reactWindowRef.current.scrollToItem(terminal.filteredTerminalRows.length - 1, 'auto');
-      console.log('useLayoutEffect() called. Scroll to length: ', terminal.filteredTerminalRows.length - 1);
     } else
     {
       // Scroll to the position determined by the Terminal model
-      console.log('useLayoutEffect() called. Scroll to position: ', terminal.scrollPos);
       reactWindowRef.current.scrollTo(terminal.scrollPos);
     }
   });
