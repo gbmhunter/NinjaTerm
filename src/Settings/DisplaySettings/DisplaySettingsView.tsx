@@ -65,25 +65,6 @@ export default observer((props: Props) => {
         followCursor
         arrow
       >
-        {/* <TextField
-          id="outlined-basic"
-          name="terminalWidthChars"
-          label="Terminal Width"
-          variant="outlined"
-          size="small"
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">chars</InputAdornment>
-            ),
-          }}
-          value={app.settings.displaySettings.terminalWidthChars.dispValue}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            app.settings.displaySettings.setTerminalWidthCharsDisp(event.target.value);
-          }}
-          error={app.settings.displaySettings.terminalWidthChars.hasError}
-          helperText={app.settings.displaySettings.terminalWidthChars.errorMsg}
-          sx={{ marginBottom: "20px" }}
-        /> */}
         <ApplyableTextFieldView
           id="outlined-basic"
           name="terminalWidthChars"

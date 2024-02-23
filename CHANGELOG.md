@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added integration test to make sure changing the number of characters per row in the terminal works.
+
 ## [4.12.2] - 2024-02-13
 
 ### Changed
