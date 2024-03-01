@@ -7,7 +7,7 @@ import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { FixedSizeList } from 'react-window';
 
 import Terminal from './SingleTerminal';
-import TerminalRow from './SingleTerminalRow';
+import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 
@@ -188,8 +188,13 @@ export default observer((props: Props) => {
         {text}
       </span>
     );
+
+    // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal
+    // ID because there could be multiple terminals on the page (all with their own row-1, row-2, e.t.c)
+    const uniqueTerminalRowId = terminal.id + '-row-' + terminalRowToRender.uniqueRowId;
+
     return (
-      <div id={'row-' + index} className="terminal-row" style={style}>
+      <div id={uniqueTerminalRowId} className="terminal-row" style={style}>
         {spans}
       </div>
     );

@@ -9,6 +9,10 @@ export default class TerminalRow {
   // The chars in this row.
   terminalChars: TerminalChar[];
 
+  /**
+   * A unique identifier for this row. This is used both for filtering
+   * and for preserving user selection across re-renders.
+   */
   uniqueRowId: number;
 
   constructor(uniqueRowId: number) {

@@ -1,7 +1,7 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable } from 'mobx';
 
-import TerminalRow from './SingleTerminalRow';
+import TerminalRow from './TerminalRow';
 import TerminalChar from './SingleTerminalChar';
 import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
 import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
