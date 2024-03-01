@@ -499,23 +499,6 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
-      // Ctrl-Shift-C is pressed
-      console.log('Ctrl-Shift-C pressed. Copying text to clipboard...');
-      const selObj = window.getSelection();
-      if (selObj === null) {
-        console.log('window.getSelection() returned null!');
-        return;
-      }
-      console.log('selObj=', selObj);
-      console.log('selObj.toString()=', selObj.toString());
-
-      // Copy the selected text to the clipboard
-
-      navigator.clipboard.writeText(selObj.toString());
-      return;
-    }
-
     if (this.portState !== PortState.OPENED) {
       // Serial port is not open, so don't send anything
       return;
@@ -661,9 +644,40 @@ export class App {
    * is handleTerminalKeyDown(), which is called by the Terminals.
    */
   handleKeyDown(event: React.KeyboardEvent) {
+    console.log('handleKeyDown() called. event=', event);
+
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
+    } else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      // Ctrl-Shift-C is pressed
+      this.handleCopyToClipboard(event);
+      return;
+    } else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
+      console.log('TXRX or TX terminal focused.');
+      this.handleTerminalKeyDown(event);
     }
+
+  }
+
+  handleCopyToClipboard(event: React.KeyboardEvent) {
+
+    // Prevents Ctrl-Shift-C from opening the browser's dev tools
+    event.preventDefault();
+    event.stopPropagation();
+
+    // console.log('handleCopyToClipboard() called.');
+    const selObj = window.getSelection();
+    if (selObj === null) {
+      console.log('window.getSelection() returned null!');
+      return;
+    }
+    // console.log('selObj=', selObj);
+    // console.log('selObj.toString()=', selObj.toString());
+
+    // Copy the selected text to the clipboard
+    navigator.clipboard.writeText(selObj.toString());
+    // Create toast telling user that text was copied to clipboard
+    this.snackbar.sendToSnackbar('Text copied to clipboard.', 'info');
   }
 
   swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {

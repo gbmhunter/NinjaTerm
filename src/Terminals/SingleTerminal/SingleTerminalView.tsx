@@ -352,7 +352,8 @@ export default observer((props: Props) => {
           terminal.setIsFocused(false);
         }}
         onKeyDown={(e) => {
-          terminal.handleKeyDown(e);
+          // Key presses now dealt with by global handler in App component
+          // terminal.handleKeyDown(e);
         }}
       >
         {/* ======================================================= */}

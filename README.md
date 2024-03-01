@@ -35,21 +35,27 @@ npm run start
 
 ## Testing
 
+Both unit tests and end-to-end tests can be run with:
+
+```shell
+npm run test
+```
+
 ### Unit Tests
 
 Unit tests are run with `vitest`, which has good integration with Vite.
+
+To run just the unit tests, use the command:
+
+```
+npx vitest run
+```
 
 ### E2E Tests
 
 End-to-end (E2E) (a.k.a. integration tests) are performed using [Playwright](https://playwright.dev/). The Playwright tests are located in the `tests/` directory, and the Playwright config is at `playwright.config.ts`.
 
-To run Playwright E2E tests from command line:
-
-```bash
-npm run test
-```
-
-or:
+To run just the E2E tests from command line:
 
 ```bash
 npx playwright test
