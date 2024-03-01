@@ -499,6 +499,23 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
+    if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      // Ctrl-Shift-C is pressed
+      console.log('Ctrl-Shift-C pressed. Copying text to clipboard...');
+      const selObj = window.getSelection();
+      if (selObj === null) {
+        console.log('window.getSelection() returned null!');
+        return;
+      }
+      console.log('selObj=', selObj);
+      console.log('selObj.toString()=', selObj.toString());
+
+      // Copy the selected text to the clipboard
+
+      navigator.clipboard.writeText(selObj.toString());
+      return;
+    }
+
     if (this.portState !== PortState.OPENED) {
       // Serial port is not open, so don't send anything
       return;

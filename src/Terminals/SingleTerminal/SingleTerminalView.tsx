@@ -11,6 +11,15 @@ import TerminalRow from './SingleTerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 
+function getChildNodeIndex(child: Element | null)
+{
+    var i = 0;
+    while ((child = child!.previousElementSibling) != null )
+    i++;
+
+    return i;
+}
+
 interface Props {
   terminal: Terminal;
   directionLabel: string;
@@ -21,6 +30,55 @@ interface RowProps {
   data: TerminalRow[]; // This is the array of indexes into the terminalRows array
   index: number; // This is the index into the data array above
   style: {};
+}
+
+class SelectionInfo {
+  anchorRowId: string;
+  anchorSpanIndexInRow: number;
+  anchorOffset: number;
+  focusRowId: string;
+  focusSpanIndexInRow: number;
+  focusOffset: number;
+  constructor(anchorRowId: string, anchorSpanIndexInRow: number, anchorOffset: number, focusRowId: string, focusSpanIndexInRow: number, focusOffset: number) {
+    this.anchorRowId = anchorRowId;
+    this.anchorSpanIndexInRow = anchorSpanIndexInRow;
+    this.anchorOffset = anchorOffset;
+    this.focusRowId = focusRowId;
+    this.focusSpanIndexInRow = focusSpanIndexInRow;
+    this.focusOffset = focusOffset;
+  }
+
+  static createFromSelection(sel: Selection | null): SelectionInfo | null {
+    if (sel === null) {
+      return null;
+    }
+
+    const anchorNode = sel.anchorNode;
+    if (anchorNode === null) {
+      return null;
+    }
+    const anchorOffset = sel.anchorOffset;
+
+    const focusNode = sel.focusNode;
+    if (focusNode === null) {
+      return null;
+    }
+    const focusOffset = sel.focusOffset;
+    // Get row IDs of the start and end of the selection
+
+    const anchorSpan = anchorNode.parentElement;
+    const anchorSpanIndexInRow = getChildNodeIndex(anchorSpan);
+    const anchorRowDiv = anchorSpan!.parentElement;
+    const anchorRowId = anchorRowDiv!.id;
+
+    const focusSpan = focusNode!.parentElement;
+    const focusSpanIndexInRow = getChildNodeIndex(focusSpan);
+    const focusRowDiv = focusSpan!.parentElement;
+    const focusRowId = focusRowDiv!.id;
+
+    return new SelectionInfo(anchorRowId, anchorSpanIndexInRow, anchorOffset, focusRowId, focusSpanIndexInRow, focusOffset);
+  }
+
 }
 
 // const outerListElement = forwardRef((props, ref: any) => (
@@ -103,11 +161,36 @@ export default observer((props: Props) => {
       </span>
     );
     return (
-      <div className="terminal-row" style={style}>
+      <div id={'row-' + index} className="terminal-row" style={style}>
         {spans}
       </div>
     );
   });
+
+  const selObj = window.getSelection();
+  console.log('Selection before render: ', selObj);
+  let selectionInfo = SelectionInfo.createFromSelection(selObj);
+  // if (selObj !== null) {
+  //   const anchorNode = selObj.anchorNode;
+  //   const anchorOffset = selObj.anchorOffset;
+  //   const focusNode = selObj.focusNode;
+  //   const focusOffset = selObj.focusOffset;
+  //   // Get row IDs of the start and end of the selection
+
+  //   const anchorSpan = anchorNode!.parentElement;
+  //   const anchorSpanIndexInRow = getChildNodeIndex(anchorSpan);
+  //   const anchorRowDiv = anchorSpan!.parentElement;
+  //   const anchorRowId = anchorRowDiv!.id;
+
+  //   const focusSpan = focusNode!.parentElement;
+  //   const focusSpanIndexInRow = getChildNodeIndex(focusSpan);
+  //   const focusRowDiv = focusSpan!.parentElement;
+  //   const focusRowId = focusRowDiv!.id;
+
+  //   console.log('anchorRowId: ', anchorRowId, 'anchorSpanIdx: ', anchorSpanIndexInRow, 'anchorOffset: ', anchorOffset, 'focusRowId: ', focusRowId, 'focusSpanIdx', focusSpanIndexInRow, 'focusOffset: ', focusOffset);
+
+  //   selectionInfo = new SelectionInfo(anchorRowId, anchorSpanIndexInRow, anchorOffset, focusRowId, focusSpanIndexInRow, focusOffset);
+  // }
 
   // Run this after every render, even though we only need to do it if
   // a new row has been added. It's too computationally expensive to
@@ -129,6 +212,34 @@ export default observer((props: Props) => {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
     }
+
+    const afterRenderSel = window.getSelection();
+    if (selObj === null || afterRenderSel === null) {
+      return;
+    }
+
+    if (selectionInfo === null) {
+      return;
+    }
+
+    // Look for the same div IDs as before the render
+    const anchorRowDiv = document.getElementById(selectionInfo.anchorRowId);
+    if (anchorRowDiv === null) {
+      console.log('Did not find anchorRowDiv');
+      return;
+    }
+    const anchorSpan = anchorRowDiv.children[selectionInfo.anchorSpanIndexInRow];
+    const anchorTextNode = anchorSpan.childNodes[0];
+
+    const focusRowDiv = document.getElementById(selectionInfo.focusRowId);
+    if (focusRowDiv === null) {
+      console.log('Did not find focusRowDiv');
+      return;
+    }
+    const focusSpan = focusRowDiv.children[selectionInfo.focusSpanIndexInRow];
+    const focusTextNode = focusSpan.childNodes[0];
+    console.log('Setting selection anchorNode: ', anchorTextNode, ' anchorOffset: ', selectionInfo.anchorOffset, ' focusNode: ', focusTextNode, ' focusOffset: ', selectionInfo.focusOffset);
+    afterRenderSel.setBaseAndExtent(anchorTextNode, selectionInfo.anchorOffset, focusTextNode, selectionInfo.focusOffset);
   });
 
   const terminalDiv = useRef<HTMLInputElement>(null);

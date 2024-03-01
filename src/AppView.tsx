@@ -123,6 +123,10 @@ const AppView = observer((props: Props) => {
 
     initFn().catch(console.error);
 
+    // document.addEventListener("selectionchange", () => {
+    //   console.log('selection:' ,document.getSelection());
+    // });
+
     // Uncomment this if you want to test out the snackbar
     // for development reasons
     // app.swOnNeedRefresh((reloadPage) => {
