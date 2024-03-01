@@ -48,7 +48,17 @@ class SelectionInfo {
     this.focusOffset = focusOffset;
   }
 
-  static createFromSelection(sel: Selection | null): SelectionInfo | null {
+  /**
+   * Use this to create a SelectionInfo object from the current selection.
+   *
+   * If there is not selection, returns null.
+   * Makes sure that the entire selection is contained within the terminal, if not, returns null.
+   *
+   * @param sel The current selection, as returned by window.getSelection().
+   * @param terminalId The ID of the terminal. This is used to make sure the selection is contained within the terminal.
+   * @returns A SelectionInfo object if the selection is contained within the terminal, otherwise null.
+   */
+  static createFromSelection(sel: Selection | null, terminalId: string): SelectionInfo | null {
     if (sel === null) {
       return null;
     }
@@ -67,11 +77,29 @@ class SelectionInfo {
     // Get row IDs of the start and end of the selection
 
     const anchorSpan = anchorNode.parentElement;
+    if (anchorSpan === null) {
+      return null;
+    }
+    // Make sure anchor is within the terminal
+    let matchingTerminalElement = anchorNode.parentElement!.closest('#' + terminalId);
+    if (matchingTerminalElement === null) {
+      console.log('Start of selection is not within terminal');
+      return null;
+    }
     const anchorSpanIndexInRow = getChildNodeIndex(anchorSpan);
     const anchorRowDiv = anchorSpan!.parentElement;
     const anchorRowId = anchorRowDiv!.id;
 
-    const focusSpan = focusNode!.parentElement;
+    const focusSpan = focusNode.parentElement;
+    if (focusSpan === null) {
+      return null;
+    }
+    // Make sure focus is within the terminal
+    matchingTerminalElement = focusNode.parentElement!.closest('#' + terminalId);
+    if (matchingTerminalElement === null) {
+      console.log('End of selection is not within terminal');
+      return null;
+    }
     const focusSpanIndexInRow = getChildNodeIndex(focusSpan);
     const focusRowDiv = focusSpan!.parentElement;
     const focusRowId = focusRowDiv!.id;
@@ -167,31 +195,6 @@ export default observer((props: Props) => {
     );
   });
 
-  const selObj = window.getSelection();
-  console.log('Selection before render: ', selObj);
-  let selectionInfo = SelectionInfo.createFromSelection(selObj);
-  // if (selObj !== null) {
-  //   const anchorNode = selObj.anchorNode;
-  //   const anchorOffset = selObj.anchorOffset;
-  //   const focusNode = selObj.focusNode;
-  //   const focusOffset = selObj.focusOffset;
-  //   // Get row IDs of the start and end of the selection
-
-  //   const anchorSpan = anchorNode!.parentElement;
-  //   const anchorSpanIndexInRow = getChildNodeIndex(anchorSpan);
-  //   const anchorRowDiv = anchorSpan!.parentElement;
-  //   const anchorRowId = anchorRowDiv!.id;
-
-  //   const focusSpan = focusNode!.parentElement;
-  //   const focusSpanIndexInRow = getChildNodeIndex(focusSpan);
-  //   const focusRowDiv = focusSpan!.parentElement;
-  //   const focusRowId = focusRowDiv!.id;
-
-  //   console.log('anchorRowId: ', anchorRowId, 'anchorSpanIdx: ', anchorSpanIndexInRow, 'anchorOffset: ', anchorOffset, 'focusRowId: ', focusRowId, 'focusSpanIdx', focusSpanIndexInRow, 'focusOffset: ', focusOffset);
-
-  //   selectionInfo = new SelectionInfo(anchorRowId, anchorSpanIndexInRow, anchorOffset, focusRowId, focusSpanIndexInRow, focusOffset);
-  // }
-
   // Run this after every render, even though we only need to do it if
   // a new row has been added. It's too computationally expensive to
   // do a deep compare of the text segments
@@ -212,12 +215,15 @@ export default observer((props: Props) => {
       // Scroll to the position determined by the Terminal model
       reactWindowRef.current.scrollTo(terminal.scrollPos);
     }
+  });
 
-    const afterRenderSel = window.getSelection();
-    if (selObj === null || afterRenderSel === null) {
-      return;
-    }
+  const selObj = window.getSelection();
+  console.log('Selection before render: ', selObj);
+  let selectionInfo = SelectionInfo.createFromSelection(selObj, terminal.id);
 
+  // This code runs after render to re-select the same text as was selected before the render,
+  // only if the selection was contained within this terminal.
+  useLayoutEffect(() => {
     if (selectionInfo === null) {
       return;
     }
@@ -239,7 +245,11 @@ export default observer((props: Props) => {
     const focusSpan = focusRowDiv.children[selectionInfo.focusSpanIndexInRow];
     const focusTextNode = focusSpan.childNodes[0];
     console.log('Setting selection anchorNode: ', anchorTextNode, ' anchorOffset: ', selectionInfo.anchorOffset, ' focusNode: ', focusTextNode, ' focusOffset: ', selectionInfo.focusOffset);
-    afterRenderSel.setBaseAndExtent(anchorTextNode, selectionInfo.anchorOffset, focusTextNode, selectionInfo.focusOffset);
+    const currentSelection = window.getSelection();
+    if (currentSelection === null) {
+      return;
+    }
+    currentSelection.setBaseAndExtent(anchorTextNode, selectionInfo.anchorOffset, focusTextNode, selectionInfo.focusOffset);
   });
 
   const terminalDiv = useRef<HTMLInputElement>(null);
@@ -317,6 +327,7 @@ export default observer((props: Props) => {
       {/* ======================================================= */}
       {/* This is the outer terminal div which sets the background colour */}
       <div
+        id={terminal.id} // Assign terminal ID to outer most DOM element
         tabIndex={terminal.isFocusable ? 0 : undefined}
         className={`${styles.outerTerminalWrapper} ${terminal.isFocusable ? styles.focusable : ''}`}
         data-testid={testId + '-outer'}

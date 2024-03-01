@@ -19,6 +19,7 @@ describe('single terminal tests', () => {
     dataProcessingSettings = new DataProcessingSettings();
     displaySettings = new DisplaySettings(appStorage);
     singleTerminal = new SingleTerminal(
+      'test-terminal',
       true,
       dataProcessingSettings,
       displaySettings,

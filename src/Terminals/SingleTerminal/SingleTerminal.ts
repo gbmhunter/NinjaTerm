@@ -18,6 +18,8 @@ export default class Terminal {
   // PASSED IN VARIABLES
   //======================================================================
 
+  id: string;
+
   dataProcessingSettings: DataProcessingSettings;
 
   displaySettings: DisplaySettings;
@@ -100,11 +102,13 @@ export default class Terminal {
   uniqueRowIndexCount: number = 0;
 
   constructor(
+      id: string,
       isFocusable: boolean,
       dataProcessingSettings: DataProcessingSettings,
       displaySettings: DisplaySettings,
       onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies
+    this.id = id;
     this.isFocusable = isFocusable;
     this.dataProcessingSettings = dataProcessingSettings;
     this.displaySettings = displaySettings;
