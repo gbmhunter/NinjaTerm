@@ -2,8 +2,11 @@ import { z } from 'zod';
 
 import { App } from 'src/App';
 import Terminal from './SingleTerminal/SingleTerminal';
+import NativeTerminal from './NativeTerminal/NativeTerminal';
 import { ApplyableTextField } from 'src/Components/ApplyableTextField';
 import { makeAutoObservable } from 'mobx';
+
+const NATIVE_TERMINAL_TEST = true;
 
 export default class Terminals {
 
@@ -13,12 +16,18 @@ export default class Terminals {
 
   txTerminal: Terminal;
 
+  nativeTerminal: NativeTerminal;
+
   filterText: ApplyableTextField
+
+  nativeTerminalTest = NATIVE_TERMINAL_TEST;
 
   constructor(app: App) {
     this.txRxTerminal = new Terminal(true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
     this.rxTerminal = new Terminal(false, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
     this.txTerminal = new Terminal(true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
+
+    this.nativeTerminal = new NativeTerminal(true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
 
     this.filterText = new ApplyableTextField('', z.string());
     this.filterText.setOnApplyChanged(this.onFilterTextApply);

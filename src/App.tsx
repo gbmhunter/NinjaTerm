@@ -437,6 +437,7 @@ export class App {
     // and the RX terminal
     this.terminals.txRxTerminal.parseData(rxData);
     this.terminals.rxTerminal.parseData(rxData);
+    this.terminals.nativeTerminal.parseData(rxData);
     this.graphing.parseData(rxData);
     this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
