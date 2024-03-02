@@ -693,25 +693,8 @@ export class App {
       console.log('Selection is within a terminal. selectionInfo=', selectionInfo);
       // Copy the text from the start node to the end node (NOTE: not the same as
       // the anchor and focus node if the user clicked at the end and released at the start)
-
-      // Extract number from end of the row ID
-      // row ID is in form <terminal id>-row-<number>
-      const anchorRowId = selectionInfo.anchorRowId;
-      const focusRowId = selectionInfo.focusRowId;
-      const anchorRowNumber = parseInt(anchorRowId.split('-').slice(-1)[0]);
-      const focusRowNumber = parseInt(focusRowId.split('-').slice(-1)[0]);
-      console.log('anchorRowNumber=', anchorRowNumber, 'focusRowNumber=', focusRowNumber);
-
-      // Convert from anchor/focus to first/last
-      const firstRowNumber = Math.min(anchorRowNumber, focusRowNumber);
-      const lastRowNumber = Math.max(anchorRowNumber, focusRowNumber);
-      console.log('firstRowNumber=', firstRowNumber, 'lastRowNumber=', lastRowNumber);
-
-      // Get the index of these row numbers in the terminal
-      const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowNumber);
-      const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowNumber);
-      console.log('firstRowIndex=', firstRowIndex, 'lastRowIndex=', lastRowIndex);
-
+      const clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
+      navigator.clipboard.writeText(clipboardText);
     } else {
       console.log('Selection is not within a terminal, doing basic toString() copy of text to clipboard.');
       // Since selection is not fully contained within a single terminal pane,
@@ -721,6 +704,48 @@ export class App {
 
     // Create toast telling user that text was copied to clipboard
     this.snackbar.sendToSnackbar('Text copied to clipboard.', 'info');
+  }
+
+  private extractClipboardTextFromTerminal(
+      selectionInfo: SelectionInfo,
+      terminalSelectionWasIn: SingleTerminal): string {
+    // Extract number from end of the row ID
+    // row ID is in form <terminal id>-row-<number>
+    const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
+    const lastRowIdNumOnly = parseInt(selectionInfo.lastRowId.split('-').slice(-1)[0]);
+    console.log('firstRowNumber=', firstRowIdNumOnly, 'lastRowNumber=', lastRowIdNumOnly);
+
+    // Get the index of these row numbers in the terminal
+    const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowIdNumOnly);
+    const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowIdNumOnly);
+    console.log('firstRowIndex=', firstRowIndex, 'lastRowIndex=', lastRowIndex);
+
+    // Iterate from the first to the last row, and extract the text from each row
+    let textToCopy = '';
+    for (let i = firstRowIndex; i <= lastRowIndex; i += 1) {
+      if (i === firstRowIndex && i === lastRowIndex) {
+        // If this is the first and last row, only copy from the start to the end of the selection
+        textToCopy += terminalSelectionWasIn!.terminalRows[i].getText().slice(selectionInfo.firstColIdx, selectionInfo.lastColIdx);
+      } else if (i === firstRowIndex) {
+        // If this is the first row, only copy from the start of the selection
+        textToCopy += terminalSelectionWasIn!.terminalRows[i].getText().slice(selectionInfo.firstColIdx);
+      } else if (i === lastRowIndex) {
+        // If this is the last row, only copy to the end of the selection
+        textToCopy += terminalSelectionWasIn!.terminalRows[i].getText().slice(0, selectionInfo.lastColIdx);
+      } else {
+        // If this is neither the first nor the last row, copy the entire row
+        textToCopy += terminalSelectionWasIn!.terminalRows[i].getText();
+      }
+
+      // Add a newline character to the end of each row, except the last one
+      if (i !== lastRowIndex) {
+        textToCopy += '\n';
+      }
+    }
+
+    console.log('textToCopy: ', textToCopy);
+
+    return textToCopy;
   }
 
   swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {

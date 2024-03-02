@@ -1,3 +1,4 @@
+import { an } from 'vitest/dist/reporters-5f784f42';
 import { getChildNodeIndex } from './Util';
 
 /**
@@ -7,16 +8,59 @@ export default class SelectionInfo {
   anchorRowId: string;
   anchorSpanIndexInRow: number;
   anchorOffset: number;
+  anchorColIdx: number;
+
   focusRowId: string;
   focusSpanIndexInRow: number;
   focusOffset: number;
-  constructor(anchorRowId: string, anchorSpanIndexInRow: number, anchorOffset: number, focusRowId: string, focusSpanIndexInRow: number, focusOffset: number) {
+  focusColIdx: number;
+
+  firstRowId: string;
+  firstSpanIndexInRow: number;
+  firstOffset: number;
+  firstColIdx: number;
+
+  lastRowId: string;
+  lastSpanIndexInRow: number;
+  lastOffset: number;
+  lastColIdx: number;
+
+  constructor(
+      anchorRowId: string,
+      anchorSpanIndexInRow: number,
+      anchorOffset: number,
+      anchorColIdx: number,
+      focusRowId: string,
+      focusSpanIndexInRow: number,
+      focusOffset: number,
+      focusColIdx: number,
+      firstRowId: string,
+      firstSpanIndexInRow: number,
+      firstOffset: number,
+      firstColIdx: number,
+      lastRowId: string,
+      lastSpanIndexInRow: number,
+      lastOffset: number,
+      lastColIdx: number) {
     this.anchorRowId = anchorRowId;
     this.anchorSpanIndexInRow = anchorSpanIndexInRow;
     this.anchorOffset = anchorOffset;
+    this.anchorColIdx = anchorColIdx;
+
     this.focusRowId = focusRowId;
     this.focusSpanIndexInRow = focusSpanIndexInRow;
     this.focusOffset = focusOffset;
+    this.focusColIdx = focusColIdx;
+
+    this.firstRowId = firstRowId;
+    this.firstSpanIndexInRow = firstSpanIndexInRow;
+    this.firstOffset = firstOffset;
+    this.firstColIdx = firstColIdx;
+
+    this.lastRowId = lastRowId;
+    this.lastSpanIndexInRow = lastSpanIndexInRow;
+    this.lastOffset = lastOffset;
+    this.lastColIdx = lastColIdx;
   }
 
   /**
@@ -75,6 +119,92 @@ export default class SelectionInfo {
     const focusRowDiv = focusSpan!.parentElement;
     const focusRowId = focusRowDiv!.id;
 
-    return new SelectionInfo(anchorRowId, anchorSpanIndexInRow, anchorOffset, focusRowId, focusSpanIndexInRow, focusOffset);
+    // Calculate column indexes
+    //=============================
+
+    let anchorColIdx = 0;
+    for (let i = 0; i <= anchorSpanIndexInRow - 1; i++) {
+      const span = anchorRowDiv!.children[i];
+      anchorColIdx += span.textContent!.length;
+    }
+    anchorColIdx += anchorOffset;
+
+    let focusColIdx = 0;
+    for (let i = 0; i <= focusSpanIndexInRow - 1; i++) {
+      const span = focusRowDiv!.children[i];
+      focusColIdx += span.textContent!.length;
+    }
+    focusColIdx += focusOffset;
+
+    console.log('anchorColIdx: ', anchorColIdx, ' focusColIdx: ', focusColIdx);
+
+    //=============================
+
+    // Also convert from focus/anchor to first/last
+    // Anchor is were the user began the selection, focus is where they ended it
+    // Assume it's true, check all conditions that would make it false
+    let isSelectionForwards = true
+    if (anchorRowId > focusRowId) {
+      isSelectionForwards = false;
+    } else if (anchorRowId === focusRowId) {
+      // Need to look at spans
+      if (anchorSpanIndexInRow > focusSpanIndexInRow) {
+        isSelectionForwards = false;
+      } else if (anchorSpanIndexInRow === focusSpanIndexInRow) {
+        // Same span, need to look at offsets
+        if (anchorOffset > focusOffset) {
+          isSelectionForwards = false;
+        }
+      }
+    }
+    console.log('isSelectionForwards: ', isSelectionForwards);
+
+    let firstRowId = '';
+    let firstRowSpanIndex = 0;
+    let firstRowOffset = 0;
+    let firstRowColIdx = 0;
+    let lastRowId = '';
+    let lastRowSpanIndex = 0;
+    let lastRowOffset = 0;
+    let lastRowColIdx = 0;
+    if (isSelectionForwards) {
+      firstRowId = anchorRowId;
+      firstRowSpanIndex = anchorSpanIndexInRow;
+      firstRowOffset = anchorOffset;
+      firstRowColIdx = anchorColIdx;
+      lastRowId = focusRowId;
+      lastRowSpanIndex = focusSpanIndexInRow;
+      lastRowOffset = focusOffset;
+      lastRowColIdx = focusColIdx;
+    } else {
+      // Invert everything
+      firstRowId = focusRowId;
+      firstRowSpanIndex = focusSpanIndexInRow;
+      firstRowOffset = focusOffset;
+      firstRowColIdx = focusColIdx;
+      lastRowId = anchorRowId;
+      lastRowSpanIndex = anchorSpanIndexInRow;
+      lastRowOffset = anchorOffset;
+      lastRowColIdx = anchorColIdx;
+    }
+
+
+    return new SelectionInfo(
+      anchorRowId,
+      anchorSpanIndexInRow,
+      anchorOffset,
+      anchorColIdx,
+      focusRowId,
+      focusSpanIndexInRow,
+      focusOffset,
+      focusColIdx,
+      firstRowId,
+      firstRowSpanIndex,
+      firstRowOffset,
+      firstRowColIdx,
+      lastRowId,
+      lastRowSpanIndex,
+      lastRowOffset,
+      lastRowColIdx);
   }
 }
