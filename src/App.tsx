@@ -17,6 +17,7 @@ import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
+import SelectionInfo from './Util/SelectionInfo';
 
 declare global {
   interface String {
@@ -636,16 +637,14 @@ export class App {
     this.shownMainPane = newPane;
   }
 
-  /** Handles any stray key press that was not caught by a child node.
-   * For example, pressing "f" while on the Port Configuration settings
-   * this cause this function to be called.
-   *
-   * This is not the function that sends data out the serial port, that
-   * is handleTerminalKeyDown(), which is called by the Terminals.
+  /** Central place which handles all key pressed in the app.
+   * This includes:
+   * - Key presses when a terminal pane is active. Data will be set out the serial port
+   *   if it's a TXRX or TX terminal, the port is open and the key press is relevant.
+   * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
+   * - Pressing "f" while on the Port Configuration settings.
    */
   handleKeyDown(event: React.KeyboardEvent) {
-    console.log('handleKeyDown() called. event=', event);
-
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
     } else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
@@ -653,29 +652,50 @@ export class App {
       this.handleCopyToClipboard(event);
       return;
     } else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
-      console.log('TXRX or TX terminal focused.');
       this.handleTerminalKeyDown(event);
     }
-
   }
 
-  handleCopyToClipboard(event: React.KeyboardEvent) {
-
+  /**
+   * This is called when the user presses Ctrl-Shift-C. It copies the selected text
+   * to the clipboard.
+   * @param event The keyboard event.
+   * @returns
+   */
+  private handleCopyToClipboard(event: React.KeyboardEvent) {
     // Prevents Ctrl-Shift-C from opening the browser's dev tools
     event.preventDefault();
     event.stopPropagation();
 
     // console.log('handleCopyToClipboard() called.');
-    const selObj = window.getSelection();
-    if (selObj === null) {
-      console.log('window.getSelection() returned null!');
+    const selection = window.getSelection();
+    if (selection === null) {
       return;
     }
-    // console.log('selObj=', selObj);
-    // console.log('selObj.toString()=', selObj.toString());
 
-    // Copy the selected text to the clipboard
-    navigator.clipboard.writeText(selObj.toString());
+    // Work out if the selection is contained within a single terminal pane, and if so,
+    // handle the copy in a special manner (no just a basic toString())
+    const terminalsToCheck = [this.terminals.txRxTerminal, this.terminals.txTerminal, this.terminals.rxTerminal];
+    let selectionInfo: SelectionInfo | null = null;
+    for (let i = 0; i < terminalsToCheck.length; i += 1) {
+      const terminal = terminalsToCheck[i];
+      selectionInfo = terminal.getSelectionInfoIfWithinTerminal();
+      if (selectionInfo !== null) {
+        // Selection is within this terminal
+        break;
+      }
+    }
+
+    if (selectionInfo !== null) {
+      console.log('Selection is within a terminal. selectionInfo=', selectionInfo);
+      navigator.clipboard.writeText(selection.toString());
+    } else {
+      console.log('Selection is not within a terminal, doing basic toString() copy of text to clipboard.');
+      // Since selection is not fully contained within a single terminal pane,
+      // do a basic toString() copy of the text to the clipboard
+      navigator.clipboard.writeText(selection.toString());
+    }
+
     // Create toast telling user that text was copied to clipboard
     this.snackbar.sendToSnackbar('Text copied to clipboard.', 'info');
   }

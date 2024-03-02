@@ -19,3 +19,18 @@ export function stringToUint8Array(str: string) {
 
     return arr;
 }
+
+/**
+ * Given a HTML element, this will find the index of the element within its parent's children array.
+ *
+ * @param child The element to get the index of.
+ * @returns The index of the element within its parent's children array.
+ */
+export function getChildNodeIndex(child: Element | null)
+{
+    var i = 0;
+    while ((child = child!.previousElementSibling) != null )
+    i++;
+
+    return i;
+}
