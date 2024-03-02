@@ -31,6 +31,7 @@ import styles from './AppView.module.css'
 import FakePortDialogView from './FakePorts/FakePortDialogView';
 import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
+import SelectionInfo from './Util/SelectionInfo';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -91,11 +92,17 @@ interface Props {
 
 const app = new App();
 
+// Expose a few parts of the application on the window object.
+// This is so that the integration tests can access them.
 declare global {
-  interface Window { app: App; }
+  interface Window {
+    app: App;
+    getSelectionInfo: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
+  }
 }
 
 window.app = app;
+window.getSelectionInfo = SelectionInfo.createFromSelection;
 
 const AppView = observer((props: Props) => {
 

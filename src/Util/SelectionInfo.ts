@@ -1,4 +1,3 @@
-import { an } from 'vitest/dist/reporters-5f784f42';
 import { getChildNodeIndex } from './Util';
 
 /**
@@ -70,7 +69,7 @@ export default class SelectionInfo {
    * Makes sure that the entire selection is contained within the terminal, if not, returns null.
    *
    * @param sel The current selection, as returned by window.getSelection().
-   * @param terminalId The ID of the terminal. This is used to make sure the selection is contained within the terminal.
+   * @param terminalId The ID of the terminal, e.g. "tx-rx-terminal". This is used to make sure the selection is contained within the terminal.
    * @returns A SelectionInfo object if the selection is contained within the terminal, otherwise null.
    */
   static createFromSelection(sel: Selection | null, terminalId: string): SelectionInfo | null {
@@ -208,3 +207,5 @@ export default class SelectionInfo {
       lastRowColIdx);
   }
 }
+
+// window.getSelectionInfo = SelectionInfo.createFromSelection;
