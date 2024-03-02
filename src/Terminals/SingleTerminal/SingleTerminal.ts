@@ -14,7 +14,7 @@ const START_OF_HEX_GLYPHS = 0xE100;
 /**
  * Represents a single terminal-style user interface.
  */
-export default class Terminal {
+export default class SingleTerminal {
 
   // PASSED IN VARIABLES
   //======================================================================

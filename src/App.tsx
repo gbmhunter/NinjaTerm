@@ -16,6 +16,7 @@ import FakePortsController from './FakePorts/FakePortsController';
 import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
+import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
 import SelectionInfo from './Util/SelectionInfo';
 
@@ -676,19 +677,41 @@ export class App {
     // Work out if the selection is contained within a single terminal pane, and if so,
     // handle the copy in a special manner (no just a basic toString())
     const terminalsToCheck = [this.terminals.txRxTerminal, this.terminals.txTerminal, this.terminals.rxTerminal];
+    let terminalSelectionWasIn: SingleTerminal | null = null;
     let selectionInfo: SelectionInfo | null = null;
     for (let i = 0; i < terminalsToCheck.length; i += 1) {
       const terminal = terminalsToCheck[i];
       selectionInfo = terminal.getSelectionInfoIfWithinTerminal();
       if (selectionInfo !== null) {
-        // Selection is within this terminal
+        // Found a terminal that the selection is contained within, break out of loop
+        terminalSelectionWasIn = terminal;
         break;
       }
     }
 
     if (selectionInfo !== null) {
       console.log('Selection is within a terminal. selectionInfo=', selectionInfo);
-      navigator.clipboard.writeText(selection.toString());
+      // Copy the text from the start node to the end node (NOTE: not the same as
+      // the anchor and focus node if the user clicked at the end and released at the start)
+
+      // Extract number from end of the row ID
+      // row ID is in form <terminal id>-row-<number>
+      const anchorRowId = selectionInfo.anchorRowId;
+      const focusRowId = selectionInfo.focusRowId;
+      const anchorRowNumber = parseInt(anchorRowId.split('-').slice(-1)[0]);
+      const focusRowNumber = parseInt(focusRowId.split('-').slice(-1)[0]);
+      console.log('anchorRowNumber=', anchorRowNumber, 'focusRowNumber=', focusRowNumber);
+
+      // Convert from anchor/focus to first/last
+      const firstRowNumber = Math.min(anchorRowNumber, focusRowNumber);
+      const lastRowNumber = Math.max(anchorRowNumber, focusRowNumber);
+      console.log('firstRowNumber=', firstRowNumber, 'lastRowNumber=', lastRowNumber);
+
+      // Get the index of these row numbers in the terminal
+      const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowNumber);
+      const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowNumber);
+      console.log('firstRowIndex=', firstRowIndex, 'lastRowIndex=', lastRowIndex);
+
     } else {
       console.log('Selection is not within a terminal, doing basic toString() copy of text to clipboard.');
       // Since selection is not fully contained within a single terminal pane,

@@ -34,3 +34,8 @@ export function getChildNodeIndex(child: Element | null)
 
     return i;
 }
+
+export function findFirstNodeInDom(node1: Node, node2: Node) {
+  return node1.compareDocumentPosition(node2)
+    & Node.DOCUMENT_POSITION_FOLLOWING ? node1 : node2;
+}

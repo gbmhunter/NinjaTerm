@@ -6,14 +6,14 @@ import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { FixedSizeList } from 'react-window';
 
-import Terminal from './SingleTerminal';
+import SingleTerminal from './SingleTerminal';
 import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 import SelectionInfo from 'src/Util/SelectionInfo';
 
 interface Props {
-  terminal: Terminal;
+  terminal: SingleTerminal;
   directionLabel: string;
   testId: string;
 }

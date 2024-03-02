@@ -1,24 +1,24 @@
 import { z } from 'zod';
 
 import { App } from 'src/App';
-import Terminal from './SingleTerminal/SingleTerminal';
+import SingleTerminal from './SingleTerminal/SingleTerminal';
 import { ApplyableTextField } from 'src/Components/ApplyableTextField';
 import { makeAutoObservable } from 'mobx';
 
 export default class Terminals {
 
-  txRxTerminal: Terminal;
+  txRxTerminal: SingleTerminal;
 
-  rxTerminal: Terminal;
+  rxTerminal: SingleTerminal;
 
-  txTerminal: Terminal;
+  txTerminal: SingleTerminal;
 
   filterText: ApplyableTextField
 
   constructor(app: App) {
-    this.txRxTerminal = new Terminal('tx-rx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
-    this.rxTerminal = new Terminal('rx-terminal', false, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
-    this.txTerminal = new Terminal('tx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
+    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
+    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
+    this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
 
     this.filterText = new ApplyableTextField('', z.string());
     this.filterText.setOnApplyChanged(this.onFilterTextApply);
