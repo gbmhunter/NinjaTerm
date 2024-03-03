@@ -19,6 +19,7 @@ import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
 import SelectionInfo from './Util/SelectionInfo';
+import SelectionController from './SelectionController/SelectionController';
 
 declare global {
   interface String {
@@ -113,6 +114,8 @@ export class App {
   fakePortController: FakePortsController = new FakePortsController(this);
 
   appStorage: AppStorage = new AppStorage();
+
+  selectionController: SelectionController = new SelectionController();
 
   constructor(testing = false) {
     this.testing = testing;

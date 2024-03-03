@@ -3,10 +3,12 @@ import { expect, test, Page } from '@playwright/test';
 
 import { ExpectedTerminalChar, AppTestHarness } from './Util';
 import SelectionInfo from '../src/Util/SelectionInfo';
+import { App } from '../src/App';
 
 declare global {
   interface Window {
     getSelectionInfo: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
+    app: App;
   }
 }
 
@@ -18,13 +20,9 @@ test.describe('Selecting Text', () => {
     await appTestHarness.sendTextToTerminal('row1\n');
 
     await page.evaluate(() => {
-      let selection = window.getSelection();
-      let firstRow = document.getElementById('tx-rx-terminal-row-0');
-      const span = firstRow!.childNodes[0];
-      console.log(span);
-      const textNode = span!.childNodes[0]!;
-      console.log('textNode: ', textNode);
-      selection!.setBaseAndExtent(textNode, 0, textNode, textNode.textContent!.length);
+      window.app.selectionController.selectTerminalText(
+        'tx-rx-terminal-row-0', 0,
+        'tx-rx-terminal-row-0', 4);
     });
 
     // Now send another line to the terminal, and make sure the selection
