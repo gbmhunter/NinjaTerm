@@ -31,7 +31,7 @@ import styles from './AppView.module.css'
 import FakePortDialogView from './FakePorts/FakePortDialogView';
 import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
-import SelectionInfo from './Util/SelectionInfo';
+import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -97,12 +97,12 @@ const app = new App();
 declare global {
   interface Window {
     app: App;
-    getSelectionInfo: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
+    createFromSelection: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
   }
 }
 
 window.app = app;
-window.getSelectionInfo = SelectionInfo.createFromSelection;
+window.createFromSelection = SelectionController.createFromSelection;
 
 const AppView = observer((props: Props) => {
 

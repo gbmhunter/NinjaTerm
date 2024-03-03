@@ -2,13 +2,13 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { ExpectedTerminalChar, AppTestHarness } from './Util';
-import SelectionInfo from '../src/Util/SelectionInfo';
+import { SelectionInfo } from '../src/SelectionController/SelectionController';
 import { App } from '../src/App';
 
 declare global {
   interface Window {
-    getSelectionInfo: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
     app: App;
+    createFromSelection: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
   }
 }
 
@@ -39,10 +39,9 @@ test.describe('Selecting Text', () => {
 
     const selectionInfo = await page.evaluate(() => {
       // Get selection
-      const selectionInfo = window.getSelectionInfo(window.getSelection(), 'tx-rx-terminal');
+      const selectionInfo = window.createFromSelection(window.getSelection(), 'tx-rx-terminal');
       return selectionInfo;
     });
-    console.log('selectionInfo: ', selectionInfo);
 
     expect(selectionInfo).not.toBe(null);
     expect(selectionInfo!.firstRowId).toBe('tx-rx-terminal-row-0');

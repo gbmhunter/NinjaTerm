@@ -10,7 +10,7 @@ import SingleTerminal from './SingleTerminal';
 import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
-import SelectionInfo from 'src/Util/SelectionInfo';
+import { SelectionController, SelectionInfo } from 'src/SelectionController/SelectionController';
 
 interface Props {
   terminal: SingleTerminal;
@@ -141,7 +141,7 @@ export default observer((props: Props) => {
 
   const selObj = window.getSelection();
   console.log('Selection before render: ', selObj);
-  let selectionInfo = SelectionInfo.createFromSelection(selObj, terminal.id);
+  let selectionInfo = SelectionController.createFromSelection(selObj, terminal.id);
 
   // This code runs after render to re-select the same text as was selected before the render,
   // only if the selection was contained within this terminal.

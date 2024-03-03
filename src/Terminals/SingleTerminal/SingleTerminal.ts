@@ -6,7 +6,7 @@ import TerminalChar from './SingleTerminalChar';
 import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/Settings/DataProcessingSettings/DataProcessingSettings';
 import DisplaySettings from 'src/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
-import SelectionInfo from 'src/Util/SelectionInfo';
+import { SelectionController, SelectionInfo } from 'src/SelectionController/SelectionController';
 
 const START_OF_CONTROL_GLYPHS = 0xE000;
 const START_OF_HEX_GLYPHS = 0xE100;
@@ -1021,6 +1021,6 @@ export default class SingleTerminal {
   }
 
   getSelectionInfoIfWithinTerminal() {
-    return SelectionInfo.createFromSelection(window.getSelection(), this.id);
+    return SelectionController.createFromSelection(window.getSelection(), this.id);
   }
 }

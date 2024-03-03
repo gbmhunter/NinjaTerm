@@ -18,8 +18,7 @@ import { PortState } from './Settings/PortConfigurationSettings/PortConfiguratio
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
-import SelectionInfo from './Util/SelectionInfo';
-import SelectionController from './SelectionController/SelectionController';
+import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 
 declare global {
   interface String {
@@ -116,6 +115,8 @@ export class App {
   appStorage: AppStorage = new AppStorage();
 
   selectionController: SelectionController = new SelectionController();
+
+  SelectionController = SelectionController;
 
   constructor(testing = false) {
     this.testing = testing;
