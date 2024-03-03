@@ -2,15 +2,9 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { ExpectedTerminalChar, AppTestHarness } from './Util';
-import { SelectionInfo } from '../src/SelectionController/SelectionController';
+import { SelectionController, SelectionInfo } from '../src/SelectionController/SelectionController';
 import { App } from '../src/App';
-
-declare global {
-  interface Window {
-    app: App;
-    createFromSelection: (sel: Selection | null, terminalId: string) => SelectionInfo | null;
-  }
-}
+import '../src/WindowTypes';
 
 test.describe('Selecting Text', () => {
   test('selection persists when a new row of data arrives', async ({ page }) => {
@@ -39,7 +33,7 @@ test.describe('Selecting Text', () => {
 
     const selectionInfo = await page.evaluate(() => {
       // Get selection
-      const selectionInfo = window.createFromSelection(window.getSelection(), 'tx-rx-terminal');
+      const selectionInfo = window.SelectionController.createFromSelection(window.getSelection(), 'tx-rx-terminal');
       return selectionInfo;
     });
 
