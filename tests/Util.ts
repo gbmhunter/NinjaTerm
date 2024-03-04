@@ -243,4 +243,19 @@ export class AppTestHarness {
     await this.page.getByLabel('Enable Graphing').click();
     // expect(this.app.graphing.graphingEnabled).toBe(true);
   };
+
+  changeTerminalWidth = async (newWidth: number) => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByText('Display').click();
+
+    await this.page.locator("[name='terminalWidthChars']").fill(String(newWidth));
+    // Press enter to "apply" change
+    await this.page.keyboard.press('Enter');
+
+    // Go back to terminal view
+    await this.page.getByTestId('show-terminal-button').click();
+  }
 }

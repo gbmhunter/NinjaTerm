@@ -134,6 +134,7 @@ export class SelectionController {
     }
     for (let i = 0; i < colIdx; i++) {
       if (currentTextIdxInSpan >= currTextInSpan!.length) {
+        // Move to next span
         currSpanIdx += 1;
         if (currSpanIdx >= rowDiv.childNodes.length) {
           // Ran out of spans, bail
@@ -172,6 +173,7 @@ export class SelectionController {
     if (sel === null) {
       return null;
     }
+    console.log('sel:', sel);
 
     const anchorNode = sel.anchorNode;
     if (anchorNode === null) {

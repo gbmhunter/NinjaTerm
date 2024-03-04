@@ -141,6 +141,19 @@ describe('single terminal tests', () => {
     expect(singleTerminal.terminalRows[0].terminalChars[4].char).toBe(' ');
   });
 
+  test.only('wrapping flag set correctly', () => {
+    displaySettings.terminalWidthChars.setDispValue('5');
+    displaySettings.terminalWidthChars.apply();
+    singleTerminal.parseData(stringToUint8Array('0123401234'));
+
+    // Check num. rows
+    expect(singleTerminal.terminalRows.length).toBe(3);
+
+    // Check 1st row
+    expect(singleTerminal.terminalRows[0].wasCreatedDueToWrapping).toBe(false);
+    expect(singleTerminal.terminalRows[1].wasCreatedDueToWrapping).toBe(true);
+  });
+
 
   describe('escape code tests', () => {
     test('clear() clears colour styles', () => {

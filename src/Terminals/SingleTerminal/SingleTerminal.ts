@@ -664,7 +664,7 @@ export default class SingleTerminal {
 
       // If this pushes us past the last existing row, add a new one
       if (this.cursorPosition[0] === this.terminalRows.length) {
-        const newRow = new TerminalRow(this.uniqueRowIndexCount, false);
+        const newRow = new TerminalRow(this.uniqueRowIndexCount, isDueToWrapping);
         this.uniqueRowIndexCount += 1;
         this.terminalRows.push(newRow);
         // Because we are the end of the terminal rows, we can just add the row to the

@@ -1,7 +1,7 @@
 /* eslint-disable testing-library/prefer-screen-queries */
 import { expect, test, Page } from '@playwright/test';
 
-import { ExpectedTerminalChar, AppTestHarness } from './Util';
+import { AppTestHarness } from './Util';
 import '../src/WindowTypes';
 
 /**
@@ -33,6 +33,26 @@ function getSelectionInfo(page: Page) {
     const selection = window.getSelection();
     return window.SelectionController.getSelectionInfo(selection, 'tx-rx-terminal');
   });
+}
+
+/**
+ * Helper function to get the text from the in-browser clipboard, normalizing newlines to \n.
+ *
+ * This means that Windows new lines \r\n are converted to \n.
+ *
+ * @param page The Playwright page object.
+ * @returns The normalized clipboard text.
+ */
+async function getNormalizedClipboardText(page: Page) {
+  let clipboardText: string = await page.evaluate("navigator.clipboard.readText()");
+  const userAgent = await page.evaluate(() => navigator.userAgent);
+
+  // This might break in the future or not work in all cases...browsers
+  // don't make it easy to detect OS
+  if (userAgent.includes('Win')) {
+    clipboardText = clipboardText.replace(/\r\n/g, '\n');
+  }
+  return clipboardText;
 }
 
 test.describe('Selecting Text', () => {
@@ -131,5 +151,93 @@ test.describe('Selecting Text', () => {
     expect(selectionInfo!.firstColIdx).toBe(2);
     expect(selectionInfo!.lastRowId).toBe('tx-rx-terminal-row-1');
     expect(selectionInfo!.lastColIdx).toBe(5);
+  });
+
+  test('copying basic text works', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+    await appTestHarness.sendTextToTerminal('row1\n');
+
+    // Select the text "row1"
+    await setSelection(page, 'tx-rx-terminal-row-0', 0, 'tx-rx-terminal-row-0', 4);
+
+    // Press Ctrl-Shift-C
+    await page.keyboard.press('Control+Shift+C');
+
+    const clipboardText = await page.evaluate("navigator.clipboard.readText()");
+    expect(clipboardText).toBe('row1');
+  });
+
+  test('new lines are added when copying text across 2 rows', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+    await appTestHarness.sendTextToTerminal('row1\nrow2\n');
+
+    // Select the text "row1"
+    await setSelection(page, 'tx-rx-terminal-row-0', 0, 'tx-rx-terminal-row-1', 4);
+
+    // Press Ctrl-Shift-C
+    await page.keyboard.press('Control+Shift+C');
+    const clipboardText = await getNormalizedClipboardText(page);
+    expect(clipboardText).toBe('row1\nrow2');
+  });
+
+  test('new lines are not added when text wraps', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+    // Change the terminal width to 5 characters
+    await appTestHarness.changeTerminalWidth(5);
+
+    // Send enough data that the text will wrap. This will create two rows:
+    // row1: 01234
+    // row2: 01234
+    await appTestHarness.sendTextToTerminal('0123401234');
+
+    // Select the "34" from the end of row 1 and the "01" from the start of row 2
+    await setSelection(page, 'tx-rx-terminal-row-0', 3, 'tx-rx-terminal-row-1', 2);
+
+    // Press Ctrl-Shift-C
+    await page.keyboard.press('Control+Shift+C');
+    const clipboardText = await getNormalizedClipboardText(page);
+
+    // There should not be a new line between the "34" and "01" because
+    // the second row was created due to wrapping
+    expect(clipboardText).toBe('3401');
+  });
+
+  test('mixture of new lines and wrapping text to clipboard', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+    // Change the terminal width to 5 characters
+    await appTestHarness.changeTerminalWidth(5);
+
+    // Send data to wrap from row 1 to row 2, then a new line char
+    // to start row 3
+    await appTestHarness.sendTextToTerminal('01234012\n01234');
+
+    // Select the "4" from the end of row 1, all of row 2, and the "01" from the start of row 2
+    await setSelection(page, 'tx-rx-terminal-row-0', 4, 'tx-rx-terminal-row-2', 2);
+
+    // Press Ctrl-Shift-C
+    await page.keyboard.press('Control+Shift+C');
+    const clipboardText = await getNormalizedClipboardText(page);
+
+    expect(clipboardText).toBe('4012\n01');
   });
 });

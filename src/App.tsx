@@ -703,6 +703,9 @@ export class App {
       console.log('Selection is not within a terminal, doing basic toString() copy of text to clipboard.');
       // Since selection is not fully contained within a single terminal pane,
       // do a basic toString() copy of the text to the clipboard
+      // Do we need to await the promise?
+      // WARNING: As per spec at: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
+      //   On Windows replace `\n` characters with `\r\n` in data before creating textBlob
       navigator.clipboard.writeText(selection.toString());
     }
 
@@ -725,17 +728,25 @@ export class App {
     // row ID is in form <terminal id>-row-<number>
     const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
     const lastRowIdNumOnly = parseInt(selectionInfo.lastRowId.split('-').slice(-1)[0]);
-    console.log('firstRowNumber=', firstRowIdNumOnly, 'lastRowNumber=', lastRowIdNumOnly);
 
     // Get the index of these row numbers in the terminal
     const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowIdNumOnly);
     const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowIdNumOnly);
-    console.log('firstRowIndex=', firstRowIndex, 'lastRowIndex=', lastRowIndex);
 
     // Iterate from the first to the last row, and extract the text from each row
     let textToCopy = '';
     for (let i = firstRowIndex; i <= lastRowIndex; i += 1) {
       const terminalRow = terminalSelectionWasIn.terminalRows[i];
+
+      // Add a newline character between each successive row, except if:
+      //    - The terminal row was created due to wrapping. This means the user can paste the text into
+      //    a text editor and it won't have additional new lines added just because the text wrapped in
+      //    the terminal. New lines will only be added if the terminal row was created because of
+      //    a new line character or an ANSI escape sequence (e.g. cursor down).
+      if (i !== firstRowIndex && terminalRow.wasCreatedDueToWrapping === false) {
+        textToCopy += '\n';
+      }
+
       if (i === firstRowIndex && i === lastRowIndex) {
         // If this is the first and last row, only copy from the start to the end of the selection
         textToCopy += terminalRow.getText().slice(selectionInfo.firstColIdx, selectionInfo.lastColIdx);
@@ -749,20 +760,7 @@ export class App {
         // If this is neither the first nor the last row, copy the entire row
         textToCopy += terminalRow.getText();
       }
-
-      // Add a newline character to the end of each row, except if:
-      // 1) The terminal row was created due to wrapping. This means the user can paste the text into
-      //    a text editor and it won't have additional new lines added just because the text wrapped in
-      //    the terminal. New lines will only be added if the terminal row was created because of
-      //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      // 2) This is the last row
-      if (i !== lastRowIndex && terminalRow.wasCreatedDueToWrapping === false) {
-        // Is \n the right thing to add for all platforms?
-        textToCopy += '\n';
-      }
     }
-
-    console.log('textToCopy: ', textToCopy);
 
     return textToCopy;
   }
