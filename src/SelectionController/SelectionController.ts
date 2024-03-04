@@ -82,7 +82,7 @@ export class SelectionController {
    *    were valid), otherwise false.
    */
   static selectTerminalText(startRowId: string, startColIdx: number, endRowId: string, endColIdx: number) {
-    console.log('Selecting text from row:', startRowId, 'column:', startColIdx, 'to row:', endRowId, 'column:', endColIdx);
+    // console.log('Selecting text from row:', startRowId, 'column:', startColIdx, 'to row:', endRowId, 'column:', endColIdx);
     let selection = window.getSelection();
     if (selection === null) {
       return false;
@@ -173,7 +173,6 @@ export class SelectionController {
     if (sel === null) {
       return null;
     }
-    console.log('sel:', sel);
 
     const anchorNode = sel.anchorNode;
     if (anchorNode === null) {
@@ -195,7 +194,6 @@ export class SelectionController {
     // Make sure anchor is within the terminal
     let matchingTerminalElement = anchorNode.parentElement!.closest('#' + terminalId);
     if (matchingTerminalElement === null) {
-      console.log('Start of selection is not within terminal');
       return null;
     }
     const anchorSpanIndexInRow = getChildNodeIndex(anchorSpan);
@@ -209,7 +207,6 @@ export class SelectionController {
     // Make sure focus is within the terminal
     matchingTerminalElement = focusNode.parentElement!.closest('#' + terminalId);
     if (matchingTerminalElement === null) {
-      console.log('End of selection is not within terminal');
       return null;
     }
     const focusSpanIndexInRow = getChildNodeIndex(focusSpan);
@@ -233,8 +230,6 @@ export class SelectionController {
     }
     focusColIdx += focusOffset;
 
-    console.log('anchorColIdx: ', anchorColIdx, ' focusColIdx: ', focusColIdx);
-
     //=============================
 
     // Also convert from focus/anchor to first/last
@@ -254,7 +249,6 @@ export class SelectionController {
         }
       }
     }
-    console.log('isSelectionForwards: ', isSelectionForwards);
 
     let firstRowId = '';
     let firstRowSpanIndex = 0;

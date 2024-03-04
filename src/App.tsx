@@ -168,6 +168,9 @@ export class App {
     if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
     }
+
+    // Send tip of the day to snackbar
+    this.snackbar.sendToSnackbar('TIP OF THE DAY: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.', 'info');
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
@@ -498,7 +501,7 @@ export class App {
    * @param event The React keydown event.
    */
   handleTerminalKeyDown = async (event: React.KeyboardEvent) => {
-    console.log('handleTerminalKeyDown() called. event=', event);
+    // console.log('handleTerminalKeyDown() called. event=', event);
 
     // Capture all key presses and prevent default actions or bubbling.
     // preventDefault() prevents a Tab press from moving focus to another element on screen
@@ -693,24 +696,23 @@ export class App {
       }
     }
 
+    let clipboardText = '';
     if (selectionInfo !== null) {
-      console.log('Selection is within a terminal. selectionInfo=', selectionInfo);
       // Copy the text from the start node to the end node (NOTE: not the same as
       // the anchor and focus node if the user clicked at the end and released at the start)
-      const clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
-      navigator.clipboard.writeText(clipboardText);
+      clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
     } else {
-      console.log('Selection is not within a terminal, doing basic toString() copy of text to clipboard.');
       // Since selection is not fully contained within a single terminal pane,
       // do a basic toString() copy of the text to the clipboard
       // Do we need to await the promise?
       // WARNING: As per spec at: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
       //   On Windows replace `\n` characters with `\r\n` in data before creating textBlob
-      navigator.clipboard.writeText(selection.toString());
+      clipboardText = selection.toString();
     }
 
+    navigator.clipboard.writeText(clipboardText);
     // Create toast telling user that text was copied to clipboard
-    this.snackbar.sendToSnackbar('Text copied to clipboard.', 'info');
+    this.snackbar.sendToSnackbar(`${clipboardText.length} chars copied to clipboard.`, 'success');
   }
 
   /**
