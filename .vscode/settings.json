@@ -28,6 +28,7 @@
     "*.{css,sass,scss}.d.ts": true
   },
   "cSpell.words": [
+    "32m",
     "abcdefghijklmnopqurstuvwxyz",
     "Applyable",
     "autorun",
@@ -49,6 +50,7 @@
     "SDMMGN",
     "testid",
     "validatorjs",
+    "x1B",
     "XTAL"
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode"

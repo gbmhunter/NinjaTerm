@@ -130,7 +130,7 @@ export class SelectionController {
    * @param terminalId The ID of the terminal, e.g. "tx-rx-terminal". This is used to make sure the selection is contained within the terminal.
    * @returns A SelectionInfo object if the selection is contained within the terminal, otherwise null.
    */
-  static createFromSelection(sel: Selection | null, terminalId: string): SelectionInfo | null {
+  static getSelectionInfo(sel: Selection | null, terminalId: string): SelectionInfo | null {
     if (sel === null) {
       return null;
     }

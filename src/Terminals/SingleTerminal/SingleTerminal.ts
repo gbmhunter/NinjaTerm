@@ -1021,6 +1021,6 @@ export default class SingleTerminal {
   }
 
   getSelectionInfoIfWithinTerminal() {
-    return SelectionController.createFromSelection(window.getSelection(), this.id);
+    return SelectionController.getSelectionInfo(window.getSelection(), this.id);
   }
 }

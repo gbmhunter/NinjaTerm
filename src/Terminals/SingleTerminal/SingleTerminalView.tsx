@@ -139,9 +139,13 @@ export default observer((props: Props) => {
     }
   });
 
-  const selObj = window.getSelection();
-  console.log('Selection before render: ', selObj);
-  let selectionInfo = SelectionController.createFromSelection(selObj, terminal.id);
+  // SELECTION LOGIC
+  //=============================================================================
+
+  const selection = window.getSelection();
+  // Convert the selection (which has pointers to the nodes) into the rows and columns of the terminal
+  // that the selection starts and ends at
+  let selectionInfo = SelectionController.getSelectionInfo(selection, terminal.id);
 
   // This code runs after render to re-select the same text as was selected before the render,
   // only if the selection was contained within this terminal.
@@ -173,6 +177,8 @@ export default observer((props: Props) => {
     }
     currentSelection.setBaseAndExtent(anchorTextNode, selectionInfo.anchorOffset, focusTextNode, selectionInfo.focusOffset);
   });
+
+  //=============================================================================
 
   const terminalDiv = useRef<HTMLInputElement>(null);
 
