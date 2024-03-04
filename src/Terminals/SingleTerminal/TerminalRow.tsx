@@ -6,7 +6,10 @@ import TerminalChar from './SingleTerminalChar';
  * Represents a single row of characters in the terminal
  */
 export default class TerminalRow {
-  // The chars in this row.
+  /**
+   * Holds the characters that make up the row. Each character has
+   * a char, style and a class name associated with it.
+   */
   terminalChars: TerminalChar[];
 
   /**
@@ -15,9 +18,17 @@ export default class TerminalRow {
    */
   uniqueRowId: number;
 
-  constructor(uniqueRowId: number) {
+  /**
+   * True if this row was created due to the previous row running out of columns to place text.
+   * This is used when the user copies selected terminal text (e.g. Ctrl-Shift-C) to determine if new lines should be inserted into the
+   * clipboard.
+   */
+  wasCreatedDueToWrapping = false;
+
+  constructor(uniqueRowId: number, wasCreatedDueToWrapping: boolean) {
     this.terminalChars = [];
     this.uniqueRowId = uniqueRowId;
+    this.wasCreatedDueToWrapping = wasCreatedDueToWrapping;
     makeAutoObservable(this);
   }
 

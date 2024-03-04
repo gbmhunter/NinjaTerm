@@ -290,7 +290,7 @@ export default class SingleTerminal {
           this._cursorLeft(this.cursorPosition[1]);
           continue;
         } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
-          // Move left FIRST, then down. This is slightly more efficient
+          // Move left FIRST (all the way to column 0), then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
           // is empty to put the cursor at the correct column position
           this._cursorLeft(this.cursorPosition[1]);
@@ -635,8 +635,9 @@ export default class SingleTerminal {
    * existing row), and adding empty spaces in the new rows up (padding) to the current cursor column position.
    *
    * @param numRows The number of rows to move down.
+   * @param isDueToWrapping True if this cursor movement was due to the previous row running out of columns to place text.
    */
-  _cursorDown(numRows: number) {
+  _cursorDown(numRows: number, isDueToWrapping: boolean = false) {
     // Go down one row at a time and perform various checks along the way
     for (let numRowsGoneDown = 0; numRowsGoneDown < numRows; numRowsGoneDown += 1) {
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
@@ -663,7 +664,7 @@ export default class SingleTerminal {
 
       // If this pushes us past the last existing row, add a new one
       if (this.cursorPosition[0] === this.terminalRows.length) {
-        const newRow = new TerminalRow(this.uniqueRowIndexCount);
+        const newRow = new TerminalRow(this.uniqueRowIndexCount, false);
         this.uniqueRowIndexCount += 1;
         this.terminalRows.push(newRow);
         // Because we are the end of the terminal rows, we can just add the row to the
@@ -784,8 +785,10 @@ export default class SingleTerminal {
     if (this.cursorPosition[1] >= this.displaySettings.terminalWidthChars.appliedValue - 1) {
       // Remove space " " for cursor at the end of the current line
       this.cursorPosition[1] = 0;
-      // this.moveToNewLine(); // This adds the " " if needed for the cursor
-      this._cursorDown(1);
+      // When moving cursor down, make sure to specify it was due to wrapping. This will
+      // make sure the next terminal row is created with the correct wasCreatedDueToWrapping parameter,
+      // which makes sure that copying terminal text to the clipboard works correctly
+      this._cursorDown(1, true);
     } else {
       this.cursorPosition[1] += 1;
       // Add space here is there is no text
@@ -810,7 +813,9 @@ export default class SingleTerminal {
 
     // Now we've cleared all existing rows, create single row
     // with one space in it to hold the cursor.
-    const terminalRow = new TerminalRow(this.uniqueRowIndexCount);
+    // The wasCreatedDueToWrapping parameter doesn't really matter for the first row
+    // as the user cannot create a terminal text selection that starts prior to it
+    const terminalRow = new TerminalRow(this.uniqueRowIndexCount, false);
     this.uniqueRowIndexCount += 1;
     const terminalChar = new TerminalChar();
     terminalChar.char = ' ';
