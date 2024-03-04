@@ -16,7 +16,7 @@ import '../src/WindowTypes';
  */
 function setSelection(page: Page, startRowId: string, startColIdx: number, endRowId: string, lastColIdx: number) {
   return page.evaluate(({firstRowId, firstColIdx, lastRowId, lastColIdx}) => {
-    window.app.selectionController.selectTerminalText(
+    window.SelectionController.selectTerminalText(
       firstRowId, firstColIdx,
       lastRowId, lastColIdx);
   }, {firstRowId: startRowId, firstColIdx: startColIdx, lastRowId: endRowId, lastColIdx});

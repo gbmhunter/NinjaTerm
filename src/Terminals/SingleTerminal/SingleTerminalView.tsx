@@ -154,28 +154,11 @@ export default observer((props: Props) => {
       return;
     }
 
-    // Look for the same div IDs as before the render
-    const anchorRowDiv = document.getElementById(selectionInfo.anchorRowId);
-    if (anchorRowDiv === null) {
-      console.log('Did not find anchorRowDiv');
-      return;
-    }
-    const anchorSpan = anchorRowDiv.children[selectionInfo.anchorSpanIndexInRow];
-    const anchorTextNode = anchorSpan.childNodes[0];
-
-    const focusRowDiv = document.getElementById(selectionInfo.focusRowId);
-    if (focusRowDiv === null) {
-      console.log('Did not find focusRowDiv');
-      return;
-    }
-    const focusSpan = focusRowDiv.children[selectionInfo.focusSpanIndexInRow];
-    const focusTextNode = focusSpan.childNodes[0];
-    console.log('Setting selection anchorNode: ', anchorTextNode, ' anchorOffset: ', selectionInfo.anchorOffset, ' focusNode: ', focusTextNode, ' focusOffset: ', selectionInfo.focusOffset);
-    const currentSelection = window.getSelection();
-    if (currentSelection === null) {
-      return;
-    }
-    currentSelection.setBaseAndExtent(anchorTextNode, selectionInfo.anchorOffset, focusTextNode, selectionInfo.focusOffset);
+    // Re-select the same text that was selected before the render. Preserve the document order of the anchor and focus.
+    // This returns false if the selection was not possible, but we don't care
+    SelectionController.selectTerminalText(
+      selectionInfo.anchorRowId, selectionInfo.anchorColIdx,
+      selectionInfo.focusRowId, selectionInfo.focusColIdx);
   });
 
   //=============================================================================

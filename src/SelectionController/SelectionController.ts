@@ -78,41 +78,79 @@ export class SelectionController {
    * @param startColIdx The text column index in the start row that you want to start the selection at.
    * @param endRowId The ID of the text row in the terminal that you want to end the selection at.
    * @param endColIdx The text column index in the end row that you want to end the selection at.
+   * @returns Returns true if selection was able to be made (i.e. start and end rows were found, column indexes in these rows
+   *    were valid), otherwise false.
    */
-  selectTerminalText(startRowId: string, startColIdx: number, endRowId: string, endColIdx: number) {
+  static selectTerminalText(startRowId: string, startColIdx: number, endRowId: string, endColIdx: number) {
     console.log('Selecting text from row:', startRowId, 'column:', startColIdx, 'to row:', endRowId, 'column:', endColIdx);
     let selection = window.getSelection();
-    let firstRow = document.getElementById(startRowId);
+    if (selection === null) {
+      return false;
+    }
 
-    const { textNode: startTextNode, offset: startOffset } = this.getTextNodeAndOffsetAtColIdx(firstRow!, startColIdx);
-    console.log('startTextNode:', startTextNode, 'startOffset:', startOffset);
+    const startRowElement = document.getElementById(startRowId);
+    if (startRowElement === null) {
+      return false;
+    }
 
-    let endRow = document.getElementById(endRowId);
-    const { textNode: endTextNode, offset: endOffset } = this.getTextNodeAndOffsetAtColIdx(endRow!, endColIdx);
-    console.log('endTextNode:', endTextNode, 'endOffset:', endOffset);
+    const { textNode: startTextNode, offset: startOffset } = this.getTextNodeAndOffsetAtColIdx(startRowElement, startColIdx);
+    // console.log('startTextNode:', startTextNode, 'startOffset:', startOffset);
+    if (startTextNode === null) {
+      return false;
+    }
 
-    selection!.setBaseAndExtent(startTextNode, startOffset, endTextNode, endOffset);
+    const endRowElement = document.getElementById(endRowId);
+    if (endRowElement === null) {
+      return false;
+    }
+    const { textNode: endTextNode, offset: endOffset } = this.getTextNodeAndOffsetAtColIdx(endRowElement, endColIdx);
+    // console.log('endTextNode:', endTextNode, 'endOffset:', endOffset);
+    if (endTextNode === null) {
+      return false;
+    }
 
-    // const span = firstRow!.childNodes[0];
-    // const textNode = span!.childNodes[0]!;
-    // selection!.setBaseAndExtent(textNode, 0, textNode, textNode.textContent!.length);
+    selection.setBaseAndExtent(startTextNode, startOffset, endTextNode, endOffset);
+
+    return true;
   }
 
-  private getTextNodeAndOffsetAtColIdx(rowDiv: Element, colIdx: number) {
+  private static getTextNodeAndOffsetAtColIdx(rowDiv: Element, colIdx: number) {
     // Move through the spans in this row div, finding the span that
     // contains the char at specified colId
     let currSpanIdx = 0;
+    if (currSpanIdx >= rowDiv.childNodes.length) {
+      return { textNode: null, offset: 0 };
+    }
     let currentSpan = rowDiv.childNodes[currSpanIdx];
+
+    if (currentSpan.childNodes.length === 0) {
+      return { textNode: null, offset: 0 };
+    }
     let currTextNode = currentSpan.childNodes[0];
     let currentTextIdxInSpan = 0;
     let currTextInSpan = currentSpan.textContent;
+    if (currTextInSpan === null || currTextInSpan.length === 0) {
+      return { textNode: null, offset: 0 };
+    }
     for (let i = 0; i < colIdx; i++) {
       if (currentTextIdxInSpan >= currTextInSpan!.length) {
         currSpanIdx += 1;
+        if (currSpanIdx >= rowDiv.childNodes.length) {
+          // Ran out of spans, bail
+          return { textNode: null, offset: 0 };
+        }
         currentSpan = rowDiv.childNodes[currSpanIdx];
+        if (currentSpan.childNodes.length === 0) {
+          // No text node in span, bail
+          return { textNode: null, offset: 0 };
+        }
         currTextNode = currentSpan.childNodes[0];
         currentTextIdxInSpan = 0;
         currTextInSpan = currentSpan.textContent;
+        if (currTextInSpan === null || currTextInSpan.length === 0) {
+          // No text in span, bail
+          return { textNode: null, offset: 0 };
+        }
       }
       currentTextIdxInSpan += 1;
     }
