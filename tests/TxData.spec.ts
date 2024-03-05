@@ -1,7 +1,6 @@
-/* eslint-disable testing-library/prefer-screen-queries */
 import { expect, test } from '@playwright/test';
 
-import { ExpectedTerminalChar, AppTestHarness } from './Util';
+import { AppTestHarness } from './Util';
 
 test.describe('TX data', () => {
 
@@ -15,7 +14,6 @@ test.describe('TX data', () => {
 
     const utf8EncodeText = new TextEncoder();
     const expectedText = utf8EncodeText.encode('A');
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 
@@ -28,7 +26,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Backspace');
 
     const expectedData = [ 0x08 ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -41,7 +38,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Delete');
 
     const expectedData = [ 0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0) ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -54,7 +50,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Tab');
 
     const expectedData = [ 0x09 ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -67,7 +62,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Control+A');
 
     const expectedData = [ 0x01 ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -80,7 +74,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Control+0');
 
     const expectedData = [];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -93,7 +86,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Alt+A');
 
     const expectedData = [ 0x1B, 0x41 ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 
@@ -106,7 +98,6 @@ test.describe('TX data', () => {
     await page.getByTestId('tx-rx-terminal-view').press('Alt+a');
 
     const expectedData = [ 0x1B, 0x61 ];
-    console.log(appTestHarness.writtenData);
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 });

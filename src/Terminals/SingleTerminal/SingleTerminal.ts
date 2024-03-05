@@ -86,8 +86,12 @@ export default class SingleTerminal {
 
   currBackgroundColorNum: number | null;
 
-  // Set to true when the user clicks within the Terminals bounding box
-  // Used to know when to capture key strokes for the Terminal
+  /**
+   * Set to true when the user clicks within the Terminals bounding box.
+   * Used to:
+   * - Know when to capture key strokes for the Terminal.
+   * - Send data to the serial port when the Paste shortcut is pressed
+   */
   isFocused: boolean;
 
   // If this is set to false, the Terminal is not focusable. It will not have a background

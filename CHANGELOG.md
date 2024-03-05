@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added integration test to make sure changing the number of characters per row in the terminal works.
 - Added ability to select terminal text and the selection persist across re-renders of the terminal pane (e.g. when more data arrives).
+- Added copy/paste of terminal text with Ctrl-Shift-C and Ctrl-Shift-V. Copying is handled smartly with new lines only added when terminal row was not a result of wrapping from the previous line.
 - Added tip of the data feature (toast on start-up which displays some potentially useful information about the app).
 
 ## [4.12.2] - 2024-02-13

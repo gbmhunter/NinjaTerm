@@ -49,11 +49,13 @@ export class AppTestHarness {
     // We need expose a function to pass the written data back from
     // the browser context to this node.js test context
     await this.page.exposeFunction('writeData', (data) => {
+      console.log('in page');
       this.writtenData.push(data);
     });
     await this.page.addInitScript(() => {
       const mockWriter = {
         write: (data: Uint8Array) => {
+          console.log('write() called with data:', data);
           // Uint8Array's are serialized a bit weirdly,
           // so do the loop client side and just send back the
           // individual numbers in the array

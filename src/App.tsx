@@ -169,8 +169,8 @@ export class App {
       await this.tryToLoadPreviouslyUsedPort();
     }
 
-    // Send tip of the day to snackbar
-    this.snackbar.sendToSnackbar('TIP OF THE DAY: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.', 'info');
+    // Send 1 random tip to snackbar on app load
+    this.snackbar.sendToSnackbar('TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.', 'info');
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
@@ -489,6 +489,157 @@ export class App {
     this.portState = PortState.CLOSED;
   }
 
+  /** Central place which handles all key pressed in the app.
+   * This includes:
+   * - Key presses when a terminal pane is active. Data will be set out the serial port
+   *   if it's a TXRX or TX terminal, the port is open and the key press is relevant.
+   * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
+   * - Pressing "f" while on the Port Configuration settings.
+   */
+  async handleKeyDown(event: React.KeyboardEvent) {
+    // SPECIAL TESTING "FAKE PORTS"
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
+      this.fakePortController.setIsDialogOpen(true);
+    }
+    // COPY KEYBOARD SHORTCUT
+    //============================================
+    else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
+      // Ctrl-Shift-C is pressed
+      this.handleCopyToClipboard(event);
+    }
+    // PASTE KEYBOARD SHORTCUT
+    //============================================
+    else if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+      // Ctrl-Shift-V is pressed, handle paste
+      // Get clipboard text and send it out the serial port if either the TXRX or TX terminal is in focus
+      // Calling readText() will ask the user for permission to access the clipboard on the first time
+      const text = await navigator.clipboard.readText();
+
+      // Make sure serial port is open
+      if (this.portState !== PortState.OPENED) {
+        return;
+      }
+
+      // Make sure either the TXRX or TX terminal is in focus
+      if (!this.terminals.txRxTerminal.isFocused && !this.terminals.txTerminal.isFocused) {
+        return;
+      }
+
+      // Convert string to Uint8Array
+      const dataAsUint8Array = new TextEncoder().encode(text);
+      await this.writeBytesToSerialPort(dataAsUint8Array);
+    }
+    // TERMINAL DATA
+    //=============================================
+    else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
+      // If we get here and the terminals are in focus, assume it's terminal data
+      this.handleTerminalKeyDown(event);
+    }
+  }
+
+  /**
+   * This is called when the user presses Ctrl-Shift-C. It copies the selected text
+   * to the clipboard.
+   * @param event The keyboard event.
+   * @returns
+   */
+  private handleCopyToClipboard(event: React.KeyboardEvent) {
+    // Prevents Ctrl-Shift-C from opening the browser's dev tools
+    event.preventDefault();
+    event.stopPropagation();
+
+    // console.log('handleCopyToClipboard() called.');
+    const selection = window.getSelection();
+    if (selection === null) {
+      return;
+    }
+
+    // Work out if the selection is contained within a single terminal pane, and if so,
+    // handle the copy in a special manner (no just a basic toString())
+    const terminalsToCheck = [this.terminals.txRxTerminal, this.terminals.txTerminal, this.terminals.rxTerminal];
+    let terminalSelectionWasIn: SingleTerminal | null = null;
+    let selectionInfo: SelectionInfo | null = null;
+    for (let i = 0; i < terminalsToCheck.length; i += 1) {
+      const terminal = terminalsToCheck[i];
+      selectionInfo = terminal.getSelectionInfoIfWithinTerminal();
+      if (selectionInfo !== null) {
+        // Found a terminal that the selection is contained within, break out of loop
+        terminalSelectionWasIn = terminal;
+        break;
+      }
+    }
+
+    let clipboardText = '';
+    if (selectionInfo !== null) {
+      // Copy the text from the start node to the end node (NOTE: not the same as
+      // the anchor and focus node if the user clicked at the end and released at the start)
+      clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
+    } else {
+      // Since selection is not fully contained within a single terminal pane,
+      // do a basic toString() copy of the text to the clipboard
+      // Do we need to await the promise?
+      // WARNING: As per spec at: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
+      //   On Windows replace `\n` characters with `\r\n` in data before creating textBlob
+      clipboardText = selection.toString();
+    }
+
+    navigator.clipboard.writeText(clipboardText);
+    // Create toast telling user that text was copied to clipboard
+    this.snackbar.sendToSnackbar(`${clipboardText.length} chars copied to clipboard.`, 'success');
+  }
+
+  /**
+   * Given selection info and the terminal the selection was in, this function walks through the rows
+   * contained in the selection and extracts the text suitable for copying to the clipboard.
+   *
+   * @param selectionInfo Information about the selection, generated by the SelectionController.
+   * @param terminalSelectionWasIn The terminal that the selection was wholly contained within.
+   * @returns Text extracted from the terminal rows, suitable for copying to the clipboard.
+   */
+  private extractClipboardTextFromTerminal(
+      selectionInfo: SelectionInfo,
+      terminalSelectionWasIn: SingleTerminal): string {
+    // Extract number from end of the row ID
+    // row ID is in form <terminal id>-row-<number>
+    const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
+    const lastRowIdNumOnly = parseInt(selectionInfo.lastRowId.split('-').slice(-1)[0]);
+
+    // Get the index of these row numbers in the terminal
+    const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowIdNumOnly);
+    const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowIdNumOnly);
+
+    // Iterate from the first to the last row, and extract the text from each row
+    let textToCopy = '';
+    for (let i = firstRowIndex; i <= lastRowIndex; i += 1) {
+      const terminalRow = terminalSelectionWasIn.terminalRows[i];
+
+      // Add a newline character between each successive row, except if:
+      //    - The terminal row was created due to wrapping. This means the user can paste the text into
+      //    a text editor and it won't have additional new lines added just because the text wrapped in
+      //    the terminal. New lines will only be added if the terminal row was created because of
+      //    a new line character or an ANSI escape sequence (e.g. cursor down).
+      if (i !== firstRowIndex && terminalRow.wasCreatedDueToWrapping === false) {
+        textToCopy += '\n';
+      }
+
+      if (i === firstRowIndex && i === lastRowIndex) {
+        // If this is the first and last row, only copy from the start to the end of the selection
+        textToCopy += terminalRow.getText().slice(selectionInfo.firstColIdx, selectionInfo.lastColIdx);
+      } else if (i === firstRowIndex) {
+        // If this is the first row, only copy from the start of the selection
+        textToCopy += terminalRow.getText().slice(selectionInfo.firstColIdx);
+      } else if (i === lastRowIndex) {
+        // If this is the last row, only copy to the end of the selection
+        textToCopy += terminalRow.getText().slice(0, selectionInfo.lastColIdx);
+      } else {
+        // If this is neither the first nor the last row, copy the entire row
+        textToCopy += terminalRow.getText();
+      }
+    }
+
+    return textToCopy;
+  }
+
   /**
    * This is called from either the TX/RX terminal or TX terminal
    * (i.e. any terminal pane that is allowed to send data). This function
@@ -609,28 +760,30 @@ export class App {
       console.log('Unsupported char! event=', event);
       return;
     }
+    await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
+  };
+
+  private async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
     const writer = this.port?.writable?.getWriter();
 
-    const txDataAsUint8Array = Uint8Array.from(bytesToWrite);
-    // console.log('Sending data to serial port. txDataAsUint8Array=', txDataAsUint8Array);
-    await writer?.write(txDataAsUint8Array);
+    await writer?.write(bytesToWrite);
 
     // Allow the serial port to be closed later.
     writer?.releaseLock();
-    this.terminals.txTerminal.parseData(txDataAsUint8Array);
+    this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
     if (this.settings.dataProcessingSettings.localTxEcho) {
-      this.terminals.txRxTerminal.parseData(txDataAsUint8Array);
+      this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 
     // Also send this data to the logger, it may need it
-    this.logging.handleTxData(txDataAsUint8Array);
+    this.logging.handleTxData(bytesToWrite);
 
     runInAction(() => {
       this.numBytesTransmitted += bytesToWrite.length;
     });
-  };
+  }
 
   clearAllData() {
     this.terminals.txRxTerminal.clear();
@@ -643,128 +796,6 @@ export class App {
    */
   setShownMainPane(newPane: MainPanes) {
     this.shownMainPane = newPane;
-  }
-
-  /** Central place which handles all key pressed in the app.
-   * This includes:
-   * - Key presses when a terminal pane is active. Data will be set out the serial port
-   *   if it's a TXRX or TX terminal, the port is open and the key press is relevant.
-   * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
-   * - Pressing "f" while on the Port Configuration settings.
-   */
-  handleKeyDown(event: React.KeyboardEvent) {
-    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
-      this.fakePortController.setIsDialogOpen(true);
-    } else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
-      // Ctrl-Shift-C is pressed
-      this.handleCopyToClipboard(event);
-      return;
-    } else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
-      this.handleTerminalKeyDown(event);
-    }
-  }
-
-  /**
-   * This is called when the user presses Ctrl-Shift-C. It copies the selected text
-   * to the clipboard.
-   * @param event The keyboard event.
-   * @returns
-   */
-  private handleCopyToClipboard(event: React.KeyboardEvent) {
-    // Prevents Ctrl-Shift-C from opening the browser's dev tools
-    event.preventDefault();
-    event.stopPropagation();
-
-    // console.log('handleCopyToClipboard() called.');
-    const selection = window.getSelection();
-    if (selection === null) {
-      return;
-    }
-
-    // Work out if the selection is contained within a single terminal pane, and if so,
-    // handle the copy in a special manner (no just a basic toString())
-    const terminalsToCheck = [this.terminals.txRxTerminal, this.terminals.txTerminal, this.terminals.rxTerminal];
-    let terminalSelectionWasIn: SingleTerminal | null = null;
-    let selectionInfo: SelectionInfo | null = null;
-    for (let i = 0; i < terminalsToCheck.length; i += 1) {
-      const terminal = terminalsToCheck[i];
-      selectionInfo = terminal.getSelectionInfoIfWithinTerminal();
-      if (selectionInfo !== null) {
-        // Found a terminal that the selection is contained within, break out of loop
-        terminalSelectionWasIn = terminal;
-        break;
-      }
-    }
-
-    let clipboardText = '';
-    if (selectionInfo !== null) {
-      // Copy the text from the start node to the end node (NOTE: not the same as
-      // the anchor and focus node if the user clicked at the end and released at the start)
-      clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
-    } else {
-      // Since selection is not fully contained within a single terminal pane,
-      // do a basic toString() copy of the text to the clipboard
-      // Do we need to await the promise?
-      // WARNING: As per spec at: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
-      //   On Windows replace `\n` characters with `\r\n` in data before creating textBlob
-      clipboardText = selection.toString();
-    }
-
-    navigator.clipboard.writeText(clipboardText);
-    // Create toast telling user that text was copied to clipboard
-    this.snackbar.sendToSnackbar(`${clipboardText.length} chars copied to clipboard.`, 'success');
-  }
-
-  /**
-   * Given selection info and the terminal the selection was in, this function walks through the rows
-   * contained in the selection and extracts the text suitable for copying to the clipboard.
-   *
-   * @param selectionInfo Information about the selection, generated by the SelectionController.
-   * @param terminalSelectionWasIn The terminal that the selection was wholly contained within.
-   * @returns Text extracted from the terminal rows, suitable for copying to the clipboard.
-   */
-  private extractClipboardTextFromTerminal(
-      selectionInfo: SelectionInfo,
-      terminalSelectionWasIn: SingleTerminal): string {
-    // Extract number from end of the row ID
-    // row ID is in form <terminal id>-row-<number>
-    const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
-    const lastRowIdNumOnly = parseInt(selectionInfo.lastRowId.split('-').slice(-1)[0]);
-
-    // Get the index of these row numbers in the terminal
-    const firstRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === firstRowIdNumOnly);
-    const lastRowIndex = terminalSelectionWasIn!.terminalRows.findIndex((row) => row.uniqueRowId === lastRowIdNumOnly);
-
-    // Iterate from the first to the last row, and extract the text from each row
-    let textToCopy = '';
-    for (let i = firstRowIndex; i <= lastRowIndex; i += 1) {
-      const terminalRow = terminalSelectionWasIn.terminalRows[i];
-
-      // Add a newline character between each successive row, except if:
-      //    - The terminal row was created due to wrapping. This means the user can paste the text into
-      //    a text editor and it won't have additional new lines added just because the text wrapped in
-      //    the terminal. New lines will only be added if the terminal row was created because of
-      //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && terminalRow.wasCreatedDueToWrapping === false) {
-        textToCopy += '\n';
-      }
-
-      if (i === firstRowIndex && i === lastRowIndex) {
-        // If this is the first and last row, only copy from the start to the end of the selection
-        textToCopy += terminalRow.getText().slice(selectionInfo.firstColIdx, selectionInfo.lastColIdx);
-      } else if (i === firstRowIndex) {
-        // If this is the first row, only copy from the start of the selection
-        textToCopy += terminalRow.getText().slice(selectionInfo.firstColIdx);
-      } else if (i === lastRowIndex) {
-        // If this is the last row, only copy to the end of the selection
-        textToCopy += terminalRow.getText().slice(0, selectionInfo.lastColIdx);
-      } else {
-        // If this is neither the first nor the last row, copy the entire row
-        textToCopy += terminalRow.getText();
-      }
-    }
-
-    return textToCopy;
   }
 
   swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {

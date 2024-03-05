@@ -240,4 +240,34 @@ test.describe('Selecting Text', () => {
 
     expect(clipboardText).toBe('4012\n01');
   });
+
+  test('pasting basic text from the clipboard', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    const textToWrite = 'text from clipboard';
+
+    // Write some text to the clipboard
+    await page.evaluate((textToWrite) => {
+      navigator.clipboard.writeText(textToWrite);
+    }, textToWrite);
+
+    // Make sure the TXRX terminal is in focus
+    await page.click('#tx-rx-terminal');
+
+    // Press Ctrl-Shift-V
+    await page.keyboard.press('Control+Shift+V');
+
+    // Check the text was written to the port
+    const expectedData = Array.from(new TextEncoder().encode(textToWrite));
+
+    // Need to poll this, as the data is written to the port asynchronously
+    await expect(async () => {
+      expect(appTestHarness.writtenData).toEqual(expectedData);
+    }).toPass();
+  });
 });
