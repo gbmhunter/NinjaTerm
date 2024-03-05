@@ -81,6 +81,9 @@ function DataProcessingView(props: Props) {
         </BorderedSection>
       </div>{" "}
       {/* End of row for TX */}
+      {/* =============================================================================== */}
+      {/* META KEYS */}
+      {/* =============================================================================== */}
       <BorderedSection title="Meta Keys" childStyle={{ display: "flex", flexDirection: "column" }}>
         {/* =============================================================================== */}
         {/* CTRL KEYS */}
@@ -387,6 +390,35 @@ function DataProcessingView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* COPY/PASTE SETTINGS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Copy/Paste Settings">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "600px",
+            gap: "20px",
+          }}
+        >
+          <Tooltip title="You usually want this enabled, as when copying text TO the clipboard on Windows, LF is automatically replaced with CRLF. So this will undo that operation when pasting, meaning you can copy terminal text and then paste it and get the same data." placement="top" followCursor arrow>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={dataProcessingSettings.whenPastingOnWindowsReplaceCRLFWithLF}
+                onChange={(e) => {
+                  dataProcessingSettings.setWhenPastingOnWindowsReplaceCRLFWithLF(e.target.checked);
+                }}
+              />
+            }
+            label="When pasting text from the clipboard into a terminal with Ctrl-Shift-V, convert CRLF to LF when on Windows."
+            sx={{ marginBottom: "10px" }}
+          />
+        </Tooltip>
         </div>
       </BorderedSection>
     </div>

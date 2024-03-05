@@ -19,6 +19,7 @@ import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
+import { isRunningOnWindows } from './Util/Util';
 
 declare global {
   interface String {
@@ -513,7 +514,12 @@ export class App {
       // Ctrl-Shift-V is pressed, handle paste
       // Get clipboard text and send it out the serial port if either the TXRX or TX terminal is in focus
       // Calling readText() will ask the user for permission to access the clipboard on the first time
-      const text = await navigator.clipboard.readText();
+      let text = await navigator.clipboard.readText();
+
+      // Convert CRLF to LF if setting is enabled
+      if (this.settings.dataProcessingSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+        text = text.replace(/\r\n/g, '\n');
+      }
 
       // Make sure serial port is open
       if (this.portState !== PortState.OPENED) {

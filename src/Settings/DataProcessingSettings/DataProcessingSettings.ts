@@ -96,9 +96,15 @@ export default class DataProcessingSettings {
   // this might be better defaulting to SWALLOW?
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
+  /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
+   * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
+   * be converted to CRLF when copying TO the clipboard when on Windows.
+   */
+  whenPastingOnWindowsReplaceCRLFWithLF = true;
+
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
-  isApplyable = false;
+  // isApplyable = false;
 
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -146,5 +152,9 @@ export default class DataProcessingSettings {
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
     this.nonVisibleCharDisplayBehavior = value;
+  };
+
+  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
+    this.whenPastingOnWindowsReplaceCRLFWithLF = value;
   };
 }

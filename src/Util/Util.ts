@@ -39,3 +39,15 @@ export function findFirstNodeInDom(node1: Node, node2: Node) {
   return node1.compareDocumentPosition(node2)
     & Node.DOCUMENT_POSITION_FOLLOWING ? node1 : node2;
 }
+
+/**
+ * Call this to detect if browser is running on Windows. Could break
+ * in the future or not work in all cases.
+ *
+ * @returns True if the current OS is Windows, false otherwise.
+ */
+export function isRunningOnWindows() {
+  // This might break in the future or not work in all cases...browsers
+  // don't make it easy to detect OS
+  return navigator.userAgent.includes('Win');
+}

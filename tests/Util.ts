@@ -33,6 +33,16 @@ declare global {
 }
 
 export class AppTestHarness {
+
+  /**
+   * This array is used to store the data that is written to the serial port from the app.
+   * Used to checking if data was written correctly during e2e tests. You might need to
+   * poll this because it is written to asynchronously. For example:
+   *
+   * await expect(async () => {
+   *   expect(appTestHarness.writtenData).toEqual(expectedData);
+   * }).toPass();
+   */
   writtenData: number[] = [];
 
   page: Page;
@@ -49,13 +59,11 @@ export class AppTestHarness {
     // We need expose a function to pass the written data back from
     // the browser context to this node.js test context
     await this.page.exposeFunction('writeData', (data) => {
-      console.log('in page');
       this.writtenData.push(data);
     });
     await this.page.addInitScript(() => {
       const mockWriter = {
         write: (data: Uint8Array) => {
-          console.log('write() called with data:', data);
           // Uint8Array's are serialized a bit weirdly,
           // so do the loop client side and just send back the
           // individual numbers in the array
