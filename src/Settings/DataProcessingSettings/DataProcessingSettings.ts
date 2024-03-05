@@ -102,6 +102,8 @@ export default class DataProcessingSettings {
    */
   whenPastingOnWindowsReplaceCRLFWithLF = true;
 
+  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
+
   // Set to true if the visible data has been changed from the applied
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   // isApplyable = false;
@@ -156,5 +158,9 @@ export default class DataProcessingSettings {
 
   setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
     this.whenPastingOnWindowsReplaceCRLFWithLF = value;
+  };
+
+  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
+    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
   };
 }

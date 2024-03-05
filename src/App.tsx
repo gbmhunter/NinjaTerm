@@ -620,11 +620,12 @@ export class App {
       const terminalRow = terminalSelectionWasIn.terminalRows[i];
 
       // Add a newline character between each successive row, except if:
-      //    - The terminal row was created due to wrapping. This means the user can paste the text into
+      //    - The terminal row was created due to wrapping AND setting is enabled.
+      //    This means the user can paste the text into
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && terminalRow.wasCreatedDueToWrapping === false) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.dataProcessingSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
