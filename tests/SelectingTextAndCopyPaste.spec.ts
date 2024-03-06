@@ -1,7 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { AppTestHarness } from './Util';
-import '../src/WindowTypes';
+import '../src/model/WindowTypes';
 
 /**
  * Helper function to set the in-browser selection based on start and end row IDs and column indexes.

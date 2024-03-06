@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Tip displayed on startup with potentially useful information about the app.
 - Integration test to make sure changing the number of characters per row in the terminal works.
 
+### Changed
+
+- Refactored source code by splitting things into `model/` and `view/` directories.
+
 ## [4.12.2] - 2024-02-13
 
 ### Changed
