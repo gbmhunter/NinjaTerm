@@ -1,8 +1,8 @@
-// eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
 import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import AppStorage from 'src/model/Storage/AppStorage';
 
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
@@ -38,7 +38,16 @@ export enum DeleteKeyPressBehaviors {
   SEND_VT_SEQUENCE,
 }
 
+class DataV1 {
+  version = 1;
+  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+}
+
 export default class DataProcessingSettings {
+
+  appStorage: AppStorage;
+
   //=================================================================
   // TX SETTINGS
   //=================================================================
@@ -108,16 +117,52 @@ export default class DataProcessingSettings {
   // data by the user AND data is valid (this is used to enable the "Apply" button)
   // isApplyable = false;
 
-  constructor() {
+  constructor(appStorage: AppStorage) {
+    console.log('DataV1: ', JSON.stringify(new DataV1()));
+
+    this.appStorage = appStorage;
+
     makeAutoObservable(this); // Make sure this is at the end of the constructor
+    this.loadSettings();
   }
+
+  loadSettings = () => {
+    let config = this.appStorage.getConfig(['settings', 'data-processing']);
+    console.log('config: ', config);
+
+    // UPGRADE PATH
+    //===============================================
+
+    if (config === null) {
+      config = new DataV1();
+      this.appStorage.saveConfig(['settings', 'data-processing'], config);
+    } else if (config.version === 1) {
+      console.log('Up-to-date config found');
+
+      let configAsDataV1 = config as DataV1;
+      this.backspaceKeyPressBehavior = configAsDataV1.backspaceKeyPressBehavior;
+      this.deleteKeyPressBehavior = configAsDataV1.deleteKeyPressBehavior;
+    } else{
+      console.error('Unknown config version found: ', config.version);
+    }
+  }
+
+  saveSettings = () => {
+    const config = new DataV1();
+    config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
+    config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
+
+    this.appStorage.saveConfig(['settings', 'data-processing'], config);
+  };
 
   setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
     this.backspaceKeyPressBehavior = value;
+    this.saveSettings();
   };
 
   setDeleteKeyPressBehavior = (value: DeleteKeyPressBehaviors) => {
     this.deleteKeyPressBehavior = value;
+    this.saveSettings();
   };
 
   setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {

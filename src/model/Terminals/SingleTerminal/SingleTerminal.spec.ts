@@ -16,7 +16,7 @@ describe('single terminal tests', () => {
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
     appStorage = new AppStorage();
-    dataProcessingSettings = new DataProcessingSettings();
+    dataProcessingSettings = new DataProcessingSettings(appStorage);
     displaySettings = new DisplaySettings(appStorage);
     singleTerminal = new SingleTerminal(
       'test-terminal',

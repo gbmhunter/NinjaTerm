@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 
 import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';

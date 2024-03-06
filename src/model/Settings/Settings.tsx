@@ -54,7 +54,7 @@ export class Settings {
   constructor(app: App) {
     this.app = app;
     this.portConfiguration = new PortConfiguration(app);
-    this.dataProcessingSettings = new DataProcessingSettings();
+    this.dataProcessingSettings = new DataProcessingSettings(app.appStorage);
     this.displaySettings = new DisplaySettings(app.appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
