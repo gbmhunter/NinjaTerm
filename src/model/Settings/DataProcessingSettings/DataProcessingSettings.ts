@@ -39,9 +39,26 @@ export enum DeleteKeyPressBehaviors {
 }
 
 class DataV1 {
+  // METADATA
   version = 1;
+
   backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
   deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
+  sendEscCharWhenAltKeyPressed = true;
+
+  ansiEscapeCodeParsingEnabled = true;
+  maxEscapeCodeLengthChars = '10';
+  localTxEcho = false;
+  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
+  swallowNewLine = true;
+  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
+  swallowCarriageReturn = true;
+  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+
+  // COPY/PASTE SETTINGS
+  whenPastingOnWindowsReplaceCRLFWithLF = true;
+  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 }
 
 export default class DataProcessingSettings {
@@ -118,10 +135,7 @@ export default class DataProcessingSettings {
   // isApplyable = false;
 
   constructor(appStorage: AppStorage) {
-    console.log('DataV1: ', JSON.stringify(new DataV1()));
-
     this.appStorage = appStorage;
-
     makeAutoObservable(this); // Make sure this is at the end of the constructor
     this.loadSettings();
   }
@@ -142,6 +156,18 @@ export default class DataProcessingSettings {
       let configAsDataV1 = config as DataV1;
       this.backspaceKeyPressBehavior = configAsDataV1.backspaceKeyPressBehavior;
       this.deleteKeyPressBehavior = configAsDataV1.deleteKeyPressBehavior;
+      this.send0x01Thru0x1AWhenCtrlAThruZPressed = configAsDataV1.send0x01Thru0x1AWhenCtrlAThruZPressed;
+
+      this.ansiEscapeCodeParsingEnabled = configAsDataV1.ansiEscapeCodeParsingEnabled;
+      this.maxEscapeCodeLengthChars.setDispValue(configAsDataV1.maxEscapeCodeLengthChars);
+      this.localTxEcho = configAsDataV1.localTxEcho;
+      this.newLineCursorBehavior = configAsDataV1.newLineCursorBehavior;
+      this.swallowNewLine = configAsDataV1.swallowNewLine;
+      this.carriageReturnCursorBehavior = configAsDataV1.carriageReturnCursorBehavior;
+      this.swallowCarriageReturn = configAsDataV1.swallowCarriageReturn;
+      this.nonVisibleCharDisplayBehavior = configAsDataV1.nonVisibleCharDisplayBehavior;
+      this.whenPastingOnWindowsReplaceCRLFWithLF = configAsDataV1.whenPastingOnWindowsReplaceCRLFWithLF;
+      this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configAsDataV1.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
     } else{
       console.error('Unknown config version found: ', config.version);
     }
@@ -149,8 +175,25 @@ export default class DataProcessingSettings {
 
   saveSettings = () => {
     const config = new DataV1();
+
+    // TX SETTINGS
     config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
     config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
+    config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
+    config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
+
+    config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
+    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.dispValue
+    config.localTxEcho = this.localTxEcho;
+    config.newLineCursorBehavior = this.newLineCursorBehavior;
+    config.swallowNewLine = this.swallowNewLine;
+    config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
+    config.swallowCarriageReturn = this.swallowCarriageReturn;
+    config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
+
+    // COPY/PASTE
+    config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
+    config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
 
     this.appStorage.saveConfig(['settings', 'data-processing'], config);
   };
@@ -167,45 +210,56 @@ export default class DataProcessingSettings {
 
   setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
     this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
+    this.saveSettings();
   }
 
   setSendEscCharWhenAltKeyPressed = (value: boolean) => {
     this.sendEscCharWhenAltKeyPressed = value;
+    this.saveSettings();
   }
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.ansiEscapeCodeParsingEnabled = value;
+    this.saveSettings();
   };
 
   setLocalTxEcho = (value: boolean) => {
     this.localTxEcho = value;
+    this.saveSettings();
   };
 
   setNewLineCursorBehavior = (value: NewLineCursorBehaviors) => {
     this.newLineCursorBehavior = value;
+    this.saveSettings();
   };
 
   setSwallowNewLine = (value: boolean) => {
     this.swallowNewLine = value;
+    this.saveSettings();
   };
 
   setCarriageReturnBehavior = (value: CarriageReturnCursorBehaviors) => {
     this.carriageReturnCursorBehavior = value;
+    this.saveSettings();
   };
 
   setSwallowCarriageReturn = (value: boolean) => {
     this.swallowCarriageReturn = value;
+    this.saveSettings();
   };
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
     this.nonVisibleCharDisplayBehavior = value;
+    this.saveSettings();
   };
 
   setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
     this.whenPastingOnWindowsReplaceCRLFWithLF = value;
+    this.saveSettings();
   };
 
   setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
+    this.saveSettings();
   };
 }
