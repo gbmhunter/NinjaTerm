@@ -1,4 +1,3 @@
-/* eslint-disable testing-library/prefer-screen-queries */
 import { expect, test, Page } from '@playwright/test';
 
 import { AppTestHarness } from './Util';
@@ -215,6 +214,37 @@ test.describe('Selecting Text', () => {
     // There should not be a new line between the "34" and "01" because
     // the second row was created due to wrapping
     expect(clipboardText).toBe('3401');
+  });
+
+  test('disable skipping new lines on wrapped text setting', async ({ page, context }) => {
+    // Granting these permissions must be done before the clipboard is written to by the app
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    // Change the terminal width to 5 characters
+    await appTestHarness.changeTerminalWidth(5);
+
+    await appTestHarness.goToDataProcessingSettings();
+    await page.getByTestId('do-not-add-lf-if-row-was-created-due-to-wrapping').click();
+    await appTestHarness.goToTerminalView();
+
+    // Send enough data that the text will wrap. This will create two rows:
+    // row1: 01234
+    // row2: 01234
+    await appTestHarness.sendTextToTerminal('0123401234');
+
+    // Select the "34" from the end of row 1 and the "01" from the start of row 2
+    await setSelection(page, 'tx-rx-terminal-row-0', 3, 'tx-rx-terminal-row-1', 2);
+
+    // Press Ctrl-Shift-C
+    await page.keyboard.press('Control+Shift+C');
+    const clipboardText = await getNormalizedClipboardText(page);
+
+    // There should be a new line between the "34" and "01" because we disabled the setting
+    expect(clipboardText).toBe('34\n01');
   });
 
   test('mixture of new lines and wrapping text to clipboard', async ({ page, context }) => {

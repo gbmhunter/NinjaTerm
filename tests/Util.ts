@@ -251,7 +251,6 @@ export class AppTestHarness {
   enableGraphing = async () => {
     await this.page.getByTestId('show-graphing-pane-button').click();
     await this.page.getByLabel('Enable Graphing').click();
-    // expect(this.app.graphing.graphingEnabled).toBe(true);
   };
 
   changeTerminalWidth = async (newWidth: number) => {
@@ -266,6 +265,24 @@ export class AppTestHarness {
     await this.page.keyboard.press('Enter');
 
     // Go back to terminal view
+    await this.page.getByTestId('show-terminal-button').click();
+  }
+
+  /**
+   * Navigate to the Data Processing settings page.
+   */
+  goToDataProcessingSettings = async () => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByText('Data Processing').click();
+  }
+
+  /**
+   * Navigate to the Terminal view (1 or more terminal panes displayed).
+   */
+  goToTerminalView = async () => {
     await this.page.getByTestId('show-terminal-button').click();
   }
 }

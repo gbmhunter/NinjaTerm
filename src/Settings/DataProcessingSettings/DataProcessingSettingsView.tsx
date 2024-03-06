@@ -416,6 +416,7 @@ function DataProcessingView(props: Props) {
                   onChange={(e) => {
                     dataProcessingSettings.setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping(e.target.checked);
                   }}
+                  data-testid="do-not-add-lf-if-row-was-created-due-to-wrapping"
                 />
               }
               label="When copying text from the terminal to the clipboard with Ctrl-Shift-C, do not insert LF into clipboard if row was created due to wrapping."

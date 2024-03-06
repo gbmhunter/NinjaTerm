@@ -364,21 +364,21 @@ export class App {
           const { value, done } = await this.reader.read();
           if (done) {
             // reader.cancel() has been called.
-            console.log('reader.read() returned done.');
+            // console.log('reader.read() returned done.');
             break;
           }
           // value is a Uint8Array.
           this.parseRxData(value);
         }
       } catch (error) {
-        console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
+        // console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
         // These error are described at https://wicg.github.io/serial/
         // @ts-ignore:
         if (error instanceof DOMException) {
-          console.log('Exception was DOMException. error.name=', error.name);
+          // console.log('Exception was DOMException. error.name=', error.name);
           // BufferOverrunError: Rendering couldn't get up with input data,
           // potentially make buffer size to port.open() larger or speed up processing/rendering
-          // if this occurs often. This is non-fatal, readable will not be null
+          // if this occurs often. This is non-fatal, port.readable will not be null
           if (error.name === 'BufferOverrunError') {
             this.snackbar.sendToSnackbar(
               'RX buffer overrun occurred. Too much data is coming in for the app to handle.\n' + 'Returned error from reader.read():\n' + `${error}`,
@@ -400,6 +400,7 @@ export class App {
               `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n` + 'Reported error from port.read():\n' + `${error}`;
             this.snackbar.sendToSnackbar(msg, 'error');
             console.log(msg);
+            console.log('port.readable: ', this.port?.readable);
           }
         } else {
           this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
