@@ -308,4 +308,57 @@ test.describe('RX data', () => {
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
+  test('changing num chars per row', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await page.keyboard.press('Escape');
+    await page.getByText('Display').click();
+
+    await page.locator("[name='terminalWidthChars']").fill("10")
+    // Press enter to "apply" change
+    await page.keyboard.press('Enter');
+
+    // Go back to terminal view
+    await page.getByTestId('show-terminal-button').click();
+
+    // We set the width to 10 chars, so let's send 20 chars and expect 2 rows
+    await appTestHarness.sendTextToTerminal('01234567890123456789');
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '9' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '9' }),
+      ],
+      [
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
 });

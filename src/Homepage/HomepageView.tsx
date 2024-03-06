@@ -269,6 +269,7 @@ export default observer((props: Props) => {
           <ul>
             <li>Ability to switch between a combined TX/RX terminal and separate terminals.</li>
             <li>Options for controlling carriage return (CR) and line feed (LF) behavior.</li>
+            <li>Smart copy/paste between the terminals and the clipboard with Ctrl-Shift-C and Ctrl-Shift-V. When copying to the clipboard, rows in the terminal created due to wrapping do not insert new lines into the clipboard data.</li>
           </ul>
 
           <Typography variant="h2">Coming Soon...</Typography>

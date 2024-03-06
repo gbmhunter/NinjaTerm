@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import ReactGA from "react-ga4";
 
-import AppView from './AppView';
+import AppView from './view/AppView';
 import HomepageView from './Homepage/HomepageView';
 
 // Google Analytics. Only initialize in production, otherwise things like

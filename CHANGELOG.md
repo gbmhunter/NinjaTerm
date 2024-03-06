@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.13.0] - 2024-03-07
+
+### Added
+
+- Ability to select terminal text and the selection persist across re-renders of the terminal pane (e.g. when more data arrives).
+- Copy/paste of terminal text with Ctrl-Shift-C and Ctrl-Shift-V. Copying is handled smartly with new lines only added when terminal row was not a result of wrapping from the previous line.
+- Tip displayed on startup with potentially useful information about the app.
+- Integration test to make sure changing the number of characters per row in the terminal works.
+
+### Changed
+
+- Refactored source code by splitting things into `model/` and `view/` directories.
+
 ## [4.12.2] - 2024-02-13
 
 ### Changed
@@ -645,7 +658,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.2...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.0...HEAD
+[4.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.2...v4.13.0
 [4.12.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.1...v4.12.2
 [4.12.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.0...v4.12.1
 [4.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.11.0...v4.12.0

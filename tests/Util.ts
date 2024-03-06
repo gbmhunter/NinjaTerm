@@ -33,6 +33,16 @@ declare global {
 }
 
 export class AppTestHarness {
+
+  /**
+   * This array is used to store the data that is written to the serial port from the app.
+   * Used to checking if data was written correctly during e2e tests. You might need to
+   * poll this because it is written to asynchronously. For example:
+   *
+   * await expect(async () => {
+   *   expect(appTestHarness.writtenData).toEqual(expectedData);
+   * }).toPass();
+   */
   writtenData: number[] = [];
 
   page: Page;
@@ -241,6 +251,38 @@ export class AppTestHarness {
   enableGraphing = async () => {
     await this.page.getByTestId('show-graphing-pane-button').click();
     await this.page.getByLabel('Enable Graphing').click();
-    // expect(this.app.graphing.graphingEnabled).toBe(true);
   };
+
+  changeTerminalWidth = async (newWidth: number) => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByText('Display').click();
+
+    await this.page.locator("[name='terminalWidthChars']").fill(String(newWidth));
+    // Press enter to "apply" change
+    await this.page.keyboard.press('Enter');
+
+    // Go back to terminal view
+    await this.page.getByTestId('show-terminal-button').click();
+  }
+
+  /**
+   * Navigate to the Data Processing settings page.
+   */
+  goToDataProcessingSettings = async () => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByText('Data Processing').click();
+  }
+
+  /**
+   * Navigate to the Terminal view (1 or more terminal panes displayed).
+   */
+  goToTerminalView = async () => {
+    await this.page.getByTestId('show-terminal-button').click();
+  }
 }
