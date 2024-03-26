@@ -32,6 +32,7 @@ declare global {
   // read bytes function
   interface Window {
     app: App;
+    umami: any; // Umami analytics
   }
 }
 
@@ -344,6 +345,8 @@ export class App {
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
       ReactGA.event('port_open');
+      // Umami event to track how many times a port was opened :-)
+      window.umami.track('port-open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {

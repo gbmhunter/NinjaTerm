@@ -22,16 +22,14 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-// Add Umami analytics script only in production.
-// Insert script into head of HTML document
+// Enable Umami analytics script in production and disable
+// in dev. environment. Use the umami.disabled key in local storage for doing so
 if (import.meta.env.PROD) {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = 'https://umami.mbedded.ninja/script.js';
-  script.setAttribute('data-website-id', 'b0ab1a49-5d70-4e53-b2e2-6f3b8127ef84');
-  document.getElementsByTagName('head')[0].appendChild(script);
+  // It's not good enough just to set the key to 0, it needs to be removed
+  window.localStorage.removeItem('umami.disabled');
 } else {
-  console.log('Detected dev. environment, not adding Umami script.');
+  console.log('Detected dev. environment, setting umami.disabled in local storage to "1".');
+  window.localStorage.setItem('umami.disabled', '1');
 }
 
 // Create routes. Only 2 routes. The root is the
