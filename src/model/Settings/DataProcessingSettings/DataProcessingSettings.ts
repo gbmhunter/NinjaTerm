@@ -4,6 +4,11 @@ import { z } from 'zod';
 import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';
 
+export enum DataTypes {
+  ASCII,
+  HEX,
+}
+
 export enum NewLineCursorBehaviors {
   DO_NOTHING,
   NEW_LINE,
@@ -40,7 +45,37 @@ export enum DeleteKeyPressBehaviors {
 
 class DataV1 {
   // METADATA
+  // Create new version of this class if you need to update the structure
   version = 1;
+
+  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
+  sendEscCharWhenAltKeyPressed = true;
+
+  ansiEscapeCodeParsingEnabled = true;
+  maxEscapeCodeLengthChars = '10';
+  localTxEcho = false;
+  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
+  swallowNewLine = true;
+  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
+  swallowCarriageReturn = true;
+  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+
+  // COPY/PASTE SETTINGS
+  whenPastingOnWindowsReplaceCRLFWithLF = true;
+  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
+}
+
+class DataV2 {
+  // METADATA
+  // Create new version of this class if you need to update the structure
+  version = 2;
+
+  /**
+   * How to interpret the received data from the serial port.
+   */
+  dataType = DataTypes.ASCII;
 
   backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
   deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
@@ -97,6 +132,8 @@ export default class DataProcessingSettings {
   // RX SETTINGS
   //=================================================================
 
+  dataType = DataTypes.ASCII;
+
   ansiEscapeCodeParsingEnabled = true;
 
   maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
@@ -148,6 +185,7 @@ export default class DataProcessingSettings {
     //===============================================
 
     if (config === null) {
+      // No data exists, create
       config = new DataV1();
       this.appStorage.saveConfig(['settings', 'data-processing'], config);
     } else if (config.version === 1) {
@@ -196,6 +234,12 @@ export default class DataProcessingSettings {
     config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
 
     this.appStorage.saveConfig(['settings', 'data-processing'], config);
+  };
+
+  setDataType = (value: DataTypes) => {
+    console.log('setDataType: ', value);
+    this.dataType = value;
+    this.saveSettings();
   };
 
   setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
