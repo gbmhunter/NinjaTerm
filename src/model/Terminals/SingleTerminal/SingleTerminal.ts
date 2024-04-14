@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import DataProcessingSettings, { CarriageReturnCursorBehaviors, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
+import DataProcessingSettings, { CarriageReturnCursorBehaviors, DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -205,6 +205,9 @@ export default class SingleTerminal {
   /**
    * Send data to the terminal to be processed and displayed.
    *
+   * Data will sent to the correct parser based on the selected data type (e.g.
+   * ASCII, HEX).
+   *
    * @param data The array of bytes to process.
    */
   parseData(data: Uint8Array) {
@@ -217,13 +220,26 @@ export default class SingleTerminal {
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
+    if (this.dataProcessingSettings.dataType === DataTypes.ASCII) {
+      this.parseAsciiData(data);
+    } else if (this.dataProcessingSettings.dataType === DataTypes.HEX) {
+      // this.parseHexData(data);
+    } else {
+      throw Error(`Data type ${this.dataProcessingSettings.dataType} not supported by parseData().`);
+    }
+
+    // Right at the end of adding everything, limit the num. of max. rows in the terminal
+    // as determined by the settings
+    this.limitNumRows();
+  }
+
+  parseAsciiData(data: Uint8Array) {
     let remainingData: number[] = []
     for (let idx = 0; idx < data.length; idx += 1) {
       remainingData.push(data[idx]);
     }
 
     while (true) {
-
       // Remove char from start of remaining data
       let rxByte = remainingData.shift();
       if (rxByte === undefined) {
@@ -368,10 +384,6 @@ export default class SingleTerminal {
         this.inIdleState = true;
       }
     }
-
-    // Right at the end of adding everything, limit the num. of max. rows in the terminal
-    // as determined by the settings
-    this.limitNumRows();
   }
 
   /**
