@@ -223,7 +223,7 @@ export default class SingleTerminal {
     if (this.dataProcessingSettings.dataType === DataTypes.ASCII) {
       this.parseAsciiData(data);
     } else if (this.dataProcessingSettings.dataType === DataTypes.HEX) {
-      // this.parseHexData(data);
+      this._parseHexData(data);
     } else {
       throw Error(`Data type ${this.dataProcessingSettings.dataType} not supported by parseData().`);
     }
@@ -550,11 +550,34 @@ export default class SingleTerminal {
     }
   }
 
-  _cursorLeft(numRows: number) {
+  /**
+   * Parses received data and displays it as hex characters on the terminal.
+   *
+   * @param data The data to parse and display.
+   */
+  _parseHexData(data: Uint8Array) {
+    for (let idx = 0; idx < data.length; idx += 1) {
+      const rxByte = data[idx];
+      // Convert byte to hex string
+      const hexStr = rxByte.toString(16).padStart(2, '0');
+      // Add to hex chars to the the terminal
+      for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
+        this._addVisibleChar(hexStr.charCodeAt(charIdx));
+      }
+    }
+  }
+
+  /**
+   * Moves the cursor left the specified number of columns. Does not move the cursor any further
+   * if it reaches column 0.
+   * @param numCols The number of columns to move left.
+   * @returns
+   */
+  _cursorLeft(numCols: number) {
     // Cap number columns to go left
     const currCursorColIdx = this.cursorPosition[1];
-    let numColsToLeftAdjusted = numRows;
-    if (numRows > currCursorColIdx) {
+    let numColsToLeftAdjusted = numCols;
+    if (numCols > currCursorColIdx) {
       numColsToLeftAdjusted = currCursorColIdx;
     }
     // Check if we actually need to move
@@ -574,11 +597,11 @@ export default class SingleTerminal {
    * Moves the cursor right the specified number of columns. Does not move the cursor any further
    * if it reaches the end of the terminal width.
    *
-   * @param numRows Number of rows to move right.
+   * @param numCols Number of columns to move right.
    */
-  _cursorRight(numRows: number) {
+  _cursorRight(numCols: number) {
     // Go right one character at a time and perform various checks along the way
-    for (let numColsGoneRight = 0; numColsGoneRight < numRows; numColsGoneRight += 1) {
+    for (let numColsGoneRight = 0; numColsGoneRight < numCols; numColsGoneRight += 1) {
       // Never exceed the specified terminal width when going right
       if (this.cursorPosition[1] >= this.displaySettings.terminalWidthChars.appliedValue) {
         return;
@@ -603,6 +626,11 @@ export default class SingleTerminal {
     }
   }
 
+  /**
+   * Moves the cursor up the specified number of rows. Does not move the cursor any further
+   * it it reaches the first row.
+   * @param numRows The number of rows to move up.
+   */
   _cursorUp(numRows: number) {
     // Go up one row at a time and perform various checks along the way
     for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
@@ -709,6 +737,10 @@ export default class SingleTerminal {
     }
   }
 
+  /**
+   * Wrapper for _addVisibleChar() which lets you add multiple characters at once.
+   * @param rxBytes The printable characters to display.
+   */
   _addVisibleChars(rxBytes: number[]) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
       this._addVisibleChar(rxBytes[idx]);
@@ -719,7 +751,9 @@ export default class SingleTerminal {
    * Adds a single printable character to the terminal at the current cursor position.
    * Cursor is also incremented to next suitable position.
    *
-   * @param char Must be a single printable character only.
+   * @param char Must be a number in the range [0, 255]. If number is in the valid ASCII range, the appropriate character
+   *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
+   *   depending on the data processing settings.
    */
   _addVisibleChar(rxByte: number) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);

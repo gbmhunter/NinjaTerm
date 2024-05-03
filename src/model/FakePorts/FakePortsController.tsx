@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { App, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
+import { DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -501,6 +501,40 @@ export default class FakePortsController {
           return null;
         },
         (_: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // dataType: HEX, bytes: 0x00-0xFF, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: hex, bytes 0x00-0xFF, 5chars/s',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
+        () => {
+          // app.settings.displaySettings.charSizePx.setDispValue('30');
+          // app.settings.displaySettings.charSizePx.apply();
+
+          // app.settings.displaySettings.terminalWidthChars.setDispValue('40');
+          // app.settings.displaySettings.terminalWidthChars.apply();
+
+          app.settings.dataProcessingSettings.setDataType(DataTypes.HEX);
+
+          let testCharIdx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            testCharIdx += 1;
+            if (testCharIdx === 256) {
+              testCharIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
