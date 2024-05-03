@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import DataProcessingSettings, { CarriageReturnCursorBehaviors, DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
+import RxSettings, { CarriageReturnCursorBehaviors, DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -21,7 +21,7 @@ export default class SingleTerminal {
 
   id: string;
 
-  dataProcessingSettings: DataProcessingSettings;
+  dataProcessingSettings: RxSettings;
 
   displaySettings: DisplaySettings;
 
@@ -109,7 +109,7 @@ export default class SingleTerminal {
   constructor(
       id: string,
       isFocusable: boolean,
-      dataProcessingSettings: DataProcessingSettings,
+      dataProcessingSettings: RxSettings,
       displaySettings: DisplaySettings,
       onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null) {
     // Save passed in variables and dependencies

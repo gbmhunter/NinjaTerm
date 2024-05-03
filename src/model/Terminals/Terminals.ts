@@ -16,9 +16,9 @@ export default class Terminals {
   filterText: ApplyableTextField
 
   constructor(app: App) {
-    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
-    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
-    this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.dataProcessingSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
+    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
+    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
+    this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
 
     this.filterText = new ApplyableTextField('', z.string());
     this.filterText.setOnApplyChanged(this.onFilterTextApply);

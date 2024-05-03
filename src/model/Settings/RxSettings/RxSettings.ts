@@ -48,30 +48,6 @@ class DataV1 {
   // Create new version of this class if you need to update the structure
   version = 1;
 
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
-  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-  sendEscCharWhenAltKeyPressed = true;
-
-  ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = '10';
-  localTxEcho = false;
-  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
-  swallowNewLine = true;
-  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
-  swallowCarriageReturn = true;
-  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
-
-  // COPY/PASTE SETTINGS
-  whenPastingOnWindowsReplaceCRLFWithLF = true;
-  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
-}
-
-class DataV2 {
-  // METADATA
-  // Create new version of this class if you need to update the structure
-  version = 2;
-
   /**
    * How to interpret the received data from the serial port.
    */
@@ -96,37 +72,9 @@ class DataV2 {
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 }
 
-export default class DataProcessingSettings {
+export default class RxSettings {
 
   appStorage: AppStorage;
-
-  //=================================================================
-  // TX SETTINGS
-  //=================================================================
-
-  /**
-   * What to do when the user presses the backspace key.
-   */
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-
-  /**
-   * What to do when the user presses the delete key.
-   */
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
-
-  /**
-   * If true, hex bytes 0x01-0x1A will be sent when the user
-   * presses Ctrl+A thru Ctrl+Z
-   */
-  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-
-  /**
-   * If true, [ESC] + <char> will be sent when the user presses
-   * Alt-<char> (e.g. Alt-A will send the bytes 0x1B 0x41).
-   *
-   * This emulates standard meta key behavior in most terminals.
-   */
-  sendEscCharWhenAltKeyPressed = true;
 
   //=================================================================
   // RX SETTINGS
@@ -178,7 +126,7 @@ export default class DataProcessingSettings {
   }
 
   loadSettings = () => {
-    let config = this.appStorage.getConfig(['settings', 'data-processing']);
+    let config = this.appStorage.getConfig(['settings', 'rx-settings']);
     console.log('config: ', config);
 
     // UPGRADE PATH
@@ -187,38 +135,33 @@ export default class DataProcessingSettings {
     if (config === null) {
       // No data exists, create
       config = new DataV1();
-      this.appStorage.saveConfig(['settings', 'data-processing'], config);
+      this.appStorage.saveConfig(['settings', 'rx-settings'], config);
     } else if (config.version === 1) {
       console.log('Up-to-date config found');
-
-      let configAsDataV1 = config as DataV1;
-      this.backspaceKeyPressBehavior = configAsDataV1.backspaceKeyPressBehavior;
-      this.deleteKeyPressBehavior = configAsDataV1.deleteKeyPressBehavior;
-      this.send0x01Thru0x1AWhenCtrlAThruZPressed = configAsDataV1.send0x01Thru0x1AWhenCtrlAThruZPressed;
-
-      this.ansiEscapeCodeParsingEnabled = configAsDataV1.ansiEscapeCodeParsingEnabled;
-      this.maxEscapeCodeLengthChars.setDispValue(configAsDataV1.maxEscapeCodeLengthChars);
-      this.localTxEcho = configAsDataV1.localTxEcho;
-      this.newLineCursorBehavior = configAsDataV1.newLineCursorBehavior;
-      this.swallowNewLine = configAsDataV1.swallowNewLine;
-      this.carriageReturnCursorBehavior = configAsDataV1.carriageReturnCursorBehavior;
-      this.swallowCarriageReturn = configAsDataV1.swallowCarriageReturn;
-      this.nonVisibleCharDisplayBehavior = configAsDataV1.nonVisibleCharDisplayBehavior;
-      this.whenPastingOnWindowsReplaceCRLFWithLF = configAsDataV1.whenPastingOnWindowsReplaceCRLFWithLF;
-      this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configAsDataV1.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
     } else{
       console.error('Unknown config version found: ', config.version);
+      config = new DataV1();
+      this.appStorage.saveConfig(['settings', 'rx-settings'], config);
     }
+
+    // At this point we a confident that config represents the latest version, so
+    // we can go ahead and update all the app settings with the values from the config object
+    let uptodateConfig = config as DataV1;
+
+    this.ansiEscapeCodeParsingEnabled = uptodateConfig.ansiEscapeCodeParsingEnabled;
+    this.maxEscapeCodeLengthChars.setDispValue(uptodateConfig.maxEscapeCodeLengthChars);
+    this.localTxEcho = uptodateConfig.localTxEcho;
+    this.newLineCursorBehavior = uptodateConfig.newLineCursorBehavior;
+    this.swallowNewLine = uptodateConfig.swallowNewLine;
+    this.carriageReturnCursorBehavior = uptodateConfig.carriageReturnCursorBehavior;
+    this.swallowCarriageReturn = uptodateConfig.swallowCarriageReturn;
+    this.nonVisibleCharDisplayBehavior = uptodateConfig.nonVisibleCharDisplayBehavior;
+    this.whenPastingOnWindowsReplaceCRLFWithLF = uptodateConfig.whenPastingOnWindowsReplaceCRLFWithLF;
+    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = uptodateConfig.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
   }
 
   saveSettings = () => {
     const config = new DataV1();
-
-    // TX SETTINGS
-    config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
-    config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
-    config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
-    config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
 
     config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
     config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.dispValue
@@ -237,30 +180,9 @@ export default class DataProcessingSettings {
   };
 
   setDataType = (value: DataTypes) => {
-    console.log('setDataType: ', value);
     this.dataType = value;
     this.saveSettings();
   };
-
-  setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
-    this.backspaceKeyPressBehavior = value;
-    this.saveSettings();
-  };
-
-  setDeleteKeyPressBehavior = (value: DeleteKeyPressBehaviors) => {
-    this.deleteKeyPressBehavior = value;
-    this.saveSettings();
-  };
-
-  setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
-    this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
-    this.saveSettings();
-  }
-
-  setSendEscCharWhenAltKeyPressed = (value: boolean) => {
-    this.sendEscCharWhenAltKeyPressed = value;
-    this.saveSettings();
-  }
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.ansiEscapeCodeParsingEnabled = value;

@@ -10,25 +10,29 @@ import { App } from '../../model/App';
 import { SettingsCategories } from '../../model/Settings/Settings';
 
 import PortConfigurationSettingsView from './PortConfigurationSettings/PortConfigurationSettingsView';
-import DataProcessingSettingsView from './DataProcessingSettings/DataProcessingSettingsView';
+import DataProcessingSettingsView from './RxSettings/RxSettingsView';
 import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
+import TxSettingsView from './TxSettings/TxSettingsView';
 
 interface Props {
-  appStore: App;
+  app: App;
 }
 
 function SettingsDialog(props: Props) {
-  const { appStore } = props;
+  const { app } = props;
 
   const displayedSettingsCategory = {
     [SettingsCategories.PORT_CONFIGURATION]: (
-      <PortConfigurationSettingsView app={appStore} />
+      <PortConfigurationSettingsView app={app} />
     ),
-    [SettingsCategories.DATA_PROCESSING]: (
-      <DataProcessingSettingsView dataProcessingSettings={appStore.settings.dataProcessingSettings} />
+    [SettingsCategories.TX_SETTINGS]: (
+      <TxSettingsView txSettings={app.settings.txSettings} />
+    ),
+    [SettingsCategories.RX_SETTINGS]: (
+      <DataProcessingSettingsView dataProcessingSettings={app.settings.rxSettings} />
     ),
     [SettingsCategories.DISPLAY]: (
-      <DisplaySettingsView app={appStore} />
+      <DisplaySettingsView app={app} />
     ),
   };
 
@@ -47,40 +51,61 @@ function SettingsDialog(props: Props) {
           >
             <nav aria-label="main">
               <List sx={{ marginRight: '10px' }}>
+                {/* PORT CONFIGURATION */}
+                {/* ================================================ */}
                 <ListItemButton
                   onClick={() => {
-                    appStore.settings.setActiveSettingsCategory(
+                    app.settings.setActiveSettingsCategory(
                       SettingsCategories.PORT_CONFIGURATION
                     );
                   }}
                   selected={
-                    appStore.settings.activeSettingsCategory ===
+                    app.settings.activeSettingsCategory ===
                     SettingsCategories.PORT_CONFIGURATION
                   }
                 >
                   <ListItemText>Port Configuration</ListItemText>
                 </ListItemButton>
+                {/* TX SETTINGS */}
+                {/* ================================================ */}
                 <ListItemButton
                   onClick={() => {
-                    appStore.settings.setActiveSettingsCategory(
-                      SettingsCategories.DATA_PROCESSING
+                    app.settings.setActiveSettingsCategory(
+                      SettingsCategories.TX_SETTINGS
                     );
                   }}
                   selected={
-                    appStore.settings.activeSettingsCategory ===
-                    SettingsCategories.DATA_PROCESSING
+                    app.settings.activeSettingsCategory ===
+                    SettingsCategories.TX_SETTINGS
                   }
                 >
-                  <ListItemText>Data Processing</ListItemText>
+                  <ListItemText>TX Settings</ListItemText>
                 </ListItemButton>
+                {/* RX SETTINGS */}
+                {/* ================================================ */}
                 <ListItemButton
                   onClick={() => {
-                    appStore.settings.setActiveSettingsCategory(
+                    app.settings.setActiveSettingsCategory(
+                      SettingsCategories.RX_SETTINGS
+                    );
+                  }}
+                  selected={
+                    app.settings.activeSettingsCategory ===
+                    SettingsCategories.RX_SETTINGS
+                  }
+                >
+                  <ListItemText>RX Settings</ListItemText>
+                </ListItemButton>
+                {/* DISPLAY */}
+                {/* ================================================ */}
+                <ListItemButton
+                  onClick={() => {
+                    app.settings.setActiveSettingsCategory(
                       SettingsCategories.DISPLAY
                     );
                   }}
                   selected={
-                    appStore.settings.activeSettingsCategory ===
+                    app.settings.activeSettingsCategory ===
                     SettingsCategories.DISPLAY
                   }
                 >
@@ -93,7 +118,7 @@ function SettingsDialog(props: Props) {
           <div style={{ flexGrow: 1, overflowY: 'auto', height: '100%' }}>
             {
               displayedSettingsCategory[
-                appStore.settings.activeSettingsCategory
+                app.settings.activeSettingsCategory
               ]
             }
           </div>

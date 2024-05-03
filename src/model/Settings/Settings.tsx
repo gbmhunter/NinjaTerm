@@ -4,7 +4,8 @@ import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
-import DataProcessingSettings from './DataProcessingSettings/DataProcessingSettings';
+import TxSettings from './TxSettings/TxSettings';
+import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
 import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
 
@@ -12,8 +13,9 @@ export type StopBits = 1 | 1.5 | 2;
 
 export enum SettingsCategories {
   PORT_CONFIGURATION,
-  DATA_PROCESSING,
+  RX_SETTINGS,
   DISPLAY,
+  TX_SETTINGS,
 }
 
 export class Settings {
@@ -24,7 +26,9 @@ export class Settings {
 
   portConfiguration: PortConfiguration;
 
-  dataProcessingSettings: DataProcessingSettings;
+  txSettings: TxSettings;
+
+  rxSettings: RxSettings;
 
   displaySettings: DisplaySettings;
 
@@ -54,7 +58,8 @@ export class Settings {
   constructor(app: App) {
     this.app = app;
     this.portConfiguration = new PortConfiguration(app);
-    this.dataProcessingSettings = new DataProcessingSettings(app.appStorage);
+    this.txSettings = new TxSettings(app.appStorage);
+    this.rxSettings = new RxSettings(app.appStorage);
     this.displaySettings = new DisplaySettings(app.appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }

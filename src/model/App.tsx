@@ -17,7 +17,7 @@ import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/RxSettings/RxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
 
@@ -521,7 +521,7 @@ export class App {
       let text = await navigator.clipboard.readText();
 
       // Convert CRLF to LF if setting is enabled
-      if (this.settings.dataProcessingSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      if (this.settings.rxSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
         text = text.replace(/\r\n/g, '\n');
       }
 
@@ -629,7 +629,7 @@ export class App {
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.dataProcessingSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.rxSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
@@ -693,7 +693,7 @@ export class App {
     } else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
-      if (this.settings.dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Ctrl-A through Ctrl-Z is has been pressed
         // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
         // uppercase if lowercase and then subtracting 64
@@ -703,7 +703,7 @@ export class App {
         return;
       }
     } else if (event.altKey) {
-      if (this.settings.dataProcessingSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
         bytesToWrite.push(0x1B);
@@ -729,20 +729,20 @@ export class App {
     //===========================================================
     else if (event.key === 'Backspace') {
       // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
-      if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+      } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
     } else if (event.key === 'Delete') {
       // Delete also has the option of sending [ESC][3~
-      if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
+      if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
         bytesToWrite.push(0x7F);
-      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
         bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');
@@ -784,7 +784,7 @@ export class App {
     this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
-    if (this.settings.dataProcessingSettings.localTxEcho) {
+    if (this.settings.rxSettings.localTxEcho) {
       this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 

@@ -269,14 +269,14 @@ export class AppTestHarness {
   }
 
   /**
-   * Navigate to the Data Processing settings page.
+   * Navigate to the RX settings page.
    */
-  goToDataProcessingSettings = async () => {
+  goToRxSettings = async () => {
     await this.page.getByTestId('settings-button').click();
     // WARNING: Escape key press is needed here otherwise the tooltip that pops
     // up when the settings button is clicked above can block subsequent clicks!
     await this.page.keyboard.press('Escape');
-    await this.page.getByText('Data Processing').click();
+    await this.page.getByText('RX Settings').click();
   }
 
   /**

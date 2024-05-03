@@ -133,7 +133,7 @@ const AppView = observer((props: Props) => {
   // ==========================================================================
   let mainPaneComponent;
   if (app.shownMainPane === MainPanes.SETTINGS) {
-    mainPaneComponent = <SettingsDialog appStore={app} />;
+    mainPaneComponent = <SettingsDialog app={app} />;
   } else if (app.shownMainPane === MainPanes.TERMINAL) {
     mainPaneComponent = <TerminalView app={app} />;
   } else if (app.shownMainPane === MainPanes.GRAPHING) {
