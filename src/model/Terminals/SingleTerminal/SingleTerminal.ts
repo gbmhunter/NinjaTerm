@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import RxSettings, { CarriageReturnCursorBehaviors, DataTypes, HexCase, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
+import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -220,9 +220,9 @@ export default class SingleTerminal {
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
-    if (this.dataProcessingSettings.dataType === DataTypes.ASCII) {
+    if (this.dataProcessingSettings.dataType === DataType.ASCII) {
       this.parseAsciiData(data);
-    } else if (this.dataProcessingSettings.dataType === DataTypes.HEX) {
+    } else if (this.dataProcessingSettings.dataType === DataType.HEX) {
       this._parseHexData(data);
     } else {
       throw Error(`Data type ${this.dataProcessingSettings.dataType} not supported by parseData().`);
@@ -267,15 +267,15 @@ export default class SingleTerminal {
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
-        if (newLineBehavior == NewLineCursorBehaviors.DO_NOTHING) {
+        if (newLineBehavior == NewLineCursorBehavior.DO_NOTHING) {
           // Don't move the cursor anywhere.
           continue;
-        } else if (newLineBehavior == NewLineCursorBehaviors.NEW_LINE) {
+        } else if (newLineBehavior == NewLineCursorBehavior.NEW_LINE) {
           // Just move the cursor down 1 line, do not move the cursor
           // back to the beginning of the line (strict new line only)
           this._cursorDown(1);
           continue;
-        } else if (newLineBehavior == NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
+        } else if (newLineBehavior == NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE) {
           // this.moveToNewLine();
           // Move left FIRST, then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
@@ -303,13 +303,13 @@ export default class SingleTerminal {
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
-        if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.DO_NOTHING) {
+        if (carriageReturnCursorBehavior == CarriageReturnCursorBehavior.DO_NOTHING) {
           // Don't move the cursor anywhere.
           continue;
-        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN) {
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehavior.CARRIAGE_RETURN) {
           this._cursorLeft(this.cursorPosition[1]);
           continue;
-        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE) {
+        } else if (carriageReturnCursorBehavior == CarriageReturnCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE) {
           // Move left FIRST (all the way to column 0), then down. This is slightly more efficient
           // as moving down first will typically mean padding with spaces if the row
           // is empty to put the cursor at the correct column position

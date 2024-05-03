@@ -2,10 +2,10 @@ import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Rad
 import { observer } from "mobx-react-lite";
 
 import RxSettings, {
-  CarriageReturnCursorBehaviors,
-  DataTypes,
+  CarriageReturnCursorBehavior,
+  DataType,
   HexCase,
-  NewLineCursorBehaviors,
+  NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
 } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
@@ -36,11 +36,11 @@ function RxSettingsView(props: Props) {
             >
               {/* ASCII */}
               <Tooltip title="Interpret RX data as ASCII characters." placement="right" arrow>
-                <FormControlLabel value={DataTypes.ASCII} control={<Radio />} label="ASCII" />
+                <FormControlLabel value={DataType.ASCII} control={<Radio />} label="ASCII" />
               </Tooltip>
               {/* HEX */}
               <Tooltip title="Interpret RX data as hexidecimal numbers." placement="right" arrow>
-                <FormControlLabel value={DataTypes.HEX} control={<Radio />} label="Hex" />
+                <FormControlLabel value={DataType.HEX} control={<Radio />} label="Hex" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -49,7 +49,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       {/* DATA TYPE = ASCII */}
       {/* =============================================================================== */}
-      <div className="ascii-block" style={{ display: rxSettings.dataType === DataTypes.ASCII ? "block" : "none" }}>
+      <div className="ascii-block" style={{ display: rxSettings.dataType === DataType.ASCII ? "block" : "none" }}>
         {/* =============================================================================== */}
         {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
         {/* =============================================================================== */}
@@ -159,7 +159,7 @@ function RxSettingsView(props: Props) {
                 >
                   {/* DO NOTHING */}
                   <Tooltip title="Don't move the cursor at all when a new line character is received." placement="right" arrow>
-                    <FormControlLabel value={NewLineCursorBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" data-testid="new-line-dont-move-cursor" />
+                    <FormControlLabel value={NewLineCursorBehavior.DO_NOTHING} control={<Radio />} label="Don't move the cursor" data-testid="new-line-dont-move-cursor" />
                   </Tooltip>
                   {/* MOVE DOWN ONE LINE */}
                   <Tooltip
@@ -167,7 +167,7 @@ function RxSettingsView(props: Props) {
                     placement="right"
                     arrow
                   >
-                    <FormControlLabel value={NewLineCursorBehaviors.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
+                    <FormControlLabel value={NewLineCursorBehavior.NEW_LINE} control={<Radio />} label="Move cursor down one line (new line)" />
                   </Tooltip>
                   {/* NEW LINE AND CARRIAGE RETURN */}
                   <Tooltip
@@ -176,7 +176,7 @@ function RxSettingsView(props: Props) {
                     arrow
                   >
                     <FormControlLabel
-                      value={NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE}
+                      value={NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE}
                       control={<Radio />}
                       label="Move cursor to the start of line and then down one line."
                     />
@@ -229,7 +229,7 @@ function RxSettingsView(props: Props) {
                 >
                   {/* DO NOTHING */}
                   <Tooltip title="Don't move the cursor at all when a carriage return character is received." placement="right" arrow>
-                    <FormControlLabel value={CarriageReturnCursorBehaviors.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
+                    <FormControlLabel value={CarriageReturnCursorBehavior.DO_NOTHING} control={<Radio />} label="Don't move the cursor" />
                   </Tooltip>
                   {/* MOVE CURSOR TO START OF LINE */}
                   <Tooltip
@@ -237,12 +237,12 @@ function RxSettingsView(props: Props) {
                     placement="right"
                     arrow
                   >
-                    <FormControlLabel value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN} control={<Radio />} label="Move cursor to the start of the current line" />
+                    <FormControlLabel value={CarriageReturnCursorBehavior.CARRIAGE_RETURN} control={<Radio />} label="Move cursor to the start of the current line" />
                   </Tooltip>
                   {/* CARRIAGE RETURN AND NEW LINE */}
                   <Tooltip title="Move the cursor back to the start of the line and then down one line." placement="right" arrow>
                     <FormControlLabel
-                      value={CarriageReturnCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE}
+                      value={CarriageReturnCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE}
                       control={<Radio />}
                       label="Move cursor to the start and then down one line."
                     />
@@ -323,7 +323,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       {/* DATA TYPE = HEX */}
       {/* =============================================================================== */}
-      <div className="hex-block" style={{ display: rxSettings.dataType === DataTypes.HEX ? "block" : "none" }}>
+      <div className="hex-block" style={{ display: rxSettings.dataType === DataType.HEX ? "block" : "none" }}>
         <BorderedSection title="Hex Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           <Tooltip
             title="This string is append to every displayed hex value. For example, use &quot; &quot; to separate hex values with a space, or &quot;,&quot; to create CSV-like data. You can also use an empty string to have no separator at all."

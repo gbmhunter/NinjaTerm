@@ -3,7 +3,7 @@ import { expect, test, describe, beforeEach } from 'vitest';
 import { stringToUint8Array } from 'src/model/Util/Util';
 import SingleTerminal from './SingleTerminal';
 import RxSettings, {
-  NewLineCursorBehaviors,
+  NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
@@ -114,7 +114,7 @@ describe('single terminal tests', () => {
     // Disable swallowing of new line
     dataProcessingSettings.setSwallowNewLine(false);
     dataProcessingSettings.setNewLineCursorBehavior(
-      NewLineCursorBehaviors.DO_NOTHING
+      NewLineCursorBehavior.DO_NOTHING
     );
     dataProcessingSettings.setNonVisibleCharDisplayBehavior(
       NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS

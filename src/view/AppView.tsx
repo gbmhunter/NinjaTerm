@@ -33,7 +33,7 @@ import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
-import { DataTypes } from 'src/model/Settings/RxSettings/RxSettings';
+import { DataType } from 'src/model/Settings/RxSettings/RxSettings';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -91,9 +91,9 @@ const portStateToToolbarStatusProperties: { [key in PortState]: any; } = {
 /**
  * Maps a data type to a string that can be displayed in the UI.
  */
-const dataTypeToDisplayString: { [key in DataTypes]: string } = {
-  [DataTypes.ASCII]: 'ASCII',
-  [DataTypes.HEX]: 'HEX',
+const dataTypeToDisplayString: { [key in DataType]: string } = {
+  [DataType.ASCII]: 'ASCII',
+  [DataType.HEX]: 'HEX',
 };
 
 interface Props {

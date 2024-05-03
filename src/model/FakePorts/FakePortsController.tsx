@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { App, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
+import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -365,7 +365,7 @@ export default class FakePortsController {
           app.settings.displaySettings.terminalWidthChars.apply();
 
           app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
           app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           let testCharIdx = 0;
@@ -401,7 +401,7 @@ export default class FakePortsController {
           app.settings.displaySettings.terminalWidthChars.apply();
 
           app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
+          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
           app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           // Create all the bytes and send them immediately
@@ -522,7 +522,7 @@ export default class FakePortsController {
           // app.settings.displaySettings.terminalWidthChars.setDispValue('40');
           // app.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.rxSettings.setDataType(DataTypes.HEX);
+          app.settings.rxSettings.setDataType(DataType.HEX);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {

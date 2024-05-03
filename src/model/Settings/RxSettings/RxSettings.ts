@@ -4,18 +4,18 @@ import { z } from 'zod';
 import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';
 
-export enum DataTypes {
+export enum DataType {
   ASCII,
   HEX,
 }
 
-export enum NewLineCursorBehaviors {
+export enum NewLineCursorBehavior {
   DO_NOTHING,
   NEW_LINE,
   CARRIAGE_RETURN_AND_NEW_LINE,
 }
 
-export enum CarriageReturnCursorBehaviors {
+export enum CarriageReturnCursorBehavior {
   DO_NOTHING,
   CARRIAGE_RETURN,
   CARRIAGE_RETURN_AND_NEW_LINE,
@@ -45,15 +45,15 @@ class DataV1 {
   /**
    * How to interpret the received data from the serial port.
    */
-  dataType = DataTypes.ASCII;
+  dataType = DataType.ASCII;
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
   maxEscapeCodeLengthChars = '10';
   localTxEcho = false;
-  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
+  newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;
-  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
+  carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
   swallowCarriageReturn = true;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
@@ -72,7 +72,7 @@ export default class RxSettings {
 
   appStorage: AppStorage;
 
-  dataType = DataTypes.ASCII;
+  dataType = DataType.ASCII;
 
   //=================================================================
   // ASCII-SPECIFIC SETTINGS
@@ -85,7 +85,7 @@ export default class RxSettings {
   // If true, local TX data will be echoed to RX
   localTxEcho = false;
 
-  newLineCursorBehavior = NewLineCursorBehaviors.CARRIAGE_RETURN_AND_NEW_LINE;
+  newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
 
   // If set to true, \n bytes will be swallowed and not displayed
   // on the terminal UI (which is generally what you want)
@@ -93,7 +93,7 @@ export default class RxSettings {
 
   // By default set the \n behavior to do new line and carriage return
   // and \r to do nothing. This works for both \n and \r\n line endings
-  carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
+  carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
 
   // If set to true, \r bytes will be swallowed and not displayed
   // on the terminal UI (which is generally what you want)
@@ -199,7 +199,7 @@ export default class RxSettings {
     this.appStorage.saveConfig(CONFIG_KEY, config);
   };
 
-  setDataType = (value: DataTypes) => {
+  setDataType = (value: DataType) => {
     this.dataType = value;
     this.saveSettings();
   };
@@ -218,7 +218,7 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setNewLineCursorBehavior = (value: NewLineCursorBehaviors) => {
+  setNewLineCursorBehavior = (value: NewLineCursorBehavior) => {
     this.newLineCursorBehavior = value;
     this.saveSettings();
   };
@@ -228,7 +228,7 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setCarriageReturnBehavior = (value: CarriageReturnCursorBehaviors) => {
+  setCarriageReturnBehavior = (value: CarriageReturnCursorBehavior) => {
     this.carriageReturnCursorBehavior = value;
     this.saveSettings();
   };
