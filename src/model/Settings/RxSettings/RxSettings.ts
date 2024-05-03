@@ -66,6 +66,8 @@ class DataV1 {
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 }
 
+const CONFIG_KEY = ['settings', 'rx-settings'];
+
 export default class RxSettings {
 
   appStorage: AppStorage;
@@ -128,7 +130,7 @@ export default class RxSettings {
   }
 
   loadSettings = () => {
-    let config = this.appStorage.getConfig(['settings', 'rx-settings']);
+    let config = this.appStorage.getConfig(CONFIG_KEY);
 
     // UPGRADE PATH
     //===============================================
@@ -136,38 +138,43 @@ export default class RxSettings {
     if (config === null) {
       // No data exists, create
       config = new DataV1();
-      this.appStorage.saveConfig(['settings', 'rx-settings'], config);
+      this.appStorage.saveConfig(CONFIG_KEY, config);
     } else if (config.version === 1) {
       console.log('Up-to-date config found');
     } else{
       console.error('Unknown config version found: ', config.version);
       config = new DataV1();
-      this.appStorage.saveConfig(['settings', 'rx-settings'], config);
+      this.appStorage.saveConfig(CONFIG_KEY, config);
     }
 
     // At this point we a confident that config represents the latest version, so
     // we can go ahead and update all the app settings with the values from the config object
-    let uptodateConfig = config as DataV1;
+    let upToDateConfig = config as DataV1;
+
+    this.dataType = upToDateConfig.dataType;
+    console.log(upToDateConfig.dataType);
 
     // ASCII-SPECIFIC SETTINGS
-    this.ansiEscapeCodeParsingEnabled = uptodateConfig.ansiEscapeCodeParsingEnabled;
-    this.maxEscapeCodeLengthChars.setDispValue(uptodateConfig.maxEscapeCodeLengthChars);
-    this.localTxEcho = uptodateConfig.localTxEcho;
-    this.newLineCursorBehavior = uptodateConfig.newLineCursorBehavior;
-    this.swallowNewLine = uptodateConfig.swallowNewLine;
-    this.carriageReturnCursorBehavior = uptodateConfig.carriageReturnCursorBehavior;
-    this.swallowCarriageReturn = uptodateConfig.swallowCarriageReturn;
-    this.nonVisibleCharDisplayBehavior = uptodateConfig.nonVisibleCharDisplayBehavior;
-    this.whenPastingOnWindowsReplaceCRLFWithLF = uptodateConfig.whenPastingOnWindowsReplaceCRLFWithLF;
-    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = uptodateConfig.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
+    this.ansiEscapeCodeParsingEnabled = upToDateConfig.ansiEscapeCodeParsingEnabled;
+    this.maxEscapeCodeLengthChars.setDispValue(upToDateConfig.maxEscapeCodeLengthChars);
+    this.localTxEcho = upToDateConfig.localTxEcho;
+    this.newLineCursorBehavior = upToDateConfig.newLineCursorBehavior;
+    this.swallowNewLine = upToDateConfig.swallowNewLine;
+    this.carriageReturnCursorBehavior = upToDateConfig.carriageReturnCursorBehavior;
+    this.swallowCarriageReturn = upToDateConfig.swallowCarriageReturn;
+    this.nonVisibleCharDisplayBehavior = upToDateConfig.nonVisibleCharDisplayBehavior;
+    this.whenPastingOnWindowsReplaceCRLFWithLF = upToDateConfig.whenPastingOnWindowsReplaceCRLFWithLF;
+    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = upToDateConfig.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
 
     // HEX-SPECIFIC SETTINGS
-    this.hexSeparator.setDispValue(uptodateConfig.hexSeparator);
-    this.hexCase = uptodateConfig.hexCase;
+    this.hexSeparator.setDispValue(upToDateConfig.hexSeparator);
+    this.hexCase = upToDateConfig.hexCase;
   }
 
   saveSettings = () => {
     const config = new DataV1();
+
+    config.dataType = this.dataType;
 
     // ASCII-SPECIFIC SETTINGS
     config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
@@ -187,7 +194,9 @@ export default class RxSettings {
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
     config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
 
-    this.appStorage.saveConfig(['settings', 'data-processing'], config);
+    console.log(config.dataType);
+
+    this.appStorage.saveConfig(CONFIG_KEY, config);
   };
 
   setDataType = (value: DataTypes) => {
