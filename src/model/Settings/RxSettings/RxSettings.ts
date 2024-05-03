@@ -32,15 +32,9 @@ export enum NonVisibleCharDisplayBehaviors {
   HEX_GLYPHS,
 }
 
-export enum BackspaceKeyPressBehavior {
-  SEND_BACKSPACE,
-  SEND_DELETE,
-}
-
-export enum DeleteKeyPressBehaviors {
-  SEND_BACKSPACE,
-  SEND_DELETE,
-  SEND_VT_SEQUENCE,
+export enum HexCase {
+  UPPERCASE,
+  LOWERCASE,
 }
 
 class DataV1 {
@@ -65,6 +59,7 @@ class DataV1 {
 
   // HEX-SPECIFIC SETTINGS
   hexSeparator = ' ';
+  hexCase = HexCase.UPPERCASE;
 
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
@@ -111,6 +106,8 @@ export default class RxSettings {
   //=================================================================
 
   hexSeparator = new ApplyableTextField(' ', z.string());
+
+  hexCase = HexCase.UPPERCASE;
 
   /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
    * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
@@ -166,6 +163,7 @@ export default class RxSettings {
 
     // HEX-SPECIFIC SETTINGS
     this.hexSeparator.setDispValue(uptodateConfig.hexSeparator);
+    this.hexCase = uptodateConfig.hexCase;
   }
 
   saveSettings = () => {
@@ -183,6 +181,7 @@ export default class RxSettings {
 
     // HEX-SPECIFIC SETTINGS
     config.hexSeparator = this.hexSeparator.dispValue;
+    config.hexCase = this.hexCase;
 
     // COPY/PASTE
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
@@ -251,6 +250,11 @@ export default class RxSettings {
 
   setHexSeparator = (value: string) => {
     this.hexSeparator.setDispValue(value);
+    this.saveSettings();
+  };
+
+  setHexCase = (value: HexCase) => {
+    this.hexCase = value;
     this.saveSettings();
   };
 }

@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import RxSettings, { CarriageReturnCursorBehaviors, DataTypes, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
+import RxSettings, { CarriageReturnCursorBehaviors, DataTypes, HexCase, NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -559,7 +559,16 @@ export default class SingleTerminal {
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
       // Convert byte to hex string
-      const hexStr = rxByte.toString(16).padStart(2, '0');
+      let hexStr = rxByte.toString(16).padStart(2, '0');
+      // Set case of hex string
+      if (this.dataProcessingSettings.hexCase === HexCase.UPPERCASE) {
+        hexStr = hexStr.toUpperCase();
+      } else if (this.dataProcessingSettings.hexCase === HexCase.LOWERCASE) {
+        hexStr = hexStr.toLowerCase();
+      } else {
+        throw Error('Invalid hex case setting: ' + this.dataProcessingSettings.hexCase);
+      }
+
       // Add to hex chars to the the terminal
       for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));

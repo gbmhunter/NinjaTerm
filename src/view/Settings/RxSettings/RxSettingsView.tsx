@@ -2,10 +2,9 @@ import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Rad
 import { observer } from "mobx-react-lite";
 
 import RxSettings, {
-  BackspaceKeyPressBehavior,
   CarriageReturnCursorBehaviors,
   DataTypes,
-  DeleteKeyPressBehaviors,
+  HexCase,
   NewLineCursorBehaviors,
   NonVisibleCharDisplayBehaviors,
 } from "src/model/Settings/RxSettings/RxSettings";
@@ -27,7 +26,6 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       <div style={{ display: "flex" }}>
         <BorderedSection title="Data Type" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* BACKSPACE */}
           <FormControl>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
@@ -342,6 +340,24 @@ function RxSettingsView(props: Props) {
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
+          <FormControl>
+            <FormLabel>Upper/lowercase hex:</FormLabel>
+            <RadioGroup
+              value={rxSettings.hexCase}
+              onChange={(e) => {
+                rxSettings.setHexCase(parseInt(e.target.value));
+              }}
+            >
+              {/* UPPERCASE */}
+              <Tooltip title="Use uppercase A-F when printing hex values." placement="right" arrow>
+                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Uppercase" />
+              </Tooltip>
+              {/* LOWERCASE */}
+              <Tooltip title="Use lowercase a-f when printing hex values." placement="right" arrow>
+                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="Lowercase" />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
         </BorderedSection>
       </div>
       {/* End of HEX block */}

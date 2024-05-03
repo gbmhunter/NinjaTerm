@@ -1,15 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import TxSettings from "src/model/Settings/TxSettings/TxSettings";
-import RxSettings, {
-  BackspaceKeyPressBehavior,
-  CarriageReturnCursorBehaviors,
-  DataTypes,
-  DeleteKeyPressBehaviors,
-  NewLineCursorBehaviors,
-  NonVisibleCharDisplayBehaviors,
-} from "src/model/Settings/RxSettings/RxSettings";
+import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from "src/model/Settings/TxSettings/TxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { number } from "zod";

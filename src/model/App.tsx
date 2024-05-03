@@ -17,7 +17,7 @@ import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/RxSettings/RxSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
 
