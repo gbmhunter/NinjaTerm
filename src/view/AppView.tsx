@@ -33,6 +33,7 @@ import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
+import { DataTypes } from 'src/model/Settings/RxSettings/RxSettings';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -85,6 +86,14 @@ const portStateToToolbarStatusProperties: { [key in PortState]: any; } = {
     color: 'green',
     text: 'Port OPENED',
   }
+};
+
+/**
+ * Maps a data type to a string that can be displayed in the UI.
+ */
+const dataTypeToDisplayString: { [key in DataTypes]: string } = {
+  [DataTypes.ASCII]: 'ASCII',
+  [DataTypes.HEX]: 'HEX',
 };
 
 interface Props {
@@ -276,6 +285,11 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
+            {/* DATA TYPE */}
+            <div style={{ padding: '0 10px' }}>
+              { dataTypeToDisplayString[app.settings.rxSettings.dataType] }
+            </div>
+
             {/* LOGGING ON/OFF */}
             <div style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}>
               { app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}

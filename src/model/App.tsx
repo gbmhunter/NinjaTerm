@@ -66,6 +66,11 @@ class LastUsedSerialPort {
   portState: PortState = PortState.CLOSED;
 }
 
+const tipsToDisplayOnStartup = [
+  'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
+  'TIP: Change the type of data displayed between ASCII, HEX and others in Settings → RX Settings.',
+]
+
 export class App {
   settings: Settings;
 
@@ -172,7 +177,9 @@ export class App {
     }
 
     // Send 1 random tip to snackbar on app load
-    this.snackbar.sendToSnackbar('TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.', 'info');
+    // Choose random tip from array
+    const randomIndex = Math.floor(Math.random() * tipsToDisplayOnStartup.length);
+    this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
