@@ -93,6 +93,7 @@ function SettingsDialog(props: Props) {
                     app.settings.activeSettingsCategory ===
                     SettingsCategories.RX_SETTINGS
                   }
+                  data-testid="rx-settings-button"
                 >
                   <ListItemText>RX Settings</ListItemText>
                 </ListItemButton>
@@ -108,6 +109,7 @@ function SettingsDialog(props: Props) {
                     app.settings.activeSettingsCategory ===
                     SettingsCategories.DISPLAY
                   }
+                  data-testid="display-settings-button"
                 >
                   <ListItemText>Display</ListItemText>
                 </ListItemButton>

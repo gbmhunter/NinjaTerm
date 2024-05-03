@@ -254,12 +254,7 @@ export class AppTestHarness {
   };
 
   changeTerminalWidth = async (newWidth: number) => {
-    await this.page.getByTestId('settings-button').click();
-    // WARNING: Escape key press is needed here otherwise the tooltip that pops
-    // up when the settings button is clicked above can block subsequent clicks!
-    await this.page.keyboard.press('Escape');
-    await this.page.getByText('Display').click();
-
+    await this.goToDisplaySettings();
     await this.page.locator("[name='terminalWidthChars']").fill(String(newWidth));
     // Press enter to "apply" change
     await this.page.keyboard.press('Enter');
@@ -276,7 +271,15 @@ export class AppTestHarness {
     // WARNING: Escape key press is needed here otherwise the tooltip that pops
     // up when the settings button is clicked above can block subsequent clicks!
     await this.page.keyboard.press('Escape');
-    await this.page.getByText('RX Settings').click();
+    await this.page.getByTestId('rx-settings-button').click();
+  }
+
+  goToDisplaySettings = async () => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByTestId('display-settings-button').click();
   }
 
   /**
