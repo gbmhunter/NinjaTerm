@@ -564,6 +564,11 @@ export default class SingleTerminal {
       for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));
       }
+      // Append the hex separator string
+      for (let charIdx = 0; charIdx < this.dataProcessingSettings.hexSeparator.appliedValue.length; charIdx += 1) {
+        this._addVisibleChar(this.dataProcessingSettings.hexSeparator.appliedValue.charCodeAt(charIdx));
+      }
+
     }
   }
 

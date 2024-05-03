@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';
 
 export enum DataTypes {
@@ -53,11 +53,7 @@ class DataV1 {
    */
   dataType = DataTypes.ASCII;
 
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
-  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-  sendEscCharWhenAltKeyPressed = true;
-
+  // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
   maxEscapeCodeLengthChars = '10';
   localTxEcho = false;
@@ -66,6 +62,9 @@ class DataV1 {
   carriageReturnCursorBehavior = CarriageReturnCursorBehaviors.DO_NOTHING;
   swallowCarriageReturn = true;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+
+  // HEX-SPECIFIC SETTINGS
+  hexSeparator = ' ';
 
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
@@ -76,11 +75,11 @@ export default class RxSettings {
 
   appStorage: AppStorage;
 
-  //=================================================================
-  // RX SETTINGS
-  //=================================================================
-
   dataType = DataTypes.ASCII;
+
+  //=================================================================
+  // ASCII-SPECIFIC SETTINGS
+  //=================================================================
 
   ansiEscapeCodeParsingEnabled = true;
 
@@ -107,6 +106,12 @@ export default class RxSettings {
   // this might be better defaulting to SWALLOW?
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
+  //=================================================================
+  // HEX-SPECIFIC SETTINGS
+  //=================================================================
+
+  hexSeparator = new ApplyableTextField(' ', z.string());
+
   /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
    * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
    * be converted to CRLF when copying TO the clipboard when on Windows.
@@ -127,7 +132,6 @@ export default class RxSettings {
 
   loadSettings = () => {
     let config = this.appStorage.getConfig(['settings', 'rx-settings']);
-    console.log('config: ', config);
 
     // UPGRADE PATH
     //===============================================
@@ -148,6 +152,7 @@ export default class RxSettings {
     // we can go ahead and update all the app settings with the values from the config object
     let uptodateConfig = config as DataV1;
 
+    // ASCII-SPECIFIC SETTINGS
     this.ansiEscapeCodeParsingEnabled = uptodateConfig.ansiEscapeCodeParsingEnabled;
     this.maxEscapeCodeLengthChars.setDispValue(uptodateConfig.maxEscapeCodeLengthChars);
     this.localTxEcho = uptodateConfig.localTxEcho;
@@ -158,11 +163,15 @@ export default class RxSettings {
     this.nonVisibleCharDisplayBehavior = uptodateConfig.nonVisibleCharDisplayBehavior;
     this.whenPastingOnWindowsReplaceCRLFWithLF = uptodateConfig.whenPastingOnWindowsReplaceCRLFWithLF;
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = uptodateConfig.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
+
+    // HEX-SPECIFIC SETTINGS
+    this.hexSeparator.setDispValue(uptodateConfig.hexSeparator);
   }
 
   saveSettings = () => {
     const config = new DataV1();
 
+    // ASCII-SPECIFIC SETTINGS
     config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
     config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.dispValue
     config.localTxEcho = this.localTxEcho;
@@ -171,6 +180,9 @@ export default class RxSettings {
     config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
     config.swallowCarriageReturn = this.swallowCarriageReturn;
     config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
+
+    // HEX-SPECIFIC SETTINGS
+    config.hexSeparator = this.hexSeparator.dispValue;
 
     // COPY/PASTE
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
@@ -183,6 +195,10 @@ export default class RxSettings {
     this.dataType = value;
     this.saveSettings();
   };
+
+  //=================================================================
+  // ASCII-SPECIFIC SETTINGS
+  //=================================================================
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.ansiEscapeCodeParsingEnabled = value;
@@ -226,6 +242,15 @@ export default class RxSettings {
 
   setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
+    this.saveSettings();
+  };
+
+  //=================================================================
+  // HEX-SPECIFIC SETTINGS
+  //=================================================================
+
+  setHexSeparator = (value: string) => {
+    this.hexSeparator.setDispValue(value);
     this.saveSettings();
   };
 }

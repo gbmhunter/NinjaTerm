@@ -14,13 +14,11 @@ import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { number } from "zod";
 
 interface Props {
-  dataProcessingSettings: RxSettings;
+  rxSettings: RxSettings;
 }
 
 function RxSettingsView(props: Props) {
-  const { dataProcessingSettings } = props;
-
-  console.log(dataProcessingSettings.dataType);
+  const { rxSettings } = props;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
@@ -33,9 +31,9 @@ function RxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
-              value={dataProcessingSettings.dataType}
+              value={rxSettings.dataType}
               onChange={(e) => {
-                dataProcessingSettings.setDataType(parseInt(e.target.value));
+                rxSettings.setDataType(parseInt(e.target.value));
               }}
             >
               {/* ASCII */}
@@ -50,7 +48,10 @@ function RxSettingsView(props: Props) {
           </FormControl>
         </BorderedSection>
       </div>
-      <div className="ascii-block" style={{ display: dataProcessingSettings.dataType === DataTypes.ASCII ? "block" : "none" }}>
+      {/* =============================================================================== */}
+      {/* DATA TYPE = ASCII */}
+      {/* =============================================================================== */}
+      <div className="ascii-block" style={{ display: rxSettings.dataType === DataTypes.ASCII ? "block" : "none" }}>
         {/* =============================================================================== */}
         {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
         {/* =============================================================================== */}
@@ -72,11 +73,11 @@ function RxSettingsView(props: Props) {
                 control={
                   <Checkbox
                     name="ansiEscapeCodeParsingEnabled"
-                    checked={dataProcessingSettings.ansiEscapeCodeParsingEnabled}
+                    checked={rxSettings.ansiEscapeCodeParsingEnabled}
                     onChange={(e) => {
-                      dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
+                      rxSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
                     }}
-                    disabled={dataProcessingSettings.dataType !== 1}
+                    disabled={rxSettings.dataType !== 1}
                   />
                 }
                 label="Enable ANSI Escape Code Parsing"
@@ -100,7 +101,7 @@ function RxSettingsView(props: Props) {
                 InputProps={{
                   endAdornment: <InputAdornment position="start">chars</InputAdornment>,
                 }}
-                applyableTextField={dataProcessingSettings.maxEscapeCodeLengthChars}
+                applyableTextField={rxSettings.maxEscapeCodeLengthChars}
                 sx={{ marginBottom: "20px" }}
               />
             </Tooltip>
@@ -122,9 +123,9 @@ function RxSettingsView(props: Props) {
                 control={
                   <Checkbox
                     name="localTxEcho"
-                    checked={dataProcessingSettings.localTxEcho}
+                    checked={rxSettings.localTxEcho}
                     onChange={(e) => {
-                      dataProcessingSettings.setLocalTxEcho(e.target.checked);
+                      rxSettings.setLocalTxEcho(e.target.checked);
                     }}
                   />
                 }
@@ -153,9 +154,9 @@ function RxSettingsView(props: Props) {
               <FormControl>
                 <FormLabel>When a \n byte is received:</FormLabel>
                 <RadioGroup
-                  value={dataProcessingSettings.newLineCursorBehavior}
+                  value={rxSettings.newLineCursorBehavior}
                   onChange={(e) => {
-                    dataProcessingSettings.setNewLineCursorBehavior(e.target.value as any);
+                    rxSettings.setNewLineCursorBehavior(e.target.value as any);
                   }}
                 >
                   {/* DO NOTHING */}
@@ -194,9 +195,9 @@ function RxSettingsView(props: Props) {
                   control={
                     <Checkbox
                       name="swallowNewLine"
-                      checked={dataProcessingSettings.swallowNewLine}
+                      checked={rxSettings.swallowNewLine}
                       onChange={(e) => {
-                        dataProcessingSettings.setSwallowNewLine(e.target.checked);
+                        rxSettings.setSwallowNewLine(e.target.checked);
                       }}
                     />
                   }
@@ -223,9 +224,9 @@ function RxSettingsView(props: Props) {
               <FormControl>
                 <FormLabel>When a \r byte is received:</FormLabel>
                 <RadioGroup
-                  value={dataProcessingSettings.carriageReturnCursorBehavior}
+                  value={rxSettings.carriageReturnCursorBehavior}
                   onChange={(e) => {
-                    dataProcessingSettings.setCarriageReturnBehavior(e.target.value as any);
+                    rxSettings.setCarriageReturnBehavior(e.target.value as any);
                   }}
                 >
                   {/* DO NOTHING */}
@@ -260,9 +261,9 @@ function RxSettingsView(props: Props) {
                   control={
                     <Checkbox
                       name="swallowCarriageReturn"
-                      checked={dataProcessingSettings.swallowCarriageReturn}
+                      checked={rxSettings.swallowCarriageReturn}
                       onChange={(e) => {
-                        dataProcessingSettings.setSwallowCarriageReturn(e.target.checked);
+                        rxSettings.setSwallowCarriageReturn(e.target.checked);
                       }}
                     />
                   }
@@ -290,9 +291,9 @@ function RxSettingsView(props: Props) {
             <FormControl>
               <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
               <RadioGroup
-                value={dataProcessingSettings.nonVisibleCharDisplayBehavior}
+                value={rxSettings.nonVisibleCharDisplayBehavior}
                 onChange={(e) => {
-                  dataProcessingSettings.setNonVisibleCharDisplayBehavior(e.target.value as any);
+                  rxSettings.setNonVisibleCharDisplayBehavior(e.target.value as any);
                 }}
               >
                 {/* SWALLOW */}
@@ -321,7 +322,29 @@ function RxSettingsView(props: Props) {
         </BorderedSection>
       </div>{" "}
       {/* End of ASCII block */}
-
+      {/* =============================================================================== */}
+      {/* DATA TYPE = HEX */}
+      {/* =============================================================================== */}
+      <div className="hex-block" style={{ display: rxSettings.dataType === DataTypes.HEX ? "block" : "none" }}>
+        <BorderedSection title="Hex Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+          <Tooltip
+            title="This string is append to every displayed hex value. For example, use &quot; &quot; to separate hex values with a space, or &quot;,&quot; to create CSV-like data. You can also use an empty string to have no separator at all."
+            followCursor
+            arrow
+          >
+            <ApplyableTextFieldView
+              id="outlined-basic"
+              name="hexSeparator"
+              label="Separator Between Hex Values"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.hexSeparator}
+              sx={{ marginBottom: "20px" }}
+            />
+          </Tooltip>
+        </BorderedSection>
+      </div>
+      {/* End of HEX block */}
       {/* =============================================================================== */}
       {/* COPY/PASTE SETTINGS */}
       {/* =============================================================================== */}
@@ -342,9 +365,9 @@ function RxSettingsView(props: Props) {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={dataProcessingSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping}
+                  checked={rxSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping}
                   onChange={(e) => {
-                    dataProcessingSettings.setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping(e.target.checked);
+                    rxSettings.setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping(e.target.checked);
                   }}
                   data-testid="do-not-add-lf-if-row-was-created-due-to-wrapping"
                 />
@@ -362,9 +385,9 @@ function RxSettingsView(props: Props) {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={dataProcessingSettings.whenPastingOnWindowsReplaceCRLFWithLF}
+                  checked={rxSettings.whenPastingOnWindowsReplaceCRLFWithLF}
                   onChange={(e) => {
-                    dataProcessingSettings.setWhenPastingOnWindowsReplaceCRLFWithLF(e.target.checked);
+                    rxSettings.setWhenPastingOnWindowsReplaceCRLFWithLF(e.target.checked);
                   }}
                 />
               }

@@ -29,7 +29,7 @@ function SettingsDialog(props: Props) {
       <TxSettingsView txSettings={app.settings.txSettings} />
     ),
     [SettingsCategories.RX_SETTINGS]: (
-      <DataProcessingSettingsView dataProcessingSettings={app.settings.rxSettings} />
+      <DataProcessingSettingsView rxSettings={app.settings.rxSettings} />
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={app} />
