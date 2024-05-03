@@ -60,6 +60,7 @@ class DataV1 {
   // HEX-SPECIFIC SETTINGS
   hexSeparator = ' ';
   hexCase = HexCase.UPPERCASE;
+  prefixHexValuesWith0x = false;
 
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
@@ -110,6 +111,12 @@ export default class RxSettings {
   hexSeparator = new ApplyableTextField(' ', z.string());
 
   hexCase = HexCase.UPPERCASE;
+
+  /**
+   * If true, displayed hex values in the terminal will all be prefixed with "0x".
+   * Defaults to false because typically the 0x is just noise and not needed.
+   */
+  prefixHexValuesWith0x = false;
 
   /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
    * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
@@ -169,6 +176,7 @@ export default class RxSettings {
     // HEX-SPECIFIC SETTINGS
     this.hexSeparator.setDispValue(upToDateConfig.hexSeparator);
     this.hexCase = upToDateConfig.hexCase;
+    this.prefixHexValuesWith0x = upToDateConfig.prefixHexValuesWith0x;
   }
 
   saveSettings = () => {
@@ -189,6 +197,7 @@ export default class RxSettings {
     // HEX-SPECIFIC SETTINGS
     config.hexSeparator = this.hexSeparator.dispValue;
     config.hexCase = this.hexCase;
+    config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
 
     // COPY/PASTE
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
@@ -264,6 +273,11 @@ export default class RxSettings {
 
   setHexCase = (value: HexCase) => {
     this.hexCase = value;
+    this.saveSettings();
+  };
+
+  setPrefixHexValuesWith0x = (value: boolean) => {
+    this.prefixHexValuesWith0x = value;
     this.saveSettings();
   };
 }

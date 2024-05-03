@@ -358,6 +358,25 @@ function RxSettingsView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+          <Tooltip
+            title="If enabled, &quot;0x&quot; will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!"
+            placement="right"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rxSettings.prefixHexValuesWith0x}
+                  onChange={(e) => {
+                    rxSettings.setPrefixHexValuesWith0x(e.target.checked);
+                  }}
+                />
+              }
+              label="Prefix hex values with &quot;0x&quot;."
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
         </BorderedSection>
       </div>
       {/* End of HEX block */}

@@ -569,6 +569,11 @@ export default class SingleTerminal {
         throw Error('Invalid hex case setting: ' + this.dataProcessingSettings.hexCase);
       }
 
+      // Add 0x prefix if needed
+      if (this.dataProcessingSettings.prefixHexValuesWith0x) {
+        hexStr = '0x' + hexStr;
+      }
+
       // Add to hex chars to the the terminal
       for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));
