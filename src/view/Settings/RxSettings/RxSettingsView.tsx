@@ -333,13 +333,13 @@ function RxSettingsView(props: Props) {
             followCursor
             arrow
           >
-            <ApplyableTextFieldV2View
+            <ApplyableTextFieldView
               id="outlined-basic"
               name="hexSeparator"
               label="Separator Between Hex Values"
               variant="outlined"
               size="small"
-              applyableTextField={rxSettings.hexSeparator}
+              applyableTextField={rxSettings.config.hexSeparator}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>

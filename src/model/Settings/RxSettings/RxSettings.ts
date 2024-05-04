@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { ApplyableTextFieldV2, AppliedValue, ApplyableNumberFieldV2 } from 'src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2';
 import AppStorage from 'src/model/Storage/AppStorage';
+import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 
 export enum DataType {
   ASCII,
@@ -63,7 +64,7 @@ class ConfigV1 {
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // HEX-SPECIFIC SETTINGS
-  hexSeparator = ' ';
+  hexSeparator = new ApplyableTextField(' ', z.string());
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
   preventHexValuesWrappingAcrossRows = true;
@@ -147,7 +148,7 @@ export default class RxSettings {
 
   config = new ConfigV1();
 
-  hexSeparator = new ApplyableTextFieldV2(' ', this.config, 'hexSeparator', z.string());
+  // hexSeparator = new ApplyableTextFieldV2(' ', this.config, 'hexSeparator', z.string());
 
   newLineHexValue = new ApplyableTextFieldV2('00', this.config, 'newLineHexValue', z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'));
 
@@ -161,7 +162,7 @@ export default class RxSettings {
     this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this.saveSettings();
     });
-    this.hexSeparator.setOnApplyChanged(() => {
+    this.config.hexSeparator.setOnApplyChanged(() => {
       this.saveSettings();
     });
     this.newLineHexValue.setOnApplyChanged(() => {
@@ -178,7 +179,8 @@ export default class RxSettings {
     if (config === null) {
       // No data exists, create
       // config = new DataV1();
-      this.appStorage.saveConfig(CONFIG_KEY, this.config);
+      console.log('No rx-settings config found in local storage. Creating...');
+      this.saveSettings();
       return;
     } else if (config.version === 1) {
       console.log('Up-to-date config found');
@@ -212,20 +214,21 @@ export default class RxSettings {
         // Primitive types can be directly assigned
         let foundVal: any = upToDateConfig[key1];
         me.config[key1] = foundVal;
+      } else if (typeof (me.config[key1]) == 'object') {
+        // ApplyableTextField
+        //===============================
+        if (me.config[key1] instanceof ApplyableTextField) {
+          let foundVal: any = upToDateConfig[key1];
+          console.log('Found applyable text field:', key1, 'value:', foundVal);
+          me.config[key1].setDispValue(foundVal);
+          me.config[key1].apply();
+        } else {
+          console.error('Unknown object type for key:', key);
+        }
       } else {
         console.error('Unknown type for key:', key);
       }
     });
-
-    // console.log('Loading RX settings config. config:', upToDateConfig);
-    // // WARNING: Never re-assign this.config, this will break applyable fields.
-    // // Only update the properties inside it
-    // Object.assign(this.config, upToDateConfig);
-
-    // // Update applyable fields that might have had changed applied values
-    // // due to loading the config
-    // this.maxEscapeCodeLengthChars.setDispValue(this.config.maxEscapeCodeLengthChars.toString());
-    // this.newLineHexValue.setDispValue(this.config.newLineHexValue);
   }
 
   saveSettings = () => {
@@ -234,15 +237,23 @@ export default class RxSettings {
     let me = this as any
     let serializableConfig: any = {};
     Object.keys(this.config).forEach(function(key, index) {
-      // key: the name of the object key
-      // index: the ordinal position of the key within the object
-      console.log('key:', key, 'index:', index);
+      // console.log('key:', key, 'index:', index);
       let key1 = key as keyof ConfigV1;
-      console.log(typeof (me.config[key1]));
+      // console.log(typeof (me.config[key1]));
       if (typeof (me.config[key1]) == 'number' ||
           typeof (me.config[key1]) == 'string' ||
           typeof (me.config[key1]) == 'boolean'){
         serializableConfig[key1] = me.config[key1];
+      }  else if (typeof (me.config[key1]) == 'object') {
+        // ApplyableTextField
+        //===============================
+        if (me.config[key1] instanceof ApplyableTextField) {
+          const applyableTextField = me.config[key1] as ApplyableTextField;
+          console.log('Saving applyable text field:', key1, 'value:', applyableTextField.appliedValue);
+          serializableConfig[key1] = applyableTextField.appliedValue;
+        } else {
+          console.error('Unknown object type for key:', key);
+        }
       } else {
         console.error('Unknown type for key:', key);
       }
