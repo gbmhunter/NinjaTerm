@@ -430,7 +430,7 @@ export default class FakePortsController {
         'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.config.ansiEscapeCodeParsingEnabled = false;
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode('x=2,y=10\n');

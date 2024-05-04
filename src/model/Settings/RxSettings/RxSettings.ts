@@ -1,10 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableTextFieldV2, AppliedValue, ApplyableNumberFieldV2 } from 'src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2';
 import AppStorage from 'src/model/Storage/AppStorage';
-import { ap } from 'vitest/dist/reporters-5f784f42';
-import { THEME_ID } from '@mui/material';
 
 export enum DataType {
   ASCII,
@@ -44,7 +42,7 @@ export enum NewLinePlacementOnHexValue {
   AFTER,
 }
 
-class DataV1 {
+class ConfigV1 {
   // METADATA
   // Create new version of this class if you need to update the structure
   version = 1;
@@ -76,6 +74,10 @@ class DataV1 {
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
+
+  constructor() {
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
 }
 
 const CONFIG_KEY = ['settings', 'rx-settings'];
@@ -84,82 +86,87 @@ export default class RxSettings {
 
   appStorage: AppStorage;
 
-  dataType = DataType.ASCII;
+  // dataType = DataType.ASCII;
 
-  //=================================================================
-  // ASCII-SPECIFIC SETTINGS
-  //=================================================================
+  // //=================================================================
+  // // ASCII-SPECIFIC SETTINGS
+  // //=================================================================
 
-  ansiEscapeCodeParsingEnabled = true;
+  // ansiEscapeCodeParsingEnabled = true;
 
-  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
+  // maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
 
-  // If true, local TX data will be echoed to RX
-  localTxEcho = false;
+  // // If true, local TX data will be echoed to RX
+  // localTxEcho = false;
 
-  newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
+  // newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
 
-  // If set to true, \n bytes will be swallowed and not displayed
-  // on the terminal UI (which is generally what you want)
-  swallowNewLine = true;
+  // // If set to true, \n bytes will be swallowed and not displayed
+  // // on the terminal UI (which is generally what you want)
+  // swallowNewLine = true;
 
-  // By default set the \n behavior to do new line and carriage return
-  // and \r to do nothing. This works for both \n and \r\n line endings
-  carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
+  // // By default set the \n behavior to do new line and carriage return
+  // // and \r to do nothing. This works for both \n and \r\n line endings
+  // carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
 
-  // If set to true, \r bytes will be swallowed and not displayed
-  // on the terminal UI (which is generally what you want)
-  swallowCarriageReturn = true;
+  // // If set to true, \r bytes will be swallowed and not displayed
+  // // on the terminal UI (which is generally what you want)
+  // swallowCarriageReturn = true;
 
-  // I assume most people by default might want to see unexpected invisible chars? If not
-  // this might be better defaulting to SWALLOW?
-  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+  // // I assume most people by default might want to see unexpected invisible chars? If not
+  // // this might be better defaulting to SWALLOW?
+  // nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
-  //=================================================================
-  // HEX-SPECIFIC SETTINGS
-  //=================================================================
+  // //=================================================================
+  // // HEX-SPECIFIC SETTINGS
+  // //=================================================================
 
-  hexSeparator = new ApplyableTextField(' ', z.string());
+  // hexSeparator = new ApplyableTextField(' ', z.string());
 
-  hexCase = HexCase.UPPERCASE;
+  // hexCase = HexCase.UPPERCASE;
 
-  /**
-   * If true, displayed hex values in the terminal will all be prefixed with "0x".
-   * Defaults to false because typically the 0x is just noise and not needed.
-   */
-  prefixHexValuesWith0x = false;
+  // /**
+  //  * If true, displayed hex values in the terminal will all be prefixed with "0x".
+  //  * Defaults to false because typically the 0x is just noise and not needed.
+  //  */
+  // prefixHexValuesWith0x = false;
 
-  preventHexValuesWrappingAcrossRows = true;
+  // preventHexValuesWrappingAcrossRows = true;
 
-  insetNewLineOnHexValue = false;
+  // insetNewLineOnHexValue = false;
 
-  data = {
-    newLineHexValue: {
-      displayed: '00',
-      applied: '00',
-      schema: z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'),
-      errorMsg: '',
-    }
-  }
+  // newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
-  newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
+  // /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
+  //  * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
+  //  * be converted to CRLF when copying TO the clipboard when on Windows.
+  //  */
+  // whenPastingOnWindowsReplaceCRLFWithLF = true;
 
-  /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
-   * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
-   * be converted to CRLF when copying TO the clipboard when on Windows.
-   */
-  whenPastingOnWindowsReplaceCRLFWithLF = true;
+  // whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
-  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
+  config = new ConfigV1();
 
-  // Set to true if the visible data has been changed from the applied
-  // data by the user AND data is valid (this is used to enable the "Apply" button)
-  // isApplyable = false;
+  hexSeparator = new ApplyableTextFieldV2(' ', this.config, 'hexSeparator', z.string());
+
+  newLineHexValue = new ApplyableTextFieldV2('00', this.config, 'newLineHexValue', z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'));
+
+  maxEscapeCodeLengthChars = new ApplyableNumberFieldV2('10', this.config, 'maxEscapeCodeLengthChars', z.coerce.number().int().min(2));
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
     this.loadSettings();
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+
+    this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
+      this.saveSettings();
+    });
+    this.hexSeparator.setOnApplyChanged(() => {
+      this.saveSettings();
+    });
+    this.newLineHexValue.setOnApplyChanged(() => {
+      this.saveSettings();
+    });
   }
 
   loadSettings = () => {
@@ -170,83 +177,38 @@ export default class RxSettings {
 
     if (config === null) {
       // No data exists, create
-      config = new DataV1();
-      this.appStorage.saveConfig(CONFIG_KEY, config);
+      // config = new DataV1();
+      this.appStorage.saveConfig(CONFIG_KEY, this.config);
     } else if (config.version === 1) {
       console.log('Up-to-date config found');
     } else{
       console.error('Unknown config version found: ', config.version);
-      config = new DataV1();
-      this.appStorage.saveConfig(CONFIG_KEY, config);
+      // config = new DataV1();
+      this.appStorage.saveConfig(CONFIG_KEY, this.config);
     }
 
     // At this point we a confident that config represents the latest version, so
     // we can go ahead and update all the app settings with the values from the config object
-    let upToDateConfig = config as DataV1;
+    let upToDateConfig = config as ConfigV1;
 
-    this.dataType = upToDateConfig.dataType;
-    console.log(upToDateConfig.dataType);
+    console.log('Loading RX settings config. config:', upToDateConfig);
+    // WARNING: Never re-assign this.config, this will break applyable fields.
+    // Only update the properties inside it
+    Object.assign(this.config, upToDateConfig);
 
-    // ASCII-SPECIFIC SETTINGS
-    this.ansiEscapeCodeParsingEnabled = upToDateConfig.ansiEscapeCodeParsingEnabled;
-    this.maxEscapeCodeLengthChars.setDispValue(upToDateConfig.maxEscapeCodeLengthChars.toString());
-    this.maxEscapeCodeLengthChars.apply();
-    this.localTxEcho = upToDateConfig.localTxEcho;
-    this.newLineCursorBehavior = upToDateConfig.newLineCursorBehavior;
-    this.swallowNewLine = upToDateConfig.swallowNewLine;
-    this.carriageReturnCursorBehavior = upToDateConfig.carriageReturnCursorBehavior;
-    this.swallowCarriageReturn = upToDateConfig.swallowCarriageReturn;
-    this.nonVisibleCharDisplayBehavior = upToDateConfig.nonVisibleCharDisplayBehavior;
-    this.whenPastingOnWindowsReplaceCRLFWithLF = upToDateConfig.whenPastingOnWindowsReplaceCRLFWithLF;
-    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = upToDateConfig.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
-
-    // HEX-SPECIFIC SETTINGS
-    this.hexSeparator.setDispValue(upToDateConfig.hexSeparator);
-    this.hexSeparator.apply();
-    this.hexCase = upToDateConfig.hexCase;
-    this.prefixHexValuesWith0x = upToDateConfig.prefixHexValuesWith0x;
-    this.preventHexValuesWrappingAcrossRows = upToDateConfig.preventHexValuesWrappingAcrossRows;
-    this.insetNewLineOnHexValue = upToDateConfig.insetNewLineOnHexValue;
-    // this.newLineHexValue.setDispValue(upToDateConfig.newLineHexValue);
-    // this.newLineHexValue.apply();
-    this.newLinePlacementOnHexValue = upToDateConfig.newLinePlacementOnHexValue;
+    // Update applyable fields that might have had changed applied values
+    // due to loading the config
+    this.maxEscapeCodeLengthChars.setDispValue(this.config.maxEscapeCodeLengthChars.toString());
+    this.newLineHexValue.setDispValue(this.config.newLineHexValue);
   }
 
   saveSettings = () => {
-    const config = new DataV1();
-
-    config.dataType = this.dataType;
-
-    // ASCII-SPECIFIC SETTINGS
-    config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
-    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.appliedValue;
-    config.localTxEcho = this.localTxEcho;
-    config.newLineCursorBehavior = this.newLineCursorBehavior;
-    config.swallowNewLine = this.swallowNewLine;
-    config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
-    config.swallowCarriageReturn = this.swallowCarriageReturn;
-    config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
-
-    // HEX-SPECIFIC SETTINGS
-    config.hexSeparator = this.hexSeparator.appliedValue;
-    config.hexCase = this.hexCase;
-    config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
-    config.preventHexValuesWrappingAcrossRows = this.preventHexValuesWrappingAcrossRows;
-    config.insetNewLineOnHexValue = this.insetNewLineOnHexValue;
-    // config.newLineHexValue = this.newLineHexValue.appliedValue;
-    config.newLinePlacementOnHexValue = this.newLinePlacementOnHexValue;
-
-    // COPY/PASTE
-    config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
-    config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
-
-    console.log(config.dataType);
-
-    this.appStorage.saveConfig(CONFIG_KEY, config);
+    console.log('Saving RX settings config. config:', JSON.stringify(this.config));
+    this.appStorage.saveConfig(CONFIG_KEY, this.config);
   };
 
   setDataType = (value: DataType) => {
-    this.dataType = value;
+    this.config.dataType = value;
     this.saveSettings();
   };
 
@@ -255,47 +217,47 @@ export default class RxSettings {
   //=================================================================
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
-    this.ansiEscapeCodeParsingEnabled = value;
+    this.config.ansiEscapeCodeParsingEnabled = value;
     this.saveSettings();
   };
 
   setLocalTxEcho = (value: boolean) => {
-    this.localTxEcho = value;
+    this.config.localTxEcho = value;
     this.saveSettings();
   };
 
   setNewLineCursorBehavior = (value: NewLineCursorBehavior) => {
-    this.newLineCursorBehavior = value;
+    this.config.newLineCursorBehavior = value;
     this.saveSettings();
   };
 
   setSwallowNewLine = (value: boolean) => {
-    this.swallowNewLine = value;
+    this.config.swallowNewLine = value;
     this.saveSettings();
   };
 
   setCarriageReturnBehavior = (value: CarriageReturnCursorBehavior) => {
-    this.carriageReturnCursorBehavior = value;
+    this.config.carriageReturnCursorBehavior = value;
     this.saveSettings();
   };
 
   setSwallowCarriageReturn = (value: boolean) => {
-    this.swallowCarriageReturn = value;
+    this.config.swallowCarriageReturn = value;
     this.saveSettings();
   };
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
-    this.nonVisibleCharDisplayBehavior = value;
+    this.config.nonVisibleCharDisplayBehavior = value;
     this.saveSettings();
   };
 
   setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
-    this.whenPastingOnWindowsReplaceCRLFWithLF = value;
+    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
     this.saveSettings();
   };
 
   setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
-    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
+    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
     this.saveSettings();
   };
 
@@ -304,42 +266,42 @@ export default class RxSettings {
   //=================================================================
 
   setHexCase = (value: HexCase) => {
-    this.hexCase = value;
+    this.config.hexCase = value;
     this.saveSettings();
   };
 
   setPrefixHexValuesWith0x = (value: boolean) => {
-    this.prefixHexValuesWith0x = value;
+    this.config.prefixHexValuesWith0x = value;
     this.saveSettings();
   };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
-    this.preventHexValuesWrappingAcrossRows = value;
+    this.config.preventHexValuesWrappingAcrossRows = value;
     this.saveSettings();
   };
 
   setInsetNewLineOnHexValue = (value: boolean) => {
-    this.insetNewLineOnHexValue = value;
+    this.config.insetNewLineOnHexValue = value;
     this.saveSettings();
   }
 
-  setNewlineHexValueDisplayed = (value: string) => {
-    this.data.newLineHexValue.displayed = value;
-    const validation = this.data.newLineHexValue.schema.safeParse(value);
-    if (validation.success) {
-      this.data.newLineHexValue.errorMsg = '';
-    } else {
-      this.data.newLineHexValue.errorMsg = validation.error.errors[0].message;
-    }
-    this.saveSettings();
-  }
+  // setNewlineHexValueDisplayed = (value: string) => {
+  //   this.data.newLineHexValue.displayed = value;
+  //   const validation = this.data.newLineHexValue.schema.safeParse(value);
+  //   if (validation.success) {
+  //     this.data.newLineHexValue.errorMsg = '';
+  //   } else {
+  //     this.data.newLineHexValue.errorMsg = validation.error.errors[0].message;
+  //   }
+  //   this.saveSettings();
+  // }
 
-  applyNewlineHexValue = () => {
-    this.saveSettings();
-  }
+  // applyNewlineHexValue = () => {
+  //   this.saveSettings();
+  // }
 
   setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
-    this.newLinePlacementOnHexValue = value;
+    this.config.newLinePlacementOnHexValue = value;
     this.saveSettings();
   }
 }

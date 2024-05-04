@@ -528,7 +528,7 @@ export class App {
       let text = await navigator.clipboard.readText();
 
       // Convert CRLF to LF if setting is enabled
-      if (this.settings.rxSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      if (this.settings.rxSettings.config.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
         text = text.replace(/\r\n/g, '\n');
       }
 
@@ -636,7 +636,7 @@ export class App {
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.rxSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.rxSettings.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
@@ -791,7 +791,7 @@ export class App {
     this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
-    if (this.settings.rxSettings.localTxEcho) {
+    if (this.settings.rxSettings.config.localTxEcho) {
       this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 

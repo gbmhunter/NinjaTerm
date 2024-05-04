@@ -120,7 +120,7 @@ export default class SingleTerminal {
     this.onTerminalKeyDown = onTerminalKeyDown;
 
     autorun(() => {
-      if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
+      if (!this.dataProcessingSettings.config.ansiEscapeCodeParsingEnabled) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -220,12 +220,12 @@ export default class SingleTerminal {
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
-    if (this.dataProcessingSettings.dataType === DataType.ASCII) {
+    if (this.dataProcessingSettings.config.dataType === DataType.ASCII) {
       this.parseAsciiData(data);
-    } else if (this.dataProcessingSettings.dataType === DataType.HEX) {
+    } else if (this.dataProcessingSettings.config.dataType === DataType.HEX) {
       this._parseHexData(data);
     } else {
-      throw Error(`Data type ${this.dataProcessingSettings.dataType} not supported by parseData().`);
+      throw Error(`Data type ${this.dataProcessingSettings.config.dataType} not supported by parseData().`);
     }
 
     // Right at the end of adding everything, limit the num. of max. rows in the terminal
@@ -254,7 +254,7 @@ export default class SingleTerminal {
       // NEW LINE HANDLING
       //========================================================================
 
-      const newLineBehavior = this.dataProcessingSettings.newLineCursorBehavior;
+      const newLineBehavior = this.dataProcessingSettings.config.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
 
@@ -262,7 +262,7 @@ export default class SingleTerminal {
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
         // line
-        if (!this.dataProcessingSettings.swallowNewLine) {
+        if (!this.dataProcessingSettings.config.swallowNewLine) {
           this._addVisibleChar(rxByte);
         }
 
@@ -291,14 +291,14 @@ export default class SingleTerminal {
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
-      const carriageReturnCursorBehavior = this.dataProcessingSettings.carriageReturnCursorBehavior;
+      const carriageReturnCursorBehavior = this.dataProcessingSettings.config.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
 
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
-        if (!this.dataProcessingSettings.swallowCarriageReturn) {
+        if (!this.dataProcessingSettings.config.swallowCarriageReturn) {
           this._addVisibleChar(rxByte);
         }
 
@@ -322,7 +322,7 @@ export default class SingleTerminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.dataProcessingSettings.ansiEscapeCodeParsingEnabled) {
+      if (!this.dataProcessingSettings.config.ansiEscapeCodeParsingEnabled) {
         this._addVisibleChar(rxByte);
         continue;
       }
@@ -367,7 +367,7 @@ export default class SingleTerminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.dataProcessingSettings.maxEscapeCodeLengthChars.appliedValue;
+      const maxEscapeCodeLengthChars = this.dataProcessingSettings.config.maxEscapeCodeLengthChars;
       // const maxEscapeCodeLengthChars = 10;
 
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
@@ -561,23 +561,23 @@ export default class SingleTerminal {
       // Convert byte to hex string
       let hexStr = rxByte.toString(16).padStart(2, '0');
       // Set case of hex string
-      if (this.dataProcessingSettings.hexCase === HexCase.UPPERCASE) {
+      if (this.dataProcessingSettings.config.hexCase === HexCase.UPPERCASE) {
         hexStr = hexStr.toUpperCase();
-      } else if (this.dataProcessingSettings.hexCase === HexCase.LOWERCASE) {
+      } else if (this.dataProcessingSettings.config.hexCase === HexCase.LOWERCASE) {
         hexStr = hexStr.toLowerCase();
       } else {
-        throw Error('Invalid hex case setting: ' + this.dataProcessingSettings.hexCase);
+        throw Error('Invalid hex case setting: ' + this.dataProcessingSettings.config.hexCase);
       }
 
       // Add 0x prefix if needed
-      if (this.dataProcessingSettings.prefixHexValuesWith0x) {
+      if (this.dataProcessingSettings.config.prefixHexValuesWith0x) {
         hexStr = '0x' + hexStr;
       }
 
       // Only prevent hex value wrapping mid-value if:
       // 1) Setting is enabled
       // 2) The terminal column width is high enough to fit an entire hex value in it
-      if (this.dataProcessingSettings.preventHexValuesWrappingAcrossRows
+      if (this.dataProcessingSettings.config.preventHexValuesWrappingAcrossRows
         && this.displaySettings.terminalWidthChars.appliedValue >= hexStr.length) {
         // Create a new terminal row if the hex value will not fit on existing row
         const currRow = this.terminalRows[this.cursorPosition[0]];
@@ -595,8 +595,8 @@ export default class SingleTerminal {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));
       }
       // Append the hex separator string
-      for (let charIdx = 0; charIdx < this.dataProcessingSettings.hexSeparator.appliedValue.length; charIdx += 1) {
-        this._addVisibleChar(this.dataProcessingSettings.hexSeparator.appliedValue.charCodeAt(charIdx));
+      for (let charIdx = 0; charIdx < this.dataProcessingSettings.config.hexSeparator.length; charIdx += 1) {
+        this._addVisibleChar(this.dataProcessingSettings.config.hexSeparator.charCodeAt(charIdx));
       }
 
     }
@@ -794,7 +794,7 @@ export default class SingleTerminal {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 
-    const nonVisibleCharDisplayBehavior = this.dataProcessingSettings.nonVisibleCharDisplayBehavior;
+    const nonVisibleCharDisplayBehavior = this.dataProcessingSettings.config.nonVisibleCharDisplayBehavior;
 
     if (rxByte >= 0x20 && rxByte <= 0x7E) {
       // Is printable ASCII character, no shifting needed

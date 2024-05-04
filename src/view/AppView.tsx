@@ -287,7 +287,7 @@ const AppView = observer((props: Props) => {
           >
             {/* DATA TYPE */}
             <div style={{ padding: '0 10px' }}>
-              { dataTypeToDisplayString[app.settings.rxSettings.dataType] }
+              { dataTypeToDisplayString[app.settings.rxSettings.config.dataType] }
             </div>
 
             {/* LOGGING ON/OFF */}
