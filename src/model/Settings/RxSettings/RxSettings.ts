@@ -1,9 +1,9 @@
-import { makeAutoObservable } from 'mobx';
-import { z } from 'zod';
+import { makeAutoObservable } from "mobx";
+import { z } from "zod";
 
-import { ApplyableTextFieldV2, AppliedValue, ApplyableNumberFieldV2 } from 'src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2';
-import AppStorage from 'src/model/Storage/AppStorage';
-import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableTextFieldV2, AppliedValue, ApplyableNumberFieldV2 } from "src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2";
+import AppStorage from "src/model/Storage/AppStorage";
+import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
 
 export enum DataType {
   ASCII,
@@ -55,7 +55,7 @@ class ConfigV1 {
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
+  maxEscapeCodeLengthChars = new ApplyableNumberField("10", z.coerce.number().min(2));
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;
@@ -64,12 +64,18 @@ class ConfigV1 {
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // HEX-SPECIFIC SETTINGS
-  hexSeparator = new ApplyableTextField(' ', z.string());
+  hexSeparator = new ApplyableTextField(" ", z.string());
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
   preventHexValuesWrappingAcrossRows = true;
   insetNewLineOnHexValue = false;
-  newLineHexValue = new ApplyableTextField('00', z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'));
+  newLineHexValue = new ApplyableTextField(
+    "00",
+    z
+      .string()
+      .length(2)
+      .regex(/^([0-9A-Fa-f]{2})$/, "Must be a valid hex number.")
+  );
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
   // COPY/PASTE SETTINGS
@@ -81,10 +87,9 @@ class ConfigV1 {
   }
 }
 
-const CONFIG_KEY = ['settings', 'rx-settings'];
+const CONFIG_KEY = ["settings", "rx-settings"];
 
 export default class RxSettings {
-
   appStorage: AppStorage;
 
   // dataType = DataType.ASCII;
@@ -173,13 +178,13 @@ export default class RxSettings {
     if (config === null) {
       // No data exists, create
       // config = new DataV1();
-      console.log('No rx-settings config found in local storage. Creating...');
+      console.log("No rx-settings config found in local storage. Creating...");
       this.saveSettings();
       return;
     } else if (config.version === 1) {
-      console.log('Up-to-date config found');
-    } else{
-      console.error('Unknown config version found: ', config.version);
+      console.log("Up-to-date config found");
+    } else {
+      console.error("Unknown config version found: ", config.version);
       // config = new DataV1();
       this.appStorage.saveConfig(CONFIG_KEY, this.config);
     }
@@ -188,77 +193,94 @@ export default class RxSettings {
     // we can go ahead and update all the app settings with the values from the config object
     let upToDateConfig = config as ConfigV1;
 
-    let me = this as any
-    Object.keys(this.config).forEach(function(key, index) {
+    let me = this as any;
+    Object.keys(this.config).forEach(function (key, index) {
       // console.log('key:', key, 'index:', index);
       let key1 = key as keyof ConfigV1;
       // console.log(typeof (me.config[key1]));
 
       // If key doesn't exist in data stored in local storage, skip it
       if (!(key1 in upToDateConfig)) {
-        console.log('Key not found in upToDateConfig:', key1);
+        console.log("Key not found in upToDateConfig:", key1);
         return;
       }
 
-      if (typeof (me.config[key1]) == 'number' ||
-          typeof (me.config[key1]) == 'string' ||
-          typeof (me.config[key1]) == 'boolean'){
+      // PRIMITIVE TYPES
+      //============================================================
+      if (typeof me.config[key1] == "number"
+          || typeof me.config[key1] == "string"
+          || typeof me.config[key1] == "boolean") {
         // Primitive types can be directly assigned
         let foundVal: any = upToDateConfig[key1];
         me.config[key1] = foundVal;
-      } else if (typeof (me.config[key1]) == 'object') {
+      }
+      // OBJECTS
+      //============================================================
+      else if (typeof me.config[key1] == "object") {
         // ApplyableTextField
         //===============================
         if (me.config[key1] instanceof ApplyableTextField) {
           let foundVal: any = upToDateConfig[key1];
-          console.log('Found applyable text field:', key1, 'value:', foundVal);
+          console.log("Found applyable text field:", key1, "value:", foundVal);
           me.config[key1].setDispValue(foundVal);
           me.config[key1].apply();
-        } else if (me.config[key1] instanceof ApplyableNumberField) {
+        }
+        // ApplyableNumberField
+        //===============================
+        else if (me.config[key1] instanceof ApplyableNumberField) {
           let foundVal: any = upToDateConfig[key1];
-          console.log('Found applyable number field:', key1, 'value:', foundVal);
+          console.log("Found applyable number field:", key1, "value:", foundVal);
           // Convert applied value back to displayed value and re-apply
           me.config[key1].setDispValue(foundVal.toString());
           me.config[key1].apply();
         } else {
-          console.error('Unknown object type for key:', key);
+          console.error("Unknown object type for key:", key);
         }
       } else {
-        console.error('Unknown type for key:', key);
+        console.error("Unknown type for key:", key);
       }
     });
-  }
+  };
 
   saveSettings = () => {
-    console.log('Saving RX settings config. config:', JSON.stringify(this.config));
+    console.log("Saving RX settings config. config:", JSON.stringify(this.config));
     // Loop through all config properties and save them
-    let me = this as any
+    let me = this as any;
     let serializableConfig: any = {};
-    Object.keys(this.config).forEach(function(key, index) {
+    Object.keys(this.config).forEach(function (key, index) {
       // console.log('key:', key, 'index:', index);
       let key1 = key as keyof ConfigV1;
       // console.log(typeof (me.config[key1]));
-      if (typeof (me.config[key1]) == 'number' ||
-          typeof (me.config[key1]) == 'string' ||
-          typeof (me.config[key1]) == 'boolean'){
+      // PRIMITIVE TYPES
+      //============================================================
+      if (typeof me.config[key1] == "number"
+          || typeof me.config[key1] == "string"
+          || typeof me.config[key1] == "boolean") {
         serializableConfig[key1] = me.config[key1];
-      }  else if (typeof (me.config[key1]) == 'object') {
+      }
+      // OBJECTS
+      //============================================================
+      else if (typeof me.config[key1] == "object") {
         // ApplyableTextField
         //===============================
         if (me.config[key1] instanceof ApplyableTextField) {
           const applyableTextField = me.config[key1] as ApplyableTextField;
           // console.log('Saving applyable text field:', key1, 'value:', applyableTextField.appliedValue);
           serializableConfig[key1] = applyableTextField.appliedValue;
-        } else if (me.config[key1] instanceof ApplyableNumberField) {
+        }
+        // ApplyableNumberField
+        //===============================
+        else if (me.config[key1] instanceof ApplyableNumberField) {
           const applyableNumberField = me.config[key1] as ApplyableNumberField;
           // console.log('Saving applyable text field:', key1, 'value:', applyableNumberField.appliedValue);
           // Store the applied value, which will be a number
           serializableConfig[key1] = applyableNumberField.appliedValue;
         } else {
-          console.error('Unknown object type for key:', key);
+          console.error("Unknown object type encountered during serialization. key: ",
+                        key, "type:", typeof me.config[key1]);
         }
       } else {
-        console.error('Unknown type for key:', key);
+        console.error("Unknown type for key:", key);
       }
     });
 
@@ -341,7 +363,7 @@ export default class RxSettings {
   setInsetNewLineOnHexValue = (value: boolean) => {
     this.config.insetNewLineOnHexValue = value;
     this.saveSettings();
-  }
+  };
 
   // setNewlineHexValueDisplayed = (value: string) => {
   //   this.data.newLineHexValue.displayed = value;
@@ -361,5 +383,5 @@ export default class RxSettings {
   setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
     this.config.newLinePlacementOnHexValue = value;
     this.saveSettings();
-  }
+  };
 }
