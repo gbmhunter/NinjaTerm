@@ -574,6 +574,22 @@ export default class SingleTerminal {
         hexStr = '0x' + hexStr;
       }
 
+      // Only prevent hex value wrapping mid-value if:
+      // 1) Setting is enabled
+      // 2) The terminal column width is high enough to fit an entire hex value in it
+      if (this.dataProcessingSettings.preventHexValuesWrappingAcrossRows
+        && this.displaySettings.terminalWidthChars.appliedValue >= hexStr.length) {
+        // Create a new terminal row if the hex value will not fit on existing row
+        const currRow = this.terminalRows[this.cursorPosition[0]];
+        const numColsLeftOnRow = this.displaySettings.terminalWidthChars.appliedValue - this.cursorPosition[1];
+        if (hexStr.length > numColsLeftOnRow) {
+          // Move cursor to next row
+          this._cursorDown(1, true);
+          // Move cursor to start of row
+          this._cursorLeft(this.cursorPosition[1]);
+        }
+      }
+
       // Add to hex chars to the the terminal
       for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));

@@ -358,6 +358,8 @@ function RxSettingsView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+          {/* PREFIX HEX VALUES WITH 0x */}
+          {/* ================================================ */}
           <Tooltip
             title="If enabled, &quot;0x&quot; will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!"
             placement="right"
@@ -374,6 +376,25 @@ function RxSettingsView(props: Props) {
                 />
               }
               label="Prefix hex values with &quot;0x&quot;."
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          <Tooltip
+            title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
+            placement="right"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rxSettings.preventHexValuesWrappingAcrossRows}
+                  onChange={(e) => {
+                    rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
+                  }}
+                />
+              }
+              label="Prevent hex values from wrapping across rows."
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>

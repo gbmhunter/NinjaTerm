@@ -61,6 +61,7 @@ class DataV1 {
   hexSeparator = ' ';
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
+  preventHexValuesWrappingAcrossRows = true;
 
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
@@ -117,6 +118,8 @@ export default class RxSettings {
    * Defaults to false because typically the 0x is just noise and not needed.
    */
   prefixHexValuesWith0x = false;
+
+  preventHexValuesWrappingAcrossRows = true;
 
   /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
    * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
@@ -177,6 +180,7 @@ export default class RxSettings {
     this.hexSeparator.setDispValue(upToDateConfig.hexSeparator);
     this.hexCase = upToDateConfig.hexCase;
     this.prefixHexValuesWith0x = upToDateConfig.prefixHexValuesWith0x;
+    this.preventHexValuesWrappingAcrossRows = upToDateConfig.preventHexValuesWrappingAcrossRows;
   }
 
   saveSettings = () => {
@@ -198,6 +202,7 @@ export default class RxSettings {
     config.hexSeparator = this.hexSeparator.dispValue;
     config.hexCase = this.hexCase;
     config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
+    config.preventHexValuesWrappingAcrossRows = this.preventHexValuesWrappingAcrossRows;
 
     // COPY/PASTE
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
@@ -278,6 +283,11 @@ export default class RxSettings {
 
   setPrefixHexValuesWith0x = (value: boolean) => {
     this.prefixHexValuesWith0x = value;
+    this.saveSettings();
+  };
+
+  setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
+    this.preventHexValuesWrappingAcrossRows = value;
     this.saveSettings();
   };
 }
