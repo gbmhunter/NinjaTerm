@@ -37,6 +37,11 @@ export enum HexCase {
   LOWERCASE,
 }
 
+export enum NewLinePlacementOnHexValue {
+  BEFORE,
+  AFTER,
+}
+
 class DataV1 {
   // METADATA
   // Create new version of this class if you need to update the structure
@@ -49,7 +54,7 @@ class DataV1 {
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = '10';
+  maxEscapeCodeLengthChars = 10;
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;
@@ -62,6 +67,9 @@ class DataV1 {
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
   preventHexValuesWrappingAcrossRows = true;
+  insetNewLineOnHexValue = false;
+  newLineHexValue = '00';
+  newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
   // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
@@ -121,6 +129,12 @@ export default class RxSettings {
 
   preventHexValuesWrappingAcrossRows = true;
 
+  insetNewLineOnHexValue = false;
+
+  newLineHexValue = new ApplyableTextField('00', z.coerce.string());
+
+  newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
+
   /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
    * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
    * be converted to CRLF when copying TO the clipboard when on Windows.
@@ -166,7 +180,8 @@ export default class RxSettings {
 
     // ASCII-SPECIFIC SETTINGS
     this.ansiEscapeCodeParsingEnabled = upToDateConfig.ansiEscapeCodeParsingEnabled;
-    this.maxEscapeCodeLengthChars.setDispValue(upToDateConfig.maxEscapeCodeLengthChars);
+    this.maxEscapeCodeLengthChars.setDispValue(upToDateConfig.maxEscapeCodeLengthChars.toString());
+    this.maxEscapeCodeLengthChars.apply();
     this.localTxEcho = upToDateConfig.localTxEcho;
     this.newLineCursorBehavior = upToDateConfig.newLineCursorBehavior;
     this.swallowNewLine = upToDateConfig.swallowNewLine;
@@ -178,9 +193,14 @@ export default class RxSettings {
 
     // HEX-SPECIFIC SETTINGS
     this.hexSeparator.setDispValue(upToDateConfig.hexSeparator);
+    this.hexSeparator.apply();
     this.hexCase = upToDateConfig.hexCase;
     this.prefixHexValuesWith0x = upToDateConfig.prefixHexValuesWith0x;
     this.preventHexValuesWrappingAcrossRows = upToDateConfig.preventHexValuesWrappingAcrossRows;
+    this.insetNewLineOnHexValue = upToDateConfig.insetNewLineOnHexValue;
+    this.newLineHexValue.setDispValue(upToDateConfig.newLineHexValue);
+    this.newLineHexValue.apply();
+    this.newLinePlacementOnHexValue = upToDateConfig.newLinePlacementOnHexValue;
   }
 
   saveSettings = () => {
@@ -190,7 +210,7 @@ export default class RxSettings {
 
     // ASCII-SPECIFIC SETTINGS
     config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
-    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.dispValue
+    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.appliedValue;
     config.localTxEcho = this.localTxEcho;
     config.newLineCursorBehavior = this.newLineCursorBehavior;
     config.swallowNewLine = this.swallowNewLine;
@@ -199,10 +219,13 @@ export default class RxSettings {
     config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
 
     // HEX-SPECIFIC SETTINGS
-    config.hexSeparator = this.hexSeparator.dispValue;
+    config.hexSeparator = this.hexSeparator.appliedValue;
     config.hexCase = this.hexCase;
     config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
     config.preventHexValuesWrappingAcrossRows = this.preventHexValuesWrappingAcrossRows;
+    config.insetNewLineOnHexValue = this.insetNewLineOnHexValue;
+    config.newLineHexValue = this.newLineHexValue.appliedValue;
+    config.newLinePlacementOnHexValue = this.newLinePlacementOnHexValue;
 
     // COPY/PASTE
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
@@ -271,11 +294,6 @@ export default class RxSettings {
   // HEX-SPECIFIC SETTINGS
   //=================================================================
 
-  setHexSeparator = (value: string) => {
-    this.hexSeparator.setDispValue(value);
-    this.saveSettings();
-  };
-
   setHexCase = (value: HexCase) => {
     this.hexCase = value;
     this.saveSettings();
@@ -290,4 +308,14 @@ export default class RxSettings {
     this.preventHexValuesWrappingAcrossRows = value;
     this.saveSettings();
   };
+
+  setInsetNewLineOnHexValue = (value: boolean) => {
+    this.insetNewLineOnHexValue = value;
+    this.saveSettings();
+  }
+
+  setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
+    this.newLinePlacementOnHexValue = value;
+    this.saveSettings();
+  }
 }
