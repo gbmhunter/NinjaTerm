@@ -367,7 +367,7 @@ export default class SingleTerminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.dataProcessingSettings.config.maxEscapeCodeLengthChars;
+      const maxEscapeCodeLengthChars = this.dataProcessingSettings.config.maxEscapeCodeLengthChars.appliedValue;
       // const maxEscapeCodeLengthChars = 10;
 
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {

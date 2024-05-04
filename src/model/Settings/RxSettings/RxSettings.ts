@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { ApplyableTextFieldV2, AppliedValue, ApplyableNumberFieldV2 } from 'src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2';
 import AppStorage from 'src/model/Storage/AppStorage';
-import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 
 export enum DataType {
   ASCII,
@@ -55,7 +55,7 @@ class ConfigV1 {
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = 10;
+  maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;
@@ -69,7 +69,7 @@ class ConfigV1 {
   prefixHexValuesWith0x = false;
   preventHexValuesWrappingAcrossRows = true;
   insetNewLineOnHexValue = false;
-  newLineHexValue = '00';
+  newLineHexValue = new ApplyableTextField('00', z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'));
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
   // COPY/PASTE SETTINGS
@@ -148,24 +148,18 @@ export default class RxSettings {
 
   config = new ConfigV1();
 
-  // hexSeparator = new ApplyableTextFieldV2(' ', this.config, 'hexSeparator', z.string());
-
-  newLineHexValue = new ApplyableTextFieldV2('00', this.config, 'newLineHexValue', z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'));
-
-  maxEscapeCodeLengthChars = new ApplyableNumberFieldV2('10', this.config, 'maxEscapeCodeLengthChars', z.coerce.number().int().min(2));
-
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
     this.loadSettings();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
 
-    this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
+    this.config.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this.saveSettings();
     });
     this.config.hexSeparator.setOnApplyChanged(() => {
       this.saveSettings();
     });
-    this.newLineHexValue.setOnApplyChanged(() => {
+    this.config.newLineHexValue.setOnApplyChanged(() => {
       this.saveSettings();
     });
   }
@@ -196,11 +190,9 @@ export default class RxSettings {
 
     let me = this as any
     Object.keys(this.config).forEach(function(key, index) {
-      // key: the name of the object key
-      // index: the ordinal position of the key within the object
-      console.log('key:', key, 'index:', index);
+      // console.log('key:', key, 'index:', index);
       let key1 = key as keyof ConfigV1;
-      console.log(typeof (me.config[key1]));
+      // console.log(typeof (me.config[key1]));
 
       // If key doesn't exist in data stored in local storage, skip it
       if (!(key1 in upToDateConfig)) {
@@ -221,6 +213,12 @@ export default class RxSettings {
           let foundVal: any = upToDateConfig[key1];
           console.log('Found applyable text field:', key1, 'value:', foundVal);
           me.config[key1].setDispValue(foundVal);
+          me.config[key1].apply();
+        } else if (me.config[key1] instanceof ApplyableNumberField) {
+          let foundVal: any = upToDateConfig[key1];
+          console.log('Found applyable number field:', key1, 'value:', foundVal);
+          // Convert applied value back to displayed value and re-apply
+          me.config[key1].setDispValue(foundVal.toString());
           me.config[key1].apply();
         } else {
           console.error('Unknown object type for key:', key);
@@ -249,8 +247,13 @@ export default class RxSettings {
         //===============================
         if (me.config[key1] instanceof ApplyableTextField) {
           const applyableTextField = me.config[key1] as ApplyableTextField;
-          console.log('Saving applyable text field:', key1, 'value:', applyableTextField.appliedValue);
+          // console.log('Saving applyable text field:', key1, 'value:', applyableTextField.appliedValue);
           serializableConfig[key1] = applyableTextField.appliedValue;
+        } else if (me.config[key1] instanceof ApplyableNumberField) {
+          const applyableNumberField = me.config[key1] as ApplyableNumberField;
+          // console.log('Saving applyable text field:', key1, 'value:', applyableNumberField.appliedValue);
+          // Store the applied value, which will be a number
+          serializableConfig[key1] = applyableNumberField.appliedValue;
         } else {
           console.error('Unknown object type for key:', key);
         }

@@ -91,7 +91,7 @@ function RxSettingsView(props: Props) {
               followCursor
               arrow
             >
-              <ApplyableTextFieldV2View
+              <ApplyableTextFieldView
                 id="outlined-basic"
                 name="maxEscapeCodeLengthChars"
                 label="Max. Escape Code Length"
@@ -100,7 +100,7 @@ function RxSettingsView(props: Props) {
                 InputProps={{
                   endAdornment: <InputAdornment position="start">chars</InputAdornment>,
                 }}
-                applyableTextField={rxSettings.maxEscapeCodeLengthChars}
+                applyableTextField={rxSettings.config.maxEscapeCodeLengthChars}
                 sx={{ marginBottom: "20px" }}
               />
             </Tooltip>
@@ -433,36 +433,13 @@ function RxSettingsView(props: Props) {
             followCursor
             arrow
           >
-            {/* <TextField
+            <ApplyableTextFieldView
               id="outlined-basic"
               name="newLineHexValue"
               label="Hex value to insert new line on"
               variant="outlined"
               size="small"
-              disabled={!rxSettings.data.insetNewLineOnHexValue}
-              value={rxSettings.data.newLineHexValue.displayed}
-              error={rxSettings.data.newLineHexValue.errorMsg !== ""}
-              helperText={rxSettings.data.newLineHexValue.errorMsg}
-              sx={{ marginBottom: "20px" }}
-              onChange={(e) => {
-                rxSettings.setNewlineHexValueDisplayed(e.target.value);
-              }}
-              onBlur={() => {
-                rxSettings.applyNewlineHexValue();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  rxSettings.applyNewlineHexValue();
-                }
-              }}
-            /> */}
-            <ApplyableTextFieldV2View
-              id="outlined-basic"
-              name="newLineHexValue"
-              label="Hex value to insert new line on"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.newLineHexValue}
+              applyableTextField={rxSettings.config.newLineHexValue}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
