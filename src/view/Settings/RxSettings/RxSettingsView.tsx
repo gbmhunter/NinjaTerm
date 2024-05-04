@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
 import RxSettings, {
@@ -432,15 +432,28 @@ function RxSettingsView(props: Props) {
             followCursor
             arrow
           >
-            <ApplyableTextFieldView
+            <TextField
               id="outlined-basic"
               name="newLineHexValue"
               label="Hex value to insert new line on"
               variant="outlined"
               size="small"
-              applyableTextField={rxSettings.newLineHexValue}
               disabled={!rxSettings.insetNewLineOnHexValue}
+              value={rxSettings.newLineHexValue.displayed}
+              error={rxSettings.newLineHexValue.errorMsg !== ""}
+              helperText={rxSettings.newLineHexValue.errorMsg}
               sx={{ marginBottom: "20px" }}
+              onChange={(e) => {
+                rxSettings.setNewlineHexValueDisplayed(e.target.value);
+              }}
+              onBlur={() => {
+                rxSettings.applyNewlineHexValue();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  rxSettings.applyNewlineHexValue();
+                }
+              }}
             />
           </Tooltip>
           {/* NEWLINE BEFORE OR AFTER HEX VALUE */}

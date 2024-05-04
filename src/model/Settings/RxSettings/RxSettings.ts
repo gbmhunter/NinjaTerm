@@ -3,6 +3,8 @@ import { z } from 'zod';
 
 import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';
+import { ap } from 'vitest/dist/reporters-5f784f42';
+import { THEME_ID } from '@mui/material';
 
 export enum DataType {
   ASCII,
@@ -131,7 +133,14 @@ export default class RxSettings {
 
   insetNewLineOnHexValue = false;
 
-  newLineHexValue = new ApplyableTextField('00', z.coerce.string().length(2).regex(/^[0-9a-fA-F]{2}$/));
+  data = {
+    newLineHexValue: {
+      displayed: '00',
+      applied: '00',
+      schema: z.string().length(2).regex(/^([0-9A-Fa-f]{2})$/, 'Must be a valid hex number.'),
+      errorMsg: '',
+    }
+  }
 
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
@@ -198,8 +207,8 @@ export default class RxSettings {
     this.prefixHexValuesWith0x = upToDateConfig.prefixHexValuesWith0x;
     this.preventHexValuesWrappingAcrossRows = upToDateConfig.preventHexValuesWrappingAcrossRows;
     this.insetNewLineOnHexValue = upToDateConfig.insetNewLineOnHexValue;
-    this.newLineHexValue.setDispValue(upToDateConfig.newLineHexValue);
-    this.newLineHexValue.apply();
+    // this.newLineHexValue.setDispValue(upToDateConfig.newLineHexValue);
+    // this.newLineHexValue.apply();
     this.newLinePlacementOnHexValue = upToDateConfig.newLinePlacementOnHexValue;
   }
 
@@ -224,7 +233,7 @@ export default class RxSettings {
     config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
     config.preventHexValuesWrappingAcrossRows = this.preventHexValuesWrappingAcrossRows;
     config.insetNewLineOnHexValue = this.insetNewLineOnHexValue;
-    config.newLineHexValue = this.newLineHexValue.appliedValue;
+    // config.newLineHexValue = this.newLineHexValue.appliedValue;
     config.newLinePlacementOnHexValue = this.newLinePlacementOnHexValue;
 
     // COPY/PASTE
@@ -311,6 +320,21 @@ export default class RxSettings {
 
   setInsetNewLineOnHexValue = (value: boolean) => {
     this.insetNewLineOnHexValue = value;
+    this.saveSettings();
+  }
+
+  setNewlineHexValueDisplayed = (value: string) => {
+    this.data.newLineHexValue.displayed = value;
+    const validation = this.data.newLineHexValue.schema.safeParse(value);
+    if (validation.success) {
+      this.data.newLineHexValue.errorMsg = '';
+    } else {
+      this.data.newLineHexValue.errorMsg = validation.error.errors[0].message;
+    }
+    this.saveSettings();
+  }
+
+  applyNewlineHexValue = () => {
     this.saveSettings();
   }
 
