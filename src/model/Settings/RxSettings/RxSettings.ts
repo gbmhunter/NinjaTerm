@@ -131,7 +131,7 @@ export default class RxSettings {
 
   insetNewLineOnHexValue = false;
 
-  newLineHexValue = new ApplyableTextField('00', z.coerce.string());
+  newLineHexValue = new ApplyableTextField('00', z.coerce.string().length(2).regex(/^[0-9a-fA-F]{2}$/));
 
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
