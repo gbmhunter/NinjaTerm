@@ -179,6 +179,7 @@ export default class RxSettings {
       // No data exists, create
       // config = new DataV1();
       this.appStorage.saveConfig(CONFIG_KEY, this.config);
+      return;
     } else if (config.version === 1) {
       console.log('Up-to-date config found');
     } else{
@@ -191,20 +192,63 @@ export default class RxSettings {
     // we can go ahead and update all the app settings with the values from the config object
     let upToDateConfig = config as ConfigV1;
 
-    console.log('Loading RX settings config. config:', upToDateConfig);
-    // WARNING: Never re-assign this.config, this will break applyable fields.
-    // Only update the properties inside it
-    Object.assign(this.config, upToDateConfig);
+    let me = this as any
+    Object.keys(this.config).forEach(function(key, index) {
+      // key: the name of the object key
+      // index: the ordinal position of the key within the object
+      console.log('key:', key, 'index:', index);
+      let key1 = key as keyof ConfigV1;
+      console.log(typeof (me.config[key1]));
 
-    // Update applyable fields that might have had changed applied values
-    // due to loading the config
-    this.maxEscapeCodeLengthChars.setDispValue(this.config.maxEscapeCodeLengthChars.toString());
-    this.newLineHexValue.setDispValue(this.config.newLineHexValue);
+      // If key doesn't exist in data stored in local storage, skip it
+      if (!(key1 in upToDateConfig)) {
+        console.log('Key not found in upToDateConfig:', key1);
+        return;
+      }
+
+      if (typeof (me.config[key1]) == 'number' ||
+          typeof (me.config[key1]) == 'string' ||
+          typeof (me.config[key1]) == 'boolean'){
+        // Primitive types can be directly assigned
+        let foundVal: any = upToDateConfig[key1];
+        me.config[key1] = foundVal;
+      } else {
+        console.error('Unknown type for key:', key);
+      }
+    });
+
+    // console.log('Loading RX settings config. config:', upToDateConfig);
+    // // WARNING: Never re-assign this.config, this will break applyable fields.
+    // // Only update the properties inside it
+    // Object.assign(this.config, upToDateConfig);
+
+    // // Update applyable fields that might have had changed applied values
+    // // due to loading the config
+    // this.maxEscapeCodeLengthChars.setDispValue(this.config.maxEscapeCodeLengthChars.toString());
+    // this.newLineHexValue.setDispValue(this.config.newLineHexValue);
   }
 
   saveSettings = () => {
     console.log('Saving RX settings config. config:', JSON.stringify(this.config));
-    this.appStorage.saveConfig(CONFIG_KEY, this.config);
+    // Loop through all config properties and save them
+    let me = this as any
+    let serializableConfig: any = {};
+    Object.keys(this.config).forEach(function(key, index) {
+      // key: the name of the object key
+      // index: the ordinal position of the key within the object
+      console.log('key:', key, 'index:', index);
+      let key1 = key as keyof ConfigV1;
+      console.log(typeof (me.config[key1]));
+      if (typeof (me.config[key1]) == 'number' ||
+          typeof (me.config[key1]) == 'string' ||
+          typeof (me.config[key1]) == 'boolean'){
+        serializableConfig[key1] = me.config[key1];
+      } else {
+        console.error('Unknown type for key:', key);
+      }
+    });
+
+    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
   };
 
   setDataType = (value: DataType) => {
