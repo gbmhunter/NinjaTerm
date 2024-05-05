@@ -13,6 +13,7 @@ import PortConfigurationSettingsView from './PortConfigurationSettings/PortConfi
 import DataProcessingSettingsView from './RxSettings/RxSettingsView';
 import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';
+import GeneralSettingsView from './GeneralSettings/GeneralSettingsView';
 
 interface Props {
   app: App;
@@ -33,6 +34,9 @@ function SettingsDialog(props: Props) {
     ),
     [SettingsCategories.DISPLAY]: (
       <DisplaySettingsView app={app} />
+    ),
+    [SettingsCategories.GENERAL]: (
+      <GeneralSettingsView generalSettings={app.settings.generalSettings} />
     ),
   };
 
@@ -112,6 +116,22 @@ function SettingsDialog(props: Props) {
                   data-testid="display-settings-button"
                 >
                   <ListItemText>Display</ListItemText>
+                </ListItemButton>
+                {/* GENERAL */}
+                {/* ================================================ */}
+                <ListItemButton
+                  onClick={() => {
+                    app.settings.setActiveSettingsCategory(
+                      SettingsCategories.GENERAL
+                    );
+                  }}
+                  selected={
+                    app.settings.activeSettingsCategory ===
+                    SettingsCategories.GENERAL
+                  }
+                  data-testid="general-settings-button"
+                >
+                  <ListItemText>General</ListItemText>
                 </ListItemButton>
               </List>
             </nav>

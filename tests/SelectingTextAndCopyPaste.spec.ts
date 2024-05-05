@@ -227,7 +227,7 @@ test.describe('Selecting Text', () => {
     // Change the terminal width to 5 characters
     await appTestHarness.changeTerminalWidth(5);
 
-    await appTestHarness.goToRxSettings();
+    await appTestHarness.goToGeneralSettings();
     await page.getByTestId('do-not-add-lf-if-row-was-created-due-to-wrapping').click();
     await appTestHarness.goToTerminalView();
 

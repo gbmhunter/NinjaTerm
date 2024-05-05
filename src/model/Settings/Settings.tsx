@@ -8,14 +8,16 @@ import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
 import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
+import GeneralSettings from './GeneralSettings/GeneralSettings';
 
 export type StopBits = 1 | 1.5 | 2;
 
 export enum SettingsCategories {
   PORT_CONFIGURATION,
+  TX_SETTINGS,
   RX_SETTINGS,
   DISPLAY,
-  TX_SETTINGS,
+  GENERAL,
 }
 
 export class Settings {
@@ -31,6 +33,8 @@ export class Settings {
   rxSettings: RxSettings;
 
   displaySettings: DisplaySettings;
+
+  generalSettings: GeneralSettings;
 
   selectedPortPath = '';
 
@@ -61,6 +65,7 @@ export class Settings {
     this.txSettings = new TxSettings(app.appStorage);
     this.rxSettings = new RxSettings(app.appStorage);
     this.displaySettings = new DisplaySettings(app.appStorage);
+    this.generalSettings = new GeneralSettings(app.appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

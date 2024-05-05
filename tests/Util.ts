@@ -282,6 +282,14 @@ export class AppTestHarness {
     await this.page.getByTestId('display-settings-button').click();
   }
 
+  goToGeneralSettings = async () => {
+    await this.page.getByTestId('settings-button').click();
+    // WARNING: Escape key press is needed here otherwise the tooltip that pops
+    // up when the settings button is clicked above can block subsequent clicks!
+    await this.page.keyboard.press('Escape');
+    await this.page.getByTestId('general-settings-button').click();
+  }
+
   /**
    * Navigate to the Terminal view (1 or more terminal panes displayed).
    */

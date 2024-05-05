@@ -81,10 +81,6 @@ class Config {
   );
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
 
-  // COPY/PASTE SETTINGS
-  whenPastingOnWindowsReplaceCRLFWithLF = true;
-  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
-
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
@@ -186,16 +182,6 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
-    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
-    this.saveSettings();
-  };
-
-  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
-    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
-    this.saveSettings();
-  };
-
   //=================================================================
   // HEX-SPECIFIC SETTINGS
   //=================================================================
@@ -219,21 +205,6 @@ export default class RxSettings {
     this.config.insetNewLineOnHexValue = value;
     this.saveSettings();
   };
-
-  // setNewlineHexValueDisplayed = (value: string) => {
-  //   this.data.newLineHexValue.displayed = value;
-  //   const validation = this.data.newLineHexValue.schema.safeParse(value);
-  //   if (validation.success) {
-  //     this.data.newLineHexValue.errorMsg = '';
-  //   } else {
-  //     this.data.newLineHexValue.errorMsg = validation.error.errors[0].message;
-  //   }
-  //   this.saveSettings();
-  // }
-
-  // applyNewlineHexValue = () => {
-  //   this.saveSettings();
-  // }
 
   setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
     this.config.newLinePlacementOnHexValue = value;
