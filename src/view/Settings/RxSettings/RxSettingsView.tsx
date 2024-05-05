@@ -10,8 +10,6 @@ import RxSettings, {
 } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
-import { number } from "zod";
-import ApplyableTextFieldV2View from "src/view/Components/ApplyableTextFieldV2/ApplyableTextFieldV2View";
 
 interface Props {
   rxSettings: RxSettings;
