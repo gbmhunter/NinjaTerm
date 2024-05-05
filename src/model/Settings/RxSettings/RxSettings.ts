@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import AppStorage from "src/model/Storage/AppStorage";
 import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
+import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
 
 export enum DataType {
   ASCII,
@@ -42,9 +43,12 @@ export enum NewLinePlacementOnHexValue {
   AFTER,
 }
 
-class ConfigV1 {
-  // METADATA
-  // Create new version of this class if you need to update the structure
+class Config {
+  /**
+   * Increment this version number if you need to update this data in this class.
+   * This will cause the app to ignore whatever is in local storage and use the defaults,
+   * updating to this new version.
+   */
   version = 1;
 
   /**
@@ -91,66 +95,7 @@ const CONFIG_KEY = ["settings", "rx-settings"];
 export default class RxSettings {
   appStorage: AppStorage;
 
-  // dataType = DataType.ASCII;
-
-  // //=================================================================
-  // // ASCII-SPECIFIC SETTINGS
-  // //=================================================================
-
-  // ansiEscapeCodeParsingEnabled = true;
-
-  // maxEscapeCodeLengthChars = new ApplyableNumberField('10', z.coerce.number().min(2));
-
-  // // If true, local TX data will be echoed to RX
-  // localTxEcho = false;
-
-  // newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
-
-  // // If set to true, \n bytes will be swallowed and not displayed
-  // // on the terminal UI (which is generally what you want)
-  // swallowNewLine = true;
-
-  // // By default set the \n behavior to do new line and carriage return
-  // // and \r to do nothing. This works for both \n and \r\n line endings
-  // carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
-
-  // // If set to true, \r bytes will be swallowed and not displayed
-  // // on the terminal UI (which is generally what you want)
-  // swallowCarriageReturn = true;
-
-  // // I assume most people by default might want to see unexpected invisible chars? If not
-  // // this might be better defaulting to SWALLOW?
-  // nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
-
-  // //=================================================================
-  // // HEX-SPECIFIC SETTINGS
-  // //=================================================================
-
-  // hexSeparator = new ApplyableTextField(' ', z.string());
-
-  // hexCase = HexCase.UPPERCASE;
-
-  // /**
-  //  * If true, displayed hex values in the terminal will all be prefixed with "0x".
-  //  * Defaults to false because typically the 0x is just noise and not needed.
-  //  */
-  // prefixHexValuesWith0x = false;
-
-  // preventHexValuesWrappingAcrossRows = true;
-
-  // insetNewLineOnHexValue = false;
-
-  // newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
-
-  // /** If true, when pasting text into a terminal from the clipboard with Ctrl-Shift-V, all
-  //  * CRLF pairs will be replaced with LF. This is generally what we want to do, because LF will
-  //  * be converted to CRLF when copying TO the clipboard when on Windows.
-  //  */
-  // whenPastingOnWindowsReplaceCRLFWithLF = true;
-
-  // whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
-
-  config = new ConfigV1();
+  config = new Config();
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
@@ -176,7 +121,6 @@ export default class RxSettings {
 
     if (config === null) {
       // No data exists, create
-      // config = new DataV1();
       console.log("No rx-settings config found in local storage. Creating...");
       this.saveSettings();
       return;
@@ -184,105 +128,17 @@ export default class RxSettings {
       console.log("Up-to-date config found");
     } else {
       console.error("Unknown config version found: ", config.version);
-      // config = new DataV1();
       this.appStorage.saveConfig(CONFIG_KEY, this.config);
     }
 
     // At this point we a confident that config represents the latest version, so
     // we can go ahead and update all the app settings with the values from the config object
-    let upToDateConfig = config as ConfigV1;
-
-    let me = this as any;
-    Object.keys(this.config).forEach(function (key, index) {
-      // console.log('key:', key, 'index:', index);
-      let key1 = key as keyof ConfigV1;
-      // console.log(typeof (me.config[key1]));
-
-      // If key doesn't exist in data stored in local storage, skip it
-      if (!(key1 in upToDateConfig)) {
-        console.log("Key not found in upToDateConfig:", key1);
-        return;
-      }
-
-      // PRIMITIVE TYPES
-      //============================================================
-      if (typeof me.config[key1] == "number"
-          || typeof me.config[key1] == "string"
-          || typeof me.config[key1] == "boolean") {
-        // Primitive types can be directly assigned
-        let foundVal: any = upToDateConfig[key1];
-        me.config[key1] = foundVal;
-      }
-      // OBJECTS
-      //============================================================
-      else if (typeof me.config[key1] == "object") {
-        // ApplyableTextField
-        //===============================
-        if (me.config[key1] instanceof ApplyableTextField) {
-          let foundVal: any = upToDateConfig[key1];
-          console.log("Found applyable text field:", key1, "value:", foundVal);
-          me.config[key1].setDispValue(foundVal);
-          me.config[key1].apply();
-        }
-        // ApplyableNumberField
-        //===============================
-        else if (me.config[key1] instanceof ApplyableNumberField) {
-          let foundVal: any = upToDateConfig[key1];
-          console.log("Found applyable number field:", key1, "value:", foundVal);
-          // Convert applied value back to displayed value and re-apply
-          me.config[key1].setDispValue(foundVal.toString());
-          me.config[key1].apply();
-        } else {
-          console.error("Unknown object type for key:", key);
-        }
-      } else {
-        console.error("Unknown type for key:", key);
-      }
-    });
+    updateConfigFromSerializable(config, this.config);
   };
 
   saveSettings = () => {
     console.log("Saving RX settings config. config:", JSON.stringify(this.config));
-    // Loop through all config properties and save them
-    let me = this as any;
-    let serializableConfig: any = {};
-    Object.keys(this.config).forEach(function (key, index) {
-      // console.log('key:', key, 'index:', index);
-      let key1 = key as keyof ConfigV1;
-      // console.log(typeof (me.config[key1]));
-      // PRIMITIVE TYPES
-      //============================================================
-      if (typeof me.config[key1] == "number"
-          || typeof me.config[key1] == "string"
-          || typeof me.config[key1] == "boolean") {
-        serializableConfig[key1] = me.config[key1];
-      }
-      // OBJECTS
-      //============================================================
-      else if (typeof me.config[key1] == "object") {
-        // ApplyableTextField
-        //===============================
-        if (me.config[key1] instanceof ApplyableTextField) {
-          const applyableTextField = me.config[key1] as ApplyableTextField;
-          // console.log('Saving applyable text field:', key1, 'value:', applyableTextField.appliedValue);
-          serializableConfig[key1] = applyableTextField.appliedValue;
-        }
-        // ApplyableNumberField
-        //===============================
-        else if (me.config[key1] instanceof ApplyableNumberField) {
-          const applyableNumberField = me.config[key1] as ApplyableNumberField;
-          // console.log('Saving applyable text field:', key1, 'value:', applyableNumberField.appliedValue);
-          // Store the applied value, which will be a number
-          serializableConfig[key1] = applyableNumberField.appliedValue;
-        } else {
-          console.error("Unknown object type encountered during serialization. key: ",
-                        key, "type:", typeof me.config[key1]);
-        }
-      } else {
-        console.error("Unknown type for key:", key);
-      }
-    });
-
+    const serializableConfig = createSerializableObjectFromConfig(this.config);
     this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
   };
 
