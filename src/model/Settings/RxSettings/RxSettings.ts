@@ -110,30 +110,28 @@ export default class RxSettings {
   }
 
   loadSettings = () => {
-    let config = this.appStorage.getConfig(CONFIG_KEY);
+    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
     // UPGRADE PATH
     //===============================================
-
-    if (config === null) {
+    if (deserializedConfig === null) {
       // No data exists, create
       console.log("No rx-settings config found in local storage. Creating...");
       this.saveSettings();
       return;
-    } else if (config.version === 1) {
+    } else if (deserializedConfig.version === 1) {
       console.log("Up-to-date config found");
     } else {
-      console.error("Unknown config version found: ", config.version);
+      console.error("Unknown config version found: ", deserializedConfig.version);
       this.appStorage.saveConfig(CONFIG_KEY, this.config);
     }
 
-    // At this point we a confident that config represents the latest version, so
-    // we can go ahead and update all the app settings with the values from the config object
-    updateConfigFromSerializable(config, this.config);
+    // At this point we are confident that the deserialized config matches what
+    // this classes config object wants, so we can go ahead and update.
+    updateConfigFromSerializable(deserializedConfig, this.config);
   };
 
   saveSettings = () => {
-    console.log("Saving RX settings config. config:", JSON.stringify(this.config));
     const serializableConfig = createSerializableObjectFromConfig(this.config);
     this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
   };

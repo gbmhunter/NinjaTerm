@@ -25,7 +25,6 @@ export function updateConfigFromSerializable(serializedSettings: any, configObje
         || typeof configObject[key] == "string"
         || typeof configObject[key] == "boolean") {
       // Primitive types can be directly assigned
-      // let foundVal: any = upToDateConfig[key1];
       configObject[key] = serializedSettings[key];
     }
     // OBJECTS
@@ -34,16 +33,12 @@ export function updateConfigFromSerializable(serializedSettings: any, configObje
       // ApplyableTextField
       //===============================
       if (configObject[key] instanceof ApplyableTextField) {
-        // let foundVal: any = upToDateConfig[key1];
-        console.log("Found applyable text field:", key, ", value:", serializedSettings[key]);
         configObject[key].setDispValue(serializedSettings[key]);
         configObject[key].apply();
       }
       // ApplyableNumberField
       //===============================
       else if (configObject[key] instanceof ApplyableNumberField) {
-        // let foundVal: any = upToDateConfig[key1];
-        console.log("Found applyable number field:", key, ", value: ", serializedSettings[key]);
         // Convert applied value back to displayed value and re-apply
         configObject[key].setDispValue(serializedSettings[key].toString());
         configObject[key].apply();
@@ -66,17 +61,12 @@ export function updateConfigFromSerializable(serializedSettings: any, configObje
 export function createSerializableObjectFromConfig(configObject: any) {
   let serializableConfig: any = {};
   Object.keys(configObject).forEach(function (key, index) {
-    // console.log('key:', key, 'index:', index);
-    // let key1 = key as keyof ConfigV1;
-    // console.log(typeof (me.config[key1]));
-
     // PRIMITIVE TYPES
     //============================================================
     if (typeof configObject[key] == "number"
         || typeof configObject[key] == "string"
         || typeof configObject[key] == "boolean") {
       // Primitive types can be directly assigned
-      // let foundVal: any = upToDateConfig[key1];
       serializableConfig[key] = configObject[key];
     }
     // OBJECTS
