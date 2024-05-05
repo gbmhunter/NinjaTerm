@@ -440,6 +440,7 @@ function RxSettingsView(props: Props) {
               variant="outlined"
               size="small"
               applyableTextField={rxSettings.config.newLineHexValue}
+              disabled={!rxSettings.config.insetNewLineOnHexValue}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>

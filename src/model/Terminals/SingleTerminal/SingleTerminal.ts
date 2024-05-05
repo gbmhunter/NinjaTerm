@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
+import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -590,6 +590,24 @@ export default class SingleTerminal {
         }
       }
 
+      // Work out if we need to insert a new line because the hex value matches the new line hex value
+      // in the settings
+      let insertNewLine = false;
+      if (this.dataProcessingSettings.config.insetNewLineOnHexValue) {
+        // Convert hex string to number. We'll compare the values as numbers rather than strings,
+        // this seems like the more robust way to do it
+        const hexValueToInsertNewLineAsNum = parseInt(this.dataProcessingSettings.config.newLineHexValue.appliedValue, 16);
+        if (rxByte ==  hexValueToInsertNewLineAsNum) {
+          insertNewLine = true;
+        }
+      }
+
+      if (insertNewLine && this.dataProcessingSettings.config.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.BEFORE) {
+        // Insert new line before hex value
+        this._cursorDown(1, false); // Not due to wrapping
+        this._cursorLeft(this.cursorPosition[1]);
+      }
+
       // Add to hex chars to the the terminal
       for (let charIdx = 0; charIdx < hexStr.length; charIdx += 1) {
         this._addVisibleChar(hexStr.charCodeAt(charIdx));
@@ -599,7 +617,13 @@ export default class SingleTerminal {
         this._addVisibleChar(this.dataProcessingSettings.config.hexSeparator.appliedValue.charCodeAt(charIdx));
       }
 
-    }
+      if (insertNewLine && this.dataProcessingSettings.config.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
+        // Insert new line after hex value
+        this._cursorDown(1, false); // Not due to wrapping
+        this._cursorLeft(this.cursorPosition[1]);
+      }
+
+    } // for (let idx = 0; idx < data.length; idx += 1) {
   }
 
   /**
