@@ -93,7 +93,7 @@ const portStateToToolbarStatusProperties: { [key in PortState]: any; } = {
  */
 const dataTypeToDisplayString: { [key in DataType]: string } = {
   [DataType.ASCII]: 'ASCII',
-  [DataType.HEX]: 'HEX',
+  [DataType.NUMBER]: 'HEX/NUMBER',
 };
 
 interface Props {

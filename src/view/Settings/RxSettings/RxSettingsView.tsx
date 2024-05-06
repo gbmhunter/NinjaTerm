@@ -1,13 +1,7 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, {
-  CarriageReturnCursorBehavior,
-  DataType,
-  HexCase,
-  NewLineCursorBehavior,
-  NonVisibleCharDisplayBehaviors,
-} from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -37,9 +31,9 @@ function RxSettingsView(props: Props) {
               <Tooltip title="Interpret RX data as ASCII characters." placement="right" arrow>
                 <FormControlLabel value={DataType.ASCII} control={<Radio />} label="ASCII" />
               </Tooltip>
-              {/* HEX */}
+              {/* HEX/NUMBER */}
               <Tooltip title="Interpret RX data as hexidecimal numbers." placement="right" arrow>
-                <FormControlLabel value={DataType.HEX} control={<Radio />} label="Hex" />
+                <FormControlLabel value={DataType.NUMBER} control={<Radio />} label="Number (e.g. hex, uint8, int16, ...)" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -320,30 +314,141 @@ function RxSettingsView(props: Props) {
       </div>{" "}
       {/* End of ASCII block */}
       {/* =============================================================================== */}
-      {/* DATA TYPE = HEX */}
+      {/* DATA TYPE = NUMBER */}
       {/* =============================================================================== */}
-      <div className="hex-block" style={{ display: rxSettings.config.dataType === DataType.HEX ? "block" : "none" }}>
-        <BorderedSection title="Hex Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+      <div className="number-block" style={{ display: rxSettings.config.dataType === DataType.NUMBER ? "block" : "none" }}>
+        <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* HEX SEPARATOR */}
           {/* ================================================ */}
           <Tooltip
-            title="This string is append to every displayed hex value. For example, use &quot; &quot; to separate hex values with a space, or &quot;,&quot; to create CSV-like data. You can also use an empty string to have no separator at all."
+            title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
+            followCursor
+            arrow
+          >
+            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
+              <InputLabel id="demo-select-small-label">Number Type</InputLabel>
+              <Select
+                labelId="demo-select-small-label"
+                id="demo-select-small"
+                value={rxSettings.config.selectedNumberType}
+                label="Baud Rate"
+                onChange={(e) => {
+                  rxSettings.setSelectedNumberType(e.target.value);
+                }}
+              >
+                {rxSettings.numberTypes.map((numberType) => {
+                  return (
+                    <MenuItem key={numberType} value={numberType}>
+                      {numberType}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Tooltip>
+          {/* SEPARATOR BETWEEN VALUES */}
+          {/* ================================================ */}
+          <Tooltip
+            title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
             followCursor
             arrow
           >
             <ApplyableTextFieldView
               id="outlined-basic"
               name="hexSeparator"
-              label="Separator Between Hex Values"
+              label="Separator Between Values"
               variant="outlined"
               size="small"
               applyableTextField={rxSettings.config.hexSeparator}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
+
+          {/* PREVENT VALUES FROM WRAPPING ACROSS ROWS */}
+          {/* ================================================ */}
+          <Tooltip
+            title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
+            placement="right"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rxSettings.config.preventHexValuesWrappingAcrossRows}
+                  onChange={(e) => {
+                    rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
+                  }}
+                />
+              }
+              label="Prevent values from wrapping across rows."
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          {/* INSERT NEW LINE ON SPECIFIC VALUE */}
+          {/* ================================================ */}
+          <Tooltip
+            title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when to have specific start-of-packet/end-of-packet delimiters."
+            placement="right"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rxSettings.config.insetNewLineOnHexValue}
+                  onChange={(e) => {
+                    rxSettings.setInsetNewLineOnHexValue(e.target.checked);
+                  }}
+                />
+              }
+              label="Insert new line on specific value."
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          {/* NEW LINE HEX VALUE */}
+          {/* ================================================ */}
+          <Tooltip
+            title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff".'
+            followCursor
+            arrow
+          >
+            <ApplyableTextFieldView
+              id="outlined-basic"
+              name="newLineHexValue"
+              label="Value to insert new line on"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.config.newLineHexValue}
+              disabled={!rxSettings.config.insetNewLineOnHexValue}
+              sx={{ marginBottom: "20px" }}
+            />
+          </Tooltip>
+          {/* NEWLINE BEFORE OR AFTER HEX VALUE */}
+          {/* ================================================ */}
+          <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue}>
+            <FormLabel>Insert new line before or after value?</FormLabel>
+            <RadioGroup
+              value={rxSettings.config.newLinePlacementOnHexValue}
+              onChange={(e) => {
+                rxSettings.setNewLinePlacementOnHexValue(parseInt(e.target.value));
+              }}
+            >
+              {/* UPPERCASE */}
+              <Tooltip title="Insert new line before the detected hex value. Useful if the hex value indicates the start of a packet." placement="right" arrow>
+                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Before" />
+              </Tooltip>
+              {/* LOWERCASE */}
+              <Tooltip title="Insert new line after the detected hex value. Useful if the hex value indicates the end of a packet." placement="right" arrow>
+                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="After" />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
+        </BorderedSection>
+        <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* UPPERCASE/LOWERCASE HEX */}
           {/* ================================================ */}
-          <FormControl>
+          <FormControl disabled={rxSettings.config.selectedNumberType !== 'Hex'}>
             <FormLabel>Upper/lowercase hex:</FormLabel>
             <RadioGroup
               value={rxSettings.config.hexCase}
@@ -364,12 +469,13 @@ function RxSettingsView(props: Props) {
           {/* PREFIX HEX VALUES WITH 0x */}
           {/* ================================================ */}
           <Tooltip
-            title="If enabled, &quot;0x&quot; will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!"
+            title='If enabled, "0x" will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!'
             placement="right"
             followCursor
             arrow
           >
             <FormControlLabel
+              disabled={rxSettings.config.selectedNumberType !== 'Hex'}
               control={
                 <Checkbox
                   checked={rxSettings.config.prefixHexValuesWith0x}
@@ -378,90 +484,10 @@ function RxSettingsView(props: Props) {
                   }}
                 />
               }
-              label="Prefix hex values with &quot;0x&quot;."
+              label='Prefix hex values with "0x".'
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
-          {/* PREVENT HEX VALUES FROM WRAPPING ACROSS ROWS */}
-          {/* ================================================ */}
-          <Tooltip
-            title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rxSettings.config.preventHexValuesWrappingAcrossRows}
-                  onChange={(e) => {
-                    rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
-                  }}
-                />
-              }
-              label="Prevent hex values from wrapping across rows."
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* INSERT NEW LINE ON HEX VALUE */}
-          {/* ================================================ */}
-          <Tooltip
-            title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when to have specific start-of-packet/end-of-packet delimiters."
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rxSettings.config.insetNewLineOnHexValue}
-                  onChange={(e) => {
-                    rxSettings.setInsetNewLineOnHexValue(e.target.checked);
-                  }}
-                />
-              }
-              label="Insert new line on hex value."
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* NEW LINE HEX VALUE */}
-          {/* ================================================ */}
-          <Tooltip
-            title="The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. &quot;0A&quot; or &quot;ff&quot;."
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              id="outlined-basic"
-              name="newLineHexValue"
-              label="Hex value to insert new line on"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.config.newLineHexValue}
-              disabled={!rxSettings.config.insetNewLineOnHexValue}
-              sx={{ marginBottom: "20px" }}
-            />
-          </Tooltip>
-          {/* NEWLINE BEFORE OR AFTER HEX VALUE */}
-          {/* ================================================ */}
-          <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue}>
-            <FormLabel>Insert new line before or after hex value?</FormLabel>
-            <RadioGroup
-              value={rxSettings.config.newLinePlacementOnHexValue}
-              onChange={(e) => {
-                rxSettings.setNewLinePlacementOnHexValue(parseInt(e.target.value));
-              }}
-            >
-              {/* UPPERCASE */}
-              <Tooltip title="Insert new line before the detected hex value. Useful if the hex value indicates the start of a packet." placement="right" arrow>
-                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Before" />
-              </Tooltip>
-              {/* LOWERCASE */}
-              <Tooltip title="Insert new line after the detected hex value. Useful if the hex value indicates the end of a packet." placement="right" arrow>
-                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="After" />
-              </Tooltip>
-            </RadioGroup>
-          </FormControl>
         </BorderedSection>
       </div>
       {/* End of HEX block */}

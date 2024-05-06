@@ -222,8 +222,8 @@ export default class SingleTerminal {
 
     if (this.dataProcessingSettings.config.dataType === DataType.ASCII) {
       this.parseAsciiData(data);
-    } else if (this.dataProcessingSettings.config.dataType === DataType.HEX) {
-      this._parseHexData(data);
+    } else if (this.dataProcessingSettings.config.dataType === DataType.NUMBER) {
+      this._parseDataAsHexOrNumber(data);
     } else {
       throw Error(`Data type ${this.dataProcessingSettings.config.dataType} not supported by parseData().`);
     }
@@ -555,7 +555,7 @@ export default class SingleTerminal {
    *
    * @param data The data to parse and display.
    */
-  _parseHexData(data: Uint8Array) {
+  _parseDataAsHexOrNumber(data: Uint8Array) {
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
       // Convert byte to hex string

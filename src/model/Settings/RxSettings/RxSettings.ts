@@ -7,7 +7,7 @@ import { createSerializableObjectFromConfig, updateConfigFromSerializable } from
 
 export enum DataType {
   ASCII,
-  HEX,
+  NUMBER,
 }
 
 export enum NewLineCursorBehavior {
@@ -43,6 +43,12 @@ export enum NewLinePlacementOnHexValue {
   AFTER,
 }
 
+export enum NumberTypes {
+  HEX = 'hex',
+  UINT8 = 'uint8',
+  UINT16 = 'uint16',
+}
+
 class Config {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -67,6 +73,7 @@ class Config {
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // HEX-SPECIFIC SETTINGS
+  selectedNumberType = 'Hex';
   hexSeparator = new ApplyableTextField(" ", z.string());
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
@@ -92,6 +99,12 @@ export default class RxSettings {
   appStorage: AppStorage;
 
   config = new Config();
+
+  numberTypes = [
+    'Hex',
+    'uint8',
+    'uint16',
+  ]
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
@@ -183,6 +196,11 @@ export default class RxSettings {
   //=================================================================
   // HEX-SPECIFIC SETTINGS
   //=================================================================
+
+  setSelectedNumberType = (value: string) => {
+    this.config.selectedNumberType = value;
+    this.saveSettings();
+  }
 
   setHexCase = (value: HexCase) => {
     this.config.hexCase = value;

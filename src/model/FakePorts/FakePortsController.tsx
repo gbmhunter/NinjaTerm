@@ -522,7 +522,7 @@ export default class FakePortsController {
           // app.settings.displaySettings.terminalWidthChars.setDispValue('40');
           // app.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.rxSettings.setDataType(DataType.HEX);
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
