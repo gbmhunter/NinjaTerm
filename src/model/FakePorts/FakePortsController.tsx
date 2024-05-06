@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { App, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/RxSettings/RxSettings';
+import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -509,6 +509,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // dataType: HEX, bytes: 0x00-0xFF, 5chars/s
     //=================================================================================
     this.fakePorts.push(
@@ -516,13 +517,38 @@ export default class FakePortsController {
         'dataType: hex, bytes 0x00-0xFF, 5chars/s',
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
         () => {
-          // app.settings.displaySettings.charSizePx.setDispValue('30');
-          // app.settings.displaySettings.charSizePx.apply();
-
-          // app.settings.displaySettings.terminalWidthChars.setDispValue('40');
-          // app.settings.displaySettings.terminalWidthChars.apply();
-
           app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setSelectedNumberType(NumberTypes.HEX);
+
+          let testCharIdx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            testCharIdx += 1;
+            if (testCharIdx === 256) {
+              testCharIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: uint8, bytes: 0x00-0xFF, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: uint8, bytes 0x00-0xFF, 5chars/s',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setSelectedNumberType(NumberTypes.UINT8);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {

@@ -44,7 +44,7 @@ export enum NewLinePlacementOnHexValue {
 }
 
 export enum NumberTypes {
-  HEX = 'hex',
+  HEX = 'Hex',
   UINT8 = 'uint8',
   UINT16 = 'uint16',
 }
@@ -73,7 +73,7 @@ class Config {
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // HEX-SPECIFIC SETTINGS
-  selectedNumberType = 'Hex';
+  selectedNumberType = NumberTypes.HEX;
   hexSeparator = new ApplyableTextField(" ", z.string());
   hexCase = HexCase.UPPERCASE;
   prefixHexValuesWith0x = false;
@@ -99,12 +99,6 @@ export default class RxSettings {
   appStorage: AppStorage;
 
   config = new Config();
-
-  numberTypes = [
-    'Hex',
-    'uint8',
-    'uint16',
-  ]
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
@@ -197,7 +191,8 @@ export default class RxSettings {
   // HEX-SPECIFIC SETTINGS
   //=================================================================
 
-  setSelectedNumberType = (value: string) => {
+  setSelectedNumberType = (value: NumberTypes) => {
+    console.log('setSelectedNumberType', value);
     this.config.selectedNumberType = value;
     this.saveSettings();
   }
