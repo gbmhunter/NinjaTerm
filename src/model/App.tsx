@@ -134,7 +134,7 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.settings = new Settings(this);
+    this.settings = new Settings(this.appStorage, this.fakePortController);
 
     this.snackbar = new Snackbar();
 
@@ -172,7 +172,7 @@ export class App {
    * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
    */
   async onAppUiLoaded() {
-    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
+    if (this.settings.portConfiguration.config.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
     }
 
@@ -290,7 +290,7 @@ export class App {
         lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
         this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
       });
-      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+      if (this.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
         runInAction(() => {
           this.portState = PortState.OPENED;
@@ -427,7 +427,7 @@ export class App {
     // fatal error from the serial port which has caused us to close. In this case, handle
     // the clean-up and state transition here.
     if (this.keepReading === true) {
-      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+      if (this.settings.portConfiguration.config.reopenSerialPortIfUnexpectedlyClosed) {
         this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
       } else {
         this.setPortState(PortState.CLOSED);

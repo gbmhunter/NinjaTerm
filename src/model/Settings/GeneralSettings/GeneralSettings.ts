@@ -3,6 +3,8 @@ import { makeAutoObservable } from "mobx";
 import AppStorage from "src/model/Storage/AppStorage";
 import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
 
+const CONFIG_KEY = ['settings', 'general-settings'];
+
 class Config {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -11,7 +13,6 @@ class Config {
    */
   version = 1;
 
-  // COPY/PASTE SETTINGS
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
@@ -20,8 +21,6 @@ class Config {
   }
 }
 
-const CONFIG_KEY = ["settings", "general-settings"];
-
 export default class RxSettings {
   appStorage: AppStorage;
 
@@ -29,11 +28,21 @@ export default class RxSettings {
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
-    this.loadSettings();
+    this._loadConfig();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
-  loadSettings = () => {
+  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
+    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
+    this._saveConfig();
+  };
+
+  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
+    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
+    this._saveConfig();
+  };
+
+  _loadConfig = () => {
     let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
     // UPGRADE PATH
@@ -42,13 +51,13 @@ export default class RxSettings {
     if (deserializedConfig === null) {
       // No data exists, create
       console.log("No rx-settings config found in local storage. Creating...");
-      this.saveSettings();
+      this._saveConfig();
       return;
     } else if (deserializedConfig.version === 1) {
       console.log("Up-to-date config found");
     } else {
       console.error("Unknown config version found: ", deserializedConfig.version);
-      this.saveSettings();
+      this._saveConfig();
     }
 
     // At this point we are confident that the deserialized config matches what
@@ -56,19 +65,8 @@ export default class RxSettings {
     updateConfigFromSerializable(deserializedConfig, this.config);
   };
 
-  saveSettings = () => {
-    console.log("Saving RX settings config. config:", JSON.stringify(this.config));
+  _saveConfig = () => {
     const serializableConfig = createSerializableObjectFromConfig(this.config);
     this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
-  };
-
-  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
-    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
-    this.saveSettings();
-  };
-
-  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
-    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
-    this.saveSettings();
   };
 }
