@@ -579,6 +579,8 @@ export default class SingleTerminal {
       } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT8) {
         // Convert byte to string
         numberStr = rxByte.toString(10);
+      } else {
+        throw Error('Invalid number type: ' + this.rxSettings.config.selectedNumberType);
       }
 
       // Only prevent hex value wrapping mid-value if:

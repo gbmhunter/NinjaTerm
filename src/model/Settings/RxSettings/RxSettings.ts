@@ -49,6 +49,11 @@ export enum NumberTypes {
   UINT16 = 'uint16',
 }
 
+export enum PaddingCharacter {
+  WHITESPACE,
+  ZERO,
+}
+
 class Config {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -72,21 +77,31 @@ class Config {
   swallowCarriageReturn = true;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
-  // HEX-SPECIFIC SETTINGS
+  // NUMBER-SPECIFIC SETTINGS
   selectedNumberType = NumberTypes.HEX;
   hexSeparator = new ApplyableTextField(" ", z.string());
-  hexCase = HexCase.UPPERCASE;
-  prefixHexValuesWith0x = false;
   preventHexValuesWrappingAcrossRows = true;
   insetNewLineOnHexValue = false;
   newLineHexValue = new ApplyableTextField(
     "00",
     z
-      .string()
-      .length(2)
-      .regex(/^([0-9A-Fa-f]{2})$/, "Must be a valid hex number.")
+    .string()
+    .length(2)
+    .regex(/^([0-9A-Fa-f]{2})$/, "Must be a valid hex number.")
   );
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
+  padValues = false;
+  paddingCharacter = PaddingCharacter.ZERO;
+
+  /**
+   * Set to -1 for automatic padding, which will pad up to the largest possible value
+   * for the selected number type.
+   */
+  numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(10).int());
+
+  // HEX-SPECIFIC SETTINGS
+  prefixHexValuesWith0x = false;
+  hexCase = HexCase.UPPERCASE;
 
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -112,6 +127,9 @@ export default class RxSettings {
       this.saveSettings();
     });
     this.config.newLineHexValue.setOnApplyChanged(() => {
+      this.saveSettings();
+    });
+    this.config.numPaddingChars.setOnApplyChanged(() => {
       this.saveSettings();
     });
   }
@@ -188,7 +206,7 @@ export default class RxSettings {
   };
 
   //=================================================================
-  // HEX-SPECIFIC SETTINGS
+  // NUMBER-SPECIFIC SETTINGS
   //=================================================================
 
   setSelectedNumberType = (value: NumberTypes) => {
@@ -196,16 +214,6 @@ export default class RxSettings {
     this.config.selectedNumberType = value;
     this.saveSettings();
   }
-
-  setHexCase = (value: HexCase) => {
-    this.config.hexCase = value;
-    this.saveSettings();
-  };
-
-  setPrefixHexValuesWith0x = (value: boolean) => {
-    this.config.prefixHexValuesWith0x = value;
-    this.saveSettings();
-  };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
     this.config.preventHexValuesWrappingAcrossRows = value;
@@ -219,6 +227,30 @@ export default class RxSettings {
 
   setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
     this.config.newLinePlacementOnHexValue = value;
+    this.saveSettings();
+  };
+
+  setPadValues = (value: boolean) => {
+    this.config.padValues = value;
+    this.saveSettings();
+  }
+
+  setPaddingCharacter = (value: PaddingCharacter) => {
+    this.config.paddingCharacter = value;
+    this.saveSettings();
+  }
+
+  //=================================================================
+  // HEX-SPECIFIC SETTINGS
+  //=================================================================
+
+  setHexCase = (value: HexCase) => {
+    this.config.hexCase = value;
+    this.saveSettings();
+  };
+
+  setPrefixHexValuesWith0x = (value: boolean) => {
+    this.config.prefixHexValuesWith0x = value;
     this.saveSettings();
   };
 }

@@ -1,7 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes } from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -340,12 +340,14 @@ function RxSettingsView(props: Props) {
                   return (
                     <MenuItem key={numberType} value={numberType}>
                       {numberType}
+
                     </MenuItem>
                   );
                 })}
               </Select>
             </FormControl>
           </Tooltip>
+          {/* ================================================ */}
           {/* SEPARATOR BETWEEN VALUES */}
           {/* ================================================ */}
           <Tooltip
@@ -363,7 +365,7 @@ function RxSettingsView(props: Props) {
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
-
+          {/* ================================================ */}
           {/* PREVENT VALUES FROM WRAPPING ACROSS ROWS */}
           {/* ================================================ */}
           <Tooltip
@@ -385,6 +387,7 @@ function RxSettingsView(props: Props) {
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
+          {/* ================================================ */}
           {/* INSERT NEW LINE ON SPECIFIC VALUE */}
           {/* ================================================ */}
           <Tooltip
@@ -406,6 +409,7 @@ function RxSettingsView(props: Props) {
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
+          {/* ================================================ */}
           {/* NEW LINE HEX VALUE */}
           {/* ================================================ */}
           <Tooltip
@@ -424,9 +428,10 @@ function RxSettingsView(props: Props) {
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
+          {/* ================================================ */}
           {/* NEWLINE BEFORE OR AFTER HEX VALUE */}
           {/* ================================================ */}
-          <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue}>
+          <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "20px" }}>
             <FormLabel>Insert new line before or after value?</FormLabel>
             <RadioGroup
               value={rxSettings.config.newLinePlacementOnHexValue}
@@ -444,8 +449,71 @@ function RxSettingsView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+          {/* ================================================ */}
+          {/* PAD VALUES */}
+          {/* ================================================ */}
+          <Tooltip
+            title="."
+            placement="right"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rxSettings.config.padValues}
+                  onChange={(e) => {
+                    rxSettings.setPadValues(e.target.checked);
+                  }}
+                />
+              }
+              label="Pad values"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          {/* ================================================ */}
+          {/* PADDING CHARACTER */}
+          {/* ================================================ */}
+          <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "20px" }}>
+            <FormLabel>Padding character:</FormLabel>
+            <RadioGroup
+              value={rxSettings.config.paddingCharacter}
+              onChange={(e) => {
+                rxSettings.setPaddingCharacter(parseInt(e.target.value));
+              }}
+            >
+              {/* 0's */}
+              <Tooltip title="" placement="right" arrow>
+                <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio />} label="0's" />
+              </Tooltip>
+              {/* WHITESPACE */}
+              <Tooltip title="." placement="right" arrow>
+                <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio />} label="<whitespace>" />
+              </Tooltip>
+            </RadioGroup>
+          </FormControl>
+          {/* ================================================ */}
+          {/* NUM. PADDING CHARS */}
+          {/* ================================================ */}
+          <Tooltip
+            title=""
+            followCursor
+            arrow
+          >
+            <ApplyableTextFieldView
+              id="outlined-basic"
+              name="numPaddingChars"
+              label="Num. of padding chars"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.config.numPaddingChars}
+              disabled={!rxSettings.config.padValues}
+              sx={{ marginBottom: "20px" }}
+            />
+          </Tooltip>
         </BorderedSection>
         <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+          {/* ================================================ */}
           {/* UPPERCASE/LOWERCASE HEX */}
           {/* ================================================ */}
           <FormControl disabled={rxSettings.config.selectedNumberType !== NumberTypes.HEX}>
