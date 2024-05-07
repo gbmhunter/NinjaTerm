@@ -18,7 +18,7 @@ function RxSettingsView(props: Props) {
       {/* DATA TYPE */}
       {/* =============================================================================== */}
       <div style={{ display: "flex" }}>
-        <BorderedSection title="Data Type" childStyle={{ display: "flex", flexDirection: "column" }}>
+        <BorderedSection title="Data Type" childStyle={{ display: "flex", flexDirection: "column", width: '500px' }}>
           <FormControl>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
@@ -317,6 +317,7 @@ function RxSettingsView(props: Props) {
       {/* DATA TYPE = NUMBER */}
       {/* =============================================================================== */}
       <div className="number-block" style={{ display: rxSettings.config.dataType === DataType.NUMBER ? "block" : "none" }}>
+      <div className="columns" style={{ display: "flex" }}>
         <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* HEX SEPARATOR */}
           {/* ================================================ */}
@@ -449,11 +450,13 @@ function RxSettingsView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+        </BorderedSection>
+        <BorderedSection title="Padding Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* ================================================ */}
           {/* PAD VALUES */}
           {/* ================================================ */}
           <Tooltip
-            title="."
+            title="Enable this to left-pad values to a consistent character width."
             placement="right"
             followCursor
             arrow
@@ -483,20 +486,20 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* 0's */}
-              <Tooltip title="" placement="right" arrow>
+              <Tooltip title="Pad with 0's, e.g. &quot;003&quot;." placement="right" arrow>
                 <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio />} label="0's" />
               </Tooltip>
               {/* WHITESPACE */}
-              <Tooltip title="." placement="right" arrow>
+              <Tooltip title="Pad with whitespace, e.g. &quot;  3&quot;." placement="right" arrow>
                 <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio />} label="<whitespace>" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
           {/* ================================================ */}
-          {/* NUM. PADDING CHARS */}
+          {/* PADDING WIDTH */}
           {/* ================================================ */}
           <Tooltip
-            title=""
+            title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16)."
             followCursor
             arrow
           >
@@ -512,6 +515,7 @@ function RxSettingsView(props: Props) {
             />
           </Tooltip>
         </BorderedSection>
+        </div>
         <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* ================================================ */}
           {/* UPPERCASE/LOWERCASE HEX */}

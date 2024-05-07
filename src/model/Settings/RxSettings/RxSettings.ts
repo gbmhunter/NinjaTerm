@@ -90,7 +90,7 @@ class Config {
     .regex(/^([0-9A-Fa-f]{2})$/, "Must be a valid hex number.")
   );
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
-  padValues = false;
+  padValues = true;
   paddingCharacter = PaddingCharacter.ZERO;
 
   /**

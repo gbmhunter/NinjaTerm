@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberTypes } from 'src/model/Settings/RxSettings/RxSettings';
+import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -560,6 +560,7 @@ export default class SingleTerminal {
       const rxByte = data[idx];
 
       let numberStr = ''
+      // CREATE NUMBER PART OF STRING
       if (this.rxSettings.config.selectedNumberType === NumberTypes.HEX) {
         // Convert byte to hex string
         numberStr = rxByte.toString(16).padStart(2, '0');
@@ -571,16 +572,43 @@ export default class SingleTerminal {
         } else {
           throw Error('Invalid hex case setting: ' + this.rxSettings.config.hexCase);
         }
-
-        // Add 0x prefix if needed
-        if (this.rxSettings.config.prefixHexValuesWith0x) {
-          numberStr = '0x' + numberStr;
-        }
+        // "0x" is added later after the padding step if enabled
       } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT8) {
         // Convert byte to string
         numberStr = rxByte.toString(10);
       } else {
         throw Error('Invalid number type: ' + this.rxSettings.config.selectedNumberType);
+      }
+
+      // ADD PADDING
+      if (this.rxSettings.config.padValues) {
+        // If padding is set to automatic, pad to the largest possible value for the selected number type
+        let paddingChar = ' ';
+        if (this.rxSettings.config.paddingCharacter === PaddingCharacter.ZERO) {
+          paddingChar = '0';
+        } else if (this.rxSettings.config.paddingCharacter === PaddingCharacter.WHITESPACE) {
+          paddingChar = ' ';
+        } else {
+          throw Error('Invalid padding character setting: ' + this.rxSettings.config.paddingCharacter);
+        }
+        // If padding is set to automatic, pad to the largest possible value for the selected number type
+        let numPaddingChars = this.rxSettings.config.numPaddingChars.appliedValue;
+        if (numPaddingChars === -1) {
+          if (this.rxSettings.config.selectedNumberType === NumberTypes.HEX) {
+            numPaddingChars = 2;
+          } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT8) {
+            // Numbers 0-255, so 3 chars
+            numPaddingChars = 3;
+          } else {
+            throw Error('Invalid number type: ' + this.rxSettings.config.selectedNumberType);
+          }
+        }
+        numberStr = numberStr.padStart(numPaddingChars, paddingChar);
+      }
+
+      // Add 0x if hex and setting is enabled
+      if (this.rxSettings.config.selectedNumberType === NumberTypes.HEX && this.rxSettings.config.prefixHexValuesWith0x) {
+        numberStr = '0x' + numberStr;
       }
 
       // Only prevent hex value wrapping mid-value if:

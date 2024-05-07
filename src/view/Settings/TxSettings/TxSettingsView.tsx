@@ -20,7 +20,7 @@ function TxSettingsView(props: Props) {
       {/* =============================================================================== */}
       <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
-        {/* BACKSPACE */}
+        {/* COL1: BACKSPACE */}
         {/* =============================================================================== */}
         <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* BACKSPACE */}
@@ -44,7 +44,7 @@ function TxSettingsView(props: Props) {
           </FormControl>
         </BorderedSection>
         {/* =============================================================================== */}
-        {/* DELETE */}
+        {/* COL2: DELETE */}
         {/* =============================================================================== */}
         <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
           <FormControl>
