@@ -1,7 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -319,7 +319,8 @@ function RxSettingsView(props: Props) {
       <div className="number-block" style={{ display: rxSettings.config.dataType === DataType.NUMBER ? "block" : "none" }}>
       <div className="columns" style={{ display: "flex" }}>
         <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* HEX SEPARATOR */}
+          {/* ================================================ */}
+          {/* NUMBER TYPE */}
           {/* ================================================ */}
           <Tooltip
             title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
@@ -343,6 +344,34 @@ function RxSettingsView(props: Props) {
                     <MenuItem key={numberType} value={numberType}>
                       {numberType}
 
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Tooltip>
+          {/* ================================================ */}
+          {/* ENDIANNESS */}
+          {/* ================================================ */}
+          <Tooltip
+            title='The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first.'
+            followCursor
+            arrow
+          >
+            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
+              <InputLabel>Endianness</InputLabel>
+              <Select
+                value={rxSettings.config.endianness}
+                label="Endianness"
+                onChange={(e) => {
+                  rxSettings.setEndianness(e.target.value as Endianness);
+                }}
+                data-testid="endianness-select"
+              >
+                {Object.values(Endianness).map((endianness) => {
+                  return (
+                    <MenuItem key={endianness} value={endianness}>
+                      {endianness}
                     </MenuItem>
                   );
                 })}

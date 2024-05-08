@@ -3,7 +3,7 @@ import { autorun, makeAutoObservable } from 'mobx';
 
 import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
-import RxSettings, { CarriageReturnCursorBehavior, DataType, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
+import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
@@ -603,8 +603,15 @@ export default class SingleTerminal {
           // the two bytes to a single number
           continue;
         }
-        // Convert two bytes to number
-        const num = this.partialNumber[0] + (this.partialNumber[1] << 8);
+        // Convert two bytes to number, taking into account the endianness setting
+        let num = 0;
+        if (this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN) {
+          num = this.partialNumber[0] + (this.partialNumber[1] << 8);
+        } else if (this.rxSettings.config.endianness === Endianness.BIG_ENDIAN) {
+          num = (this.partialNumber[0] << 8) + this.partialNumber[1];
+        } else {
+          throw Error('Invalid endianness setting: ' + this.rxSettings.config.endianness);
+        }
         numberStr = num.toString(10);
         this.partialNumber = [];
       }

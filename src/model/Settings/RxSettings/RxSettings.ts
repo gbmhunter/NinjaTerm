@@ -54,6 +54,14 @@ export enum PaddingCharacter {
   ZERO,
 }
 
+/**
+ * The different ways multi-byte numbers can be sent across the serial port.
+ */
+export enum Endianness {
+  LITTLE_ENDIAN = 'Little Endian', // LSB is sent first.
+  BIG_ENDIAN = 'Big Endian', // MSB is sent first.
+}
+
 class Config {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -79,6 +87,7 @@ class Config {
 
   // NUMBER-SPECIFIC SETTINGS
   selectedNumberType = NumberTypes.HEX;
+  endianness = Endianness.LITTLE_ENDIAN;
   hexSeparator = new ApplyableTextField(" ", z.string());
   preventHexValuesWrappingAcrossRows = true;
   insetNewLineOnHexValue = false;
@@ -214,6 +223,11 @@ export default class RxSettings {
     this.config.selectedNumberType = value;
     this.saveSettings();
   }
+
+  setEndianness = (value: Endianness) => {
+    this.config.endianness = value;
+    this.saveSettings();
+  };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
     this.config.preventHexValuesWrappingAcrossRows = value;
