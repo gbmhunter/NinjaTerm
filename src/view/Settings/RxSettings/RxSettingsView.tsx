@@ -31,9 +31,9 @@ function RxSettingsView(props: Props) {
               <Tooltip title="Interpret RX data as ASCII characters." placement="right" arrow>
                 <FormControlLabel value={DataType.ASCII} control={<Radio />} label="ASCII" />
               </Tooltip>
-              {/* HEX/NUMBER */}
-              <Tooltip title="Interpret RX data as hexidecimal numbers." placement="right" arrow>
-                <FormControlLabel value={DataType.NUMBER} control={<Radio />} label="Number (e.g. hex, uint8, int16, ...)" />
+              {/* NUMBER */}
+              <Tooltip title="Interpret RX data as a type of number." placement="right" arrow>
+                <FormControlLabel value={DataType.NUMBER} control={<Radio data-testid="data-type-number-radio-button" />} label="Number (e.g. hex, uint8, int16, ...)" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -336,6 +336,7 @@ function RxSettingsView(props: Props) {
                 onChange={(e) => {
                   rxSettings.setSelectedNumberType(e.target.value as NumberTypes);
                 }}
+                data-testid="number-type-select"
               >
                 {Object.values(NumberTypes).map((numberType) => {
                   return (
@@ -530,11 +531,11 @@ function RxSettingsView(props: Props) {
             >
               {/* UPPERCASE */}
               <Tooltip title="Use uppercase A-F when printing hex values." placement="right" arrow>
-                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Uppercase" />
+                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio data-testid="hex-uppercase-radio-button" />} label="Uppercase" />
               </Tooltip>
               {/* LOWERCASE */}
               <Tooltip title="Use lowercase a-f when printing hex values." placement="right" arrow>
-                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="Lowercase" />
+                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio data-testid="hex-lowercase-radio-button" />} label="Lowercase" />
               </Tooltip>
             </RadioGroup>
           </FormControl>

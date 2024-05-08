@@ -3,7 +3,7 @@ import { expect, Page, Locator } from '@playwright/test';
 // This import is so we can grab window.app without typescript complaining
 // Complains it's unused though...
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { App } from '../src/App';
+import { App } from '../src/model/App';
 
 export class ExpectedTerminalChar {
   char: string;
@@ -148,7 +148,7 @@ export class AppTestHarness {
   };
 
   /**
-   * Use this to send data to NinjaTerm when testing. For the most
+   * Use this to send string data to NinjaTerm when testing. For the most
    * part NinjaTerm thinks this came from the serial port.
    *
    * @param textToSend The data you want to send as a string.
@@ -161,6 +161,21 @@ export class AppTestHarness {
       }
       window.app.parseRxData(Uint8Array.from(dataToSend));
     }, textToSend);
+  }
+
+  /**
+   * Use this to send bytes of data to NinjaTerm when testing. For the most
+   * part NinjaTerm thinks this came from the serial port.
+   *
+   * @param bytesToSend The data you want to send as an array of numbers.
+   */
+  sendBytesToTerminal = async (bytesToSend: number[]) => {
+    // Be careful, serializing a Uint8Array loses it's type when going from Playwright context
+    // to browser context. So send data as a number array, and convert it to Uint8Array inside
+    // the browser context.
+    await this.page.evaluate((bytesToSend) => {
+      window.app.parseRxData(Uint8Array.from(bytesToSend));
+    }, bytesToSend);
   }
 
   checkTerminalTextAgainstExpected = async (expectedDisplay: ExpectedTerminalChar[][]) => {

@@ -106,6 +106,15 @@ export default class SingleTerminal {
    */
   uniqueRowIndexCount: number = 0;
 
+  /**
+   * Used to store partially received numbers when the data type is a number format.
+   * Only relevant for numbers larger than 1 byte, e.g. uint16, int16.
+   *
+   * Each byte is stored as a separate number in the array. When the array is full,
+   * the numbers are combined into a single number and added to the terminal.
+   */
+  partialNumber: number[] = [];
+
   constructor(
       id: string,
       isFocusable: boolean,
@@ -212,7 +221,7 @@ export default class SingleTerminal {
    */
   parseData(data: Uint8Array) {
     // Parse each character
-    // console.log('parseData() called. data=', data);
+    console.log('parseData() called. data=', data);
     // const dataAsStr = new TextDecoder().decode(data);
 
     // This variable can get modified during the loop, for example if a partial escape code
@@ -353,7 +362,7 @@ export default class SingleTerminal {
             //   'Received terminating letter of CSI sequence! Escape code = ',
             //   this.partialEscapeCode
             // );
-            this.parseCSISequence(this.partialEscapeCode);
+            this._parseCSISequence(this.partialEscapeCode);
             this._resetEscapeCodeParserState();
             this.inIdleState = true;
           }
@@ -391,7 +400,7 @@ export default class SingleTerminal {
    * @param ansiEscapeCode Must be in the form "ESC[<remaining data>". This function will validate
    *    the rest of the code, and perform actions on the terminal as required.
    */
-  parseCSISequence(ansiEscapeCode: string) {
+  _parseCSISequence(ansiEscapeCode: string) {
     // The last char is used to work out what kind of CSI sequence it is
     const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
     //============================================================
@@ -551,19 +560,30 @@ export default class SingleTerminal {
   }
 
   /**
-   * Parses received data and displays it as hex characters on the terminal.
+   * Parses received data and displays it as numbers on the terminal.
+   *
+   * The exact formatting (e.g. hex vs. uint8 vs int16 vs. ....) depends on the RX settings.
    *
    * @param data The data to parse and display.
    */
   _parseDataAsNumber(data: Uint8Array) {
+    console.log('_parseDataAsNumber() called. data=', data, 'length: ', data.length ,'selectedNumberType=', this.rxSettings.config.selectedNumberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
+      console.log('rxByte=', rxByte);
+
+      // Add received byte to number array
+      this.partialNumber.push(rxByte);
 
       let numberStr = ''
+      //========================================================================
       // CREATE NUMBER PART OF STRING
+      //========================================================================
       if (this.rxSettings.config.selectedNumberType === NumberTypes.HEX) {
         // Convert byte to hex string
-        numberStr = rxByte.toString(16).padStart(2, '0');
+        console.log('this.partialNumber[0]:', this.partialNumber[0]);
+        numberStr = this.partialNumber[0].toString(16);
+        this.partialNumber = [];
         // Set case of hex string
         if (this.rxSettings.config.hexCase === HexCase.UPPERCASE) {
           numberStr = numberStr.toUpperCase();
@@ -574,13 +594,27 @@ export default class SingleTerminal {
         }
         // "0x" is added later after the padding step if enabled
       } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT8) {
-        // Convert byte to string
-        numberStr = rxByte.toString(10);
-      } else {
+        // Convert byte to number
+        numberStr = this.partialNumber[0].toString(10);
+        this.partialNumber = [];
+      } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT16) {
+        if (this.partialNumber.length < 2) {
+          // We need to wait for another byte to come in before we can convert
+          // the two bytes to a single number
+          continue;
+        }
+        // Convert two bytes to number
+        const num = this.partialNumber[0] + (this.partialNumber[1] << 8);
+        numberStr = num.toString(10);
+        this.partialNumber = [];
+      }
+      else {
         throw Error('Invalid number type: ' + this.rxSettings.config.selectedNumberType);
       }
 
+      //========================================================================
       // ADD PADDING
+      //========================================================================
       if (this.rxSettings.config.padValues) {
         // If padding is set to automatic, pad to the largest possible value for the selected number type
         let paddingChar = ' ';
@@ -599,6 +633,9 @@ export default class SingleTerminal {
           } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT8) {
             // Numbers 0-255, so 3 chars
             numPaddingChars = 3;
+          } else if (this.rxSettings.config.selectedNumberType === NumberTypes.UINT16) {
+            // Numbers 0-65535, so 5 chars
+            numPaddingChars = 5;
           } else {
             throw Error('Invalid number type: ' + this.rxSettings.config.selectedNumberType);
           }
@@ -611,7 +648,11 @@ export default class SingleTerminal {
         numberStr = '0x' + numberStr;
       }
 
-      // Only prevent hex value wrapping mid-value if:
+      //========================================================================
+      // PREVENT WRAPPING
+      //========================================================================
+
+      // Only prevent numerical value wrapping mid-value if:
       // 1) Setting is enabled
       // 2) The terminal column width is high enough to fit an entire hex value in it
       if (this.rxSettings.config.preventHexValuesWrappingAcrossRows
@@ -627,7 +668,11 @@ export default class SingleTerminal {
         }
       }
 
-      // Work out if we need to insert a new line because the hex value matches the new line hex value
+      //========================================================================
+      // NEWLINE NEEDED?
+      //========================================================================
+
+      // Work out if we need to insert a new line because the numerical value matches the new line value
       // in the settings
       let insertNewLine = false;
       if (this.rxSettings.config.insetNewLineOnHexValue) {
