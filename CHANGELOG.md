@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added support for receiving and displaying numerical data types such as hex, uint8, uint16, e.t.c.
+
 ## [4.13.2] - 2024-03-26
 
 ### Added

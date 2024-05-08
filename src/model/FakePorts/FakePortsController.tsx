@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { App, MainPanes, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes } from 'src/model/Settings/RxSettings/RxSettings';
+import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -518,7 +518,7 @@ export default class FakePortsController {
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
         () => {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setSelectedNumberType(NumberTypes.HEX);
+          app.settings.rxSettings.setNumberType(NumberType.HEX);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
@@ -548,7 +548,7 @@ export default class FakePortsController {
         'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
         () => {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setSelectedNumberType(NumberTypes.UINT8);
+          app.settings.rxSettings.setNumberType(NumberType.UINT8);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
@@ -578,7 +578,7 @@ export default class FakePortsController {
         'Sends uint16 numbers 250 thru 260, at a rate of 5 characters per second.',
         () => {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
-          app.settings.rxSettings.setSelectedNumberType(NumberTypes.UINT16);
+          app.settings.rxSettings.setNumberType(NumberType.UINT16);
 
           let numberToSend = 250;
           const intervalId = setInterval(() => {

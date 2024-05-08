@@ -1,7 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -332,14 +332,14 @@ function RxSettingsView(props: Props) {
               <Select
                 labelId="demo-select-small-label"
                 id="demo-select-small"
-                value={rxSettings.config.selectedNumberType}
+                value={rxSettings.config.numberType}
                 label="Baud Rate"
                 onChange={(e) => {
-                  rxSettings.setSelectedNumberType(e.target.value as NumberTypes);
+                  rxSettings.setNumberType(e.target.value as NumberType);
                 }}
                 data-testid="number-type-select"
               >
-                {Object.values(NumberTypes).map((numberType) => {
+                {Object.values(NumberType).map((numberType) => {
                   return (
                     <MenuItem key={numberType} value={numberType}>
                       {numberType}
@@ -550,7 +550,7 @@ function RxSettingsView(props: Props) {
           {/* ================================================ */}
           {/* UPPERCASE/LOWERCASE HEX */}
           {/* ================================================ */}
-          <FormControl disabled={rxSettings.config.selectedNumberType !== NumberTypes.HEX}>
+          <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX}>
             <FormLabel>Upper/lowercase hex:</FormLabel>
             <RadioGroup
               value={rxSettings.config.hexCase}
@@ -577,7 +577,7 @@ function RxSettingsView(props: Props) {
             arrow
           >
             <FormControlLabel
-              disabled={rxSettings.config.selectedNumberType !== NumberTypes.HEX}
+              disabled={rxSettings.config.numberType !== NumberType.HEX}
               control={
                 <Checkbox
                   checked={rxSettings.config.prefixHexValuesWith0x}
