@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { App, PortType } from 'src/model/App';
+import { App, MainPanes, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberTypes } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
@@ -569,6 +569,36 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
+    // dataType: uint16, numbers: 250-260, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: uint16, numbers: 250-260, 5chars/s',
+        'Sends uint16 numbers 250 thru 260, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setSelectedNumberType(NumberTypes.UINT16);
+
+          let numberToSend = 250;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ numberToSend & 0xFF, (numberToSend >> 8) & 0xFF]));
+            numberToSend += 1;
+            if (numberToSend === 261) {
+              numberToSend = 250;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     makeAutoObservable(this);
   }
 
@@ -586,6 +616,11 @@ export default class FakePortsController {
     this.fakePortOpen = true;
     this.app.lastSelectedPortType = PortType.FAKE;
     this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
+
+    // Go to terminal view
+    if (this.app.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
+      this.app.setShownMainPane(MainPanes.TERMINAL);
+    }
   }
 
   closePort() {
