@@ -7,6 +7,7 @@ import RxSettings, {
   CarriageReturnCursorBehavior,
   DataType,
   Endianness,
+  FloatStringConversionMethod,
   HexCase,
   NewLineCursorBehavior,
   NewLinePlacementOnHexValue,
@@ -686,8 +687,12 @@ export default class SingleTerminal {
         const dataView = new DataView(uint8Array.buffer);
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
-        // numberStr = dataView.getFloat32(0, isLittleEndian).toFixed(5);
-        numberStr = dataView.getFloat32(0, isLittleEndian).toString();
+        const number = dataView.getFloat32(0, isLittleEndian);
+        if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
+          numberStr = number.toString();
+        } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
+          numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
+        }
         this.partialNumber = [];
       }
       // FLOAT64
@@ -700,8 +705,12 @@ export default class SingleTerminal {
         const dataView = new DataView(uint8Array.buffer);
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
-        // numberStr = dataView.getFloat32(0, isLittleEndian).toFixed(5);
-        numberStr = dataView.getFloat64(0, isLittleEndian).toString();
+        const number = dataView.getFloat64(0, isLittleEndian);
+        if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
+          numberStr = number.toString();
+        } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
+          numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
+        }
         this.partialNumber = [];
       }
       // INVALID

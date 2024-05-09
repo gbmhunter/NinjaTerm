@@ -60,6 +60,11 @@ export enum NumberType {
   FLOAT64 = 'float64',
 }
 
+export enum FloatStringConversionMethod {
+  TO_STRING = "toString()",
+  TO_FIXED = "toFixed()",
+}
+
 export enum PaddingCharacter {
   WHITESPACE,
   ZERO,
@@ -119,9 +124,13 @@ class Config {
    */
   numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(10).int());
 
-  // HEX-SPECIFIC SETTINGS
+  // HEX SPECIFIC SETTINGS
   prefixHexValuesWith0x = false;
   hexCase = HexCase.UPPERCASE;
+
+  // FLOAT SPECIFIC SETTINGS
+  floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
+  floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -150,6 +159,9 @@ export default class RxSettings {
       this.saveSettings();
     });
     this.config.numPaddingChars.setOnApplyChanged(() => {
+      this.saveSettings();
+    });
+    this.config.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
       this.saveSettings();
     });
   }
@@ -265,7 +277,7 @@ export default class RxSettings {
   }
 
   //=================================================================
-  // HEX-SPECIFIC SETTINGS
+  // HEX SPECIFIC SETTINGS
   //=================================================================
 
   setHexCase = (value: HexCase) => {
@@ -275,6 +287,15 @@ export default class RxSettings {
 
   setPrefixHexValuesWith0x = (value: boolean) => {
     this.config.prefixHexValuesWith0x = value;
+    this.saveSettings();
+  };
+
+  //=================================================================
+  // FLOAT SPECIFIC SETTINGS
+  //=================================================================
+
+  setFloatStringConversionMethod = (value: FloatStringConversionMethod) => {
+    this.config.floatStringConversionMethod = value;
     this.saveSettings();
   };
 }

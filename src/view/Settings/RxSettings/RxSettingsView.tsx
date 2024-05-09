@@ -1,7 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -546,6 +546,7 @@ function RxSettingsView(props: Props) {
           </Tooltip>
         </BorderedSection>
         </div>
+        <div className="hex-and-floating-point-settings" style={{ display: "flex" }}>
         <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
           {/* ================================================ */}
           {/* UPPERCASE/LOWERCASE HEX */}
@@ -591,8 +592,61 @@ function RxSettingsView(props: Props) {
             />
           </Tooltip>
         </BorderedSection>
+        <BorderedSection title="Float Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+          {/* ================================================ */}
+          {/* FLOAT STRING CONVERSION METHOD */}
+          {/* ================================================ */}
+          <Tooltip
+            title='Control how the float gets converted into a string. toString() converts the number to the smallest string representation which uniquely identifies the float. toFixed() creates the string representation with a fixed number of decimal places (settable in the input below).'
+            // followCursor
+            arrow
+            placement="top"
+          >
+            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
+              <InputLabel>String Conversion Method</InputLabel>
+              <Select
+                value={rxSettings.config.floatStringConversionMethod}
+                label="Float String Conversion Method"
+                onChange={(e) => {
+                  rxSettings.setFloatStringConversionMethod(e.target.value as FloatStringConversionMethod);
+                }}
+                data-testid="float-string-conversion-method-select"
+              >
+                {Object.values(FloatStringConversionMethod).map((method) => {
+                  return (
+                    <MenuItem key={method} value={method}>
+                      {method}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Tooltip>
+          {/* ================================================ */}
+          {/* FLOAT NUM. OF DECIMAL PLACES */}
+          {/* ================================================ */}
+          <Tooltip
+            title="The number of decimal places to round the float to if using toFixed()."
+            followCursor
+            arrow
+          >
+            <ApplyableTextFieldView
+              name="floatNumOfDecimalPlaces"
+              label="Float num. of decimal places"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.config.floatNumOfDecimalPlaces}
+              disabled={
+                (rxSettings.config.numberType !== NumberType.FLOAT32 &&
+                rxSettings.config.numberType !== NumberType.FLOAT64) ||
+                rxSettings.config.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED}
+              sx={{ marginBottom: "20px" }}
+            />
+          </Tooltip>
+        </BorderedSection>
+        </div>
       </div>
-      {/* End of HEX block */}
+      {/* End of NUMBER block */}
     </div>
   );
 }
