@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { App, MainPanes, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType } from 'src/model/Settings/RxSettings/RxSettings';
+import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -588,6 +588,44 @@ export default class FakePortsController {
               numberToSend = 250;
             }
           }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: int16, numbers: -10 to 10, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: int16, numbers: 250-260, endianness: little, 1chars/s',
+        'Sends int16 numbers -10 thru 10, in little endian format, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.INT16);
+          app.settings.rxSettings.setInsertNewLineOnHexValue(false);
+          app.settings.rxSettings.config.hexSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.hexSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          let numberToSend = -10;
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(2);
+            const view = new DataView(array);
+            view.setInt16(0, numberToSend, true); // Little endian
+            app.parseRxData(Uint8Array.from([ view.getUint8(0), view.getUint8(1) ]));
+            numberToSend += 1;
+            if (numberToSend === 11) {
+              numberToSend = -10;
+            }
+          }, 1000);
           return intervalId;
         },
         (intervalId: NodeJS.Timer | null) => {

@@ -43,10 +43,17 @@ export enum NewLinePlacementOnHexValue {
   AFTER,
 }
 
+/**
+ * The support ways we can interpret received data as numbers.
+ */
 export enum NumberType {
   HEX = 'Hex',
   UINT8 = 'uint8',
+  INT8 = 'int8',
   UINT16 = 'uint16',
+  INT16 = 'int16',
+  UINT32 = 'uint32',
+  INT32 = 'int32',
 }
 
 export enum PaddingCharacter {
@@ -233,7 +240,7 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setInsetNewLineOnHexValue = (value: boolean) => {
+  setInsertNewLineOnHexValue = (value: boolean) => {
     this.config.insetNewLineOnHexValue = value;
     this.saveSettings();
   };

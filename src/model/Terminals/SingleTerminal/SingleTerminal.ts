@@ -231,7 +231,7 @@ export default class SingleTerminal {
    */
   parseData(data: Uint8Array) {
     // Parse each character
-    console.log("parseData() called. data=", data);
+    // console.log("parseData() called. data=", data);
     // const dataAsStr = new TextDecoder().decode(data);
 
     // This variable can get modified during the loop, for example if a partial escape code
@@ -558,10 +558,9 @@ export default class SingleTerminal {
    * @param data The data to parse and display.
    */
   _parseDataAsNumber(data: Uint8Array) {
-    console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.config.numberType);
+    // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.config.numberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
-      console.log("rxByte=", rxByte);
 
       // Add received byte to number array
       this.partialNumber.push(rxByte);
@@ -570,9 +569,11 @@ export default class SingleTerminal {
       //========================================================================
       // CREATE NUMBER PART OF STRING
       //========================================================================
+      const isLittleEndian = this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN;
+      // HEX
+      //============
       if (this.rxSettings.config.numberType === NumberType.HEX) {
         // Convert byte to hex string
-        console.log("this.partialNumber[0]:", this.partialNumber[0]);
         numberStr = this.partialNumber[0].toString(16);
         this.partialNumber = [];
         // Set case of hex string
@@ -584,28 +585,78 @@ export default class SingleTerminal {
           throw Error("Invalid hex case setting: " + this.rxSettings.config.hexCase);
         }
         // "0x" is added later after the padding step if enabled
-      } else if (this.rxSettings.config.numberType === NumberType.UINT8) {
-        // Convert byte to number
-        numberStr = this.partialNumber[0].toString(10);
+      }
+      // UINT8
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.UINT8) {
+        // Even though for a uint8 we could directly convert the byte to a string,
+        // we use this Array method to be consistent with the other number types
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getUint8(0).toString(10);
         this.partialNumber = [];
-      } else if (this.rxSettings.config.numberType === NumberType.UINT16) {
+      }
+      // INT8
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.INT8) {
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getInt8(0).toString(10);
+        this.partialNumber = [];
+      }
+      // UINT16
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.UINT16) {
         if (this.partialNumber.length < 2) {
           // We need to wait for another byte to come in before we can convert
           // the two bytes to a single number
           continue;
         }
         // Convert two bytes to number, taking into account the endianness setting
-        let num = 0;
-        if (this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN) {
-          num = this.partialNumber[0] + (this.partialNumber[1] << 8);
-        } else if (this.rxSettings.config.endianness === Endianness.BIG_ENDIAN) {
-          num = (this.partialNumber[0] << 8) + this.partialNumber[1];
-        } else {
-          throw Error("Invalid endianness setting: " + this.rxSettings.config.endianness);
-        }
-        numberStr = num.toString(10);
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getUint16(0, isLittleEndian).toString(10);
         this.partialNumber = [];
-      } else {
+      }
+      // INT16
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.INT16) {
+        if (this.partialNumber.length < 2) {
+          // We need to wait for another byte to come in before we can convert
+          // the two bytes to a single number
+          continue;
+        }
+        // Convert two bytes to number, taking into account the endianness setting
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getInt16(0, isLittleEndian).toString(10);
+        this.partialNumber = [];
+      }
+      // UINT32
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.UINT32) {
+        if (this.partialNumber.length < 4) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getUint32(0, isLittleEndian).toString(10);
+        this.partialNumber = [];
+      }
+      // INT32
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.INT32) {
+        if (this.partialNumber.length < 4) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getInt32(0, isLittleEndian).toString(10);
+        this.partialNumber = [];
+      }
+      // INVALID
+      //============
+      else {
         throw Error("Invalid number type: " + this.rxSettings.config.numberType);
       }
 
@@ -628,16 +679,37 @@ export default class SingleTerminal {
           if (this.rxSettings.config.numberType === NumberType.HEX) {
             numPaddingChars = 2;
           } else if (this.rxSettings.config.numberType === NumberType.UINT8) {
-            // Numbers 0-255, so 3 chars
+            // Numbers 0 to 255, so 3 chars
             numPaddingChars = 3;
+          } else if (this.rxSettings.config.numberType === NumberType.INT8) {
+            // Numbers -128 to 127, so 4 chars
+            numPaddingChars = 4;
           } else if (this.rxSettings.config.numberType === NumberType.UINT16) {
-            // Numbers 0-65535, so 5 chars
+            // Numbers 0 to 65535, so 5 chars
             numPaddingChars = 5;
+          } else if (this.rxSettings.config.numberType === NumberType.INT16) {
+            // Numbers -32768 to 32767, so 6 chars
+            numPaddingChars = 6;
+          } else if (this.rxSettings.config.numberType === NumberType.UINT32) {
+            // Numbers 0 to 4294967296, so 10 chars
+            numPaddingChars = 10;
+          } else if (this.rxSettings.config.numberType === NumberType.INT32) {
+            // Numbers -2147483648 to 2147483647, so 11 chars
+            numPaddingChars = 11;
           } else {
             throw Error("Invalid number type: " + this.rxSettings.config.numberType);
           }
         }
-        numberStr = numberStr.padStart(numPaddingChars, paddingChar);
+
+        // Handle negative numbers by padding after the negative sign
+        if (numberStr[0] === "-") {
+          numberStr = numberStr.slice(1);
+          numPaddingChars -= 1; // Negative sign takes up one padding char
+          numberStr = '-' + numberStr.padStart(numPaddingChars, paddingChar);
+        } else {
+          // Number must be positive, can pad normally
+          numberStr = numberStr.padStart(numPaddingChars, paddingChar);
+        }
       }
 
       // Add 0x if hex and setting is enabled
@@ -686,8 +758,9 @@ export default class SingleTerminal {
         this._cursorLeft(this.cursorPosition[1]);
       }
 
-      // Add to hex chars to the the terminal
+      // Add to string to the the terminal
       for (let charIdx = 0; charIdx < numberStr.length; charIdx += 1) {
+        const charCode = numberStr.charCodeAt(charIdx);
         this._addVisibleChar(numberStr.charCodeAt(charIdx));
       }
       // Append the hex separator string

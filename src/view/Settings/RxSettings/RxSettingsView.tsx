@@ -432,7 +432,7 @@ function RxSettingsView(props: Props) {
                 <Checkbox
                   checked={rxSettings.config.insetNewLineOnHexValue}
                   onChange={(e) => {
-                    rxSettings.setInsetNewLineOnHexValue(e.target.checked);
+                    rxSettings.setInsertNewLineOnHexValue(e.target.checked);
                   }}
                 />
               }

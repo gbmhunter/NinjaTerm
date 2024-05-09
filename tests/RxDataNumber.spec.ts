@@ -139,6 +139,38 @@ test.describe('Parsing RX data as numbers', () => {
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
+  test('one int8 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "int8"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="int8"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send -123 (0x85)
+    await appTestHarness.sendBytesToTerminal([0x85]);
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '-' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
   test('one uint16 value, padding: 0s, endianness: little', async ({ page }) => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
@@ -201,6 +233,158 @@ test.describe('Parsing RX data as numbers', () => {
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: '2' }),
         new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+  test('one int16 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "int16"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="int16"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send -100 (0x9C, 0xFF) in little-endian order
+    await appTestHarness.sendBytesToTerminal([0x9C, 0xFF]);
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '-' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+  test('two int16 values, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "int16"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="int16"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send -100, 321 in little-endian order
+    await appTestHarness.sendBytesToTerminal([0x9C, 0xFF, 0x41, 0x01]);
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '-' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+  test('one uint32 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "uint32"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="uint32"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send 4036988851 (F0 9F 8F B3) in little-endian order
+    await appTestHarness.sendBytesToTerminal([0xB3, 0x8F, 0x9F, 0xF0]);
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '9' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+  test('one int32 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "int32"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="int32"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send -85746 (0E B1 FE FF) in little-endian order
+    await appTestHarness.sendBytesToTerminal([0x0E, 0xB1, 0xFE, 0xFF]);
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '-' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '4' }),
         new ExpectedTerminalChar({ char: '6' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
         new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
