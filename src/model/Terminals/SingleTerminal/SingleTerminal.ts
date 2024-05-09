@@ -654,11 +654,62 @@ export default class SingleTerminal {
         numberStr = dataView.getInt32(0, isLittleEndian).toString(10);
         this.partialNumber = [];
       }
+      // UINT64
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.UINT64) {
+        if (this.partialNumber.length < 8) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getBigUint64(0, isLittleEndian).toString(10);
+        this.partialNumber = [];
+      }
+      // INT64
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.INT64) {
+        if (this.partialNumber.length < 8) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        numberStr = dataView.getBigInt64(0, isLittleEndian).toString(10);
+        this.partialNumber = [];
+      }
+      // FLOAT32
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.FLOAT32) {
+        if (this.partialNumber.length < 4) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        // toFixed gives a fixed number of decimal places
+        // toString gives a variable amount depending on the number
+        // numberStr = dataView.getFloat32(0, isLittleEndian).toFixed(5);
+        numberStr = dataView.getFloat32(0, isLittleEndian).toString();
+        this.partialNumber = [];
+      }
+      // FLOAT64
+      //============
+      else if (this.rxSettings.config.numberType === NumberType.FLOAT64) {
+        if (this.partialNumber.length < 8) {
+          continue;
+        }
+        const uint8Array = Uint8Array.from(this.partialNumber);
+        const dataView = new DataView(uint8Array.buffer);
+        // toFixed gives a fixed number of decimal places
+        // toString gives a variable amount depending on the number
+        // numberStr = dataView.getFloat32(0, isLittleEndian).toFixed(5);
+        numberStr = dataView.getFloat64(0, isLittleEndian).toString();
+        this.partialNumber = [];
+      }
       // INVALID
       //============
       else {
         throw Error("Invalid number type: " + this.rxSettings.config.numberType);
       }
+      console.log('Converted numberStr=', numberStr);
 
       //========================================================================
       // ADD PADDING
@@ -696,6 +747,17 @@ export default class SingleTerminal {
           } else if (this.rxSettings.config.numberType === NumberType.INT32) {
             // Numbers -2147483648 to 2147483647, so 11 chars
             numPaddingChars = 11;
+          } else if (this.rxSettings.config.numberType === NumberType.UINT64) {
+            // Numbers 0 to 18,446,744,073,709,551,615, so 20 chars
+            numPaddingChars = 20;
+          } else if (this.rxSettings.config.numberType === NumberType.INT64) {
+            // Numbers -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, so 20 chars
+            numPaddingChars = 20;
+          } else if (this.rxSettings.config.numberType === NumberType.FLOAT32) {
+            // Arbitrarily choose 6 for floats if it's set to "auto" (-1)
+            numPaddingChars = 6;
+          } else if (this.rxSettings.config.numberType === NumberType.FLOAT64) {
+            numPaddingChars = 6;
           } else {
             throw Error("Invalid number type: " + this.rxSettings.config.numberType);
           }
@@ -764,8 +826,8 @@ export default class SingleTerminal {
         this._addVisibleChar(numberStr.charCodeAt(charIdx));
       }
       // Append the hex separator string
-      for (let charIdx = 0; charIdx < this.rxSettings.config.hexSeparator.appliedValue.length; charIdx += 1) {
-        this._addVisibleChar(this.rxSettings.config.hexSeparator.appliedValue.charCodeAt(charIdx));
+      for (let charIdx = 0; charIdx < this.rxSettings.config.numberSeparator.appliedValue.length; charIdx += 1) {
+        this._addVisibleChar(this.rxSettings.config.numberSeparator.appliedValue.charCodeAt(charIdx));
       }
 
       if (insertNewLine && this.rxSettings.config.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {

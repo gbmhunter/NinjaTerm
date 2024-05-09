@@ -392,4 +392,57 @@ test.describe('Parsing RX data as numbers', () => {
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
+
+  test('one uint64 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "uint32"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="uint64"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send 12345678901234567890 in little-endian order
+    const number = BigInt('12345678901234567890');
+    const array = new ArrayBuffer(8);
+    const view = new DataView(array);
+    view.setBigUint64(0, number, true);
+    const bytes = new Uint8Array(array);
+    await appTestHarness.sendBytesToTerminal(Array.from(bytes));
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '9' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '5' }),
+        new ExpectedTerminalChar({ char: '6' }),
+        new ExpectedTerminalChar({ char: '7' }),
+        new ExpectedTerminalChar({ char: '8' }),
+        new ExpectedTerminalChar({ char: '9' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
 });

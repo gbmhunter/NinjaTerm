@@ -609,9 +609,9 @@ export default class FakePortsController {
         () => {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
           app.settings.rxSettings.setNumberType(NumberType.INT16);
-          app.settings.rxSettings.setInsertNewLineOnHexValue(false);
-          app.settings.rxSettings.config.hexSeparator.setDispValue(' ');
-          app.settings.rxSettings.config.hexSeparator.apply();
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
           app.settings.rxSettings.setPadValues(true);
           app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
@@ -624,6 +624,45 @@ export default class FakePortsController {
             numberToSend += 1;
             if (numberToSend === 11) {
               numberToSend = -10;
+            }
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: float32, numbers: -1 to 1 in 0.25 steps, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: float32, numbers: -1 to 1 in 0.25 steps, endianness: little, 1chars/s',
+        'Sends 32-bit floating point numbers -1 to 1 in 0.25 steps, in little endian format, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          let numberToSend = -1.0;
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(4);
+            const view = new DataView(array);
+            view.setFloat32(0, numberToSend, true); // Little endian
+            const uint8Array = new Uint8Array(array);
+            app.parseRxData(uint8Array);
+            numberToSend += 0.25;
+            if (numberToSend > 1.05) {
+              numberToSend = -1.0;
             }
           }, 1000);
           return intervalId;

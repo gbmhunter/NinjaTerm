@@ -54,6 +54,10 @@ export enum NumberType {
   INT16 = 'int16',
   UINT32 = 'uint32',
   INT32 = 'int32',
+  UINT64 = 'uint64',
+  INT64 = 'int64',
+  FLOAT32 = 'float32',
+  FLOAT64 = 'float64',
 }
 
 export enum PaddingCharacter {
@@ -95,7 +99,7 @@ class Config {
   // NUMBER-SPECIFIC SETTINGS
   numberType = NumberType.HEX;
   endianness = Endianness.LITTLE_ENDIAN;
-  hexSeparator = new ApplyableTextField(" ", z.string());
+  numberSeparator = new ApplyableTextField(" ", z.string());
   preventHexValuesWrappingAcrossRows = true;
   insetNewLineOnHexValue = false;
   newLineHexValue = new ApplyableTextField(
@@ -139,7 +143,7 @@ export default class RxSettings {
     this.config.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this.saveSettings();
     });
-    this.config.hexSeparator.setOnApplyChanged(() => {
+    this.config.numberSeparator.setOnApplyChanged(() => {
       this.saveSettings();
     });
     this.config.newLineHexValue.setOnApplyChanged(() => {
@@ -240,7 +244,7 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setInsertNewLineOnHexValue = (value: boolean) => {
+  setInsertNewLineOnValue = (value: boolean) => {
     this.config.insetNewLineOnHexValue = value;
     this.saveSettings();
   };

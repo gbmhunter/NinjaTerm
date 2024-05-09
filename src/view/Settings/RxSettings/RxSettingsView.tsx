@@ -392,7 +392,7 @@ function RxSettingsView(props: Props) {
               label="Separator Between Values"
               variant="outlined"
               size="small"
-              applyableTextField={rxSettings.config.hexSeparator}
+              applyableTextField={rxSettings.config.numberSeparator}
               sx={{ marginBottom: "20px" }}
             />
           </Tooltip>
@@ -432,7 +432,7 @@ function RxSettingsView(props: Props) {
                 <Checkbox
                   checked={rxSettings.config.insetNewLineOnHexValue}
                   onChange={(e) => {
-                    rxSettings.setInsertNewLineOnHexValue(e.target.checked);
+                    rxSettings.setInsertNewLineOnValue(e.target.checked);
                   }}
                 />
               }
@@ -460,7 +460,7 @@ function RxSettingsView(props: Props) {
             />
           </Tooltip>
           {/* ================================================ */}
-          {/* NEWLINE BEFORE OR AFTER HEX VALUE */}
+          {/* NEWLINE BEFORE OR AFTER VALUE */}
           {/* ================================================ */}
           <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "20px" }}>
             <FormLabel>Insert new line before or after value?</FormLabel>
@@ -529,7 +529,7 @@ function RxSettingsView(props: Props) {
           {/* PADDING WIDTH */}
           {/* ================================================ */}
           <Tooltip
-            title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16)."
+            title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16). For floats, -1 equals 6 chars."
             followCursor
             arrow
           >
