@@ -68,7 +68,8 @@ class LastUsedSerialPort {
 
 const tipsToDisplayOnStartup = [
   'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
-  'TIP: Change the type of data displayed between ASCII, HEX and others in Settings → RX Settings.',
+  'TIP: Change the type of data displayed between ASCII, HEX and other number types in Settings → RX Settings.',
+  'TIP: Press Ctrl-Shift-B to send the "break" signal.',
 ]
 
 export class App {
