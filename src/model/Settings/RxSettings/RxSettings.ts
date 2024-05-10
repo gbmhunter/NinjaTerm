@@ -125,8 +125,9 @@ class Config {
   numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(100).int());
 
   // HEX SPECIFIC SETTINGS
-  prefixHexValuesWith0x = false;
+  numBytesPerHexNumber = new ApplyableNumberField('1', z.coerce.number().min(1).max(10).int());
   hexCase = HexCase.UPPERCASE;
+  prefixHexValuesWith0x = false;
 
   // FLOAT SPECIFIC SETTINGS
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;

@@ -574,8 +574,14 @@ export default class SingleTerminal {
       // HEX
       //============
       if (this.rxSettings.config.numberType === NumberType.HEX) {
-        // Convert byte to hex string
-        numberStr = this.partialNumber[0].toString(16);
+        if (this.partialNumber.length < this.rxSettings.config.numBytesPerHexNumber.appliedValue) {
+          // Wait for enough bytes for the hex number as specified by the user
+          continue;
+        }
+        // Got enough bytes, loop through and convert to hex
+        for (let byteIdx = 0; byteIdx < this.partialNumber.length; byteIdx += 1) {
+          numberStr += this.partialNumber[byteIdx].toString(16);
+        }
         this.partialNumber = [];
         // Set case of hex string
         if (this.rxSettings.config.hexCase === HexCase.UPPERCASE) {

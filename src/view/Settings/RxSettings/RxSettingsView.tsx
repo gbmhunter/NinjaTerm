@@ -82,7 +82,7 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label="Enable ANSI Escape Code Parsing"
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* =============================================================================== */}
@@ -103,7 +103,7 @@ function RxSettingsView(props: Props) {
                   endAdornment: <InputAdornment position="start">chars</InputAdornment>,
                 }}
                 applyableTextField={rxSettings.config.maxEscapeCodeLengthChars}
-                sx={{ marginBottom: "20px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
           </BorderedSection>
@@ -131,7 +131,7 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label="Local TX Echo"
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
           </BorderedSection>
@@ -203,7 +203,7 @@ function RxSettingsView(props: Props) {
                     />
                   }
                   label="Swallow \n bytes"
-                  sx={{ marginBottom: "10px" }}
+                  sx={{ marginBottom: "15px" }}
                 />
               </Tooltip>
             </div>
@@ -269,7 +269,7 @@ function RxSettingsView(props: Props) {
                     />
                   }
                   label="Swallow \r bytes"
-                  sx={{ marginBottom: "10px" }}
+                  sx={{ marginBottom: "15px" }}
                 />
               </Tooltip>
             </div>
@@ -337,11 +337,9 @@ function RxSettingsView(props: Props) {
               followCursor
               arrow
             >
-              <FormControl sx={{ minWidth: 160, marginBottom: "20px" }} size="small">
+              <FormControl sx={{ minWidth: 160, marginBottom: "15px" }} size="small">
                 <InputLabel id="demo-select-small-label">Number Type</InputLabel>
                 <Select
-                  labelId="demo-select-small-label"
-                  id="demo-select-small"
                   value={rxSettings.config.numberType}
                   label="Baud Rate"
                   onChange={(e) => {
@@ -363,11 +361,11 @@ function RxSettingsView(props: Props) {
             {/* ENDIANNESS */}
             {/* ================================================ */}
             <Tooltip
-              title="The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first."
+              title="The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first. Most MCUs use little endian for their memory layout, so if you are sending the lowest memory address first of a multi-byte type, you are probably using little endian."
               followCursor
               arrow
             >
-              <FormControl sx={{ minWidth: 160, marginBottom: "20px" }} size="small">
+              <FormControl sx={{ minWidth: 160, marginBottom: "15px" }} size="small">
                 <InputLabel>Endianness</InputLabel>
                 <Select
                   value={rxSettings.config.endianness}
@@ -402,7 +400,7 @@ function RxSettingsView(props: Props) {
                 variant="outlined"
                 size="small"
                 applyableTextField={rxSettings.config.numberSeparator}
-                sx={{ marginBottom: "20px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
@@ -424,7 +422,7 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label="Prevent values from wrapping across rows."
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
@@ -446,7 +444,7 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label="Insert new line on specific value."
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
@@ -465,13 +463,13 @@ function RxSettingsView(props: Props) {
                 size="small"
                 applyableTextField={rxSettings.config.newLineHexValue}
                 disabled={!rxSettings.config.insetNewLineOnHexValue}
-                sx={{ marginBottom: "20px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* NEWLINE BEFORE OR AFTER VALUE */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "20px" }}>
+            <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "15px" }}>
               <FormLabel>Insert new line before or after value?</FormLabel>
               <RadioGroup
                 value={rxSettings.config.newLinePlacementOnHexValue}
@@ -505,13 +503,13 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label="Pad values"
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* PADDING CHARACTER */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "20px" }}>
+            <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "15px" }}>
               <FormLabel>Padding character:</FormLabel>
               <RadioGroup
                 value={rxSettings.config.paddingCharacter}
@@ -545,7 +543,7 @@ function RxSettingsView(props: Props) {
                 size="small"
                 applyableTextField={rxSettings.config.numPaddingChars}
                 disabled={!rxSettings.config.padValues}
-                sx={{ marginBottom: "20px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
           </BorderedSection>
@@ -553,9 +551,26 @@ function RxSettingsView(props: Props) {
         <div className="hex-and-floating-point-settings" style={{ display: "flex" }}>
           <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
             {/* ================================================ */}
+            {/* NUMBER OF BYTES PER HEX NUMBER */}
+            {/* ================================================ */}
+            <Tooltip title="The number of received bytes to convert into a single hex. number. For example, setting this to 1 will result in terminal display like 8E FF 05 33. Setting this to 2 will result in FF8E 3305 (if little endian). Uses the endianness setting above." followCursor arrow>
+              <ApplyableTextFieldView
+                name="numBytesPerHexNumber"
+                label="Num. of bytes per hex number"
+                variant="outlined"
+                size="small"
+                applyableTextField={rxSettings.config.numBytesPerHexNumber}
+                disabled={rxSettings.config.numberType !== NumberType.HEX}
+                sx={{ marginBottom: "15px" }}
+                inputProps={{
+                  'data-testid': 'num-bytes-per-hex-number-input'
+                }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
             {/* UPPERCASE/LOWERCASE HEX */}
             {/* ================================================ */}
-            <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX}>
+            <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX} sx={{ marginBottom: "15px" }}>
               <FormLabel>Upper/lowercase hex:</FormLabel>
               <RadioGroup
                 value={rxSettings.config.hexCase}
@@ -593,7 +608,7 @@ function RxSettingsView(props: Props) {
                   />
                 }
                 label='Prefix hex values with "0x".'
-                sx={{ marginBottom: "10px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
           </BorderedSection>
@@ -611,7 +626,7 @@ function RxSettingsView(props: Props) {
               placement="top"
             >
               <FormControl
-                sx={{ minWidth: 160, marginBottom: "20px" }}
+                sx={{ minWidth: 160, marginBottom: "15px" }}
                 size="small"
                 disabled={rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64}
               >
@@ -648,7 +663,7 @@ function RxSettingsView(props: Props) {
                   (rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64) ||
                   rxSettings.config.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED
                 }
-                sx={{ marginBottom: "20px" }}
+                sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
           </BorderedSection>

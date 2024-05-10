@@ -104,6 +104,48 @@ test.describe('Parsing RX data as numbers', () => {
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
+  test('make sure little endian multibyte hex values work', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "Hex"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="Hex"]');
+
+    // Set the number of bytes per hex number to 2
+    await page.getByTestId('num-bytes-per-hex-number-input').fill('2');
+    await page.getByTestId('num-bytes-per-hex-number-input').press('Enter'); // Press enter to "apply" change
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send 01 02 03 04
+    const dataToSend = [0x01, 0x02, 0x03, 0x04];
+    await appTestHarness.sendBytesToTerminal(dataToSend);
+
+    // Because little endian is selected, the bytes in each number should be displayed in reverse order
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '2' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '4' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
   test('two uint8 values with 0s as padding', async ({ page }) => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
