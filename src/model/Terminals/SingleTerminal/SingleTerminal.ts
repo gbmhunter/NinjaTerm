@@ -590,9 +590,7 @@ export default class SingleTerminal {
           }
           let partialHexString = this.partialNumber[byteIdx].toString(16);
           partialHexString = partialHexString.padStart(2, '0');
-          console.log("partialHexString=", partialHexString);
           numberStr += partialHexString;
-          console.log("numberStr=", numberStr);
         }
         this.partialNumber = [];
         // Set case of hex string
@@ -736,7 +734,7 @@ export default class SingleTerminal {
       else {
         throw Error("Invalid number type: " + this.rxSettings.config.numberType);
       }
-      console.log('Converted numberStr=', numberStr);
+      // console.log('Converted numberStr=', numberStr);
 
       //========================================================================
       // ADD PADDING
@@ -802,7 +800,7 @@ export default class SingleTerminal {
           numberStr = numberStr.padStart(numPaddingChars, paddingChar);
         }
       }
-      console.log('After padding, numberStr=', numberStr);
+      // console.log('After padding, numberStr=', numberStr);
 
       // Add 0x if hex and setting is enabled
       if (this.rxSettings.config.numberType === NumberType.HEX && this.rxSettings.config.prefixHexValuesWith0x) {

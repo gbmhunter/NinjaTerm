@@ -333,7 +333,7 @@ function RxSettingsView(props: Props) {
             {/* NUMBER TYPE */}
             {/* ================================================ */}
             <Tooltip
-              title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
+              title='The type of number of interpret data as. Some types require only one byte, others are multi-byte which will buffer data and require the endianness to be set correctly.'
               followCursor
               arrow
             >
