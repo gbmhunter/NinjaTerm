@@ -117,12 +117,18 @@ export default class SingleTerminal {
 
   /**
    * Used to store partially received numbers when the data type is a number format.
-   * Only relevant for numbers larger than 1 byte, e.g. uint16, int16.
+   * Only relevant for numbers larger than 1 byte, e.g. uint16, int16, float32.
    *
    * Each byte is stored as a separate number in the array. When the array is full,
    * the numbers are combined into a single number and added to the terminal.
+   *
+   * This buffer must be cleared when:
+   * - The terminal is cleared
+   * - The number data type is changed
+   * - The serial port is closed
    */
-  partialNumber: number[] = [];
+
+  partialNumberBuffer: number[] = [];
 
   constructor(
     id: string,
@@ -564,7 +570,7 @@ export default class SingleTerminal {
       const rxByte = data[idx];
 
       // Add received byte to number array
-      this.partialNumber.push(rxByte);
+      this.partialNumberBuffer.push(rxByte);
 
       let numberStr = "";
       //========================================================================
@@ -574,25 +580,25 @@ export default class SingleTerminal {
       // HEX
       //============
       if (this.rxSettings.config.numberType === NumberType.HEX) {
-        if (this.partialNumber.length < this.rxSettings.config.numBytesPerHexNumber.appliedValue) {
+        if (this.partialNumberBuffer.length < this.rxSettings.config.numBytesPerHexNumber.appliedValue) {
           // Wait for enough bytes for the hex number as specified by the user
           continue;
         }
         // Got enough bytes, loop through and convert to hex
-        for (let idx = 0; idx < this.partialNumber.length; idx += 1) {
+        for (let idx = 0; idx < this.partialNumberBuffer.length; idx += 1) {
           let byteIdx;
           if (this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN) {
-            byteIdx = this.partialNumber.length - 1 - idx;
+            byteIdx = this.partialNumberBuffer.length - 1 - idx;
           } else if (this.rxSettings.config.endianness === Endianness.BIG_ENDIAN) {
             byteIdx = idx;
           } else {
             throw Error("Invalid endianness setting: " + this.rxSettings.config.endianness);
           }
-          let partialHexString = this.partialNumber[byteIdx].toString(16);
+          let partialHexString = this.partialNumberBuffer[byteIdx].toString(16);
           partialHexString = partialHexString.padStart(2, '0');
           numberStr += partialHexString;
         }
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
         // Set case of hex string
         if (this.rxSettings.config.hexCase === HexCase.UPPERCASE) {
           numberStr = numberStr.toUpperCase();
@@ -608,98 +614,98 @@ export default class SingleTerminal {
       else if (this.rxSettings.config.numberType === NumberType.UINT8) {
         // Even though for a uint8 we could directly convert the byte to a string,
         // we use this Array method to be consistent with the other number types
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint8(0).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // INT8
       //============
       else if (this.rxSettings.config.numberType === NumberType.INT8) {
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt8(0).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // UINT16
       //============
       else if (this.rxSettings.config.numberType === NumberType.UINT16) {
-        if (this.partialNumber.length < 2) {
+        if (this.partialNumberBuffer.length < 2) {
           // We need to wait for another byte to come in before we can convert
           // the two bytes to a single number
           continue;
         }
         // Convert two bytes to number, taking into account the endianness setting
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint16(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // INT16
       //============
       else if (this.rxSettings.config.numberType === NumberType.INT16) {
-        if (this.partialNumber.length < 2) {
+        if (this.partialNumberBuffer.length < 2) {
           // We need to wait for another byte to come in before we can convert
           // the two bytes to a single number
           continue;
         }
         // Convert two bytes to number, taking into account the endianness setting
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt16(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // UINT32
       //============
       else if (this.rxSettings.config.numberType === NumberType.UINT32) {
-        if (this.partialNumber.length < 4) {
+        if (this.partialNumberBuffer.length < 4) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint32(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // INT32
       //============
       else if (this.rxSettings.config.numberType === NumberType.INT32) {
-        if (this.partialNumber.length < 4) {
+        if (this.partialNumberBuffer.length < 4) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt32(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // UINT64
       //============
       else if (this.rxSettings.config.numberType === NumberType.UINT64) {
-        if (this.partialNumber.length < 8) {
+        if (this.partialNumberBuffer.length < 8) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getBigUint64(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // INT64
       //============
       else if (this.rxSettings.config.numberType === NumberType.INT64) {
-        if (this.partialNumber.length < 8) {
+        if (this.partialNumberBuffer.length < 8) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getBigInt64(0, isLittleEndian).toString(10);
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // FLOAT32
       //============
       else if (this.rxSettings.config.numberType === NumberType.FLOAT32) {
-        if (this.partialNumber.length < 4) {
+        if (this.partialNumberBuffer.length < 4) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
@@ -709,15 +715,15 @@ export default class SingleTerminal {
         } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
           numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
         }
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // FLOAT64
       //============
       else if (this.rxSettings.config.numberType === NumberType.FLOAT64) {
-        if (this.partialNumber.length < 8) {
+        if (this.partialNumberBuffer.length < 8) {
           continue;
         }
-        const uint8Array = Uint8Array.from(this.partialNumber);
+        const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
@@ -727,7 +733,7 @@ export default class SingleTerminal {
         } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
           numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
         }
-        this.partialNumber = [];
+        this.partialNumberBuffer = [];
       }
       // INVALID
       //============
@@ -872,7 +878,7 @@ export default class SingleTerminal {
    * This clears any partially received numbers from a internal buffer.
    */
   onNumberTypeChange = () => {
-    this.partialNumber = [];
+    this.partialNumberBuffer = [];
   };
 
   /**
@@ -1156,7 +1162,7 @@ export default class SingleTerminal {
   }
 
   /**
-   * Clears all data from the terminal, resets all styles, resets cursor position,
+   * Clears all data from the terminal, clears any internal buffers, resets all styles, resets cursor position,
    * and re-enables scroll lock.
    */
   clear() {
@@ -1192,6 +1198,9 @@ export default class SingleTerminal {
     // Clear all styles that ANSI escape codes might
     // have applied
     this.clearStyle();
+
+    // Clear the multi-byte number buffer
+    this.clearPartialNumberBuffer();
   }
 
   clearStyle() {
@@ -1381,5 +1390,12 @@ export default class SingleTerminal {
 
   getSelectionInfoIfWithinTerminal() {
     return SelectionController.getSelectionInfo(window.getSelection(), this.id);
+  }
+
+  /**
+   * Call this to clear the buffer which is used to store partially received multi-byte numbers.
+   */
+  clearPartialNumberBuffer() {
+    this.partialNumberBuffer = [];
   }
 }

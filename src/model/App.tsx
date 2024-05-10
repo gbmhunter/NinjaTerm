@@ -303,6 +303,11 @@ export class App {
     }
   }
 
+  /**
+   * Opens the selected serial port.
+   *
+   * @param printSuccessMsg If true, a success message will be printed to the snackbar.
+   */
   async openPort(printSuccessMsg = true) {
     if (this.lastSelectedPortType === PortType.REAL) {
       try {
@@ -359,6 +364,11 @@ export class App {
     } else {
       throw Error('Unsupported port type!');
     }
+
+    // Clear the partial number buffers in all terminals
+    this.terminals.txTerminal.clearPartialNumberBuffer();
+    this.terminals.rxTerminal.clearPartialNumberBuffer();
+    this.terminals.txRxTerminal.clearPartialNumberBuffer();
   }
 
   /** Continuously reads from the serial port until:
