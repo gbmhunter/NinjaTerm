@@ -579,8 +579,20 @@ export default class SingleTerminal {
           continue;
         }
         // Got enough bytes, loop through and convert to hex
-        for (let byteIdx = 0; byteIdx < this.partialNumber.length; byteIdx += 1) {
-          numberStr += this.partialNumber[byteIdx].toString(16);
+        for (let idx = 0; idx < this.partialNumber.length; idx += 1) {
+          let byteIdx;
+          if (this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN) {
+            byteIdx = this.partialNumber.length - 1 - idx;
+          } else if (this.rxSettings.config.endianness === Endianness.BIG_ENDIAN) {
+            byteIdx = idx;
+          } else {
+            throw Error("Invalid endianness setting: " + this.rxSettings.config.endianness);
+          }
+          let partialHexString = this.partialNumber[byteIdx].toString(16);
+          partialHexString = partialHexString.padStart(2, '0');
+          console.log("partialHexString=", partialHexString);
+          numberStr += partialHexString;
+          console.log("numberStr=", numberStr);
         }
         this.partialNumber = [];
         // Set case of hex string

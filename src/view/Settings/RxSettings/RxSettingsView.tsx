@@ -492,7 +492,7 @@ function RxSettingsView(props: Props) {
             {/* ================================================ */}
             {/* PAD VALUES */}
             {/* ================================================ */}
-            <Tooltip title="Enable this to left-pad values to a consistent character width." placement="right" followCursor arrow>
+            <Tooltip title="Enable this to left-pad values to a consistent character width for integer and float types. Zeroes style padding is always applied to hex values." placement="right" followCursor arrow>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -500,6 +500,7 @@ function RxSettingsView(props: Props) {
                     onChange={(e) => {
                       rxSettings.setPadValues(e.target.checked);
                     }}
+                    disabled={rxSettings.config.numberType === NumberType.HEX}
                   />
                 }
                 label="Pad values"
@@ -509,7 +510,7 @@ function RxSettingsView(props: Props) {
             {/* ================================================ */}
             {/* PADDING CHARACTER */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "15px" }}>
+            <FormControl disabled={!rxSettings.config.padValues || rxSettings.config.numberType == NumberType.HEX} sx={{ marginBottom: "15px" }}>
               <FormLabel>Padding character:</FormLabel>
               <RadioGroup
                 value={rxSettings.config.paddingCharacter}
@@ -542,7 +543,7 @@ function RxSettingsView(props: Props) {
                 variant="outlined"
                 size="small"
                 applyableTextField={rxSettings.config.numPaddingChars}
-                disabled={!rxSettings.config.padValues}
+                disabled={!rxSettings.config.padValues || rxSettings.config.numberType == NumberType.HEX}
                 sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
