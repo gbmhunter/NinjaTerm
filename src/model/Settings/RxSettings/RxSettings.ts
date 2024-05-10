@@ -105,14 +105,13 @@ class Config {
   numberType = NumberType.HEX;
   endianness = Endianness.LITTLE_ENDIAN;
   numberSeparator = new ApplyableTextField(" ", z.string());
-  preventHexValuesWrappingAcrossRows = true;
-  insetNewLineOnHexValue = false;
-  newLineHexValue = new ApplyableTextField(
+  preventValuesWrappingAcrossRows = true;
+  insertNewLineOnMatchedValue = false;
+  newLineMatchValueAsHex = new ApplyableTextField(
     "00",
     z
     .string()
-    .length(2)
-    .regex(/^([0-9A-Fa-f]{2})$/, "Must be a valid hex number.")
+    .regex(/^([0-9A-Fa-f]*)$/, "Must be a valid hex number.")
   );
   newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
   padValues = true;
@@ -156,7 +155,7 @@ export default class RxSettings {
     this.config.numberSeparator.setOnApplyChanged(() => {
       this.saveSettings();
     });
-    this.config.newLineHexValue.setOnApplyChanged(() => {
+    this.config.newLineMatchValueAsHex.setOnApplyChanged(() => {
       this.saveSettings();
     });
     this.config.numPaddingChars.setOnApplyChanged(() => {
@@ -253,12 +252,12 @@ export default class RxSettings {
   };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
-    this.config.preventHexValuesWrappingAcrossRows = value;
+    this.config.preventValuesWrappingAcrossRows = value;
     this.saveSettings();
   };
 
   setInsertNewLineOnValue = (value: boolean) => {
-    this.config.insetNewLineOnHexValue = value;
+    this.config.insertNewLineOnMatchedValue = value;
     this.saveSettings();
   };
 

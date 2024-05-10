@@ -128,7 +128,7 @@ export default observer((props: Props) => {
 
           <Grid xs={12}>
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
-              NinjaTerm is an open source and free cross-platform application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller).
+              NinjaTerm is an open source and free web-based application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller).
             </Typography>
           </Grid>
 

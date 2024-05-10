@@ -389,7 +389,7 @@ function RxSettingsView(props: Props) {
             {/* SEPARATOR BETWEEN VALUES */}
             {/* ================================================ */}
             <Tooltip
-              title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
+              title='This string is append to every displayed numerical value. For example, use " " to separate values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
               followCursor
               arrow
             >
@@ -400,14 +400,14 @@ function RxSettingsView(props: Props) {
                 variant="outlined"
                 size="small"
                 applyableTextField={rxSettings.config.numberSeparator}
-                sx={{ marginBottom: "15px" }}
+                sx={{ marginBottom: "10px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* PREVENT VALUES FROM WRAPPING ACROSS ROWS */}
             {/* ================================================ */}
             <Tooltip
-              title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
+              title="If enabled, numerical values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row even when starting from the first column (e.g. small column count)."
               placement="right"
               followCursor
               arrow
@@ -415,21 +415,21 @@ function RxSettingsView(props: Props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={rxSettings.config.preventHexValuesWrappingAcrossRows}
+                    checked={rxSettings.config.preventValuesWrappingAcrossRows}
                     onChange={(e) => {
                       rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
                     }}
                   />
                 }
                 label="Prevent values from wrapping across rows."
-                sx={{ marginBottom: "15px" }}
+                sx={{ marginBottom: "0px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* INSERT NEW LINE ON SPECIFIC VALUE */}
             {/* ================================================ */}
             <Tooltip
-              title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when to have specific start-of-packet/end-of-packet delimiters."
+              title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when you have specific start-of-packet/end-of-packet delimiters and you want to display one packet per row."
               placement="right"
               followCursor
               arrow
@@ -437,7 +437,7 @@ function RxSettingsView(props: Props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={rxSettings.config.insetNewLineOnHexValue}
+                    checked={rxSettings.config.insertNewLineOnMatchedValue}
                     onChange={(e) => {
                       rxSettings.setInsertNewLineOnValue(e.target.checked);
                     }}
@@ -451,25 +451,23 @@ function RxSettingsView(props: Props) {
             {/* NEW LINE HEX VALUE */}
             {/* ================================================ */}
             <Tooltip
-              title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff".'
+              title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff". This is always a hex value, no matter what the selected number type is. It is compared against the raw bytes received that make up the number, not the interpreted number value. For example, if you were displaying uint16 and wanted to create a new line on the value 1000, you would enter "3E8". If you were displaying int16 and wanted a new line on -10, you would enter "FFF6".'
               followCursor
               arrow
             >
               <ApplyableTextFieldView
-                id="outlined-basic"
-                name="newLineHexValue"
                 label="Value to insert new line on"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.newLineHexValue}
-                disabled={!rxSettings.config.insetNewLineOnHexValue}
+                applyableTextField={rxSettings.config.newLineMatchValueAsHex}
+                disabled={!rxSettings.config.insertNewLineOnMatchedValue}
                 sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* NEWLINE BEFORE OR AFTER VALUE */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "15px" }}>
+            <FormControl disabled={!rxSettings.config.insertNewLineOnMatchedValue} sx={{ marginBottom: "15px" }}>
               <FormLabel>Insert new line before or after value?</FormLabel>
               <RadioGroup
                 value={rxSettings.config.newLinePlacementOnHexValue}

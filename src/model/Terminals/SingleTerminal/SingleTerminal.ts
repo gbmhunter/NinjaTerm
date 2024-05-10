@@ -127,7 +127,6 @@ export default class SingleTerminal {
    * - The number data type is changed
    * - The serial port is closed
    */
-
   partialNumberBuffer: number[] = [];
 
   constructor(
@@ -179,7 +178,7 @@ export default class SingleTerminal {
     this.isFocused = false;
 
     // Register listener for whenever the number type is changed
-    reaction(() => this.rxSettings.config.numberType, this.onNumberTypeChange);
+    reaction(() => this.rxSettings.config.numberType, this.clearPartialNumberBuffer);
 
     makeAutoObservable(this);
   }
@@ -572,7 +571,8 @@ export default class SingleTerminal {
       // Add received byte to number array
       this.partialNumberBuffer.push(rxByte);
 
-      let numberStr = "";
+      let numberAsBigInt = BigInt(0); // This is used for the new line on match feature
+      let numberStr = ""; // This is used for displaying the number in the terminal
       //========================================================================
       // CREATE NUMBER PART OF STRING
       //========================================================================
@@ -607,6 +607,7 @@ export default class SingleTerminal {
         } else {
           throw Error("Invalid hex case setting: " + this.rxSettings.config.hexCase);
         }
+        numberAsBigInt = BigInt('0x' + numberStr);
         // "0x" is added later after the padding step if enabled
       }
       // UINT8
@@ -617,6 +618,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint8(0).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint8(0));
         this.partialNumberBuffer = [];
       }
       // INT8
@@ -625,6 +627,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt8(0).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint8(0));
         this.partialNumberBuffer = [];
       }
       // UINT16
@@ -639,6 +642,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint16(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint16(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // INT16
@@ -653,6 +657,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt16(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint16(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // UINT32
@@ -664,6 +669,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getUint32(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint32(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // INT32
@@ -675,6 +681,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt32(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getUint32(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // UINT64
@@ -686,6 +693,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getBigUint64(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getBigUint64(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // INT64
@@ -697,6 +705,7 @@ export default class SingleTerminal {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getBigInt64(0, isLittleEndian).toString(10);
+        numberAsBigInt = BigInt(dataView.getBigInt64(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // FLOAT32
@@ -715,6 +724,7 @@ export default class SingleTerminal {
         } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
           numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
         }
+        numberAsBigInt = BigInt(dataView.getUint32(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // FLOAT64
@@ -733,6 +743,7 @@ export default class SingleTerminal {
         } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
           numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
         }
+        numberAsBigInt = BigInt(dataView.getBigUint64(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // INVALID
@@ -819,8 +830,8 @@ export default class SingleTerminal {
 
       // Only prevent numerical value wrapping mid-value if:
       // 1) Setting is enabled
-      // 2) The terminal column width is high enough to fit an entire hex value in it
-      if (this.rxSettings.config.preventHexValuesWrappingAcrossRows && this.displaySettings.terminalWidthChars.appliedValue >= numberStr.length) {
+      // 2) The terminal column width is high enough to fit an entire value in it
+      if (this.rxSettings.config.preventValuesWrappingAcrossRows && this.displaySettings.terminalWidthChars.appliedValue >= numberStr.length) {
         // Create a new terminal row if the hex value will not fit on existing row
         const currRow = this.terminalRows[this.cursorPosition[0]];
         const numColsLeftOnRow = this.displaySettings.terminalWidthChars.appliedValue - this.cursorPosition[1];
@@ -839,11 +850,9 @@ export default class SingleTerminal {
       // Work out if we need to insert a new line because the numerical value matches the new line value
       // in the settings
       let insertNewLine = false;
-      if (this.rxSettings.config.insetNewLineOnHexValue) {
-        // Convert hex string to number. We'll compare the values as numbers rather than strings,
-        // this seems like the more robust way to do it
-        const hexValueToInsertNewLineAsNum = parseInt(this.rxSettings.config.newLineHexValue.appliedValue, 16);
-        if (rxByte == hexValueToInsertNewLineAsNum) {
+      if (this.rxSettings.config.insertNewLineOnMatchedValue) {
+        const valueToInsertNewLineAsNum = BigInt('0x' +  this.rxSettings.config.newLineMatchValueAsHex.appliedValue);
+        if (numberAsBigInt == valueToInsertNewLineAsNum) {
           insertNewLine = true;
         }
       }
@@ -871,15 +880,6 @@ export default class SingleTerminal {
       }
     } // for (let idx = 0; idx < data.length; idx += 1) {
   }
-
-  /**
-   * Needs to be called whenever the the number type in the settings is changed.
-   *
-   * This clears any partially received numbers from a internal buffer.
-   */
-  onNumberTypeChange = () => {
-    this.partialNumberBuffer = [];
-  };
 
   /**
    * Moves the cursor left the specified number of columns. Does not move the cursor any further
@@ -1395,7 +1395,7 @@ export default class SingleTerminal {
   /**
    * Call this to clear the buffer which is used to store partially received multi-byte numbers.
    */
-  clearPartialNumberBuffer() {
+  clearPartialNumberBuffer = () => {
     this.partialNumberBuffer = [];
   }
 }
