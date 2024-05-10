@@ -509,6 +509,7 @@ export class App {
    * - Pressing "f" while on the Port Configuration settings.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
+    console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
@@ -697,7 +698,22 @@ export class App {
     if (event.key === 'Control' || event.key === 'Shift' || event.key === 'Alt') {
       // Don't send anything if a control/shift/alt key was pressed by itself
       return;
-    } else if (event.ctrlKey) {
+    }
+    //===========================================================
+    // Ctrl-Shift-B: Send break signal
+    //===========================================================
+    else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
+      // TODO: Get types for setSignals() and remove ts-ignore
+      // @ts-ignore
+      await this.port.setSignals({ break: true });
+      // 200ms seems like a standard break time
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // @ts-ignore
+      await this.port.setSignals({ break: false });
+      // Emit message to user
+      this.snackbar.sendToSnackbar('Break signal sent.', 'success');
+    }
+    else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
       if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {

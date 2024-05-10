@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Added support for receiving and displaying numerical data types such as hex, uint8, uint16, e.t.c.
+- Added support for receiving and displaying numerical data types such as hex, uint8, uint16, float32, e.t.c.
+- Added the ability to send a 200ms break signal by pressing Ctrl-Shift-B when the terminal is focused and the serial port open.
 
 ## [4.13.2] - 2024-03-26
 
