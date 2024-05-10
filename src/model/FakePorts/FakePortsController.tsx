@@ -676,6 +676,42 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
+    // dataType: float32, numbers: random in the range -100 to 100, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: float32, numbers: random in the range -100 to 100, endianness: little, 1chars/s',
+        'Sends random 32-bit floating point numbers in the range -100 to 100, in little endian format, at a rate of 1 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(4);
+            const view = new DataView(array);
+            // Generate random float number between -100 and 100
+            const numberToSend = Math.random() * 200 - 100;
+            view.setFloat32(0, numberToSend, true); // Little endian
+            const uint8Array = new Uint8Array(array);
+            app.parseRxData(uint8Array);
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     makeAutoObservable(this);
   }
 

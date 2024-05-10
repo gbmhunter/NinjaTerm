@@ -171,6 +171,45 @@ test.describe('Parsing RX data as numbers', () => {
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
+  test('make sure padding with spaces goes before the negative sign', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "int8"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="int8"]');
+
+    // Set padding to spaces
+    await page.getByTestId('pad-whitespace-radio-button').check();
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send -3 (0x85)
+    const array = new ArrayBuffer(1);
+    const view = new DataView(array);
+    view.setInt8(0, -3);
+    const bytes = new Uint8Array(array);
+    await appTestHarness.sendBytesToTerminal(Array.from(bytes));
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: ' ' }),
+        new ExpectedTerminalChar({ char: ' ' }),
+        new ExpectedTerminalChar({ char: '-' }), // Unlike padding with zeroes, padding with spaces means negative sign should be here, after the padding
+        new ExpectedTerminalChar({ char: '3' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
   test('one uint16 value, padding: 0s, endianness: little', async ({ page }) => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
@@ -439,6 +478,44 @@ test.describe('Parsing RX data as numbers', () => {
         new ExpectedTerminalChar({ char: '8' }),
         new ExpectedTerminalChar({ char: '9' }),
         new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: ' ' }), // Separator
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+      ],
+    ];
+    await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
+  });
+
+  test('one float32 value, padding: 0s, endianness: little', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.goToRxSettings();
+    // Set the data type to "Number"
+    await page.getByTestId('data-type-number-radio-button').check();
+
+    // Set the subtype to "float32"
+    await page.getByTestId('number-type-select').click();
+    await page.click('li[data-value="float32"]');
+
+    // Go back to the terminal view
+    await appTestHarness.goToTerminalView();
+
+    // Send 1.5 in little-endian order
+    const array = new ArrayBuffer(4);
+    const view = new DataView(array);
+    view.setFloat32(0, 1.5, true);
+    const bytes = new Uint8Array(array);
+    await appTestHarness.sendBytesToTerminal(Array.from(bytes));
+
+    const expectedDisplay: ExpectedTerminalChar[][] = [
+      [
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '0' }),
+        new ExpectedTerminalChar({ char: '1' }),
+        new ExpectedTerminalChar({ char: '.' }),
+        new ExpectedTerminalChar({ char: '5' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
         new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
       ],

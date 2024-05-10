@@ -122,7 +122,7 @@ class Config {
    * Set to -1 for automatic padding, which will pad up to the largest possible value
    * for the selected number type.
    */
-  numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(10).int());
+  numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(100).int());
 
   // HEX SPECIFIC SETTINGS
   prefixHexValuesWith0x = false;

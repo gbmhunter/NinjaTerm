@@ -516,12 +516,12 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* 0's */}
-              <Tooltip title="Pad with 0's, e.g. &quot;003&quot;." placement="right" arrow>
-                <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio />} label="0's" />
+              <Tooltip title="Pad with 0's, e.g. &quot;-003&quot;." placement="right" arrow>
+                <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio data-testid="pad-zeroes-radio-button" />} label="0's" />
               </Tooltip>
               {/* WHITESPACE */}
-              <Tooltip title="Pad with whitespace, e.g. &quot;  3&quot;." placement="right" arrow>
-                <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio />} label="<whitespace>" />
+              <Tooltip title="Pad with whitespace, e.g. &quot;  -3&quot;." placement="right" arrow>
+                <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio data-testid="pad-whitespace-radio-button" />} label="<whitespace>" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -569,6 +569,7 @@ function RxSettingsView(props: Props) {
               </Tooltip>
             </RadioGroup>
           </FormControl>
+          {/* ================================================ */}
           {/* PREFIX HEX VALUES WITH 0x */}
           {/* ================================================ */}
           <Tooltip

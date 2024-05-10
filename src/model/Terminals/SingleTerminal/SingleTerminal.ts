@@ -772,8 +772,10 @@ export default class SingleTerminal {
           }
         }
 
-        // Handle negative numbers by padding after the negative sign
-        if (numberStr[0] === "-") {
+        // Handle negative numbers combined with zeroes padding by padding after the negative sign
+        // (padding negative numbers with spaces is handled the same way as positive numbers, the padding
+        // goes before the negative sign).
+        if (this.rxSettings.config.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === "-") {
           numberStr = numberStr.slice(1);
           numPaddingChars -= 1; // Negative sign takes up one padding char
           numberStr = '-' + numberStr.padStart(numPaddingChars, paddingChar);
@@ -782,6 +784,7 @@ export default class SingleTerminal {
           numberStr = numberStr.padStart(numPaddingChars, paddingChar);
         }
       }
+      console.log('After padding, numberStr=', numberStr);
 
       // Add 0x if hex and setting is enabled
       if (this.rxSettings.config.numberType === NumberType.HEX && this.rxSettings.config.prefixHexValuesWith0x) {
