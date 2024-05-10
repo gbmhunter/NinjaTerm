@@ -298,4 +298,21 @@ export default class RxSettings {
     this.config.floatStringConversionMethod = value;
     this.saveSettings();
   };
+
+  //=================================================================
+  // OTHER
+  //=================================================================
+
+  /**
+   * Provides a descriptive name for the currently selected data type for the app
+   * to display in the toolbar.
+   * @returns The descriptive name as a string.
+   */
+  getDataTypeNameForToolbarDisplay = () => {
+    if (this.config.dataType === DataType.ASCII) {
+      return "ASCII";
+    } else {
+      return this.config.numberType;
+    }
+  };
 }

@@ -1,7 +1,17 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import RxSettings, { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
+import RxSettings, {
+  CarriageReturnCursorBehavior,
+  DataType,
+  Endianness,
+  FloatStringConversionMethod,
+  HexCase,
+  NewLineCursorBehavior,
+  NonVisibleCharDisplayBehaviors,
+  NumberType,
+  PaddingCharacter,
+} from "src/model/Settings/RxSettings/RxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 
@@ -18,7 +28,7 @@ function RxSettingsView(props: Props) {
       {/* DATA TYPE */}
       {/* =============================================================================== */}
       <div style={{ display: "flex" }}>
-        <BorderedSection title="Data Type" childStyle={{ display: "flex", flexDirection: "column", width: '500px' }}>
+        <BorderedSection title="Data Type" childStyle={{ display: "flex", flexDirection: "column", width: "500px" }}>
           <FormControl>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
@@ -317,334 +327,331 @@ function RxSettingsView(props: Props) {
       {/* DATA TYPE = NUMBER */}
       {/* =============================================================================== */}
       <div className="number-block" style={{ display: rxSettings.config.dataType === DataType.NUMBER ? "block" : "none" }}>
-      <div className="columns" style={{ display: "flex" }}>
-        <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* ================================================ */}
-          {/* NUMBER TYPE */}
-          {/* ================================================ */}
-          <Tooltip
-            title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
-            followCursor
-            arrow
-          >
-            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
-              <InputLabel id="demo-select-small-label">Number Type</InputLabel>
-              <Select
-                labelId="demo-select-small-label"
-                id="demo-select-small"
-                value={rxSettings.config.numberType}
-                label="Baud Rate"
-                onChange={(e) => {
-                  rxSettings.setNumberType(e.target.value as NumberType);
-                }}
-                data-testid="number-type-select"
-              >
-                {Object.values(NumberType).map((numberType) => {
-                  return (
-                    <MenuItem key={numberType} value={numberType}>
-                      {numberType}
-
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Tooltip>
-          {/* ================================================ */}
-          {/* ENDIANNESS */}
-          {/* ================================================ */}
-          <Tooltip
-            title='The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first.'
-            followCursor
-            arrow
-          >
-            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
-              <InputLabel>Endianness</InputLabel>
-              <Select
-                value={rxSettings.config.endianness}
-                label="Endianness"
-                onChange={(e) => {
-                  rxSettings.setEndianness(e.target.value as Endianness);
-                }}
-                data-testid="endianness-select"
-              >
-                {Object.values(Endianness).map((endianness) => {
-                  return (
-                    <MenuItem key={endianness} value={endianness}>
-                      {endianness}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
-          </Tooltip>
-          {/* ================================================ */}
-          {/* SEPARATOR BETWEEN VALUES */}
-          {/* ================================================ */}
-          <Tooltip
-            title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              id="outlined-basic"
-              name="hexSeparator"
-              label="Separator Between Values"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.config.numberSeparator}
-              sx={{ marginBottom: "20px" }}
-            />
-          </Tooltip>
-          {/* ================================================ */}
-          {/* PREVENT VALUES FROM WRAPPING ACROSS ROWS */}
-          {/* ================================================ */}
-          <Tooltip
-            title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rxSettings.config.preventHexValuesWrappingAcrossRows}
-                  onChange={(e) => {
-                    rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
-                  }}
-                />
-              }
-              label="Prevent values from wrapping across rows."
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* ================================================ */}
-          {/* INSERT NEW LINE ON SPECIFIC VALUE */}
-          {/* ================================================ */}
-          <Tooltip
-            title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when to have specific start-of-packet/end-of-packet delimiters."
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rxSettings.config.insetNewLineOnHexValue}
-                  onChange={(e) => {
-                    rxSettings.setInsertNewLineOnValue(e.target.checked);
-                  }}
-                />
-              }
-              label="Insert new line on specific value."
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* ================================================ */}
-          {/* NEW LINE HEX VALUE */}
-          {/* ================================================ */}
-          <Tooltip
-            title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff".'
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              id="outlined-basic"
-              name="newLineHexValue"
-              label="Value to insert new line on"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.config.newLineHexValue}
-              disabled={!rxSettings.config.insetNewLineOnHexValue}
-              sx={{ marginBottom: "20px" }}
-            />
-          </Tooltip>
-          {/* ================================================ */}
-          {/* NEWLINE BEFORE OR AFTER VALUE */}
-          {/* ================================================ */}
-          <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "20px" }}>
-            <FormLabel>Insert new line before or after value?</FormLabel>
-            <RadioGroup
-              value={rxSettings.config.newLinePlacementOnHexValue}
-              onChange={(e) => {
-                rxSettings.setNewLinePlacementOnHexValue(parseInt(e.target.value));
-              }}
+        <div className="columns" style={{ display: "flex" }}>
+          <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+            {/* ================================================ */}
+            {/* NUMBER TYPE */}
+            {/* ================================================ */}
+            <Tooltip
+              title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
+              followCursor
+              arrow
             >
-              {/* UPPERCASE */}
-              <Tooltip title="Insert new line before the detected hex value. Useful if the hex value indicates the start of a packet." placement="right" arrow>
-                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Before" />
-              </Tooltip>
-              {/* LOWERCASE */}
-              <Tooltip title="Insert new line after the detected hex value. Useful if the hex value indicates the end of a packet." placement="right" arrow>
-                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="After" />
-              </Tooltip>
-            </RadioGroup>
-          </FormControl>
-        </BorderedSection>
-        <BorderedSection title="Padding Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* ================================================ */}
-          {/* PAD VALUES */}
-          {/* ================================================ */}
-          <Tooltip
-            title="Enable this to left-pad values to a consistent character width."
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={rxSettings.config.padValues}
+              <FormControl sx={{ minWidth: 160, marginBottom: "20px" }} size="small">
+                <InputLabel id="demo-select-small-label">Number Type</InputLabel>
+                <Select
+                  labelId="demo-select-small-label"
+                  id="demo-select-small"
+                  value={rxSettings.config.numberType}
+                  label="Baud Rate"
                   onChange={(e) => {
-                    rxSettings.setPadValues(e.target.checked);
+                    rxSettings.setNumberType(e.target.value as NumberType);
                   }}
-                />
-              }
-              label="Pad values"
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-          {/* ================================================ */}
-          {/* PADDING CHARACTER */}
-          {/* ================================================ */}
-          <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "20px" }}>
-            <FormLabel>Padding character:</FormLabel>
-            <RadioGroup
-              value={rxSettings.config.paddingCharacter}
-              onChange={(e) => {
-                rxSettings.setPaddingCharacter(parseInt(e.target.value));
-              }}
+                  data-testid="number-type-select"
+                >
+                  {Object.values(NumberType).map((numberType) => {
+                    return (
+                      <MenuItem key={numberType} value={numberType}>
+                        {numberType}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ================================================ */}
+            {/* ENDIANNESS */}
+            {/* ================================================ */}
+            <Tooltip
+              title="The order in which multi-byte numbers are sent on the serial port. Little endian is when the LSB is sent first, big endian is when the MSB is sent first."
+              followCursor
+              arrow
             >
-              {/* 0's */}
-              <Tooltip title="Pad with 0's, e.g. &quot;-003&quot;." placement="right" arrow>
-                <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio data-testid="pad-zeroes-radio-button" />} label="0's" />
-              </Tooltip>
-              {/* WHITESPACE */}
-              <Tooltip title="Pad with whitespace, e.g. &quot;  -3&quot;." placement="right" arrow>
-                <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio data-testid="pad-whitespace-radio-button" />} label="<whitespace>" />
-              </Tooltip>
-            </RadioGroup>
-          </FormControl>
-          {/* ================================================ */}
-          {/* PADDING WIDTH */}
-          {/* ================================================ */}
-          <Tooltip
-            title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16). For floats, -1 equals 6 chars."
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              id="outlined-basic"
-              name="numPaddingChars"
-              label="Num. of padding chars"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.config.numPaddingChars}
-              disabled={!rxSettings.config.padValues}
-              sx={{ marginBottom: "20px" }}
-            />
-          </Tooltip>
-        </BorderedSection>
+              <FormControl sx={{ minWidth: 160, marginBottom: "20px" }} size="small">
+                <InputLabel>Endianness</InputLabel>
+                <Select
+                  value={rxSettings.config.endianness}
+                  label="Endianness"
+                  onChange={(e) => {
+                    rxSettings.setEndianness(e.target.value as Endianness);
+                  }}
+                  data-testid="endianness-select"
+                >
+                  {Object.values(Endianness).map((endianness) => {
+                    return (
+                      <MenuItem key={endianness} value={endianness}>
+                        {endianness}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ================================================ */}
+            {/* SEPARATOR BETWEEN VALUES */}
+            {/* ================================================ */}
+            <Tooltip
+              title='This string is append to every displayed hex value. For example, use " " to separate hex values with a space, or "," to create CSV-like data. You can also use an empty string to have no separator at all.'
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                id="outlined-basic"
+                name="hexSeparator"
+                label="Separator Between Values"
+                variant="outlined"
+                size="small"
+                applyableTextField={rxSettings.config.numberSeparator}
+                sx={{ marginBottom: "20px" }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
+            {/* PREVENT VALUES FROM WRAPPING ACROSS ROWS */}
+            {/* ================================================ */}
+            <Tooltip
+              title="If enabled, hex values will not be broken into two to wrap to the next row if the terminal reaches the last column. A new row will be created when a whole hex value cannot fit onto the existing row. This has no effect if a hex value cannot fit into a single row (e.g. small column count)."
+              placement="right"
+              followCursor
+              arrow
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={rxSettings.config.preventHexValuesWrappingAcrossRows}
+                    onChange={(e) => {
+                      rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
+                    }}
+                  />
+                }
+                label="Prevent values from wrapping across rows."
+                sx={{ marginBottom: "10px" }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
+            {/* INSERT NEW LINE ON SPECIFIC VALUE */}
+            {/* ================================================ */}
+            <Tooltip
+              title="Check this if you want to insert new lines when specific bytes arrive from the serial port. Handy when to have specific start-of-packet/end-of-packet delimiters."
+              placement="right"
+              followCursor
+              arrow
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={rxSettings.config.insetNewLineOnHexValue}
+                    onChange={(e) => {
+                      rxSettings.setInsertNewLineOnValue(e.target.checked);
+                    }}
+                  />
+                }
+                label="Insert new line on specific value."
+                sx={{ marginBottom: "10px" }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
+            {/* NEW LINE HEX VALUE */}
+            {/* ================================================ */}
+            <Tooltip
+              title='The hex value to look for in the RX stream. If found, a new line will be inserted either before or after the value (depending on the setting). Must be a valid hex value, e.g. "0A" or "ff".'
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                id="outlined-basic"
+                name="newLineHexValue"
+                label="Value to insert new line on"
+                variant="outlined"
+                size="small"
+                applyableTextField={rxSettings.config.newLineHexValue}
+                disabled={!rxSettings.config.insetNewLineOnHexValue}
+                sx={{ marginBottom: "20px" }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
+            {/* NEWLINE BEFORE OR AFTER VALUE */}
+            {/* ================================================ */}
+            <FormControl disabled={!rxSettings.config.insetNewLineOnHexValue} sx={{ marginBottom: "20px" }}>
+              <FormLabel>Insert new line before or after value?</FormLabel>
+              <RadioGroup
+                value={rxSettings.config.newLinePlacementOnHexValue}
+                onChange={(e) => {
+                  rxSettings.setNewLinePlacementOnHexValue(parseInt(e.target.value));
+                }}
+              >
+                {/* UPPERCASE */}
+                <Tooltip title="Insert new line before the detected hex value. Useful if the hex value indicates the start of a packet." placement="right" arrow>
+                  <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Before" />
+                </Tooltip>
+                {/* LOWERCASE */}
+                <Tooltip title="Insert new line after the detected hex value. Useful if the hex value indicates the end of a packet." placement="right" arrow>
+                  <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="After" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </BorderedSection>
+          <BorderedSection title="Padding Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+            {/* ================================================ */}
+            {/* PAD VALUES */}
+            {/* ================================================ */}
+            <Tooltip title="Enable this to left-pad values to a consistent character width." placement="right" followCursor arrow>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={rxSettings.config.padValues}
+                    onChange={(e) => {
+                      rxSettings.setPadValues(e.target.checked);
+                    }}
+                  />
+                }
+                label="Pad values"
+                sx={{ marginBottom: "10px" }}
+              />
+            </Tooltip>
+            {/* ================================================ */}
+            {/* PADDING CHARACTER */}
+            {/* ================================================ */}
+            <FormControl disabled={!rxSettings.config.padValues} sx={{ marginBottom: "20px" }}>
+              <FormLabel>Padding character:</FormLabel>
+              <RadioGroup
+                value={rxSettings.config.paddingCharacter}
+                onChange={(e) => {
+                  rxSettings.setPaddingCharacter(parseInt(e.target.value));
+                }}
+              >
+                {/* 0's */}
+                <Tooltip title='Pad with 0&apos;s, e.g. "-003".' placement="right" arrow>
+                  <FormControlLabel value={PaddingCharacter.ZERO} control={<Radio data-testid="pad-zeroes-radio-button" />} label="0's" />
+                </Tooltip>
+                {/* WHITESPACE */}
+                <Tooltip title='Pad with whitespace, e.g. "  -3".' placement="right" arrow>
+                  <FormControlLabel value={PaddingCharacter.WHITESPACE} control={<Radio data-testid="pad-whitespace-radio-button" />} label="<whitespace>" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+            {/* ================================================ */}
+            {/* PADDING WIDTH */}
+            {/* ================================================ */}
+            <Tooltip
+              title="The width to pad numbers out to. Set to -1 if you want to automatically pad the value to the width of the largest possible number of the selected type (e.g. 2 chars for a 1-byte hex value, 3 chars for a uint8, 5 for a uint16). For floats, -1 equals 6 chars."
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                id="outlined-basic"
+                name="numPaddingChars"
+                label="Num. of padding chars"
+                variant="outlined"
+                size="small"
+                applyableTextField={rxSettings.config.numPaddingChars}
+                disabled={!rxSettings.config.padValues}
+                sx={{ marginBottom: "20px" }}
+              />
+            </Tooltip>
+          </BorderedSection>
         </div>
         <div className="hex-and-floating-point-settings" style={{ display: "flex" }}>
-        <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* ================================================ */}
-          {/* UPPERCASE/LOWERCASE HEX */}
-          {/* ================================================ */}
-          <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX}>
-            <FormLabel>Upper/lowercase hex:</FormLabel>
-            <RadioGroup
-              value={rxSettings.config.hexCase}
-              onChange={(e) => {
-                rxSettings.setHexCase(parseInt(e.target.value));
-              }}
-            >
-              {/* UPPERCASE */}
-              <Tooltip title="Use uppercase A-F when printing hex values." placement="right" arrow>
-                <FormControlLabel value={HexCase.UPPERCASE} control={<Radio data-testid="hex-uppercase-radio-button" />} label="Uppercase" />
-              </Tooltip>
-              {/* LOWERCASE */}
-              <Tooltip title="Use lowercase a-f when printing hex values." placement="right" arrow>
-                <FormControlLabel value={HexCase.LOWERCASE} control={<Radio data-testid="hex-lowercase-radio-button" />} label="Lowercase" />
-              </Tooltip>
-            </RadioGroup>
-          </FormControl>
-          {/* ================================================ */}
-          {/* PREFIX HEX VALUES WITH 0x */}
-          {/* ================================================ */}
-          <Tooltip
-            title='If enabled, "0x" will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!'
-            placement="right"
-            followCursor
-            arrow
-          >
-            <FormControlLabel
-              disabled={rxSettings.config.numberType !== NumberType.HEX}
-              control={
-                <Checkbox
-                  checked={rxSettings.config.prefixHexValuesWith0x}
-                  onChange={(e) => {
-                    rxSettings.setPrefixHexValuesWith0x(e.target.checked);
-                  }}
-                />
-              }
-              label='Prefix hex values with "0x".'
-              sx={{ marginBottom: "10px" }}
-            />
-          </Tooltip>
-        </BorderedSection>
-        <BorderedSection title="Float Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
-          {/* ================================================ */}
-          {/* FLOAT STRING CONVERSION METHOD */}
-          {/* ================================================ */}
-          <Tooltip
-            title='Control how the float gets converted into a string. toString() converts the number to the smallest string representation which uniquely identifies the float. toFixed() creates the string representation with a fixed number of decimal places (settable in the input below).'
-            // followCursor
-            arrow
-            placement="top"
-          >
-            <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
-              <InputLabel>String Conversion Method</InputLabel>
-              <Select
-                value={rxSettings.config.floatStringConversionMethod}
-                label="Float String Conversion Method"
+          <BorderedSection title="Hex Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+            {/* ================================================ */}
+            {/* UPPERCASE/LOWERCASE HEX */}
+            {/* ================================================ */}
+            <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX}>
+              <FormLabel>Upper/lowercase hex:</FormLabel>
+              <RadioGroup
+                value={rxSettings.config.hexCase}
                 onChange={(e) => {
-                  rxSettings.setFloatStringConversionMethod(e.target.value as FloatStringConversionMethod);
+                  rxSettings.setHexCase(parseInt(e.target.value));
                 }}
-                data-testid="float-string-conversion-method-select"
               >
-                {Object.values(FloatStringConversionMethod).map((method) => {
-                  return (
-                    <MenuItem key={method} value={method}>
-                      {method}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
+                {/* UPPERCASE */}
+                <Tooltip title="Use uppercase A-F when printing hex values." placement="right" arrow>
+                  <FormControlLabel value={HexCase.UPPERCASE} control={<Radio data-testid="hex-uppercase-radio-button" />} label="Uppercase" />
+                </Tooltip>
+                {/* LOWERCASE */}
+                <Tooltip title="Use lowercase a-f when printing hex values." placement="right" arrow>
+                  <FormControlLabel value={HexCase.LOWERCASE} control={<Radio data-testid="hex-lowercase-radio-button" />} label="Lowercase" />
+                </Tooltip>
+              </RadioGroup>
             </FormControl>
-          </Tooltip>
-          {/* ================================================ */}
-          {/* FLOAT NUM. OF DECIMAL PLACES */}
-          {/* ================================================ */}
-          <Tooltip
-            title="The number of decimal places to round the float to if using toFixed()."
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              name="floatNumOfDecimalPlaces"
-              label="Float num. of decimal places"
-              variant="outlined"
-              size="small"
-              applyableTextField={rxSettings.config.floatNumOfDecimalPlaces}
-              disabled={
-                (rxSettings.config.numberType !== NumberType.FLOAT32 &&
-                rxSettings.config.numberType !== NumberType.FLOAT64) ||
-                rxSettings.config.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED}
-              sx={{ marginBottom: "20px" }}
-            />
-          </Tooltip>
-        </BorderedSection>
+            {/* ================================================ */}
+            {/* PREFIX HEX VALUES WITH 0x */}
+            {/* ================================================ */}
+            <Tooltip
+              title='If enabled, "0x" will be prefixed to all hex values displayed in the terminal. Normally this just adds more clutter to the data, but might be useful in some cases!'
+              placement="right"
+              followCursor
+              arrow
+            >
+              <FormControlLabel
+                disabled={rxSettings.config.numberType !== NumberType.HEX}
+                control={
+                  <Checkbox
+                    checked={rxSettings.config.prefixHexValuesWith0x}
+                    onChange={(e) => {
+                      rxSettings.setPrefixHexValuesWith0x(e.target.checked);
+                    }}
+                  />
+                }
+                label='Prefix hex values with "0x".'
+                sx={{ marginBottom: "10px" }}
+              />
+            </Tooltip>
+          </BorderedSection>
+          {/* ============================================================================================ */}
+          {/* FLOAT SPECIFIC SETTINGS */}
+          {/* ============================================================================================ */}
+          <BorderedSection title="Float Specific Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
+            {/* ================================================ */}
+            {/* FLOAT STRING CONVERSION METHOD */}
+            {/* ================================================ */}
+            <Tooltip
+              title="Control how the float gets converted into a string. toString() converts the number to the smallest string representation which uniquely identifies the float. toFixed() creates the string representation with a fixed number of decimal places (settable in the input below)."
+              // followCursor
+              arrow
+              placement="top"
+            >
+              <FormControl
+                sx={{ minWidth: 160, marginBottom: "20px" }}
+                size="small"
+                disabled={rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64}
+              >
+                <InputLabel>String Conversion Method</InputLabel>
+                <Select
+                  value={rxSettings.config.floatStringConversionMethod}
+                  label="Float String Conversion Method"
+                  onChange={(e) => {
+                    rxSettings.setFloatStringConversionMethod(e.target.value as FloatStringConversionMethod);
+                  }}
+                  data-testid="float-string-conversion-method-select"
+                >
+                  {Object.values(FloatStringConversionMethod).map((method) => {
+                    return (
+                      <MenuItem key={method} value={method}>
+                        {method}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ================================================ */}
+            {/* FLOAT NUM. OF DECIMAL PLACES */}
+            {/* ================================================ */}
+            <Tooltip title="The number of decimal places to round the float to if using toFixed()." followCursor arrow>
+              <ApplyableTextFieldView
+                name="floatNumOfDecimalPlaces"
+                label="Float num. of decimal places"
+                variant="outlined"
+                size="small"
+                applyableTextField={rxSettings.config.floatNumOfDecimalPlaces}
+                disabled={
+                  (rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64) ||
+                  rxSettings.config.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED
+                }
+                sx={{ marginBottom: "20px" }}
+              />
+            </Tooltip>
+          </BorderedSection>
         </div>
       </div>
       {/* End of NUMBER block */}

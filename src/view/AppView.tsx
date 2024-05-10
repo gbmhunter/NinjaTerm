@@ -88,14 +88,6 @@ const portStateToToolbarStatusProperties: { [key in PortState]: any; } = {
   }
 };
 
-/**
- * Maps a data type to a string that can be displayed in the UI.
- */
-const dataTypeToDisplayString: { [key in DataType]: string } = {
-  [DataType.ASCII]: 'ASCII',
-  [DataType.NUMBER]: 'HEX/NUMBER',
-};
-
 interface Props {
   // app: App;
 }
@@ -287,7 +279,7 @@ const AppView = observer((props: Props) => {
           >
             {/* DATA TYPE */}
             <div style={{ padding: '0 10px' }}>
-              { dataTypeToDisplayString[app.settings.rxSettings.config.dataType] }
+              { app.settings.rxSettings.getDataTypeNameForToolbarDisplay() }
             </div>
 
             {/* LOGGING ON/OFF */}
