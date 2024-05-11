@@ -261,7 +261,7 @@ export default class RxSettings {
     this.saveSettings();
   };
 
-  setNewLinePlacementOnHexValue = (value: NewLinePlacementOnHexValue) => {
+  setNewLinePlacementOnValue = (value: NewLinePlacementOnHexValue) => {
     this.config.newLinePlacementOnHexValue = value;
     this.saveSettings();
   };

@@ -8,6 +8,7 @@ import RxSettings, {
   FloatStringConversionMethod,
   HexCase,
   NewLineCursorBehavior,
+  NewLinePlacementOnHexValue,
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
@@ -472,16 +473,16 @@ function RxSettingsView(props: Props) {
               <RadioGroup
                 value={rxSettings.config.newLinePlacementOnHexValue}
                 onChange={(e) => {
-                  rxSettings.setNewLinePlacementOnHexValue(parseInt(e.target.value));
+                  rxSettings.setNewLinePlacementOnValue(parseInt(e.target.value));
                 }}
               >
                 {/* UPPERCASE */}
-                <Tooltip title="Insert new line before the detected hex value. Useful if the hex value indicates the start of a packet." placement="right" arrow>
-                  <FormControlLabel value={HexCase.UPPERCASE} control={<Radio />} label="Before" />
+                <Tooltip title="Insert new line before the detected value. Useful if the value indicates the start of a packet." placement="right" arrow>
+                  <FormControlLabel value={NewLinePlacementOnHexValue.BEFORE} control={<Radio />} label="Before" />
                 </Tooltip>
                 {/* LOWERCASE */}
-                <Tooltip title="Insert new line after the detected hex value. Useful if the hex value indicates the end of a packet." placement="right" arrow>
-                  <FormControlLabel value={HexCase.LOWERCASE} control={<Radio />} label="After" />
+                <Tooltip title="Insert new line after the detected value. Useful if the value indicates the end of a packet." placement="right" arrow>
+                  <FormControlLabel value={NewLinePlacementOnHexValue.AFTER} control={<Radio />} label="After" />
                 </Tooltip>
               </RadioGroup>
             </FormControl>
