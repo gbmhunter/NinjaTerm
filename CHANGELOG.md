@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.14.0] - 2024-05-12
+
 ### Added
 
 - Added support for receiving and displaying numerical data types such as hex, uint8, uint16, float32, e.t.c.
@@ -679,7 +681,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.2...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.14.0...HEAD
+[4.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.2...v4.14.0
 [4.13.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.1...v4.13.2
 [4.13.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.0...v4.13.1
 [4.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.12.2...v4.13.0
