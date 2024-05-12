@@ -17,7 +17,7 @@ import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/DataProcessingSettings/DataProcessingSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
 
@@ -65,6 +65,12 @@ class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
   portState: PortState = PortState.CLOSED;
 }
+
+const tipsToDisplayOnStartup = [
+  'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
+  'TIP: Change the type of data displayed between ASCII, HEX and other number types in Settings → RX Settings.',
+  'TIP: Press Ctrl-Shift-B to send the "break" signal.',
+]
 
 export class App {
   settings: Settings;
@@ -129,7 +135,7 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.settings = new Settings(this);
+    this.settings = new Settings(this.appStorage, this.fakePortController);
 
     this.snackbar = new Snackbar();
 
@@ -167,12 +173,14 @@ export class App {
    * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
    */
   async onAppUiLoaded() {
-    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
+    if (this.settings.portConfiguration.config.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
     }
 
     // Send 1 random tip to snackbar on app load
-    this.snackbar.sendToSnackbar('TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.', 'info');
+    // Choose random tip from array
+    const randomIndex = Math.floor(Math.random() * tipsToDisplayOnStartup.length);
+    this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
@@ -283,7 +291,7 @@ export class App {
         lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
         this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
       });
-      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+      if (this.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
         runInAction(() => {
           this.portState = PortState.OPENED;
@@ -296,6 +304,11 @@ export class App {
     }
   }
 
+  /**
+   * Opens the selected serial port.
+   *
+   * @param printSuccessMsg If true, a success message will be printed to the snackbar.
+   */
   async openPort(printSuccessMsg = true) {
     if (this.lastSelectedPortType === PortType.REAL) {
       try {
@@ -352,6 +365,11 @@ export class App {
     } else {
       throw Error('Unsupported port type!');
     }
+
+    // Clear the partial number buffers in all terminals
+    this.terminals.txTerminal.clearPartialNumberBuffer();
+    this.terminals.rxTerminal.clearPartialNumberBuffer();
+    this.terminals.txRxTerminal.clearPartialNumberBuffer();
   }
 
   /** Continuously reads from the serial port until:
@@ -420,7 +438,7 @@ export class App {
     // fatal error from the serial port which has caused us to close. In this case, handle
     // the clean-up and state transition here.
     if (this.keepReading === true) {
-      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+      if (this.settings.portConfiguration.config.reopenSerialPortIfUnexpectedlyClosed) {
         this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
       } else {
         this.setPortState(PortState.CLOSED);
@@ -502,6 +520,7 @@ export class App {
    * - Pressing "f" while on the Port Configuration settings.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
+    console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
@@ -521,7 +540,7 @@ export class App {
       let text = await navigator.clipboard.readText();
 
       // Convert CRLF to LF if setting is enabled
-      if (this.settings.dataProcessingSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      if (this.settings.generalSettings.config.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
         text = text.replace(/\r\n/g, '\n');
       }
 
@@ -629,7 +648,7 @@ export class App {
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.dataProcessingSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.generalSettings.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
@@ -690,10 +709,33 @@ export class App {
     if (event.key === 'Control' || event.key === 'Shift' || event.key === 'Alt') {
       // Don't send anything if a control/shift/alt key was pressed by itself
       return;
-    } else if (event.ctrlKey) {
+    }
+    //===========================================================
+    // Ctrl-Shift-B: Send break signal
+    //===========================================================
+    else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
+      // TODO: Get types for setSignals() and remove ts-ignore
+      try {
+        // @ts-ignore
+        await this.port.setSignals({ break: true });
+        // 200ms seems like a standard break time
+        await new Promise(resolve => setTimeout(resolve, 200));
+        // @ts-ignore
+        await this.port.setSignals({ break: false });
+        // Emit message to user
+        this.snackbar.sendToSnackbar('Break signal sent.', 'success');
+      }
+      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
+      // If the operating system fails to change the state of any of these signals for any reason, queue a
+      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
+      catch (error) {
+        this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
+      }
+    }
+    else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
-      if (this.settings.dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Ctrl-A through Ctrl-Z is has been pressed
         // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
         // uppercase if lowercase and then subtracting 64
@@ -703,7 +745,7 @@ export class App {
         return;
       }
     } else if (event.altKey) {
-      if (this.settings.dataProcessingSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
         bytesToWrite.push(0x1B);
@@ -729,20 +771,20 @@ export class App {
     //===========================================================
     else if (event.key === 'Backspace') {
       // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
-      if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.dataProcessingSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+      } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
     } else if (event.key === 'Delete') {
       // Delete also has the option of sending [ESC][3~
-      if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
+      if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
         bytesToWrite.push(0x7F);
-      } else if (this.settings.dataProcessingSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
         bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');
@@ -784,7 +826,7 @@ export class App {
     this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
-    if (this.settings.dataProcessingSettings.localTxEcho) {
+    if (this.settings.rxSettings.config.localTxEcho) {
       this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 

@@ -33,6 +33,7 @@ import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
+import { DataType } from 'src/model/Settings/RxSettings/RxSettings';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -133,7 +134,7 @@ const AppView = observer((props: Props) => {
   // ==========================================================================
   let mainPaneComponent;
   if (app.shownMainPane === MainPanes.SETTINGS) {
-    mainPaneComponent = <SettingsDialog appStore={app} />;
+    mainPaneComponent = <SettingsDialog app={app} />;
   } else if (app.shownMainPane === MainPanes.TERMINAL) {
     mainPaneComponent = <TerminalView app={app} />;
   } else if (app.shownMainPane === MainPanes.GRAPHING) {
@@ -276,6 +277,11 @@ const AppView = observer((props: Props) => {
             }}
             style={{ height: '20px' }}
           >
+            {/* DATA TYPE */}
+            <div style={{ padding: '0 10px' }}>
+              { app.settings.rxSettings.getDataTypeNameForToolbarDisplay() }
+            </div>
+
             {/* LOGGING ON/OFF */}
             <div style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}>
               { app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}

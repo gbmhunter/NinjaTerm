@@ -47,6 +47,7 @@ export default observer(
           }
         }}
         helperText={applyableTextField.errorMsg}
+        inputProps={props.inputProps}
       />
     );
   })

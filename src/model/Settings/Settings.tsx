@@ -4,33 +4,43 @@ import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
 import { App } from '../App';
-import DataProcessingSettings from './DataProcessingSettings/DataProcessingSettings';
+import TxSettings from './TxSettings/TxSettings';
+import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
 import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
+import GeneralSettings from './GeneralSettings/GeneralSettings';
+import AppStorage from '../Storage/AppStorage';
+import FakePortsController from 'src/model/FakePorts/FakePortsController';
 
 export type StopBits = 1 | 1.5 | 2;
 
 export enum SettingsCategories {
   PORT_CONFIGURATION,
-  DATA_PROCESSING,
+  TX_SETTINGS,
+  RX_SETTINGS,
   DISPLAY,
+  GENERAL,
 }
 
 export class Settings {
-  app: App;
+  appStorage: AppStorage;
+
+  fakePortsController: FakePortsController;
 
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
   portConfiguration: PortConfiguration;
 
-  dataProcessingSettings: DataProcessingSettings;
+  txSettings: TxSettings;
+
+  rxSettings: RxSettings;
 
   displaySettings: DisplaySettings;
 
-  selectedPortPath = '';
+  generalSettings: GeneralSettings;
 
-  // availablePortInfos: PortInfo.PortInfo[] = [];
+  selectedPortPath = '';
 
   // Commonly-available baud rates as mentioned at https://serialport.io/docs/api-stream/
   baudRates = [
@@ -51,16 +61,29 @@ export class Settings {
 
   selectedStopBits: StopBits = 1;
 
-  constructor(app: App) {
-    this.app = app;
-    this.portConfiguration = new PortConfiguration(app);
-    this.dataProcessingSettings = new DataProcessingSettings(app.appStorage);
-    this.displaySettings = new DisplaySettings(app.appStorage);
+  /**
+   * Constructor for the Settings class.
+   *
+   * @param appStorage Needed to load/save settings into local storage.
+   * @param fakePortController Needed to show the hidden fake port dialog.
+   */
+  constructor(appStorage: AppStorage, fakePortController: FakePortsController) {
+    this.appStorage = appStorage;
+    this.fakePortsController = fakePortController;
+
+    this.portConfiguration = new PortConfiguration(appStorage);
+    this.txSettings = new TxSettings(appStorage);
+    this.rxSettings = new RxSettings(appStorage);
+    this.displaySettings = new DisplaySettings(appStorage);
+    this.generalSettings = new GeneralSettings(appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
-  /** Computed value which represents the serial port config in short hand,
+  /**
+   * Computed value which represents the serial port config in short hand,
    * e.g. "115200 8n1"
+   *
+   * @returns The short hand serial port config for displaying.
    */
   get shortSerialConfigName() {
     let output = '';
@@ -99,7 +122,7 @@ export class Settings {
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     // console.log(event);
     if (event.key === 'f') {
-      this.app.fakePortController.setIsDialogOpen(true);
+      this.fakePortsController.setIsDialogOpen(true);
     }
   }
 }

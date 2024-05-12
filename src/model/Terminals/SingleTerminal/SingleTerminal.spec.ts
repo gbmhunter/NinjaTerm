@@ -2,21 +2,21 @@ import { expect, test, describe, beforeEach } from 'vitest';
 
 import { stringToUint8Array } from 'src/model/Util/Util';
 import SingleTerminal from './SingleTerminal';
-import DataProcessingSettings, {
-  NewLineCursorBehaviors,
+import RxSettings, {
+  NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
-} from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
+} from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import AppStorage from 'src/model/Storage/AppStorage';
 
 describe('single terminal tests', () => {
   let appStorage: AppStorage;
-  let dataProcessingSettings: DataProcessingSettings;
+  let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
     appStorage = new AppStorage();
-    dataProcessingSettings = new DataProcessingSettings(appStorage);
+    dataProcessingSettings = new RxSettings(appStorage);
     displaySettings = new DisplaySettings(appStorage);
     singleTerminal = new SingleTerminal(
       'test-terminal',
@@ -114,7 +114,7 @@ describe('single terminal tests', () => {
     // Disable swallowing of new line
     dataProcessingSettings.setSwallowNewLine(false);
     dataProcessingSettings.setNewLineCursorBehavior(
-      NewLineCursorBehaviors.DO_NOTHING
+      NewLineCursorBehavior.DO_NOTHING
     );
     dataProcessingSettings.setNonVisibleCharDisplayBehavior(
       NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS

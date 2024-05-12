@@ -20,6 +20,7 @@ import SmartScrollGif from './smart-scroll.gif';
 import ControlCharAndHexCodeGlyphsGif from './control-char-and-hex-code-glyphs.gif';
 import LoggingGif from './logging.gif';
 import FilteringGif from './filtering.gif';
+import NumberTypesGif from './number-types.gif';
 
 import './HomepageView.css';
 
@@ -127,7 +128,7 @@ export default observer((props: Props) => {
 
           <Grid xs={12}>
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
-              NinjaTerm is an open source and free cross-platform application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller).
+              NinjaTerm is an open source and free web-based application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller).
             </Typography>
           </Grid>
 
@@ -263,6 +264,27 @@ export default observer((props: Props) => {
               </div>
             </Grid>
 
+            {/* Number Types */}
+            {/* ========================================================================== */}
+            <Grid xs={12}>
+              <div
+                style={{
+                  backgroundColor: '#202020',
+                  border: '1px solid #dc3545',
+                  borderRadius: '10px',
+                  padding: '20px',
+                }}
+              >
+                <Typography variant="h6" style={{ marginBottom: '20px' }}>Number Types</Typography>
+
+                <Typography style={{ marginBottom: '20px' }}>Don't just treat your data as ASCII! NinjaTerm also supports parsing received data as various numbers, including hex (variable byte length), uint8, int8, uint16, float32, e.t.c. View your data in the way you want it.</Typography>
+
+                <div style={{ display: 'flex' }}>
+                  <img src={NumberTypesGif} alt="Demonstration of number parsing in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                </div>
+              </div>
+            </Grid>
+
           </Grid>
 
           <Typography variant="h2">And more!</Typography>
@@ -270,13 +292,13 @@ export default observer((props: Props) => {
             <li>Ability to switch between a combined TX/RX terminal and separate terminals.</li>
             <li>Options for controlling carriage return (CR) and line feed (LF) behavior.</li>
             <li>Smart copy/paste between the terminals and the clipboard with Ctrl-Shift-C and Ctrl-Shift-V. When copying to the clipboard, rows in the terminal created due to wrapping do not insert new lines into the clipboard data.</li>
+            <li>Send 200ms "break signals" with Ctrl-Shift-B.</li>
           </ul>
 
           <Typography variant="h2">Coming Soon...</Typography>
           <ul>
             <li>Timestamping</li>
             <li>Mode to send data only on enter</li>
-            <li>Render data in different ways (e.g. as hex bytes or uint8s).</li>
           </ul>
 
           <Typography variant="h2">Bugs and Features</Typography>

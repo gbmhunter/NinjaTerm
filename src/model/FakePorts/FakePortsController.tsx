@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 
-import { App, PortType } from 'src/model/App';
+import { App, MainPanes, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { NewLineCursorBehaviors, NonVisibleCharDisplayBehaviors } from 'src/model/Settings/DataProcessingSettings/DataProcessingSettings';
+import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 
 class FakePort {
@@ -364,9 +364,9 @@ export default class FakePortsController {
           app.settings.displaySettings.terminalWidthChars.setDispValue('40');
           app.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
-          app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
+          app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
@@ -400,9 +400,9 @@ export default class FakePortsController {
           app.settings.displaySettings.terminalWidthChars.setDispValue('40');
           app.settings.displaySettings.terminalWidthChars.apply();
 
-          app.settings.dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
-          app.settings.dataProcessingSettings.setNewLineCursorBehavior(NewLineCursorBehaviors.DO_NOTHING);
-          app.settings.dataProcessingSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
+          app.settings.rxSettings.setNewLineCursorBehavior(NewLineCursorBehavior.DO_NOTHING);
+          app.settings.rxSettings.setNonVisibleCharDisplayBehavior(NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS);
 
           // Create all the bytes and send them immediately
           const data = new Uint8Array(256);
@@ -430,7 +430,7 @@ export default class FakePortsController {
         'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
-          app.settings.dataProcessingSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.config.ansiEscapeCodeParsingEnabled = false;
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode('x=2,y=10\n');
@@ -509,6 +509,209 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
+    // dataType: HEX, bytes: 0x00-0xFF, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: hex, bytes 0x00-0xFF, 5chars/s',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.HEX);
+
+          let testCharIdx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            testCharIdx += 1;
+            if (testCharIdx === 256) {
+              testCharIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: uint8, bytes: 0x00-0xFF, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: uint8, bytes 0x00-0xFF, 5chars/s',
+        'Sends all bytes from 0x00 to 0xFF, one by one, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.UINT8);
+
+          let testCharIdx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            testCharIdx += 1;
+            if (testCharIdx === 256) {
+              testCharIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: uint16, numbers: 250-260, 5chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: uint16, numbers: 250-260, 5chars/s',
+        'Sends uint16 numbers 250 thru 260, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.UINT16);
+
+          let numberToSend = 250;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([ numberToSend & 0xFF, (numberToSend >> 8) & 0xFF]));
+            numberToSend += 1;
+            if (numberToSend === 261) {
+              numberToSend = 250;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: int16, numbers: -10 to 10, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: int16, numbers: 250-260, endianness: little, 1chars/s',
+        'Sends int16 numbers -10 thru 10, in little endian format, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.INT16);
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          let numberToSend = -10;
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(2);
+            const view = new DataView(array);
+            view.setInt16(0, numberToSend, true); // Little endian
+            app.parseRxData(Uint8Array.from([ view.getUint8(0), view.getUint8(1) ]));
+            numberToSend += 1;
+            if (numberToSend === 11) {
+              numberToSend = -10;
+            }
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: float32, numbers: -1 to 1 in 0.25 steps, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: float32, numbers: -1 to 1 in 0.25 steps, endianness: little, 1chars/s',
+        'Sends 32-bit floating point numbers -1 to 1 in 0.25 steps, in little endian format, at a rate of 5 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          let numberToSend = -1.0;
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(4);
+            const view = new DataView(array);
+            view.setFloat32(0, numberToSend, true); // Little endian
+            const uint8Array = new Uint8Array(array);
+            app.parseRxData(uint8Array);
+            numberToSend += 0.25;
+            if (numberToSend > 1.05) {
+              numberToSend = -1.0;
+            }
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // dataType: float32, numbers: random in the range -100 to 100, endianness: little, 1chars/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'dataType: float32, numbers: random in the range -100 to 100, endianness: little, 1chars/s',
+        'Sends random 32-bit floating point numbers in the range -100 to 100, in little endian format, at a rate of 1 characters per second.',
+        () => {
+          app.settings.rxSettings.setDataType(DataType.NUMBER);
+          app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
+          app.settings.rxSettings.setInsertNewLineOnValue(false);
+          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.setPadValues(true);
+          app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
+
+          const intervalId = setInterval(() => {
+            const array = new ArrayBuffer(4);
+            const view = new DataView(array);
+            // Generate random float number between -100 and 100
+            const numberToSend = Math.random() * 200 - 100;
+            view.setFloat32(0, numberToSend, true); // Little endian
+            const uint8Array = new Uint8Array(array);
+            app.parseRxData(uint8Array);
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timer | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     makeAutoObservable(this);
   }
 
@@ -526,6 +729,11 @@ export default class FakePortsController {
     this.fakePortOpen = true;
     this.app.lastSelectedPortType = PortType.FAKE;
     this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
+
+    // Go to terminal view
+    if (this.app.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
+      this.app.setShownMainPane(MainPanes.TERMINAL);
+    }
   }
 
   closePort() {

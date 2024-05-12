@@ -251,9 +251,9 @@ export default observer((props: Props) => {
         control={
           <Switch
             name="localTxEcho"
-            checked={app.settings.dataProcessingSettings.localTxEcho}
+            checked={app.settings.rxSettings.config.localTxEcho}
             onChange={(e) => {
-              app.settings.dataProcessingSettings.setLocalTxEcho(e.target.checked);
+              app.settings.rxSettings.setLocalTxEcho(e.target.checked);
             }}
           />
         }

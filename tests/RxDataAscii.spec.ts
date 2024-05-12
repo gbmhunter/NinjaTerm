@@ -286,12 +286,7 @@ test.describe('RX data', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
-    await page.getByTestId('settings-button').click();
-    // WARNING: Escape key press is needed here otherwise the tooltip that pops
-    // up when the settings button is clicked above can block the click on the
-    // Data Processing tab!
-    await page.keyboard.press('Escape');
-    await page.getByText('Data Processing').click();
+    await appTestHarness.goToRxSettings();
     await page.getByTestId('new-line-dont-move-cursor').click();
     await page.getByTestId('show-terminal-button').click();
 
@@ -313,11 +308,7 @@ test.describe('RX data', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
-    await page.getByTestId('settings-button').click();
-    // WARNING: Escape key press is needed here otherwise the tooltip that pops
-    // up when the settings button is clicked above can block subsequent clicks!
-    await page.keyboard.press('Escape');
-    await page.getByText('Display').click();
+    await appTestHarness.goToDisplaySettings();
 
     await page.locator("[name='terminalWidthChars']").fill("10")
     // Press enter to "apply" change

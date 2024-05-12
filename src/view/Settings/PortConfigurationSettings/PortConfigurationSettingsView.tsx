@@ -14,9 +14,9 @@ import {
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
-import { App, PortType } from '../../../model/App';
-import { PortState } from '../../../model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { StopBits } from '../../../model/Settings/Settings';
+import { App, PortType } from 'src/model/App';
+import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { StopBits } from 'src/model/Settings/Settings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortConfigurationSettingsView.module.css';
 
@@ -129,7 +129,7 @@ function PortConfigurationView(props: Props) {
             <Checkbox
               checked={
                 app.settings.portConfiguration
-                  .connectToSerialPortAsSoonAsItIsSelected
+                  .config.connectToSerialPortAsSoonAsItIsSelected
               }
               onChange={(e) => {
                 app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(
@@ -151,7 +151,7 @@ function PortConfigurationView(props: Props) {
             <Checkbox
               checked={
                 app.settings.portConfiguration
-                  .resumeConnectionToLastSerialPortOnStartup
+                  .config.resumeConnectionToLastSerialPortOnStartup
               }
               onChange={(e) => {
                 app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(
@@ -172,7 +172,7 @@ function PortConfigurationView(props: Props) {
             <Checkbox
               checked={
                 app.settings.portConfiguration
-                  .reopenSerialPortIfUnexpectedlyClosed
+                  .config.reopenSerialPortIfUnexpectedlyClosed
               }
               onChange={(e) => {
                 app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(

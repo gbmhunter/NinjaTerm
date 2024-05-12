@@ -1,16 +1,9 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable } from "mobx";
 
-import { App } from 'src/model/App';
-import AppStorage from 'src/model/Storage/AppStorage';
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
+import AppStorage from "src/model/Storage/AppStorage";
+import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
 
-export enum PortState {
-  CLOSED,
-  CLOSED_BUT_WILL_REOPEN,
-  OPENED
-}
-
-const CONFIG_KEY = ['settings', 'port-configuration-settings'];
+const CONFIG_KEY = ['settings', 'general-settings'];
 
 class Config {
   /**
@@ -20,19 +13,15 @@ class Config {
    */
   version = 1;
 
-  connectToSerialPortAsSoonAsItIsSelected = true;
-
-  resumeConnectionToLastSerialPortOnStartup = true;
-
-  reopenSerialPortIfUnexpectedlyClosed = true;
+  whenPastingOnWindowsReplaceCRLFWithLF = true;
+  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 }
 
-export default class PortConfiguration {
-
+export default class RxSettings {
   appStorage: AppStorage;
 
   config = new Config();
@@ -40,23 +29,18 @@ export default class PortConfiguration {
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
     this._loadConfig();
-    makeAutoObservable(this);
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
-  setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {
-    this.config.connectToSerialPortAsSoonAsItIsSelected = value;
+  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
+    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
     this._saveConfig();
-  }
+  };
 
-  setResumeConnectionToLastSerialPortOnStartup = (value: boolean) => {
-    this.config.resumeConnectionToLastSerialPortOnStartup = value;
+  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
+    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
     this._saveConfig();
-  }
-
-  setReopenSerialPortIfUnexpectedlyClosed = (value: boolean) => {
-    this.config.reopenSerialPortIfUnexpectedlyClosed = value;
-    this._saveConfig();
-  }
+  };
 
   _loadConfig = () => {
     let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
@@ -86,5 +70,3 @@ export default class PortConfiguration {
     this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
   };
 }
-
-
