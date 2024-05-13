@@ -3,12 +3,17 @@ import { makeAutoObservable } from 'mobx';
 import { App } from 'src/model/App';
 import AppStorage from 'src/model/Storage/AppStorage';
 import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
+import { z } from 'zod';
 
 export enum PortState {
   CLOSED,
   CLOSED_BUT_WILL_REOPEN,
   OPENED
 }
+
+export const DEFAULT_BAUD_RATES = [
+  110, 300, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200,
+];
 
 const CONFIG_KEY = ['settings', 'port-configuration-settings'];
 
@@ -19,6 +24,8 @@ class Config {
    * updating to this new version.
    */
   version = 1;
+
+  baudRate = 115200;
 
   connectToSerialPortAsSoonAsItIsSelected = true;
 
@@ -37,10 +44,35 @@ export default class PortConfiguration {
 
   config = new Config();
 
+  baudRateInputValue = this.config.baudRate.toString();
+
+  baudRateValidation = z.coerce.number().int().min(1).max(115200);
+  baudRateErrorMsg = '';
+
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
     this._loadConfig();
     makeAutoObservable(this);
+  }
+
+  setBaudRate = (baudRate: number) => {
+    this.config.baudRate = baudRate;
+    this._saveConfig();
+  }
+
+  setBaudRateInputValue = (value: string) => {
+    this.baudRateInputValue = value;
+
+    const parsed = this.baudRateValidation.safeParse(value);
+    if (parsed.success) {
+      this.baudRateErrorMsg = '';
+      console.log("Setting baud rate to: ", parsed.data);
+      this.setBaudRate(parsed.data);
+    } else {
+      // We want to keep this simple, just show the first
+      // error message
+      this.baudRateErrorMsg = parsed.error.errors[0].message;
+    }
   }
 
   setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {

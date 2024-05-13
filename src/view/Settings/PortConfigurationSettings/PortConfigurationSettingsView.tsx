@@ -10,12 +10,14 @@ import {
   Tooltip,
   Checkbox,
   FormControlLabel,
+  Autocomplete,
+  TextField,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
 import { App, PortType } from 'src/model/App';
-import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState, DEFAULT_BAUD_RATES } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { StopBits } from 'src/model/Settings/Settings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortConfigurationSettingsView.module.css';
@@ -57,6 +59,24 @@ function PortConfigurationView(props: Props) {
             })}
           </Select>
         </FormControl>
+        <Autocomplete
+        id="free-solo-demo"
+        freeSolo
+        options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
+        renderInput={(params) => <TextField {...params} label="Baud rate"
+                      error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
+                      helperText={app.settings.portConfiguration.baudRateErrorMsg}
+        />}
+        sx={{ m: 1, width: 160 }} size="small"
+        onChange={(event: any, newValue: string | null) => {
+          console.log('onChange() called. newValue: ', newValue);
+        }}
+        inputValue={app.settings.portConfiguration.baudRateInputValue}
+        onInputChange={(event, newInputValue) => {
+          console.log('newInputValue: ', newInputValue);
+          app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
+        }}
+      />
         {/*  ====================== NUM. DATA BITS  ============================= */}
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Num. Data Bits</InputLabel>
