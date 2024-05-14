@@ -295,14 +295,13 @@ export class App {
       });
       if (this.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
-        runInAction(() => {
-          this.portState = PortState.OPENED;
-        });
-        // Goto the terminal pane
-        this.setShownMainPane(MainPanes.TERMINAL);
+        // Go to the terminal pane, only if opening was successful
+        if (this.portState === PortState.OPENED) {
+          this.setShownMainPane(MainPanes.TERMINAL);
+        }
       }
     } else {
-      console.error('Browser not supported, it does not provide the navigator.serial API.');
+      this.snackbar.sendToSnackbar('Browser not supported, it does not provide the navigator.serial API.', 'error');
     }
   }
 
@@ -342,12 +341,14 @@ export class App {
           console.log(msg);
         }
 
+        console.log('Disabling modal');
         this.setShowCircularProgressModal(false);
 
         // An error occurred whilst calling port.open(), so DO NOT continue, port
         // cannot be considered open
         return;
       }
+      console.log('Open success!');
       if (printSuccessMsg) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }

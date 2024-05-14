@@ -62,10 +62,6 @@ export class Settings {
     this.activeSettingsCategory = settingsCategory;
   }
 
-  // setSelectedPortPath(selectedPortPath: string) {
-  //   this.selectedPortPath = selectedPortPath;
-  // }
-
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     // console.log(event);
     if (event.key === 'f') {

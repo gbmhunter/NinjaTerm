@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added the ability to specify a custom baud rate.
 - Added a circular progress modal which is shown when the port is opening.
 
+### Fixed
+
+- Fixed bug which meant app thought port opened successfully even when it didn't.
+
 ## [4.14.0] - 2024-05-12
 
 ### Added
