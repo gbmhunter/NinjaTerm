@@ -126,6 +126,8 @@ export class App {
 
   SelectionController = SelectionController;
 
+  showCircularProgressModal = false;
+
   constructor(testing = false) {
     this.testing = testing;
     if (this.testing) {
@@ -305,18 +307,21 @@ export class App {
   }
 
   /**
-   * Opens the selected serial port.
+   * Opens the selected serial port using settings from the Port Configuration view.
    *
    * @param printSuccessMsg If true, a success message will be printed to the snackbar.
    */
   async openPort(printSuccessMsg = true) {
     if (this.lastSelectedPortType === PortType.REAL) {
+      // Show the circular progress modal when trying to open the port. If the port opening is going to fail, sometimes it takes
+      // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
+      this.setShowCircularProgressModal(true);
       try {
         await this.port?.open({
-          baudRate: this.settings.selectedBaudRate,
-          dataBits: this.settings.selectedNumDataBits,
-          parity: this.settings.selectedParity as ParityType,
-          stopBits: this.settings.selectedStopBits,
+          baudRate: this.settings.portConfiguration.config.baudRate, // This might be custom
+          dataBits: this.settings.portConfiguration.config.numDataBits,
+          parity: this.settings.portConfiguration.config.parity as ParityType,
+          stopBits: this.settings.portConfiguration.config.stopBits,
           bufferSize: 10000,
         }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
       } catch (error) {
@@ -337,6 +342,8 @@ export class App {
           console.log(msg);
         }
 
+        this.setShowCircularProgressModal(false);
+
         // An error occurred whilst calling port.open(), so DO NOT continue, port
         // cannot be considered open
         return;
@@ -344,6 +351,8 @@ export class App {
       if (printSuccessMsg) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
+
+      this.setShowCircularProgressModal(false);
 
       runInAction(() => {
         this.portState = PortState.OPENED;
@@ -898,5 +907,9 @@ export class App {
   swOnRegisterError(error: any) {
     console.log('onRegisterError() called.');
     console.error(error.message);
+  }
+
+  setShowCircularProgressModal(show: boolean) {
+    this.showCircularProgressModal = show;
   }
 }

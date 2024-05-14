@@ -12,13 +12,14 @@ import {
   FormControlLabel,
   Autocomplete,
   TextField,
+  Backdrop,
+  CircularProgress,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 
 import { App, PortType } from 'src/model/App';
-import { PortState, DEFAULT_BAUD_RATES } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { StopBits } from 'src/model/Settings/Settings';
+import { PortState, DEFAULT_BAUD_RATES, NUM_DATA_BITS_OPTIONS, Parity, STOP_BIT_OPTIONS, StopBits } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortConfigurationSettingsView.module.css';
 
@@ -37,78 +38,70 @@ function PortConfigurationView(props: Props) {
       <div style={{ height: '20px' }}></div>
 
       <Box display="flex" flexDirection="row">
-        {/*  ====================== BAUD RATE  ============================= */}
-        <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-          <InputLabel id="demo-select-small-label">Baud Rate</InputLabel>
-          <Select
-            labelId="demo-select-small-label"
-            id="demo-select-small"
-            value={app.settings.selectedBaudRate}
-            label="Baud Rate"
-            disabled={app.portState !== PortState.CLOSED}
-            onChange={(e) => {
-              app.settings.setSelectedBaudRate(e.target.value as number);
-            }}
-          >
-            {app.settings.baudRates.map((baudRate) => {
-              return (
-                <MenuItem key={baudRate} value={baudRate}>
-                  {baudRate}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
+        {/* ============================================================== */}
+        {/* BAUD RATE */}
+        {/* ============================================================== */}
+        <Tooltip title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected.">
         <Autocomplete
-        id="free-solo-demo"
-        freeSolo
-        options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
-        renderInput={(params) => <TextField {...params} label="Baud rate"
-                      error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
-                      helperText={app.settings.portConfiguration.baudRateErrorMsg}
-        />}
-        sx={{ m: 1, width: 160 }} size="small"
-        onChange={(event: any, newValue: string | null) => {
-          console.log('onChange() called. newValue: ', newValue);
-        }}
-        inputValue={app.settings.portConfiguration.baudRateInputValue}
-        onInputChange={(event, newInputValue) => {
-          console.log('newInputValue: ', newInputValue);
-          app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
-        }}
-      />
-        {/*  ====================== NUM. DATA BITS  ============================= */}
+          freeSolo
+          options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
+          renderInput={(
+            params) =>
+              <TextField
+                  {...params}
+                  label="Baud rate"
+                  error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
+                  helperText={app.settings.portConfiguration.baudRateErrorMsg}
+                  onKeyDown={(e) => { e.stopPropagation(); }} // Prevents the global keydown event from being triggered
+          />}
+          disabled={app.portState !== PortState.CLOSED}
+          sx={{ m: 1, width: 160 }} size="small"
+          onChange={(event: any, newValue: string | null) => {
+            console.log('onChange() called. newValue: ', newValue);
+          }}
+          inputValue={app.settings.portConfiguration.baudRateInputValue}
+          onInputChange={(event, newInputValue) => {
+            console.log('newInputValue: ', newInputValue);
+            app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
+          }}
+        />
+        </Tooltip>
+        {/* ============================================================== */}
+        {/* NUM. DATA BITS */}
+        {/* ============================================================== */}
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Num. Data Bits</InputLabel>
           <Select
-            value={app.settings.selectedNumDataBits}
+            value={app.settings.portConfiguration.config.numDataBits}
             label="Num. Data Bits"
             disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              app.settings.setSelectedNumDataBits(e.target.value as number);
+              app.settings.portConfiguration.setNumDataBits(e.target.value as number);
             }}
           >
-            {app.settings.numDataBitsOptions.map((numDataBits) => {
+            {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
               return (
                 <MenuItem key={numDataBits} value={numDataBits}>
-                  {numDataBits}
+                  {numDataBits.toString()}
                 </MenuItem>
               );
             })}
           </Select>
         </FormControl>
-        {/*  ====================== PARITY  ============================= */}
+        {/* ============================================================== */}
+        {/* PARITY */}
+        {/* ============================================================== */}
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Parity</InputLabel>
           <Select
-            value={app.settings.selectedParity}
+            value={app.settings.portConfiguration.config.parity}
             label="Parity"
             disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              app.settings.setSelectedParity(e.target.value);
+              app.settings.portConfiguration.setParity(e.target.value as Parity);
             }}
           >
-            {app.settings.parityOptions.map((parity) => {
+            {Object.values(Parity).map((parity) => {
               return (
                 <MenuItem key={parity} value={parity}>
                   {parity}
@@ -117,21 +110,23 @@ function PortConfigurationView(props: Props) {
             })}
           </Select>
         </FormControl>
-        {/*  ========================== STOP BITS  ============================= */}
+        {/* ============================================================== */}
+        {/* STOP BITS */}
+        {/* ============================================================== */}
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Stop Bits</InputLabel>
           <Select
-            value={app.settings.selectedStopBits}
+            value={app.settings.portConfiguration.config.stopBits}
             label="Stop Bits"
             disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
-              app.settings.setSelectedStopBits(e.target.value as StopBits);
+              app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
             }}
           >
-            {app.settings.stopBitOptions.map((stopBits) => {
+            {STOP_BIT_OPTIONS.map((stopBits) => {
               return (
                 <MenuItem key={stopBits} value={stopBits}>
-                  {stopBits}
+                  {stopBits.toString()}
                 </MenuItem>
               );
             })}
@@ -141,6 +136,7 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: '20px' }}></div>
 
+      {/* =============================================================== */}
       {/* OPEN AND GO TO TERMINAL CHECKBOX */}
       {/* =============================================================== */}
       <Tooltip title="Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!">
@@ -162,7 +158,7 @@ function PortConfigurationView(props: Props) {
           label="Open serial port and go to the terminal as soon as it is selected"
         />
       </Tooltip>
-
+      {/* =============================================================== */}
       {/* RECONNECT ON STARTUP CHECKBOX */}
       {/* =============================================================== */}
       <Tooltip title="On startup, if NinjaTerm can find last used serial port it will reselect it. If it was previously in the CONNECTED state, the port will also be re-opened.">
@@ -183,7 +179,7 @@ function PortConfigurationView(props: Props) {
           label="Resume connection to last serial port on app startup"
         />
       </Tooltip>
-
+      {/* =============================================================== */}
       {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
       {/* =============================================================== */}
       <Tooltip title="If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again.">
@@ -208,6 +204,7 @@ function PortConfigurationView(props: Props) {
       <div style={{ height: '20px' }}></div>
 
       <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', gap: '20px' }}>
+        {/* =============================================================== */}
         {/* SELECT PORT BUTTON */}
         {/* =============================================================== */}
         <Button
@@ -222,7 +219,7 @@ function PortConfigurationView(props: Props) {
         >
           Select Port
         </Button>
-
+        {/* =============================================================== */}
         {/* OPEN/CLOSE BUTTON */}
         {/* =============================================================== */}
         <Button
@@ -251,7 +248,8 @@ function PortConfigurationView(props: Props) {
               throw Error('Invalid port state.');
             }
           }}
-          disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE}
+          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
+          disabled={(app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''}
           sx={{ width: '150px' }}
           data-testid="open-close-button"
         >
@@ -260,7 +258,7 @@ function PortConfigurationView(props: Props) {
       </div>
 
       <div style={{ height: '20px' }}></div>
-
+      {/* =============================================================== */}
       {/* INFO ON SELECTED SERIAL PORT */}
       {/* =============================================================== */}
       <Typography
@@ -285,7 +283,7 @@ function PortConfigurationView(props: Props) {
       </Typography>
 
       <div style={{ height: '20px' }}></div>
-
+      {/* =============================================================== */}
       {/* PORT CONNECTED/DISCONNECTED STATUS */}
       {/* =============================================================== */}
       <Typography>Status: {PortState[app.portState]}</Typography>

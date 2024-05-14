@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added more recommended baud rate options.
+- Added the ability to specify a custom baud rate.
+- Added a circular progress modal which is shown when the port is opening.
+
 ## [4.14.0] - 2024-05-12
 
 ### Added
