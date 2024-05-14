@@ -17,7 +17,7 @@ import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from './Settings/TxSettings/TxSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
 
@@ -535,12 +535,14 @@ export class App {
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
     }
+    //============================================
     // COPY KEYBOARD SHORTCUT
     //============================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
       // Ctrl-Shift-C is pressed
       this.handleCopyToClipboard(event);
     }
+    //============================================
     // PASTE KEYBOARD SHORTCUT
     //============================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'V') {
@@ -568,6 +570,7 @@ export class App {
       const dataAsUint8Array = new TextEncoder().encode(text);
       await this.writeBytesToSerialPort(dataAsUint8Array);
     }
+    //=============================================
     // TERMINAL DATA
     //=============================================
     else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
@@ -745,7 +748,7 @@ export class App {
     else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
-      if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.config.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Ctrl-A through Ctrl-Z is has been pressed
         // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
         // uppercase if lowercase and then subtracting 64
@@ -755,7 +758,7 @@ export class App {
         return;
       }
     } else if (event.altKey) {
-      if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.config.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
         bytesToWrite.push(0x1B);
@@ -765,9 +768,16 @@ export class App {
         return;
       }
     } else if (event.key === 'Enter') {
-      // TODO: Add support for sending different things on enter
-      bytesToWrite.push(13);
-      bytesToWrite.push(10);
+      if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+        bytesToWrite.push(0x0A);
+      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+        bytesToWrite.push(0x0D);
+      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+        bytesToWrite.push(0x0D);
+        bytesToWrite.push(0x0A);
+      } else {
+        throw Error('Unsupported enter key press behavior!');
+      }
     } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
       // Pressed key is alphanumeric
       bytesToWrite.push(event.key.charCodeAt(0));
@@ -781,20 +791,20 @@ export class App {
     //===========================================================
     else if (event.key === 'Backspace') {
       // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
-      if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+      } else if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
     } else if (event.key === 'Delete') {
       // Delete also has the option of sending [ESC][3~
-      if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_BACKSPACE) {
+      if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_DELETE) {
+      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
-      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehaviors.SEND_VT_SEQUENCE) {
+      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
         bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');

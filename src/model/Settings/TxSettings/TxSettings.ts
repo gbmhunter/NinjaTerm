@@ -1,38 +1,34 @@
 import { makeAutoObservable } from 'mobx';
-import { z } from 'zod';
 
-import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 import AppStorage from 'src/model/Storage/AppStorage';
+import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
+
+export enum EnterKeyPressBehavior {
+  SEND_LF,
+  SEND_CR,
+  SEND_CRLF,
+}
 
 export enum BackspaceKeyPressBehavior {
   SEND_BACKSPACE,
   SEND_DELETE,
 }
 
-export enum DeleteKeyPressBehaviors {
+export enum DeleteKeyPressBehavior {
   SEND_BACKSPACE,
   SEND_DELETE,
   SEND_VT_SEQUENCE,
 }
 
-class DataV1 {
-  // METADATA
-  // Create new version of this class if you need to update the structure
-  version = 1;
+class Config {
+  /**
+   * Increment this version number if you need to update this data in this class.
+   * This will cause the app to ignore whatever is in local storage and use the defaults,
+   * updating to this new version.
+   */
+  version = 2;
 
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
-  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-  sendEscCharWhenAltKeyPressed = true;
-}
-
-export default class DataProcessingSettings {
-
-  appStorage: AppStorage;
-
-  //=================================================================
-  // TX SETTINGS
-  //=================================================================
+  enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
 
   /**
    * What to do when the user presses the backspace key.
@@ -42,7 +38,7 @@ export default class DataProcessingSettings {
   /**
    * What to do when the user presses the delete key.
    */
-  deleteKeyPressBehavior = DeleteKeyPressBehaviors.SEND_VT_SEQUENCE;
+  deleteKeyPressBehavior = DeleteKeyPressBehavior.SEND_VT_SEQUENCE;
 
   /**
    * If true, hex bytes 0x01-0x1A will be sent when the user
@@ -58,64 +54,92 @@ export default class DataProcessingSettings {
    */
   sendEscCharWhenAltKeyPressed = true;
 
+  constructor() {
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
+}
+
+const CONFIG_KEY = ['settings', 'tx-settings'];
+
+export default class DataProcessingSettings {
+
+  appStorage: AppStorage;
+
+  config = new Config();
+
+  //=================================================================
+  // TX SETTINGS
+  //=================================================================
+
+
+  // backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+
+
+  // deleteKeyPressBehavior = DeleteKeyPressBehavior.SEND_VT_SEQUENCE;
+
+
+  // send0x01Thru0x1AWhenCtrlAThruZPressed = true;
+
+
+  // sendEscCharWhenAltKeyPressed = true;
+
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
+    this._loadSettings();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
-    this.loadSettings();
   }
 
-  loadSettings = () => {
-    let config = this.appStorage.getConfig(['settings', 'tx-settings']);
-    console.log('config: ', config);
+  _loadSettings = () => {
+    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
+    //===============================================
     // UPGRADE PATH
     //===============================================
-
-    if (config === null) {
+    if (deserializedConfig === null) {
       // No data exists, create
-      config = new DataV1();
-      this.appStorage.saveConfig(['settings', 'data-processing'], config);
-    } else if (config.version === 1) {
-      console.log('Up-to-date config found');
-
-      let configAsDataV1 = config as DataV1;
-      this.backspaceKeyPressBehavior = configAsDataV1.backspaceKeyPressBehavior;
-      this.deleteKeyPressBehavior = configAsDataV1.deleteKeyPressBehavior;
-      this.send0x01Thru0x1AWhenCtrlAThruZPressed = configAsDataV1.send0x01Thru0x1AWhenCtrlAThruZPressed;
-    } else{
-      console.error('Unknown config version found: ', config.version);
+      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
+      this._saveSettings();
+      return;
+    } else if (deserializedConfig.version === this.config.version) {
+      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
+    } else {
+      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
+                    ` Updating to version ${this.config.version}.`);
+      this._saveSettings();
     }
-  }
 
-  saveSettings = () => {
-    const config = new DataV1();
+    // At this point we are confident that the deserialized config matches what
+    // this classes config object wants, so we can go ahead and update.
+    updateConfigFromSerializable(deserializedConfig, this.config);
+  };
 
-    // TX SETTINGS
-    config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
-    config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
-    config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
-    config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
+  _saveSettings = () => {
+    const serializableConfig = createSerializableObjectFromConfig(this.config);
+    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
+  };
 
-    this.appStorage.saveConfig(['settings', 'tx-settings'], config);
+  setEnterKeyPressBehavior = (value: EnterKeyPressBehavior) => {
+    this.config.enterKeyPressBehavior = value;
+    this._saveSettings();
   };
 
   setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
-    this.backspaceKeyPressBehavior = value;
-    this.saveSettings();
+    this.config.backspaceKeyPressBehavior = value;
+    this._saveSettings();
   };
 
-  setDeleteKeyPressBehavior = (value: DeleteKeyPressBehaviors) => {
-    this.deleteKeyPressBehavior = value;
-    this.saveSettings();
+  setDeleteKeyPressBehavior = (value: DeleteKeyPressBehavior) => {
+    this.config.deleteKeyPressBehavior = value;
+    this._saveSettings();
   };
 
   setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
-    this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
-    this.saveSettings();
+    this.config.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
+    this._saveSettings();
   }
 
   setSendEscCharWhenAltKeyPressed = (value: boolean) => {
-    this.sendEscCharWhenAltKeyPressed = value;
-    this.saveSettings();
+    this.config.sendEscCharWhenAltKeyPressed = value;
+    this._saveSettings();
   }
 }

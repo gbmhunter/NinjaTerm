@@ -63,6 +63,7 @@ export default class DisplaySettings {
   }
 
   saveConfig = () => {
+    // TODO: Update this to match the style used in RX settings (and others)
     const config = {
       charSizePx: this.charSizePx.dispValue,
       verticalRowPadding: this.verticalRowPaddingPx.dispValue,

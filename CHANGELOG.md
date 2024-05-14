@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added more recommended baud rate options.
 - Added the ability to specify a custom baud rate.
 - Added a circular progress modal which is shown when the port is opening.
+- Added ability to customize what is sent (LF, CR, or CRLF) on enter key press.
 
 ### Fixed
 

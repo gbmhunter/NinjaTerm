@@ -138,18 +138,19 @@ export default class PortConfiguration {
   _loadConfig = () => {
     let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
+    //===============================================
     // UPGRADE PATH
     //===============================================
-
     if (deserializedConfig === null) {
       // No data exists, create
-      console.log("No rx-settings config found in local storage. Creating...");
+      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
       this._saveConfig();
       return;
-    } else if (deserializedConfig.version === 1) {
-      console.log("Up-to-date config found");
+    } else if (deserializedConfig.version === this.config.version) {
+      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
     } else {
-      console.error("Unknown config version found: ", deserializedConfig.version);
+      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
+                    ` Updating to version ${this.config.version}.`);
       this._saveConfig();
     }
 

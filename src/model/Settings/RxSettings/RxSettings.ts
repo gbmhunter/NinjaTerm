@@ -137,7 +137,7 @@ class Config {
   }
 }
 
-const CONFIG_KEY = ["settings", "rx-settings"];
+const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
   appStorage: AppStorage;
@@ -146,41 +146,43 @@ export default class RxSettings {
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
-    this.loadSettings();
+    this._loadConfig();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
 
     this.config.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
-      this.saveSettings();
+      this._saveConfig();
     });
     this.config.numberSeparator.setOnApplyChanged(() => {
-      this.saveSettings();
+      this._saveConfig();
     });
     this.config.newLineMatchValueAsHex.setOnApplyChanged(() => {
-      this.saveSettings();
+      this._saveConfig();
     });
     this.config.numPaddingChars.setOnApplyChanged(() => {
-      this.saveSettings();
+      this._saveConfig();
     });
     this.config.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
-      this.saveSettings();
+      this._saveConfig();
     });
   }
 
-  loadSettings = () => {
+  _loadConfig = () => {
     let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
+    //===============================================
     // UPGRADE PATH
     //===============================================
     if (deserializedConfig === null) {
       // No data exists, create
-      console.log("No rx-settings config found in local storage. Creating...");
-      this.saveSettings();
+      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
+      this._saveConfig();
       return;
-    } else if (deserializedConfig.version === 1) {
-      console.log("Up-to-date config found");
+    } else if (deserializedConfig.version === this.config.version) {
+      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
     } else {
-      console.error("Unknown config version found: ", deserializedConfig.version);
-      this.appStorage.saveConfig(CONFIG_KEY, this.config);
+      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
+                    ` Updating to version ${this.config.version}.`);
+      this._saveConfig();
     }
 
     // At this point we are confident that the deserialized config matches what
@@ -188,14 +190,14 @@ export default class RxSettings {
     updateConfigFromSerializable(deserializedConfig, this.config);
   };
 
-  saveSettings = () => {
+  _saveConfig = () => {
     const serializableConfig = createSerializableObjectFromConfig(this.config);
     this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
   };
 
   setDataType = (value: DataType) => {
     this.config.dataType = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   //=================================================================
@@ -204,37 +206,37 @@ export default class RxSettings {
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.config.ansiEscapeCodeParsingEnabled = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setLocalTxEcho = (value: boolean) => {
     this.config.localTxEcho = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setNewLineCursorBehavior = (value: NewLineCursorBehavior) => {
     this.config.newLineCursorBehavior = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setSwallowNewLine = (value: boolean) => {
     this.config.swallowNewLine = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setCarriageReturnBehavior = (value: CarriageReturnCursorBehavior) => {
     this.config.carriageReturnCursorBehavior = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setSwallowCarriageReturn = (value: boolean) => {
     this.config.swallowCarriageReturn = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
     this.config.nonVisibleCharDisplayBehavior = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   //=================================================================
@@ -243,37 +245,37 @@ export default class RxSettings {
 
   setNumberType = (value: NumberType) => {
     this.config.numberType = value;
-    this.saveSettings();
+    this._saveConfig();
   }
 
   setEndianness = (value: Endianness) => {
     this.config.endianness = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
     this.config.preventValuesWrappingAcrossRows = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setInsertNewLineOnValue = (value: boolean) => {
     this.config.insertNewLineOnMatchedValue = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setNewLinePlacementOnValue = (value: NewLinePlacementOnHexValue) => {
     this.config.newLinePlacementOnHexValue = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setPadValues = (value: boolean) => {
     this.config.padValues = value;
-    this.saveSettings();
+    this._saveConfig();
   }
 
   setPaddingCharacter = (value: PaddingCharacter) => {
     this.config.paddingCharacter = value;
-    this.saveSettings();
+    this._saveConfig();
   }
 
   //=================================================================
@@ -282,12 +284,12 @@ export default class RxSettings {
 
   setHexCase = (value: HexCase) => {
     this.config.hexCase = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   setPrefixHexValuesWith0x = (value: boolean) => {
     this.config.prefixHexValuesWith0x = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   //=================================================================
@@ -296,7 +298,7 @@ export default class RxSettings {
 
   setFloatStringConversionMethod = (value: FloatStringConversionMethod) => {
     this.config.floatStringConversionMethod = value;
-    this.saveSettings();
+    this._saveConfig();
   };
 
   //=================================================================
