@@ -1,7 +1,7 @@
 import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehaviors } from "src/model/Settings/TxSettings/TxSettings";
+import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { number } from "zod";
@@ -16,7 +16,35 @@ function TxSettingsView(props: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       {/* =============================================================================== */}
-      {/* ROW FOR TX */}
+      {/* ENTER PRESSED */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Enter" childStyle={{ display: "flex", flexDirection: "column" }} style={{ width: '400px' }}>
+        {/* BACKSPACE */}
+        <FormControl>
+          <FormLabel>When enter is pressed:</FormLabel>
+          <RadioGroup
+            value={dataProcessingSettings.config.enterKeyPressBehavior}
+            onChange={(e) => {
+              dataProcessingSettings.setEnterKeyPressBehavior(e.target.value as any);
+            }}
+          >
+            {/* SEND LF */}
+            <Tooltip title="Send the line feed (LF, &quot;\n&quot;) char (0x0A) when the Enter key is pressed." placement="right" arrow>
+              <FormControlLabel value={EnterKeyPressBehavior.SEND_LF} control={<Radio />} label="Send LF (0x0A)" />
+            </Tooltip>
+            {/* SEND CR */}
+            <Tooltip title="Send the carriage return (CR, &quot;\r&quot;) char (0x0D) when the Enter key is pressed." placement="right" arrow>
+              <FormControlLabel value={EnterKeyPressBehavior.SEND_CR} control={<Radio />} label="Send CR (0x0D)" />
+            </Tooltip>
+            {/* SEND CRLF */}
+            <Tooltip title="Send both the carriage return and line feed chars (0x0D 0x0A) when the Enter key is pressed." placement="right" arrow>
+              <FormControlLabel value={EnterKeyPressBehavior.SEND_CRLF} control={<Radio />} label="Send CRLF (0x0D 0x0A)" />
+            </Tooltip>
+          </RadioGroup>
+        </FormControl>
+      </BorderedSection>
+      {/* =============================================================================== */}
+      {/* ROW FOR DELETE AND BACKSPACE */}
       {/* =============================================================================== */}
       <div style={{ display: "flex" }}>
         {/* =============================================================================== */}
@@ -27,7 +55,7 @@ function TxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>When backspace is pressed:</FormLabel>
             <RadioGroup
-              value={dataProcessingSettings.backspaceKeyPressBehavior}
+              value={dataProcessingSettings.config.backspaceKeyPressBehavior}
               onChange={(e) => {
                 dataProcessingSettings.setBackspaceKeyPressBehavior(e.target.value as any);
               }}
@@ -50,18 +78,18 @@ function TxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>When delete is pressed:</FormLabel>
             <RadioGroup
-              value={dataProcessingSettings.deleteKeyPressBehavior}
+              value={dataProcessingSettings.config.deleteKeyPressBehavior}
               onChange={(e) => {
                 dataProcessingSettings.setDeleteKeyPressBehavior(e.target.value as any);
               }}
             >
               {/* SEND BACKSPACE (0x08) */}
               <Tooltip title="Send the backspace control char (0x08) when the delete key is pressed." placement="right" arrow>
-                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
+                <FormControlLabel value={DeleteKeyPressBehavior.SEND_BACKSPACE} control={<Radio />} label="Send backspace (0x08)" />
               </Tooltip>
               {/* SEND DELETE (0x7F) */}
               <Tooltip title="Send the delete control char (0x7F) when the delete key is pressed." placement="right" arrow>
-                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
+                <FormControlLabel value={DeleteKeyPressBehavior.SEND_DELETE} control={<Radio />} label="Send delete (0x7F)" />
               </Tooltip>
               {/* SEND CSI_3_TILDE ([ESC] [3~) */}
               <Tooltip
@@ -69,7 +97,7 @@ function TxSettingsView(props: Props) {
                 placement="right"
                 arrow
               >
-                <FormControlLabel value={DeleteKeyPressBehaviors.SEND_VT_SEQUENCE} control={<Radio />} label="Send VT sequence ( ESC [ 3 ~ )" />
+                <FormControlLabel value={DeleteKeyPressBehavior.SEND_VT_SEQUENCE} control={<Radio />} label="Send VT sequence ( ESC [ 3 ~ )" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -87,7 +115,7 @@ function TxSettingsView(props: Props) {
           <FormControlLabel
             control={
               <Checkbox
-                checked={dataProcessingSettings.send0x01Thru0x1AWhenCtrlAThruZPressed}
+                checked={dataProcessingSettings.config.send0x01Thru0x1AWhenCtrlAThruZPressed}
                 onChange={(e) => {
                   dataProcessingSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
                 }}
@@ -109,7 +137,7 @@ function TxSettingsView(props: Props) {
           <FormControlLabel
             control={
               <Checkbox
-                checked={dataProcessingSettings.sendEscCharWhenAltKeyPressed}
+                checked={dataProcessingSettings.config.sendEscCharWhenAltKeyPressed}
                 onChange={(e) => {
                   dataProcessingSettings.setSendEscCharWhenAltKeyPressed(e.target.checked);
                 }}

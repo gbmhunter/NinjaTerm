@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.15.0] - 2024-05-14
+
+### Added
+
+- Added more recommended baud rate options.
+- Added the ability to specify a custom baud rate.
+- Added a circular progress modal which is shown when the port is opening.
+- Added ability to customize what is sent (LF, CR, or CRLF) on enter key press.
+
+### Fixed
+
+- Fixed bug which meant app thought port opened successfully even when it didn't.
+
 ## [4.14.0] - 2024-05-12
 
 ### Added
@@ -681,7 +694,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.14.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...HEAD
+[4.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.14.0...v4.15.0
 [4.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.2...v4.14.0
 [4.13.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.1...v4.13.2
 [4.13.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.0...v4.13.1
