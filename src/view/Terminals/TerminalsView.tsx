@@ -28,6 +28,7 @@ import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { portStateToButtonProps } from "src/view/Components/PortStateToButtonProps";
+import RightDrawerView from "./RightDrawerView";
 
 interface Props {
   app: App;
@@ -263,12 +264,7 @@ export default observer((props: Props) => {
       <div id="drawer-container" style={{ width: "100%", height: "100%", flexGrow: 1, display: "flex", flexDirection: "row", position: "relative" }}>
         {terminals}
         <div style={{ width: '5px' }}></div> {/* Vertical spacer */}
-        <ResizableBox className="box" width={200} resizeHandles={['w']} axis="x" style={{ 'padding': '0px 0px 0px 5px', 'margin': '0px 0px 10px 0px'}}
-            handle={<div style={{ height: '100%', width: '5px', backgroundColor: '#DC3545', position: 'absolute', left: 0, top: 0, cursor: 'ew-resize', display: 'flex', alignItems: 'center', justifyContent: 'center' }}></div>}
-        >
-          <div>Macros</div>
-        </ResizableBox>
-        {/* <DrawerRel variant="permanent"><p>hello</p></DrawerRel> */}
+        <RightDrawerView app={app} />
       </div>
     </div>
   );
