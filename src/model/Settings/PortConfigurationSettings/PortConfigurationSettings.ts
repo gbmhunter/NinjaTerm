@@ -170,16 +170,15 @@ export default class PortConfiguration {
    * Computed value which represents the serial port config in short hand,
    * e.g. "115200 8n1"
    *
-   * @returns The short hand serial port config for displaying.
+   * @returns The short hand serial port config for displaying to the user.
    */
   get shortSerialConfigName() {
     let output = '';
     output += this.config.baudRate.toString();
     output += ' ';
-    // output += this.selectedNumDataBits.toString();
-    // output += this.selectedParity[0];
-    // output += this.selectedStopBits.toString();
-    output += '8n1'; // TODO: Fix this
+    output += this.config.numDataBits.toString();
+    output += this.config.parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
+    output += this.config.stopBits.toString();
     return output;
   }
 }

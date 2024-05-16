@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug which caused the wrong serial port config to be displayed in the bottom toolbar.
+
 ## [4.15.0] - 2024-05-14
 
 ### Added
