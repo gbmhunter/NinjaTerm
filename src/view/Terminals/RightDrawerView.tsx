@@ -76,7 +76,7 @@ export default observer((props: Props) => {
         {/* ================================================ */}
         <Tooltip
           title='The data to send for this macro.'
-          followCursor
+          enterDelay={500}
           arrow
         >
           <TextField
@@ -92,15 +92,26 @@ export default observer((props: Props) => {
         {/* ================================================ */}
         {/* MACRO SEND BUTTON */}
         {/* ================================================ */}
+        <Tooltip
+          title='Send the data to the serial port.'
+          enterDelay={500}
+          arrow
+        >
         <IconButton aria-label="delete" size="small" style={{ padding: '1px' }}>
           <ArrowForwardIcon />
         </IconButton>
+        </Tooltip>
+        {/* MACRO MORE SETTINGS BUTTON */}
         {/* ================================================ */}
-        {/* MACRO MORE OPTIONS BUTTON */}
-        {/* ================================================ */}
+        <Tooltip
+          title='More settings for this macro.'
+          enterDelay={500}
+          arrow
+        >
         <IconButton aria-label="delete" size="small" style={{ padding: '1px' }}>
           <MoreHorizIcon />
         </IconButton>
+        </Tooltip>
       </div>
     </ResizableBox>
   );
