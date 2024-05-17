@@ -34,6 +34,7 @@ export default observer((props: Props) => {
             },
           }}
           value={macro.data}
+          fullWidth // Take up available width (so it changes size as the drawer is resized)
           onChange={(e) => macro.setData(e.target.value)}
           onKeyDown={(e) => {
             e.stopPropagation();

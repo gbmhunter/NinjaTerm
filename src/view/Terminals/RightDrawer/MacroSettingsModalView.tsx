@@ -1,11 +1,12 @@
-import { IconButton, Modal, TextField, Tooltip } from "@mui/material";
+import { Button, IconButton, Modal, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import CloseIcon from '@mui/icons-material/Close';
 
 import { Macro, MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
+import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
 
 interface Props {
   app: App;
@@ -25,12 +26,11 @@ export default observer((props: Props) => {
       aria-describedby="modal-modal-description"
       style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
     >
-      <div style={{ padding: "20px", backgroundColor: "#202020", width: "80%", height: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={{ padding: "20px", backgroundColor: "#202020", width: "80%", maxHeight: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
         <span>Macro Settings</span>
         <TextField
-          size="small"
           variant="outlined"
-          label="Data"
+          label="Macro Data"
           inputProps={{
             style: {
               padding: 5,
@@ -41,19 +41,32 @@ export default observer((props: Props) => {
           value={macroController.macroToDisplayInModal?.data}
           onChange={(e) => macroController.macroToDisplayInModal?.setData(e.target.value)}
           onKeyDown={(e) => {
-            e.stopPropagation();
-          }} // Don't want the global keydown event to trigger
-        />
-        <IconButton
-          aria-label="send-macro-data"
-          size="small"
-          style={{ padding: "1px" }}
-          onClick={() => {
-            macroController.macroToDisplayInModal?.send();
+            e.stopPropagation(); // Don't want the global keydown event to trigger
           }}
-        >
-          <ArrowForwardIcon />
-        </IconButton>
+        />
+        <div className="button-row" style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', gap: '10px' }}>
+          <Button
+            variant="contained"
+            aria-label="send-macro-data"
+            startIcon={<ArrowForwardIcon />}
+            disabled={app.portState !== PortState.OPENED}
+            onClick={() => {
+              macroController.macroToDisplayInModal?.send();
+            }}
+          >
+            Send
+          </Button>
+          <Button
+            variant="outlined"
+            aria-label="send-macro-data"
+            startIcon={<CloseIcon />}
+            onClick={() => {
+              macroController.setIsModalOpen(false);
+            }}
+          >
+            Close
+          </Button>
+        </div>
       </div>
     </Modal>
   );

@@ -71,6 +71,15 @@ export default observer((props: Props) => {
     },
   };
 
+  let showHideSidePanelButtonText;
+  if (isSmallScreen) {
+    showHideSidePanelButtonText = '';
+  } else if (!app.terminals.showRightDrawer) {
+    showHideSidePanelButtonText = 'Show Side Panel';
+  } else {
+    showHideSidePanelButtonText = 'Hide Side Panel';
+  }
+
   return (
     <div
       id="terminal-view-outer"
@@ -200,10 +209,11 @@ export default observer((props: Props) => {
           }}
           startIcon={<VisibilityIcon />}
           sx={buttonSx}
+          style={{ width: '200px' }}
           data-testid="show-hide-side-panel-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
-          {isSmallScreen ? "" : "SHOW SIDE PANEL"}
+          {showHideSidePanelButtonText}
         </Button>
 
         {/* ============================ VERSION NUMBER =========================== */}
