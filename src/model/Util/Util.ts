@@ -20,6 +20,13 @@ export function stringToUint8Array(str: string) {
     return arr;
 }
 
+export function textAreaToBytes(str: string, newLinesChar: string) {
+    // Replace all instances of LF with the newLinesChar
+    str = str.replace(/\n/g, newLinesChar);
+    // Convert to Uint8Array
+    return stringToUint8Array(str);
+}
+
 /**
  * Given a HTML element, this will find the index of the element within its parent's children array.
  *
