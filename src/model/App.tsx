@@ -836,7 +836,15 @@ export class App {
     await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
   };
 
-  private async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
+  /**
+   * Writes bytes to the serial port. Also:
+   * - Sends the data to the TX terminal view
+   * - Sends the data to the TX/RX terminal view, if local TX echo is enabled.
+   * - Sends the data to the logger.
+   *
+   * @param bytesToWrite
+   */
+  async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
     const writer = this.port?.writable?.getWriter();
 
     await writer?.write(bytesToWrite);

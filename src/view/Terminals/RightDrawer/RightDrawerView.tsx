@@ -28,8 +28,8 @@ export default observer((props: Props) => {
         <div
           style={{
             height: "100%",
-            width: "5px",
-            backgroundColor: "#DC3545",
+            width: "10px", // This determines how easy it is to click on the resizable element
+            // backgroundColor: "#DC3545",
             position: "absolute",
             left: 0,
             top: 0,
@@ -37,6 +37,7 @@ export default observer((props: Props) => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            borderLeft: "1px solid #505050", // Same border color as used on the left-hand nav menu
           }}
         ></div>
       }

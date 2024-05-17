@@ -42,18 +42,22 @@ export default observer((props: Props) => {
       {/* MACRO SEND BUTTON */}
       {/* ================================================ */}
       <Tooltip title="Send the data to the serial port." enterDelay={500} arrow>
-        <IconButton
-          aria-label="send-macro-data"
-          size="small"
-          style={{ padding: "1px" }}
-          disabled={app.portState !== PortState.OPENED}
-          onClick={() => {
-            macro.send();
-          }}
-        >
-          <ArrowForwardIcon />
-        </IconButton>
+        <span>
+          {/* This is a hack to get the tooltip to work when the button is disabled */}
+          <IconButton
+            aria-label="send-macro-data"
+            size="small"
+            style={{ padding: "1px" }}
+            disabled={app.portState !== PortState.OPENED}
+            onClick={() => {
+              macro.send();
+            }}
+          >
+            <ArrowForwardIcon />
+          </IconButton>
+        </span>
       </Tooltip>
+      {/* ================================================ */}
       {/* MACRO MORE SETTINGS BUTTON */}
       {/* ================================================ */}
       <Tooltip title="More settings for this macro." enterDelay={500} arrow>
