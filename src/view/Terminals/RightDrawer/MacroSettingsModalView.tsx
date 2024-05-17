@@ -1,12 +1,13 @@
-import { Button, IconButton, Modal, TextField, Tooltip } from "@mui/material";
+import { Button, FormControl, FormControlLabel, FormLabel, IconButton, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CloseIcon from '@mui/icons-material/Close';
 
-import { Macro, MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
+import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import { MacroDataType } from "src/model/Terminals/RightDrawer/Macros/Macro";
 
 interface Props {
   app: App;
@@ -15,6 +16,11 @@ interface Props {
 
 export default observer((props: Props) => {
   const { app, macroController } = props;
+
+  const macro = macroController.macroToDisplayInModal!;
+  if (!macro) {
+    return null;
+  }
 
   return (
     <Modal
@@ -28,6 +34,25 @@ export default observer((props: Props) => {
     >
       <div style={{ padding: "20px", backgroundColor: "#202020", width: "80%", maxHeight: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
         <span>Macro Settings</span>
+        {/* BACKSPACE */}
+        <FormControl>
+          <FormLabel>Treat data as:</FormLabel>
+          <RadioGroup
+            value={macro.dataType}
+            onChange={(e) => {
+              macro.setDataType(e.target.value as any);
+            }}
+          >
+            {/* SEND LF */}
+            <Tooltip title="Treat the data as ASCII." placement="right" arrow>
+              <FormControlLabel value={MacroDataType.ASCII} control={<Radio />} label="ASCII" />
+            </Tooltip>
+            {/* SEND CR */}
+            <Tooltip title="Treat te data as HEX." placement="right" arrow>
+              <FormControlLabel value={MacroDataType.HEX} control={<Radio />} label="HEX" />
+            </Tooltip>
+          </RadioGroup>
+        </FormControl>
         <TextField
           variant="outlined"
           label="Macro Data"
