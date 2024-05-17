@@ -11,6 +11,13 @@ export class Macro {
     makeAutoObservable(this); // Make sure this near the end
   }
 
+  setData(data: string) {
+    this.data = data;
+  }
+
+  send() {
+    console.log('Send macro data:', this.data);
+  }
 }
 
 export class Macros {
@@ -25,4 +32,5 @@ export class Macros {
 
     makeAutoObservable(this); // Make sure this near the end
   }
+
 }

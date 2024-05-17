@@ -14,7 +14,7 @@ export default observer((props: Props) => {
 
   // Create macro rows
   const macroRows = app.terminals.rightDrawer.macros.macrosArray.map((macro, index) => {
-    return <MacroView key={index} macro={macro} />;
+    return <MacroView key={index} app={app} macro={macro} />;
   });
 
   return (
@@ -41,9 +41,11 @@ export default observer((props: Props) => {
         ></div>
       }
     >
+      <div className="resizable-child-container"> {/* ResizableBox requires a single child component */}
       <div>Macros</div>
       <div className="macro-rows-container" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
         {macroRows}
+      </div>
       </div>
     </ResizableBox>
   );
