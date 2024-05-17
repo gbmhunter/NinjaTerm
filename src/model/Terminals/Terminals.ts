@@ -18,6 +18,8 @@ export default class Terminals {
 
   rightDrawer: RightDrawer;
 
+  showRightDrawer = true;
+
   constructor(app: App) {
     this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
     this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
@@ -37,5 +39,9 @@ export default class Terminals {
     // Apply filter text to the two terminals which contain RX data
     this.txRxTerminal.setFilterText(this.filterText.appliedValue);
     this.rxTerminal.setFilterText(this.filterText.appliedValue);
+  }
+
+  setShowRightDrawer(show: boolean) {
+    this.showRightDrawer = show;
   }
 }

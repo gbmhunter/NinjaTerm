@@ -25,7 +25,7 @@ export default observer((props: Props) => {
       aria-describedby="modal-modal-description"
       style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
     >
-      <div style={{ padding: '20px', backgroundColor: "#202020", width: "80%", height: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={{ padding: "20px", backgroundColor: "#202020", width: "80%", height: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
         <span>Macro Settings</span>
         <TextField
           size="small"

@@ -20,7 +20,7 @@ export default observer((props: Props) => {
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <span>{macro.name}</span>
+      <span style={{ paddingRight: '5px' }}>{macro.name}</span>
       {/* ================================================ */}
       {/* MACRO DATA */}
       {/* ================================================ */}

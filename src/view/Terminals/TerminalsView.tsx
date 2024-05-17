@@ -16,11 +16,12 @@ import {
 } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { OverridableStringUnion } from "@mui/types";
 import KofiButton from "kofi-button";
 import { observer } from "mobx-react-lite";
-import { ResizableBox } from 'react-resizable';
-import 'react-resizable/css/styles.css';
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
 import { App, PortType } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
@@ -254,6 +255,28 @@ export default observer((props: Props) => {
           label="Local TX Echo"
         />
 
+        {/* ==================================================================== */}
+        {/* SHOW/HIDE SIDE PANEL BUTTON */}
+        {/* ==================================================================== */}
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => {
+            // Toggle the right drawer
+            if (!app.terminals.showRightDrawer) {
+              app.terminals.setShowRightDrawer(true);
+            } else {
+              app.terminals.setShowRightDrawer(false);
+            }
+          }}
+          startIcon={<VisibilityIcon />}
+          sx={buttonSx}
+          data-testid="show-hide-side-panel-button"
+        >
+          {/* Specify a width to prevent it resizing when the text changes */}
+          {isSmallScreen ? "" : "SHOW SIDE PANEL"}
+        </Button>
+
         {/* ============================ VERSION NUMBER =========================== */}
         {/* Push to right hand side of screen */}
         <Typography sx={{ marginLeft: "auto" }}>v{app.version}</Typography>
@@ -261,10 +284,15 @@ export default observer((props: Props) => {
         {/* ============================ Ko-Fi "Donate" button =========================== */}
         <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
       </Box>
-      <div id="drawer-container" style={{ width: "100%", height: "100%", flexGrow: 1, display: "flex", flexDirection: "row", position: "relative" }}>
+      <div className="terminals-and-drawer-row" style={{ width: "100%", height: "100%", flexGrow: 1, display: "flex", flexDirection: "row", position: "relative" }}>
         {terminals}
-        <div style={{ width: '5px' }}></div> {/* Vertical spacer */}
-        <RightDrawerView app={app} />
+        {/* ==================================================================== */}
+        {/* RIGHT DRAWER (wrapped in a div so we can hide it all) */}
+        {/* ==================================================================== */}
+        <div style={{ height: "100%", display: app.terminals.showRightDrawer ? "flex" : "none", flexDirection: "row", position: "relative" }}>
+          <div style={{ width: "5px" }}></div>
+          <RightDrawerView app={app} />
+        </div>
       </div>
     </div>
   );

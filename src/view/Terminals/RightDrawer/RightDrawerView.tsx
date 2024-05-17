@@ -48,8 +48,8 @@ export default observer((props: Props) => {
       <div className="macro-rows-container" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
         {macroRows}
       </div>
-      </div>
       <MacroSettingsModalView app={app} macroController={app.terminals.rightDrawer.macroController} />
+      </div>
     </ResizableBox>
   );
 });
