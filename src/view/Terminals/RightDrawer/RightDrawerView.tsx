@@ -3,7 +3,8 @@ import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
 
 import { App } from "src/model/App";
-import MacroView from "./MacroView";
+import MacroView from "./MacroRowView";
+import MacroSettingsModalView from "./MacroSettingsModalView";
 
 interface Props {
   app: App;
@@ -13,8 +14,8 @@ export default observer((props: Props) => {
   const { app } = props;
 
   // Create macro rows
-  const macroRows = app.terminals.rightDrawer.macros.macrosArray.map((macro, index) => {
-    return <MacroView key={index} app={app} macro={macro} />;
+  const macroRows = app.terminals.rightDrawer.macroController.macrosArray.map((macro, index) => {
+    return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} />;
   });
 
   return (
@@ -48,6 +49,7 @@ export default observer((props: Props) => {
         {macroRows}
       </div>
       </div>
+      <MacroSettingsModalView app={app} macroController={app.terminals.rightDrawer.macroController} />
     </ResizableBox>
   );
 });

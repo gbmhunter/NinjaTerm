@@ -5,6 +5,7 @@ export class Macro {
   app: App;
   name: string;
   data: string;
+  isSettingsModalOpen: boolean = false;
 
   constructor(app: App, name: string, data: string) {
     this.app = app;
@@ -25,11 +26,20 @@ export class Macro {
     const data = new TextEncoder().encode(this.data);
     this.app.writeBytesToSerialPort(data);
   }
+
+  setIsSettingsModalOpen(isOpen: boolean) {
+    console.log('Set isSettingsModalOpen:', isOpen);
+    this.isSettingsModalOpen = isOpen;
+  }
 }
 
-export class Macros {
+export class MacroController {
 
   macrosArray: Macro[] = [];
+
+  macroToDisplayInModal: Macro | null = null;
+
+  isModalOpen: boolean = false;
 
   constructor(app: App) {
 
@@ -40,6 +50,16 @@ export class Macros {
     }
 
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  setMacroToDisplayInModal(macro: Macro) {
+    console.log('Set macro to display in modal:', macro);
+    this.macroToDisplayInModal = macro;
+  }
+
+  setIsModalOpen(isOpen: boolean) {
+    console.log('Set isModalOpen:', isOpen);
+    this.isModalOpen = isOpen;
   }
 
 }

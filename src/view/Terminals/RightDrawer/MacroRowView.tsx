@@ -4,17 +4,19 @@ import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
-import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macros";
+import { Macro, MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import MacroSettingsModalView from "./MacroSettingsModalView";
 
 interface Props {
   app: App;
+  macroController: MacroController;
   macro: Macro;
 }
 
 export default observer((props: Props) => {
-  const { app, macro } = props;
+  const { app, macroController, macro } = props;
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
@@ -61,10 +63,23 @@ export default observer((props: Props) => {
       {/* MACRO MORE SETTINGS BUTTON */}
       {/* ================================================ */}
       <Tooltip title="More settings for this macro." enterDelay={500} arrow>
-        <IconButton aria-label="more-settings-for-macro" size="small" style={{ padding: "1px" }}>
+        <IconButton
+          aria-label="more-settings-for-macro"
+          size="small"
+          style={{ padding: "1px" }}
+          onClick={() => {
+            macroController.setMacroToDisplayInModal(macro);
+            macroController.setIsModalOpen(true);
+          }}
+        >
           <MoreHorizIcon />
         </IconButton>
       </Tooltip>
+      {/* It shouldn't be a performance problem to create a modal component per macro row, as per
+      https://mui.com/material-ui/react-modal/ the modal content is unmounted when closed. If it does become
+      a problem, we could instead just have one modal and it's populated with the contents of whatever macro
+      settings button is clicked */}
+      {/* <MacroSettingsModalView app={app} macro={macro} /> */}
     </div>
   );
 });

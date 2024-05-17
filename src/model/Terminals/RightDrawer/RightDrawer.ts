@@ -1,14 +1,14 @@
 import { makeAutoObservable } from 'mobx';
-import { Macros } from './Macros/Macros';
+import { MacroController } from './Macros/MacroController';
 import { App } from 'src/model/App';
 
 export default class RightDrawer {
 
-  macros: Macros;
+  macroController: MacroController;
 
   constructor(app: App) {
 
-    this.macros = new Macros(app);
+    this.macroController = new MacroController(app);
 
     makeAutoObservable(this); // Make sure this near the end
   }
