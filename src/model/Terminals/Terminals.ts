@@ -1,9 +1,10 @@
 import { z } from 'zod';
+import { makeAutoObservable } from 'mobx';
 
 import { App } from 'src/model/App';
 import SingleTerminal from './SingleTerminal/SingleTerminal';
 import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
-import { makeAutoObservable } from 'mobx';
+import RightDrawer from './RightDrawer/RightDrawer';
 
 export default class Terminals {
 
@@ -13,7 +14,9 @@ export default class Terminals {
 
   txTerminal: SingleTerminal;
 
-  filterText: ApplyableTextField
+  filterText: ApplyableTextField;
+
+  rightDrawer: RightDrawer = new RightDrawer();
 
   constructor(app: App) {
     this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);

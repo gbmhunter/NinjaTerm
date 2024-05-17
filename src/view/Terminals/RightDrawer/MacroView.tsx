@@ -28,49 +28,22 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 import { App, PortType } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
+import SingleTerminalView from "../SingleTerminal/SingleTerminalView";
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { portStateToButtonProps } from "src/view/Components/PortStateToButtonProps";
+import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macros";
 
 interface Props {
-  app: App;
+  macro: Macro;
 }
 
 export default observer((props: Props) => {
-  const { app } = props;
+  const { macro } = props;
 
   return (
-    <ResizableBox
-      className="box"
-      width={200}
-      resizeHandles={["w"]}
-      axis="x"
-      style={{ padding: "0px 0px 0px 10px", margin: "0px 0px 10px 0px", fontSize: "12px" }}
-      handle={
-        <div
-          style={{
-            height: "100%",
-            width: "5px",
-            backgroundColor: "#DC3545",
-            position: "absolute",
-            left: 0,
-            top: 0,
-            cursor: "ew-resize",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        ></div>
-      }
-    >
-      <div>Macros</div>
-
-      {/* ================================================ */}
-      {/* MACRO ROW */}
-      {/* ================================================ */}
       <div style={{ display: "flex", alignItems: "center" }}>
-        <span>M1</span>
+        <span>{macro.name}</span>
         {/* ================================================ */}
         {/* MACRO DATA */}
         {/* ================================================ */}
@@ -113,6 +86,5 @@ export default observer((props: Props) => {
         </IconButton>
         </Tooltip>
       </div>
-    </ResizableBox>
   );
 });

@@ -28,7 +28,7 @@ import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { portStateToButtonProps } from "src/view/Components/PortStateToButtonProps";
-import RightDrawerView from "./RightDrawerView";
+import RightDrawerView from "./RightDrawer/RightDrawerView";
 
 interface Props {
   app: App;
