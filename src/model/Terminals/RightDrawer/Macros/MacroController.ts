@@ -2,6 +2,8 @@ import { makeAutoObservable } from 'mobx';
 import { App } from 'src/model/App';
 import { Macro } from './Macro';
 
+const NUM_MACROS = 8;
+
 export class MacroController {
 
   app: App;
@@ -18,8 +20,9 @@ export class MacroController {
 
     // Create individual macros. These will be displayed in the right-hand drawer
     // in the terminal view.
-    for (let i = 0; i < 3; i++) {
-      this.macrosArray.push(new Macro(`M${i}`));
+    for (let i = 0; i < NUM_MACROS; i++) {
+      // Macros are numbered from 1 so that Ctrl+1, Ctrl+2, etc. can be used to send them
+      this.macrosArray.push(new Macro(`M${i + 1}`));
     }
 
     makeAutoObservable(this); // Make sure this near the end

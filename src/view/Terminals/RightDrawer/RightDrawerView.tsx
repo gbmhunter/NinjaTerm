@@ -48,54 +48,47 @@ export default observer((props: Props) => {
     >
       {/* ResizableBox requires a single child component */}
       <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column" }}>
-        <div
-          className="a-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gridAutoRows: "minmax(10px, auto)",
-          }}
+        {/* ======================================================= */}
+        {/* DATA VIEW CONFIGURATION */}
+        {/* ======================================================= */}
+        <Tooltip
+          title={
+            <div>
+              Controls how to display the TX and RX data. Different use cases require different view configurations.
+              <ul>
+                <li>Single terminal: TX and RX data is combined in the same pane. Useful for terminal style applications when escape codes are used.</li>
+                <li>
+                  Separate TX/RX terminals: TX and RX data are kept in separate panes. Useful for when you have a lot of incoming basic RX data and what to still see the data you
+                  are sending.
+                </li>
+              </ul>
+            </div>
+          }
+          placement="left"
         >
-          {/* ======================================================= */}
-          {/* DATA VIEW CONFIGURATION */}
-          {/* ======================================================= */}
-          <Tooltip
-            title={
-              <div>
-                Controls how to display the TX and RX data. Different use cases require different view configurations.
-                <ul>
-                  <li>Single terminal: TX and RX data is combined in the same pane. Useful for terminal style applications when escape codes are used.</li>
-                  <li>
-                    Separate TX/RX terminals: TX and RX data are kept in separate panes. Useful for when you have a lot of incoming basic RX data and what to still see the data you
-                    are sending.
-                  </li>
-                </ul>
-              </div>
-            }
-            placement="left"
-          >
-            <FormControl size="small" style={{ maxWidth: "210px", marginBottom: "10px", gridColumn: "1/3", gridRow: "1/1" }}>
-              <InputLabel>Data View Configuration</InputLabel>
-              <Select
-                name="dataViewConfiguration"
-                value={app.settings.displaySettings.dataViewConfiguration}
-                onChange={(e) => {
-                  app.settings.displaySettings.setDataViewConfiguration(Number(e.target.value));
-                }}
-                sx={{ fontSize: "0.8rem" }}
-              >
-                {Object.keys(DataViewConfiguration)
-                  .filter((key) => !Number.isNaN(Number(key)))
-                  .map((key) => {
-                    return (
-                      <MenuItem key={key} value={key}>
-                        {dataViewConfigEnumToDisplayName[key]}
-                      </MenuItem>
-                    );
-                  })}
-              </Select>
-            </FormControl>
-          </Tooltip>
+          <FormControl size="small" style={{ maxWidth: "210px", marginBottom: "10px" }}>
+            <InputLabel>Data View Configuration</InputLabel>
+            <Select
+              name="dataViewConfiguration"
+              value={app.settings.displaySettings.dataViewConfiguration}
+              onChange={(e) => {
+                app.settings.displaySettings.setDataViewConfiguration(Number(e.target.value));
+              }}
+              sx={{ fontSize: "0.8rem" }}
+            >
+              {Object.keys(DataViewConfiguration)
+                .filter((key) => !Number.isNaN(Number(key)))
+                .map((key) => {
+                  return (
+                    <MenuItem key={key} value={key}>
+                      {dataViewConfigEnumToDisplayName[key]}
+                    </MenuItem>
+                  );
+                })}
+            </Select>
+          </FormControl>
+        </Tooltip>
+        <div style={{ display: "flex", gap: "20px" }}>
           {/* =============================================================================== */}
           {/* CHAR SIZE */}
           {/* =============================================================================== */}
@@ -113,7 +106,9 @@ export default observer((props: Props) => {
               sx={{ width: "80px" }}
             />
           </Tooltip>
-          {/* ============================ LOCAL TX ECHO SWITCH =========================== */}
+          {/* =============================================================================== */}
+          {/* LOCAL TX ECHO SWITCH */}
+          {/* =============================================================================== */}
           <FormControlLabel
             control={
               <Switch
