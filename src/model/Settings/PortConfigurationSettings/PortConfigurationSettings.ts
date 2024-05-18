@@ -152,6 +152,7 @@ export default class PortConfiguration {
       console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
                     ` Updating to version ${this.config.version}.`);
       this._saveConfig();
+      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
     }
 
     // At this point we are confident that the deserialized config matches what

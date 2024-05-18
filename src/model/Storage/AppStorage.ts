@@ -87,7 +87,8 @@ export default class AppStorage {
     } else {
       obj[keys[keys.length - 1]] = data;
     }
-    window.localStorage.setItem('configs', JSON.stringify(this.configs));
+    const valueToWrite = JSON.stringify(this.configs);
+    window.localStorage.setItem('configs', valueToWrite);
   }
 
   /**
