@@ -1,6 +1,7 @@
 import { makeAutoObservable } from "mobx";
 import { App } from "src/model/App";
 import { z } from "zod";
+import { stringToUint8Array } from 'src/model/Util/Util';
 
 export enum MacroDataType {
   ASCII = "ASCII",
@@ -8,7 +9,6 @@ export enum MacroDataType {
 }
 
 export class Macro {
-  app: App;
   name: string;
 
   dataType: MacroDataType = MacroDataType.ASCII;
@@ -17,10 +17,9 @@ export class Macro {
 
   errorMsg: string = '';
 
-  constructor(app: App, name: string, data: string) {
-    this.app = app;
+  constructor(name: string) {
     this.name = name;
-    this.data = data;
+    this.data = '';
 
     makeAutoObservable(this); // Make sure this near the end
   }
@@ -61,28 +60,16 @@ export class Macro {
     }
   }
 
-  send() {
-    console.log("Send macro data:", this.data);
-    // Send the data to the serial port
-    // If the user presses enter in the multiline text field, it will add a newline character
-    // (0x0A or 10) to the string.
-    let data;
-    if (this.dataType === MacroDataType.ASCII) {
-      data = new TextEncoder().encode(this.data);
-    } else if (this.dataType === MacroDataType.HEX) {
-      // Remove spaces and new lines
-      const hexString = this.data.replace(/[\s\n]/g, '');
-      // Convert to Uint8Array
-      data = new Uint8Array(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
-    } else {
-      throw new Error("Invalid data type.");
-    }
-    console.log("Data:", data);
-    this.app.writeBytesToSerialPort(data);
-  }
-
   setIsSettingsModalOpen(isOpen: boolean) {
     console.log("Set isSettingsModalOpen:", isOpen);
     this.isSettingsModalOpen = isOpen;
+  }
+
+  textAreaToBytes = (newLineReplacementChar: string) => {
+    // Replace all instances of LF with the newLinesChar
+    let str = this.data;
+    str = str.replace(/\n/g, newLineReplacementChar);
+    // Convert to Uint8Array
+    return stringToUint8Array(str);
   }
 }

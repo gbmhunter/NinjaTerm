@@ -88,7 +88,7 @@ export default observer((props: Props) => {
             startIcon={<ArrowForwardIcon />}
             disabled={app.portState !== PortState.OPENED}
             onClick={() => {
-              macroController.macroToDisplayInModal?.send();
+              macroController.send(macro);
             }}
           >
             Send

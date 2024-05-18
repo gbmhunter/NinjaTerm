@@ -54,7 +54,7 @@ export default observer((props: Props) => {
             style={{ padding: "1px" }}
             disabled={app.portState !== PortState.OPENED}
             onClick={() => {
-              macro.send();
+              macroController.send(macro);
             }}
           >
             <ArrowForwardIcon />

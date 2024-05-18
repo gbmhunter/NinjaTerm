@@ -13,18 +13,12 @@ export function generateRandomString(length: number) {
 
 export function stringToUint8Array(str: string) {
     const arr = new Uint8Array(str.length);
+    // Do NOT use a TextEncoder here, as this is node only (not browser)
     for (let i = 0; i < str.length; i++) {
         arr[i] = str.charCodeAt(i);
     }
 
     return arr;
-}
-
-export function textAreaToBytes(str: string, newLinesChar: string) {
-    // Replace all instances of LF with the newLinesChar
-    str = str.replace(/\n/g, newLinesChar);
-    // Convert to Uint8Array
-    return stringToUint8Array(str);
 }
 
 /**
