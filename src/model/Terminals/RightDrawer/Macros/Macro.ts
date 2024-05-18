@@ -17,9 +17,12 @@ export class Macro {
 
   errorMsg: string = '';
 
-  constructor(name: string) {
+  onChange: (() => void) | null;
+
+  constructor(name: string, onChange: (() => void) | null = null) {
     this.name = name;
     this.data = '';
+    this.onChange = onChange;
 
     makeAutoObservable(this); // Make sure this near the end
   }
@@ -27,11 +30,17 @@ export class Macro {
   setDataType(dataType: MacroDataType) {
     this.dataType = dataType;
     this.validateData();
+    if (this.onChange) {
+      this.onChange();
+    }
   }
 
   setData(data: string) {
     this.data = data;
     this.validateData();
+    if (this.onChange) {
+      this.onChange();
+    }
   }
 
   validateData() {
@@ -72,6 +81,9 @@ export class Macro {
       // We want to keep this simple, just show the first
       // error message
       this.errorMsg = validation.error.errors[0].message;
+    }
+    if (this.onChange) {
+      this.onChange();
     }
   }
 
@@ -131,5 +143,16 @@ export class Macro {
    */
   get canSend() {
     return this.data.length !== 0 && this.errorMsg === '';
+  }
+
+  static fromJSON(json: string): Macro {
+    const objFromJson = JSON.parse(json);
+    let macro = new Macro(objFromJson.name);
+    macro = Object.assign(macro, objFromJson);
+    return macro;
+  }
+
+  setOnChange(onChange: () => void) {
+    this.onChange = onChange;
   }
 }
