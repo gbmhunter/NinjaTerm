@@ -19,9 +19,24 @@ interface Props {
 export default observer((props: Props) => {
   const { app, macroController, macro } = props;
 
+  let dataTypeShort = "";
+  let dataTypeColor = "";
+  if (macro.dataType === "ASCII") {
+    dataTypeShort = "A";
+    dataTypeColor = "#FFD700";
+  } else if (macro.dataType === "HEX") {
+    dataTypeShort = "H";
+    dataTypeColor = "#FF6347";
+  } else {
+    throw new Error("Unknown macro data type");
+  }
+
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <span style={{ paddingRight: '5px' }}>{macro.name}</span>
+      <Tooltip title="The selected data type for this macro. A = ASCII, H = HEX.">
+        <span style={{ paddingRight: '5px', color: dataTypeColor }}>{dataTypeShort}</span>
+      </Tooltip>
       {/* ================================================ */}
       {/* MACRO DATA */}
       {/* ================================================ */}
