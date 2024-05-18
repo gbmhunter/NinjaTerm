@@ -1,8 +1,8 @@
-import { expect, test, describe, beforeEach } from 'vitest';
+import { expect, test, describe } from 'vitest';
 
-import { Macro } from './Macro';
+import { Macro, MacroDataType } from './Macro';
 
-describe('util tests', () => {
+describe('macro tests', () => {
 
   test('basic ascii to bytes', () => {
     let macro = new Macro('M1');
@@ -32,4 +32,50 @@ describe('util tests', () => {
     expect(bytes).toStrictEqual(Uint8Array.from([97, 13, 98]));
   });
 
+  test('basic hex', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('00');
+    const bytes = macro.textAreaToBytes('');
+    expect(bytes).toStrictEqual(Uint8Array.from([0]));
+  });
+
+  test('two bytes of hex', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('0001');
+    const bytes = macro.textAreaToBytes('');
+    expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
+  });
+
+  test('two bytes of hex with space', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('00 01');
+    const bytes = macro.textAreaToBytes('');
+    expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
+  });
+
+  test('two bytes of hex with new lines', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('00\n01');
+    const bytes = macro.textAreaToBytes('');
+    expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
+  });
+
+  test('make sure odd number of hex chars throws error', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('abc');
+    expect(() => macro.textAreaToBytes('')).toThrowError();
+  });
+
+  test('complicated hex works', () => {
+    let macro = new Macro('M1');
+    macro.setDataType(MacroDataType.HEX);
+    macro.setData('00 ff AB 32\n    689\n1');
+    const bytes = macro.textAreaToBytes('');
+    expect(bytes).toStrictEqual(Uint8Array.from([0x00, 0xFF, 0xAB, 0x32, 0x68, 0x91]));
+  });
 });

@@ -65,11 +65,47 @@ export class Macro {
     this.isSettingsModalOpen = isOpen;
   }
 
-  textAreaToBytes = (newLineReplacementChar: string) => {
-    // Replace all instances of LF with the newLinesChar
-    let str = this.data;
-    str = str.replace(/\n/g, newLineReplacementChar);
-    // Convert to Uint8Array
-    return stringToUint8Array(str);
+  /**
+   *
+   * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
+   * @returns
+   */
+  textAreaToBytes = (newLineReplacementChar: string): Uint8Array => {
+    let bytes;
+    if (this.dataType === MacroDataType.ASCII) {
+      // Replace all instances of LF with the newLinesChar
+      let str = this.data;
+      str = str.replace(/\n/g, newLineReplacementChar);
+      // Convert to Uint8Array
+      bytes = stringToUint8Array(str);
+    } else if (this.dataType === MacroDataType.HEX) {
+      // Remove all spaces and new lines
+      let str = this.data;
+      str = str.replace(/ /g, '');
+      str = str.replace(/\n/g, '');
+      // Convert hex string to Uint8Array
+      bytes = this._hexStringToUint8Array(str);
+    } else {
+      throw new Error("Invalid data type");
+    }
+
+    return bytes;
+  }
+
+  /**
+   * Converts a hex string to a Uint8Array.
+   * @param hexString Should be valid hex string only containing the characters 0-9 and A-F (or a-f). Should have an even number of characters. If not, an error will be thrown.
+   * @returns The Uint8Array representation of the hex string.
+   */
+  _hexStringToUint8Array = (hexString: string): Uint8Array => {
+    if (!this._isHex(hexString)) {
+      throw new Error("Invalid hex string");
+    }
+    const output = Uint8Array.from(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+    return output;
+  }
+
+  _isHex = (str: string): boolean => {
+    return str.length !== 0 && str.length % 2 === 0 && !/[^a-fA-F0-9]/u.test(str);
   }
 }
