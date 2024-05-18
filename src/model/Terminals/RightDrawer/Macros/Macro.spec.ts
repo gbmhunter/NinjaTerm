@@ -7,28 +7,28 @@ describe('macro tests', () => {
   test('basic ascii to bytes', () => {
     let macro = new Macro('M1');
     macro.setData('a');
-    const bytes = macro.textAreaToBytes('\n');
+    const bytes = macro.dataToBytes('\n');
     expect(bytes).toStrictEqual(Uint8Array.from([97]));
   });
 
   test('new line converted to \n', () => {
     let macro = new Macro('M1');
     macro.setData('a\nb');
-    const bytes = macro.textAreaToBytes('\n');
+    const bytes = macro.dataToBytes('\n');
     expect(bytes).toStrictEqual(Uint8Array.from([97, 10, 98]));
   });
 
   test('new line converted to \r\n', () => {
     let macro = new Macro('M1');
     macro.setData('a\nb');
-    const bytes = macro.textAreaToBytes('\r\n');
+    const bytes = macro.dataToBytes('\r\n');
     expect(bytes).toStrictEqual(Uint8Array.from([97, 13, 10, 98]));
   });
 
   test('new line converted to \r', () => {
     let macro = new Macro('M1');
     macro.setData('a\nb');
-    const bytes = macro.textAreaToBytes('\r');
+    const bytes = macro.dataToBytes('\r');
     expect(bytes).toStrictEqual(Uint8Array.from([97, 13, 98]));
   });
 
@@ -36,7 +36,7 @@ describe('macro tests', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('00');
-    const bytes = macro.textAreaToBytes('');
+    const bytes = macro.dataToBytes('');
     expect(bytes).toStrictEqual(Uint8Array.from([0]));
   });
 
@@ -44,7 +44,7 @@ describe('macro tests', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('0001');
-    const bytes = macro.textAreaToBytes('');
+    const bytes = macro.dataToBytes('');
     expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
   });
 
@@ -52,7 +52,7 @@ describe('macro tests', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('00 01');
-    const bytes = macro.textAreaToBytes('');
+    const bytes = macro.dataToBytes('');
     expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
   });
 
@@ -60,7 +60,7 @@ describe('macro tests', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('00\n01');
-    const bytes = macro.textAreaToBytes('');
+    const bytes = macro.dataToBytes('');
     expect(bytes).toStrictEqual(Uint8Array.from([0, 1]));
   });
 
@@ -68,14 +68,14 @@ describe('macro tests', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('abc');
-    expect(() => macro.textAreaToBytes('')).toThrowError();
+    expect(() => macro.dataToBytes('')).toThrowError();
   });
 
   test('complicated hex works', () => {
     let macro = new Macro('M1');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('00 ff AB 32\n    689\n1');
-    const bytes = macro.textAreaToBytes('');
+    const bytes = macro.dataToBytes('');
     expect(bytes).toStrictEqual(Uint8Array.from([0x00, 0xFF, 0xAB, 0x32, 0x68, 0x91]));
   });
 

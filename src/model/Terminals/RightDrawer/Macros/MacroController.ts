@@ -65,7 +65,7 @@ export class MacroController {
     // If the user presses enter in the multiline text field, it will add a newline character
     // (0x0A or 10) to the string.
     let outputData;
-    outputData = macro.textAreaToBytes('\n');
+    outputData = macro.dataToBytes('\n');
     console.log("Data:", outputData);
     this.app.writeBytesToSerialPort(outputData);
   }

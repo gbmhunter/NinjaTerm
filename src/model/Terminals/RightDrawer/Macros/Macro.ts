@@ -15,6 +15,10 @@ export class Macro {
   data: string;
   isSettingsModalOpen: boolean = false;
 
+  processEscapeChars: boolean = true;
+
+  sendOnEnterValueForEveryNewLineInTextBox: boolean = true;
+
   errorMsg: string = '';
 
   onChange: (() => void) | null;
@@ -50,7 +54,21 @@ export class Macro {
     let validation;
     if (this.dataType === MacroDataType.ASCII) {
       // Validate ASCII
-      validation = z.string().safeParse(this.data);
+      validation = z.string().refine(
+        value => {
+          // Skip this validation step if we not processing
+          // escape chars
+          if (!this.processEscapeChars) {
+            return true;
+          }
+          try {
+            JSON.parse(`"${value}"`);
+            return true;
+          } catch (e) {
+            // Generally a SyntaxError is thrown if the JSON is invalid
+            return false;
+          }
+        }, { message: 'Text is not a valid JSON string. It likely has unfinished escape codes or unescaped quotes.' }).safeParse(this.data);
     } else if (this.dataType === MacroDataType.HEX) {
 
       // Remove all spaces and new lines
@@ -99,12 +117,28 @@ export class Macro {
    * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
    * @returns The Uint8Array representation of the data.
    */
-  textAreaToBytes = (newLineReplacementChar: string): Uint8Array => {
+  dataToBytes = (newLineReplacementChar: string): Uint8Array => {
     let bytes;
     if (this.dataType === MacroDataType.ASCII) {
       // Replace all instances of LF with the newLinesChar
+      // NOTE: This has to be done before JSON.parse() is called below, otherwise the LF that
+      // JSON.parse() might introduce into the string will also be converted by this
       let str = this.data;
-      str = str.replace(/\n/g, newLineReplacementChar);
+
+      // If we are sending the "on enter" sequence for every new line in the text box, then we need to replace
+      // all new lines with the newLineReplacementChar
+      if (this.sendOnEnterValueForEveryNewLineInTextBox) {
+        str = str.replace(/\n/g, newLineReplacementChar);
+      } else {
+        // Strip out all new lines
+        str = str.replace(/\n/g, '');
+      }
+
+      // Now run JSON.parse() to convert all literal "\r" and "\n" to actual CR and LF characters
+      // (among others like \t).
+      if (this.processEscapeChars) {
+        str = JSON.parse(`"${str}"`);
+      }
       // Convert to Uint8Array
       bytes = stringToUint8Array(str);
     } else if (this.dataType === MacroDataType.HEX) {
@@ -154,5 +188,22 @@ export class Macro {
 
   setOnChange(onChange: () => void) {
     this.onChange = onChange;
+  }
+
+  setProcessEscapeChars(allow: boolean) {
+    this.processEscapeChars = allow;
+    // This could change the validation status, need to
+    // re-validate
+    this.validateData();
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setSendOnEnterValueForEveryNewLineInTextBox(allow: boolean) {
+    this.sendOnEnterValueForEveryNewLineInTextBox = allow;
+    if (this.onChange) {
+      this.onChange();
+    }
   }
 }
