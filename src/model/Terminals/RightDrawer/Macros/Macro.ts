@@ -43,8 +43,23 @@ export class Macro {
       // Validate ASCII
       validation = z.string().safeParse(this.data);
     } else if (this.dataType === MacroDataType.HEX) {
+
+      // Remove all spaces and new lines
+      let strippedString = this.data;
+      strippedString = strippedString.replace(/ /g, '');
+      strippedString = strippedString.replace(/\n/g, '');
       // Validate HEX
-      validation = z.string().regex(/^([0-9A-Fa-f]*)$/, "Must be a valid hex number.").safeParse(this.data);
+      validation = z.string().refine(
+        value => {
+          // Make sure it only contains 0-9 and A-F (or a-f)
+          return !/[^a-fA-F0-9]/u.test(value);
+        }, { message: 'Text must only contain: the numbers 0-9 and A-F (or a-f), new lines and spaces.' })
+        .refine(
+          value => {
+            // Make sure that there are an even number of characters
+            return value.length % 2 === 0;
+          }, { message: 'Text must contain an even number of hex characters.' })
+        .safeParse(strippedString);
     } else {
       throw new Error("Invalid data type");
     }
@@ -66,9 +81,11 @@ export class Macro {
   }
 
   /**
+   * Converts the data in the macro's text area to a Uint8Array suitable
+   * for sending out the serial port.
    *
    * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
-   * @returns
+   * @returns The Uint8Array representation of the data.
    */
   textAreaToBytes = (newLineReplacementChar: string): Uint8Array => {
     let bytes;
@@ -107,5 +124,12 @@ export class Macro {
 
   _isHex = (str: string): boolean => {
     return str.length !== 0 && str.length % 2 === 0 && !/[^a-fA-F0-9]/u.test(str);
+  }
+
+  /**
+   * Returns true if the macro data is not zero and the data is valid, otherwise returns false.
+   */
+  get canSend() {
+    return this.data.length !== 0 && this.errorMsg === '';
   }
 }

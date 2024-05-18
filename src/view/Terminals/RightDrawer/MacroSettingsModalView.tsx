@@ -86,7 +86,7 @@ export default observer((props: Props) => {
             variant="contained"
             aria-label="send-macro-data"
             startIcon={<ArrowForwardIcon />}
-            disabled={app.portState !== PortState.OPENED}
+            disabled={app.portState !== PortState.OPENED || !macro.canSend}
             onClick={() => {
               macroController.send(macro);
             }}
