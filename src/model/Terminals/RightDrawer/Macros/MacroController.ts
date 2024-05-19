@@ -68,6 +68,9 @@ export class MacroController {
         )
       );
     }
+
+    // Add some example data. Don't use setData because this will trigger a save
+    this.macrosArray[0].data = 'Hello\\n';
   }
 
   setMacroToDisplayInModal(macro: Macro) {
