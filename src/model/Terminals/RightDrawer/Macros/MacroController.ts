@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { App } from "src/model/App";
-import { Macro } from "./Macro";
+import { Macro, MacroDataType } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 
 const NUM_MACROS = 8;
@@ -71,6 +71,8 @@ export class MacroController {
 
     // Add some example data. Don't use setData because this will trigger a save
     this.macrosArray[0].data = 'Hello\\n';
+    this.macrosArray[1].data = 'deadbeef';
+    this.macrosArray[1].dataType = MacroDataType.HEX;
   }
 
   setMacroToDisplayInModal(macro: Macro) {
