@@ -21,11 +21,14 @@ export class Macro {
 
   errorMsg: string = '';
 
+  getNewLineReplacementStr: () => string;
+
   onChange: (() => void) | null;
 
-  constructor(name: string, onChange: (() => void) | null = null) {
+  constructor(name: string, getNewLineReplacementStr: () => string, onChange: (() => void) | null = null) {
     this.name = name;
     this.data = '';
+    this.getNewLineReplacementStr = getNewLineReplacementStr;
     this.onChange = onChange;
 
     makeAutoObservable(this); // Make sure this near the end
@@ -49,57 +52,19 @@ export class Macro {
 
   validateData() {
     // Validate the data
-    // If it's ASCII, make sure it's valid ASCII
-    // If it's HEX, make sure it's valid HEX
-    let validation;
-    if (this.dataType === MacroDataType.ASCII) {
-      // Validate ASCII
-      validation = z.string().refine(
-        value => {
-          // Skip this validation step if we not processing
-          // escape chars
-          if (!this.processEscapeChars) {
-            return true;
-          }
-          try {
-            JSON.parse(`"${value}"`);
-            return true;
-          } catch (e) {
-            // Generally a SyntaxError is thrown if the JSON is invalid
-            return false;
-          }
-        }, { message: 'Text is not a valid JSON string. It likely has unfinished escape codes or unescaped quotes.' }).safeParse(this.data);
-    } else if (this.dataType === MacroDataType.HEX) {
 
-      // Remove all spaces and new lines
-      let strippedString = this.data;
-      strippedString = strippedString.replace(/ /g, '');
-      strippedString = strippedString.replace(/\n/g, '');
-      // Validate HEX
-      validation = z.string().refine(
-        value => {
-          // Make sure it only contains 0-9 and A-F (or a-f)
-          return !/[^a-fA-F0-9]/u.test(value);
-        }, { message: 'Text must only contain: the numbers 0-9 and A-F (or a-f), new lines and spaces.' })
-        .refine(
-          value => {
-            // Make sure that there are an even number of characters
-            return value.length % 2 === 0;
-          }, { message: 'Text must contain an even number of hex characters.' })
-        .safeParse(strippedString);
-    } else {
-      throw new Error("Invalid data type");
-    }
-
-    console.log("Validation:", validation);
-
-    if (validation.success) {
+    try {
+      // TODO: Fix hardcoded \n
+      this.dataToBytes();
       this.errorMsg = '';
-    } else {
-      // We want to keep this simple, just show the first
-      // error message
-      this.errorMsg = validation.error.errors[0].message;
+    } catch (e) {
+      if (e instanceof Error) {
+        this.errorMsg = e.message;
+      } else {
+        throw Error("Unexpected error type");
+      }
     }
+
     if (this.onChange) {
       this.onChange();
     }
@@ -117,35 +82,60 @@ export class Macro {
    * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
    * @returns The Uint8Array representation of the data.
    */
-  dataToBytes = (newLineReplacementChar: string): Uint8Array => {
+  dataToBytes = (): Uint8Array => {
     let bytes;
     if (this.dataType === MacroDataType.ASCII) {
       // Replace all instances of LF with the newLinesChar
       // NOTE: This has to be done before JSON.parse() is called below, otherwise the LF that
       // JSON.parse() might introduce into the string will also be converted by this
-      let str = this.data;
+      // let str = this.data;
 
-      // If we are sending the "on enter" sequence for every new line in the text box, then we need to replace
-      // all new lines with the newLineReplacementChar
-      if (this.sendOnEnterValueForEveryNewLineInTextBox) {
-        str = str.replace(/\n/g, newLineReplacementChar);
-      } else {
-        // Strip out all new lines
-        str = str.replace(/\n/g, '');
+      // Split the string into lines
+      let lines = this.data.split('\n');
+
+      // Loop through each line
+      let processedStr = '';
+      for (let i = 0; i < lines.length; i++) {
+        // If we are sending the "on enter" sequence for every new line in the text box, then we need to replace
+        // all new lines with the newLineReplacementChar
+        if (i !== 0 && this.sendOnEnterValueForEveryNewLineInTextBox) {
+          processedStr += this.getNewLineReplacementStr();
+        }
+        // Add the line, parsing as JSON if asked for
+        // This will convert all literal "\r" and "\n" to actual CR and LF characters
+        // (among others like \t).
+        if (this.processEscapeChars) {
+          // JSON.parse will throw a SyntaxError if the string is not valid JSON
+          try {
+            processedStr += JSON.parse(`"${lines[i]}"`);
+          } catch (e) {
+            throw new Error('Line failed during JSON.parse(). Likely has unfinished escape codes or unescaped quotes.');
+          }
+        } else {
+          processedStr += lines[i];
+        }
       }
 
-      // Now run JSON.parse() to convert all literal "\r" and "\n" to actual CR and LF characters
-      // (among others like \t).
-      if (this.processEscapeChars) {
-        str = JSON.parse(`"${str}"`);
-      }
       // Convert to Uint8Array
-      bytes = stringToUint8Array(str);
+      bytes = stringToUint8Array(processedStr);
     } else if (this.dataType === MacroDataType.HEX) {
       // Remove all spaces and new lines
       let str = this.data;
       str = str.replace(/ /g, '');
       str = str.replace(/\n/g, '');
+
+      if (str.length === 0) {
+        throw new Error("Hex string is empty.");
+      }
+
+      if (str.length % 2 !== 0) {
+        throw new Error("Hex string must have an even number of characters.");
+      }
+
+      if (/[^a-fA-F0-9]/u.test(str)) {
+        throw new Error("Hex string must only contain: the numbers 0-9 and A-F (or a-f).");
+      }
+
       // Convert hex string to Uint8Array
       bytes = this._hexStringToUint8Array(str);
     } else {
@@ -179,11 +169,9 @@ export class Macro {
     return this.data.length !== 0 && this.errorMsg === '';
   }
 
-  static fromJSON(json: string): Macro {
+  fromJSON = (json: string) => {
     const objFromJson = JSON.parse(json);
-    let macro = new Macro(objFromJson.name);
-    macro = Object.assign(macro, objFromJson);
-    return macro;
+    Object.assign(this, objFromJson);
   }
 
   setOnChange(onChange: () => void) {

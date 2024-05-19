@@ -1,10 +1,11 @@
-import { makeAutoObservable } from 'mobx';
-import { App } from 'src/model/App';
-import { Macro } from './Macro';
+import { makeAutoObservable } from "mobx";
+import { App } from "src/model/App";
+import { Macro } from "./Macro";
+import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 
 const NUM_MACROS = 8;
 
-const CONFIG_KEY = ['macros'];
+const CONFIG_KEY = ["macros"];
 const CONFIG_VERSION = 1;
 
 class Config {
@@ -20,11 +21,9 @@ class Config {
   }
 
   macros: any[] = [];
-
 }
 
 export class MacroController {
-
   app: App;
 
   macrosArray: Macro[] = [];
@@ -34,28 +33,50 @@ export class MacroController {
   isModalOpen: boolean = false;
 
   constructor(app: App) {
-
     this.app = app;
 
-    // Create individual macros. These will be displayed in the right-hand drawer
-    // in the terminal view.
-    for (let i = 0; i < NUM_MACROS; i++) {
-      // Macros are numbered from 1 so that Ctrl+1, Ctrl+2, etc. can be used to send them
-      this.macrosArray.push(new Macro(`M${i + 1}`, this._saveConfig));
-    }
+    this.recreateMacros(NUM_MACROS);
 
     makeAutoObservable(this); // Make sure this near the end
 
     this._loadConfig();
   }
 
+  recreateMacros(numMacros: number) {
+
+    // Remove all elements from macroArray
+    this.macrosArray.splice(0, this.macrosArray.length);
+    // Create individual macros. These will be displayed in the right-hand drawer
+    // in the terminal view.
+    for (let i = 0; i < numMacros; i++) {
+      // Macros are numbered from 1 so that Ctrl+1, Ctrl+2, etc. can be used to send them
+      this.macrosArray.push(
+        new Macro(
+          `M${i + 1}`,
+          () => {
+            if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+              return "\n";
+            } else if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+              return "\r";
+            } else if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+              return "\r\n";
+            } else {
+              throw new Error("Unknown enter key press behavior");
+            }
+          },
+          this._saveConfig
+        )
+      );
+    }
+  }
+
   setMacroToDisplayInModal(macro: Macro) {
-    console.log('Set macro to display in modal:', macro);
+    console.log("Set macro to display in modal:", macro);
     this.macroToDisplayInModal = macro;
   }
 
   setIsModalOpen(isOpen: boolean) {
-    console.log('Set isModalOpen:', isOpen);
+    console.log("Set isModalOpen:", isOpen);
     this.isModalOpen = isOpen;
   }
 
@@ -65,19 +86,19 @@ export class MacroController {
     // If the user presses enter in the multiline text field, it will add a newline character
     // (0x0A or 10) to the string.
     let outputData;
-    outputData = macro.dataToBytes('\n');
+    outputData = macro.dataToBytes();
     console.log("Data:", outputData);
     this.app.writeBytesToSerialPort(outputData);
   }
 
   _saveConfig = () => {
     let config = new Config();
-    config.macros = this.macrosArray.map(macro => {
+    config.macros = this.macrosArray.map((macro) => {
       return JSON.stringify(macro);
     });
-    console.log('Saving config: ', config);
+    console.log("Saving config: ", config);
     this.app.appStorage.saveConfig(CONFIG_KEY, config);
-  }
+  };
 
   _loadConfig() {
     let deserializedConfig = this.app.appStorage.getConfig(CONFIG_KEY);
@@ -93,18 +114,17 @@ export class MacroController {
     } else if (deserializedConfig.version === CONFIG_VERSION) {
       console.log(`Up-to-date config found for key "${CONFIG_KEY}".`);
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key "${CONFIG_KEY}".`
-                    + ` Updating to version ${CONFIG_VERSION}.`);
+      console.error(`Out-of-date config version ${deserializedConfig.version} found for key "${CONFIG_KEY}".` + ` Updating to version ${CONFIG_VERSION}.`);
       this._saveConfig();
       return;
     }
 
     // If we get here we loaded a valid config. Apply config.
-    this.macrosArray = deserializedConfig.macros.map((macroData: string) => {
-      const macro = Macro.fromJSON(macroData);
-      macro.setOnChange(this._saveConfig);
-      return macro;
-    });
+    this.recreateMacros(deserializedConfig.macros.length);
+    for (let i = 0; i < deserializedConfig.macros.length; i++) {
+      const macroData = deserializedConfig.macros[i];
+      let macro = this.macrosArray[i];
+      macro.fromJSON(macroData);
+    };
   }
-
 }

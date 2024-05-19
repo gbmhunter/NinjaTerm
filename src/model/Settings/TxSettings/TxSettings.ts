@@ -67,22 +67,6 @@ export default class DataProcessingSettings {
 
   config = new Config();
 
-  //=================================================================
-  // TX SETTINGS
-  //=================================================================
-
-
-  // backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-
-
-  // deleteKeyPressBehavior = DeleteKeyPressBehavior.SEND_VT_SEQUENCE;
-
-
-  // send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-
-
-  // sendEscCharWhenAltKeyPressed = true;
-
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
     this._loadSettings();
