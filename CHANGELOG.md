@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added macros to send pre-defined ASCII or HEX sequences out the serial port.
+- Added a right-hand panel to the terminal view and moved some UI elements there.
+
 ### Fixed
 
 - Fixed bug which caused the wrong serial port config to be displayed in the bottom toolbar.
