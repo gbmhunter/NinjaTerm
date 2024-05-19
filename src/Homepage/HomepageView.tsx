@@ -292,13 +292,8 @@ export default observer((props: Props) => {
             <li>Ability to switch between a combined TX/RX terminal and separate terminals.</li>
             <li>Options for controlling carriage return (CR) and line feed (LF) behavior.</li>
             <li>Smart copy/paste between the terminals and the clipboard with Ctrl-Shift-C and Ctrl-Shift-V. When copying to the clipboard, rows in the terminal created due to wrapping do not insert new lines into the clipboard data.</li>
+            <li>Macros to send repetitive ASCII or HEX data easily.</li>
             <li>Send 200ms "break signals" with Ctrl-Shift-B.</li>
-          </ul>
-
-          <Typography variant="h2">Coming Soon...</Typography>
-          <ul>
-            <li>Timestamping</li>
-            <li>Mode to send data only on enter</li>
           </ul>
 
           <Typography variant="h2">Bugs and Features</Typography>
@@ -314,7 +309,7 @@ export default observer((props: Props) => {
 
           <hr style={{ width: '100%' }}/>
 
-          <p style={{ fontWeight: 'bold', marginBottom: '50px' }}>NinjaTerm is developed and maintained by Geoffrey Hunter <IconButton href="https://twitter.com/gbmhunter" target="_blank"><TwitterIcon /></IconButton> (<a href="https://blog.mbedded.ninja/">mbedded.ninja</a>).</p>
+          <p style={{ fontWeight: 'bold', marginBottom: '50px' }}>NinjaTerm is developed and maintained by Geoffrey Hunter <IconButton href="https://twitter.com/gbmhunter" target="_blank"><TwitterIcon /></IconButton> (<a href="https://blog.mbedded.ninja/">blog.mbedded.ninja</a>).</p>
 
         </Grid>
       </Box>
