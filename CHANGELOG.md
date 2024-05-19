@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.16.0] - 2024-05-19
+
+### Added
+
+- Added macros to send pre-defined ASCII or HEX sequences out the serial port.
+- Added a right-hand panel to the terminal view and moved some UI elements there.
+
+### Fixed
+
+- Fixed bug which caused the wrong serial port config to be displayed in the bottom toolbar.
+
 ## [4.15.0] - 2024-05-14
 
 ### Added
@@ -694,7 +705,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...HEAD
+[4.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...v4.16.0
 [4.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.14.0...v4.15.0
 [4.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.2...v4.14.0
 [4.13.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.1...v4.13.2

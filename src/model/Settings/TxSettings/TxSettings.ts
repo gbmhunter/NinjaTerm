@@ -67,22 +67,6 @@ export default class DataProcessingSettings {
 
   config = new Config();
 
-  //=================================================================
-  // TX SETTINGS
-  //=================================================================
-
-
-  // backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
-
-
-  // deleteKeyPressBehavior = DeleteKeyPressBehavior.SEND_VT_SEQUENCE;
-
-
-  // send0x01Thru0x1AWhenCtrlAThruZPressed = true;
-
-
-  // sendEscCharWhenAltKeyPressed = true;
-
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;
     this._loadSettings();
@@ -106,6 +90,7 @@ export default class DataProcessingSettings {
       console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
                     ` Updating to version ${this.config.version}.`);
       this._saveSettings();
+      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
     }
 
     // At this point we are confident that the deserialized config matches what

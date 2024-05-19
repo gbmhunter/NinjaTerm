@@ -254,10 +254,12 @@ const AppView = observer((props: Props) => {
             padding: "0 0 0 10px",
           }}
         >
+          {/* =================================================================================== */}
           {/* MAIN PANE */}
           {/* =================================================================================== */}
           {mainPaneComponent}
 
+          {/* =================================================================================== */}
           {/* BOTTOM APP TOOLBAR */}
           {/* =================================================================================== */}
           <Box
@@ -312,6 +314,8 @@ const AppView = observer((props: Props) => {
         <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={app.showCircularProgressModal}>
           <CircularProgress color="inherit" />
         </Backdrop>
+
+
       </div>
     </ThemeProvider>
   );
