@@ -48,11 +48,11 @@ export default observer((props: Props) => {
             >
               {/* ASCII */}
               <Tooltip title="Treat the data as ASCII." placement="right" arrow>
-                <FormControlLabel value={MacroDataType.ASCII} control={<Radio />} label="ASCII" />
+                <FormControlLabel value={MacroDataType.ASCII} control={<Radio data-testid={'macro-data-type-ascii-rb'} />} label="ASCII" />
               </Tooltip>
               {/* HEX */}
               <Tooltip title="Treat the data as HEX." placement="right" arrow>
-                <FormControlLabel value={MacroDataType.HEX} control={<Radio />} label="HEX" />
+                <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -155,6 +155,7 @@ export default observer((props: Props) => {
             onClick={() => {
               macroController.setIsModalOpen(false);
             }}
+            data-testid="macro-settings-modal-close-button"
           >
             Close
           </Button>

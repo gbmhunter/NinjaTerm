@@ -18,7 +18,7 @@ export default observer((props: Props) => {
 
   // Create macro rows
   const macroRows = app.terminals.rightDrawer.macroController.macrosArray.map((macro, index) => {
-    return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} />;
+    return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} macroIdx={index} />;
   });
 
   return (
