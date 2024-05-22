@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, IconButton, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -73,6 +73,7 @@ export default observer((props: Props) => {
                     onChange={(e) => {
                       macro.setProcessEscapeChars(e.target.checked);
                     }}
+                    data-testid='macro-process-escape-chars-cb'
                   />
                 }
                 label='Process escape chars (\r, \n, \t, e.t.c.)'

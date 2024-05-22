@@ -63,6 +63,25 @@ test.describe('macros', () => {
     expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 
+  test('turning off "process escape chars" works', async ({ page }) => {
+    const appTestHarness = new AppTestHarness(page);
+    await appTestHarness.setupPage();
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId('macro-more-settings-0').click();
+    // Uncheck the process escape chars checkbox
+    await page.getByTestId('macro-process-escape-chars-cb').uncheck();
+    await page.getByTestId('macro-settings-modal-close-button').click();
+
+    await page.getByTestId('macro-data-0').fill('abc123\\n');
+    await page.getByTestId('macro-0-send-button').click();
+
+    const utf8EncodeText = new TextEncoder();
+    // The \n should not be processed into LF, should still be separate \ and n chars
+    const expectedText = utf8EncodeText.encode('abc123\\n');
+    expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
+  });
+
   test('macro sends out correct hex data', async ({ page }) => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();

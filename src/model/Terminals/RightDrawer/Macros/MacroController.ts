@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+
 import { App } from "src/model/App";
 import { Macro, MacroDataType } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
@@ -76,23 +77,19 @@ export class MacroController {
   }
 
   setMacroToDisplayInModal(macro: Macro) {
-    console.log("Set macro to display in modal:", macro);
     this.macroToDisplayInModal = macro;
   }
 
   setIsModalOpen(isOpen: boolean) {
-    console.log("Set isModalOpen:", isOpen);
     this.isModalOpen = isOpen;
   }
 
   send(macro: Macro) {
-    console.log("Send macro data:", macro.data);
     // Send the data to the serial port
     // If the user presses enter in the multiline text field, it will add a newline character
     // (0x0A or 10) to the string.
     let outputData;
     outputData = macro.dataToBytes();
-    console.log("Data:", outputData);
     this.app.writeBytesToSerialPort(outputData);
   }
 
@@ -101,7 +98,6 @@ export class MacroController {
     config.macros = this.macrosArray.map((macro) => {
       return JSON.stringify(macro);
     });
-    console.log("Saving config: ", config);
     this.app.appStorage.saveConfig(CONFIG_KEY, config);
   };
 
@@ -113,13 +109,13 @@ export class MacroController {
     //===============================================
     if (deserializedConfig === null) {
       // No data exists, create
-      console.log(`No config found in local storage for key "${CONFIG_KEY}". Creating...`);
+      // console.log(`No config found in local storage for key "${CONFIG_KEY}". Creating...`);
       this._saveConfig();
       return;
     } else if (deserializedConfig.version === CONFIG_VERSION) {
-      console.log(`Up-to-date config found for key "${CONFIG_KEY}".`);
+      // console.log(`Up-to-date config found for key "${CONFIG_KEY}".`);
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key "${CONFIG_KEY}".` + ` Updating to version ${CONFIG_VERSION}.`);
+      // console.log(`Out-of-date config version ${deserializedConfig.version} found for key "${CONFIG_KEY}".` + ` Updating to version ${CONFIG_VERSION}.`);
       this._saveConfig();
       return;
     }

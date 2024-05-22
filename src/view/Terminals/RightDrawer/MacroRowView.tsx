@@ -1,13 +1,11 @@
 import { IconButton, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import MacroSettingsModalView from "./MacroSettingsModalView";
 import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macro";
 
 interface Props {

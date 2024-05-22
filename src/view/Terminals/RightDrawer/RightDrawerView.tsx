@@ -1,11 +1,11 @@
 import { observer } from "mobx-react-lite";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
+import { FormControl, FormControlLabel, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 
 import { App } from "src/model/App";
 import MacroView from "./MacroRowView";
 import MacroSettingsModalView from "./MacroSettingsModalView";
-import { FormControl, FormControlLabel, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
 
