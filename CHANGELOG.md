@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added ability to select flow control type (none or hardware) in the serial port settings.
 - Added tooltips to parameters in the serial port settings pane.
+- Added "Send Break" button to the terminal right-hand drawer.
 
 ## [4.16.0] - 2024-05-19
 

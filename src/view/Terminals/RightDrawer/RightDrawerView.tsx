@@ -1,13 +1,14 @@
 import { observer } from "mobx-react-lite";
 import { ResizableBox } from "react-resizable";
 import "react-resizable/css/styles.css";
-import { FormControl, FormControlLabel, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
+import { Button, FormControl, FormControlLabel, InputAdornment, InputLabel, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 
 import { App } from "src/model/App";
 import MacroView from "./MacroRowView";
 import MacroSettingsModalView from "./MacroSettingsModalView";
 import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
+import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
 
 interface Props {
   app: App;
@@ -22,7 +23,7 @@ export default observer((props: Props) => {
   });
 
   return (
-    <ResizableBox
+    <ResizableBox // This what provides the resizing functionality for the right drawer
       className="box"
       width={400} // Default width, this can be changed by the user resizing
       resizeHandles={["w"]}
@@ -47,7 +48,7 @@ export default observer((props: Props) => {
       }
     >
       {/* ResizableBox requires a single child component */}
-      <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column" }}>
+      <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column", alignItems: 'flex-start' }}>
         {/* ======================================================= */}
         {/* DATA VIEW CONFIGURATION */}
         {/* ======================================================= */}
@@ -66,7 +67,7 @@ export default observer((props: Props) => {
           }
           placement="left"
         >
-          <FormControl size="small" style={{ maxWidth: "210px", marginBottom: "10px" }}>
+          <FormControl size="small" style={{ minWidth: "210px", marginBottom: "10px" }}>
             <InputLabel>Data View Configuration</InputLabel>
             <Select
               name="dataViewConfiguration"
@@ -88,7 +89,7 @@ export default observer((props: Props) => {
             </Select>
           </FormControl>
         </Tooltip>
-        <div style={{ display: "flex", gap: "20px" }}>
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
           {/* =============================================================================== */}
           {/* CHAR SIZE */}
           {/* =============================================================================== */}
@@ -103,7 +104,7 @@ export default observer((props: Props) => {
                 endAdornment: <InputAdornment position="start">px</InputAdornment>,
               }}
               applyableTextField={app.settings.displaySettings.charSizePx}
-              sx={{ width: "80px" }}
+              sx={{ width: '100px' }}
             />
           </Tooltip>
           {/* =============================================================================== */}
@@ -122,11 +123,29 @@ export default observer((props: Props) => {
             label="Local TX Echo"
           />
         </div>
+        {/* ==================================================================== */}
+        {/* SEND BREAK BUTTON */}
+        {/* ==================================================================== */}
+        <Tooltip title="Click this to send the break signal for 200ms to the serial port.">
+          <span>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={async () => {
+            await app.sendBreakSignal();
+          }}
+          disabled={app.portState !== PortState.OPENED}
+          data-testid="send-break-button"
+        >
+          Send BREAK
+        </Button>
+        </span>
+        </Tooltip>
         {/* =============================================================================== */}
         {/* MACROS */}
         {/* =============================================================================== */}
         <h2>Macros</h2>
-        <div className="macro-rows-container" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+        <div className="macro-rows-container" style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
           {macroRows}
         </div>
         <MacroSettingsModalView app={app} macroController={app.terminals.rightDrawer.macroController} />

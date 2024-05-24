@@ -737,23 +737,7 @@ export class App {
     // Ctrl-Shift-B: Send break signal
     //===========================================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
-      // TODO: Get types for setSignals() and remove ts-ignore
-      try {
-        // @ts-ignore
-        await this.port.setSignals({ break: true });
-        // 200ms seems like a standard break time
-        await new Promise(resolve => setTimeout(resolve, 200));
-        // @ts-ignore
-        await this.port.setSignals({ break: false });
-        // Emit message to user
-        this.snackbar.sendToSnackbar('Break signal sent.', 'success');
-      }
-      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
-      // If the operating system fails to change the state of any of these signals for any reason, queue a
-      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
-      catch (error) {
-        this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
-      }
+      await this.sendBreakSignal();
     }
     else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
@@ -845,6 +829,29 @@ export class App {
     }
     await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
   };
+
+  /**
+   * Sends a break signal to the serial port for 200ms. Port must be open otherwise an error will be shown.
+   */
+  async sendBreakSignal() {
+    // TODO: Get types for setSignals() and remove ts-ignore
+    try {
+      // @ts-ignore
+      await this.port.setSignals({ break: true });
+      // 200ms seems like a standard break time
+      await new Promise(resolve => setTimeout(resolve, 200));
+      // @ts-ignore
+      await this.port.setSignals({ break: false });
+      // Emit message to user
+      this.snackbar.sendToSnackbar('Break signal sent.', 'success');
+    }
+    // As per https://wicg.github.io/serial/#dom-serialport-setsignals
+    // If the operating system fails to change the state of any of these signals for any reason, queue a
+    // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
+    catch (error) {
+      this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
+    }
+  }
 
   /**
    * Writes bytes to the serial port. Also:
