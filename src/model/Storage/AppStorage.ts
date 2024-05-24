@@ -65,7 +65,7 @@ export default class AppStorage {
    *
    * @param keys Array of strings the defines the "path" to the setting. If various
    * parts of the key do not exist, empty objects will be created.
-   * @param data Value of the setting.
+   * @param data The data to save. This must be serializable to JSON.
    */
   saveConfig(keys: string[], data: any) {
     let obj = this.activeConfig.configData;
@@ -112,7 +112,4 @@ export default class AppStorage {
     }
     return obj;
   }
-
-
-
 }

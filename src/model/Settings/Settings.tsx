@@ -3,7 +3,6 @@
 import { makeAutoObservable } from 'mobx';
 
 // eslint-disable-next-line import/no-cycle
-import { App } from '../App';
 import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
@@ -11,6 +10,7 @@ import PortConfiguration from './PortConfigurationSettings/PortConfigurationSett
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import AppStorage from '../Storage/AppStorage';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
+import ProfilesSettings from './ProfilesSettings/ProfilesSettings';
 
 
 
@@ -20,6 +20,7 @@ export enum SettingsCategories {
   RX_SETTINGS,
   DISPLAY,
   GENERAL,
+  PROFILES,
 }
 
 export class Settings {
@@ -40,6 +41,8 @@ export class Settings {
 
   generalSettings: GeneralSettings;
 
+  profilesSettings: ProfilesSettings;
+
   /**
    * Constructor for the Settings class.
    *
@@ -55,6 +58,7 @@ export class Settings {
     this.rxSettings = new RxSettings(appStorage);
     this.displaySettings = new DisplaySettings(appStorage);
     this.generalSettings = new GeneralSettings(appStorage);
+    this.profilesSettings = new ProfilesSettings(appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

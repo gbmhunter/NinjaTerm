@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
 

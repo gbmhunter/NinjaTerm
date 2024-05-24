@@ -14,6 +14,7 @@ import DataProcessingSettingsView from './RxSettings/RxSettingsView';
 import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';
 import GeneralSettingsView from './GeneralSettings/GeneralSettingsView';
+import ProfileSettingsView from './ProfileSettings/ProfileSettingsView';
 
 interface Props {
   app: App;
@@ -38,6 +39,9 @@ function SettingsDialog(props: Props) {
     [SettingsCategories.GENERAL]: (
       <GeneralSettingsView generalSettings={app.settings.generalSettings} />
     ),
+    [SettingsCategories.PROFILES]: (
+      <ProfileSettingsView profilesSettings={app.settings.profilesSettings} />
+    ),
   };
 
   return (
@@ -55,6 +59,7 @@ function SettingsDialog(props: Props) {
           >
             <nav aria-label="main">
               <List sx={{ marginRight: '10px' }}>
+                {/* ================================================ */}
                 {/* PORT CONFIGURATION */}
                 {/* ================================================ */}
                 <ListItemButton
@@ -70,6 +75,7 @@ function SettingsDialog(props: Props) {
                 >
                   <ListItemText>Port Configuration</ListItemText>
                 </ListItemButton>
+                {/* ================================================ */}
                 {/* TX SETTINGS */}
                 {/* ================================================ */}
                 <ListItemButton
@@ -85,6 +91,7 @@ function SettingsDialog(props: Props) {
                 >
                   <ListItemText>TX Settings</ListItemText>
                 </ListItemButton>
+                {/* ================================================ */}
                 {/* RX SETTINGS */}
                 {/* ================================================ */}
                 <ListItemButton
@@ -101,6 +108,7 @@ function SettingsDialog(props: Props) {
                 >
                   <ListItemText>RX Settings</ListItemText>
                 </ListItemButton>
+                {/* ================================================ */}
                 {/* DISPLAY */}
                 {/* ================================================ */}
                 <ListItemButton
@@ -117,6 +125,7 @@ function SettingsDialog(props: Props) {
                 >
                   <ListItemText>Display</ListItemText>
                 </ListItemButton>
+                {/* ================================================ */}
                 {/* GENERAL */}
                 {/* ================================================ */}
                 <ListItemButton
@@ -132,6 +141,23 @@ function SettingsDialog(props: Props) {
                   data-testid="general-settings-button"
                 >
                   <ListItemText>General</ListItemText>
+                </ListItemButton>
+                {/* ================================================ */}
+                {/* PROFILES */}
+                {/* ================================================ */}
+                <ListItemButton
+                  onClick={() => {
+                    app.settings.setActiveSettingsCategory(
+                      SettingsCategories.PROFILES
+                    );
+                  }}
+                  selected={
+                    app.settings.activeSettingsCategory ===
+                    SettingsCategories.PROFILES
+                  }
+                  data-testid="profile-settings-button"
+                >
+                  <ListItemText>Profiles</ListItemText>
                 </ListItemButton>
               </List>
             </nav>
