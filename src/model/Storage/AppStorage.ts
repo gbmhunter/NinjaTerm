@@ -69,6 +69,7 @@ export default class AppStorage {
   }
 
   getProfiles(): Profile[] {
+    console.log(this.profiles);
     return this.profiles;
   }
 

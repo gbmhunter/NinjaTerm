@@ -29,7 +29,6 @@ export default class ProfilesSettings {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
-
   _loadConfig = () => {
     let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
 
