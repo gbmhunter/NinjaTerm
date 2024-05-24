@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added ability to select flow control type (none or hardware) in the serial port settings.
+- Added tooltips to parameters in the serial port settings pane.
+
 ## [4.16.0] - 2024-05-19
 
 ### Added

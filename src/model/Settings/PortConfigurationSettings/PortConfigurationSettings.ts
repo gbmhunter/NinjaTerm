@@ -1,9 +1,8 @@
 import { makeAutoObservable } from 'mobx';
+import { z } from 'zod';
 
-import { App } from 'src/model/App';
 import AppStorage from 'src/model/Storage/AppStorage';
 import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
-import { z } from 'zod';
 
 export enum PortState {
   CLOSED,
@@ -31,6 +30,11 @@ export type StopBits = 1 | 1.5 | 2;
 
 export const STOP_BIT_OPTIONS: StopBits[] = [1, 2];
 
+export enum FlowControl {
+  NONE = 'none',
+  HARDWARE = 'hardware',
+};
+
 const CONFIG_KEY = ['settings', 'port-configuration-settings'];
 
 class Config {
@@ -48,6 +52,8 @@ class Config {
   parity = Parity.NONE;
 
   stopBits: StopBits = 1;
+
+  flowControl = FlowControl.NONE;
 
   connectToSerialPortAsSoonAsItIsSelected = true;
 
@@ -120,6 +126,11 @@ export default class PortConfiguration {
     this._saveConfig();
   }
 
+  setFlowControl = (flowControl: FlowControl) => {
+    this.config.flowControl = flowControl;
+    this._saveConfig();
+  }
+
   setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {
     this.config.connectToSerialPortAsSoonAsItIsSelected = value;
     this._saveConfig();
@@ -145,7 +156,7 @@ export default class PortConfiguration {
       // No data exists, create
       console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
       this._saveConfig();
-      return;
+      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
     } else if (deserializedConfig.version === this.config.version) {
       console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
     } else {

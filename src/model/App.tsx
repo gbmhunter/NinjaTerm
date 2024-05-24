@@ -316,11 +316,21 @@ export class App {
       // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
       this.setShowCircularProgressModal(true);
       try {
+        // Convert from our flow control enum to the Web Serial API's
+        let flowControlType: FlowControlType;
+        if (this.settings.portConfiguration.config.flowControl === 'none') {
+          flowControlType = 'none';
+        } else if (this.settings.portConfiguration.config.flowControl === 'hardware') {
+          flowControlType = 'hardware';
+        } else {
+          throw Error(`Unsupported flow control type ${this.settings.portConfiguration.config.flowControl}.`);
+        }
         await this.port?.open({
           baudRate: this.settings.portConfiguration.config.baudRate, // This might be custom
           dataBits: this.settings.portConfiguration.config.numDataBits,
           parity: this.settings.portConfiguration.config.parity as ParityType,
           stopBits: this.settings.portConfiguration.config.stopBits,
+          flowControl: flowControlType,
           bufferSize: 10000,
         }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
       } catch (error) {
