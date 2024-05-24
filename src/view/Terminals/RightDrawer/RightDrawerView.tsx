@@ -48,7 +48,7 @@ export default observer((props: Props) => {
       }
     >
       {/* ResizableBox requires a single child component */}
-      <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column", alignItems: 'flex-start' }}>
+      <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
         {/* ======================================================= */}
         {/* DATA VIEW CONFIGURATION */}
         {/* ======================================================= */}
@@ -89,7 +89,7 @@ export default observer((props: Props) => {
             </Select>
           </FormControl>
         </Tooltip>
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+        <div style={{ display: "flex", gap: "20px", marginBottom: "10px" }}>
           {/* =============================================================================== */}
           {/* CHAR SIZE */}
           {/* =============================================================================== */}
@@ -104,7 +104,7 @@ export default observer((props: Props) => {
                 endAdornment: <InputAdornment position="start">px</InputAdornment>,
               }}
               applyableTextField={app.settings.displaySettings.charSizePx}
-              sx={{ width: '100px' }}
+              sx={{ width: "100px" }}
             />
           </Tooltip>
           {/* =============================================================================== */}
@@ -128,24 +128,24 @@ export default observer((props: Props) => {
         {/* ==================================================================== */}
         <Tooltip title="Click this to send the break signal for 200ms to the serial port.">
           <span>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={async () => {
-            await app.sendBreakSignal();
-          }}
-          disabled={app.portState !== PortState.OPENED}
-          data-testid="send-break-button"
-        >
-          Send BREAK
-        </Button>
-        </span>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={async () => {
+                await app.sendBreakSignal();
+              }}
+              disabled={app.portState !== PortState.OPENED}
+              data-testid="send-break-button"
+            >
+              Send BREAK
+            </Button>
+          </span>
         </Tooltip>
         {/* =============================================================================== */}
         {/* MACROS */}
         {/* =============================================================================== */}
         <h2>Macros</h2>
-        <div className="macro-rows-container" style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
+        <div className="macro-rows-container" style={{ display: "flex", flexDirection: "column", gap: "3px", width: "100%" }}>
           {macroRows}
         </div>
         <MacroSettingsModalView app={app} macroController={app.terminals.rightDrawer.macroController} />
