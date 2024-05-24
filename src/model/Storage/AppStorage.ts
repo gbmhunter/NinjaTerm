@@ -106,13 +106,23 @@ export default class AppStorage {
   }
 
   /**
-   * Gets a particular setting from the active config.
+   * Gets a config object from the active profile.
    *
-   * @param keys Array of strings the defines the "path" to the setting.
-   * @returns The value of the setting, or null if not found.
+   * @param keys Array of strings the defines the "path" to the config object.
+   * @returns The config object, or null if not found.
    */
   getConfig(keys: string[]): any {
-    let obj = this.activeProfile.configData;
+    return this.getConfigFromProfile(this.activeProfile, keys);
+  }
+
+  /**
+   * Gets a config object from any profile (not just the active one).
+   * @param profile The profile to get the config from.
+   * @param keys Array of strings the defines the "path" to the config object.
+   * @returns The config object, or null if not found.
+   */
+  getConfigFromProfile(profile: Profile, keys: string[]): any {
+    let obj = profile.configData;
     // Walk down the active config object using
     // the array of keys
     for (let i = 0; i < keys.length; i++) {

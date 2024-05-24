@@ -35,9 +35,9 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
-const CONFIG_KEY = ['settings', 'port-configuration-settings'];
+export const PORT_CONFIGURATION_CONFIG_KEY = ['settings', 'port-configuration-settings'];
 
-class Config {
+export class PortConfigurationConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
@@ -70,7 +70,7 @@ export default class PortConfiguration {
 
   appStorage: AppStorage;
 
-  config = new Config();
+  config = new PortConfigurationConfig();
 
   baudRateInputValue = this.config.baudRate.toString();
 
@@ -147,23 +147,23 @@ export default class PortConfiguration {
   }
 
   _loadConfig = () => {
-    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+    let deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
 
     //===============================================
     // UPGRADE PATH
     //===============================================
     if (deserializedConfig === null) {
       // No data exists, create
-      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
+      console.log(`No config found in local storage for key ${PORT_CONFIGURATION_CONFIG_KEY}. Creating...`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+      deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     } else if (deserializedConfig.version === this.config.version) {
-      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
+      console.log(`Up-to-date config found for key ${PORT_CONFIGURATION_CONFIG_KEY}.`);
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
+      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${PORT_CONFIGURATION_CONFIG_KEY}.` +
                     ` Updating to version ${this.config.version}.`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+      deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     }
 
     // At this point we are confident that the deserialized config matches what
@@ -175,7 +175,7 @@ export default class PortConfiguration {
 
   _saveConfig = () => {
     const serializableConfig = createSerializableObjectFromConfig(this.config);
-    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
+    this.appStorage.saveConfig(PORT_CONFIGURATION_CONFIG_KEY, serializableConfig);
   };
 
   /**

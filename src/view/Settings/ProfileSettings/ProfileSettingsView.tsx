@@ -7,6 +7,7 @@ import AppStorage from "src/model/Storage/AppStorage";
 
 import BorderedSection from "src/view/Components/BorderedSection";
 import { DataType } from "src/model/Settings/RxSettings/RxSettings";
+import PortConfiguration, { PORT_CONFIGURATION_CONFIG_KEY, PortConfigurationConfig } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
 
 interface Props {
   appStorage: AppStorage;
@@ -18,18 +19,21 @@ function ProfileSettingsView(props: Props) {
 
   const profiles = appStorage.getProfiles();
 
+  // Define the columns of the profiles table
   const columns: GridColDef[] = [
     { field: "name", headerName: "Name", width: 200 },
     { field: "portSettings", headerName: "Port settings", width: 130 },
     { field: "dataType", headerName: "RX data type", width: 130 },
   ];
 
+  // Create rows in profiles table
   let rows = [];
   for (let profile of profiles) {
+    const portConfigSettings = appStorage.getConfigFromProfile(profile, PORT_CONFIGURATION_CONFIG_KEY) as PortConfigurationConfig;
     rows.push({
       id: profile.name,
       name: profile.name,
-      portSettings: profile.configData["settings"]["port-configuration-settings"]["baudRate"],
+      portSettings: portConfigSettings.baudRate,
       dataType: DataType[profile.configData["settings"]["rx-settings"]["dataType"]],
     });
   }
