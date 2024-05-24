@@ -183,6 +183,9 @@ export class App {
     // Choose random tip from array
     const randomIndex = Math.floor(Math.random() * tipsToDisplayOnStartup.length);
     this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
+
+    // DEBUG
+    document.title = 'Hello!';
   }
 
   onSerialPortConnected(serialPort: SerialPort) {
