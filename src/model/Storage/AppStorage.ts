@@ -1,7 +1,16 @@
 
-class Config {
+/**
+ * This class represents a serial port profile. It is used to store use-specific
+ * settings for the application (e.g. all the settings to talk to a particular
+ * embedded device). The class is serializable to JSON.
+ */
+class Profile {
   name: string = '';
   configData: any = {};
+
+  constructor(name: string = 'Default profile') {
+    this.name = name;
+  }
 }
 
 /**
@@ -11,26 +20,26 @@ class Config {
  */
 export default class AppStorage {
 
-  configs: Config[] = [];
+  profiles: Profile[] = [];
 
-  activeConfig: Config;
+  activeProfile: Profile;
 
   constructor() {
     // Read in configurations
-    const configsStr = window.localStorage.getItem('configs');
-    if (configsStr === null) {
+    const profilesJson = window.localStorage.getItem('configs');
+    if (profilesJson === null) {
       // No config key found in users store, create one!
-      const defaultConfig = new Config();
-      this.configs.push(defaultConfig);
+      const defaultConfig = new Profile();
+      this.profiles.push(defaultConfig);
       // Save just-created config back to store. Not strictly needed as it
       // will be saved as soon as any changes are made, but this feels
       // cleaner.
-      window.localStorage.setItem('configs', JSON.stringify(this.configs));
+      window.localStorage.setItem('configs', JSON.stringify(this.profiles));
     } else {
-      this.configs = JSON.parse(configsStr);
+      this.profiles = JSON.parse(profilesJson);
     }
     // Only support the 1 active config for now
-    this.activeConfig = this.configs[0];
+    this.activeProfile = this.profiles[0];
 
   }
 
@@ -59,6 +68,10 @@ export default class AppStorage {
     return JSON.parse(value);
   }
 
+  getProfiles(): Profile[] {
+    return this.profiles;
+  }
+
   /**
    * Saves a particular setting to the active config. This is stored
    * in the local storage of the browser.
@@ -68,7 +81,7 @@ export default class AppStorage {
    * @param data The data to save. This must be serializable to JSON.
    */
   saveConfig(keys: string[], data: any) {
-    let obj = this.activeConfig.configData;
+    let obj = this.activeProfile.configData;
     // Walk down the active config object using
     // the array of keys
     for (let i = 0; i < keys.length - 1; i++) {
@@ -83,11 +96,11 @@ export default class AppStorage {
     // If no keys were provided, we are writing to the entire
     // config object
     if (keys.length === 0) {
-      this.activeConfig.configData = data;
+      this.activeProfile.configData = data;
     } else {
       obj[keys[keys.length - 1]] = data;
     }
-    const valueToWrite = JSON.stringify(this.configs);
+    const valueToWrite = JSON.stringify(this.profiles);
     window.localStorage.setItem('configs', valueToWrite);
   }
 
@@ -98,7 +111,7 @@ export default class AppStorage {
    * @returns The value of the setting, or null if not found.
    */
   getConfig(keys: string[]): any {
-    let obj = this.activeConfig.configData;
+    let obj = this.activeProfile.configData;
     // Walk down the active config object using
     // the array of keys
     for (let i = 0; i < keys.length; i++) {
