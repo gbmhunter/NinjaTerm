@@ -33,7 +33,7 @@ function RxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
-              value={rxSettings.config.dataType}
+              value={rxSettings.dataType}
               onChange={(e) => {
                 rxSettings.setDataType(parseInt(e.target.value));
               }}
@@ -53,7 +53,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       {/* DATA TYPE = ASCII */}
       {/* =============================================================================== */}
-      <div className="ascii-block" style={{ display: rxSettings.config.dataType === DataType.ASCII ? "block" : "none" }}>
+      <div className="ascii-block" style={{ display: rxSettings.dataType === DataType.ASCII ? "block" : "none" }}>
         {/* =============================================================================== */}
         {/* ROW FOR ANSI ESCAPE CODES AND ECHO SETTINGS */}
         {/* =============================================================================== */}
@@ -75,11 +75,11 @@ function RxSettingsView(props: Props) {
                 control={
                   <Checkbox
                     name="ansiEscapeCodeParsingEnabled"
-                    checked={rxSettings.config.ansiEscapeCodeParsingEnabled}
+                    checked={rxSettings.ansiEscapeCodeParsingEnabled}
                     onChange={(e) => {
                       rxSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
                     }}
-                    disabled={rxSettings.config.dataType !== 1}
+                    disabled={rxSettings.dataType !== 1}
                   />
                 }
                 label="Enable ANSI Escape Code Parsing"
@@ -103,7 +103,7 @@ function RxSettingsView(props: Props) {
                 InputProps={{
                   endAdornment: <InputAdornment position="start">chars</InputAdornment>,
                 }}
-                applyableTextField={rxSettings.config.maxEscapeCodeLengthChars}
+                applyableTextField={rxSettings.maxEscapeCodeLengthChars}
                 sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
@@ -125,7 +125,7 @@ function RxSettingsView(props: Props) {
                 control={
                   <Checkbox
                     name="localTxEcho"
-                    checked={rxSettings.config.localTxEcho}
+                    checked={rxSettings.localTxEcho}
                     onChange={(e) => {
                       rxSettings.setLocalTxEcho(e.target.checked);
                     }}
@@ -156,7 +156,7 @@ function RxSettingsView(props: Props) {
               <FormControl>
                 <FormLabel>When a \n byte is received:</FormLabel>
                 <RadioGroup
-                  value={rxSettings.config.newLineCursorBehavior}
+                  value={rxSettings.newLineCursorBehavior}
                   onChange={(e) => {
                     rxSettings.setNewLineCursorBehavior(e.target.value as any);
                   }}
@@ -197,7 +197,7 @@ function RxSettingsView(props: Props) {
                   control={
                     <Checkbox
                       name="swallowNewLine"
-                      checked={rxSettings.config.swallowNewLine}
+                      checked={rxSettings.swallowNewLine}
                       onChange={(e) => {
                         rxSettings.setSwallowNewLine(e.target.checked);
                       }}
@@ -226,7 +226,7 @@ function RxSettingsView(props: Props) {
               <FormControl>
                 <FormLabel>When a \r byte is received:</FormLabel>
                 <RadioGroup
-                  value={rxSettings.config.carriageReturnCursorBehavior}
+                  value={rxSettings.carriageReturnCursorBehavior}
                   onChange={(e) => {
                     rxSettings.setCarriageReturnBehavior(e.target.value as any);
                   }}
@@ -263,7 +263,7 @@ function RxSettingsView(props: Props) {
                   control={
                     <Checkbox
                       name="swallowCarriageReturn"
-                      checked={rxSettings.config.swallowCarriageReturn}
+                      checked={rxSettings.swallowCarriageReturn}
                       onChange={(e) => {
                         rxSettings.setSwallowCarriageReturn(e.target.checked);
                       }}
@@ -293,7 +293,7 @@ function RxSettingsView(props: Props) {
             <FormControl>
               <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
               <RadioGroup
-                value={rxSettings.config.nonVisibleCharDisplayBehavior}
+                value={rxSettings.nonVisibleCharDisplayBehavior}
                 onChange={(e) => {
                   rxSettings.setNonVisibleCharDisplayBehavior(e.target.value as any);
                 }}
@@ -327,7 +327,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       {/* DATA TYPE = NUMBER */}
       {/* =============================================================================== */}
-      <div className="number-block" style={{ display: rxSettings.config.dataType === DataType.NUMBER ? "block" : "none" }}>
+      <div className="number-block" style={{ display: rxSettings.dataType === DataType.NUMBER ? "block" : "none" }}>
         <div className="columns" style={{ display: "flex" }}>
           <BorderedSection title="Number Settings" childStyle={{ display: "flex", flexDirection: "column" }}>
             {/* ================================================ */}
@@ -341,7 +341,7 @@ function RxSettingsView(props: Props) {
               <FormControl sx={{ minWidth: 160, marginBottom: "15px" }} size="small">
                 <InputLabel id="demo-select-small-label">Number Type</InputLabel>
                 <Select
-                  value={rxSettings.config.numberType}
+                  value={rxSettings.numberType}
                   label="Baud Rate"
                   onChange={(e) => {
                     rxSettings.setNumberType(e.target.value as NumberType);
@@ -369,7 +369,7 @@ function RxSettingsView(props: Props) {
               <FormControl sx={{ minWidth: 160, marginBottom: "15px" }} size="small">
                 <InputLabel>Endianness</InputLabel>
                 <Select
-                  value={rxSettings.config.endianness}
+                  value={rxSettings.endianness}
                   label="Endianness"
                   onChange={(e) => {
                     rxSettings.setEndianness(e.target.value as Endianness);
@@ -400,7 +400,7 @@ function RxSettingsView(props: Props) {
                 label="Separator Between Values"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.numberSeparator}
+                applyableTextField={rxSettings.numberSeparator}
                 sx={{ marginBottom: "10px" }}
               />
             </Tooltip>
@@ -416,7 +416,7 @@ function RxSettingsView(props: Props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={rxSettings.config.preventValuesWrappingAcrossRows}
+                    checked={rxSettings.preventValuesWrappingAcrossRows}
                     onChange={(e) => {
                       rxSettings.setPreventHexValuesWrappingAcrossRows(e.target.checked);
                     }}
@@ -438,7 +438,7 @@ function RxSettingsView(props: Props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={rxSettings.config.insertNewLineOnMatchedValue}
+                    checked={rxSettings.insertNewLineOnMatchedValue}
                     onChange={(e) => {
                       rxSettings.setInsertNewLineOnValue(e.target.checked);
                     }}
@@ -460,18 +460,18 @@ function RxSettingsView(props: Props) {
                 label="Value to insert new line on"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.newLineMatchValueAsHex}
-                disabled={!rxSettings.config.insertNewLineOnMatchedValue}
+                applyableTextField={rxSettings.newLineMatchValueAsHex}
+                disabled={!rxSettings.insertNewLineOnMatchedValue}
                 sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
             {/* ================================================ */}
             {/* NEWLINE BEFORE OR AFTER VALUE */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.insertNewLineOnMatchedValue} sx={{ marginBottom: "15px" }}>
+            <FormControl disabled={!rxSettings.insertNewLineOnMatchedValue} sx={{ marginBottom: "15px" }}>
               <FormLabel>Insert new line before or after value?</FormLabel>
               <RadioGroup
-                value={rxSettings.config.newLinePlacementOnHexValue}
+                value={rxSettings.newLinePlacementOnHexValue}
                 onChange={(e) => {
                   rxSettings.setNewLinePlacementOnValue(parseInt(e.target.value));
                 }}
@@ -495,11 +495,11 @@ function RxSettingsView(props: Props) {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={rxSettings.config.padValues}
+                    checked={rxSettings.padValues}
                     onChange={(e) => {
                       rxSettings.setPadValues(e.target.checked);
                     }}
-                    disabled={rxSettings.config.numberType === NumberType.HEX}
+                    disabled={rxSettings.numberType === NumberType.HEX}
                   />
                 }
                 label="Pad values"
@@ -509,10 +509,10 @@ function RxSettingsView(props: Props) {
             {/* ================================================ */}
             {/* PADDING CHARACTER */}
             {/* ================================================ */}
-            <FormControl disabled={!rxSettings.config.padValues || rxSettings.config.numberType == NumberType.HEX} sx={{ marginBottom: "15px" }}>
+            <FormControl disabled={!rxSettings.padValues || rxSettings.numberType == NumberType.HEX} sx={{ marginBottom: "15px" }}>
               <FormLabel>Padding character:</FormLabel>
               <RadioGroup
-                value={rxSettings.config.paddingCharacter}
+                value={rxSettings.paddingCharacter}
                 onChange={(e) => {
                   rxSettings.setPaddingCharacter(parseInt(e.target.value));
                 }}
@@ -541,8 +541,8 @@ function RxSettingsView(props: Props) {
                 label="Num. of padding chars"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.numPaddingChars}
-                disabled={!rxSettings.config.padValues || rxSettings.config.numberType == NumberType.HEX}
+                applyableTextField={rxSettings.numPaddingChars}
+                disabled={!rxSettings.padValues || rxSettings.numberType == NumberType.HEX}
                 sx={{ marginBottom: "15px" }}
               />
             </Tooltip>
@@ -559,8 +559,8 @@ function RxSettingsView(props: Props) {
                 label="Num. of bytes per hex number"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.numBytesPerHexNumber}
-                disabled={rxSettings.config.numberType !== NumberType.HEX}
+                applyableTextField={rxSettings.numBytesPerHexNumber}
+                disabled={rxSettings.numberType !== NumberType.HEX}
                 sx={{ marginBottom: "15px" }}
                 inputProps={{
                   'data-testid': 'num-bytes-per-hex-number-input'
@@ -570,10 +570,10 @@ function RxSettingsView(props: Props) {
             {/* ================================================ */}
             {/* UPPERCASE/LOWERCASE HEX */}
             {/* ================================================ */}
-            <FormControl disabled={rxSettings.config.numberType !== NumberType.HEX} sx={{ marginBottom: "15px" }}>
+            <FormControl disabled={rxSettings.numberType !== NumberType.HEX} sx={{ marginBottom: "15px" }}>
               <FormLabel>Upper/lowercase hex:</FormLabel>
               <RadioGroup
-                value={rxSettings.config.hexCase}
+                value={rxSettings.hexCase}
                 onChange={(e) => {
                   rxSettings.setHexCase(parseInt(e.target.value));
                 }}
@@ -598,10 +598,10 @@ function RxSettingsView(props: Props) {
               arrow
             >
               <FormControlLabel
-                disabled={rxSettings.config.numberType !== NumberType.HEX}
+                disabled={rxSettings.numberType !== NumberType.HEX}
                 control={
                   <Checkbox
-                    checked={rxSettings.config.prefixHexValuesWith0x}
+                    checked={rxSettings.prefixHexValuesWith0x}
                     onChange={(e) => {
                       rxSettings.setPrefixHexValuesWith0x(e.target.checked);
                     }}
@@ -628,11 +628,11 @@ function RxSettingsView(props: Props) {
               <FormControl
                 sx={{ minWidth: 160, marginBottom: "15px" }}
                 size="small"
-                disabled={rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64}
+                disabled={rxSettings.numberType !== NumberType.FLOAT32 && rxSettings.numberType !== NumberType.FLOAT64}
               >
                 <InputLabel>String Conversion Method</InputLabel>
                 <Select
-                  value={rxSettings.config.floatStringConversionMethod}
+                  value={rxSettings.floatStringConversionMethod}
                   label="Float String Conversion Method"
                   onChange={(e) => {
                     rxSettings.setFloatStringConversionMethod(e.target.value as FloatStringConversionMethod);
@@ -658,10 +658,10 @@ function RxSettingsView(props: Props) {
                 label="Float num. of decimal places"
                 variant="outlined"
                 size="small"
-                applyableTextField={rxSettings.config.floatNumOfDecimalPlaces}
+                applyableTextField={rxSettings.floatNumOfDecimalPlaces}
                 disabled={
-                  (rxSettings.config.numberType !== NumberType.FLOAT32 && rxSettings.config.numberType !== NumberType.FLOAT64) ||
-                  rxSettings.config.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED
+                  (rxSettings.numberType !== NumberType.FLOAT32 && rxSettings.numberType !== NumberType.FLOAT64) ||
+                  rxSettings.floatStringConversionMethod !== FloatStringConversionMethod.TO_FIXED
                 }
                 sx={{ marginBottom: "15px" }}
               />

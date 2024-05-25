@@ -7,7 +7,7 @@ import AppStorage from "src/model/Storage/AppStorage";
 
 import BorderedSection from "src/view/Components/BorderedSection";
 import { DataType } from "src/model/Settings/RxSettings/RxSettings";
-import PortConfiguration, { PORT_CONFIGURATION_CONFIG_KEY, PortConfigurationConfig } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import PortConfiguration, { PortConfigurationConfig } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
 
 interface Props {
   appStorage: AppStorage;
@@ -27,16 +27,16 @@ function ProfileSettingsView(props: Props) {
   ];
 
   // Create rows in profiles table
-  let rows = [];
-  for (let profile of profiles) {
-    const portConfigSettings = appStorage.getConfigFromProfile(profile, PORT_CONFIGURATION_CONFIG_KEY) as PortConfigurationConfig;
-    rows.push({
-      id: profile.name,
-      name: profile.name,
-      portSettings: portConfigSettings.baudRate,
-      dataType: DataType[profile.configData["settings"]["rx-settings"]["dataType"]],
-    });
-  }
+  let rows: any = [];
+  // for (let profile of profiles) {
+  //   const portConfigSettings = appStorage.getConfigFromProfile(profile, PORT_CONFIGURATION_CONFIG_KEY) as PortConfigurationConfig;
+  //   rows.push({
+  //     id: profile.name,
+  //     name: profile.name,
+  //     portSettings: portConfigSettings.baudRate,
+  //     dataType: DataType[profile.configData["settings"]["rx-settings"]["dataType"]],
+  //   });
+  // }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>

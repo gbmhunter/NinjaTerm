@@ -179,7 +179,7 @@ export class App {
    * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
    */
   async onAppUiLoaded() {
-    if (this.settings.portConfiguration.config.resumeConnectionToLastSerialPortOnStartup) {
+    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
     }
 
@@ -300,7 +300,7 @@ export class App {
         lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
         this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
       });
-      if (this.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
+      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
         // Go to the terminal pane, only if opening was successful
         if (this.portState === PortState.OPENED) {
@@ -325,18 +325,18 @@ export class App {
       try {
         // Convert from our flow control enum to the Web Serial API's
         let flowControlType: FlowControlType;
-        if (this.settings.portConfiguration.config.flowControl === 'none') {
+        if (this.settings.portConfiguration.flowControl === 'none') {
           flowControlType = 'none';
-        } else if (this.settings.portConfiguration.config.flowControl === 'hardware') {
+        } else if (this.settings.portConfiguration.flowControl === 'hardware') {
           flowControlType = 'hardware';
         } else {
-          throw Error(`Unsupported flow control type ${this.settings.portConfiguration.config.flowControl}.`);
+          throw Error(`Unsupported flow control type ${this.settings.portConfiguration.flowControl}.`);
         }
         await this.port?.open({
-          baudRate: this.settings.portConfiguration.config.baudRate, // This might be custom
-          dataBits: this.settings.portConfiguration.config.numDataBits,
-          parity: this.settings.portConfiguration.config.parity as ParityType,
-          stopBits: this.settings.portConfiguration.config.stopBits,
+          baudRate: this.settings.portConfiguration.baudRate, // This might be custom
+          dataBits: this.settings.portConfiguration.numDataBits,
+          parity: this.settings.portConfiguration.parity as ParityType,
+          stopBits: this.settings.portConfiguration.stopBits,
           flowControl: flowControlType,
           bufferSize: 10000,
         }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
@@ -465,7 +465,7 @@ export class App {
     // fatal error from the serial port which has caused us to close. In this case, handle
     // the clean-up and state transition here.
     if (this.keepReading === true) {
-      if (this.settings.portConfiguration.config.reopenSerialPortIfUnexpectedlyClosed) {
+      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
         this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
       } else {
         this.setPortState(PortState.CLOSED);
@@ -878,7 +878,7 @@ export class App {
     this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
-    if (this.settings.rxSettings.config.localTxEcho) {
+    if (this.settings.rxSettings.localTxEcho) {
       this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 

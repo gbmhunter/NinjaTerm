@@ -79,7 +79,7 @@ function PortConfigurationView(props: Props) {
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Num. data bits</InputLabel>
             <Select
-              value={app.settings.portConfiguration.config.numDataBits}
+              value={app.settings.portConfiguration.numDataBits}
               label="Num. Data Bits"
               disabled={app.portState !== PortState.CLOSED}
               onChange={(e) => {
@@ -106,7 +106,7 @@ function PortConfigurationView(props: Props) {
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Parity</InputLabel>
             <Select
-              value={app.settings.portConfiguration.config.parity}
+              value={app.settings.portConfiguration.parity}
               label="Parity"
               disabled={app.portState !== PortState.CLOSED}
               onChange={(e) => {
@@ -130,7 +130,7 @@ function PortConfigurationView(props: Props) {
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Stop bits</InputLabel>
             <Select
-              value={app.settings.portConfiguration.config.stopBits}
+              value={app.settings.portConfiguration.stopBits}
               label="Stop Bits"
               disabled={app.portState !== PortState.CLOSED}
               onChange={(e) => {
@@ -159,7 +159,7 @@ function PortConfigurationView(props: Props) {
         <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
           <InputLabel>Flow control</InputLabel>
           <Select
-            value={app.settings.portConfiguration.config.flowControl}
+            value={app.settings.portConfiguration.flowControl}
             label="Parity"
             disabled={app.portState !== PortState.CLOSED}
             onChange={(e) => {
@@ -186,7 +186,7 @@ function PortConfigurationView(props: Props) {
         <FormControlLabel
           control={
             <Checkbox
-              checked={app.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected}
+              checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
               onChange={(e) => {
                 app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
               }}
@@ -203,7 +203,7 @@ function PortConfigurationView(props: Props) {
         <FormControlLabel
           control={
             <Checkbox
-              checked={app.settings.portConfiguration.config.resumeConnectionToLastSerialPortOnStartup}
+              checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
               onChange={(e) => {
                 app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
               }}
@@ -219,7 +219,7 @@ function PortConfigurationView(props: Props) {
         <FormControlLabel
           control={
             <Checkbox
-              checked={app.settings.portConfiguration.config.reopenSerialPortIfUnexpectedlyClosed}
+              checked={app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed}
               onChange={(e) => {
                 app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(e.target.checked);
               }}

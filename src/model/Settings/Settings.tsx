@@ -56,7 +56,7 @@ export class Settings {
 
     this.portConfiguration = new PortConfiguration(appStorage, profileManager);
     this.txSettings = new TxSettings(appStorage);
-    this.rxSettings = new RxSettings(appStorage);
+    this.rxSettings = new RxSettings(appStorage, profileManager);
     this.displaySettings = new DisplaySettings(appStorage);
     this.generalSettings = new GeneralSettings(appStorage);
     this.profilesSettings = new ProfilesSettings(appStorage);

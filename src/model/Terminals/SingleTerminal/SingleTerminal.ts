@@ -144,7 +144,7 @@ export default class SingleTerminal {
     this.onTerminalKeyDown = onTerminalKeyDown;
 
     autorun(() => {
-      if (!this.rxSettings.config.ansiEscapeCodeParsingEnabled) {
+      if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
@@ -178,7 +178,7 @@ export default class SingleTerminal {
     this.isFocused = false;
 
     // Register listener for whenever the number type is changed
-    reaction(() => this.rxSettings.config.numberType, this.clearPartialNumberBuffer);
+    reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
 
     makeAutoObservable(this);
   }
@@ -245,12 +245,12 @@ export default class SingleTerminal {
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
-    if (this.rxSettings.config.dataType === DataType.ASCII) {
+    if (this.rxSettings.dataType === DataType.ASCII) {
       this.parseAsciiData(data);
-    } else if (this.rxSettings.config.dataType === DataType.NUMBER) {
+    } else if (this.rxSettings.dataType === DataType.NUMBER) {
       this._parseDataAsNumber(data);
     } else {
-      throw Error(`Data type ${this.rxSettings.config.dataType} not supported by parseData().`);
+      throw Error(`Data type ${this.rxSettings.dataType} not supported by parseData().`);
     }
 
     // Right at the end of adding everything, limit the num. of max. rows in the terminal
@@ -279,14 +279,14 @@ export default class SingleTerminal {
       // NEW LINE HANDLING
       //========================================================================
 
-      const newLineBehavior = this.rxSettings.config.newLineCursorBehavior;
+      const newLineBehavior = this.rxSettings.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === "\n".charCodeAt(0)) {
         // If swallow is disabled, print the new line character. Do this before
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
         // line
-        if (!this.rxSettings.config.swallowNewLine) {
+        if (!this.rxSettings.swallowNewLine) {
           this._addVisibleChar(rxByte);
         }
 
@@ -315,13 +315,13 @@ export default class SingleTerminal {
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
-      const carriageReturnCursorBehavior = this.rxSettings.config.carriageReturnCursorBehavior;
+      const carriageReturnCursorBehavior = this.rxSettings.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
       if (this.inIdleState && rxByte === "\r".charCodeAt(0)) {
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
-        if (!this.rxSettings.config.swallowCarriageReturn) {
+        if (!this.rxSettings.swallowCarriageReturn) {
           this._addVisibleChar(rxByte);
         }
 
@@ -345,7 +345,7 @@ export default class SingleTerminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.rxSettings.config.ansiEscapeCodeParsingEnabled) {
+      if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
         this._addVisibleChar(rxByte);
         continue;
       }
@@ -390,7 +390,7 @@ export default class SingleTerminal {
       // When we get to the end of parsing, check that if we are still
       // parsing an escape code, and we've hit the escape code length limit,
       // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.rxSettings.config.maxEscapeCodeLengthChars.appliedValue;
+      const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
       // const maxEscapeCodeLengthChars = 10;
 
       if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
@@ -564,7 +564,7 @@ export default class SingleTerminal {
    * @param data The data to parse and display.
    */
   _parseDataAsNumber(data: Uint8Array) {
-    // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.config.numberType);
+    // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.numberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
 
@@ -576,23 +576,23 @@ export default class SingleTerminal {
       //========================================================================
       // CREATE NUMBER PART OF STRING
       //========================================================================
-      const isLittleEndian = this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN;
+      const isLittleEndian = this.rxSettings.endianness === Endianness.LITTLE_ENDIAN;
       // HEX
       //============
-      if (this.rxSettings.config.numberType === NumberType.HEX) {
-        if (this.partialNumberBuffer.length < this.rxSettings.config.numBytesPerHexNumber.appliedValue) {
+      if (this.rxSettings.numberType === NumberType.HEX) {
+        if (this.partialNumberBuffer.length < this.rxSettings.numBytesPerHexNumber.appliedValue) {
           // Wait for enough bytes for the hex number as specified by the user
           continue;
         }
         // Got enough bytes, loop through and convert to hex
         for (let idx = 0; idx < this.partialNumberBuffer.length; idx += 1) {
           let byteIdx;
-          if (this.rxSettings.config.endianness === Endianness.LITTLE_ENDIAN) {
+          if (this.rxSettings.endianness === Endianness.LITTLE_ENDIAN) {
             byteIdx = this.partialNumberBuffer.length - 1 - idx;
-          } else if (this.rxSettings.config.endianness === Endianness.BIG_ENDIAN) {
+          } else if (this.rxSettings.endianness === Endianness.BIG_ENDIAN) {
             byteIdx = idx;
           } else {
-            throw Error("Invalid endianness setting: " + this.rxSettings.config.endianness);
+            throw Error("Invalid endianness setting: " + this.rxSettings.endianness);
           }
           let partialHexString = this.partialNumberBuffer[byteIdx].toString(16);
           partialHexString = partialHexString.padStart(2, '0');
@@ -600,19 +600,19 @@ export default class SingleTerminal {
         }
         this.partialNumberBuffer = [];
         // Set case of hex string
-        if (this.rxSettings.config.hexCase === HexCase.UPPERCASE) {
+        if (this.rxSettings.hexCase === HexCase.UPPERCASE) {
           numberStr = numberStr.toUpperCase();
-        } else if (this.rxSettings.config.hexCase === HexCase.LOWERCASE) {
+        } else if (this.rxSettings.hexCase === HexCase.LOWERCASE) {
           numberStr = numberStr.toLowerCase();
         } else {
-          throw Error("Invalid hex case setting: " + this.rxSettings.config.hexCase);
+          throw Error("Invalid hex case setting: " + this.rxSettings.hexCase);
         }
         numberAsBigInt = BigInt('0x' + numberStr);
         // "0x" is added later after the padding step if enabled
       }
       // UINT8
       //============
-      else if (this.rxSettings.config.numberType === NumberType.UINT8) {
+      else if (this.rxSettings.numberType === NumberType.UINT8) {
         // Even though for a uint8 we could directly convert the byte to a string,
         // we use this Array method to be consistent with the other number types
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
@@ -623,7 +623,7 @@ export default class SingleTerminal {
       }
       // INT8
       //============
-      else if (this.rxSettings.config.numberType === NumberType.INT8) {
+      else if (this.rxSettings.numberType === NumberType.INT8) {
         const uint8Array = Uint8Array.from(this.partialNumberBuffer);
         const dataView = new DataView(uint8Array.buffer);
         numberStr = dataView.getInt8(0).toString(10);
@@ -632,7 +632,7 @@ export default class SingleTerminal {
       }
       // UINT16
       //============
-      else if (this.rxSettings.config.numberType === NumberType.UINT16) {
+      else if (this.rxSettings.numberType === NumberType.UINT16) {
         if (this.partialNumberBuffer.length < 2) {
           // We need to wait for another byte to come in before we can convert
           // the two bytes to a single number
@@ -647,7 +647,7 @@ export default class SingleTerminal {
       }
       // INT16
       //============
-      else if (this.rxSettings.config.numberType === NumberType.INT16) {
+      else if (this.rxSettings.numberType === NumberType.INT16) {
         if (this.partialNumberBuffer.length < 2) {
           // We need to wait for another byte to come in before we can convert
           // the two bytes to a single number
@@ -662,7 +662,7 @@ export default class SingleTerminal {
       }
       // UINT32
       //============
-      else if (this.rxSettings.config.numberType === NumberType.UINT32) {
+      else if (this.rxSettings.numberType === NumberType.UINT32) {
         if (this.partialNumberBuffer.length < 4) {
           continue;
         }
@@ -674,7 +674,7 @@ export default class SingleTerminal {
       }
       // INT32
       //============
-      else if (this.rxSettings.config.numberType === NumberType.INT32) {
+      else if (this.rxSettings.numberType === NumberType.INT32) {
         if (this.partialNumberBuffer.length < 4) {
           continue;
         }
@@ -686,7 +686,7 @@ export default class SingleTerminal {
       }
       // UINT64
       //============
-      else if (this.rxSettings.config.numberType === NumberType.UINT64) {
+      else if (this.rxSettings.numberType === NumberType.UINT64) {
         if (this.partialNumberBuffer.length < 8) {
           continue;
         }
@@ -698,7 +698,7 @@ export default class SingleTerminal {
       }
       // INT64
       //============
-      else if (this.rxSettings.config.numberType === NumberType.INT64) {
+      else if (this.rxSettings.numberType === NumberType.INT64) {
         if (this.partialNumberBuffer.length < 8) {
           continue;
         }
@@ -710,7 +710,7 @@ export default class SingleTerminal {
       }
       // FLOAT32
       //============
-      else if (this.rxSettings.config.numberType === NumberType.FLOAT32) {
+      else if (this.rxSettings.numberType === NumberType.FLOAT32) {
         if (this.partialNumberBuffer.length < 4) {
           continue;
         }
@@ -719,17 +719,17 @@ export default class SingleTerminal {
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
         const number = dataView.getFloat32(0, isLittleEndian);
-        if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
+        if (this.rxSettings.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
           numberStr = number.toString();
-        } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
-          numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
+        } else if (this.rxSettings.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
+          numberStr = number.toFixed(this.rxSettings.floatNumOfDecimalPlaces.appliedValue);
         }
         numberAsBigInt = BigInt(dataView.getUint32(0, isLittleEndian));
         this.partialNumberBuffer = [];
       }
       // FLOAT64
       //============
-      else if (this.rxSettings.config.numberType === NumberType.FLOAT64) {
+      else if (this.rxSettings.numberType === NumberType.FLOAT64) {
         if (this.partialNumberBuffer.length < 8) {
           continue;
         }
@@ -738,10 +738,10 @@ export default class SingleTerminal {
         // toFixed gives a fixed number of decimal places
         // toString gives a variable amount depending on the number
         const number = dataView.getFloat64(0, isLittleEndian);
-        if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
+        if (this.rxSettings.floatStringConversionMethod === FloatStringConversionMethod.TO_STRING) {
           numberStr = number.toString();
-        } else if (this.rxSettings.config.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
-          numberStr = number.toFixed(this.rxSettings.config.floatNumOfDecimalPlaces.appliedValue);
+        } else if (this.rxSettings.floatStringConversionMethod === FloatStringConversionMethod.TO_FIXED) {
+          numberStr = number.toFixed(this.rxSettings.floatNumOfDecimalPlaces.appliedValue);
         }
         numberAsBigInt = BigInt(dataView.getBigUint64(0, isLittleEndian));
         this.partialNumberBuffer = [];
@@ -749,66 +749,66 @@ export default class SingleTerminal {
       // INVALID
       //============
       else {
-        throw Error("Invalid number type: " + this.rxSettings.config.numberType);
+        throw Error("Invalid number type: " + this.rxSettings.numberType);
       }
       // console.log('Converted numberStr=', numberStr);
 
       //========================================================================
       // ADD PADDING
       //========================================================================
-      if (this.rxSettings.config.padValues) {
+      if (this.rxSettings.padValues) {
         // If padding is set to automatic, pad to the largest possible value for the selected number type
         let paddingChar = " ";
-        if (this.rxSettings.config.paddingCharacter === PaddingCharacter.ZERO) {
+        if (this.rxSettings.paddingCharacter === PaddingCharacter.ZERO) {
           paddingChar = "0";
-        } else if (this.rxSettings.config.paddingCharacter === PaddingCharacter.WHITESPACE) {
+        } else if (this.rxSettings.paddingCharacter === PaddingCharacter.WHITESPACE) {
           paddingChar = " ";
         } else {
-          throw Error("Invalid padding character setting: " + this.rxSettings.config.paddingCharacter);
+          throw Error("Invalid padding character setting: " + this.rxSettings.paddingCharacter);
         }
         // If padding is set to automatic, pad to the largest possible value for the selected number type
-        let numPaddingChars = this.rxSettings.config.numPaddingChars.appliedValue;
+        let numPaddingChars = this.rxSettings.numPaddingChars.appliedValue;
         if (numPaddingChars === -1) {
-          if (this.rxSettings.config.numberType === NumberType.HEX) {
+          if (this.rxSettings.numberType === NumberType.HEX) {
             numPaddingChars = 2;
-          } else if (this.rxSettings.config.numberType === NumberType.UINT8) {
+          } else if (this.rxSettings.numberType === NumberType.UINT8) {
             // Numbers 0 to 255, so 3 chars
             numPaddingChars = 3;
-          } else if (this.rxSettings.config.numberType === NumberType.INT8) {
+          } else if (this.rxSettings.numberType === NumberType.INT8) {
             // Numbers -128 to 127, so 4 chars
             numPaddingChars = 4;
-          } else if (this.rxSettings.config.numberType === NumberType.UINT16) {
+          } else if (this.rxSettings.numberType === NumberType.UINT16) {
             // Numbers 0 to 65535, so 5 chars
             numPaddingChars = 5;
-          } else if (this.rxSettings.config.numberType === NumberType.INT16) {
+          } else if (this.rxSettings.numberType === NumberType.INT16) {
             // Numbers -32768 to 32767, so 6 chars
             numPaddingChars = 6;
-          } else if (this.rxSettings.config.numberType === NumberType.UINT32) {
+          } else if (this.rxSettings.numberType === NumberType.UINT32) {
             // Numbers 0 to 4294967296, so 10 chars
             numPaddingChars = 10;
-          } else if (this.rxSettings.config.numberType === NumberType.INT32) {
+          } else if (this.rxSettings.numberType === NumberType.INT32) {
             // Numbers -2147483648 to 2147483647, so 11 chars
             numPaddingChars = 11;
-          } else if (this.rxSettings.config.numberType === NumberType.UINT64) {
+          } else if (this.rxSettings.numberType === NumberType.UINT64) {
             // Numbers 0 to 18,446,744,073,709,551,615, so 20 chars
             numPaddingChars = 20;
-          } else if (this.rxSettings.config.numberType === NumberType.INT64) {
+          } else if (this.rxSettings.numberType === NumberType.INT64) {
             // Numbers -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, so 20 chars
             numPaddingChars = 20;
-          } else if (this.rxSettings.config.numberType === NumberType.FLOAT32) {
+          } else if (this.rxSettings.numberType === NumberType.FLOAT32) {
             // Arbitrarily choose 6 for floats if it's set to "auto" (-1)
             numPaddingChars = 6;
-          } else if (this.rxSettings.config.numberType === NumberType.FLOAT64) {
+          } else if (this.rxSettings.numberType === NumberType.FLOAT64) {
             numPaddingChars = 6;
           } else {
-            throw Error("Invalid number type: " + this.rxSettings.config.numberType);
+            throw Error("Invalid number type: " + this.rxSettings.numberType);
           }
         }
 
         // Handle negative numbers combined with zeroes padding by padding after the negative sign
         // (padding negative numbers with spaces is handled the same way as positive numbers, the padding
         // goes before the negative sign).
-        if (this.rxSettings.config.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === "-") {
+        if (this.rxSettings.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === "-") {
           numberStr = numberStr.slice(1);
           numPaddingChars -= 1; // Negative sign takes up one padding char
           numberStr = '-' + numberStr.padStart(numPaddingChars, paddingChar);
@@ -820,7 +820,7 @@ export default class SingleTerminal {
       // console.log('After padding, numberStr=', numberStr);
 
       // Add 0x if hex and setting is enabled
-      if (this.rxSettings.config.numberType === NumberType.HEX && this.rxSettings.config.prefixHexValuesWith0x) {
+      if (this.rxSettings.numberType === NumberType.HEX && this.rxSettings.prefixHexValuesWith0x) {
         numberStr = "0x" + numberStr;
       }
 
@@ -831,7 +831,7 @@ export default class SingleTerminal {
       // Only prevent numerical value wrapping mid-value if:
       // 1) Setting is enabled
       // 2) The terminal column width is high enough to fit an entire value in it
-      if (this.rxSettings.config.preventValuesWrappingAcrossRows && this.displaySettings.terminalWidthChars.appliedValue >= numberStr.length) {
+      if (this.rxSettings.preventValuesWrappingAcrossRows && this.displaySettings.terminalWidthChars.appliedValue >= numberStr.length) {
         // Create a new terminal row if the hex value will not fit on existing row
         const currRow = this.terminalRows[this.cursorPosition[0]];
         const numColsLeftOnRow = this.displaySettings.terminalWidthChars.appliedValue - this.cursorPosition[1];
@@ -850,14 +850,14 @@ export default class SingleTerminal {
       // Work out if we need to insert a new line because the numerical value matches the new line value
       // in the settings
       let insertNewLine = false;
-      if (this.rxSettings.config.insertNewLineOnMatchedValue) {
-        const valueToInsertNewLineAsNum = BigInt('0x' +  this.rxSettings.config.newLineMatchValueAsHex.appliedValue);
+      if (this.rxSettings.insertNewLineOnMatchedValue) {
+        const valueToInsertNewLineAsNum = BigInt('0x' +  this.rxSettings.newLineMatchValueAsHex.appliedValue);
         if (numberAsBigInt == valueToInsertNewLineAsNum) {
           insertNewLine = true;
         }
       }
 
-      if (insertNewLine && this.rxSettings.config.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.BEFORE) {
+      if (insertNewLine && this.rxSettings.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.BEFORE) {
         // Insert new line before hex value
         this._cursorDown(1, false); // Not due to wrapping
         this._cursorLeft(this.cursorPosition[1]);
@@ -869,11 +869,11 @@ export default class SingleTerminal {
         this._addVisibleChar(numberStr.charCodeAt(charIdx));
       }
       // Append the hex separator string
-      for (let charIdx = 0; charIdx < this.rxSettings.config.numberSeparator.appliedValue.length; charIdx += 1) {
-        this._addVisibleChar(this.rxSettings.config.numberSeparator.appliedValue.charCodeAt(charIdx));
+      for (let charIdx = 0; charIdx < this.rxSettings.numberSeparator.appliedValue.length; charIdx += 1) {
+        this._addVisibleChar(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx));
       }
 
-      if (insertNewLine && this.rxSettings.config.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
+      if (insertNewLine && this.rxSettings.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
         // Insert new line after hex value
         this._cursorDown(1, false); // Not due to wrapping
         this._cursorLeft(this.cursorPosition[1]);
@@ -1070,7 +1070,7 @@ export default class SingleTerminal {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
     const terminalChar = new TerminalChar();
 
-    const nonVisibleCharDisplayBehavior = this.rxSettings.config.nonVisibleCharDisplayBehavior;
+    const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
     if (rxByte >= 0x20 && rxByte <= 0x7e) {
       // Is printable ASCII character, no shifting needed

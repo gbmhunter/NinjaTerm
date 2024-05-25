@@ -36,8 +36,6 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
-export const PORT_CONFIGURATION_CONFIG_KEY = ['settings', 'port-configuration-settings'];
-
 export class PortConfigurationConfig {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -61,10 +59,6 @@ export class PortConfigurationConfig {
   resumeConnectionToLastSerialPortOnStartup = true;
 
   reopenSerialPortIfUnexpectedlyClosed = true;
-
-  constructor() {
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
 }
 
 export default class PortConfiguration {
@@ -73,9 +67,7 @@ export default class PortConfiguration {
 
   profileManager: ProfileManager;
 
-  config = new PortConfigurationConfig();
-
-  baudRateInputValue = this.config.baudRate.toString();
+  baudRateInputValue: string;
 
   /**
    * Set min. baud rate to 1 and max. baud rate to 2,000,000. Most systems won't actually
@@ -85,9 +77,26 @@ export default class PortConfiguration {
   baudRateValidation = z.coerce.number().int().min(1).max(2000000);
   baudRateErrorMsg = '';
 
+  baudRate = 115200;
+
+  numDataBits = 8;
+
+  parity = Parity.NONE;
+
+  stopBits: StopBits = 1;
+
+  flowControl = FlowControl.NONE;
+
+  connectToSerialPortAsSoonAsItIsSelected = true;
+
+  resumeConnectionToLastSerialPortOnStartup = true;
+
+  reopenSerialPortIfUnexpectedlyClosed = true;
+
   constructor(appStorage: AppStorage, profileManager: ProfileManager) {
     this.appStorage = appStorage;
     this.profileManager = profileManager;
+    this.baudRateInputValue = this.baudRate.toString();
     // this.config =
     this._loadConfig();
     // this.profileManager.registerForProfileChange(() => {
@@ -97,7 +106,7 @@ export default class PortConfiguration {
   }
 
   setBaudRate = (baudRate: number) => {
-    this.config.baudRate = baudRate;
+    this.baudRate = baudRate;
     this._saveConfig();
   }
 
@@ -120,37 +129,37 @@ export default class PortConfiguration {
     if (typeof numDataBits !== 'number') {
       throw new Error("numDataBits must be a number");
     }
-    this.config.numDataBits = numDataBits;
+    this.numDataBits = numDataBits;
     this._saveConfig();
   }
 
   setParity = (parity: Parity) => {
-    this.config.parity = parity;
+    this.parity = parity;
     this._saveConfig();
   }
 
   setStopBits = (stopBits: StopBits) => {
-    this.config.stopBits = stopBits;
+    this.stopBits = stopBits;
     this._saveConfig();
   }
 
   setFlowControl = (flowControl: FlowControl) => {
-    this.config.flowControl = flowControl;
+    this.flowControl = flowControl;
     this._saveConfig();
   }
 
   setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {
-    this.config.connectToSerialPortAsSoonAsItIsSelected = value;
+    this.connectToSerialPortAsSoonAsItIsSelected = value;
     this._saveConfig();
   }
 
   setResumeConnectionToLastSerialPortOnStartup = (value: boolean) => {
-    this.config.resumeConnectionToLastSerialPortOnStartup = value;
+    this.resumeConnectionToLastSerialPortOnStartup = value;
     this._saveConfig();
   }
 
   setReopenSerialPortIfUnexpectedlyClosed = (value: boolean) => {
-    this.config.reopenSerialPortIfUnexpectedlyClosed = value;
+    this.reopenSerialPortIfUnexpectedlyClosed = value;
     this._saveConfig();
   }
 
@@ -160,11 +169,12 @@ export default class PortConfiguration {
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (configToLoad.version === this.config.version) {
-      console.log(`Up-to-date config found for key ${PORT_CONFIGURATION_CONFIG_KEY}.`);
+    const latestVersion = new PortConfigurationConfig().version;
+    if (configToLoad.version === latestVersion) {
+      console.log(`Up-to-date config found.`);
     } else {
-      console.error(`Out-of-date config version ${configToLoad.version} found for key ${PORT_CONFIGURATION_CONFIG_KEY}.` +
-                    ` Updating to version ${this.config.version}.`);
+      console.error(`Out-of-date config version ${configToLoad.version} found.` +
+                    ` Updating to version ${latestVersion}.`);
       this._saveConfig();
       configToLoad = this.profileManager.activeProfile.rootConfig.settings.portSettings
       // deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
@@ -172,11 +182,16 @@ export default class PortConfiguration {
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
-    // updateConfigFromSerializable(configToLoad, this.config);
-    this.config = configToLoad;
-    makeAutoObservable(this.config);
+    this.baudRate = configToLoad.baudRate;
+    this.numDataBits = configToLoad.numDataBits;
+    this.parity = configToLoad.parity;
+    this.stopBits = configToLoad.stopBits;
+    this.flowControl = configToLoad.flowControl;
+    this.connectToSerialPortAsSoonAsItIsSelected = configToLoad.connectToSerialPortAsSoonAsItIsSelected;
+    this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
+    this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
 
-    this.setBaudRateInputValue(this.config.baudRate.toString());
+    this.setBaudRateInputValue(this.baudRate.toString());
   };
 
   _saveConfig = () => {
@@ -194,11 +209,11 @@ export default class PortConfiguration {
    */
   get shortSerialConfigName() {
     let output = '';
-    output += this.config.baudRate.toString();
+    output += this.baudRate.toString();
     output += ' ';
-    output += this.config.numDataBits.toString();
-    output += this.config.parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
-    output += this.config.stopBits.toString();
+    output += this.numDataBits.toString();
+    output += this.parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
+    output += this.stopBits.toString();
     return output;
   }
 }
