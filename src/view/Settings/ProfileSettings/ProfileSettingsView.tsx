@@ -42,6 +42,7 @@ function ProfileSettingsView(props: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+      <h2>Profiles</h2>
       <div style={{ height: 400, width: 600 }}>
         <DataGrid
           rows={rows}
@@ -70,8 +71,15 @@ function ProfileSettingsView(props: Props) {
         />
       </div>
 
+      <div style={{ height: 20 }} />
+
+      <div style={{ display: 'flex', gap: 10 }}>
       <Button variant="contained" color="primary">
         Load Profile
+      </Button>
+
+      <Button variant="contained" color="primary">
+        Save App State To Profile
       </Button>
 
       <Button
@@ -93,6 +101,7 @@ function ProfileSettingsView(props: Props) {
       >
         Delete Profile
       </Button>
+      </div>
 
       <div style={{ height: 20 }} />
 

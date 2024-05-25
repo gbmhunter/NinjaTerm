@@ -77,6 +77,9 @@ export class ProfileManager {
     this.callbacks.push(callback);
   }
 
+  /**
+   * Save all profiles to local storage.
+   */
   saveProfiles = () => {
     console.log('Saving profiles...');
     window.localStorage.setItem('profiles', JSON.stringify(this.profiles));
