@@ -8,16 +8,17 @@ import AppStorage from "src/model/Storage/AppStorage";
 import BorderedSection from "src/view/Components/BorderedSection";
 import { DataType } from "src/model/Settings/RxSettings/RxSettings";
 import PortConfiguration, { PortConfigurationConfig } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 interface Props {
-  appStorage: AppStorage;
+  profileManager: ProfileManager;
   profilesSettings: ProfilesSettings;
 }
 
 function ProfileSettingsView(props: Props) {
-  const { appStorage, profilesSettings } = props;
+  const { profileManager, profilesSettings } = props;
 
-  const profiles = appStorage.getProfiles();
+  const profiles = profileManager.profiles;
 
   // Define the columns of the profiles table
   const columns: GridColDef[] = [
@@ -28,19 +29,19 @@ function ProfileSettingsView(props: Props) {
 
   // Create rows in profiles table
   let rows: any = [];
-  // for (let profile of profiles) {
-  //   const portConfigSettings = appStorage.getConfigFromProfile(profile, PORT_CONFIGURATION_CONFIG_KEY) as PortConfigurationConfig;
-  //   rows.push({
-  //     id: profile.name,
-  //     name: profile.name,
-  //     portSettings: portConfigSettings.baudRate,
-  //     dataType: DataType[profile.configData["settings"]["rx-settings"]["dataType"]],
-  //   });
-  // }
+  for (let idx = 0; idx < profiles.length; idx++) {
+    const profile = profiles[idx];
+    rows.push({
+      id: idx,
+      name: profile.name,
+      portSettings: profile.rootConfig.settings.portSettings.baudRate,
+      dataType: DataType[profile.rootConfig.settings.rxSettings.dataType],
+    });
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
-      <FormControl sx={{ m: 1, minWidth: 300, maxWidth: 300 }}>
+      {/* <FormControl sx={{ m: 1, minWidth: 300, maxWidth: 300 }}>
         <InputLabel shrink htmlFor="select-multiple-native">
           Profiles
         </InputLabel>
@@ -61,7 +62,7 @@ function ProfileSettingsView(props: Props) {
             </option>
           ))}
         </Select>
-      </FormControl>
+      </FormControl> */}
 
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
@@ -87,8 +88,24 @@ function ProfileSettingsView(props: Props) {
         Load Profile
       </Button>
 
-      <Button variant="contained" color="primary">
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          profileManager.newProfile();
+        }}
+      >
         New Profile
+      </Button>
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          // profileManager.newProfile();
+        }}
+      >
+        Delete Profile
       </Button>
     </div>
   );

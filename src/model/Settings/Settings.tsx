@@ -59,7 +59,7 @@ export class Settings {
     this.rxSettings = new RxSettings(appStorage, profileManager);
     this.displaySettings = new DisplaySettings(appStorage, profileManager);
     this.generalSettings = new GeneralSettings(appStorage, profileManager);
-    this.profilesSettings = new ProfilesSettings(appStorage);
+    this.profilesSettings = new ProfilesSettings();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

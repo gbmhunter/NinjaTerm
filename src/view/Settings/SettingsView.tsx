@@ -40,7 +40,7 @@ function SettingsDialog(props: Props) {
       <GeneralSettingsView generalSettings={app.settings.generalSettings} />
     ),
     [SettingsCategories.PROFILES]: (
-      <ProfileSettingsView appStorage={app.appStorage} profilesSettings={app.settings.profilesSettings} />
+      <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />
     ),
   };
 

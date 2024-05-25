@@ -1,3 +1,4 @@
+import { makeAutoObservable } from "mobx";
 import { DisplaySettingsConfig } from "../Settings/DisplaySettings/DisplaySettings";
 import { GeneralSettingsConfig } from "../Settings/GeneralSettings/GeneralSettings";
 import { PortConfigurationConfig } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
@@ -60,6 +61,8 @@ export class ProfileManager {
     }
     // Only support the 1 active config for now
     this.activeProfile = this.profiles[0];
+
+    makeAutoObservable(this);
   }
 
   setActiveProfile = (profile: Profile) => {
@@ -77,5 +80,11 @@ export class ProfileManager {
   saveProfiles = () => {
     console.log('Saving profiles...');
     window.localStorage.setItem('profiles', JSON.stringify(this.profiles));
+  }
+
+  newProfile = () => {
+    const newProfile = new Profile();
+    this.profiles.push(newProfile);
+    this.saveProfiles();
   }
 }
