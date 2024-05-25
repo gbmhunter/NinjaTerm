@@ -55,11 +55,11 @@ export class MacroController {
         new Macro(
           `M${i + 1}`,
           () => {
-            if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+            if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
               return "\n";
-            } else if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+            } else if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
               return "\r";
-            } else if (this.app.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+            } else if (this.app.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
               return "\r\n";
             } else {
               throw new Error("Unknown enter key press behavior");

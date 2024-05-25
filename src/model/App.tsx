@@ -569,7 +569,7 @@ export class App {
       let text = await navigator.clipboard.readText();
 
       // Convert CRLF to LF if setting is enabled
-      if (this.settings.generalSettings.config.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      if (this.settings.generalSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
         text = text.replace(/\r\n/g, '\n');
       }
 
@@ -678,7 +678,7 @@ export class App {
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.generalSettings.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.generalSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
@@ -749,7 +749,7 @@ export class App {
     else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
-      if (this.settings.txSettings.config.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Ctrl-A through Ctrl-Z is has been pressed
         // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
         // uppercase if lowercase and then subtracting 64
@@ -759,7 +759,7 @@ export class App {
         return;
       }
     } else if (event.altKey) {
-      if (this.settings.txSettings.config.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
         bytesToWrite.push(0x1B);
@@ -769,11 +769,11 @@ export class App {
         return;
       }
     } else if (event.key === 'Enter') {
-      if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+      if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
         bytesToWrite.push(0x0A);
-      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
         bytesToWrite.push(0x0D);
-      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
         bytesToWrite.push(0x0D);
         bytesToWrite.push(0x0A);
       } else {
@@ -792,20 +792,20 @@ export class App {
     //===========================================================
     else if (event.key === 'Backspace') {
       // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
-      if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+      } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
     } else if (event.key === 'Delete') {
       // Delete also has the option of sending [ESC][3~
-      if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
         bytesToWrite.push(0x7F);
-      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
         bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');

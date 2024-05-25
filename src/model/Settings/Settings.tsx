@@ -55,10 +55,10 @@ export class Settings {
     this.fakePortsController = fakePortController;
 
     this.portConfiguration = new PortConfiguration(appStorage, profileManager);
-    this.txSettings = new TxSettings(appStorage);
+    this.txSettings = new TxSettings(appStorage, profileManager);
     this.rxSettings = new RxSettings(appStorage, profileManager);
-    this.displaySettings = new DisplaySettings(appStorage);
-    this.generalSettings = new GeneralSettings(appStorage);
+    this.displaySettings = new DisplaySettings(appStorage, profileManager);
+    this.generalSettings = new GeneralSettings(appStorage, profileManager);
     this.profilesSettings = new ProfilesSettings(appStorage);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }

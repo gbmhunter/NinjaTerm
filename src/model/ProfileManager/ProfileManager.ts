@@ -1,5 +1,8 @@
+import { DisplaySettingsConfig } from "../Settings/DisplaySettings/DisplaySettings";
+import { GeneralSettingsConfig } from "../Settings/GeneralSettings/GeneralSettings";
 import { PortConfigurationConfig } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
 import { RxSettingsConfig } from "../Settings/RxSettings/RxSettings";
+import { TxSettingsConfig } from "../Settings/TxSettings/TxSettings";
 
 export class RootConfig {
 
@@ -7,7 +10,10 @@ export class RootConfig {
 
   settings = {
     'portSettings': new PortConfigurationConfig(),
+    'txSettings': new TxSettingsConfig(),
     'rxSettings': new RxSettingsConfig(),
+    'displaySettings': new DisplaySettingsConfig(),
+    'generalSettings': new GeneralSettingsConfig(),
   };
 }
 

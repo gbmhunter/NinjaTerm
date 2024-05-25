@@ -1,11 +1,9 @@
 import { makeAutoObservable } from "mobx";
+import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 import AppStorage from "src/model/Storage/AppStorage";
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
 
-const CONFIG_KEY = ['settings', 'general-settings'];
-
-class Config {
+export class GeneralSettingsConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
@@ -15,60 +13,56 @@ class Config {
 
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
-
-  constructor() {
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
 }
 
 export default class RxSettings {
   appStorage: AppStorage;
+  profileManager: ProfileManager;
 
-  config = new Config();
+  whenPastingOnWindowsReplaceCRLFWithLF = true;
+  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
-  constructor(appStorage: AppStorage) {
+  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
     this.appStorage = appStorage;
+    this.profileManager = profileManager;
     this._loadConfig();
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
-    this.config.whenPastingOnWindowsReplaceCRLFWithLF = value;
+    this.whenPastingOnWindowsReplaceCRLFWithLF = value;
     this._saveConfig();
   };
 
   setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
-    this.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
+    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
     this._saveConfig();
   };
 
-  _loadConfig = () => {
-    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+  _saveConfig = () => {
+    let config = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
 
+    config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
+    config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
+
+    this.profileManager.saveProfiles();
+  };
+
+  _loadConfig = () => {
+    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (deserializedConfig === null) {
-      // No data exists, create
-      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
-      this._saveConfig();
-      return;
-    } else if (deserializedConfig.version === this.config.version) {
-      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
+    const latestVersion = new GeneralSettingsConfig().version;
+    if (configToLoad.version === latestVersion) {
+      console.log(`Up-to-date config found.`);
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
-                    ` Updating to version ${this.config.version}.`);
+      console.error(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+      configToLoad = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
     }
 
-    // At this point we are confident that the deserialized config matches what
-    // this classes config object wants, so we can go ahead and update.
-    updateConfigFromSerializable(deserializedConfig, this.config);
-  };
-
-  _saveConfig = () => {
-    const serializableConfig = createSerializableObjectFromConfig(this.config);
-    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
+    this.whenPastingOnWindowsReplaceCRLFWithLF = configToLoad.whenPastingOnWindowsReplaceCRLFWithLF;
+    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configToLoad.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
   };
 }

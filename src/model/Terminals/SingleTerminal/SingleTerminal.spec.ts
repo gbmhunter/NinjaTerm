@@ -21,7 +21,7 @@ describe('single terminal tests', () => {
     appStorage = new AppStorage();
     profileManager = new ProfileManager();
     dataProcessingSettings = new RxSettings(appStorage, profileManager);
-    displaySettings = new DisplaySettings(appStorage);
+    displaySettings = new DisplaySettings(appStorage, profileManager);
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,

@@ -1,8 +1,9 @@
-import { makeAutoObservable } from 'mobx';
-import { boolean, z } from 'zod';
+import { makeAutoObservable } from "mobx";
+import { boolean, z } from "zod";
 
-import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
-import AppStorage from 'src/model/Storage/AppStorage';
+import { ApplyableNumberField } from "src/view/Components/ApplyableTextField";
+import AppStorage from "src/model/Storage/AppStorage";
+import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -16,88 +17,96 @@ export enum DataViewConfiguration {
 export const dataViewConfigEnumToDisplayName: {
   [key: string]: string;
 } = {
-  [DataViewConfiguration.SINGLE_TERMINAL]: 'Single terminal',
-  [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
+  [DataViewConfiguration.SINGLE_TERMINAL]: "Single terminal",
+  [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: "Separate TX/RX terminals",
 };
 
-export default class DisplaySettings {
+export class DisplaySettingsConfig {
+  version = 1;
+  charSizePx = 14;
+  verticalRowPaddingPx = 5;
+  terminalWidthChars = 120;
+  scrollbackBufferSizeRows = 2000;
+  dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
+}
 
+export default class DisplaySettings {
   appStorage: AppStorage;
 
+  profileManager: ProfileManager;
+
   // 14px is a good default size for the terminal text
-  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
+  charSizePx = new ApplyableNumberField("14", z.coerce.number().int().min(1));
 
   /**
    * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
    */
-  verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(1));
+  verticalRowPaddingPx = new ApplyableNumberField("5", z.coerce.number().int().min(1));
 
-  terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
+  terminalWidthChars = new ApplyableNumberField("120", z.coerce.number().int().min(1));
 
-  scrollbackBufferSizeRows = new ApplyableNumberField('2000', z.coerce.number().int().min(1));
+  scrollbackBufferSizeRows = new ApplyableNumberField("2000", z.coerce.number().int().min(1));
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-
-  constructor(appStorage: AppStorage) {
+  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
     this.appStorage = appStorage;
+    this.profileManager = profileManager;
     this.charSizePx.setOnApplyChanged(() => {
-      this.saveConfig();
+      this._saveConfig();
     });
     this.verticalRowPaddingPx.setOnApplyChanged(() => {
-      this.saveConfig();
+      this._saveConfig();
     });
     this.terminalWidthChars.setOnApplyChanged(() => {
-      this.saveConfig();
+      this._saveConfig();
     });
     this.scrollbackBufferSizeRows.setOnApplyChanged(() => {
-      this.saveConfig();
+      this._saveConfig();
     });
     makeAutoObservable(this);
-    this.loadConfig();
+    this._loadConfig();
   }
 
   setDataViewConfiguration = (value: DataViewConfiguration) => {
     this.dataViewConfiguration = value;
-    this.saveConfig();
-  }
+    this._saveConfig();
+  };
 
-  saveConfig = () => {
-    // TODO: Update this to match the style used in RX settings (and others)
-    const config = {
-      charSizePx: this.charSizePx.dispValue,
-      verticalRowPadding: this.verticalRowPaddingPx.dispValue,
-      terminalWidthChars: this.terminalWidthChars.dispValue,
-      scrollbackBufferSizeRows: this.scrollbackBufferSizeRows.dispValue,
-      dataViewConfiguration: this.dataViewConfiguration,
-    };
+  _saveConfig = () => {
+    let config = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
 
-    this.appStorage.saveConfig(['settings', 'display'], config);
-  }
+    config.charSizePx = this.charSizePx.appliedValue;
+    config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
+    config.terminalWidthChars = this.terminalWidthChars.appliedValue;
+    config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
+    config.dataViewConfiguration = this.dataViewConfiguration;
 
-  loadConfig = () => {
-    const config = this.appStorage.getConfig(['settings', 'display']);
-    if (config === null) {
-      return;
+    this.profileManager.saveProfiles();
+  };
+
+  _loadConfig = () => {
+    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
+    //===============================================
+    // UPGRADE PATH
+    //===============================================
+    const latestVersion = new DisplaySettingsConfig().version;
+    if (configToLoad.version === latestVersion) {
+      console.log(`Up-to-date config found.`);
+    } else {
+      console.error(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
+      this._saveConfig();
+      configToLoad = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
     }
-    if (config.charSizePx !== undefined) {
-      this.charSizePx.dispValue = config.charSizePx;
-      this.charSizePx.apply();
-    }
-    if (config.verticalRowPadding !== undefined) {
-      this.verticalRowPaddingPx.dispValue = config.verticalRowPadding;
-      this.verticalRowPaddingPx.apply();
-    }
-    if (config.terminalWidthChars !== undefined) {
-      this.terminalWidthChars.dispValue = config.terminalWidthChars;
-      this.terminalWidthChars.apply();
-    }
-    if (config.scrollbackBufferSizeRows !== undefined) {
-      this.scrollbackBufferSizeRows.dispValue = config.scrollbackBufferSizeRows;
-      this.scrollbackBufferSizeRows.apply();
-    }
-    if (config.dataViewConfiguration !== undefined) {
-      this.dataViewConfiguration = config.dataViewConfiguration;
-    }
-  }
+
+    this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
+    this.charSizePx.apply();
+    this.verticalRowPaddingPx.setDispValue(configToLoad.verticalRowPaddingPx.toString());
+    this.verticalRowPaddingPx.apply();
+    this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
+    this.terminalWidthChars.apply();
+    this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
+    this.scrollbackBufferSizeRows.apply();
+    this.dataViewConfiguration = configToLoad.dataViewConfiguration;
+  };
 }
