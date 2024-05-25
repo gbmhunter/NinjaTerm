@@ -1,3 +1,4 @@
+import PortConfiguration, { PortConfigurationConfig } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
 
 /**
  * This class represents a serial port profile. It is used to store use-specific

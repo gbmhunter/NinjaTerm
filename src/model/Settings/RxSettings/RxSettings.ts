@@ -78,7 +78,7 @@ export enum Endianness {
   BIG_ENDIAN = 'Big Endian', // MSB is sent first.
 }
 
-class Config {
+export class RxSettingsConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
@@ -142,7 +142,7 @@ const CONFIG_KEY = ['settings', 'rx-settings'];
 export default class RxSettings {
   appStorage: AppStorage;
 
-  config = new Config();
+  config = new RxSettingsConfig();
 
   constructor(appStorage: AppStorage) {
     this.appStorage = appStorage;

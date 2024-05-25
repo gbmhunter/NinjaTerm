@@ -11,6 +11,7 @@ import GeneralSettings from './GeneralSettings/GeneralSettings';
 import AppStorage from '../Storage/AppStorage';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfilesSettings/ProfilesSettings';
+import { ProfileManager } from '../ProfileManager/ProfileManager';
 
 
 
@@ -49,11 +50,11 @@ export class Settings {
    * @param appStorage Needed to load/save settings into local storage.
    * @param fakePortController Needed to show the hidden fake port dialog.
    */
-  constructor(appStorage: AppStorage, fakePortController: FakePortsController) {
+  constructor(appStorage: AppStorage, profileManager: ProfileManager, fakePortController: FakePortsController) {
     this.appStorage = appStorage;
     this.fakePortsController = fakePortController;
 
-    this.portConfiguration = new PortConfiguration(appStorage);
+    this.portConfiguration = new PortConfiguration(appStorage, profileManager);
     this.txSettings = new TxSettings(appStorage);
     this.rxSettings = new RxSettings(appStorage);
     this.displaySettings = new DisplaySettings(appStorage);

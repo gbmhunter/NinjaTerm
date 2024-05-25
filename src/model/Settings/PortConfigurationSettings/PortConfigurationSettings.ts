@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import AppStorage from 'src/model/Storage/AppStorage';
 import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
+import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 
 export enum PortState {
   CLOSED,
@@ -70,6 +71,8 @@ export default class PortConfiguration {
 
   appStorage: AppStorage;
 
+  profileManager: ProfileManager;
+
   config = new PortConfigurationConfig();
 
   baudRateInputValue = this.config.baudRate.toString();
@@ -82,9 +85,14 @@ export default class PortConfiguration {
   baudRateValidation = z.coerce.number().int().min(1).max(2000000);
   baudRateErrorMsg = '';
 
-  constructor(appStorage: AppStorage) {
+  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
     this.appStorage = appStorage;
+    this.profileManager = profileManager;
+    // this.config =
     this._loadConfig();
+    // this.profileManager.registerForProfileChange(() => {
+    //   this._loadConfig();
+    // });
     makeAutoObservable(this);
   }
 
@@ -147,35 +155,35 @@ export default class PortConfiguration {
   }
 
   _loadConfig = () => {
-    let deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
-
+    // let deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
+    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.portSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (deserializedConfig === null) {
-      // No data exists, create
-      console.log(`No config found in local storage for key ${PORT_CONFIGURATION_CONFIG_KEY}. Creating...`);
-      this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
-    } else if (deserializedConfig.version === this.config.version) {
+    if (configToLoad.version === this.config.version) {
       console.log(`Up-to-date config found for key ${PORT_CONFIGURATION_CONFIG_KEY}.`);
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${PORT_CONFIGURATION_CONFIG_KEY}.` +
+      console.error(`Out-of-date config version ${configToLoad.version} found for key ${PORT_CONFIGURATION_CONFIG_KEY}.` +
                     ` Updating to version ${this.config.version}.`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
+      configToLoad = this.profileManager.activeProfile.rootConfig.settings.portSettings
+      // deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     }
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
-    updateConfigFromSerializable(deserializedConfig, this.config);
+    // updateConfigFromSerializable(configToLoad, this.config);
+    this.config = configToLoad;
+    makeAutoObservable(this.config);
 
     this.setBaudRateInputValue(this.config.baudRate.toString());
   };
 
   _saveConfig = () => {
-    const serializableConfig = createSerializableObjectFromConfig(this.config);
-    this.appStorage.saveConfig(PORT_CONFIGURATION_CONFIG_KEY, serializableConfig);
+    // const serializableConfig = createSerializableObjectFromConfig(this.config);
+    // this.profileManager.activeProfile.rootConfig.settings.portSettings = serializableConfig;
+    this.profileManager.saveProfiles();
+    // this.appStorage.saveConfig(PORT_CONFIGURATION_CONFIG_KEY, serializableConfig);
   };
 
   /**
