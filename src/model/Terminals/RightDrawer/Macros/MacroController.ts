@@ -1,15 +1,14 @@
 import { makeAutoObservable } from "mobx";
 
 import { App } from "src/model/App";
-import { Macro, MacroDataType } from "./Macro";
+import { Macro, MacroConfig, MacroDataType } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 
 const NUM_MACROS = 8;
 
-const CONFIG_KEY = ["macros"];
 const CONFIG_VERSION = 1;
 
-class Config {
+export class MacroControllerConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
@@ -17,11 +16,21 @@ class Config {
    */
   version = CONFIG_VERSION;
 
-  constructor() {
-    // makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
+  macroConfigs: MacroConfig[] = [];
 
-  macros: any[] = [];
+  constructor() {
+    // Create 8 macros by default and put some example data in the first two. This will
+    // only be applied the first time the user runs the app, after then it will load
+    // saved config from local storage
+    this.macroConfigs = [];
+    for (let i = 0; i < NUM_MACROS; i++) {
+      let macroConfig = new MacroConfig();
+      this.macroConfigs.push(macroConfig);
+    }
+    this.macroConfigs[0].data = 'Hello\\n';
+    this.macroConfigs[1].data = 'deadbeef';
+    this.macroConfigs[1].dataType = MacroDataType.HEX;
+  }
 }
 
 export class MacroController {
@@ -44,6 +53,8 @@ export class MacroController {
   }
 
   recreateMacros(numMacros: number) {
+
+    console.log(`Recreating macros with ${numMacros} macros`);
 
     // Remove all elements from macroArray
     this.macrosArray.splice(0, this.macrosArray.length);
@@ -69,11 +80,6 @@ export class MacroController {
         )
       );
     }
-
-    // Add some example data. Don't use setData because this will trigger a save
-    this.macrosArray[0].data = 'Hello\\n';
-    this.macrosArray[1].data = 'deadbeef';
-    this.macrosArray[1].dataType = MacroDataType.HEX;
   }
 
   setMacroToDisplayInModal(macro: Macro) {
@@ -94,38 +100,38 @@ export class MacroController {
   }
 
   _saveConfig = () => {
-    let config = new Config();
-    config.macros = this.macrosArray.map((macro) => {
-      return JSON.stringify(macro);
+
+    let config = this.app.profileManager.activeProfile.rootConfig.terminal.macroController;
+
+    config.macroConfigs = this.macrosArray.map((macro) => {
+      return macro.toConfig();
     });
-    this.app.appStorage.saveConfig(CONFIG_KEY, config);
+
+    this.app.profileManager.saveProfiles();
   };
 
   _loadConfig() {
-    let deserializedConfig = this.app.appStorage.getConfig(CONFIG_KEY);
+    let configToLoad = this.app.profileManager.activeProfile.rootConfig.terminal.macroController;
 
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (deserializedConfig === null) {
-      // No data exists, create
-      // console.log(`No config found in local storage for key "${CONFIG_KEY}". Creating...`);
-      this._saveConfig();
-      return;
-    } else if (deserializedConfig.version === CONFIG_VERSION) {
-      // console.log(`Up-to-date config found for key "${CONFIG_KEY}".`);
+    const latestVersion = new MacroControllerConfig().version;
+    if (configToLoad.version === latestVersion) {
+      console.log(`Up-to-date config found.`);
     } else {
-      // console.log(`Out-of-date config version ${deserializedConfig.version} found for key "${CONFIG_KEY}".` + ` Updating to version ${CONFIG_VERSION}.`);
+      console.error(`Out-of-date config version ${configToLoad.version} found.` +
+                    ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      return;
+      configToLoad = this.app.profileManager.activeProfile.rootConfig.terminal.macroController;
     }
 
     // If we get here we loaded a valid config. Apply config.
-    this.recreateMacros(deserializedConfig.macros.length);
-    for (let i = 0; i < deserializedConfig.macros.length; i++) {
-      const macroData = deserializedConfig.macros[i];
+    this.recreateMacros(configToLoad.macroConfigs.length);
+    for (let i = 0; i < configToLoad.macroConfigs.length; i++) {
+      const macroConfig = configToLoad.macroConfigs[i];
       let macro = this.macrosArray[i];
-      macro.fromJSON(macroData);
+      macro.loadConfig(macroConfig);
     };
   }
 }

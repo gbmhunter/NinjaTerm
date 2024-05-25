@@ -3,10 +3,15 @@ import { GeneralSettingsConfig } from "../Settings/GeneralSettings/GeneralSettin
 import { PortConfigurationConfig } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
 import { RxSettingsConfig } from "../Settings/RxSettings/RxSettings";
 import { TxSettingsConfig } from "../Settings/TxSettings/TxSettings";
+import { MacroControllerConfig } from "../Terminals/RightDrawer/Macros/MacroController";
 
 export class RootConfig {
 
   version = 1;
+
+  terminal = {
+    'macroController': new MacroControllerConfig(),
+  };
 
   settings = {
     'portSettings': new PortConfigurationConfig(),

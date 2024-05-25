@@ -1,11 +1,18 @@
 import { makeAutoObservable } from "mobx";
-import { App } from "src/model/App";
-import { z } from "zod";
 import { stringToUint8Array } from 'src/model/Util/Util';
 
 export enum MacroDataType {
   ASCII = "ASCII",
   HEX = "HEX",
+}
+
+export class MacroConfig {
+  version = 1;
+  name = '';
+  dataType = MacroDataType.ASCII;
+  data = '';
+  processEscapeChars = true;
+  sendOnEnterValueForEveryNewLineInTextBox = true;
 }
 
 export class Macro {
@@ -169,9 +176,23 @@ export class Macro {
     return this.data.length !== 0 && this.errorMsg === '';
   }
 
-  fromJSON = (json: string) => {
-    const objFromJson = JSON.parse(json);
-    Object.assign(this, objFromJson);
+  loadConfig = (config: MacroConfig) => {
+    this.name = config.name;
+    this.data = config.data;
+    this.dataType = config.dataType;
+    this.processEscapeChars = config.processEscapeChars;
+    this.sendOnEnterValueForEveryNewLineInTextBox = config.sendOnEnterValueForEveryNewLineInTextBox;
+  }
+
+  toConfig = (): MacroConfig => {
+    return {
+      version: 1,
+      name: this.name,
+      data: this.data,
+      dataType: this.dataType,
+      processEscapeChars: this.processEscapeChars,
+      sendOnEnterValueForEveryNewLineInTextBox: this.sendOnEnterValueForEveryNewLineInTextBox,
+    };
   }
 
   setOnChange(onChange: () => void) {
