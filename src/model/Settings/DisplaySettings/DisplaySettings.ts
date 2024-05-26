@@ -74,7 +74,7 @@ export default class DisplaySettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
+    let config = this.profileManager.currentAppConfig.settings.displaySettings;
 
     config.charSizePx = this.charSizePx.appliedValue;
     config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
@@ -82,11 +82,11 @@ export default class DisplaySettings {
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
 
-    this.profileManager.saveProfiles();
+    this.profileManager.saveAppConfig();
   };
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
+    let configToLoad = this.profileManager.currentAppConfig.settings.displaySettings;
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -96,7 +96,7 @@ export default class DisplaySettings {
     } else {
       console.error(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.activeProfile.rootConfig.settings.displaySettings;
+      configToLoad = this.profileManager.currentAppConfig.settings.displaySettings;
     }
 
     this.charSizePx.setDispValue(configToLoad.charSizePx.toString());

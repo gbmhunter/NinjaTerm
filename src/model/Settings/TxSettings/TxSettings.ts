@@ -95,7 +95,7 @@ export default class DataProcessingSettings {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.txSettings;
+    let configToLoad = this.profileManager.currentAppConfig.settings.txSettings;
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -106,7 +106,7 @@ export default class DataProcessingSettings {
       console.error(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.activeProfile.rootConfig.settings.txSettings
+      configToLoad = this.profileManager.currentAppConfig.settings.txSettings
     }
 
     this.enterKeyPressBehavior = configToLoad.enterKeyPressBehavior;
@@ -117,7 +117,7 @@ export default class DataProcessingSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.activeProfile.rootConfig.settings.txSettings;
+    let config = this.profileManager.currentAppConfig.settings.txSettings;
 
     config.enterKeyPressBehavior = this.enterKeyPressBehavior;
     config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
@@ -125,7 +125,7 @@ export default class DataProcessingSettings {
     config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
     config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
 
-    this.profileManager.saveProfiles();
+    this.profileManager.saveAppConfig();
   };
 
   setEnterKeyPressBehavior = (value: EnterKeyPressBehavior) => {

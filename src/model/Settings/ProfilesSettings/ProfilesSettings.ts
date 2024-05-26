@@ -25,7 +25,7 @@ export default class ProfilesSettings {
       }
       this.profileManager.profiles[this.selectedProfiles[0] as number].name = this.profileName.appliedValue;
       // Profile name has changed so save the profiles
-      this.profileManager.saveProfiles();
+      this.profileManager.saveAppConfig();
     });
   }
 

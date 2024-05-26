@@ -40,16 +40,16 @@ export default class RxSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
+    let config = this.profileManager.currentAppConfig.settings.generalSettings;
 
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
     config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
 
-    this.profileManager.saveProfiles();
+    this.profileManager.saveAppConfig();
   };
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
+    let configToLoad = this.profileManager.currentAppConfig.settings.generalSettings;
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -59,7 +59,7 @@ export default class RxSettings {
     } else {
       console.error(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.activeProfile.rootConfig.settings.generalSettings;
+      configToLoad = this.profileManager.currentAppConfig.settings.generalSettings;
     }
 
     this.whenPastingOnWindowsReplaceCRLFWithLF = configToLoad.whenPastingOnWindowsReplaceCRLFWithLF;

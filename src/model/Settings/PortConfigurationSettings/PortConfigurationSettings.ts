@@ -165,7 +165,7 @@ export default class PortConfiguration {
 
   _loadConfig = () => {
     // let deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
-    let configToLoad = this.profileManager.activeProfile.rootConfig.settings.portSettings
+    let configToLoad = this.profileManager.currentAppConfig.settings.portSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -176,7 +176,7 @@ export default class PortConfiguration {
       console.error(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.activeProfile.rootConfig.settings.portSettings
+      configToLoad = this.profileManager.currentAppConfig.settings.portSettings
       // deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     }
 
@@ -196,8 +196,8 @@ export default class PortConfiguration {
 
   _saveConfig = () => {
     // const serializableConfig = createSerializableObjectFromConfig(this.config);
-    // this.profileManager.activeProfile.rootConfig.settings.portSettings = serializableConfig;
-    this.profileManager.saveProfiles();
+    // this.profileManager.currentAppConfig.settings.portSettings = serializableConfig;
+    this.profileManager.saveAppConfig();
     // this.appStorage.saveConfig(PORT_CONFIGURATION_CONFIG_KEY, serializableConfig);
   };
 
