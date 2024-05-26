@@ -98,7 +98,7 @@ function ProfileSettingsView(props: Props) {
         variant="contained"
         color="primary"
         onClick={() => {
-          // profileManager.newProfile();
+          profilesSettings.deleteProfile();
         }}
       >
         Delete Profile

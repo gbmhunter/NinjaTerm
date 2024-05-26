@@ -147,6 +147,15 @@ export class ProfileManager {
   }
 
   /**
+   * Delete the profile at the provided index and save the profiles to local storage.
+   * @param profileIdx The index of the profile to delete.
+   */
+  deleteProfile = (profileIdx: number) => {
+    this.profiles.splice(profileIdx, 1);
+    this.saveProfiles();
+  }
+
+  /**
    * Apply the profile at the provided index to the current app config (i.e. update the app
    * to reflect the profile).
    * @param profileIdx The index of the profile to apply to the app.

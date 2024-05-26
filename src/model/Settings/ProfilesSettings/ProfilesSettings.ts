@@ -12,14 +12,18 @@ export default class ProfilesSettings {
 
   profileName = new ApplyableTextField(" ", z.string());
 
+  /**
+   * This should either be an array of 0 elements (no profile is selected) or an array of 1 element (the index of the selected profile).
+   */
   selectedProfiles: GridRowSelectionModel = [];
 
   constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
     makeAutoObservable(this);
     this.profileName.setOnApplyChanged(() => {
-      if (this.selectedProfiles.length !== 1) {
-        throw new Error("Expected there to be one profile selected.");
+      if (this.selectedProfiles.length === 0) {
+        // Nothing to do if no profile is selected
+        return;
       }
       this.profileManager.profiles[this.selectedProfiles[0] as number].name = this.profileName.appliedValue;
       // Profile name has changed so save the profiles
@@ -28,15 +32,21 @@ export default class ProfilesSettings {
   }
 
   setSelectedProfiles(selectedProfiles: GridRowSelectionModel) {
-    if (selectedProfiles.length !== 1) {
+    // The length should either be 0 or 1
+    if (selectedProfiles.length > 1) {
       throw new Error("Only one profile can be selected at a time.");
     }
 
-    let selectedProfileIdx = selectedProfiles[0];
     this.selectedProfiles = selectedProfiles;
 
     // Whenever the selected profile changes, update the profile name field to match the selected profile
-    this.profileName.dispValue = this.profileManager.profiles[selectedProfileIdx as number].name;
+    let name;
+    if (this.selectedProfiles.length === 1) {
+      name = this.profileManager.profiles[this.selectedProfiles[0] as number].name;
+    } else {
+      name = "";
+    }
+    this.profileName.dispValue = name;
     this.profileName.apply();
   }
 
@@ -57,6 +67,14 @@ export default class ProfilesSettings {
     }
     let selectedProfileIdx = this.selectedProfiles[0];
     this.profileManager.saveCurrentAppConfigToProfile(selectedProfileIdx as number);
+  }
+
+  deleteProfile() {
+    if (this.selectedProfiles.length !== 1) {
+      throw new Error("Expected there to be one profile selected.");
+    }
+    let selectedProfileIdx = this.selectedProfiles[0];
+    this.profileManager.deleteProfile(selectedProfileIdx as number);
   }
 
 }
