@@ -2,9 +2,7 @@ import { GridRowSelectionModel } from "@mui/x-data-grid";
 import { makeAutoObservable } from "mobx";
 import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
-import AppStorage from "src/model/Storage/AppStorage";
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
-import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
+import { ApplyableTextField } from "src/view/Components/ApplyableTextField";
 import { z } from "zod";
 
 
@@ -25,7 +23,7 @@ export default class ProfilesSettings {
       }
       this.profileManager.profiles[this.selectedProfiles[0] as number].name = this.profileName.appliedValue;
       // Profile name has changed so save the profiles
-      this.profileManager.saveAppConfig();
+      this.profileManager.saveProfiles();
     });
   }
 

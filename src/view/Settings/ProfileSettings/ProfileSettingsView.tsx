@@ -49,16 +49,14 @@ function ProfileSettingsView(props: Props) {
           columns={columns}
           initialState={{
             pagination: {
-              paginationModel: { page: 0, pageSize: 5 },
+              paginationModel: { page: 0, pageSize: 100 },
             },
           }}
-          pageSizeOptions={[5, 10]}
+          pageSizeOptions={[100]} // Just display as many as possible in one page (limited to 100 in community edition)
           density="compact"
           rowSelectionModel={profilesSettings.selectedProfiles}
           onRowSelectionModelChange={(newRowSelectionModel: GridRowSelectionModel) => {
-            console.log('sss', newRowSelectionModel);
             profilesSettings.setSelectedProfiles(newRowSelectionModel);
-            // setRowSelectionModel(newRowSelectionModel);
           }}
           // checkboxSelection
           // disableMultipleRowSelection={true}

@@ -33,16 +33,12 @@ export class Profile {
   name: string = '';
   rootConfig: RootConfig = new RootConfig();
 
-  constructor(name: string = 'Default profile') {
+  constructor(name: string) {
     this.name = name;
   }
 }
 
-export class ProfileManagerData {
-  profiles: Profile[] = [];
-
-  currentAppConfig: RootConfig = new RootConfig();
-}
+const PROFILES_STORAGE_KEY = 'profiles';
 
 export class ProfileManager {
   profiles: Profile[] = [];
@@ -58,25 +54,34 @@ export class ProfileManager {
   callbacks: (() => void)[] = [];
 
   constructor() {
-    // Read in configurations
-    const profileManagerDataJson = window.localStorage.getItem('profileManagerData');
-    let profileManagerData: ProfileManagerData;
-    if (profileManagerDataJson === null) {
+
+    addEventListener("storage", (event) => {
+      console.log("Caught storage event. event.key: ", event.key, " event.newValue: ", event.newValue);
+
+      if (event.key === PROFILES_STORAGE_KEY) {
+        console.log('Profiles changed. Reloading...');
+        this._loadProfiles();
+      }
+    });
+
+    // Read in profiles
+    this._loadProfiles();
+
+    // Load current app config
+    const currentAppConfigJson = window.localStorage.getItem('currentAppConfig');
+    let currentAppConfig: RootConfig;
+    if (currentAppConfigJson === null) {
       // No config key found in users store, create one!
-      profileManagerData = new ProfileManagerData();
+      currentAppConfig = new RootConfig();
       // Save just-created config back to store. Not strictly needed as it
       // will be saved as soon as any changes are made, but this feels
       // cleaner.
-      window.localStorage.setItem('profiles', JSON.stringify(this.profiles));
+      // window.localStorage.setItem('currentAppConfig', JSON.stringify(this.currentAppConfig));
     } else {
-      profileManagerData = JSON.parse(profileManagerDataJson);
+      currentAppConfig = JSON.parse(currentAppConfigJson);
+      console.log('Loading current app config from local storage. currentAppConfig: ', currentAppConfig);
     }
-    // Only support the 1 active config for now
-    // this.activeProfile = this.profiles[0];
-
-    // Load data into class
-    this.profiles = profileManagerData.profiles;
-    this.currentAppConfig = profileManagerData.currentAppConfig;
+    this.currentAppConfig = currentAppConfig
 
     makeAutoObservable(this);
   }
@@ -93,24 +98,49 @@ export class ProfileManager {
     this.callbacks.push(callback);
   }
 
-  _saveData = () => {
-    console.log('Saving profile manager data...');
-    let profileManagerData = new ProfileManagerData();
-    profileManagerData.profiles = this.profiles;
-    profileManagerData.currentAppConfig = this.currentAppConfig;
-    window.localStorage.setItem('profileManagerData', JSON.stringify(profileManagerData));
+  _loadProfiles = () => {
+    const profilesJson = window.localStorage.getItem(PROFILES_STORAGE_KEY);
+    // let profileManagerData: ProfileManagerData;
+    let profiles: Profile[];
+    if (profilesJson === null) {
+      // No config key found in users store, create one!
+      profiles = [];
+      profiles.push(new Profile('Default profile')); // Create a
+      console.log('No profiles found in local storage. Creating default profile.');
+      // Save just-created config back to store. Not strictly needed as it
+      // will be saved as soon as any changes are made, but this feels
+      // cleaner.
+      window.localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
+    } else {
+      profiles = JSON.parse(profilesJson);
+    }
+    // Only support the 1 active config for now
+    // this.activeProfile = this.profiles[0];
+
+    // Load data into class
+    this.profiles = profiles;
+  }
+
+  saveProfiles = () => {
+    console.log('Saving profiles...');
+    window.localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profiles));
+  }
+
+  _saveAppConfig = () => {
+    console.log('Saving app config...');
+    window.localStorage.setItem('currentAppConfig', JSON.stringify(this.currentAppConfig));
   }
 
   /**
    * Save all profiles to local storage.
    */
   saveAppConfig = () => {
-    this._saveData();
+    this._saveAppConfig();
   }
 
   newProfile = () => {
-    const newProfile = new Profile();
+    const newProfile = new Profile('New profile');
     this.profiles.push(newProfile);
-    this.saveAppConfig();
+    this.saveProfiles();
   }
 }

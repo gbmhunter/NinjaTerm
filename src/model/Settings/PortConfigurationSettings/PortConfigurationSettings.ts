@@ -195,10 +195,18 @@ export default class PortConfiguration {
   };
 
   _saveConfig = () => {
-    // const serializableConfig = createSerializableObjectFromConfig(this.config);
-    // this.profileManager.currentAppConfig.settings.portSettings = serializableConfig;
+    let config = this.profileManager.currentAppConfig.settings.portSettings;
+
+    config.baudRate = this.baudRate;
+    config.numDataBits = this.numDataBits;
+    config.parity = this.parity;
+    config.stopBits = this.stopBits;
+    config.flowControl = this.flowControl;
+    config.connectToSerialPortAsSoonAsItIsSelected = this.connectToSerialPortAsSoonAsItIsSelected;
+    config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
+    config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
+
     this.profileManager.saveAppConfig();
-    // this.appStorage.saveConfig(PORT_CONFIGURATION_CONFIG_KEY, serializableConfig);
   };
 
   /**
