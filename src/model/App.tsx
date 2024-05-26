@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { closeSnackbar } from 'notistack';
 import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
@@ -170,7 +170,18 @@ export class App {
       });
     }
 
+    // Listen for changes to the last applied profile name, and update the app title
+    reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
+    this.onLastAppliedProfileNameChanged();
+
     makeAutoObservable(this); // Make sure this near the end
+  }
+
+  onLastAppliedProfileNameChanged = () => {
+    console.log('onLastAppliedProfileNameChanged() called. this.profileManager.lastAppliedProfileName=', this.profileManager.lastAppliedProfileName);
+
+    // Set the title of the app to the last applied profile name
+    document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
   }
 
   /**
@@ -187,9 +198,6 @@ export class App {
     // Choose random tip from array
     const randomIndex = Math.floor(Math.random() * tipsToDisplayOnStartup.length);
     this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
-
-    // DEBUG
-    document.title = 'Hello!';
   }
 
   onSerialPortConnected(serialPort: SerialPort) {

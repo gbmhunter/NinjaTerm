@@ -8,22 +8,20 @@ import { MacroControllerConfig } from "../Terminals/RightDrawer/Macros/MacroCont
 import { App } from "../App";
 
 export class RootConfig {
-
   version = 1;
 
   terminal = {
-    'macroController': new MacroControllerConfig(),
+    macroController: new MacroControllerConfig(),
   };
 
   settings = {
-    'portSettings': new PortConfigurationConfig(),
-    'txSettings': new TxSettingsConfig(),
-    'rxSettings': new RxSettingsConfig(),
-    'displaySettings': new DisplaySettingsConfig(),
-    'generalSettings': new GeneralSettingsConfig(),
+    portSettings: new PortConfigurationConfig(),
+    txSettings: new TxSettingsConfig(),
+    rxSettings: new RxSettingsConfig(),
+    displaySettings: new DisplaySettingsConfig(),
+    generalSettings: new GeneralSettingsConfig(),
   };
 }
-
 
 /**
  * This class represents a serial port profile. It is used to store use-specific
@@ -31,7 +29,7 @@ export class RootConfig {
  * embedded device). The class is serializable to JSON.
  */
 export class Profile {
-  name: string = '';
+  name: string = "";
   rootConfig: RootConfig = new RootConfig();
 
   constructor(name: string) {
@@ -40,10 +38,9 @@ export class Profile {
   }
 }
 
-const PROFILES_STORAGE_KEY = 'profiles';
+const PROFILES_STORAGE_KEY = "profiles";
 
 export class ProfileManager {
-
   app: App;
 
   profiles: Profile[] = [];
@@ -56,17 +53,22 @@ export class ProfileManager {
    */
   currentAppConfig: RootConfig = new RootConfig();
 
-  callbacks: (() => void)[] = [];
+  _profileChangeCallbacks: (() => void)[] = [];
+
+  /**
+   * Represents the name of the last profile that was applied to the app. Used for displaying
+   * in various places such as the toolbar.
+   */
+  lastAppliedProfileName: string = "No profile";
 
   constructor(app: App) {
-
     this.app = app;
 
     addEventListener("storage", (event) => {
       console.log("Caught storage event. event.key: ", event.key, " event.newValue: ", event.newValue);
 
       if (event.key === PROFILES_STORAGE_KEY) {
-        console.log('Profiles changed. Reloading...');
+        console.log("Profiles changed. Reloading...");
         this._loadProfilesFromStorage();
       }
     });
@@ -75,18 +77,18 @@ export class ProfileManager {
     this._loadProfilesFromStorage();
 
     // Load current app config
-    const currentAppConfigJson = window.localStorage.getItem('currentAppConfig');
+    const currentAppConfigJson = window.localStorage.getItem("currentAppConfig");
     let currentAppConfig: RootConfig;
     if (currentAppConfigJson === null) {
       // No config key found in users store, create one!
       currentAppConfig = new RootConfig();
       // Save just-created config back to store.
-      window.localStorage.setItem('currentAppConfig', JSON.stringify(this.currentAppConfig));
+      window.localStorage.setItem("currentAppConfig", JSON.stringify(this.currentAppConfig));
     } else {
       currentAppConfig = JSON.parse(currentAppConfigJson);
-      console.log('Loading current app config from local storage. currentAppConfig: ', currentAppConfig);
+      console.log("Loading current app config from local storage. currentAppConfig: ", currentAppConfig);
     }
-    this.currentAppConfig = currentAppConfig
+    this.currentAppConfig = currentAppConfig;
 
     makeAutoObservable(this);
   }
@@ -94,14 +96,14 @@ export class ProfileManager {
   setActiveProfile = (profile: Profile) => {
     // this.activeProfile = profile;
     // Need to tell the rest of the app to update
-    this.callbacks.forEach((callback) => {
+    this._profileChangeCallbacks.forEach((callback) => {
       callback();
     });
-  }
+  };
 
   registerForProfileChange = (callback: () => void) => {
-    this.callbacks.push(callback);
-  }
+    this._profileChangeCallbacks.push(callback);
+  };
 
   _loadProfilesFromStorage = () => {
     const profilesJson = window.localStorage.getItem(PROFILES_STORAGE_KEY);
@@ -110,8 +112,8 @@ export class ProfileManager {
     if (profilesJson === null) {
       // No config key found in users store, create one!
       profiles = [];
-      profiles.push(new Profile('Default profile'));
-      console.log('No profiles found in local storage. Creating default profile.');
+      profiles.push(new Profile("Default profile"));
+      console.log("No profiles found in local storage. Creating default profile.");
       // Save just-created config back to store.
       window.localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
     } else {
@@ -122,29 +124,29 @@ export class ProfileManager {
 
     // Load data into class
     this.profiles = profiles;
-  }
+  };
 
   saveProfiles = () => {
-    console.log('Saving profiles...');
+    console.log("Saving profiles...");
     window.localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profiles));
-  }
+  };
 
   /**
    * Save all profiles to local storage.
    */
   saveAppConfig = () => {
-    console.log('Saving app config...');
-    window.localStorage.setItem('currentAppConfig', JSON.stringify(this.currentAppConfig));
-  }
+    console.log("Saving app config...");
+    window.localStorage.setItem("currentAppConfig", JSON.stringify(this.currentAppConfig));
+  };
 
   /**
    * Create a new profile (with default config) and add it to the list of profiles.
    */
   newProfile = () => {
-    const newProfile = new Profile('New profile');
+    const newProfile = new Profile("New profile");
     this.profiles.push(newProfile);
     this.saveProfiles();
-  }
+  };
 
   /**
    * Delete the profile at the provided index and save the profiles to local storage.
@@ -153,7 +155,7 @@ export class ProfileManager {
   deleteProfile = (profileIdx: number) => {
     this.profiles.splice(profileIdx, 1);
     this.saveProfiles();
-  }
+  };
 
   /**
    * Apply the profile at the provided index to the current app config (i.e. update the app
@@ -168,25 +170,27 @@ export class ProfileManager {
     this.saveAppConfig();
 
     // Need to tell the rest of the app to update
-    this.callbacks.forEach((callback) => {
+    this._profileChangeCallbacks.forEach((callback) => {
       callback();
     });
 
+    this.lastAppliedProfileName = profile.name;
+
     // Post message to snackbar
-    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" loaded.', 'success');
-  }
+    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" loaded.', "success");
+  };
 
   /**
    * Save the current app config to the provided profile and the save the profiles to local storage.
    * @param profileIdx The index of the profile to save the current app config to.
    */
   saveCurrentAppConfigToProfile = (profileIdx: number) => {
-    console.log('Saving current app config to profile...');
+    console.log("Saving current app config to profile...");
     const profile = this.profiles[profileIdx];
     profile.rootConfig = JSON.parse(JSON.stringify(this.currentAppConfig));
     this.saveProfiles();
 
     // Post message to snackbar
-    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" saved.', 'success');
-  }
+    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" saved.', "success");
+  };
 }
