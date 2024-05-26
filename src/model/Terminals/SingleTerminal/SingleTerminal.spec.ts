@@ -10,16 +10,19 @@ import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings'
 import AppStorage from 'src/model/Storage/AppStorage';
 import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 import { profile } from 'console';
+import { App } from 'src/model/App';
 
 describe('single terminal tests', () => {
+  let app: App;
   let appStorage: AppStorage;
   let profileManager: ProfileManager;
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
+    app = new App();
     appStorage = new AppStorage();
-    profileManager = new ProfileManager();
+    profileManager = new ProfileManager(app);
     dataProcessingSettings = new RxSettings(appStorage, profileManager);
     displaySettings = new DisplaySettings(appStorage, profileManager);
     singleTerminal = new SingleTerminal(

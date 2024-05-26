@@ -72,11 +72,15 @@ function ProfileSettingsView(props: Props) {
       <div style={{ height: 20 }} />
 
       <div style={{ display: 'flex', gap: 10 }}>
-      <Button variant="contained" color="primary">
+      <Button variant="contained" color="primary" onClick={() => {
+        profilesSettings.loadProfile();
+      }}>
         Load Profile
       </Button>
 
-      <Button variant="contained" color="primary">
+      <Button variant="contained" color="primary" onClick={() => {
+        profilesSettings.saveCurrentAppStateToProfile();
+      }}>
         Save App State To Profile
       </Button>
 

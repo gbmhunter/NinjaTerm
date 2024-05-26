@@ -140,7 +140,7 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.profileManager = new ProfileManager();
+    this.profileManager = new ProfileManager(this);
     this.settings = new Settings(this.appStorage, this.profileManager, this.fakePortController);
 
     this.snackbar = new Snackbar();

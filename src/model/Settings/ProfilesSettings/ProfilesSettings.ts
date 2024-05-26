@@ -40,4 +40,23 @@ export default class ProfilesSettings {
     this.profileName.apply();
   }
 
+  loadProfile() {
+    if (this.selectedProfiles.length !== 1) {
+      throw new Error("Expected there to be one profile selected.");
+    }
+    let selectedProfileIdx = this.selectedProfiles[0];
+    this.profileManager.applyProfileToApp(selectedProfileIdx as number);
+  }
+
+  /**
+   * Save the current app state to the selected profile.
+   */
+  saveCurrentAppStateToProfile() {
+    if (this.selectedProfiles.length !== 1) {
+      throw new Error("Expected there to be one profile selected.");
+    }
+    let selectedProfileIdx = this.selectedProfiles[0];
+    this.profileManager.saveCurrentAppConfigToProfile(selectedProfileIdx as number);
+  }
+
 }
