@@ -141,7 +141,15 @@ export class ProfileManager {
    * Create a new profile (with default config) and add it to the list of profiles.
    */
   newProfile = () => {
-    const newProfile = new Profile("New profile");
+    // Calculate name for new profile, in the form "New profile X" where X is the next number
+    let nextProfileNum = 1;
+    const newProfileName = "New profile";
+    let newProfileNameToCheck = newProfileName + " " + nextProfileNum;
+    while (this.profiles.find((profile) => profile.name === newProfileNameToCheck) !== undefined) {
+      nextProfileNum++;
+      newProfileNameToCheck = newProfileName + " " + nextProfileNum;
+    }
+    const newProfile = new Profile(newProfileNameToCheck);
     this.profiles.push(newProfile);
     this.saveProfiles();
   };
