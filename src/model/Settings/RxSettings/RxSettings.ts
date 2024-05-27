@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import AppStorage from "src/model/Storage/AppStorage";
 import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
 import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 export enum DataType {
@@ -426,10 +425,14 @@ export default class RxSettings {
    * @returns The descriptive name as a string.
    */
   getDataTypeNameForToolbarDisplay = () => {
-    if (this.dataType === DataType.ASCII) {
+    return RxSettings.computeDataTypeNameForToolbarDisplay(this.dataType, this.numberType);
+  };
+
+  static computeDataTypeNameForToolbarDisplay = (dataType: DataType, numberType: NumberType) => {
+    if (dataType === DataType.ASCII) {
       return "ASCII";
     } else {
-      return this.numberType;
+      return numberType;
     }
-  };
+  }
 }

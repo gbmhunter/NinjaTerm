@@ -164,7 +164,6 @@ export default class PortConfiguration {
   }
 
   _loadConfig = () => {
-    // let deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     let configToLoad = this.profileManager.currentAppConfig.settings.portSettings
     //===============================================
     // UPGRADE PATH
@@ -177,7 +176,6 @@ export default class PortConfiguration {
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
       configToLoad = this.profileManager.currentAppConfig.settings.portSettings
-      // deserializedConfig = this.appStorage.getConfig(PORT_CONFIGURATION_CONFIG_KEY);
     }
 
     // At this point we are confident that the deserialized config matches what
@@ -216,12 +214,16 @@ export default class PortConfiguration {
    * @returns The short hand serial port config for displaying to the user.
    */
   get shortSerialConfigName() {
+    return PortConfiguration.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+  }
+
+  static computeShortSerialConfigName(baudRate: number, numDataBits: number, parity: Parity, stopBits: StopBits) {
     let output = '';
-    output += this.baudRate.toString();
+    output += baudRate.toString();
     output += ' ';
-    output += this.numDataBits.toString();
-    output += this.parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
-    output += this.stopBits.toString();
+    output += numDataBits.toString();
+    output += parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
+    output += stopBits.toString();
     return output;
   }
 }
