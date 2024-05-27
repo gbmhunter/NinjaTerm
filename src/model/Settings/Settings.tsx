@@ -8,7 +8,6 @@ import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
 import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
-import AppStorage from '../Storage/AppStorage';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfilesSettings/ProfilesSettings';
 import { ProfileManager } from '../ProfileManager/ProfileManager';
@@ -25,8 +24,6 @@ export enum SettingsCategories {
 }
 
 export class Settings {
-  appStorage: AppStorage;
-
   fakePortsController: FakePortsController;
 
   activeSettingsCategory: SettingsCategories =
@@ -50,15 +47,14 @@ export class Settings {
    * @param appStorage Needed to load/save settings into local storage.
    * @param fakePortController Needed to show the hidden fake port dialog.
    */
-  constructor(appStorage: AppStorage, profileManager: ProfileManager, fakePortController: FakePortsController) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager, fakePortController: FakePortsController) {
     this.fakePortsController = fakePortController;
 
-    this.portConfiguration = new PortConfiguration(appStorage, profileManager);
-    this.txSettings = new TxSettings(appStorage, profileManager);
-    this.rxSettings = new RxSettings(appStorage, profileManager);
-    this.displaySettings = new DisplaySettings(appStorage, profileManager);
-    this.generalSettings = new GeneralSettings(appStorage, profileManager);
+    this.portConfiguration = new PortConfiguration(profileManager);
+    this.txSettings = new TxSettings(profileManager);
+    this.rxSettings = new RxSettings(profileManager);
+    this.displaySettings = new DisplaySettings(profileManager);
+    this.generalSettings = new GeneralSettings(profileManager);
     this.profilesSettings = new ProfilesSettings(profileManager);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }

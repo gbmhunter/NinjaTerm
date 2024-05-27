@@ -1,8 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
-import AppStorage from "src/model/Storage/AppStorage";
-
 export class GeneralSettingsConfig {
   /**
    * Increment this version number if you need to update this data in this class.
@@ -16,14 +14,12 @@ export class GeneralSettingsConfig {
 }
 
 export default class RxSettings {
-  appStorage: AppStorage;
   profileManager: ProfileManager;
 
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
-  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {

@@ -1,7 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
-import AppStorage from "src/model/Storage/AppStorage";
 import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
 import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
@@ -135,7 +134,7 @@ export class RxSettingsConfig {
 const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
-  appStorage: AppStorage;
+
   profileManager: ProfileManager;
 
   /**
@@ -185,8 +184,7 @@ export default class RxSettings {
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
 
-  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {

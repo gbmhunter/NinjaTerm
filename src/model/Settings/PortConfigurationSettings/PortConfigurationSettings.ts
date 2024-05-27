@@ -1,8 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import AppStorage from 'src/model/Storage/AppStorage';
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
 import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 
 export enum PortState {
@@ -63,8 +61,6 @@ export class PortConfigurationConfig {
 
 export default class PortConfiguration {
 
-  appStorage: AppStorage;
-
   profileManager: ProfileManager;
 
   baudRateInputValue: string;
@@ -93,8 +89,7 @@ export default class PortConfiguration {
 
   reopenSerialPortIfUnexpectedlyClosed = true;
 
-  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
     this.baudRateInputValue = this.baudRate.toString();
     // this.config =

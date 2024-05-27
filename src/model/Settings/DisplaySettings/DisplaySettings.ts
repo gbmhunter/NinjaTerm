@@ -1,8 +1,7 @@
 import { makeAutoObservable } from "mobx";
-import { boolean, z } from "zod";
+import { z } from "zod";
 
 import { ApplyableNumberField } from "src/view/Components/ApplyableTextField";
-import AppStorage from "src/model/Storage/AppStorage";
 import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 /** Enumerates the different possible ways the TX and RX data
@@ -31,7 +30,6 @@ export class DisplaySettingsConfig {
 }
 
 export default class DisplaySettings {
-  appStorage: AppStorage;
 
   profileManager: ProfileManager;
 
@@ -49,8 +47,7 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-  constructor(appStorage: AppStorage, profileManager: ProfileManager) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
     this.charSizePx.setOnApplyChanged(() => {
       this._saveConfig();

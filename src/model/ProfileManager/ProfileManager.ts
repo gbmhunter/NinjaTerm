@@ -1,18 +1,29 @@
 import { makeAutoObservable } from "mobx";
+
 import { DisplaySettingsConfig } from "../Settings/DisplaySettings/DisplaySettings";
 import { GeneralSettingsConfig } from "../Settings/GeneralSettings/GeneralSettings";
-import { PortConfigurationConfig } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
+import { PortConfigurationConfig, PortState } from "../Settings/PortConfigurationSettings/PortConfigurationSettings";
 import { RxSettingsConfig } from "../Settings/RxSettings/RxSettings";
 import { TxSettingsConfig } from "../Settings/TxSettings/TxSettings";
 import { MacroControllerConfig } from "../Terminals/RightDrawer/Macros/MacroController";
 import { App } from "../App";
 
+export class LastUsedSerialPort {
+  serialPortInfo: Partial<SerialPortInfo> = {};
+  portState: PortState = PortState.CLOSED;
+}
+
+/**
+ * Everything in this class must be POD (plain old data) and serializable to JSON.
+ */
 export class RootConfig {
   version = 1;
 
   terminal = {
     macroController: new MacroControllerConfig(),
   };
+
+  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
 
   settings = {
     portSettings: new PortConfigurationConfig(),
