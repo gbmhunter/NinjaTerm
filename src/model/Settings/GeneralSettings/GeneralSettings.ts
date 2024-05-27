@@ -26,6 +26,9 @@ export default class RxSettings {
     this.appStorage = appStorage;
     this.profileManager = profileManager;
     this._loadConfig();
+    this.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

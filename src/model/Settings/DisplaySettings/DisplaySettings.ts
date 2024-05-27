@@ -64,8 +64,11 @@ export default class DisplaySettings {
     this.scrollbackBufferSizeRows.setOnApplyChanged(() => {
       this._saveConfig();
     });
-    makeAutoObservable(this);
     this._loadConfig();
+    this.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
+    makeAutoObservable(this);
   }
 
   setDataViewConfiguration = (value: DataViewConfiguration) => {

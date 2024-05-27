@@ -25,7 +25,13 @@ export default class ProfilesSettings {
         // Nothing to do if no profile is selected
         return;
       }
-      this.profileManager.profiles[this.selectedProfiles[0] as number].name = this.profileName.appliedValue;
+      const selectedProfile = this.profileManager.profiles[this.selectedProfiles[0] as number];
+      if (selectedProfile.name === this.profileName.appliedValue) {
+        // The profile name hasn't changed so nothing to do
+        return;
+      }
+      // If we get here profile name has changed
+      selectedProfile.name = this.profileName.appliedValue;
       // Profile name has changed so save the profiles
       this.profileManager.saveProfiles();
     });

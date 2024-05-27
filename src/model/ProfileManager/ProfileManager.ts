@@ -45,8 +45,6 @@ export class ProfileManager {
 
   profiles: Profile[] = [];
 
-  // activeProfile: Profile;
-
   /**
    * Represents the current application configuration. This is saved regularly so that when the app reloads,
    * it can restore the last known configuration.
@@ -101,7 +99,7 @@ export class ProfileManager {
     });
   };
 
-  registerForProfileChange = (callback: () => void) => {
+  registerOnProfileLoad = (callback: () => void) => {
     this._profileChangeCallbacks.push(callback);
   };
 

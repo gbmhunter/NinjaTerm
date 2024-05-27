@@ -99,7 +99,7 @@ export default class PortConfiguration {
     this.baudRateInputValue = this.baudRate.toString();
     // this.config =
     this._loadConfig();
-    this.profileManager.registerForProfileChange(() => {
+    this.profileManager.registerOnProfileLoad(() => {
       this._loadConfig();
     });
     makeAutoObservable(this);

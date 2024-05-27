@@ -189,8 +189,9 @@ export default class RxSettings {
     this.appStorage = appStorage;
     this.profileManager = profileManager;
     this._loadConfig();
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-
+    this.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
     this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this._saveConfig();
     });
@@ -206,6 +207,7 @@ export default class RxSettings {
     this.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
       this._saveConfig();
     });
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
   _loadConfig = () => {
