@@ -7,6 +7,7 @@ import { RxSettingsConfig } from "../Settings/RxSettings/RxSettings";
 import { TxSettingsConfig } from "../Settings/TxSettings/TxSettings";
 import { MacroControllerConfig } from "../Terminals/RightDrawer/Macros/MacroController";
 import { App } from "../App";
+import { VariantType } from "notistack";
 
 export class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -179,8 +180,55 @@ export class ProfileManager {
    * to reflect the profile).
    * @param profileIdx The index of the profile to apply to the app.
    */
-  applyProfileToApp = (profileIdx: number) => {
+  applyProfileToApp = async (profileIdx: number) => {
     const profile = this.profiles[profileIdx];
+
+    // Check the last connected serial port of the profile and compare with
+    // currently connected one
+    const profileSerialPortInfoJson = JSON.stringify(profile.rootConfig.lastUsedSerialPort.serialPortInfo);
+    const currentSerialPortInfoJson = JSON.stringify(this.currentAppConfig.lastUsedSerialPort.serialPortInfo);
+
+    let weNeedToConnect;
+    let matchedAvailablePorts: SerialPort[] = [];
+    let snackbarMessage = 'Profile loaded.';
+    let snackbarVariant: VariantType = 'success';
+    if (profileSerialPortInfoJson == "{}") {
+      weNeedToConnect = false;
+    } else if (profileSerialPortInfoJson === currentSerialPortInfoJson) {
+      // Same serial port, no need to disconnect and connect
+      weNeedToConnect = false;
+    } else {
+      // They are both different and the profile one is non-empty. Check to see if the profile ports is available
+      console.log("Port infos are both different and non-empty. Checking if ports are available...");
+      const availablePorts = await navigator.serial.getPorts();
+      const matchedAvailablePorts = availablePorts.filter((port) => JSON.stringify(port.getInfo()) === profileSerialPortInfoJson);
+
+      if (matchedAvailablePorts.length === 0) {
+        // The profile port is not available
+        weNeedToConnect = false;
+        snackbarMessage += '\n\nNo available port matches the profile port info. No connecting to any.';
+        snackbarVariant = 'warning';
+      } else if (matchedAvailablePorts.length === 1) {
+        // The profile port is available
+        weNeedToConnect = true;
+      } else {
+        // There are multiple ports that match the profile port, to ambiguous, do
+        // not connect to any
+        weNeedToConnect = false;
+        snackbarMessage +=  '\n\nMultiple available ports info match the profile port info. Not connecting to any.';
+        snackbarVariant = 'warning';
+      }
+    }
+
+    // Only disconnect if we have found a valid port to connect to
+    if (weNeedToConnect) {
+      if (this.app.portState === PortState.OPENED) {
+        await this.app.closePort();
+      } else if (this.app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.stopWaitingToReopenPort();
+      }
+    }
+
     // Update the current app config from the provided profile,
     // and then save this new app config
     this.currentAppConfig = JSON.parse(JSON.stringify(profile.rootConfig));
@@ -193,8 +241,15 @@ export class ProfileManager {
 
     this.lastAppliedProfileName = profile.name;
 
+    // Now connect to the port if we need to
+    if (weNeedToConnect) {
+      this.app.port = matchedAvailablePorts[0];
+      await this.app.openPort();
+      snackbarMessage += '\n\nConnected to port with info: "' + profileSerialPortInfoJson + '".';
+    }
+
     // Post message to snackbar
-    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" loaded.', "success");
+    this.app.snackbar.sendToSnackbar(snackbarMessage, snackbarVariant);
   };
 
   /**

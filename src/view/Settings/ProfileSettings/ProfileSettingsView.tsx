@@ -26,6 +26,7 @@ function ProfileSettingsView(props: Props) {
     { field: "name", headerName: "Name", width: 150 },
     { field: "corePortSettings", headerName: "Core port settings", width: 130 },
     { field: "flowControl", headerName: "Flow control", width: 80 },
+    { field: "portInfo", headerName: "Port info", width: 300 },
     { field: "dataType", headerName: "RX data type", width: 100 },
     { field: "terminalWidth", headerName: "Terminal width", width: 100 },
   ];
@@ -39,11 +40,15 @@ function ProfileSettingsView(props: Props) {
 
     const rxSettings = profile.rootConfig.settings.rxSettings;
     const dataType = RxSettings.computeDataTypeNameForToolbarDisplay(rxSettings.dataType, rxSettings.numberType);
+
+    const lastUsedSerialPort = profile.rootConfig.lastUsedSerialPort;
+    const lastUsedSerialPortInfoJson = JSON.stringify(lastUsedSerialPort.serialPortInfo);
     rows.push({
       id: idx,
       name: profile.name,
       corePortSettings: shorthandPortConfig,
       flowControl: portSettings.flowControl,
+      portInfo: lastUsedSerialPortInfoJson,
       dataType: dataType,
       terminalWidth: `${profile.rootConfig.settings.displaySettings.terminalWidthChars}chars`,
     });
@@ -52,8 +57,8 @@ function ProfileSettingsView(props: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       <h2>Profiles</h2>
-      <p>Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile.</p>
-      <div style={{ height: 400, width: 600 }}>
+      <p>Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile. The last selected serial port will be saved with the profile, and NinjaTerm will attempt to reconnect to that port when the profile is loaded.</p>
+      <div style={{ height: 400 }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -85,8 +90,8 @@ function ProfileSettingsView(props: Props) {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => {
-            profilesSettings.loadProfile();
+          onClick={async () => {
+            await profilesSettings.loadProfile();
           }}
         >
           Load Profile

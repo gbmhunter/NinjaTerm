@@ -56,12 +56,12 @@ export default class ProfilesSettings {
     this.profileName.apply();
   }
 
-  loadProfile() {
+  loadProfile = async () => {
     if (this.selectedProfiles.length !== 1) {
       throw new Error("Expected there to be one profile selected.");
     }
     let selectedProfileIdx = this.selectedProfiles[0];
-    this.profileManager.applyProfileToApp(selectedProfileIdx as number);
+    await this.profileManager.applyProfileToApp(selectedProfileIdx as number);
   }
 
   /**
