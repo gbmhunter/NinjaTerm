@@ -161,9 +161,14 @@ export class ProfileManager {
       nextProfileNum++;
       newProfileNameToCheck = newProfileName + " " + nextProfileNum;
     }
+    // At this point newProfileNameToCheck is the name we want
     const newProfile = new Profile(newProfileNameToCheck);
     this.profiles.push(newProfile);
     this.saveProfiles();
+
+    // Automatically save the current app state to the newly created profile
+    // and silence the snackbar message
+    this.saveCurrentAppConfigToProfile(this.profiles.length - 1, true);
   };
 
   /**
@@ -190,7 +195,7 @@ export class ProfileManager {
 
     let weNeedToConnect;
     let matchedAvailablePorts: SerialPort[] = [];
-    let snackbarMessage = 'Profile loaded.';
+    let snackbarMessage = `Profile "${profile.name}" loaded.`;
     let snackbarVariant: VariantType = 'success';
     if (profileSerialPortInfoJson == "{}") {
       weNeedToConnect = false;
@@ -256,13 +261,15 @@ export class ProfileManager {
    * Save the current app config to the provided profile and the save the profiles to local storage.
    * @param profileIdx The index of the profile to save the current app config to.
    */
-  saveCurrentAppConfigToProfile = (profileIdx: number) => {
+  saveCurrentAppConfigToProfile = (profileIdx: number, noSnackbar=false) => {
     console.log("Saving current app config to profile...");
     const profile = this.profiles[profileIdx];
     profile.rootConfig = JSON.parse(JSON.stringify(this.currentAppConfig));
     this.saveProfiles();
 
     // Post message to snackbar
-    this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" saved.', "success");
+    if (!noSnackbar) {
+      this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" saved.', "success");
+    }
   };
 }

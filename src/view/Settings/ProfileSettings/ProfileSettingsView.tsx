@@ -1,6 +1,10 @@
 import { Button, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import SaveIcon from '@mui/icons-material/Save';
+import PublishIcon from '@mui/icons-material/Publish';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import ProfilesSettings from "src/model/Settings/ProfilesSettings/ProfilesSettings";
 
@@ -19,7 +23,6 @@ function ProfileSettingsView(props: Props) {
   const { profileManager, profilesSettings } = props;
 
   const profiles = profileManager.profiles;
-
 
   // Define the columns of the profiles table
   const columns: GridColDef[] = [
@@ -57,7 +60,9 @@ function ProfileSettingsView(props: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       <h2>Profiles</h2>
-      <p>Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile. The last selected serial port will be saved with the profile, and NinjaTerm will attempt to reconnect to that port when the profile is loaded.</p>
+      <p style={{ maxWidth: 800 }}>
+        Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile. The last selected serial port will be saved with the profile, and NinjaTerm will attempt to reconnect to that port when the profile is loaded (because of the limited information about the serial ports available in the browser, it might not be enough to uniquely identify the port).
+      </p>
       <div style={{ height: 400 }}>
         <DataGrid
           rows={rows}
@@ -87,60 +92,70 @@ function ProfileSettingsView(props: Props) {
       <div style={{ height: 20 }} />
 
       <div style={{ display: "flex", gap: 10 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={async () => {
-            await profilesSettings.loadProfile();
-          }}
-        >
-          Load Profile
-        </Button>
+        <Tooltip title="Loads the configuration saved in the selected profile above and applies it to the app. If there is a saved serial port and it is still available, it will be connected to.">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<PublishIcon />}
+            onClick={async () => {
+              await profilesSettings.loadProfile();
+            }}
+          >
+            Load Profile
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            profilesSettings.saveCurrentAppStateToProfile();
-          }}
-        >
-          Save App State To Profile
-        </Button>
+        <Tooltip title="Saves the current app state to the selected profile above.">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<SaveIcon />}
+            onClick={() => {
+              profilesSettings.saveCurrentAppStateToProfile();
+            }}
+          >
+            Save App State To Profile
+          </Button>
+        </Tooltip>
       </div>
 
       <div style={{ height: 20 }} />
 
       <div style={{ display: "flex", gap: 10 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            profileManager.newProfile();
-          }}
-        >
-          New Profile
-        </Button>
+        <Tooltip title="Creates a new profile with the current app configuration saved to it.">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => {
+              profileManager.newProfile();
+            }}
+          >
+            New Profile
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            profilesSettings.deleteProfile();
-          }}
-        >
-          Delete Profile
-        </Button>
+        <Tooltip title="Deletes the selected profile above.">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<DeleteIcon />}
+            onClick={() => {
+              profilesSettings.deleteProfile();
+            }}
+          >
+            Delete Profile
+          </Button>
+        </Tooltip>
       </div>
 
       <div style={{ height: 20 }} />
 
       {/* =============================================================================== */}
-      {/* SCROLLBACK BUFFER SIZE */}
+      {/* PROFILE NAME */}
       {/* =============================================================================== */}
       <Tooltip
-        title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
-        Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer."
-        followCursor
+        title="Use this to rename the selected profile's name. Name is saved on enter press or defocus."
         arrow
       >
         <ApplyableTextFieldView label="Profile name" variant="outlined" size="small" applyableTextField={profilesSettings.profileName} sx={{ marginBottom: "20px" }} />
