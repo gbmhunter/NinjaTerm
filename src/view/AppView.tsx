@@ -264,17 +264,17 @@ const AppView = observer((props: Props) => {
           {/* =================================================================================== */}
           {/* BOTTOM APP TOOLBAR */}
           {/* =================================================================================== */}
-          <Box
+          <div
             id="bottom-status-bar"
-            sx={{
+            style={{
               display: "flex",
               flexDirection: "row",
               justifyContent: "end",
               alignItems: "center",
               fontSize: "0.9rem",
               gap: "20px",
+              height: 30,
             }}
-            style={{ height: "30px" }}
           >
             {/* DATA TYPE */}
             <div style={{ padding: "0 10px" }}>{app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}</div>
@@ -302,7 +302,7 @@ const AppView = observer((props: Props) => {
             <Box sx={{ width: "80px" }}>{app.settings.portConfiguration.shortSerialConfigName}</Box>
             {/* PORT STATE */}
             <Box sx={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: "0 10px" }}>{portStateToToolbarStatusProperties[app.portState].text}</Box>
-          </Box>
+          </div>
         </div>
 
         <FakePortDialogView app={app} />
