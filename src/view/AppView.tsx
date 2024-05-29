@@ -170,6 +170,8 @@ const AppView = observer((props: Props) => {
           display: "flex",
           padding: "10px 10px 10px 0px", // No padding on left
           outline: "none", // Prevent weird white border when selected
+          overflow: "hidden", // Prevent scrollbars from appearing, force internal elements
+                              // to scroll instead
         }}
       >
         <div
@@ -272,7 +274,7 @@ const AppView = observer((props: Props) => {
               fontSize: "0.9rem",
               gap: "20px",
             }}
-            style={{ height: "20px" }}
+            style={{ height: "30px" }}
           >
             {/* DATA TYPE */}
             <div style={{ padding: "0 10px" }}>{app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}</div>
