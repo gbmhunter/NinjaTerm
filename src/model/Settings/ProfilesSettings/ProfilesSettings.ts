@@ -1,16 +1,14 @@
-import { GridRowSelectionModel } from "@mui/x-data-grid";
-import { makeAutoObservable } from "mobx";
-import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
+import { GridRowSelectionModel } from '@mui/x-data-grid';
+import { makeAutoObservable } from 'mobx';
+import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 
-import { ApplyableTextField } from "src/view/Components/ApplyableTextField";
-import { z } from "zod";
-
+import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import { z } from 'zod';
 
 export default class ProfilesSettings {
-
   profileManager: ProfileManager;
 
-  profileName = new ApplyableTextField(" ", z.string());
+  profileName = new ApplyableTextField(' ', z.string());
 
   /**
    * This should either be an array of 0 elements (no profile is selected) or an array of 1 element (the index of the selected profile).
@@ -40,7 +38,7 @@ export default class ProfilesSettings {
   setSelectedProfiles(selectedProfiles: GridRowSelectionModel) {
     // The length should either be 0 or 1
     if (selectedProfiles.length > 1) {
-      throw new Error("Only one profile can be selected at a time.");
+      throw new Error('Only one profile can be selected at a time.');
     }
 
     this.selectedProfiles = selectedProfiles;
@@ -50,7 +48,7 @@ export default class ProfilesSettings {
     if (this.selectedProfiles.length === 1) {
       name = this.profileManager.profiles[this.selectedProfiles[0] as number].name;
     } else {
-      name = "";
+      name = '';
     }
     this.profileName.dispValue = name;
     this.profileName.apply();
@@ -58,18 +56,18 @@ export default class ProfilesSettings {
 
   loadProfile = async () => {
     if (this.selectedProfiles.length !== 1) {
-      throw new Error("Expected there to be one profile selected.");
+      throw new Error('Expected there to be one profile selected.');
     }
     let selectedProfileIdx = this.selectedProfiles[0];
     await this.profileManager.applyProfileToApp(selectedProfileIdx as number);
-  }
+  };
 
   /**
    * Save the current app state to the selected profile.
    */
   saveCurrentAppStateToProfile() {
     if (this.selectedProfiles.length !== 1) {
-      throw new Error("Expected there to be one profile selected.");
+      throw new Error('Expected there to be one profile selected.');
     }
     let selectedProfileIdx = this.selectedProfiles[0];
     this.profileManager.saveCurrentAppConfigToProfile(selectedProfileIdx as number);
@@ -77,10 +75,9 @@ export default class ProfilesSettings {
 
   deleteProfile() {
     if (this.selectedProfiles.length !== 1) {
-      throw new Error("Expected there to be one profile selected.");
+      throw new Error('Expected there to be one profile selected.');
     }
     let selectedProfileIdx = this.selectedProfiles[0];
     this.profileManager.deleteProfile(selectedProfileIdx as number);
   }
-
 }

@@ -65,7 +65,7 @@ const tipsToDisplayOnStartup = [
   'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
   'TIP: Change the type of data displayed between ASCII, HEX and other number types in Settings → RX Settings.',
   'TIP: Press Ctrl-Shift-B to send the "break" signal.',
-]
+];
 
 export class App {
   settings: Settings;
@@ -174,7 +174,7 @@ export class App {
 
     // Set the title of the app to the last applied profile name
     document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
-  }
+  };
 
   /**
    * Called once when the React UI is loaded (specifically, when the App is rendered, by using a useEffect()).
@@ -200,7 +200,7 @@ export class App {
   setSelectedPort = (port: SerialPort) => {
     this.port = port;
     this.serialPortInfo = port.getInfo();
-  }
+  };
 
   onSerialPortConnected(serialPort: SerialPort) {
     console.log('onSerialPortConnected() called.');
@@ -326,7 +326,7 @@ export class App {
    * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openPort({silenceSnackbar = false} = {}) {
+  async openPort({ silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       // Show the circular progress modal when trying to open the port. If the port opening is going to fail, sometimes it takes
       // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
@@ -510,7 +510,7 @@ export class App {
     this.numBytesReceived += rxData.length;
   }
 
-  async closePort({goToReopenState = false, silenceSnackbar = false} = {}) {
+  async closePort({ goToReopenState = false, silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -664,9 +664,7 @@ export class App {
    * @param terminalSelectionWasIn The terminal that the selection was wholly contained within.
    * @returns Text extracted from the terminal rows, suitable for copying to the clipboard.
    */
-  private extractClipboardTextFromTerminal(
-      selectionInfo: SelectionInfo,
-      terminalSelectionWasIn: SingleTerminal): string {
+  private extractClipboardTextFromTerminal(selectionInfo: SelectionInfo, terminalSelectionWasIn: SingleTerminal): string {
     // Extract number from end of the row ID
     // row ID is in form <terminal id>-row-<number>
     const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
@@ -740,7 +738,7 @@ export class App {
     // use keyCode, but this method is deprecated!
     const bytesToWrite: number[] = [];
     // List of allowed symbols, includes space char also
-    const symbols = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? ";
+    const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
 
     // List of all alphanumeric chars
     const alphabeticChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz';
@@ -754,8 +752,7 @@ export class App {
     //===========================================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
       await this.sendBreakSignal();
-    }
-    else if (event.ctrlKey) {
+    } else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
       if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
@@ -771,7 +768,7 @@ export class App {
       if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
-        bytesToWrite.push(0x1B);
+        bytesToWrite.push(0x1b);
         bytesToWrite.push(event.key.charCodeAt(0));
       } else {
         // Alt key was pressed with another key, but we don't want to do anything with it
@@ -779,12 +776,12 @@ export class App {
       }
     } else if (event.key === 'Enter') {
       if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
-        bytesToWrite.push(0x0A);
+        bytesToWrite.push(0x0a);
       } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
-        bytesToWrite.push(0x0D);
+        bytesToWrite.push(0x0d);
       } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
-        bytesToWrite.push(0x0D);
-        bytesToWrite.push(0x0A);
+        bytesToWrite.push(0x0d);
+        bytesToWrite.push(0x0a);
       } else {
         throw Error('Unsupported enter key press behavior!');
       }
@@ -804,7 +801,7 @@ export class App {
       if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
       } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
-        bytesToWrite.push(0x7F);
+        bytesToWrite.push(0x7f);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
@@ -813,9 +810,9 @@ export class App {
       if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
       } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
-        bytesToWrite.push(0x7F);
+        bytesToWrite.push(0x7f);
       } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
+        bytesToWrite.push(0x1b, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');
       }
@@ -855,16 +852,15 @@ export class App {
       // @ts-ignore
       await this.port.setSignals({ break: true });
       // 200ms seems like a standard break time
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       // @ts-ignore
       await this.port.setSignals({ break: false });
       // Emit message to user
       this.snackbar.sendToSnackbar('Break signal sent.', 'success');
-    }
-    // As per https://wicg.github.io/serial/#dom-serialport-setsignals
-    // If the operating system fails to change the state of any of these signals for any reason, queue a
-    // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
-    catch (error) {
+    } catch (error) {
+      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
+      // If the operating system fails to change the state of any of these signals for any reason, queue a
+      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
       this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
     }
   }
@@ -923,8 +919,8 @@ export class App {
             onClick={() => {
               updateSw(true);
             }}
-            color='info'
-            variant='text'
+            color="info"
+            variant="text"
             sx={{
               color: 'rgb(33, 150, 243)',
               backgroundColor: 'white',
@@ -936,8 +932,8 @@ export class App {
             onClick={() => {
               closeSnackbar(snackbarId);
             }}
-            color='info'
-            variant='text'
+            color="info"
+            variant="text"
             sx={{
               color: 'white',
               // backgroundColor: 'white'
