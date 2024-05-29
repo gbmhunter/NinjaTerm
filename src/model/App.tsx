@@ -192,6 +192,16 @@ export class App {
     this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
   }
 
+  /**
+   * Set the port which will be used if open() is called.
+   *
+   * @param port The serial port to set as the selected port.
+   */
+  setSelectedPort = (port: SerialPort) => {
+    this.port = port;
+    this.serialPortInfo = port.getInfo();
+  }
+
   onSerialPortConnected(serialPort: SerialPort) {
     console.log('onSerialPortConnected() called.');
 
@@ -250,7 +260,7 @@ export class App {
           this.serialPortInfo = approvedPortInfo;
 
           if (lastUsedSerialPort.portState === PortState.OPENED) {
-            await this.openPort(false);
+            await this.openPort({ silenceSnackbar: true });
             this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
           } else if (lastUsedSerialPort.portState === PortState.CLOSED) {
             this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
@@ -312,9 +322,11 @@ export class App {
   /**
    * Opens the selected serial port using settings from the Port Configuration view.
    *
-   * @param printSuccessMsg If true, a success message will be printed to the snackbar.
+   * @param obj Optional object with the following properties:
+   * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
+   * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openPort(printSuccessMsg = true) {
+  async openPort({silenceSnackbar = false} = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       // Show the circular progress modal when trying to open the port. If the port opening is going to fail, sometimes it takes
       // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
@@ -342,28 +354,26 @@ export class App {
           if (error.name === 'NetworkError') {
             const msg = 'Serial port is already in use by another program.\n' + 'Reported error from port.open():\n' + `${error}`;
             this.snackbar.sendToSnackbar(msg, 'error');
-            console.log(msg);
+            console.error(msg);
           } else {
             const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
             this.snackbar.sendToSnackbar(msg, 'error');
-            console.log(msg);
+            console.error(msg);
           }
         } else {
           // Type of error not recognized or seen before
           const msg = `Unrecognized error occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
           this.snackbar.sendToSnackbar(msg, 'error');
-          console.log(msg);
+          console.error(msg);
         }
 
-        console.log('Disabling modal');
         this.setShowCircularProgressModal(false);
 
         // An error occurred whilst calling port.open(), so DO NOT continue, port
         // cannot be considered open
-        return;
+        return false;
       }
-      console.log('Open success!');
-      if (printSuccessMsg) {
+      if (!silenceSnackbar) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
 
@@ -394,6 +404,8 @@ export class App {
     this.terminals.txTerminal.clearPartialNumberBuffer();
     this.terminals.rxTerminal.clearPartialNumberBuffer();
     this.terminals.txRxTerminal.clearPartialNumberBuffer();
+
+    return true;
   }
 
   /** Continuously reads from the serial port until:
@@ -498,7 +510,7 @@ export class App {
     this.numBytesReceived += rxData.length;
   }
 
-  async closePort(goToReopenState = false) {
+  async closePort({goToReopenState = false, silenceSnackbar = false} = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -517,7 +529,9 @@ export class App {
         // this.setPortState(PortState.CLOSED);
         this.portState = PortState.CLOSED;
       }
-      this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      if (!silenceSnackbar) {
+        this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      }
       this.reader = null;
       this.closedPromise = null;
       const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;

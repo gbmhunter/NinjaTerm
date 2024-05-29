@@ -99,9 +99,9 @@ export default class DataProcessingSettings {
     //===============================================
     const latestVersion = new TxSettingsConfig().version;
     if (configToLoad.version === latestVersion) {
-      console.log(`Up-to-date config found.`);
+      // Do nothing
     } else {
-      console.error(`Out-of-date config version ${configToLoad.version} found.` +
+      console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
       configToLoad = this.profileManager.currentAppConfig.settings.txSettings

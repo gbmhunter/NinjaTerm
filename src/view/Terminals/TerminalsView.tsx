@@ -125,7 +125,7 @@ export default observer((props: Props) => {
             } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
               app.stopWaitingToReopenPort();
             } else if (app.portState === PortState.OPENED) {
-              app.closePort(false);
+              app.closePort();
             } else {
               throw Error(`Unsupported port state. portState=${app.portState}`);
             }

@@ -52,9 +52,11 @@ export class MacroController {
     this._loadConfig();
   }
 
+  /**
+   * Recreate the macros array with the given number of macros.
+   * @param numMacros The number of macros to put into the macros array.
+   */
   recreateMacros(numMacros: number) {
-
-    console.log(`Recreating macros with ${numMacros} macros`);
 
     // Remove all elements from macroArray
     this.macrosArray.splice(0, this.macrosArray.length);
@@ -90,6 +92,10 @@ export class MacroController {
     this.isModalOpen = isOpen;
   }
 
+  /**
+   * Send the provided macro data to the serial port.
+   * @param macro The macro to send.
+   */
   send(macro: Macro) {
     // Send the data to the serial port
     // If the user presses enter in the multiline text field, it will add a newline character
@@ -118,9 +124,9 @@ export class MacroController {
     //===============================================
     const latestVersion = new MacroControllerConfig().version;
     if (configToLoad.version === latestVersion) {
-      console.log(`Up-to-date config found.`);
+      // Do nothing
     } else {
-      console.error(`Out-of-date config version ${configToLoad.version} found.` +
+      console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
       configToLoad = this.app.profileManager.currentAppConfig.terminal.macroController;

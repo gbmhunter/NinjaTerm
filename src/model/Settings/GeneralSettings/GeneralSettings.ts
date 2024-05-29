@@ -54,9 +54,9 @@ export default class RxSettings {
     //===============================================
     const latestVersion = new GeneralSettingsConfig().version;
     if (configToLoad.version === latestVersion) {
-      console.log(`Up-to-date config found.`);
+      // Do nothing
     } else {
-      console.error(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
+      console.log(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
       this._saveConfig();
       configToLoad = this.profileManager.currentAppConfig.settings.generalSettings;
     }
