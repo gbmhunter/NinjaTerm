@@ -252,8 +252,9 @@ const AppView = observer((props: Props) => {
             // flex: 1,
             width: "100%",
             height: "100%",
+            overflowY: "clip",
             // margin: '30px',
-            padding: "0 0 0 10px",
+            padding: "0 5px 0 5px",
           }}
         >
           {/* =================================================================================== */}
