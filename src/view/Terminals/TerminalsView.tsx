@@ -223,7 +223,15 @@ export default observer((props: Props) => {
         {/* ============================ Ko-Fi "Donate" button =========================== */}
         <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
       </Box>
-      <div className="terminals-and-drawer-row" style={{ width: '100%', height: '100%', flexGrow: 1, display: 'flex', flexDirection: 'row', position: 'relative' }}>
+      <div
+        className="terminals-and-drawer-row"
+        style={{
+          width: '100%', height: '100%',
+          flexGrow: 1,
+          display: 'flex', flexDirection: 'row', position: 'relative',
+          overflow: 'hidden', padding: '3px' }} // Hide overflow to allow for correct sizing. But this
+                                                // blocks the outer flow effect, so add 3px padding
+        >
         {terminals}
         {/* ==================================================================== */}
         {/* RIGHT DRAWER (wrapped in a div so we can hide it all) */}

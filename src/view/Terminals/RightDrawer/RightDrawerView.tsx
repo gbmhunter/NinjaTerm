@@ -28,7 +28,7 @@ export default observer((props: Props) => {
       width={400} // Default width, this can be changed by the user resizing
       resizeHandles={["w"]}
       axis="x"
-      style={{ padding: "0px 0px 0px 10px", margin: "0px 0px 10px 0px", fontSize: "12px" }}
+      style={{ padding: "0px 0px 0px 10px", margin: "0px 0px 10px 0px", fontSize: "12px", display: "flex", flexDirection: "column", overflowY: "auto"}}
       handle={
         <div
           style={{
@@ -49,6 +49,7 @@ export default observer((props: Props) => {
     >
       {/* ResizableBox requires a single child component */}
       <div className="resizable-child-container" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+        <div style={{height: '6px'}} /> {/* Spacer to prevent select input title from being clipped */}
         {/* ======================================================= */}
         {/* DATA VIEW CONFIGURATION */}
         {/* ======================================================= */}

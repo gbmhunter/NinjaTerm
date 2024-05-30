@@ -274,7 +274,8 @@ const AppView = observer((props: Props) => {
               alignItems: 'center',
               fontSize: '0.9rem',
               gap: '20px',
-              height: 30,
+              height: '25px',
+              border: '1px solid #505050',
             }}
           >
             {/* DATA TYPE */}
