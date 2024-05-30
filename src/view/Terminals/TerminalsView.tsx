@@ -63,7 +63,7 @@ export default observer((props: Props) => {
     throw Error(`Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}.`);
   }
 
-  const buttonSx = {
+  const responsiveButtonStyle = {
     // minWidth: isSmallScreen ? '10px' : '180px',
     '& .MuiButton-startIcon': {
       marginRight: isSmallScreen ? '0px' : undefined,
@@ -93,19 +93,21 @@ export default observer((props: Props) => {
         // The negative margin and then positive padding cancel each over out...BUT they
         // do let the outer glow on a focused terminal still show. Without this, it would
         // be clipped because we set the overflow to be hidden
+        // UPDATE 2024-05-30: Removed the margin/padding thing and the glow still works???
         overflowY: 'hidden',
-        margin: '-10px',
-        padding: '10px',
+        // margin: '-10px',
+        // padding: '10px',
       }}
     >
-      <Box
-        id="menu"
-        sx={{
+      <div
+        className="top-terminal-menu"
+        style={{
           display: 'flex',
           alignItems: 'center',
           height: '40px',
           gap: '10px',
-          marginBottom: '10px',
+          marginTop: '3px',
+          marginBottom: '2px',
         }}
       >
         {/* ==================================================================== */}
@@ -132,7 +134,7 @@ export default observer((props: Props) => {
           }}
           startIcon={portStateToButtonProps[app.portState].icon}
           disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType === PortType.REAL}
-          sx={buttonSx}
+          sx={responsiveButtonStyle}
           data-testid="open-close-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
@@ -147,7 +149,7 @@ export default observer((props: Props) => {
           onClick={() => {
             app.clearAllData();
           }}
-          sx={buttonSx}
+          sx={responsiveButtonStyle}
         >
           {isSmallScreen ? '' : 'Clear'}
         </Button>
@@ -174,6 +176,7 @@ export default observer((props: Props) => {
             variant="outlined"
             applyableTextField={app.terminals.filterText}
             InputProps={{
+              style: { height: '35px' },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
@@ -208,8 +211,8 @@ export default observer((props: Props) => {
             }
           }}
           startIcon={<VisibilityIcon />}
-          sx={buttonSx}
-          style={{ width: '200px' }}
+          // sx={responsiveButtonStyle}
+          sx={responsiveButtonStyle}
           data-testid="show-hide-side-panel-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
@@ -222,7 +225,7 @@ export default observer((props: Props) => {
 
         {/* ============================ Ko-Fi "Donate" button =========================== */}
         <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
-      </Box>
+      </div>
       <div
         className="terminals-and-drawer-row"
         style={{

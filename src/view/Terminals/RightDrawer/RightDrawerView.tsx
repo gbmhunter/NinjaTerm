@@ -28,7 +28,7 @@ export default observer((props: Props) => {
       width={400} // Default width, this can be changed by the user resizing
       resizeHandles={["w"]}
       axis="x"
-      style={{ padding: "0px 0px 0px 10px", margin: "0px 0px 10px 0px", fontSize: "12px", display: "flex", flexDirection: "column", overflowY: "auto"}}
+      style={{ padding: "0px 0px 0px 10px", margin: "0px 0px 0px 0px", fontSize: "12px", display: "flex", flexDirection: "column", overflowY: "auto"}}
       handle={
         <div
           style={{

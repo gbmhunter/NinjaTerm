@@ -168,7 +168,7 @@ const AppView = observer((props: Props) => {
         style={{
           height: '100%',
           display: 'flex',
-          padding: '10px 10px 10px 0px', // No padding on left
+          padding: '5px 5px 5px 0px', // No padding on left
           outline: 'none', // Prevent weird white border when selected
           overflow: 'hidden', // Prevent scrollbars from appearing, force internal elements
           // to scroll instead
@@ -186,9 +186,12 @@ const AppView = observer((props: Props) => {
             boxSizing: 'border-box',
           }}
         >
-          {/* ================== LOGO ==================== */}
+          {/* ==================================================== */}
+          {/* LOGO */}
+          {/* ==================================================== */}
           <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px', marginBottom: '20px' }} />
 
+          {/* ==================================================== */}
           {/* SETTINGS BUTTON */}
           {/* ==================================================== */}
           <Tooltip title="Show settings." placement="right" enterDelay={500} arrow>
@@ -203,6 +206,7 @@ const AppView = observer((props: Props) => {
             </IconButton>
           </Tooltip>
 
+          {/* ==================================================== */}
           {/* TERMINAL BUTTON */}
           {/* ==================================================== */}
           <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
@@ -216,6 +220,7 @@ const AppView = observer((props: Props) => {
               <TerminalIcon />
             </IconButton>
           </Tooltip>
+          {/* ==================================================== */}
           {/* GRAPHING BUTTON */}
           {/* ==================================================== */}
           <Tooltip title="Show the graphing pane." placement="right" enterDelay={500} arrow>
@@ -229,6 +234,7 @@ const AppView = observer((props: Props) => {
               <TimelineIcon />
             </IconButton>
           </Tooltip>
+          {/* ==================================================== */}
           {/* LOGGING BUTTON */}
           {/* ==================================================== */}
           <Tooltip title="Show the logging pane." placement="right" enterDelay={500} arrow>
@@ -275,7 +281,6 @@ const AppView = observer((props: Props) => {
               fontSize: '0.9rem',
               gap: '20px',
               height: '25px',
-              border: '1px solid #505050',
             }}
           >
             {/* DATA TYPE */}
