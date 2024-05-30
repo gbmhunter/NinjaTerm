@@ -1,9 +1,7 @@
 import { makeAutoObservable } from 'mobx';
-
-import { App } from 'src/model/App';
-import AppStorage from 'src/model/Storage/AppStorage';
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from 'src/model/Util/SettingsLoader';
 import { z } from 'zod';
+
+import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 
 export enum PortState {
   CLOSED,
@@ -31,9 +29,12 @@ export type StopBits = 1 | 1.5 | 2;
 
 export const STOP_BIT_OPTIONS: StopBits[] = [1, 2];
 
-const CONFIG_KEY = ['settings', 'port-configuration-settings'];
+export enum FlowControl {
+  NONE = 'none',
+  HARDWARE = 'hardware',
+};
 
-class Config {
+export class PortConfigurationConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
@@ -49,24 +50,20 @@ class Config {
 
   stopBits: StopBits = 1;
 
+  flowControl = FlowControl.NONE;
+
   connectToSerialPortAsSoonAsItIsSelected = true;
 
   resumeConnectionToLastSerialPortOnStartup = true;
 
   reopenSerialPortIfUnexpectedlyClosed = true;
-
-  constructor() {
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
 }
 
 export default class PortConfiguration {
 
-  appStorage: AppStorage;
+  profileManager: ProfileManager;
 
-  config = new Config();
-
-  baudRateInputValue = this.config.baudRate.toString();
+  baudRateInputValue: string;
 
   /**
    * Set min. baud rate to 1 and max. baud rate to 2,000,000. Most systems won't actually
@@ -76,14 +73,35 @@ export default class PortConfiguration {
   baudRateValidation = z.coerce.number().int().min(1).max(2000000);
   baudRateErrorMsg = '';
 
-  constructor(appStorage: AppStorage) {
-    this.appStorage = appStorage;
+  baudRate = 115200;
+
+  numDataBits = 8;
+
+  parity = Parity.NONE;
+
+  stopBits: StopBits = 1;
+
+  flowControl = FlowControl.NONE;
+
+  connectToSerialPortAsSoonAsItIsSelected = true;
+
+  resumeConnectionToLastSerialPortOnStartup = true;
+
+  reopenSerialPortIfUnexpectedlyClosed = true;
+
+  constructor(profileManager: ProfileManager) {
+    this.profileManager = profileManager;
+    this.baudRateInputValue = this.baudRate.toString();
+    // this.config =
     this._loadConfig();
+    this.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
     makeAutoObservable(this);
   }
 
   setBaudRate = (baudRate: number) => {
-    this.config.baudRate = baudRate;
+    this.baudRate = baudRate;
     this._saveConfig();
   }
 
@@ -106,65 +124,82 @@ export default class PortConfiguration {
     if (typeof numDataBits !== 'number') {
       throw new Error("numDataBits must be a number");
     }
-    this.config.numDataBits = numDataBits;
+    this.numDataBits = numDataBits;
     this._saveConfig();
   }
 
   setParity = (parity: Parity) => {
-    this.config.parity = parity;
+    this.parity = parity;
     this._saveConfig();
   }
 
   setStopBits = (stopBits: StopBits) => {
-    this.config.stopBits = stopBits;
+    this.stopBits = stopBits;
+    this._saveConfig();
+  }
+
+  setFlowControl = (flowControl: FlowControl) => {
+    this.flowControl = flowControl;
     this._saveConfig();
   }
 
   setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {
-    this.config.connectToSerialPortAsSoonAsItIsSelected = value;
+    this.connectToSerialPortAsSoonAsItIsSelected = value;
     this._saveConfig();
   }
 
   setResumeConnectionToLastSerialPortOnStartup = (value: boolean) => {
-    this.config.resumeConnectionToLastSerialPortOnStartup = value;
+    this.resumeConnectionToLastSerialPortOnStartup = value;
     this._saveConfig();
   }
 
   setReopenSerialPortIfUnexpectedlyClosed = (value: boolean) => {
-    this.config.reopenSerialPortIfUnexpectedlyClosed = value;
+    this.reopenSerialPortIfUnexpectedlyClosed = value;
     this._saveConfig();
   }
 
   _loadConfig = () => {
-    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
-
+    let configToLoad = this.profileManager.currentAppConfig.settings.portSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (deserializedConfig === null) {
-      // No data exists, create
-      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
-      this._saveConfig();
-      return;
-    } else if (deserializedConfig.version === this.config.version) {
-      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
+    const latestVersion = new PortConfigurationConfig().version;
+    if (configToLoad.version === latestVersion) {
+      // Do nothing
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
-                    ` Updating to version ${this.config.version}.`);
+      console.log(`Out-of-date config version ${configToLoad.version} found.` +
+                    ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+      configToLoad = this.profileManager.currentAppConfig.settings.portSettings
     }
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
-    updateConfigFromSerializable(deserializedConfig, this.config);
+    this.baudRate = configToLoad.baudRate;
+    this.numDataBits = configToLoad.numDataBits;
+    this.parity = configToLoad.parity;
+    this.stopBits = configToLoad.stopBits;
+    this.flowControl = configToLoad.flowControl;
+    this.connectToSerialPortAsSoonAsItIsSelected = configToLoad.connectToSerialPortAsSoonAsItIsSelected;
+    this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
+    this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
 
-    this.setBaudRateInputValue(this.config.baudRate.toString());
+    this.setBaudRateInputValue(this.baudRate.toString());
   };
 
   _saveConfig = () => {
-    const serializableConfig = createSerializableObjectFromConfig(this.config);
-    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
+    let config = this.profileManager.currentAppConfig.settings.portSettings;
+
+    config.baudRate = this.baudRate;
+    config.numDataBits = this.numDataBits;
+    config.parity = this.parity;
+    config.stopBits = this.stopBits;
+    config.flowControl = this.flowControl;
+    config.connectToSerialPortAsSoonAsItIsSelected = this.connectToSerialPortAsSoonAsItIsSelected;
+    config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
+    config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
+
+    this.profileManager.saveAppConfig();
   };
 
   /**
@@ -174,12 +209,16 @@ export default class PortConfiguration {
    * @returns The short hand serial port config for displaying to the user.
    */
   get shortSerialConfigName() {
+    return PortConfiguration.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+  }
+
+  static computeShortSerialConfigName(baudRate: number, numDataBits: number, parity: Parity, stopBits: StopBits) {
     let output = '';
-    output += this.config.baudRate.toString();
+    output += baudRate.toString();
     output += ' ';
-    output += this.config.numDataBits.toString();
-    output += this.config.parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
-    output += this.config.stopBits.toString();
+    output += numDataBits.toString();
+    output += parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
+    output += stopBits.toString();
     return output;
   }
 }

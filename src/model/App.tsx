@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line max-classes-per-file
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { closeSnackbar } from 'notistack';
 import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
@@ -13,13 +13,13 @@ import Snackbar from './Snackbar/Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import AppStorage from './Storage/AppStorage';
 import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
+import { LastUsedSerialPort, ProfileManager } from './ProfileManager/ProfileManager';
 
 declare global {
   interface String {
@@ -61,16 +61,11 @@ export enum PortType {
   FAKE,
 }
 
-class LastUsedSerialPort {
-  serialPortInfo: Partial<SerialPortInfo> = {};
-  portState: PortState = PortState.CLOSED;
-}
-
 const tipsToDisplayOnStartup = [
   'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
   'TIP: Change the type of data displayed between ASCII, HEX and other number types in Settings → RX Settings.',
   'TIP: Press Ctrl-Shift-B to send the "break" signal.',
-]
+];
 
 export class App {
   settings: Settings;
@@ -120,7 +115,7 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
-  appStorage: AppStorage = new AppStorage();
+  profileManager: ProfileManager;
 
   selectionController: SelectionController = new SelectionController();
 
@@ -137,7 +132,8 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.settings = new Settings(this.appStorage, this.fakePortController);
+    this.profileManager = new ProfileManager(this);
+    this.settings = new Settings(this.profileManager, this.fakePortController);
 
     this.snackbar = new Snackbar();
 
@@ -166,8 +162,19 @@ export class App {
       });
     }
 
+    // Listen for changes to the last applied profile name, and update the app title
+    reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
+    this.onLastAppliedProfileNameChanged();
+
     makeAutoObservable(this); // Make sure this near the end
   }
+
+  onLastAppliedProfileNameChanged = () => {
+    console.log('onLastAppliedProfileNameChanged() called. this.profileManager.lastAppliedProfileName=', this.profileManager.lastAppliedProfileName);
+
+    // Set the title of the app to the last applied profile name
+    document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
+  };
 
   /**
    * Called once when the React UI is loaded (specifically, when the App is rendered, by using a useEffect()).
@@ -175,7 +182,7 @@ export class App {
    * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
    */
   async onAppUiLoaded() {
-    if (this.settings.portConfiguration.config.resumeConnectionToLastSerialPortOnStartup) {
+    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
       await this.tryToLoadPreviouslyUsedPort();
     }
 
@@ -185,13 +192,23 @@ export class App {
     this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
   }
 
+  /**
+   * Set the port which will be used if open() is called.
+   *
+   * @param port The serial port to set as the selected port.
+   */
+  setSelectedPort = (port: SerialPort) => {
+    this.port = port;
+    this.serialPortInfo = port.getInfo();
+  };
+
   onSerialPortConnected(serialPort: SerialPort) {
     console.log('onSerialPortConnected() called.');
 
     if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
       // Check to see if this is the serial port we want to reopen
 
-      const lastUsedPortInfo: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedPortInfo = this.profileManager.currentAppConfig.lastUsedSerialPort;
       if (lastUsedPortInfo === null) {
         return;
       }
@@ -216,7 +233,7 @@ export class App {
     let approvedPorts = await navigator.serial.getPorts();
 
     // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort') as LastUsedSerialPort;
+    const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
     if (lastUsedSerialPort === null) {
       // Did not find last used serial port data in local storage, so do nothing
       return;
@@ -243,7 +260,7 @@ export class App {
           this.serialPortInfo = approvedPortInfo;
 
           if (lastUsedSerialPort.portState === PortState.OPENED) {
-            await this.openPort(false);
+            await this.openPort({ silenceSnackbar: true });
             this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
           } else if (lastUsedSerialPort.portState === PortState.CLOSED) {
             this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
@@ -286,14 +303,11 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        let lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
-        if (lastUsedSerialPort === null) {
-          lastUsedSerialPort = new LastUsedSerialPort();
-        }
-        lastUsedSerialPort.serialPortInfo = this.serialPortInfo;
-        this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+        let lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+        lastUsedSerialPort.serialPortInfo = JSON.parse(JSON.stringify(this.serialPortInfo));
+        this.profileManager.saveAppConfig();
       });
-      if (this.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
+      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
         // Go to the terminal pane, only if opening was successful
         if (this.portState === PortState.OPENED) {
@@ -308,19 +322,31 @@ export class App {
   /**
    * Opens the selected serial port using settings from the Port Configuration view.
    *
-   * @param printSuccessMsg If true, a success message will be printed to the snackbar.
+   * @param obj Optional object with the following properties:
+   * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
+   * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openPort(printSuccessMsg = true) {
+  async openPort({ silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       // Show the circular progress modal when trying to open the port. If the port opening is going to fail, sometimes it takes
       // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
       this.setShowCircularProgressModal(true);
       try {
+        // Convert from our flow control enum to the Web Serial API's
+        let flowControlType: FlowControlType;
+        if (this.settings.portConfiguration.flowControl === 'none') {
+          flowControlType = 'none';
+        } else if (this.settings.portConfiguration.flowControl === 'hardware') {
+          flowControlType = 'hardware';
+        } else {
+          throw Error(`Unsupported flow control type ${this.settings.portConfiguration.flowControl}.`);
+        }
         await this.port?.open({
-          baudRate: this.settings.portConfiguration.config.baudRate, // This might be custom
-          dataBits: this.settings.portConfiguration.config.numDataBits,
-          parity: this.settings.portConfiguration.config.parity as ParityType,
-          stopBits: this.settings.portConfiguration.config.stopBits,
+          baudRate: this.settings.portConfiguration.baudRate, // This might be custom
+          dataBits: this.settings.portConfiguration.numDataBits,
+          parity: this.settings.portConfiguration.parity as ParityType,
+          stopBits: this.settings.portConfiguration.stopBits,
+          flowControl: flowControlType,
           bufferSize: 10000,
         }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
       } catch (error) {
@@ -328,28 +354,26 @@ export class App {
           if (error.name === 'NetworkError') {
             const msg = 'Serial port is already in use by another program.\n' + 'Reported error from port.open():\n' + `${error}`;
             this.snackbar.sendToSnackbar(msg, 'error');
-            console.log(msg);
+            console.error(msg);
           } else {
             const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
             this.snackbar.sendToSnackbar(msg, 'error');
-            console.log(msg);
+            console.error(msg);
           }
         } else {
           // Type of error not recognized or seen before
           const msg = `Unrecognized error occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
           this.snackbar.sendToSnackbar(msg, 'error');
-          console.log(msg);
+          console.error(msg);
         }
 
-        console.log('Disabling modal');
         this.setShowCircularProgressModal(false);
 
         // An error occurred whilst calling port.open(), so DO NOT continue, port
         // cannot be considered open
-        return;
+        return false;
       }
-      console.log('Open success!');
-      if (printSuccessMsg) {
+      if (!silenceSnackbar) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
 
@@ -361,9 +385,9 @@ export class App {
         this.closedPromise = this.readUntilClosed();
       });
 
-      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.OPENED;
-      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+      this.profileManager.saveAppConfig();
 
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
@@ -380,6 +404,8 @@ export class App {
     this.terminals.txTerminal.clearPartialNumberBuffer();
     this.terminals.rxTerminal.clearPartialNumberBuffer();
     this.terminals.txRxTerminal.clearPartialNumberBuffer();
+
+    return true;
   }
 
   /** Continuously reads from the serial port until:
@@ -448,7 +474,7 @@ export class App {
     // fatal error from the serial port which has caused us to close. In this case, handle
     // the clean-up and state transition here.
     if (this.keepReading === true) {
-      if (this.settings.portConfiguration.config.reopenSerialPortIfUnexpectedlyClosed) {
+      if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
         this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
       } else {
         this.setPortState(PortState.CLOSED);
@@ -484,7 +510,7 @@ export class App {
     this.numBytesReceived += rxData.length;
   }
 
-  async closePort(goToReopenState = false) {
+  async closePort({ goToReopenState = false, silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
       // Force reader.read() to resolve immediately and subsequently
@@ -503,14 +529,14 @@ export class App {
         // this.setPortState(PortState.CLOSED);
         this.portState = PortState.CLOSED;
       }
-      this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      if (!silenceSnackbar) {
+        this.snackbar.sendToSnackbar('Serial port closed.', 'success');
+      }
       this.reader = null;
       this.closedPromise = null;
-      // this.appStorage.data.lastUsedSerialPort.portState = PortState.CLOSED;
-      // this.appStorage.saveData();
-      const lastUsedSerialPort: LastUsedSerialPort = this.appStorage.getData('lastUsedSerialPort');
+      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.CLOSED;
-      this.appStorage.saveData('lastUsedSerialPort', lastUsedSerialPort);
+      this.profileManager.saveAppConfig();
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
@@ -552,7 +578,7 @@ export class App {
       let text = await navigator.clipboard.readText();
 
       // Convert CRLF to LF if setting is enabled
-      if (this.settings.generalSettings.config.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      if (this.settings.generalSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
         text = text.replace(/\r\n/g, '\n');
       }
 
@@ -638,9 +664,7 @@ export class App {
    * @param terminalSelectionWasIn The terminal that the selection was wholly contained within.
    * @returns Text extracted from the terminal rows, suitable for copying to the clipboard.
    */
-  private extractClipboardTextFromTerminal(
-      selectionInfo: SelectionInfo,
-      terminalSelectionWasIn: SingleTerminal): string {
+  private extractClipboardTextFromTerminal(selectionInfo: SelectionInfo, terminalSelectionWasIn: SingleTerminal): string {
     // Extract number from end of the row ID
     // row ID is in form <terminal id>-row-<number>
     const firstRowIdNumOnly = parseInt(selectionInfo.firstRowId.split('-').slice(-1)[0]);
@@ -661,7 +685,7 @@ export class App {
       //    a text editor and it won't have additional new lines added just because the text wrapped in
       //    the terminal. New lines will only be added if the terminal row was created because of
       //    a new line character or an ANSI escape sequence (e.g. cursor down).
-      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.generalSettings.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
+      if (i !== firstRowIndex && (terminalRow.wasCreatedDueToWrapping === false || !this.settings.generalSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping)) {
         textToCopy += '\n';
       }
 
@@ -714,7 +738,7 @@ export class App {
     // use keyCode, but this method is deprecated!
     const bytesToWrite: number[] = [];
     // List of allowed symbols, includes space char also
-    const symbols = "`~!@#$%^&*()-_=+[{]}\\|;:'\",<.>/? ";
+    const symbols = '`~!@#$%^&*()-_=+[{]}\\|;:\'",<.>/? ';
 
     // List of all alphanumeric chars
     const alphabeticChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz';
@@ -727,28 +751,11 @@ export class App {
     // Ctrl-Shift-B: Send break signal
     //===========================================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
-      // TODO: Get types for setSignals() and remove ts-ignore
-      try {
-        // @ts-ignore
-        await this.port.setSignals({ break: true });
-        // 200ms seems like a standard break time
-        await new Promise(resolve => setTimeout(resolve, 200));
-        // @ts-ignore
-        await this.port.setSignals({ break: false });
-        // Emit message to user
-        this.snackbar.sendToSnackbar('Break signal sent.', 'success');
-      }
-      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
-      // If the operating system fails to change the state of any of these signals for any reason, queue a
-      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
-      catch (error) {
-        this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
-      }
-    }
-    else if (event.ctrlKey) {
+      await this.sendBreakSignal();
+    } else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
-      if (this.settings.txSettings.config.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Ctrl-A through Ctrl-Z is has been pressed
         // Send 0x01 through 0x1A, which is easily done by getting the char, converting to
         // uppercase if lowercase and then subtracting 64
@@ -758,23 +765,23 @@ export class App {
         return;
       }
     } else if (event.altKey) {
-      if (this.settings.txSettings.config.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
+      if (this.settings.txSettings.sendEscCharWhenAltKeyPressed && event.key.length === 1 && alphabeticChars.includes(event.key)) {
         // Alt-A through Alt-Z is has been pressed
         // Send ESC char (0x1B) followed by the char
-        bytesToWrite.push(0x1B);
+        bytesToWrite.push(0x1b);
         bytesToWrite.push(event.key.charCodeAt(0));
       } else {
         // Alt key was pressed with another key, but we don't want to do anything with it
         return;
       }
     } else if (event.key === 'Enter') {
-      if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
-        bytesToWrite.push(0x0A);
-      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
-        bytesToWrite.push(0x0D);
-      } else if (this.settings.txSettings.config.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
-        bytesToWrite.push(0x0D);
-        bytesToWrite.push(0x0A);
+      if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
+        bytesToWrite.push(0x0a);
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
+        bytesToWrite.push(0x0d);
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
+        bytesToWrite.push(0x0d);
+        bytesToWrite.push(0x0a);
       } else {
         throw Error('Unsupported enter key press behavior!');
       }
@@ -791,21 +798,21 @@ export class App {
     //===========================================================
     else if (event.key === 'Backspace') {
       // Work out whether to send BS (0x08) or DEL (0x7F) based on settings
-      if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.config.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
-        bytesToWrite.push(0x7F);
+      } else if (this.settings.txSettings.backspaceKeyPressBehavior === BackspaceKeyPressBehavior.SEND_DELETE) {
+        bytesToWrite.push(0x7f);
       } else {
         throw Error('Unsupported backspace key press behavior!');
       }
     } else if (event.key === 'Delete') {
       // Delete also has the option of sending [ESC][3~
-      if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
+      if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_BACKSPACE) {
         bytesToWrite.push(0x08);
-      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
-        bytesToWrite.push(0x7F);
-      } else if (this.settings.txSettings.config.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
-        bytesToWrite.push(0x1B, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_DELETE) {
+        bytesToWrite.push(0x7f);
+      } else if (this.settings.txSettings.deleteKeyPressBehavior === DeleteKeyPressBehavior.SEND_VT_SEQUENCE) {
+        bytesToWrite.push(0x1b, '['.charCodeAt(0), '3'.charCodeAt(0), '~'.charCodeAt(0));
       } else {
         throw Error('Unsupported delete key press behavior!');
       }
@@ -837,6 +844,28 @@ export class App {
   };
 
   /**
+   * Sends a break signal to the serial port for 200ms. Port must be open otherwise an error will be shown.
+   */
+  async sendBreakSignal() {
+    // TODO: Get types for setSignals() and remove ts-ignore
+    try {
+      // @ts-ignore
+      await this.port.setSignals({ break: true });
+      // 200ms seems like a standard break time
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      // @ts-ignore
+      await this.port.setSignals({ break: false });
+      // Emit message to user
+      this.snackbar.sendToSnackbar('Break signal sent.', 'success');
+    } catch (error) {
+      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
+      // If the operating system fails to change the state of any of these signals for any reason, queue a
+      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
+      this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
+    }
+  }
+
+  /**
    * Writes bytes to the serial port. Also:
    * - Sends the data to the TX terminal view
    * - Sends the data to the TX/RX terminal view, if local TX echo is enabled.
@@ -854,7 +883,7 @@ export class App {
     this.terminals.txTerminal.parseData(bytesToWrite);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
-    if (this.settings.rxSettings.config.localTxEcho) {
+    if (this.settings.rxSettings.localTxEcho) {
       this.terminals.txRxTerminal.parseData(bytesToWrite);
     }
 
@@ -890,8 +919,8 @@ export class App {
             onClick={() => {
               updateSw(true);
             }}
-            color='info'
-            variant='text'
+            color="info"
+            variant="text"
             sx={{
               color: 'rgb(33, 150, 243)',
               backgroundColor: 'white',
@@ -903,8 +932,8 @@ export class App {
             onClick={() => {
               closeSnackbar(snackbarId);
             }}
-            color='info'
-            variant='text'
+            color="info"
+            variant="text"
             sx={{
               color: 'white',
               // backgroundColor: 'white'

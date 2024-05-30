@@ -3,37 +3,35 @@ import { observer } from "mobx-react-lite";
 
 import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 import BorderedSection from "src/view/Components/BorderedSection";
-import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
-import { number } from "zod";
 
 interface Props {
   txSettings: TxSettings;
 }
 
 function TxSettingsView(props: Props) {
-  const { txSettings: dataProcessingSettings } = props;
+  const { txSettings } = props;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       {/* =============================================================================== */}
       {/* ENTER PRESSED */}
       {/* =============================================================================== */}
-      <BorderedSection title="Enter" childStyle={{ display: "flex", flexDirection: "column" }} style={{ width: '400px' }}>
+      <BorderedSection title="Enter" childStyle={{ display: "flex", flexDirection: "column" }} style={{ width: "400px" }}>
         {/* BACKSPACE */}
         <FormControl>
           <FormLabel>When enter is pressed:</FormLabel>
           <RadioGroup
-            value={dataProcessingSettings.config.enterKeyPressBehavior}
+            value={txSettings.enterKeyPressBehavior}
             onChange={(e) => {
-              dataProcessingSettings.setEnterKeyPressBehavior(e.target.value as any);
+              txSettings.setEnterKeyPressBehavior(e.target.value as any);
             }}
           >
             {/* SEND LF */}
-            <Tooltip title="Send the line feed (LF, &quot;\n&quot;) char (0x0A) when the Enter key is pressed." placement="right" arrow>
+            <Tooltip title='Send the line feed (LF, "\n") char (0x0A) when the Enter key is pressed.' placement="right" arrow>
               <FormControlLabel value={EnterKeyPressBehavior.SEND_LF} control={<Radio />} label="Send LF (0x0A)" />
             </Tooltip>
             {/* SEND CR */}
-            <Tooltip title="Send the carriage return (CR, &quot;\r&quot;) char (0x0D) when the Enter key is pressed." placement="right" arrow>
+            <Tooltip title='Send the carriage return (CR, "\r") char (0x0D) when the Enter key is pressed.' placement="right" arrow>
               <FormControlLabel value={EnterKeyPressBehavior.SEND_CR} control={<Radio />} label="Send CR (0x0D)" />
             </Tooltip>
             {/* SEND CRLF */}
@@ -55,9 +53,9 @@ function TxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>When backspace is pressed:</FormLabel>
             <RadioGroup
-              value={dataProcessingSettings.config.backspaceKeyPressBehavior}
+              value={txSettings.backspaceKeyPressBehavior}
               onChange={(e) => {
-                dataProcessingSettings.setBackspaceKeyPressBehavior(e.target.value as any);
+                txSettings.setBackspaceKeyPressBehavior(e.target.value as any);
               }}
             >
               {/* SEND BACKSPACE (0x08) */}
@@ -78,9 +76,9 @@ function TxSettingsView(props: Props) {
           <FormControl>
             <FormLabel>When delete is pressed:</FormLabel>
             <RadioGroup
-              value={dataProcessingSettings.config.deleteKeyPressBehavior}
+              value={txSettings.deleteKeyPressBehavior}
               onChange={(e) => {
-                dataProcessingSettings.setDeleteKeyPressBehavior(e.target.value as any);
+                txSettings.setDeleteKeyPressBehavior(e.target.value as any);
               }}
             >
               {/* SEND BACKSPACE (0x08) */}
@@ -115,9 +113,9 @@ function TxSettingsView(props: Props) {
           <FormControlLabel
             control={
               <Checkbox
-                checked={dataProcessingSettings.config.send0x01Thru0x1AWhenCtrlAThruZPressed}
+                checked={txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed}
                 onChange={(e) => {
-                  dataProcessingSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
+                  txSettings.setSend0x01Thru0x1AWhenCtrlAThruZPressed(e.target.checked);
                 }}
               />
             }
@@ -137,9 +135,9 @@ function TxSettingsView(props: Props) {
           <FormControlLabel
             control={
               <Checkbox
-                checked={dataProcessingSettings.config.sendEscCharWhenAltKeyPressed}
+                checked={txSettings.sendEscCharWhenAltKeyPressed}
                 onChange={(e) => {
-                  dataProcessingSettings.setSendEscCharWhenAltKeyPressed(e.target.checked);
+                  txSettings.setSendEscCharWhenAltKeyPressed(e.target.checked);
                 }}
               />
             }

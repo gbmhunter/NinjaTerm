@@ -1,23 +1,25 @@
 import { IconButton, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
 import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import MacroSettingsModalView from "./MacroSettingsModalView";
 import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macro";
 
 interface Props {
   app: App;
   macroController: MacroController;
   macro: Macro;
+
+  // The index of the macro in the macroController's macro array. This is used for
+  // creating unique data-testid attributes for testing.
+  macroIdx: number;
 }
 
 export default observer((props: Props) => {
-  const { app, macroController, macro } = props;
+  const { app, macroController, macro, macroIdx } = props;
 
   let dataTypeShort = "";
   let dataTypeColor = "";
@@ -48,6 +50,7 @@ export default observer((props: Props) => {
             style: {
               padding: 5,
             },
+            'data-testid': `macro-data-${macroIdx}`,
           }}
           value={macro.data}
           error={macro.errorMsg !== ""}
@@ -63,7 +66,7 @@ export default observer((props: Props) => {
       {/* ================================================ */}
       <Tooltip title="Send the data to the serial port." enterDelay={500} arrow>
         <span>
-          {/* This is a hack to get the tooltip to work when the button is disabled */}
+          {/* The span is a hack to get the tooltip to work when the button is disabled */}
           <IconButton
             aria-label="send-macro-data"
             size="small"
@@ -72,6 +75,7 @@ export default observer((props: Props) => {
             onClick={() => {
               macroController.send(macro);
             }}
+            data-testid={`macro-${macroIdx}-send-button`}
           >
             <ArrowForwardIcon />
           </IconButton>
@@ -89,6 +93,7 @@ export default observer((props: Props) => {
             macroController.setMacroToDisplayInModal(macro);
             macroController.setIsModalOpen(true);
           }}
+          data-testid={`macro-more-settings-${macroIdx}`}
         >
           <MoreHorizIcon />
         </IconButton>

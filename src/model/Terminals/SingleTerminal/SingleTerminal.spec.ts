@@ -7,17 +7,20 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import AppStorage from 'src/model/Storage/AppStorage';
+import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { App } from 'src/model/App';
 
 describe('single terminal tests', () => {
-  let appStorage: AppStorage;
+  let app: App;
+  let profileManager: ProfileManager;
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
-    appStorage = new AppStorage();
-    dataProcessingSettings = new RxSettings(appStorage);
-    displaySettings = new DisplaySettings(appStorage);
+    app = new App();
+    profileManager = new ProfileManager(app);
+    dataProcessingSettings = new RxSettings(profileManager);
+    displaySettings = new DisplaySettings(profileManager);
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,

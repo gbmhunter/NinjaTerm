@@ -1,9 +1,8 @@
 import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
-import AppStorage from "src/model/Storage/AppStorage";
 import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
-import { createSerializableObjectFromConfig, updateConfigFromSerializable } from "src/model/Util/SettingsLoader";
+import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
 
 export enum DataType {
   ASCII,
@@ -78,13 +77,65 @@ export enum Endianness {
   BIG_ENDIAN = 'Big Endian', // MSB is sent first.
 }
 
-class Config {
+export class RxSettingsConfig {
   /**
    * Increment this version number if you need to update this data in this class.
    * This will cause the app to ignore whatever is in local storage and use the defaults,
    * updating to this new version.
    */
   version = 1;
+
+  /**
+   * How to interpret the received data from the serial port.
+   */
+  dataType = DataType.ASCII;
+
+  // ASCII-SPECIFIC SETTINGS
+  ansiEscapeCodeParsingEnabled = true;
+  maxEscapeCodeLengthChars = 10;
+  localTxEcho = false;
+  newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
+  swallowNewLine = true;
+  carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
+  swallowCarriageReturn = true;
+  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+
+  // NUMBER-SPECIFIC SETTINGS
+  numberType = NumberType.HEX;
+  endianness = Endianness.LITTLE_ENDIAN;
+  numberSeparator = " ";
+  preventValuesWrappingAcrossRows = true;
+  insertNewLineOnMatchedValue = false;
+  newLineMatchValueAsHex = "00";
+  newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
+  padValues = true;
+  paddingCharacter = PaddingCharacter.ZERO;
+
+  /**
+   * Set to -1 for automatic padding, which will pad up to the largest possible value
+   * for the selected number type.
+   */
+  numPaddingChars = -1;
+
+  // HEX SPECIFIC SETTINGS
+  numBytesPerHexNumber = 1;
+  hexCase = HexCase.UPPERCASE;
+  prefixHexValuesWith0x = false;
+
+  // FLOAT SPECIFIC SETTINGS
+  floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
+  floatNumOfDecimalPlaces = 5;
+
+  constructor() {
+    makeAutoObservable(this); // Make sure this is at the end of the constructor
+  }
+}
+
+const CONFIG_KEY = ['settings', 'rx-settings'];
+
+export default class RxSettings {
+
+  profileManager: ProfileManager;
 
   /**
    * How to interpret the received data from the serial port.
@@ -132,72 +183,134 @@ class Config {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
-  constructor() {
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
-}
 
-const CONFIG_KEY = ['settings', 'rx-settings'];
-
-export default class RxSettings {
-  appStorage: AppStorage;
-
-  config = new Config();
-
-  constructor(appStorage: AppStorage) {
-    this.appStorage = appStorage;
+  constructor(profileManager: ProfileManager) {
+    this.profileManager = profileManager;
     this._loadConfig();
+    this.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
+    this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.numberSeparator.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.newLineMatchValueAsHex.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.numPaddingChars.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
     makeAutoObservable(this); // Make sure this is at the end of the constructor
-
-    this.config.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.config.numberSeparator.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.config.newLineMatchValueAsHex.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.config.numPaddingChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.config.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
   }
 
   _loadConfig = () => {
-    let deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
-
+    let configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
-    if (deserializedConfig === null) {
-      // No data exists, create
-      console.log(`No config found in local storage for key ${CONFIG_KEY}. Creating...`);
-      this._saveConfig();
-      return;
-    } else if (deserializedConfig.version === this.config.version) {
-      console.log(`Up-to-date config found for key ${CONFIG_KEY}.`);
+    const latestVersion = new RxSettingsConfig().version;
+    if (configToLoad.version === latestVersion) {
+      // Do nothing
     } else {
-      console.error(`Out-of-date config version ${deserializedConfig.version} found for key ${CONFIG_KEY}.` +
-                    ` Updating to version ${this.config.version}.`);
+      console.log(`Out-of-date config version ${configToLoad.version} found.` +
+                    ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      deserializedConfig = this.appStorage.getConfig(CONFIG_KEY);
+      configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
     }
 
-    // At this point we are confident that the deserialized config matches what
-    // this classes config object wants, so we can go ahead and update.
-    updateConfigFromSerializable(deserializedConfig, this.config);
+    /**
+     * How to interpret the received data from the serial port.
+     */
+    this.dataType = configToLoad.dataType;
+
+    // ASCII-SPECIFIC SETTINGS
+    this.ansiEscapeCodeParsingEnabled = configToLoad.ansiEscapeCodeParsingEnabled;
+    this.maxEscapeCodeLengthChars.setDispValue(configToLoad.maxEscapeCodeLengthChars.toString());
+    this.maxEscapeCodeLengthChars.apply();
+    this.localTxEcho = configToLoad.localTxEcho;
+    this.newLineCursorBehavior = configToLoad.newLineCursorBehavior;
+    this.swallowNewLine = configToLoad.swallowNewLine;
+    this.carriageReturnCursorBehavior = configToLoad.carriageReturnCursorBehavior;
+    this.swallowCarriageReturn = configToLoad.swallowCarriageReturn;
+    this.nonVisibleCharDisplayBehavior = configToLoad.nonVisibleCharDisplayBehavior;
+
+    // NUMBER-SPECIFIC SETTINGS
+    this.numberType = configToLoad.numberType;
+    this.endianness = configToLoad.endianness;
+    this.numberSeparator.setDispValue(configToLoad.numberSeparator);
+    this.numberSeparator.apply();
+    this.preventValuesWrappingAcrossRows = configToLoad.preventValuesWrappingAcrossRows;
+    this.insertNewLineOnMatchedValue = configToLoad.insertNewLineOnMatchedValue;
+    this.newLineMatchValueAsHex.setDispValue(configToLoad.newLineMatchValueAsHex);
+    this.newLineMatchValueAsHex.apply();
+    this.newLinePlacementOnHexValue = configToLoad.newLinePlacementOnHexValue;
+    this.padValues = configToLoad.padValues;
+    this.paddingCharacter = configToLoad.paddingCharacter;
+
+    /**
+     * Set to -1 for automatic padding, which will pad up to the largest possible value
+     * for the selected number type.
+     */
+    this.numPaddingChars.setDispValue(configToLoad.numPaddingChars.toString());
+    this.numPaddingChars.apply();
+
+    // HEX SPECIFIC SETTINGS
+    this.numBytesPerHexNumber.setDispValue(configToLoad.numBytesPerHexNumber.toString());
+    this.numBytesPerHexNumber.apply();
+    this.hexCase = configToLoad.hexCase;
+    this.prefixHexValuesWith0x = configToLoad.prefixHexValuesWith0x;
+
+    // FLOAT SPECIFIC SETTINGS
+    this.floatStringConversionMethod = configToLoad.floatStringConversionMethod;
+    this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
+    this.floatNumOfDecimalPlaces.apply();
   };
 
   _saveConfig = () => {
-    const serializableConfig = createSerializableObjectFromConfig(this.config);
-    this.appStorage.saveConfig(CONFIG_KEY, serializableConfig);
+    let config = this.profileManager.currentAppConfig.settings.rxSettings;
+    config.dataType = this.dataType;
+
+    // ASCII-SPECIFIC SETTINGS
+    config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
+    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.appliedValue;
+    config.localTxEcho = this.localTxEcho;
+    config.newLineCursorBehavior = this.newLineCursorBehavior;
+    config.swallowNewLine = this.swallowNewLine;
+    config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
+    config.swallowCarriageReturn = this.swallowCarriageReturn;
+    config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
+
+    // NUMBER-SPECIFIC SETTINGS
+    config.numberType = this.numberType;
+    config.endianness = this.endianness;
+    config.numberSeparator = this.numberSeparator.appliedValue;
+    config.preventValuesWrappingAcrossRows = this.preventValuesWrappingAcrossRows;
+    config.insertNewLineOnMatchedValue = this.insertNewLineOnMatchedValue;
+    config.newLineMatchValueAsHex = this.newLineMatchValueAsHex.appliedValue;
+    config.newLinePlacementOnHexValue = this.newLinePlacementOnHexValue;
+    config.padValues = this.padValues;
+    config.paddingCharacter = this.paddingCharacter;
+    config.numPaddingChars = this.numPaddingChars.appliedValue;
+
+    // HEX SPECIFIC SETTINGS
+    config.numBytesPerHexNumber = this.numBytesPerHexNumber.appliedValue;
+    config.hexCase = this.hexCase;
+    config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
+
+    // FLOAT SPECIFIC SETTINGS
+    config.floatStringConversionMethod = this.floatStringConversionMethod;
+    config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
+
+    this.profileManager.saveAppConfig();
   };
 
   setDataType = (value: DataType) => {
-    this.config.dataType = value;
+    this.dataType = value;
     this._saveConfig();
   };
 
@@ -206,37 +319,37 @@ export default class RxSettings {
   //=================================================================
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
-    this.config.ansiEscapeCodeParsingEnabled = value;
+    this.ansiEscapeCodeParsingEnabled = value;
     this._saveConfig();
   };
 
   setLocalTxEcho = (value: boolean) => {
-    this.config.localTxEcho = value;
+    this.localTxEcho = value;
     this._saveConfig();
   };
 
   setNewLineCursorBehavior = (value: NewLineCursorBehavior) => {
-    this.config.newLineCursorBehavior = value;
+    this.newLineCursorBehavior = value;
     this._saveConfig();
   };
 
   setSwallowNewLine = (value: boolean) => {
-    this.config.swallowNewLine = value;
+    this.swallowNewLine = value;
     this._saveConfig();
   };
 
   setCarriageReturnBehavior = (value: CarriageReturnCursorBehavior) => {
-    this.config.carriageReturnCursorBehavior = value;
+    this.carriageReturnCursorBehavior = value;
     this._saveConfig();
   };
 
   setSwallowCarriageReturn = (value: boolean) => {
-    this.config.swallowCarriageReturn = value;
+    this.swallowCarriageReturn = value;
     this._saveConfig();
   };
 
   setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
-    this.config.nonVisibleCharDisplayBehavior = value;
+    this.nonVisibleCharDisplayBehavior = value;
     this._saveConfig();
   };
 
@@ -245,37 +358,37 @@ export default class RxSettings {
   //=================================================================
 
   setNumberType = (value: NumberType) => {
-    this.config.numberType = value;
+    this.numberType = value;
     this._saveConfig();
   }
 
   setEndianness = (value: Endianness) => {
-    this.config.endianness = value;
+    this.endianness = value;
     this._saveConfig();
   };
 
   setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
-    this.config.preventValuesWrappingAcrossRows = value;
+    this.preventValuesWrappingAcrossRows = value;
     this._saveConfig();
   };
 
   setInsertNewLineOnValue = (value: boolean) => {
-    this.config.insertNewLineOnMatchedValue = value;
+    this.insertNewLineOnMatchedValue = value;
     this._saveConfig();
   };
 
   setNewLinePlacementOnValue = (value: NewLinePlacementOnHexValue) => {
-    this.config.newLinePlacementOnHexValue = value;
+    this.newLinePlacementOnHexValue = value;
     this._saveConfig();
   };
 
   setPadValues = (value: boolean) => {
-    this.config.padValues = value;
+    this.padValues = value;
     this._saveConfig();
   }
 
   setPaddingCharacter = (value: PaddingCharacter) => {
-    this.config.paddingCharacter = value;
+    this.paddingCharacter = value;
     this._saveConfig();
   }
 
@@ -284,12 +397,12 @@ export default class RxSettings {
   //=================================================================
 
   setHexCase = (value: HexCase) => {
-    this.config.hexCase = value;
+    this.hexCase = value;
     this._saveConfig();
   };
 
   setPrefixHexValuesWith0x = (value: boolean) => {
-    this.config.prefixHexValuesWith0x = value;
+    this.prefixHexValuesWith0x = value;
     this._saveConfig();
   };
 
@@ -298,7 +411,7 @@ export default class RxSettings {
   //=================================================================
 
   setFloatStringConversionMethod = (value: FloatStringConversionMethod) => {
-    this.config.floatStringConversionMethod = value;
+    this.floatStringConversionMethod = value;
     this._saveConfig();
   };
 
@@ -312,10 +425,14 @@ export default class RxSettings {
    * @returns The descriptive name as a string.
    */
   getDataTypeNameForToolbarDisplay = () => {
-    if (this.config.dataType === DataType.ASCII) {
+    return RxSettings.computeDataTypeNameForToolbarDisplay(this.dataType, this.numberType);
+  };
+
+  static computeDataTypeNameForToolbarDisplay = (dataType: DataType, numberType: NumberType) => {
+    if (dataType === DataType.ASCII) {
       return "ASCII";
     } else {
-      return this.config.numberType;
+      return numberType;
     }
-  };
+  }
 }

@@ -13,23 +13,23 @@ import {
   Tooltip,
   Typography,
   useMediaQuery,
-} from "@mui/material";
-import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import { OverridableStringUnion } from "@mui/types";
-import KofiButton from "kofi-button";
-import { observer } from "mobx-react-lite";
-import { ResizableBox } from "react-resizable";
-import "react-resizable/css/styles.css";
+} from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { OverridableStringUnion } from '@mui/types';
+import KofiButton from 'kofi-button';
+import { observer } from 'mobx-react-lite';
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
-import { App, PortType } from "src/model/App";
-import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import SingleTerminalView from "./SingleTerminal/SingleTerminalView";
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from "src/model/Settings/DisplaySettings/DisplaySettings";
-import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
-import { portStateToButtonProps } from "src/view/Components/PortStateToButtonProps";
-import RightDrawerView from "./RightDrawer/RightDrawerView";
+import { App, PortType } from 'src/model/App';
+import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import SingleTerminalView from './SingleTerminal/SingleTerminalView';
+import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
+import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
+import RightDrawerView from './RightDrawer/RightDrawerView';
 
 interface Props {
   app: App;
@@ -38,7 +38,7 @@ interface Props {
 export default observer((props: Props) => {
   const { app } = props;
 
-  const isSmallScreen = useMediaQuery((theme) => (theme as any).breakpoints.down("lg"));
+  const isSmallScreen = useMediaQuery((theme) => (theme as any).breakpoints.down('lg'));
 
   // TERMINAL CREATION
   // ==========================================================================
@@ -50,11 +50,11 @@ export default observer((props: Props) => {
   } else if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = (
-      <div style={{ flexGrow: 1, height: "100%", display: "flex", flexDirection: "column" }}>
-        <div style={{ height: "50%", display: "flex" }}>
+      <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: '50%', display: 'flex' }}>
           <SingleTerminalView terminal={app.terminals.txTerminal} directionLabel="TX" testId="tx-terminal-view" />
         </div>
-        <div style={{ height: "50%", display: "flex" }}>
+        <div style={{ height: '50%', display: 'flex' }}>
           <SingleTerminalView terminal={app.terminals.rxTerminal} directionLabel="RX" testId="rx-terminal-view" />
         </div>
       </div>
@@ -63,11 +63,11 @@ export default observer((props: Props) => {
     throw Error(`Unsupported data view configuration. dataViewConfiguration=${app.settings.displaySettings.dataViewConfiguration}.`);
   }
 
-  const buttonSx = {
+  const responsiveButtonStyle = {
     // minWidth: isSmallScreen ? '10px' : '180px',
-    "& .MuiButton-startIcon": {
-      marginRight: isSmallScreen ? "0px" : undefined,
-      marginLeft: isSmallScreen ? "0px" : undefined,
+    '& .MuiButton-startIcon': {
+      marginRight: isSmallScreen ? '0px' : undefined,
+      marginLeft: isSmallScreen ? '0px' : undefined,
     },
   };
 
@@ -85,27 +85,29 @@ export default observer((props: Props) => {
       id="terminal-view-outer"
       style={{
         flexGrow: 1,
-        display: "flex",
-        flexDirection: "column",
+        display: 'flex',
+        flexDirection: 'column',
 
         // overflowY: hidden important so that the single terminal panes get smaller when the
         // window height is made smaller. Without this, scrollbars appear.
         // The negative margin and then positive padding cancel each over out...BUT they
         // do let the outer glow on a focused terminal still show. Without this, it would
         // be clipped because we set the overflow to be hidden
-        overflowY: "hidden",
-        margin: "-10px",
-        padding: "10px",
+        // UPDATE 2024-05-30: Removed the margin/padding thing and the glow still works???
+        overflowY: 'hidden',
+        // margin: '-10px',
+        // padding: '10px',
       }}
     >
-      <Box
-        id="menu"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          height: "40px",
-          gap: "10px",
-          marginBottom: "10px",
+      <div
+        className="top-terminal-menu"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          height: '40px',
+          gap: '10px',
+          marginTop: '3px',
+          marginBottom: '2px',
         }}
       >
         {/* ==================================================================== */}
@@ -115,7 +117,7 @@ export default observer((props: Props) => {
           variant="outlined"
           color={
             portStateToButtonProps[app.portState].color as OverridableStringUnion<
-              "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning",
+              'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
@@ -125,18 +127,18 @@ export default observer((props: Props) => {
             } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
               app.stopWaitingToReopenPort();
             } else if (app.portState === PortState.OPENED) {
-              app.closePort(false);
+              app.closePort();
             } else {
               throw Error(`Unsupported port state. portState=${app.portState}`);
             }
           }}
           startIcon={portStateToButtonProps[app.portState].icon}
           disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType === PortType.REAL}
-          sx={buttonSx}
+          sx={responsiveButtonStyle}
           data-testid="open-close-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
-          {isSmallScreen ? "" : portStateToButtonProps[app.portState].text}
+          {isSmallScreen ? '' : portStateToButtonProps[app.portState].text}
         </Button>
         {/* ==================================================================== */}
         {/* CLEAR DATA BUTTON */}
@@ -147,9 +149,9 @@ export default observer((props: Props) => {
           onClick={() => {
             app.clearAllData();
           }}
-          sx={buttonSx}
+          sx={responsiveButtonStyle}
         >
-          {isSmallScreen ? "" : "Clear"}
+          {isSmallScreen ? '' : 'Clear'}
         </Button>
         {/* ======================================================= */}
         {/* FILTER TEXT INPUT */}
@@ -174,13 +176,14 @@ export default observer((props: Props) => {
             variant="outlined"
             applyableTextField={app.terminals.filterText}
             InputProps={{
+              style: { height: '35px' },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
                     edge="end"
                     color="primary"
                     onClick={() => {
-                      app.terminals.filterText.setDispValue("");
+                      app.terminals.filterText.setDispValue('');
                       app.terminals.filterText.apply();
                     }}
                   >
@@ -189,7 +192,7 @@ export default observer((props: Props) => {
                 </InputAdornment>
               ),
             }}
-            sx={{ width: "200px" }}
+            sx={{ width: '200px' }}
           />
         </Tooltip>
 
@@ -208,8 +211,8 @@ export default observer((props: Props) => {
             }
           }}
           startIcon={<VisibilityIcon />}
-          sx={buttonSx}
-          style={{ width: '200px' }}
+          // sx={responsiveButtonStyle}
+          sx={responsiveButtonStyle}
           data-testid="show-hide-side-panel-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
@@ -218,18 +221,26 @@ export default observer((props: Props) => {
 
         {/* ============================ VERSION NUMBER =========================== */}
         {/* Push to right hand side of screen */}
-        <Typography sx={{ marginLeft: "auto" }}>v{app.version}</Typography>
+        <Typography sx={{ marginLeft: 'auto' }}>v{app.version}</Typography>
 
         {/* ============================ Ko-Fi "Donate" button =========================== */}
         <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
-      </Box>
-      <div className="terminals-and-drawer-row" style={{ width: "100%", height: "100%", flexGrow: 1, display: "flex", flexDirection: "row", position: "relative" }}>
+      </div>
+      <div
+        className="terminals-and-drawer-row"
+        style={{
+          width: '100%', height: '100%',
+          flexGrow: 1,
+          display: 'flex', flexDirection: 'row', position: 'relative',
+          overflow: 'hidden', padding: '3px' }} // Hide overflow to allow for correct sizing. But this
+                                                // blocks the outer flow effect, so add 3px padding
+        >
         {terminals}
         {/* ==================================================================== */}
         {/* RIGHT DRAWER (wrapped in a div so we can hide it all) */}
         {/* ==================================================================== */}
-        <div style={{ height: "100%", display: app.terminals.showRightDrawer ? "flex" : "none", flexDirection: "row", position: "relative" }}>
-          <div style={{ width: "5px" }}></div>
+        <div style={{ height: '100%', display: app.terminals.showRightDrawer ? 'flex' : 'none', flexDirection: 'row', position: 'relative' }}>
+          <div style={{ width: '5px' }}></div>
           <RightDrawerView app={app} />
         </div>
       </div>

@@ -430,7 +430,7 @@ export default class FakePortsController {
         'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
-          app.settings.rxSettings.config.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode('x=2,y=10\n');
@@ -610,8 +610,8 @@ export default class FakePortsController {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
           app.settings.rxSettings.setNumberType(NumberType.INT16);
           app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.numberSeparator.apply();
           app.settings.rxSettings.setPadValues(true);
           app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
@@ -648,8 +648,8 @@ export default class FakePortsController {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
           app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
           app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.numberSeparator.apply();
           app.settings.rxSettings.setPadValues(true);
           app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
@@ -687,8 +687,8 @@ export default class FakePortsController {
           app.settings.rxSettings.setDataType(DataType.NUMBER);
           app.settings.rxSettings.setNumberType(NumberType.FLOAT32);
           app.settings.rxSettings.setInsertNewLineOnValue(false);
-          app.settings.rxSettings.config.numberSeparator.setDispValue(' ');
-          app.settings.rxSettings.config.numberSeparator.apply();
+          app.settings.rxSettings.numberSeparator.setDispValue(' ');
+          app.settings.rxSettings.numberSeparator.apply();
           app.settings.rxSettings.setPadValues(true);
           app.settings.rxSettings.setPaddingCharacter(PaddingCharacter.ZERO);
 
@@ -731,7 +731,7 @@ export default class FakePortsController {
     this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
 
     // Go to terminal view
-    if (this.app.settings.portConfiguration.config.connectToSerialPortAsSoonAsItIsSelected) {
+    if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
       this.app.setShownMainPane(MainPanes.TERMINAL);
     }
   }

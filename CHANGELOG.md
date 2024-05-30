@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.17.0] - 2024-05-31
+
+### Added
+
+- Added ability to select flow control type (none or hardware) in the serial port settings.
+- Added tooltips to parameters in the serial port settings pane.
+- Added "Send Break" button to the terminal right-hand drawer.
+- Added profiles (and a profile settings view) so that the user can save and load different serial port configurations.
+
 ## [4.16.0] - 2024-05-19
 
 ### Added
@@ -705,7 +714,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.0...HEAD
+[4.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...v4.17.0
 [4.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...v4.16.0
 [4.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.14.0...v4.15.0
 [4.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.13.2...v4.14.0

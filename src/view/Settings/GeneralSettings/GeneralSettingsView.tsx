@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
 
@@ -33,7 +33,7 @@ function GeneralSettingsView(props: Props) {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={generalSettings.config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping}
+                  checked={generalSettings.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping}
                   onChange={(e) => {
                     generalSettings.setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping(e.target.checked);
                   }}
@@ -53,7 +53,7 @@ function GeneralSettingsView(props: Props) {
             <FormControlLabel
               control={
                 <Checkbox
-                  checked={generalSettings.config.whenPastingOnWindowsReplaceCRLFWithLF}
+                  checked={generalSettings.whenPastingOnWindowsReplaceCRLFWithLF}
                   onChange={(e) => {
                     generalSettings.setWhenPastingOnWindowsReplaceCRLFWithLF(e.target.checked);
                   }}

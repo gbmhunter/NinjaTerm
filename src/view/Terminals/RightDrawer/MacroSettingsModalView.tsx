@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, IconButton, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import "react-resizable/css/styles.css";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -48,11 +48,11 @@ export default observer((props: Props) => {
             >
               {/* ASCII */}
               <Tooltip title="Treat the data as ASCII." placement="right" arrow>
-                <FormControlLabel value={MacroDataType.ASCII} control={<Radio />} label="ASCII" />
+                <FormControlLabel value={MacroDataType.ASCII} control={<Radio data-testid={'macro-data-type-ascii-rb'} />} label="ASCII" />
               </Tooltip>
               {/* HEX */}
               <Tooltip title="Treat the data as HEX." placement="right" arrow>
-                <FormControlLabel value={MacroDataType.HEX} control={<Radio />} label="HEX" />
+                <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
           </FormControl>
@@ -73,6 +73,7 @@ export default observer((props: Props) => {
                     onChange={(e) => {
                       macro.setProcessEscapeChars(e.target.checked);
                     }}
+                    data-testid='macro-process-escape-chars-cb'
                   />
                 }
                 label='Process escape chars (\r, \n, \t, e.t.c.)'
@@ -155,6 +156,7 @@ export default observer((props: Props) => {
             onClick={() => {
               macroController.setIsModalOpen(false);
             }}
+            data-testid="macro-settings-modal-close-button"
           >
             Close
           </Button>

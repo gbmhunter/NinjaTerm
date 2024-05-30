@@ -138,6 +138,7 @@ export default observer((props: Props) => {
           <Typography variant="h2" style={{ marginBottom: '20px' }}>Features</Typography>
 
           <Grid container xs={12} spacing={2.0} sx={{ marginBottom: '20px' }}>
+            {/* ========================================================================== */}
             {/* ANSI Escape Code Support */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -158,7 +159,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Graphing */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -179,7 +180,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Smart Scrolling */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -200,7 +201,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Show Invisible Characters */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -221,7 +222,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Logging */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -242,7 +243,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Filtering */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -263,7 +264,7 @@ export default observer((props: Props) => {
                 </div>
               </div>
             </Grid>
-
+            {/* ========================================================================== */}
             {/* Number Types */}
             {/* ========================================================================== */}
             <Grid xs={12}>
@@ -287,6 +288,9 @@ export default observer((props: Props) => {
 
           </Grid>
 
+          {/* ========================================================================== */}
+          {/* AND MORE */}
+          {/* ========================================================================== */}
           <Typography variant="h2">And more!</Typography>
           <ul>
             <li>Ability to switch between a combined TX/RX terminal and separate terminals.</li>
@@ -300,6 +304,9 @@ export default observer((props: Props) => {
           <Typography style={{ marginBottom: '20px' }}>Found a bug? Have a awesome feature you'd like added to NinjaTerm? <a href="https://github.com/gbmhunter/NinjaTerm/issues">Open an issue on GitHub</a>.
           </Typography>
 
+          {/* ========================================================================== */}
+          {/* CONTRIBUTORS */}
+          {/* ========================================================================== */}
           <Typography variant="h2">Contributors</Typography>
 
           <Typography>Thanks to Zac Frank for user-interaction guidance and tips!</Typography>

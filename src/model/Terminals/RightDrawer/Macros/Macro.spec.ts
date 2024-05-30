@@ -79,15 +79,15 @@ describe('macro tests', () => {
     expect(bytes).toStrictEqual(Uint8Array.from([0x00, 0xFF, 0xAB, 0x32, 0x68, 0x91]));
   });
 
-  test('toJSON() and fromJSON() work', () => {
+  test('toConfig() and fromConfig() work', () => {
     let macro = new Macro('M1', () => '\n');
     macro.setDataType(MacroDataType.HEX);
     macro.setData('1234');
-    const json = JSON.stringify(macro);
+    const macroConfig = macro.toConfig();
 
     // Create new macro
     let newMacro = new Macro('M1', () => '\n');
-    newMacro.fromJSON(json);
+    newMacro.loadConfig(macroConfig);
 
     expect(newMacro.data).toBe(macro.data);
     expect(newMacro.dataType).toBe(macro.dataType);
