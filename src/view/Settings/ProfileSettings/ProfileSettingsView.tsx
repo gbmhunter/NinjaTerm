@@ -1,18 +1,17 @@
-import { Button, Tooltip } from "@mui/material";
-import { observer } from "mobx-react-lite";
-import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import { Button, Tooltip } from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import ProfilesSettings from "src/model/Settings/ProfilesSettings/ProfilesSettings";
+import ProfilesSettings from 'src/model/Settings/ProfilesSettings/ProfilesSettings';
 
-import { DataType } from "src/model/Settings/RxSettings/RxSettings";
-import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
-import ApplyableTextFieldView from "src/view/Components/ApplyableTextFieldView";
-import PortConfigurationSettings from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import RxSettings from "src/model/Settings/RxSettings/RxSettings";
+import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
+import PortConfigurationSettings from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 
 interface Props {
   profileManager: ProfileManager;
@@ -26,12 +25,12 @@ function ProfileSettingsView(props: Props) {
 
   // Define the columns of the profiles table
   const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 150 },
-    { field: "corePortSettings", headerName: "Core port settings", width: 130 },
-    { field: "flowControl", headerName: "Flow control", width: 80 },
-    { field: "portInfo", headerName: "Port info", width: 300 },
-    { field: "dataType", headerName: "RX data type", width: 100 },
-    { field: "terminalWidth", headerName: "Terminal width", width: 100 },
+    { field: 'name', headerName: 'Name', width: 150 },
+    { field: 'corePortSettings', headerName: 'Core port settings', width: 130 },
+    { field: 'flowControl', headerName: 'Flow control', width: 80 },
+    { field: 'portInfo', headerName: 'Port info', width: 300 },
+    { field: 'dataType', headerName: 'RX data type', width: 100 },
+    { field: 'terminalWidth', headerName: 'Terminal width', width: 100 },
   ];
 
   // Create rows in profiles table
@@ -58,10 +57,12 @@ function ProfileSettingsView(props: Props) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <h2>Profiles</h2>
       <p style={{ maxWidth: 800 }}>
-        Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile. The last selected serial port will be saved with the profile, and NinjaTerm will attempt to reconnect to that port when the profile is loaded (because of the limited information about the serial ports available in the browser, it might not be enough to uniquely identify the port).
+        Profiles let you save and load settings and configuration to quickly switch between projects. Almost all settings are saved with each profile. The last selected serial port
+        will be saved with the profile, and NinjaTerm will attempt to reconnect to that port when the profile is loaded (because of the limited information about the serial ports
+        available in the browser, it might not be enough to uniquely identify the port).
       </p>
       <div style={{ height: 400 }}>
         <DataGrid
@@ -78,12 +79,10 @@ function ProfileSettingsView(props: Props) {
           onRowSelectionModelChange={(newRowSelectionModel: GridRowSelectionModel) => {
             profilesSettings.setSelectedProfiles(newRowSelectionModel);
           }}
-          // checkboxSelection
-          // disableMultipleRowSelection={true}
           // Hide the "select all" checkbox in the header row
           sx={{
-            "& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-columnHeaderTitleContainer": {
-              display: "none",
+            '& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-columnHeaderTitleContainer': {
+              display: 'none',
             },
           }}
         />
@@ -91,12 +90,17 @@ function ProfileSettingsView(props: Props) {
 
       <div style={{ height: 20 }} />
 
-      <div style={{ display: "flex", gap: 10 }}>
-        <Tooltip title="Loads the configuration saved in the selected profile above and applies it to the app. If there is a saved serial port and it is still available, it will be connected to.">
+      <div style={{ display: 'flex', gap: 10 }}>
+        <Tooltip
+          title="Loads the configuration saved in the selected profile above and applies it to the app. If there is a saved serial port and it is still available, it will be connected to."
+          enterDelay={500}
+          arrow
+        >
           <Button
             variant="contained"
             color="primary"
             startIcon={<PublishIcon />}
+            disabled={profilesSettings.selectedProfiles.length !== 1}
             onClick={async () => {
               await profilesSettings.loadProfile();
             }}
@@ -105,11 +109,12 @@ function ProfileSettingsView(props: Props) {
           </Button>
         </Tooltip>
 
-        <Tooltip title="Saves the current app state to the selected profile above.">
+        <Tooltip title="Saves the current app state to the selected profile above." enterDelay={500} arrow>
           <Button
             variant="contained"
             color="primary"
             startIcon={<SaveIcon />}
+            disabled={profilesSettings.selectedProfiles.length !== 1}
             onClick={() => {
               profilesSettings.saveCurrentAppStateToProfile();
             }}
@@ -121,8 +126,8 @@ function ProfileSettingsView(props: Props) {
 
       <div style={{ height: 20 }} />
 
-      <div style={{ display: "flex", gap: 10 }}>
-        <Tooltip title="Creates a new profile with the current app configuration saved to it.">
+      <div style={{ display: 'flex', gap: 10 }}>
+        <Tooltip title="Creates a new profile with the current app configuration saved to it." enterDelay={500} arrow>
           <Button
             variant="contained"
             color="primary"
@@ -135,11 +140,12 @@ function ProfileSettingsView(props: Props) {
           </Button>
         </Tooltip>
 
-        <Tooltip title="Deletes the selected profile above.">
+        <Tooltip title="Deletes the selected profile above." enterDelay={500} arrow>
           <Button
             variant="contained"
             color="primary"
             startIcon={<DeleteIcon />}
+            disabled={profilesSettings.selectedProfiles.length !== 1}
             onClick={() => {
               profilesSettings.deleteProfile();
             }}
@@ -154,11 +160,8 @@ function ProfileSettingsView(props: Props) {
       {/* =============================================================================== */}
       {/* PROFILE NAME */}
       {/* =============================================================================== */}
-      <Tooltip
-        title="Use this to rename the selected profile's name. Name is saved on enter press or defocus."
-        arrow
-      >
-        <ApplyableTextFieldView label="Profile name" variant="outlined" size="small" applyableTextField={profilesSettings.profileName} sx={{ marginBottom: "20px" }} />
+      <Tooltip title="Use this to rename the selected profile's name. Name is saved on enter press or defocus." enterDelay={500} arrow>
+        <ApplyableTextFieldView label="Profile name" variant="outlined" size="small" applyableTextField={profilesSettings.profileName} sx={{ marginBottom: '20px' }} />
       </Tooltip>
     </div>
   );
