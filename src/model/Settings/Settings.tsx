@@ -9,7 +9,7 @@ import DisplaySettings from './DisplaySettings/DisplaySettings';
 import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
-import ProfilesSettings from './ProfilesSettings/ProfilesSettings';
+import ProfilesSettings from './ProfileSettings/ProfileSettings';
 import { ProfileManager } from '../ProfileManager/ProfileManager';
 
 

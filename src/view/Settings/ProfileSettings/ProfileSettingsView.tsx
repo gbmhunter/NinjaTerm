@@ -1,4 +1,4 @@
-import { Button, Tooltip } from '@mui/material';
+import { Button, TextField, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { DataGrid, GridColDef, GridRowSelectionModel } from '@mui/x-data-grid';
 import SaveIcon from '@mui/icons-material/Save';
@@ -6,10 +6,8 @@ import PublishIcon from '@mui/icons-material/Publish';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import ProfilesSettings from 'src/model/Settings/ProfilesSettings/ProfilesSettings';
-
+import ProfilesSettings from 'src/model/Settings/ProfileSettings/ProfileSettings';
 import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
-import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
 import PortConfigurationSettings from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 
@@ -90,7 +88,7 @@ function ProfileSettingsView(props: Props) {
 
       <div style={{ height: 20 }} />
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <Tooltip
           title="Loads the configuration saved in the selected profile above and applies it to the app. If there is a saved serial port and it is still available, it will be connected to."
           enterDelay={500}
@@ -122,11 +120,29 @@ function ProfileSettingsView(props: Props) {
             Save App State To Profile
           </Button>
         </Tooltip>
+
+        {/* =============================================================================== */}
+        {/* PROFILE NAME */}
+        {/* =============================================================================== */}
+        <Tooltip title="Use this to rename the selected profile's name." enterDelay={500} arrow>
+          <TextField
+            label="Profile name"
+            variant="outlined"
+            size="small"
+            value={profilesSettings.profileNameText}
+            error={profilesSettings.profileNameErrorMsg !== ''}
+            helperText={profilesSettings.profileNameErrorMsg}
+            disabled={profilesSettings.selectedProfiles.length !== 1}
+            onChange={(event) => {
+              profilesSettings.setProfileName(event.target.value);
+            }}
+          ></TextField>
+        </Tooltip>
       </div>
 
       <div style={{ height: 20 }} />
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <Tooltip title="Creates a new profile with the current app configuration saved to it." enterDelay={500} arrow>
           <Button
             variant="contained"
@@ -155,14 +171,7 @@ function ProfileSettingsView(props: Props) {
         </Tooltip>
       </div>
 
-      <div style={{ height: 20 }} />
-
-      {/* =============================================================================== */}
-      {/* PROFILE NAME */}
-      {/* =============================================================================== */}
-      <Tooltip title="Use this to rename the selected profile's name. Name is saved on enter press or defocus." enterDelay={500} arrow>
-        <ApplyableTextFieldView label="Profile name" variant="outlined" size="small" applyableTextField={profilesSettings.profileName} sx={{ marginBottom: '20px' }} />
-      </Tooltip>
+      <div style={{ height: '30px' }} />
     </div>
   );
 }
