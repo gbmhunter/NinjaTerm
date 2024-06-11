@@ -187,6 +187,7 @@ export default observer((props: Props) => {
       if (!terminalDiv?.current?.offsetHeight) {
         return;
       }
+      console.log('handleResize() called');
       terminal.setTerminalViewHeightPx(terminalDiv?.current?.offsetHeight);
     };
     handleResize();
