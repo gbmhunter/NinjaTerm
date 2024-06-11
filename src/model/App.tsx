@@ -282,8 +282,7 @@ export class App {
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    // if ('serial' in window.navigator) {
-    if (false) {
+    if ('serial' in window.navigator) {
       // The Web Serial API is supported.
 
       let localPort: SerialPort;
