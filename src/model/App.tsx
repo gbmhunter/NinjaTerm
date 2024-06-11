@@ -282,7 +282,8 @@ export class App {
    */
   async scanForPorts() {
     // Prompt user to select any serial port.
-    if ('serial' in window.navigator) {
+    // if ('serial' in window.navigator) {
+    if (false) {
       // The Web Serial API is supported.
 
       let localPort: SerialPort;
@@ -315,7 +316,26 @@ export class App {
         }
       }
     } else {
-      this.snackbar.sendToSnackbar('This browser is not supported. It does not provide the Web Serial API (navigator.serial).\nSupported browsers include Chromium-based desktop browsers (e.t.c. Chrome, Edge, Brave) and Opera. Unfortunately as of June 2024 Firefox and Safari are not supported.\nSee https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for a compatibility table.', 'error');
+      this.snackbar.sendToSnackbar(
+        <div>
+          <p style={{ maxWidth: '500px' }}>
+            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c.
+            Chrome, Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
+            <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
+              WebSerial for Firefox extension
+            </a>{' '}
+            first. Unfortunately as of June 2024 Safari is not supported.
+          </p>
+          <p style={{ maxWidth: '500px' }}>
+            See{' '}
+            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility" target="_blank">
+              https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility
+            </a>{' '}
+            for a compatibility table.
+          </p>
+        </div>,
+        'error'
+      );
     }
   }
 
