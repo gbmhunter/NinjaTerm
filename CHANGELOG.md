@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Added more info about browser compatibility to the error message if navigator.serial is not available.
+
 ## [4.17.0] - 2024-05-31
 
 ### Added

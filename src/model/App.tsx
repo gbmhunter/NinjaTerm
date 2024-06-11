@@ -315,7 +315,7 @@ export class App {
         }
       }
     } else {
-      this.snackbar.sendToSnackbar('Browser not supported, it does not provide the navigator.serial API.', 'error');
+      this.snackbar.sendToSnackbar('This browser is not supported. It does not provide the Web Serial API (navigator.serial).\nSupported browsers include Chromium-based desktop browsers (e.t.c. Chrome, Edge, Brave) and Opera. Unfortunately as of June 2024 Firefox and Safari are not supported.\nSee https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for a compatibility table.', 'error');
     }
   }
 
