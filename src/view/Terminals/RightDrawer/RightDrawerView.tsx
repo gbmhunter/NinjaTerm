@@ -22,7 +22,7 @@ import {
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
-import { App, PortType } from 'src/model/App';
+import { App, MainPanes, PortType } from 'src/model/App';
 import MacroView from './MacroRowView';
 import MacroSettingsModalView from './MacroSettingsModalView';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
@@ -38,29 +38,22 @@ import {
 } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 
-import MuiAccordionSummary, {
-  AccordionSummaryProps,
-} from '@mui/material/AccordionSummary';
+import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
+import { SettingsCategories } from 'src/model/Settings/Settings';
 
 // This code was modified from https://mui.com/material-ui/react-accordion/#customization
-const AccordionSummary = styled((props: AccordionSummaryProps) => (
-  <MuiAccordionSummary
-    expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />}
-    {...props}
-  />
-))(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, .05)'
-      : 'rgba(0, 0, 0, .03)',
-  flexDirection: 'row-reverse',
-  '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-    transform: 'rotate(90deg)',
-  },
-  '& .MuiAccordionSummary-content': {
-    marginLeft: theme.spacing(1),
-  },
-}));
+const AccordionSummary = styled((props: AccordionSummaryProps) => <MuiAccordionSummary expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />} {...props} />)(
+  ({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+      transform: 'rotate(90deg)',
+    },
+    '& .MuiAccordionSummary-content': {
+      marginLeft: theme.spacing(1),
+    },
+  })
+);
 
 interface Props {
   app: App;
@@ -110,14 +103,18 @@ export default observer((props: Props) => {
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
         <Accordion sx={{ width: '100%' }} disableGutters>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="test">Quick Port Settings</AccordionSummary>
+          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="test">
+            Quick Port Settings
+          </AccordionSummary>
           <AccordionDetails>
-          <div>
+            <div>
               For more port settings, go to the{' '}
               <Link
-                href="#"
+                component="button"
                 onClick={() => {
-                  console.log('Hello');
+                  // Show Settings->Port Configuration view
+                  app.setShownMainPane(MainPanes.SETTINGS);
+                  app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
                 }}
               >
                 Port Settings view
@@ -320,9 +317,11 @@ export default observer((props: Props) => {
             <div>
               For more options, go to the{' '}
               <Link
-                href="#"
+                component="button"
                 onClick={() => {
-                  console.log('Hello');
+                  // Show the Settings view. The sub-view selected will be whatever
+                  // was last selected by the user.
+                  app.setShownMainPane(MainPanes.SETTINGS);
                 }}
               >
                 Settings view
@@ -425,7 +424,9 @@ export default observer((props: Props) => {
           </AccordionDetails>
         </Accordion>
         <Accordion sx={{ width: '100%' }} disableGutters>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">Macros</AccordionSummary>
+          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
+            Macros
+          </AccordionSummary>
           <AccordionDetails>
             {/* =============================================================================== */}
             {/* MACROS */}
