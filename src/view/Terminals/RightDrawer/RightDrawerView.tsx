@@ -110,7 +110,7 @@ export default observer((props: Props) => {
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
         <Accordion sx={{ width: '100%' }} disableGutters>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Quick Port Settings</AccordionSummary>
+          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="test">Quick Port Settings</AccordionSummary>
           <AccordionDetails>
           <div>
               For more port settings, go to the{' '}
@@ -425,7 +425,7 @@ export default observer((props: Props) => {
           </AccordionDetails>
         </Accordion>
         <Accordion sx={{ width: '100%' }} disableGutters>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Macros</AccordionSummary>
+          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">Macros</AccordionSummary>
           <AccordionDetails>
             {/* =============================================================================== */}
             {/* MACROS */}

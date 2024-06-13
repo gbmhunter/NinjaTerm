@@ -8,6 +8,9 @@ test.describe('macros', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
+    // Open the macros accordion
+    await page.getByTestId("macros-accordion-summary").click();
+
     await expect(await page.getByTestId('macro-data-0')).toHaveValue('Hello\\n');
     // Click on macro's "more settings"
     await page.getByTestId('macro-more-settings-0').click();
@@ -39,6 +42,8 @@ test.describe('macros', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
+    await page.getByTestId("macros-accordion-summary").click();
+
     // Change the value of MACRO 0
     await page.getByTestId('macro-data-0').fill('new value');
 
@@ -54,6 +59,8 @@ test.describe('macros', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
+    await page.getByTestId("macros-accordion-summary").click();
+
     await page.getByTestId('macro-data-0').fill('abc123\\n');
     // Hit the send button
     await page.getByTestId('macro-0-send-button').click();
@@ -67,6 +74,8 @@ test.describe('macros', () => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId("macros-accordion-summary").click();
 
     await page.getByTestId('macro-more-settings-0').click();
     // Uncheck the process escape chars checkbox
@@ -86,6 +95,8 @@ test.describe('macros', () => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
+
+    await page.getByTestId("macros-accordion-summary").click();
 
     // Change macro 0 to hex
     await page.getByTestId('macro-more-settings-0').click();
