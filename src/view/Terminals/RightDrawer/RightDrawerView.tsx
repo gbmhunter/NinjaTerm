@@ -62,6 +62,8 @@ interface Props {
 export default observer((props: Props) => {
   const { app } = props;
 
+  const rightDrawer = app.terminals.rightDrawer;
+
   // Create macro rows
   const macroRows = app.terminals.rightDrawer.macroController.macrosArray.map((macro, index) => {
     return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} macroIdx={index} />;
@@ -102,7 +104,12 @@ export default observer((props: Props) => {
         }}
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
-        <Accordion sx={{ width: '100%' }} disableGutters>
+        <Accordion
+          disableGutters
+          expanded={rightDrawer.quickPortSetttingsIsExpanded}
+          onChange={rightDrawer.handleQuickPortSettingsAccordionChange}
+          sx={{ width: '100%' }}
+        >
           <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="test">
             Quick Port Settings
           </AccordionSummary>
@@ -311,7 +318,12 @@ export default observer((props: Props) => {
         {/* ======================================================= */}
         {/* OTHER QUICK SETTINGS */}
         {/* ======================================================= */}
-        <Accordion sx={{ width: '100%' }} disableGutters>
+        <Accordion
+          disableGutters
+          expanded={rightDrawer.otherQuickSettingsIsExpanded}
+          onChange={rightDrawer.handleOtherQuickSettingsAccordionChange}
+          sx={{ width: '100%' }}
+        >
           <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</AccordionSummary>
           <AccordionDetails>
             <div>
@@ -423,14 +435,19 @@ export default observer((props: Props) => {
             </Tooltip>
           </AccordionDetails>
         </Accordion>
-        <Accordion sx={{ width: '100%' }} disableGutters>
+        {/* =============================================================================== */}
+        {/* MACROS */}
+        {/* =============================================================================== */}
+        <Accordion
+          disableGutters
+          expanded={rightDrawer.macrosIsExpanded}
+          onChange={rightDrawer.handleMacrosAccordionChange}
+          sx={{ width: '100%' }}
+        >
           <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
             Macros
           </AccordionSummary>
           <AccordionDetails>
-            {/* =============================================================================== */}
-            {/* MACROS */}
-            {/* =============================================================================== */}
             <div className="macro-rows-container" style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
               {macroRows}
             </div>
