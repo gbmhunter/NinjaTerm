@@ -4,7 +4,6 @@ import 'react-resizable/css/styles.css';
 import {
   Accordion,
   AccordionDetails,
-  AccordionSummary,
   Autocomplete,
   Button,
   ButtonPropsColorOverrides,
@@ -18,6 +17,7 @@ import {
   Switch,
   TextField,
   Tooltip,
+  styled,
 } from '@mui/material';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
@@ -37,6 +37,30 @@ import {
   StopBits,
 } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
+
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from '@mui/material/AccordionSummary';
+
+// This code was modified from https://mui.com/material-ui/react-accordion/#customization
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, .05)'
+      : 'rgba(0, 0, 0, .03)',
+  flexDirection: 'row-reverse',
+  '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+    transform: 'rotate(90deg)',
+  },
+  '& .MuiAccordionSummary-content': {
+    marginLeft: theme.spacing(1),
+  },
+}));
 
 interface Props {
   app: App;
