@@ -30,6 +30,7 @@ import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
 import { DataType } from 'src/model/Settings/RxSettings/RxSettings';
+import { SettingsCategories } from 'src/model/Settings/Settings';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -284,7 +285,17 @@ const AppView = observer((props: Props) => {
             }}
           >
             {/* DATA TYPE */}
-            <div style={{ padding: '0 10px' }}>{app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}</div>
+            <div
+              className={styles.onHover}
+              onClick={() => {
+                // Go to Settings -> RX Settings where the user can change the data type
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{ padding: '0 10px' }}
+            >
+              {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
+            </div>
 
             {/* LOGGING ON/OFF */}
             <div style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}>{app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}</div>

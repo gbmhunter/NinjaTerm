@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Clicking on the data type in the bottom status bar takes you to the settings view where you can change the data type.
+- Added accordions to the terminal right-hand drawer, and added more controls such as quick port settings.
+- The terminal right-hand drawer now remembers if it was open or closed. This info is also saved in each profile. 
+
+### Changed
+
+- Improved the way app data is stored in local storage.
+
 ## [4.17.1] - 2024-06-11
 
 ### Changed

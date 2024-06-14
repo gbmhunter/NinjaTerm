@@ -44,3 +44,8 @@
   10% { background-color: var(--blue-bright-color); box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 7px 1px, inset var(--blue-idle-color) 0 -1px 9px, var(--blue-idle-color) 0 2px 0; }
   to { background-color: var(--blue-idle-color); }
 }
+
+.onHover:hover {
+  cursor: pointer;
+  background-color: #404040;
+}
