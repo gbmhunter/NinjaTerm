@@ -107,17 +107,17 @@ export class MacroController {
 
   _saveConfig = () => {
 
-    let config = this.app.profileManager.currentAppConfig.terminal.macroController;
+    let config = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     config.macroConfigs = this.macrosArray.map((macro) => {
       return macro.toConfig();
     });
 
-    this.app.profileManager.saveAppConfig();
+    this.app.profileManager.saveAppData();
   };
 
   _loadConfig() {
-    let configToLoad = this.app.profileManager.currentAppConfig.terminal.macroController;
+    let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     //===============================================
     // UPGRADE PATH
@@ -129,7 +129,7 @@ export class MacroController {
       console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.app.profileManager.currentAppConfig.terminal.macroController;
+      configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
     }
 
     // If we get here we loaded a valid config. Apply config.

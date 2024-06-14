@@ -209,7 +209,7 @@ export default class RxSettings {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
+    let configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -220,7 +220,7 @@ export default class RxSettings {
       console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
+      configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
     }
 
     /**
@@ -272,7 +272,7 @@ export default class RxSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.currentAppConfig.settings.rxSettings;
+    let config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
     config.dataType = this.dataType;
 
     // ASCII-SPECIFIC SETTINGS
@@ -306,7 +306,7 @@ export default class RxSettings {
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
 
-    this.profileManager.saveAppConfig();
+    this.profileManager.saveAppData();
   };
 
   setDataType = (value: DataType) => {

@@ -106,11 +106,14 @@ export default observer((props: Props) => {
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
         <Accordion
           disableGutters
-          expanded={rightDrawer.quickPortSetttingsIsExpanded}
+          expanded={rightDrawer.quickPortSettingsIsExpanded}
           onChange={rightDrawer.handleQuickPortSettingsAccordionChange}
           sx={{ width: '100%' }}
         >
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="test">
+          <AccordionSummary
+            expandIcon={<ArrowDownwardIcon />}
+            data-testid="quick-port-settings-accordion-summary"
+          >
             Quick Port Settings
           </AccordionSummary>
           <AccordionDetails>

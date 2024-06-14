@@ -19,7 +19,7 @@ interface Props {
 function ProfileSettingsView(props: Props) {
   const { profileManager, profilesSettings } = props;
 
-  const profiles = profileManager.profiles;
+  const profiles = profileManager.appData.profiles;
 
   // Define the columns of the profiles table
   const columns: GridColDef[] = [

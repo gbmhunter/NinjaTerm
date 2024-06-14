@@ -208,7 +208,7 @@ export class App {
     if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
       // Check to see if this is the serial port we want to reopen
 
-      const lastUsedPortInfo = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedPortInfo = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       if (lastUsedPortInfo === null) {
         return;
       }
@@ -233,7 +233,7 @@ export class App {
     let approvedPorts = await navigator.serial.getPorts();
 
     // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+    const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
     if (lastUsedSerialPort === null) {
       // Did not find last used serial port data in local storage, so do nothing
       return;
@@ -303,9 +303,9 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        let lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+        let lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
         lastUsedSerialPort.serialPortInfo = JSON.parse(JSON.stringify(this.serialPortInfo));
-        this.profileManager.saveAppConfig();
+        this.profileManager.saveAppData();
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
@@ -404,9 +404,9 @@ export class App {
         this.closedPromise = this.readUntilClosed();
       });
 
-      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.OPENED;
-      this.profileManager.saveAppConfig();
+      this.profileManager.saveAppData();
 
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
@@ -553,9 +553,9 @@ export class App {
       }
       this.reader = null;
       this.closedPromise = null;
-      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.CLOSED;
-      this.profileManager.saveAppConfig();
+      this.profileManager.saveAppData();
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
@@ -575,7 +575,7 @@ export class App {
    * - Pressing "f" while on the Port Configuration settings.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
-    console.log('handleKeyDown() called. event.key=', event.key);
+    // console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
