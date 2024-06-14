@@ -8,6 +8,8 @@ import RightDrawer from './RightDrawer/RightDrawer';
 
 export default class Terminals {
 
+  app: App;
+
   txRxTerminal: SingleTerminal;
 
   rxTerminal: SingleTerminal;
@@ -21,6 +23,8 @@ export default class Terminals {
   showRightDrawer = true;
 
   constructor(app: App) {
+    this.app = app;
+
     this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
     this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown); // Not focusable
     this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.handleTerminalKeyDown);
@@ -28,6 +32,11 @@ export default class Terminals {
 
     this.filterText = new ApplyableTextField('', z.string());
     this.filterText.setOnApplyChanged(this.onFilterTextApply);
+
+    this._loadConfig();
+    this.app.profileManager.registerOnProfileLoad(() => {
+      this._loadConfig();
+    });
 
     makeAutoObservable(this); // Make sure this near the end
   }
@@ -43,5 +52,17 @@ export default class Terminals {
 
   setShowRightDrawer(show: boolean) {
     this.showRightDrawer = show;
+    this._saveConfig();
   }
+
+  _saveConfig = () => {
+    let config = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    config.showRightDrawer = this.showRightDrawer;
+    this.app.profileManager.saveAppData();
+  };
+
+  _loadConfig = () => {
+    let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    this.showRightDrawer = configToLoad.showRightDrawer;
+  };
 }

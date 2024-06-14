@@ -73,8 +73,6 @@ export class AppData {
   }
 }
 
-const PROFILES_STORAGE_KEY = 'profiles';
-
 const APP_DATA_STORAGE_KEY = 'appData';
 
 export class ProfileManager {
@@ -93,50 +91,47 @@ export class ProfileManager {
   constructor(app: App) {
     this.app = app;
 
-    addEventListener('storage', (event) => {
-      console.log('Caught storage event. event.key: ', event.key, ' event.newValue: ', event.newValue);
+    addEventListener('storage', this.onStorageEvent);
 
-      if (event.key === PROFILES_STORAGE_KEY) {
-        console.log('Profiles changed. Reloading...');
-        this._loadAppDataFromStorage();
-      }
-    });
-
-    // Read in profiles
+    // Load app data from storage
     this._loadAppDataFromStorage();
-
-    // Load current app config
-    // const currentAppConfigJson = window.localStorage.getItem('currentAppConfig');
-    // let currentAppConfig: RootConfig;
-    // if (currentAppConfigJson === null) {
-    //   // No config key found in users store, create one!
-    //   currentAppConfig = new RootConfig();
-    //   // Save just-created config back to store.
-    //   window.localStorage.setItem('currentAppConfig', JSON.stringify(this.currentAppConfig));
-    // } else {
-    //   currentAppConfig = JSON.parse(currentAppConfigJson);
-    //   console.log('Loading current app config from local storage. currentAppConfig: ', currentAppConfig);
-    //   if (currentAppConfig.version == 1) {
-    //     currentAppConfig.terminal.rightDrawer = new RightDrawerConfig();
-    //   } else if (currentAppConfig.version == 2) {
-    //     // Do nothing, up-to-date
-    //   } else {
-    //     // This shouldn't happen
-    //     console.error('Unknown config version found: ', currentAppConfig.version);
-    //   }
-    // }
-    // this.currentAppConfig = currentAppConfig;
 
     makeAutoObservable(this);
   }
 
-  setActiveProfile = (profile: Profile) => {
-    // this.activeProfile = profile;
-    // Need to tell the rest of the app to update
-    this._profileChangeCallbacks.forEach((callback) => {
-      callback();
-    });
-  };
+  /**
+   * Function should be registered as a listener for the 'storage' event. It will check
+   * to see if the profile data in storage has changed and if so, reload the profiles.
+   * @param event The storage event.
+   * @returns
+   */
+  onStorageEvent = (event: StorageEvent) => {
+    console.log('Caught storage event. event.key: ', event.key, ' event.newValue: ', event.newValue);
+
+    if (event.key === APP_DATA_STORAGE_KEY) {
+      console.log('App data changed from another process. Checking if profiles changed...');
+      // Check if the profiles changed
+      const appDataAsJson = window.localStorage.getItem(APP_DATA_STORAGE_KEY);
+      if (appDataAsJson === null) {
+        console.error('App data not found in local storage.');
+        return;
+      }
+      const appDataInStorage = JSON.parse(appDataAsJson);
+      if (JSON.stringify(appDataInStorage.profiles) !== JSON.stringify(this.appData.profiles)) {
+        console.log('Profiles changed. Reloading profiles...');
+        // Reload just the profiles, we don't want to overwrite the current app config
+        this.appData.profiles = appDataInStorage.profiles;
+      }
+    }
+  }
+
+  // setActiveProfile = (profile: Profile) => {
+  //   // this.activeProfile = profile;
+  //   // Need to tell the rest of the app to update
+  //   this._profileChangeCallbacks.forEach((callback) => {
+  //     callback();
+  //   });
+  // };
 
   registerOnProfileLoad = (callback: () => void) => {
     this._profileChangeCallbacks.push(callback);
@@ -158,7 +153,8 @@ export class ProfileManager {
       // A version of app data was found in local storage. Load it.
       let appDataUnknownVersion = JSON.parse(appDataAsJson);
       if (appDataUnknownVersion.version == 1) {
-        // Latest version
+        // Latest version, don't need to convert anything
+        // or save it back
         appData = appDataUnknownVersion;
       } else {
         console.error('Unknown app data version found: ', appDataUnknownVersion.version);
@@ -171,14 +167,8 @@ export class ProfileManager {
     }
 
     // Load data into class
-    // this.profiles = profiles;
     this.appData = appData;
   };
-
-  // saveProfiles = () => {
-  //   console.log('Saving profiles...');
-  //   window.localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(this.profiles));
-  // };
 
   /**
    * Save the current app configuration to local storage.

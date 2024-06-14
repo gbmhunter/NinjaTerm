@@ -11,6 +11,8 @@ export class RightDrawerConfig {
    */
   version = 1;
 
+  showRightDrawer = true;
+
   quickPortSettingsIsExpanded = true;
   otherQuickSettingsIsExpanded = true;
   macrosIsExpanded = true;
