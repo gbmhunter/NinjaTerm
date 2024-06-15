@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Improved the way app data is stored in local storage.
 - Snackbar message when profile is loaded now tells you if already connected port matches the one specified in the profile.
+- Active profile name is updated when the app state is saved to a profile.
 
 ## [4.17.1] - 2024-06-11
 

@@ -276,9 +276,7 @@ export class ProfileManager {
 
     // Now connect to the port if we need to
     if (weNeedToConnect) {
-      console.log('Setting selected port...', matchedAvailablePorts[0]);
       this.app.setSelectedPort(matchedAvailablePorts[0]);
-      console.log('Opening port...');
       await this.app.openPort({ silenceSnackbar: true });
       snackbarMessage += '\nConnected to port with info: "' + profileSerialPortInfoJson + '".';
     }
@@ -296,6 +294,10 @@ export class ProfileManager {
     const profile = this.appData.profiles[profileIdx];
     profile.rootConfig = JSON.parse(JSON.stringify(this.appData.currentAppConfig));
     this.saveAppData();
+
+    // Although we are not loading a profile, saving the app state to a profile
+    // is essentially the same thing, so update the name (this is used in the app title)
+    this.lastAppliedProfileName = profile.name;
 
     // Post message to snackbar
     if (!noSnackbar) {
