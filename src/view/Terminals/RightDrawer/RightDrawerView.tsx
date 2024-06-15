@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ResizableBox, Resizable } from 'react-resizable';
+import { Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import {
   Accordion,
@@ -72,9 +72,8 @@ export default observer((props: Props) => {
   return (
     <Resizable // This what provides the resizing functionality for the right drawer
       className="box"
-      width={rightDrawer.drawerWidth_px} // Default width, this can be changed by the user resizing
+      width={rightDrawer.drawerWidth_px}
       onResize={(e, {node, size, handle}) => {
-        console.log('onResize() called. size: ', size);
         rightDrawer.setDrawerWidth(size.width);
       }}
       resizeHandles={['w']}
@@ -124,7 +123,7 @@ export default observer((props: Props) => {
             Quick Port Settings
           </AccordionSummary>
           <AccordionDetails>
-            <div>
+            <div style={{ fontSize: '12px' }}>
               For more port settings, go to the{' '}
               <Link
                 component="button"
@@ -336,7 +335,7 @@ export default observer((props: Props) => {
         >
           <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</AccordionSummary>
           <AccordionDetails>
-            <div>
+            <div style={{ fontSize: '12px' }}>
               For more options, go to the{' '}
               <Link
                 component="button"
