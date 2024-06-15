@@ -1,8 +1,8 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from "@mui/material";
-import { observer } from "mobx-react-lite";
+import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from '@mui/material';
+import { observer } from 'mobx-react-lite';
 
-import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
-import BorderedSection from "src/view/Components/BorderedSection";
+import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
+import BorderedSection from 'src/view/Components/BorderedSection';
 
 interface Props {
   txSettings: TxSettings;
@@ -12,11 +12,15 @@ function TxSettingsView(props: Props) {
   const { txSettings } = props;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       {/* =============================================================================== */}
       {/* ENTER PRESSED */}
       {/* =============================================================================== */}
-      <BorderedSection title="Enter" childStyle={{ display: "flex", flexDirection: "column" }} style={{ width: "400px" }}>
+      <BorderedSection
+        title="Enter"
+        childStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
+        style={{ width: '400px' }}
+      >
         {/* BACKSPACE */}
         <FormControl>
           <FormLabel>When enter is pressed:</FormLabel>
@@ -38,17 +42,21 @@ function TxSettingsView(props: Props) {
             <Tooltip title="Send both the carriage return and line feed chars (0x0D 0x0A) when the Enter key is pressed." placement="right" arrow>
               <FormControlLabel value={EnterKeyPressBehavior.SEND_CRLF} control={<Radio />} label="Send CRLF (0x0D 0x0A)" />
             </Tooltip>
+            {/* SEND BREAK */}
+            <Tooltip title="Send a break signal when the Enter key is pressed." placement="right" arrow>
+              <FormControlLabel value={EnterKeyPressBehavior.SEND_BREAK} control={<Radio />} label="Send a break signal" />
+            </Tooltip>
           </RadioGroup>
         </FormControl>
       </BorderedSection>
       {/* =============================================================================== */}
       {/* ROW FOR DELETE AND BACKSPACE */}
       {/* =============================================================================== */}
-      <div style={{ display: "flex" }}>
+      <div style={{ display: 'flex' }}>
         {/* =============================================================================== */}
         {/* COL1: BACKSPACE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Backspace" childStyle={{ display: "flex", flexDirection: "column" }}>
+        <BorderedSection title="Backspace" childStyle={{ display: 'flex', flexDirection: 'column' }}>
           {/* BACKSPACE */}
           <FormControl>
             <FormLabel>When backspace is pressed:</FormLabel>
@@ -72,7 +80,7 @@ function TxSettingsView(props: Props) {
         {/* =============================================================================== */}
         {/* COL2: DELETE */}
         {/* =============================================================================== */}
-        <BorderedSection title="Delete" childStyle={{ display: "flex", flexDirection: "column" }}>
+        <BorderedSection title="Delete" childStyle={{ display: 'flex', flexDirection: 'column' }}>
           <FormControl>
             <FormLabel>When delete is pressed:</FormLabel>
             <RadioGroup
@@ -100,12 +108,12 @@ function TxSettingsView(props: Props) {
             </RadioGroup>
           </FormControl>
         </BorderedSection>
-      </div>{" "}
+      </div>{' '}
       {/* End of row for TX */}
       {/* =============================================================================== */}
       {/* META KEYS */}
       {/* =============================================================================== */}
-      <BorderedSection title="Meta Keys" childStyle={{ display: "flex", flexDirection: "column" }}>
+      <BorderedSection title="Meta Keys" childStyle={{ display: 'flex', flexDirection: 'column' }}>
         {/* =============================================================================== */}
         {/* CTRL KEYS */}
         {/* =============================================================================== */}
@@ -120,7 +128,7 @@ function TxSettingsView(props: Props) {
               />
             }
             label="Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed"
-            sx={{ marginBottom: "10px" }}
+            sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
         {/* =============================================================================== */}
@@ -142,7 +150,7 @@ function TxSettingsView(props: Props) {
               />
             }
             label="Send [ESC] + <char> when Alt-<char> is pressed (e.g. Alt-A sends 0x1B 0x41)."
-            sx={{ marginBottom: "10px" }}
+            sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
       </BorderedSection>

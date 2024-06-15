@@ -801,6 +801,8 @@ export class App {
       } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
         bytesToWrite.push(0x0d);
         bytesToWrite.push(0x0a);
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_BREAK) {
+        await this.sendBreakSignal();
       } else {
         throw Error('Unsupported enter key press behavior!');
       }

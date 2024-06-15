@@ -5,6 +5,7 @@ export enum EnterKeyPressBehavior {
   SEND_LF,
   SEND_CR,
   SEND_CRLF,
+  SEND_BREAK, // Send the break signal (not a character)
 }
 
 export enum BackspaceKeyPressBehavior {
