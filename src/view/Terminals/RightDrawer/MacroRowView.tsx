@@ -84,7 +84,7 @@ export default observer((props: Props) => {
       {/* ================================================ */}
       {/* MACRO MORE SETTINGS BUTTON */}
       {/* ================================================ */}
-      <Tooltip title="More settings for this macro." enterDelay={500} arrow>
+      <Tooltip title="More settings for this macro." enterDelay={0} arrow>
         <IconButton
           aria-label="more-settings-for-macro"
           size="small"
