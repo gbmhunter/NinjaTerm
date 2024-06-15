@@ -95,7 +95,12 @@ export default observer((props: Props) => {
             {/* SEND ON ENTER VALUE FOR EVERY LINE IN TEXT BOX */}
             {/* ================================================================= */}
             <Tooltip
-              title='If enabled, every time a new line is encountered in this text box it will be replaced with the "On Enter" sequence set in the TX settings. This is useful if you want an "Enter" key press to behave to same in this text box as it would if pressed in the terminal.'
+              title={
+                <div>If enabled, the "On Enter" sequence will be appended to every line in the macro data. This is useful if you want each line of ASCII macro data to behave to same in this text box as it would if typed in the terminal.<br />
+                <br />
+                You can also change the "On Enter" sequence below.
+                </div>
+              }
               arrow
               enterDelay={500}
             >
@@ -109,6 +114,7 @@ export default observer((props: Props) => {
                   />
                 }
                 label='Send "On Enter" value for every new line in text box'
+                disabled={macro.dataType !== MacroDataType.ASCII}
               />
             </Tooltip>
             {/* ================================================================= */}
@@ -126,7 +132,11 @@ export default observer((props: Props) => {
               placement="right"
               enterDelay={500}
             >
-              <FormControl sx={{ m: 1, minWidth: 160 }} size="small" disabled={!macro.sendOnEnterValueForEveryNewLineInTextBox}>
+              <FormControl
+                sx={{ m: 1, minWidth: 160 }}
+                size="small"
+                disabled={macro.dataType !== MacroDataType.ASCII || !macro.sendOnEnterValueForEveryNewLineInTextBox}
+              >
                 <InputLabel>On Enter Value</InputLabel>
                 <Select
                   value={app.settings.txSettings.enterKeyPressBehavior}
@@ -148,7 +158,7 @@ export default observer((props: Props) => {
             {/* SEND BREAK AT END OF EVERY LINE OF HEX */}
             {/* ================================================================= */}
             <Tooltip
-              title='.'
+              title='If ticked, a break signal will be sent at the end of every line of hex in the macro data. This can be useful if the device you are talking to uses the break signal to frame raw data.'
               arrow
               enterDelay={500}
             >
