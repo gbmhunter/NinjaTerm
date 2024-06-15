@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added accordions to the terminal right-hand drawer, and added more controls such as quick port settings.
 - The terminal right-hand drawer now remembers if it was open or closed. This info is also saved in each profile.
 - Added to option to send a break signal on Enter key press.
+- Added ability to send a break signal at the end of every line of hex data in a macro.
+- You can now disable "received break signal" warnings from the RX Settings view.
 
 ### Changed
 

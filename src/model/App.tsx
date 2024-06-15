@@ -318,8 +318,8 @@ export class App {
       this.snackbar.sendToSnackbar(
         <div>
           <p style={{ maxWidth: '500px' }}>
-            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c.
-            Chrome, Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
+            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome, Edge,
+            Brave) and Opera. Firefox is supported but you have to install the{' '}
             <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
               WebSerial for Firefox extension
             </a>{' '}
@@ -461,7 +461,17 @@ export class App {
               'warning'
             );
           } else if (error.name === 'BreakError') {
-            this.snackbar.sendToSnackbar('Encountered break signal.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
+            // The user has the ability to disable these warnings as break signals
+            // might be expected in certain use cases (e.g. framing of raw data)
+            if (this.settings.rxSettings.showWarningOnRxBreakSignal) {
+              this.snackbar.sendToSnackbar(
+                'Received break signal.\n' +
+                  'You can disable this warning in the RX Settings view if break signals are expected.\n' +
+                  'Returned error from reader.read():\n' +
+                  `${error}`,
+                'warning'
+              );
+            }
           } else if (error.name === 'FramingError') {
             this.snackbar.sendToSnackbar('Encountered framing error.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
           } else if (error.name === 'ParityError') {

@@ -126,6 +126,9 @@ export class RxSettingsConfig {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = 5;
 
+  // OTHER SETTINGS
+  showWarningOnRxBreakSignal = true;
+
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
@@ -182,6 +185,9 @@ export default class RxSettings {
   // FLOAT SPECIFIC SETTINGS
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
+
+  // OTHER SETTINGS
+  showWarningOnRxBreakSignal = true;
 
 
   constructor(profileManager: ProfileManager) {
@@ -269,6 +275,9 @@ export default class RxSettings {
     this.floatStringConversionMethod = configToLoad.floatStringConversionMethod;
     this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
     this.floatNumOfDecimalPlaces.apply();
+
+    // OTHER SETTINGS
+    this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
   };
 
   _saveConfig = () => {
@@ -305,6 +314,9 @@ export default class RxSettings {
     // FLOAT SPECIFIC SETTINGS
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
+
+    // OTHER SETTINGS
+    config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
 
     this.profileManager.saveAppData();
   };
@@ -418,6 +430,11 @@ export default class RxSettings {
   //=================================================================
   // OTHER
   //=================================================================
+
+  setShowWarningOnRxBreakSignal = (value: boolean) => {
+    this.showWarningOnRxBreakSignal = value;
+    this._saveConfig();
+  };
 
   /**
    * Provides a descriptive name for the currently selected data type for the app
