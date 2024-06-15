@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - The terminal right-hand drawer now remembers if it was open or closed. This info is also saved in each profile.
 - Added to option to send a break signal on Enter key press.
 - Added ability to send a break signal at the end of every line of hex data in a macro.
+- ASCII macro data now adds the "on enter" sequence to the end of every line, if enabled.
 - You can now disable "received break signal" warnings from the RX Settings view.
 
 ### Changed
