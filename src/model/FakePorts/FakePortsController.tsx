@@ -8,15 +8,15 @@ import { generateRandomString } from 'src/model/Util/Util';
 class FakePort {
   name: string;
   description: string;
-  intervalId: NodeJS.Timer | null;
-  connectFunction: () => NodeJS.Timer | null;
-  disconnectFunction: (intervalId: NodeJS.Timer | null) => void;
+  intervalId: NodeJS.Timeout | null;
+  connectFunction: () => NodeJS.Timeout | null;
+  disconnectFunction: (intervalId: NodeJS.Timeout | null) => void;
 
   constructor(
     name: string,
     description: string,
-    connectFunction: () => NodeJS.Timer | null,
-    disconnectFunction: (intervalId: NodeJS.Timer | null) => void
+    connectFunction: () => NodeJS.Timeout | null,
+    disconnectFunction: (intervalId: NodeJS.Timeout | null) => void
   ) {
     this.name = name;
     this.description = description;
@@ -66,7 +66,7 @@ export default class FakePortsController {
           }, 10000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -92,7 +92,7 @@ export default class FakePortsController {
           }, 1000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -118,7 +118,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -144,7 +144,7 @@ export default class FakePortsController {
           }, 100);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -181,7 +181,7 @@ export default class FakePortsController {
           }, 5000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -285,7 +285,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -311,7 +311,7 @@ export default class FakePortsController {
           }, 100);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -342,7 +342,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -378,7 +378,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -414,7 +414,7 @@ export default class FakePortsController {
           // No timer needed
           return null;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -442,7 +442,7 @@ export default class FakePortsController {
           }, 2000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -454,7 +454,7 @@ export default class FakePortsController {
     // mcu modules
     //=================================================================================
     // This intervalId is a hacky way of allowing for variable intervals
-    let intervalId: NodeJS.Timer | null = null;
+    let intervalId: NodeJS.Timeout | null = null;
     this.fakePorts.push(
       new FakePort(
         'mcu modules',
@@ -500,7 +500,7 @@ export default class FakePortsController {
           intervalId = setInterval(onTimeoutFn, 1000);
           return null;
         },
-        (_: NodeJS.Timer | null) => {
+        (_: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -530,7 +530,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -560,7 +560,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -590,7 +590,7 @@ export default class FakePortsController {
           }, 200);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -628,7 +628,7 @@ export default class FakePortsController {
           }, 1000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -667,7 +667,7 @@ export default class FakePortsController {
           }, 1000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
@@ -703,7 +703,7 @@ export default class FakePortsController {
           }, 1000);
           return intervalId;
         },
-        (intervalId: NodeJS.Timer | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);

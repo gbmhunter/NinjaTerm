@@ -30,7 +30,7 @@ export default class Logging {
 
   isLogging = false;
 
-  intervalId: NodeJS.Timer | null = null;
+  intervalId: NodeJS.Timeout | null = null;
 
   /**
    * Stored data to be written to the file, until the next file write
