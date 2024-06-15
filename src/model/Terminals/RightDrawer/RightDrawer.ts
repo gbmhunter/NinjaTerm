@@ -13,6 +13,7 @@ export class RightDrawerConfig {
 
   showRightDrawer = true;
 
+  rightDrawerWidth_px = 400;
 
   /**
    * Expand the quick port settings and macro accordions by default.
@@ -26,6 +27,8 @@ export default class RightDrawer {
 
   profileManager: ProfileManager;
   macroController: MacroController;
+
+  drawerWidth_px = 400;
 
   quickPortSettingsIsExpanded = false;
   otherQuickSettingsIsExpanded = false;
@@ -61,18 +64,17 @@ export default class RightDrawer {
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
 
+    config.rightDrawerWidth_px = this.drawerWidth_px;
+
     config.quickPortSettingsIsExpanded = this.quickPortSettingsIsExpanded;
     config.otherQuickSettingsIsExpanded = this.otherQuickSettingsIsExpanded;
     config.macrosIsExpanded = this.macrosIsExpanded;
-
-    console.log('Saving config', config);
 
     this.profileManager.saveAppData();
   };
 
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
-    console.log('configToLoad', configToLoad);
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -85,8 +87,14 @@ export default class RightDrawer {
       configToLoad = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
     }
 
+    this.drawerWidth_px = configToLoad.rightDrawerWidth_px;
     this.quickPortSettingsIsExpanded = configToLoad.quickPortSettingsIsExpanded;
     this.otherQuickSettingsIsExpanded = configToLoad.otherQuickSettingsIsExpanded;
     this.macrosIsExpanded = configToLoad.macrosIsExpanded
   };
+
+  setDrawerWidth(width: number) {
+    this.drawerWidth_px = width;
+    this._saveConfig();
+  }
 }

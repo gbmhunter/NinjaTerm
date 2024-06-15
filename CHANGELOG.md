@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added ability to send a break signal at the end of every line of hex data in a macro.
 - ASCII macro data now adds the "on enter" sequence to the end of every line, if enabled.
 - You can now disable "received break signal" warnings from the RX Settings view.
+- The right-hand terminal drawer width is now saved as part of the application data and in profiles.
 
 ### Changed
 

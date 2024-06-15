@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ResizableBox } from 'react-resizable';
+import { ResizableBox, Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import {
   Accordion,
@@ -19,6 +19,7 @@ import {
   Tooltip,
   styled,
 } from '@mui/material';
+import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
@@ -38,7 +39,6 @@ import {
 } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 
-import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import { SettingsCategories } from 'src/model/Settings/Settings';
 
 // This code was modified from https://mui.com/material-ui/react-accordion/#customization
@@ -70,12 +70,16 @@ export default observer((props: Props) => {
   });
 
   return (
-    <ResizableBox // This what provides the resizing functionality for the right drawer
+    <Resizable // This what provides the resizing functionality for the right drawer
       className="box"
-      width={400} // Default width, this can be changed by the user resizing
+      width={rightDrawer.drawerWidth_px} // Default width, this can be changed by the user resizing
+      onResize={(e, {node, size, handle}) => {
+        console.log('onResize() called. size: ', size);
+        rightDrawer.setDrawerWidth(size.width);
+      }}
       resizeHandles={['w']}
       axis="x"
-      style={{ padding: '0px 0px 0px 10px', margin: '0px 0px 0px 0px', fontSize: '12px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
+      // style={{ padding: '0px 0px 0px 10px', margin: '0px 0px 0px 0px', fontSize: '12px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}
       handle={
         <div
           style={{
@@ -101,6 +105,9 @@ export default observer((props: Props) => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          width: rightDrawer.drawerWidth_px + 'px',
         }}
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
@@ -458,6 +465,6 @@ export default observer((props: Props) => {
           </AccordionDetails>
         </Accordion>
       </div>
-    </ResizableBox>
+    </Resizable>
   );
 });
