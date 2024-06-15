@@ -43,7 +43,7 @@ export default class ProfilesSettings {
       // Nothing to do if no profile is selected
       return;
     }
-    const selectedProfile = this.profileManager.profiles[this.selectedProfiles[0] as number];
+    const selectedProfile = this.profileManager.appData.profiles[this.selectedProfiles[0] as number];
     if (selectedProfile.name === this.profileNameText) {
       // The profile name hasn't changed so nothing to do
       return;
@@ -51,7 +51,7 @@ export default class ProfilesSettings {
     // If we get here profile name has changed
     selectedProfile.name = this.profileNameText;
     // Profile name has changed so save the profiles
-    this.profileManager.saveProfiles();
+    this.profileManager.saveAppData();
   }
 
   setSelectedProfiles(selectedProfiles: GridRowSelectionModel) {
@@ -65,7 +65,7 @@ export default class ProfilesSettings {
     // Whenever the selected profile changes, update the profile name field to match the selected profile
     let name;
     if (this.selectedProfiles.length === 1) {
-      name = this.profileManager.profiles[this.selectedProfiles[0] as number].name;
+      name = this.profileManager.appData.profiles[this.selectedProfiles[0] as number].name;
     } else {
       name = '';
     }

@@ -19,7 +19,7 @@ interface Props {
 function ProfileSettingsView(props: Props) {
   const { profileManager, profilesSettings } = props;
 
-  const profiles = profileManager.profiles;
+  const profiles = profileManager.appData.profiles;
 
   // Define the columns of the profiles table
   const columns: GridColDef[] = [
@@ -94,49 +94,55 @@ function ProfileSettingsView(props: Props) {
           enterDelay={500}
           arrow
         >
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<PublishIcon />}
-            disabled={profilesSettings.selectedProfiles.length !== 1}
-            onClick={async () => {
-              await profilesSettings.loadProfile();
-            }}
-          >
-            Load Profile
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<PublishIcon />}
+              disabled={profilesSettings.selectedProfiles.length !== 1}
+              onClick={async () => {
+                await profilesSettings.loadProfile();
+              }}
+            >
+              Load Profile
+            </Button>
+          </div>
         </Tooltip>
 
         <Tooltip title="Saves the current app state to the selected profile above." enterDelay={500} arrow>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<SaveIcon />}
-            disabled={profilesSettings.selectedProfiles.length !== 1}
-            onClick={() => {
-              profilesSettings.saveCurrentAppStateToProfile();
-            }}
-          >
-            Save App State To Profile
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+              disabled={profilesSettings.selectedProfiles.length !== 1}
+              onClick={() => {
+                profilesSettings.saveCurrentAppStateToProfile();
+              }}
+            >
+              Save App State To Profile
+            </Button>
+          </div>
         </Tooltip>
 
         {/* =============================================================================== */}
         {/* PROFILE NAME */}
         {/* =============================================================================== */}
         <Tooltip title="Use this to rename the selected profile's name." enterDelay={500} arrow>
-          <TextField
-            label="Profile name"
-            variant="outlined"
-            size="small"
-            value={profilesSettings.profileNameText}
-            error={profilesSettings.profileNameErrorMsg !== ''}
-            helperText={profilesSettings.profileNameErrorMsg}
-            disabled={profilesSettings.selectedProfiles.length !== 1}
-            onChange={(event) => {
-              profilesSettings.setProfileName(event.target.value);
-            }}
-          ></TextField>
+          <div>
+            <TextField
+              label="Profile name"
+              variant="outlined"
+              size="small"
+              value={profilesSettings.profileNameText}
+              error={profilesSettings.profileNameErrorMsg !== ''}
+              helperText={profilesSettings.profileNameErrorMsg}
+              disabled={profilesSettings.selectedProfiles.length !== 1}
+              onChange={(event) => {
+                profilesSettings.setProfileName(event.target.value);
+              }}
+            ></TextField>
+          </div>
         </Tooltip>
       </div>
 
@@ -157,17 +163,19 @@ function ProfileSettingsView(props: Props) {
         </Tooltip>
 
         <Tooltip title="Deletes the selected profile above." enterDelay={500} arrow>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<DeleteIcon />}
-            disabled={profilesSettings.selectedProfiles.length !== 1}
-            onClick={() => {
-              profilesSettings.deleteProfile();
-            }}
-          >
-            Delete Profile
-          </Button>
+          <div>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<DeleteIcon />}
+              disabled={profilesSettings.selectedProfiles.length !== 1}
+              onClick={() => {
+                profilesSettings.deleteProfile();
+              }}
+            >
+              Delete Profile
+            </Button>
+          </div>
         </Tooltip>
       </div>
 

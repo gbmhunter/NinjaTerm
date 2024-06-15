@@ -19,7 +19,7 @@ void loop() {
   Serial.println("fast ");
   // Wait until data is sent
   Serial.flush();
-//  delay(DISPLAY_PERIOD);
+  delay(DISPLAY_PERIOD);
 }
 
 

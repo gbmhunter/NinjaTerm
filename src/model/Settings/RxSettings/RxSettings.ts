@@ -126,6 +126,9 @@ export class RxSettingsConfig {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = 5;
 
+  // OTHER SETTINGS
+  showWarningOnRxBreakSignal = true;
+
   constructor() {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
@@ -183,6 +186,9 @@ export default class RxSettings {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
+  // OTHER SETTINGS
+  showWarningOnRxBreakSignal = true;
+
 
   constructor(profileManager: ProfileManager) {
     this.profileManager = profileManager;
@@ -209,7 +215,7 @@ export default class RxSettings {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
+    let configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -220,7 +226,7 @@ export default class RxSettings {
       console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.currentAppConfig.settings.rxSettings
+      configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
     }
 
     /**
@@ -269,10 +275,13 @@ export default class RxSettings {
     this.floatStringConversionMethod = configToLoad.floatStringConversionMethod;
     this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
     this.floatNumOfDecimalPlaces.apply();
+
+    // OTHER SETTINGS
+    this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.currentAppConfig.settings.rxSettings;
+    let config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
     config.dataType = this.dataType;
 
     // ASCII-SPECIFIC SETTINGS
@@ -306,7 +315,10 @@ export default class RxSettings {
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
 
-    this.profileManager.saveAppConfig();
+    // OTHER SETTINGS
+    config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
+
+    this.profileManager.saveAppData();
   };
 
   setDataType = (value: DataType) => {
@@ -418,6 +430,11 @@ export default class RxSettings {
   //=================================================================
   // OTHER
   //=================================================================
+
+  setShowWarningOnRxBreakSignal = (value: boolean) => {
+    this.showWarningOnRxBreakSignal = value;
+    this._saveConfig();
+  };
 
   /**
    * Provides a descriptive name for the currently selected data type for the app

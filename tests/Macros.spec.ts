@@ -54,12 +54,12 @@ test.describe('macros', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
 
-    await page.getByTestId('macro-data-0').fill('abc123\\n');
+    await page.getByTestId('macro-data-0').fill('abc123');
     // Hit the send button
     await page.getByTestId('macro-0-send-button').click();
 
     const utf8EncodeText = new TextEncoder();
-    const expectedText = utf8EncodeText.encode('abc123\n');
+    const expectedText = utf8EncodeText.encode('abc123');
     expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 

@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 import { App } from "src/model/App";
-import { Macro, MacroConfig, MacroDataType } from "./Macro";
+import { Macro, MacroConfig, MacroDataType, TxStepBreak, TxStepData } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 
 const NUM_MACROS = 8;
@@ -96,28 +96,35 @@ export class MacroController {
    * Send the provided macro data to the serial port.
    * @param macro The macro to send.
    */
-  send(macro: Macro) {
+  send = async (macro: Macro) => {
     // Send the data to the serial port
     // If the user presses enter in the multiline text field, it will add a newline character
     // (0x0A or 10) to the string.
-    let outputData;
-    outputData = macro.dataToBytes();
-    this.app.writeBytesToSerialPort(outputData);
+    const outputData = macro.dataToTxSequence();
+    for (let i = 0; i < outputData.steps.length; i++) {
+      // Determine type of item in array. If data, write to port. If break, send a break.
+      const currStep = outputData.steps[i];
+      if (currStep instanceof TxStepData) {
+        this.app.writeBytesToSerialPort(currStep.data);
+      } else if (currStep instanceof TxStepBreak) {
+        await this.app.sendBreakSignal();
+      }
+    }
   }
 
   _saveConfig = () => {
 
-    let config = this.app.profileManager.currentAppConfig.terminal.macroController;
+    let config = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     config.macroConfigs = this.macrosArray.map((macro) => {
       return macro.toConfig();
     });
 
-    this.app.profileManager.saveAppConfig();
+    this.app.profileManager.saveAppData();
   };
 
   _loadConfig() {
-    let configToLoad = this.app.profileManager.currentAppConfig.terminal.macroController;
+    let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     //===============================================
     // UPGRADE PATH
@@ -129,7 +136,7 @@ export class MacroController {
       console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.app.profileManager.currentAppConfig.terminal.macroController;
+      configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
     }
 
     // If we get here we loaded a valid config. Apply config.

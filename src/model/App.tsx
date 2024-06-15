@@ -208,7 +208,7 @@ export class App {
     if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
       // Check to see if this is the serial port we want to reopen
 
-      const lastUsedPortInfo = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedPortInfo = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       if (lastUsedPortInfo === null) {
         return;
       }
@@ -233,7 +233,7 @@ export class App {
     let approvedPorts = await navigator.serial.getPorts();
 
     // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+    const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
     if (lastUsedSerialPort === null) {
       // Did not find last used serial port data in local storage, so do nothing
       return;
@@ -303,9 +303,9 @@ export class App {
         this.serialPortInfo = this.port.getInfo();
         // Save the info for this port, so we can automatically re-open
         // it on app re-open in the future
-        let lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+        let lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
         lastUsedSerialPort.serialPortInfo = JSON.parse(JSON.stringify(this.serialPortInfo));
-        this.profileManager.saveAppConfig();
+        this.profileManager.saveAppData();
       });
       if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
         await this.openPort();
@@ -318,8 +318,8 @@ export class App {
       this.snackbar.sendToSnackbar(
         <div>
           <p style={{ maxWidth: '500px' }}>
-            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c.
-            Chrome, Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
+            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome, Edge,
+            Brave) and Opera. Firefox is supported but you have to install the{' '}
             <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
               WebSerial for Firefox extension
             </a>{' '}
@@ -404,9 +404,9 @@ export class App {
         this.closedPromise = this.readUntilClosed();
       });
 
-      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.OPENED;
-      this.profileManager.saveAppConfig();
+      this.profileManager.saveAppData();
 
       // Create custom GA4 event to see how many ports have
       // been opened in NinjaTerm :-)
@@ -461,7 +461,17 @@ export class App {
               'warning'
             );
           } else if (error.name === 'BreakError') {
-            this.snackbar.sendToSnackbar('Encountered break signal.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
+            // The user has the ability to disable these warnings as break signals
+            // might be expected in certain use cases (e.g. framing of raw data)
+            if (this.settings.rxSettings.showWarningOnRxBreakSignal) {
+              this.snackbar.sendToSnackbar(
+                'Received break signal.\n' +
+                  'You can disable this warning in the RX Settings view if break signals are expected.\n' +
+                  'Returned error from reader.read():\n' +
+                  `${error}`,
+                'warning'
+              );
+            }
           } else if (error.name === 'FramingError') {
             this.snackbar.sendToSnackbar('Encountered framing error.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
           } else if (error.name === 'ParityError') {
@@ -553,9 +563,9 @@ export class App {
       }
       this.reader = null;
       this.closedPromise = null;
-      const lastUsedSerialPort = this.profileManager.currentAppConfig.lastUsedSerialPort;
+      const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.CLOSED;
-      this.profileManager.saveAppConfig();
+      this.profileManager.saveAppData();
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.closePort();
     } else {
@@ -575,7 +585,7 @@ export class App {
    * - Pressing "f" while on the Port Configuration settings.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
-    console.log('handleKeyDown() called. event.key=', event.key);
+    // console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
@@ -801,6 +811,8 @@ export class App {
       } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
         bytesToWrite.push(0x0d);
         bytesToWrite.push(0x0a);
+      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_BREAK) {
+        await this.sendBreakSignal();
       } else {
         throw Error('Unsupported enter key press behavior!');
       }

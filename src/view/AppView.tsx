@@ -30,6 +30,7 @@ import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
 import { DataType } from 'src/model/Settings/RxSettings/RxSettings';
+import { SettingsCategories } from 'src/model/Settings/Settings';
 
 // Create dark theme for MUI
 const darkTheme = createTheme({
@@ -284,13 +285,39 @@ const AppView = observer((props: Props) => {
             }}
           >
             {/* DATA TYPE */}
-            <div style={{ padding: '0 10px' }}>{app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}</div>
+            <div
+              className={styles.onHover}
+              onClick={() => {
+                // Go to Settings -> RX Settings where the user can change the data type
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{ padding: '0 10px' }}
+            >
+              {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
+            </div>
 
             {/* LOGGING ON/OFF */}
-            <div style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}>{app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}</div>
+            <div
+              className={styles.onHover}
+              onClick={() => {
+                app.setShownMainPane(MainPanes.LOGGING);
+              }}
+              style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}
+            >
+              {app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
+            </div>
 
             {/* GRAPHING ON/OFF */}
-            <div style={{ backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '', padding: '0 10px' }}>{app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}</div>
+            <div
+              className={styles.onHover}
+              onClick={() => {
+                app.setShownMainPane(MainPanes.GRAPHING);
+              }}
+              style={{ backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '', padding: '0 10px' }}
+            >
+              {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
+            </div>
 
             {/* TX/RX ACTIVITY INDICATORS */}
             {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
@@ -304,11 +331,26 @@ const AppView = observer((props: Props) => {
                 RX
               </Box>
             </Box>
+
             {/* PORT CONFIG */}
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
-            <Box sx={{ width: '80px' }}>{app.settings.portConfiguration.shortSerialConfigName}</Box>
+            <div
+              className={styles.onHover}
+              onClick={() => {
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
+              }}
+              style={{ width: '100px', padding: '0 10px' }}
+            >
+              {app.settings.portConfiguration.shortSerialConfigName}
+            </div>
+
             {/* PORT STATE */}
-            <Box sx={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}>{portStateToToolbarStatusProperties[app.portState].text}</Box>
+            <div
+              style={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}
+            >
+              {portStateToToolbarStatusProperties[app.portState].text}
+            </div>
           </div>
         </div>
 

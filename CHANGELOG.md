@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.18.0] - 2024-06-16
+
+### Added
+
+- Clicking on the many of the indicators in the bottom status bar takes you to the settings view where you can change the related settings.
+- Added accordions to the terminal right-hand drawer, and added more controls such as quick port settings.
+- The terminal right-hand drawer now remembers if it was open or closed. This info is also saved in each profile.
+- Added to option to send a break signal on Enter key press.
+- Added ability to send a break signal at the end of every line of hex data in a macro.
+- ASCII macro data now adds the "on enter" sequence to the end of every line, if enabled.
+- You can now disable "received break signal" warnings from the RX Settings view.
+- The right-hand terminal drawer width is now saved as part of the application data and in profiles.
+
+### Changed
+
+- Improved the way app data is stored in local storage.
+- Snackbar message when profile is loaded now tells you if already connected port matches the one specified in the profile.
+- Active profile name is updated when the app state is saved to a profile.
+
 ## [4.17.1] - 2024-06-11
 
 ### Changed
@@ -720,7 +739,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.18.0...HEAD
+[4.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...v4.18.0
 [4.17.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.0...v4.17.1
 [4.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...v4.17.0
 [4.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...v4.16.0

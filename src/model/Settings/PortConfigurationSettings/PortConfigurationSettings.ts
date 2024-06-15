@@ -159,7 +159,7 @@ export default class PortConfiguration {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.currentAppConfig.settings.portSettings
+    let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
     //===============================================
     // UPGRADE PATH
     //===============================================
@@ -170,7 +170,7 @@ export default class PortConfiguration {
       console.log(`Out-of-date config version ${configToLoad.version} found.` +
                     ` Updating to version ${latestVersion}.`);
       this._saveConfig();
-      configToLoad = this.profileManager.currentAppConfig.settings.portSettings
+      configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
     }
 
     // At this point we are confident that the deserialized config matches what
@@ -188,7 +188,7 @@ export default class PortConfiguration {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.currentAppConfig.settings.portSettings;
+    let config = this.profileManager.appData.currentAppConfig.settings.portSettings;
 
     config.baudRate = this.baudRate;
     config.numDataBits = this.numDataBits;
@@ -199,7 +199,7 @@ export default class PortConfiguration {
     config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
     config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
 
-    this.profileManager.saveAppConfig();
+    this.profileManager.saveAppData();
   };
 
   /**
