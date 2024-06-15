@@ -59,7 +59,7 @@ test.describe('macros', () => {
     await page.getByTestId('macro-0-send-button').click();
 
     const utf8EncodeText = new TextEncoder();
-    const expectedText = utf8EncodeText.encode('abc123\n');
+    const expectedText = utf8EncodeText.encode('abc123');
     expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 
@@ -78,7 +78,7 @@ test.describe('macros', () => {
 
     const utf8EncodeText = new TextEncoder();
     // The \n should not be processed into LF, should still be separate \ and n chars
-    const expectedText = utf8EncodeText.encode('abc123\\n\n');
+    const expectedText = utf8EncodeText.encode('abc123\\n');
     expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 

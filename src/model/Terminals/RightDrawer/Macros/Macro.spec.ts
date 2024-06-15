@@ -7,6 +7,8 @@ describe('macro tests', () => {
   test('basic ascii to bytes', () => {
     let macro = new Macro('M1', () => '\n');
     macro.setData('a');
+    macro.setSendOnEnterValueForEveryNewLineInTextBox(true);
+
     const txSequence = macro.dataToTxSequence();
     expect(txSequence.steps.length).toBe(1);
     let step = txSequence.steps[0] as TxStepData;
@@ -17,6 +19,7 @@ describe('macro tests', () => {
   test('new line converted to \n', () => {
     let macro = new Macro('M1', () => '\n');
     macro.setData('a\nb');
+    macro.setSendOnEnterValueForEveryNewLineInTextBox(true);
 
     const txSequence = macro.dataToTxSequence();
     expect(txSequence.steps.length).toBe(1);
@@ -28,6 +31,7 @@ describe('macro tests', () => {
   test('new line converted to \r\n', () => {
     let macro = new Macro('M1', () => '\r\n');
     macro.setData('a\nb');
+    macro.setSendOnEnterValueForEveryNewLineInTextBox(true);
 
     const txSequence = macro.dataToTxSequence();
     expect(txSequence.steps.length).toBe(1);
@@ -39,6 +43,7 @@ describe('macro tests', () => {
   test('new line converted to \r', () => {
     let macro = new Macro('M1', () => '\r');
     macro.setData('a\nb');
+    macro.setSendOnEnterValueForEveryNewLineInTextBox(true);
 
     const txSequence = macro.dataToTxSequence();
     expect(txSequence.steps.length).toBe(1);
