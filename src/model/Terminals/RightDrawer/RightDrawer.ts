@@ -13,8 +13,12 @@ export class RightDrawerConfig {
 
   showRightDrawer = true;
 
+
+  /**
+   * Expand the quick port settings and macro accordions by default.
+   */
   quickPortSettingsIsExpanded = true;
-  otherQuickSettingsIsExpanded = true;
+  otherQuickSettingsIsExpanded = false;
   macrosIsExpanded = true;
 }
 

@@ -12,22 +12,8 @@ export class MacroConfig {
   dataType = MacroDataType.ASCII;
   data = '';
   processEscapeChars = true;
-  sendOnEnterValueForEveryNewLineInTextBox = true;
+  sendOnEnterValueForEveryNewLineInTextBox = false;
   sendBreakAtEndOfEveryLineOfHex = false;
-}
-
-function concatenate(resultConstructor: any, ...arrays: any[]) {
-  let totalLength = 0;
-  for (const arr of arrays) {
-      totalLength += arr.length;
-  }
-  const result = new resultConstructor(totalLength);
-  let offset = 0;
-  for (const arr of arrays) {
-      result.set(arr, offset);
-      offset += arr.length;
-  }
-  return result;
 }
 
 export class TxStepData {
@@ -55,7 +41,7 @@ export class Macro {
 
   processEscapeChars: boolean = true;
 
-  sendOnEnterValueForEveryNewLineInTextBox: boolean = true;
+  sendOnEnterValueForEveryNewLineInTextBox: boolean = false;
 
   sendBreakAtEndOfEveryLineOfHex: boolean = false;
 
