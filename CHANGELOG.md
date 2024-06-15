@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.18.0] - 2024-06-16
+
 ### Added
 
 - Clicking on the many of the indicators in the bottom status bar takes you to the settings view where you can change the related settings.
@@ -737,7 +739,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.18.0...HEAD
+[4.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...v4.18.0
 [4.17.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.0...v4.17.1
 [4.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...v4.17.0
 [4.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.15.0...v4.16.0
