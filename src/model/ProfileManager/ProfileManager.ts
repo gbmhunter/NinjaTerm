@@ -38,7 +38,7 @@ export class RootConfig {
 }
 
 /**
- * This class represents a serial port profile. It is used to store use-specific
+ * This class represents all the data stored in a user profile. It is used to store use-specific
  * settings for the application (e.g. all the settings to talk to a particular
  * embedded device). The class is serializable to JSON.
  */
@@ -117,6 +117,7 @@ export class ProfileManager {
         return;
       }
       const appDataInStorage = JSON.parse(appDataAsJson);
+      // Compare the JSON strings of the profiles to work out if they are different
       if (JSON.stringify(appDataInStorage.profiles) !== JSON.stringify(this.appData.profiles)) {
         console.log('Profiles changed. Reloading profiles...');
         // Reload just the profiles, we don't want to overwrite the current app config
@@ -124,14 +125,6 @@ export class ProfileManager {
       }
     }
   }
-
-  // setActiveProfile = (profile: Profile) => {
-  //   // this.activeProfile = profile;
-  //   // Need to tell the rest of the app to update
-  //   this._profileChangeCallbacks.forEach((callback) => {
-  //     callback();
-  //   });
-  // };
 
   registerOnProfileLoad = (callback: () => void) => {
     this._profileChangeCallbacks.push(callback);
@@ -212,6 +205,9 @@ export class ProfileManager {
   /**
    * Apply the profile at the provided index to the current app config (i.e. update the app
    * to reflect the profile).
+   *
+   * Will attempt to connect to the serial port specified in the profile if it is available.
+   *
    * @param profileIdx The index of the profile to apply to the app.
    */
   applyProfileToApp = async (profileIdx: number) => {
@@ -230,7 +226,11 @@ export class ProfileManager {
       weNeedToConnect = false;
     } else if (profileSerialPortInfoJson === currentSerialPortInfoJson) {
       // Same serial port, no need to disconnect and connect
+      // Note there is a chance we are not connected to the right one due to
+      // ambiguity...but if already connected it is a better user experience to
+      // not disconnect on the high chance it is the correct port
       weNeedToConnect = false;
+      snackbarMessage += '\nAlready connected port matches one specified in profile. Leaving port connected.';
     } else {
       // They are both different and the profile one is non-empty. Check to see if the profile ports is available
       console.log('Port infos are both different and non-empty. Checking if ports are available...');
@@ -246,10 +246,10 @@ export class ProfileManager {
         // The profile port is available
         weNeedToConnect = true;
       } else {
-        // There are multiple ports that match the profile port, to ambiguous, do
+        // There are multiple ports that match the profile port, too ambiguous, do
         // not connect to any
         weNeedToConnect = false;
-        snackbarMessage += '\nMultiple available ports info match the profile port info. Not connecting to any.';
+        snackbarMessage += '\nMultiple available ports info match the profile port info (ambiguous). Not connecting to any.';
         snackbarVariant = 'warning';
       }
     }
@@ -257,13 +257,11 @@ export class ProfileManager {
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
       if (this.app.portState === PortState.OPENED) {
-        console.log('Closing port...');
         await this.app.closePort({ silenceSnackbar: true });
       } else if (this.app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
         this.app.stopWaitingToReopenPort();
       }
     }
-    console.log('Port closed.');
     // Update the current app config from the provided profile,
     // and then save this new app config
     this.appData.currentAppConfig = JSON.parse(JSON.stringify(profile.rootConfig));
