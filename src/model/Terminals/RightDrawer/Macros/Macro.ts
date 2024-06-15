@@ -98,7 +98,7 @@ export class Macro {
 
     try {
       // TODO: Fix hardcoded \n
-      this.dataToBytes();
+      this.dataToTxSequence();
       this.errorMsg = '';
     } catch (e) {
       if (e instanceof Error) {
@@ -125,7 +125,7 @@ export class Macro {
    * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
    * @returns The Uint8Array representation of the data.
    */
-  dataToBytes = (): TxSequence => {
+  dataToTxSequence = (): TxSequence => {
     let txSequence = new TxSequence();
     if (this.dataType === MacroDataType.ASCII) {
       // Replace all instances of LF with the newLinesChar
@@ -139,11 +139,7 @@ export class Macro {
       // Loop through each line
       let processedStr = '';
       for (let i = 0; i < lines.length; i++) {
-        // If we are sending the "on enter" sequence for every new line in the text box, then we need to replace
-        // all new lines with the newLineReplacementChar
-        if (i !== 0 && this.sendOnEnterValueForEveryNewLineInTextBox) {
-          processedStr += this.getNewLineReplacementStr();
-        }
+
         // Add the line, parsing as JSON if asked for
         // This will convert all literal "\r" and "\n" to actual CR and LF characters
         // (among others like \t).
@@ -156,6 +152,12 @@ export class Macro {
           }
         } else {
           processedStr += lines[i];
+        }
+
+        // Check if we are sending the "on enter" sequence at the end of every line in the text
+        // and add it if needed
+        if (this.sendOnEnterValueForEveryNewLineInTextBox) {
+          processedStr += this.getNewLineReplacementStr();
         }
       }
 
@@ -208,30 +210,6 @@ export class Macro {
     } else {
       throw new Error("Invalid data type");
     }
-
-
-    //   // Remove all spaces and new lines
-    //   let str = this.data;
-    //   str = str.replace(/ /g, '');
-    //   str = str.replace(/\n/g, '');
-
-    //   if (str.length === 0) {
-    //     throw new Error("Hex string is empty.");
-    //   }
-
-    //   if (str.length % 2 !== 0) {
-    //     throw new Error("Hex string must have an even number of characters.");
-    //   }
-
-    //   if (/[^a-fA-F0-9]/u.test(str)) {
-    //     throw new Error("Hex string must only contain: the numbers 0-9 and A-F (or a-f).");
-    //   }
-
-    //   // Convert hex string to Uint8Array
-    //   bytes = this._hexStringToUint8Array(str);
-    // } else {
-    //   throw new Error("Invalid data type");
-    // }
 
     return txSequence;
   }

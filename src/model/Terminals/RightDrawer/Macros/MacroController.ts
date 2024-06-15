@@ -100,7 +100,7 @@ export class MacroController {
     // Send the data to the serial port
     // If the user presses enter in the multiline text field, it will add a newline character
     // (0x0A or 10) to the string.
-    const outputData = macro.dataToBytes();
+    const outputData = macro.dataToTxSequence();
     for (let i = 0; i < outputData.steps.length; i++) {
       // Determine type of item in array. If data, write to port. If break, send a break.
       const currStep = outputData.steps[i];
