@@ -1,13 +1,14 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Modal, Radio, RadioGroup, TextField, Tooltip } from "@mui/material";
-import { observer } from "mobx-react-lite";
-import "react-resizable/css/styles.css";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import CloseIcon from "@mui/icons-material/Close";
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Tooltip } from '@mui/material';
+import { observer } from 'mobx-react-lite';
+import 'react-resizable/css/styles.css';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CloseIcon from '@mui/icons-material/Close';
 
-import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
-import { App } from "src/model/App";
-import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
-import { MacroDataType } from "src/model/Terminals/RightDrawer/Macros/Macro";
+import { MacroController } from 'src/model/Terminals/RightDrawer/Macros/MacroController';
+import { App } from 'src/model/App';
+import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { MacroDataType } from 'src/model/Terminals/RightDrawer/Macros/Macro';
+import { EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
 
 interface Props {
   app: App;
@@ -30,11 +31,11 @@ export default observer((props: Props) => {
       }}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
-      style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-      <div style={{ padding: "20px", backgroundColor: "#202020", width: "80%", maxHeight: "80%", display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div style={{ padding: '20px', backgroundColor: '#202020', width: '80%', maxHeight: '80%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <span>Macro Settings</span>
-        <div className="row" style={{ display: "flex", alignItems: 'start', gap: '30px' }}>
+        <div className="row" style={{ display: 'flex', alignItems: 'start', gap: '30px' }}>
           {/* ================================================================= */}
           {/* TREAT DATA AS */}
           {/* ================================================================= */}
@@ -47,11 +48,21 @@ export default observer((props: Props) => {
               }}
             >
               {/* ASCII */}
-              <Tooltip title="Treat the data as ASCII." placement="right" arrow>
+              <Tooltip
+                title="Treat the data as ASCII."
+                placement="right"
+                arrow
+                enterDelay={500}
+              >
                 <FormControlLabel value={MacroDataType.ASCII} control={<Radio data-testid={'macro-data-type-ascii-rb'} />} label="ASCII" />
               </Tooltip>
               {/* HEX */}
-              <Tooltip title="Treat the data as HEX." placement="right" arrow>
+              <Tooltip
+                title="Treat the data as HEX."
+                placement="right"
+                arrow
+                enterDelay={500}
+              >
                 <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
@@ -64,6 +75,7 @@ export default observer((props: Props) => {
             <Tooltip
               title='If enabled, and the data type is ASCII, the text will be processed for escape characters (by calling JSON.parse()). This means you can use things like "\n" to insert a LF character (0x0A) and "\r" to insert a CR character (0x0D).'
               arrow
+              enterDelay={500}
             >
               <FormControlLabel
                 disabled={macro.dataType !== MacroDataType.ASCII}
@@ -73,10 +85,10 @@ export default observer((props: Props) => {
                     onChange={(e) => {
                       macro.setProcessEscapeChars(e.target.checked);
                     }}
-                    data-testid='macro-process-escape-chars-cb'
+                    data-testid="macro-process-escape-chars-cb"
                   />
                 }
-                label='Process escape chars (\r, \n, \t, e.t.c.)'
+                label="Process escape chars (\r, \n, \t, e.t.c.)"
               />
             </Tooltip>
             {/* ================================================================= */}
@@ -85,9 +97,9 @@ export default observer((props: Props) => {
             <Tooltip
               title='If enabled, every time a new line is encountered in this text box it will be replaced with the "On Enter" sequence set in the TX settings. This is useful if you want an "Enter" key press to behave to same in this text box as it would if pressed in the terminal.'
               arrow
+              enterDelay={500}
             >
               <FormControlLabel
-                disabled={macro.dataType !== MacroDataType.ASCII}
                 control={
                   <Checkbox
                     checked={macro.sendOnEnterValueForEveryNewLineInTextBox}
@@ -97,6 +109,60 @@ export default observer((props: Props) => {
                   />
                 }
                 label='Send "On Enter" value for every new line in text box'
+              />
+            </Tooltip>
+            {/* ================================================================= */}
+            {/* ENTER KEY PRESS BEHAVIOR */}
+            {/* ================================================================= */}
+            <Tooltip
+              title={
+                <div>
+                  What to send at the end of every line in the macro data text box, if the above checkbox is ticked.<br />
+                  <br />
+                  This is the same setting as in the TX Settings view.
+                </div>
+              }
+              arrow
+              placement="right"
+              enterDelay={500}
+            >
+              <FormControl sx={{ m: 1, minWidth: 160 }} size="small" disabled={!macro.sendOnEnterValueForEveryNewLineInTextBox}>
+                <InputLabel>On Enter Value</InputLabel>
+                <Select
+                  value={app.settings.txSettings.enterKeyPressBehavior}
+                  onChange={(e) => {
+                    app.settings.txSettings.setEnterKeyPressBehavior(e.target.value as EnterKeyPressBehavior);
+                  }}
+                >
+                  {Object.values(EnterKeyPressBehavior).map((item) => {
+                    return (
+                      <MenuItem key={item} value={item}>
+                        {item}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ================================================================= */}
+            {/* SEND BREAK AT END OF EVERY LINE OF HEX */}
+            {/* ================================================================= */}
+            <Tooltip
+              title='.'
+              arrow
+              enterDelay={500}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={macro.sendBreakAtEndOfEveryLineOfHex}
+                    onChange={(e) => {
+                      macro.setSendBreakAtEndOfEveryLineOfHex(e.target.checked);
+                    }}
+                  />
+                }
+                label='Send the break signal at the end of every line of hex.'
+                disabled={macro.dataType !== MacroDataType.HEX}
               />
             </Tooltip>
           </div>
@@ -130,21 +196,21 @@ export default observer((props: Props) => {
             minRows={10}
             value={macro.data}
             helperText={macro.errorMsg}
-            error={macro.errorMsg !== ""}
+            error={macro.errorMsg !== ''}
             onChange={(e) => macro.setData(e.target.value)}
             onKeyDown={(e) => {
               e.stopPropagation(); // Don't want the global keydown event to trigger
             }}
           />
         </Tooltip>
-        <div className="button-row" style={{ display: "flex", justifyContent: "end", alignItems: "center", gap: "10px" }}>
+        <div className="button-row" style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', gap: '10px' }}>
           <Button
             variant="contained"
             aria-label="send-macro-data"
             startIcon={<ArrowForwardIcon />}
             disabled={app.portState !== PortState.OPENED || !macro.canSend}
-            onClick={() => {
-              macroController.send(macro);
+            onClick={async () => {
+              await macroController.send(macro);
             }}
           >
             Send

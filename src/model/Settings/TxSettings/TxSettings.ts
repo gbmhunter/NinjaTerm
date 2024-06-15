@@ -2,10 +2,10 @@ import { makeAutoObservable } from 'mobx';
 import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
 
 export enum EnterKeyPressBehavior {
-  SEND_LF,
-  SEND_CR,
-  SEND_CRLF,
-  SEND_BREAK, // Send the break signal (not a character)
+  SEND_LF = 'Send LF',
+  SEND_CR = 'Send CR',
+  SEND_CRLF = 'Send CRLF',
+  SEND_BREAK = 'Send break', // Send the break signal (not a character)
 }
 
 export enum BackspaceKeyPressBehavior {

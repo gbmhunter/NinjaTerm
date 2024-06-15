@@ -13,6 +13,37 @@ export class MacroConfig {
   data = '';
   processEscapeChars = true;
   sendOnEnterValueForEveryNewLineInTextBox = true;
+  sendBreakAtEndOfEveryLineOfHex = false;
+}
+
+function concatenate(resultConstructor: any, ...arrays: any[]) {
+  let totalLength = 0;
+  for (const arr of arrays) {
+      totalLength += arr.length;
+  }
+  const result = new resultConstructor(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+      result.set(arr, offset);
+      offset += arr.length;
+  }
+  return result;
+}
+
+export class TxStepData {
+  data: Uint8Array;
+
+  constructor(data: Uint8Array) {
+    this.data = data;
+  }
+}
+
+export class TxStepBreak {
+
+}
+
+export class TxSequence {
+  steps: (TxStepData | TxStepBreak)[] = [];
 }
 
 export class Macro {
@@ -26,8 +57,13 @@ export class Macro {
 
   sendOnEnterValueForEveryNewLineInTextBox: boolean = true;
 
+  sendBreakAtEndOfEveryLineOfHex: boolean = false;
+
   errorMsg: string = '';
 
+  /**
+   * Callback function which is passed to the constructor.
+   */
   getNewLineReplacementStr: () => string;
 
   onChange: (() => void) | null;
@@ -89,8 +125,8 @@ export class Macro {
    * @param newLineReplacementChar Ignored if the data type is HEX. If the data type is ASCII, this string will replace all instances of LF in the data.
    * @returns The Uint8Array representation of the data.
    */
-  dataToBytes = (): Uint8Array => {
-    let bytes;
+  dataToBytes = (): TxSequence => {
+    let txSequence = new TxSequence();
     if (this.dataType === MacroDataType.ASCII) {
       // Replace all instances of LF with the newLinesChar
       // NOTE: This has to be done before JSON.parse() is called below, otherwise the LF that
@@ -124,32 +160,80 @@ export class Macro {
       }
 
       // Convert to Uint8Array
-      bytes = stringToUint8Array(processedStr);
+      let txStepData = new TxStepData(stringToUint8Array(processedStr));
+      txSequence.steps.push(txStepData);
     } else if (this.dataType === MacroDataType.HEX) {
-      // Remove all spaces and new lines
-      let str = this.data;
-      str = str.replace(/ /g, '');
-      str = str.replace(/\n/g, '');
-
-      if (str.length === 0) {
-        throw new Error("Hex string is empty.");
+      // If "sendEnterValueForEveryNewLineInTextBox" is true, then we need to parse the hex
+      // per line
+      let linesOfHex;
+      if (this.sendBreakAtEndOfEveryLineOfHex) {
+        // Split the string into lines, since we need to send break signals
+        // between each line
+        linesOfHex = this.data.split('\n');
+      } else {
+        // Treat the entire string as one hex string since no
+        // break signals are needed
+        linesOfHex = [this.data];
       }
 
-      if (str.length % 2 !== 0) {
-        throw new Error("Hex string must have an even number of characters.");
-      }
+      for (let i = 0; i < linesOfHex.length; i++) {
+        // Remove all spaces and new lines. If break signals at the end of every line
+        // is disabled, there might be new lines here, and we just ignore them along
+        // with all spaces.
+        let str = linesOfHex[i];
+        str = str.replace(/ /g, '');
+        str = str.replace(/\n/g, '');
 
-      if (/[^a-fA-F0-9]/u.test(str)) {
-        throw new Error("Hex string must only contain: the numbers 0-9 and A-F (or a-f).");
-      }
+        if (str.length === 0) {
+          throw new Error("Hex string is empty.");
+        }
 
-      // Convert hex string to Uint8Array
-      bytes = this._hexStringToUint8Array(str);
+        if (str.length % 2 !== 0) {
+          throw new Error("Hex string must have an even number of characters.");
+        }
+
+        if (/[^a-fA-F0-9]/u.test(str)) {
+          throw new Error("Hex string must only contain: the numbers 0-9 and A-F (or a-f).");
+        }
+
+        // Convert hex string to Uint8Array
+        let txStepData = new TxStepData(this._hexStringToUint8Array(str));
+        txSequence.steps.push(txStepData);
+
+        if (this.sendBreakAtEndOfEveryLineOfHex) {
+          // Add a break signal
+          txSequence.steps.push(new TxStepBreak());
+        }
+      }
     } else {
       throw new Error("Invalid data type");
     }
 
-    return bytes;
+
+    //   // Remove all spaces and new lines
+    //   let str = this.data;
+    //   str = str.replace(/ /g, '');
+    //   str = str.replace(/\n/g, '');
+
+    //   if (str.length === 0) {
+    //     throw new Error("Hex string is empty.");
+    //   }
+
+    //   if (str.length % 2 !== 0) {
+    //     throw new Error("Hex string must have an even number of characters.");
+    //   }
+
+    //   if (/[^a-fA-F0-9]/u.test(str)) {
+    //     throw new Error("Hex string must only contain: the numbers 0-9 and A-F (or a-f).");
+    //   }
+
+    //   // Convert hex string to Uint8Array
+    //   bytes = this._hexStringToUint8Array(str);
+    // } else {
+    //   throw new Error("Invalid data type");
+    // }
+
+    return txSequence;
   }
 
   /**
@@ -182,6 +266,7 @@ export class Macro {
     this.dataType = config.dataType;
     this.processEscapeChars = config.processEscapeChars;
     this.sendOnEnterValueForEveryNewLineInTextBox = config.sendOnEnterValueForEveryNewLineInTextBox;
+    this.sendBreakAtEndOfEveryLineOfHex = config.sendBreakAtEndOfEveryLineOfHex
   }
 
   toConfig = (): MacroConfig => {
@@ -192,6 +277,7 @@ export class Macro {
       dataType: this.dataType,
       processEscapeChars: this.processEscapeChars,
       sendOnEnterValueForEveryNewLineInTextBox: this.sendOnEnterValueForEveryNewLineInTextBox,
+      sendBreakAtEndOfEveryLineOfHex: this.sendBreakAtEndOfEveryLineOfHex,
     };
   }
 
@@ -211,6 +297,16 @@ export class Macro {
 
   setSendOnEnterValueForEveryNewLineInTextBox(allow: boolean) {
     this.sendOnEnterValueForEveryNewLineInTextBox = allow;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setSendBreakAtEndOfEveryLineOfHex(allow: boolean) {
+    this.sendBreakAtEndOfEveryLineOfHex = allow;
+    // This could change the validation status, need to
+    // re-validate
+    this.validateData();
     if (this.onChange) {
       this.onChange();
     }

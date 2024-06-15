@@ -1,14 +1,17 @@
 import { expect, test, describe } from 'vitest';
 
-import { Macro, MacroDataType } from './Macro';
+import { Macro, MacroDataType, TxStepData } from './Macro';
 
 describe('macro tests', () => {
 
   test('basic ascii to bytes', () => {
     let macro = new Macro('M1', () => '\n');
     macro.setData('a');
-    const bytes = macro.dataToBytes();
-    expect(bytes).toStrictEqual(Uint8Array.from([97]));
+    const txSequence = macro.dataToBytes();
+    expect(txSequence.steps.length).toBe(1);
+    let step = txSequence.steps[0] as TxStepData;
+    expect(step).toBeInstanceOf(TxStepData);
+    expect(step.data).toStrictEqual(Uint8Array.from([97]));
   });
 
   test('new line converted to \n', () => {

@@ -72,8 +72,8 @@ export default observer((props: Props) => {
             size="small"
             style={{ padding: "1px" }}
             disabled={app.portState !== PortState.OPENED || !macro.canSend}
-            onClick={() => {
-              macroController.send(macro);
+            onClick={async () => {
+              await macroController.send(macro);
             }}
             data-testid={`macro-${macroIdx}-send-button`}
           >
