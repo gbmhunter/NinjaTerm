@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Switched from a CJS to ESM build in vite. CJS build is deprecated. See https://vitejs.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more info.
+
 ## [4.18.0] - 2024-06-16
 
 ### Added
@@ -25,6 +29,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improved the way app data is stored in local storage.
 - Snackbar message when profile is loaded now tells you if already connected port matches the one specified in the profile.
 - Active profile name is updated when the app state is saved to a profile.
+
+### Fixes
+
+- Fixes bug present in v4.17.x where the app would crash relatively often when navigating back to the terminal view from the settings view. This was due to some tooltips containing buttons that were sometimes disabled, without a wrapper div around them.
 
 ## [4.17.1] - 2024-06-11
 
