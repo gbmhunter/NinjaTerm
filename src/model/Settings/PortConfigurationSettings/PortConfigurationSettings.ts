@@ -60,6 +60,33 @@ export class PortConfigurationConfigV2 {
   reopenSerialPortIfUnexpectedlyClosed = true;
 }
 
+export class PortConfigurationConfigV3 {
+  /**
+   * Increment this version number if you need to update this data in this class.
+   * This will cause the app to ignore whatever is in local storage and use the defaults,
+   * updating to this new version.
+   */
+  version = 3;
+
+  baudRate = 115200;
+
+  numDataBits = 8;
+
+  parity = Parity.NONE;
+
+  stopBits: StopBits = 1;
+
+  flowControl = FlowControl.NONE;
+
+  connectToSerialPortAsSoonAsItIsSelected = true;
+
+  resumeConnectionToLastSerialPortOnStartup = true;
+
+  reopenSerialPortIfUnexpectedlyClosed = true;
+
+  allowSettingsChangesWhenOpen = false;
+}
+
 export default class PortConfiguration {
 
   app: App
@@ -178,18 +205,6 @@ export default class PortConfiguration {
 
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
-    //===============================================
-    // UPGRADE PATH
-    //===============================================
-    const latestVersion = new PortConfigurationConfigV2().version;
-    if (configToLoad.version === latestVersion) {
-      // Do nothing
-    } else {
-      console.log(`Out-of-date config version ${configToLoad.version} found.` +
-                    ` Updating to version ${latestVersion}.`);
-      this._saveConfig();
-      configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
-    }
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
@@ -201,6 +216,7 @@ export default class PortConfiguration {
     this.connectToSerialPortAsSoonAsItIsSelected = configToLoad.connectToSerialPortAsSoonAsItIsSelected;
     this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
     this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
+    this.allowSettingsChangesWhenOpen = configToLoad.allowSettingsChangesWhenOpen;
 
     this.setBaudRateInputValue(this.baudRate.toString());
   };
@@ -216,6 +232,7 @@ export default class PortConfiguration {
     config.connectToSerialPortAsSoonAsItIsSelected = this.connectToSerialPortAsSoonAsItIsSelected;
     config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
     config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
+    config.allowSettingsChangesWhenOpen = this.allowSettingsChangesWhenOpen;
 
     this.profileManager.saveAppData();
   };
