@@ -27,20 +27,20 @@ import {
   FlowControl,
 } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
-import styles from './PortConfigurationSettingsView.module.css';
+import styles from './PortSettingsView.module.css';
 
 interface Props {
   app: App;
 }
 
-function PortConfigurationView(props: Props) {
+function PortSettingsView(props: Props) {
   const { app } = props;
 
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <div style={{ height: '20px' }}></div>
 
-      <Box display="flex" flexDirection="row">
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {/* ============================================================== */}
         {/* BAUD RATE */}
         {/* ============================================================== */}
@@ -156,7 +156,7 @@ function PortConfigurationView(props: Props) {
             </Select>
           </FormControl>
         </Tooltip>
-      </Box>
+      </div>
 
       {/* ============================================================== */}
       {/* FLOW CONTROL */}
@@ -273,7 +273,7 @@ function PortConfigurationView(props: Props) {
 
       <div style={{ height: '20px' }}></div>
 
-      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', gap: '20px' }}>
+      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
         {/* =============================================================== */}
         {/* SELECT PORT BUTTON */}
         {/* =============================================================== */}
@@ -350,4 +350,4 @@ function PortConfigurationView(props: Props) {
   );
 }
 
-export default observer(PortConfigurationView);
+export default observer(PortSettingsView);
