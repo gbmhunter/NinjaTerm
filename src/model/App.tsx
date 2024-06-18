@@ -133,7 +133,7 @@ export class App {
     this.version = packageDotJson['version'];
 
     this.profileManager = new ProfileManager(this);
-    this.settings = new Settings(this.profileManager, this.fakePortController);
+    this.settings = new Settings(this);
 
     this.snackbar = new Snackbar();
 

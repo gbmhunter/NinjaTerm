@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 
 import { DisplaySettingsConfig } from '../Settings/DisplaySettings/DisplaySettings';
 import { GeneralSettingsConfig } from '../Settings/GeneralSettings/GeneralSettings';
-import { PortConfigurationConfig, PortState } from '../Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortConfigurationConfigV2, PortState } from '../Settings/PortConfigurationSettings/PortConfigurationSettings';
 import { RxSettingsConfig } from '../Settings/RxSettings/RxSettings';
 import { TxSettingsConfig } from '../Settings/TxSettings/TxSettings';
 import { MacroControllerConfig } from '../Terminals/RightDrawer/Macros/MacroController';
@@ -29,7 +29,7 @@ export class RootConfig {
   lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
 
   settings = {
-    portSettings: new PortConfigurationConfig(),
+    portSettings: new PortConfigurationConfigV2(),
     txSettings: new TxSettingsConfig(),
     rxSettings: new RxSettingsConfig(),
     displaySettings: new DisplaySettingsConfig(),
