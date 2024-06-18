@@ -1,19 +1,10 @@
 import { makeAutoObservable } from "mobx";
+import { MacroDataV1 } from "src/model/AppDataManager/DataClasses/MacroData";
 import { stringToUint8Array } from 'src/model/Util/Util';
 
 export enum MacroDataType {
   ASCII = "ASCII",
   HEX = "HEX",
-}
-
-export class MacroConfig {
-  version = 1;
-  name = '';
-  dataType = MacroDataType.ASCII;
-  data = '';
-  processEscapeChars = true;
-  sendOnEnterValueForEveryNewLineInTextBox = false;
-  sendBreakAtEndOfEveryLineOfHex = false;
 }
 
 export class TxStepData {
@@ -224,7 +215,7 @@ export class Macro {
     return this.data.length !== 0 && this.errorMsg === '';
   }
 
-  loadConfig = (config: MacroConfig) => {
+  loadConfig = (config: MacroDataV1) => {
     this.name = config.name;
     this.data = config.data;
     this.dataType = config.dataType;
@@ -233,7 +224,7 @@ export class Macro {
     this.sendBreakAtEndOfEveryLineOfHex = config.sendBreakAtEndOfEveryLineOfHex
   }
 
-  toConfig = (): MacroConfig => {
+  toConfig = (): MacroDataV1 => {
     return {
       version: 1,
       name: this.name,

@@ -6,7 +6,7 @@ import { makeAutoObservable } from 'mobx';
 import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
-import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
+import PortSettings from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfileSettings/ProfileSettings';
@@ -31,7 +31,7 @@ export class Settings {
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
-  portConfiguration: PortConfiguration;
+  portConfiguration: PortSettings;
 
   txSettings: TxSettings;
 
@@ -52,7 +52,7 @@ export class Settings {
   constructor(app: App) {
     this.app = app;
 
-    this.portConfiguration = new PortConfiguration(this.app);
+    this.portConfiguration = new PortSettings(this.app);
     this.txSettings = new TxSettings(this.app.profileManager);
     this.rxSettings = new RxSettings(this.app.profileManager);
     this.displaySettings = new DisplaySettings(this.app.profileManager);

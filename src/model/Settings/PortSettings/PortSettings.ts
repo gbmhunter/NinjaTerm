@@ -35,59 +35,7 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
-export class PortConfigurationConfigV2 {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 2;
-
-  baudRate = 115200;
-
-  numDataBits = 8;
-
-  parity = Parity.NONE;
-
-  stopBits: StopBits = 1;
-
-  flowControl = FlowControl.NONE;
-
-  connectToSerialPortAsSoonAsItIsSelected = true;
-
-  resumeConnectionToLastSerialPortOnStartup = true;
-
-  reopenSerialPortIfUnexpectedlyClosed = true;
-}
-
-export class PortConfigurationConfigV3 {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 3;
-
-  baudRate = 115200;
-
-  numDataBits = 8;
-
-  parity = Parity.NONE;
-
-  stopBits: StopBits = 1;
-
-  flowControl = FlowControl.NONE;
-
-  connectToSerialPortAsSoonAsItIsSelected = true;
-
-  resumeConnectionToLastSerialPortOnStartup = true;
-
-  reopenSerialPortIfUnexpectedlyClosed = true;
-
-  allowSettingsChangesWhenOpen = false;
-}
-
-export default class PortConfiguration {
+export default class PortSettings {
 
   app: App
   profileManager: AppDataManager;
@@ -244,7 +192,7 @@ export default class PortConfiguration {
    * @returns The short hand serial port config for displaying to the user.
    */
   get shortSerialConfigName() {
-    return PortConfiguration.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+    return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
   }
 
   static computeShortSerialConfigName(baudRate: number, numDataBits: number, parity: Parity, stopBits: StopBits) {

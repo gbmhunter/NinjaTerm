@@ -37,7 +37,7 @@ import {
   PortState,
   STOP_BIT_OPTIONS,
   StopBits,
-} from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+} from 'src/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 
 import { SettingsCategories } from 'src/model/Settings/Settings';

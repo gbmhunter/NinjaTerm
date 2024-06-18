@@ -8,7 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import ProfilesSettings from 'src/model/Settings/ProfileSettings/ProfileSettings';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import PortConfigurationSettings from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import PortConfigurationSettings from 'src/model/Settings/PortSettings/PortSettings';
 import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 
 interface Props {

@@ -1,9 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 
-import { PortConfigurationConfigV2, PortConfigurationConfigV3, PortState } from '../Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
-import { RightDrawerConfig } from '../Terminals/RightDrawer/RightDrawer';
 import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
 import { ProfileV3 } from './DataClasses/Profile';
 

@@ -1,11 +1,11 @@
-import { MacroControllerConfig } from "src/model/Terminals/RightDrawer/Macros/MacroController";
-import { RightDrawerConfig } from "src/model/Terminals/RightDrawer/RightDrawer";
-import { LastUsedSerialPort } from "../AppDataManager";
-import { TxSettingsConfig } from "src/model/Settings/TxSettings/TxSettings";
-import { RxSettingsConfig } from "src/model/Settings/RxSettings/RxSettings";
-import { DisplaySettingsConfig } from "src/model/Settings/DisplaySettings/DisplaySettings";
-import { GeneralSettingsConfig } from "src/model/Settings/GeneralSettings/GeneralSettings";
-import { PortConfigurationConfigV2, PortConfigurationConfigV3 } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import { RightDrawerConfig } from 'src/model/Terminals/RightDrawer/RightDrawer';
+import { LastUsedSerialPort } from '../AppDataManager';
+import { PortSettingsDataV2, PortSettingsDataV3 } from './PortSettingsData';
+import { DisplaySettingsDataV1 } from './DisplaySettingsData';
+import { RxSettingsDataV1 } from './RxSettingsData';
+import { TxSettingsDataV1 } from './TxSettingsData';
+import { GeneralSettingsConfig } from './GeneralSettingsData';
+import { MacroControllerDataV1 } from './MacroControllerData';
 
 /**
  * Everything in this class must be POD (plain old data) and serializable to JSON.
@@ -14,17 +14,17 @@ export class RootConfigV2 {
   version = 2;
 
   terminal = {
-    macroController: new MacroControllerConfig(),
+    macroController: new MacroControllerDataV1(),
     rightDrawer: new RightDrawerConfig(),
   };
 
   lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
 
   settings = {
-    portSettings: new PortConfigurationConfigV2(),
-    txSettings: new TxSettingsConfig(),
-    rxSettings: new RxSettingsConfig(),
-    displaySettings: new DisplaySettingsConfig(),
+    portSettings: new PortSettingsDataV2(),
+    txSettings: new TxSettingsDataV1(),
+    rxSettings: new RxSettingsDataV1(),
+    displaySettings: new DisplaySettingsDataV1(),
     generalSettings: new GeneralSettingsConfig(),
   };
 }
@@ -36,17 +36,17 @@ export class RootConfigV3 {
   version = 3;
 
   terminal = {
-    macroController: new MacroControllerConfig(),
+    macroController: new MacroControllerDataV1(),
     rightDrawer: new RightDrawerConfig(),
   };
 
   lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
 
   settings = {
-    portSettings: new PortConfigurationConfigV3(),
-    txSettings: new TxSettingsConfig(),
-    rxSettings: new RxSettingsConfig(),
-    displaySettings: new DisplaySettingsConfig(),
+    portSettings: new PortSettingsDataV3(),
+    txSettings: new TxSettingsDataV1(),
+    rxSettings: new RxSettingsDataV1(),
+    displaySettings: new DisplaySettingsDataV1(),
     generalSettings: new GeneralSettingsConfig(),
   };
 }

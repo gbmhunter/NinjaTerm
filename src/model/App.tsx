@@ -13,7 +13,7 @@ import Snackbar from './Snackbar/Snackbar';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';

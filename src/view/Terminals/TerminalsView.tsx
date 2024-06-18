@@ -24,7 +24,7 @@ import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 
 import { App, PortType } from 'src/model/App';
-import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';

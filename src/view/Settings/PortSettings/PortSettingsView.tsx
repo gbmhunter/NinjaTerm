@@ -25,7 +25,7 @@ import {
   STOP_BIT_OPTIONS,
   StopBits,
   FlowControl,
-} from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+} from 'src/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
 

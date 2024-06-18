@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import { MacroController } from 'src/model/Terminals/RightDrawer/Macros/MacroController';
 import { App } from 'src/model/App';
-import { PortState } from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import { MacroDataType } from 'src/model/Terminals/RightDrawer/Macros/Macro';
 import { EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
 import BorderedSection from 'src/view/Components/BorderedSection';
