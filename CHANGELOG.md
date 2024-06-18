@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added the ability to modify port settings whilst the port is open (port is quickly disconnected and reconnected with new settings).
+
 ### Changed
 
 - Switched from a CJS to ESM build in vite. CJS build is deprecated. See https://vitejs.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more info.

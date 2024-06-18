@@ -57,20 +57,25 @@ function PortConfigurationView(props: Props) {
                 label="Baud rate"
                 error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
                 helperText={app.settings.portConfiguration.baudRateErrorMsg}
-                onKeyDown={(e) => {
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    // Apply baud rate
+                    await app.settings.portConfiguration.setBaudRate();
+                  }
+                  // Prevent the global keydown event from being triggered
                   e.stopPropagation();
-                }} // Prevents the global keydown event from being triggered
+                }}
+                onBlur={async () => {
+                  // Apply baud rate
+                  await app.settings.portConfiguration.setBaudRate();
+                }}
               />
             )}
-            disabled={app.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
             sx={{ m: 1, width: 160 }}
             size="small"
-            onChange={(event: any, newValue: string | null) => {
-              console.log('onChange() called. newValue: ', newValue);
-            }}
             inputValue={app.settings.portConfiguration.baudRateInputValue}
             onInputChange={(event, newInputValue) => {
-              console.log('newInputValue: ', newInputValue);
               app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
             }}
           />
@@ -84,7 +89,7 @@ function PortConfigurationView(props: Props) {
             <Select
               value={app.settings.portConfiguration.numDataBits}
               label="Num. Data Bits"
-              disabled={app.portState !== PortState.CLOSED}
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
               onChange={(e) => {
                 app.settings.portConfiguration.setNumDataBits(e.target.value as number);
               }}
@@ -112,7 +117,7 @@ function PortConfigurationView(props: Props) {
             <Select
               value={app.settings.portConfiguration.parity}
               label="Parity"
-              disabled={app.portState !== PortState.CLOSED}
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
               onChange={(e) => {
                 app.settings.portConfiguration.setParity(e.target.value as Parity);
               }}
@@ -136,7 +141,7 @@ function PortConfigurationView(props: Props) {
             <Select
               value={app.settings.portConfiguration.stopBits}
               label="Stop Bits"
-              disabled={app.portState !== PortState.CLOSED}
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
               onChange={(e) => {
                 app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
               }}
@@ -166,7 +171,7 @@ function PortConfigurationView(props: Props) {
           <Select
             value={app.settings.portConfiguration.flowControl}
             label="Parity"
-            disabled={app.portState !== PortState.CLOSED}
+            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
             onChange={(e) => {
               app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
             }}
@@ -188,7 +193,13 @@ function PortConfigurationView(props: Props) {
       {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
       {/* =============================================================== */}
       <Tooltip
-        title="Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again."
+        title={
+          <div>
+            Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
+            <br />
+            This setting is more relevant for the quick port settings in the right-hand drawer on the terminal view.
+          </div>
+        }
         enterDelay={500}
       >
         <FormControlLabel
