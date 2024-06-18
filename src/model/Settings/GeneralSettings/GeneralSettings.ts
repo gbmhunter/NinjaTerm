@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
+import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
 
 export class GeneralSettingsConfig {
   /**
@@ -14,12 +14,12 @@ export class GeneralSettingsConfig {
 }
 
 export default class RxSettings {
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
-  constructor(profileManager: ProfileManager) {
+  constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {

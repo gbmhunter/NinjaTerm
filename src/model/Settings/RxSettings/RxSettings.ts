@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
 import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
-import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
+import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
 
 export enum DataType {
   ASCII,
@@ -138,7 +138,7 @@ const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   /**
    * How to interpret the received data from the serial port.
@@ -190,7 +190,7 @@ export default class RxSettings {
   showWarningOnRxBreakSignal = true;
 
 
-  constructor(profileManager: ProfileManager) {
+  constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {

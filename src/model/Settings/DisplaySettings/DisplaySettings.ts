@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
 import { ApplyableNumberField } from "src/view/Components/ApplyableTextField";
-import { ProfileManager } from "src/model/ProfileManager/ProfileManager";
+import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -31,7 +31,7 @@ export class DisplaySettingsConfig {
 
 export default class DisplaySettings {
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   // 14px is a good default size for the terminal text
   charSizePx = new ApplyableNumberField("14", z.coerce.number().int().min(1));
@@ -47,7 +47,7 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-  constructor(profileManager: ProfileManager) {
+  constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this.charSizePx.setOnApplyChanged(() => {
       this._saveConfig();

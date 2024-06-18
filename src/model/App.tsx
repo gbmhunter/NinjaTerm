@@ -19,7 +19,7 @@ import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
-import { LastUsedSerialPort, ProfileManager } from './ProfileManager/ProfileManager';
+import { LastUsedSerialPort, AppDataManager } from './AppDataManager/AppDataManager';
 
 declare global {
   interface String {
@@ -115,7 +115,7 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   selectionController: SelectionController = new SelectionController();
 
@@ -132,7 +132,7 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.profileManager = new ProfileManager(this);
+    this.profileManager = new AppDataManager(this);
     this.settings = new Settings(this);
 
     this.snackbar = new Snackbar();

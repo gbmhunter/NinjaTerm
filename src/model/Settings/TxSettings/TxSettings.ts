@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
 export enum EnterKeyPressBehavior {
   SEND_LF = 'Send LF',
@@ -56,7 +56,7 @@ export class TxSettingsConfig {
 
 export default class DataProcessingSettings {
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
 
@@ -84,7 +84,7 @@ export default class DataProcessingSettings {
    */
   sendEscCharWhenAltKeyPressed = true;
 
-  constructor(profileManager: ProfileManager) {
+  constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {

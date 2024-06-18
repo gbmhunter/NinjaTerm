@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 
 export enum PortState {
@@ -90,7 +90,7 @@ export class PortConfigurationConfigV3 {
 export default class PortConfiguration {
 
   app: App
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   baudRateInputValue: string;
 

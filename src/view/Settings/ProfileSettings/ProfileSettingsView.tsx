@@ -7,12 +7,12 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import ProfilesSettings from 'src/model/Settings/ProfileSettings/ProfileSettings';
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import PortConfigurationSettings from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
 import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
 
 interface Props {
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
   profilesSettings: ProfilesSettings;
 }
 

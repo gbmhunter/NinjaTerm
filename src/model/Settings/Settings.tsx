@@ -10,7 +10,7 @@ import PortConfiguration from './PortConfigurationSettings/PortConfigurationSett
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfileSettings/ProfileSettings';
-import { ProfileManager } from '../ProfileManager/ProfileManager';
+import { AppDataManager } from '../AppDataManager/AppDataManager';
 import { App } from '../App';
 
 

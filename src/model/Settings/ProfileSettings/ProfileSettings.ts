@@ -2,10 +2,10 @@ import { GridRowSelectionModel } from '@mui/x-data-grid';
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
 export default class ProfilesSettings {
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   profileNameText = '';
   profileNameErrorMsg = '';
@@ -15,7 +15,7 @@ export default class ProfilesSettings {
    */
   selectedProfiles: GridRowSelectionModel = [];
 
-  constructor(profileManager: ProfileManager) {
+  constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     makeAutoObservable(this);
   }

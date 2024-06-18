@@ -1,134 +1,22 @@
 import { makeAutoObservable } from 'mobx';
 
-import { DisplaySettingsConfig } from '../Settings/DisplaySettings/DisplaySettings';
-import { GeneralSettingsConfig } from '../Settings/GeneralSettings/GeneralSettings';
 import { PortConfigurationConfigV2, PortConfigurationConfigV3, PortState } from '../Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { RxSettingsConfig } from '../Settings/RxSettings/RxSettings';
-import { TxSettingsConfig } from '../Settings/TxSettings/TxSettings';
-import { MacroControllerConfig } from '../Terminals/RightDrawer/Macros/MacroController';
 import { App } from '../App';
 import { VariantType } from 'notistack';
 import { RightDrawerConfig } from '../Terminals/RightDrawer/RightDrawer';
+import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
+import { ProfileV3 } from './DataClasses/Profile';
 
 export class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
   portState: PortState = PortState.CLOSED;
 }
 
-/**
- * Everything in this class must be POD (plain old data) and serializable to JSON.
- */
-export class RootConfigV2 {
-  version = 2;
-
-  terminal = {
-    macroController: new MacroControllerConfig(),
-    rightDrawer: new RightDrawerConfig(),
-  };
-
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
-
-  settings = {
-    portSettings: new PortConfigurationConfigV2(),
-    txSettings: new TxSettingsConfig(),
-    rxSettings: new RxSettingsConfig(),
-    displaySettings: new DisplaySettingsConfig(),
-    generalSettings: new GeneralSettingsConfig(),
-  };
-}
-
-/**
- * Everything in this class must be POD (plain old data) and serializable to JSON.
- */
-export class RootConfigV3 {
-  version = 3;
-
-  terminal = {
-    macroController: new MacroControllerConfig(),
-    rightDrawer: new RightDrawerConfig(),
-  };
-
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
-
-  settings = {
-    portSettings: new PortConfigurationConfigV3(),
-    txSettings: new TxSettingsConfig(),
-    rxSettings: new RxSettingsConfig(),
-    displaySettings: new DisplaySettingsConfig(),
-    generalSettings: new GeneralSettingsConfig(),
-  };
-}
-
-/**
- * This class represents all the data stored in a user profile. It is used to store use-specific
- * settings for the application (e.g. all the settings to talk to a particular
- * embedded device). The class is serializable to JSON.
- */
-export class ProfileV2 {
-  name: string = '';
-  rootConfig: RootConfigV2 = new RootConfigV2();
-
-  constructor(name: string) {
-    this.name = name;
-    makeAutoObservable(this);
-  }
-}
-
-export class ProfileV3 {
-  name: string = '';
-  rootConfig: RootConfigV3 = new RootConfigV3();
-
-  constructor(name: string) {
-    this.name = name;
-    makeAutoObservable(this);
-  }
-}
-
-/**
- * This class represents all the data that the app needs to store/load from
- * local storage (i.e. the root object). It must be serializable to JSON.
- */
-export class AppDataV1 {
-
-  version = 1;
-
-  profiles: ProfileV2[] = [];
-
-  /**
-   * Represents the current application configuration. This is saved regularly so that when the app reloads,
-   * it can restore the last known configuration.
-   */
-  currentAppConfig: RootConfigV2 = new RootConfigV2();
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-}
-
-export class AppDataV2 {
-
-  version = 2;
-
-  profiles: ProfileV3[] = [];
-
-  /**
-   * Represents the current application configuration. This is saved regularly so that when the app reloads,
-   * it can restore the last known configuration.
-   */
-  currentAppConfig: RootConfigV3 = new RootConfigV3();
-
-  constructor() {
-    this.profiles = [];
-    this.profiles.push(new ProfileV3('Default profile'));
-    makeAutoObservable(this);
-  }
-}
-
 type AppData = AppDataV2;
 
 const APP_DATA_STORAGE_KEY = 'appData';
 
-export class ProfileManager {
+export class AppDataManager {
   app: App;
 
   appData: AppDataV2 = new AppDataV2();
