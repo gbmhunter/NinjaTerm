@@ -170,8 +170,6 @@ export class App {
   }
 
   onLastAppliedProfileNameChanged = () => {
-    console.log('onLastAppliedProfileNameChanged() called. this.profileManager.lastAppliedProfileName=', this.profileManager.lastAppliedProfileName);
-
     // Set the title of the app to the last applied profile name
     document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
   };
