@@ -174,11 +174,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* NUM. DATA BITS */}
               {/* ============================================================== */}
-              <Tooltip
-                title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
-                placement="right"
-                enterDelay={500}
-              >
+              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right" enterDelay={500}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Num. data bits</InputLabel>
                   <Select
@@ -230,11 +226,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* STOP BITS */}
               {/* ============================================================== */}
-              <Tooltip
-                title="The num. of stop bits is the number of bits used to mark the end of the frame. &quot;1&quot; is the most common setting."
-                placement="right"
-                enterDelay={500}
-              >
+              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right" enterDelay={500}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Stop bits</InputLabel>
                   <Select
