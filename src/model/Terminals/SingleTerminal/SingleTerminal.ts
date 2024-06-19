@@ -1,8 +1,8 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, reaction } from "mobx";
+import { autorun, makeAutoObservable, reaction } from 'mobx';
 
-import TerminalRow from "../../../view/Terminals/SingleTerminal/TerminalRow";
-import TerminalChar from "../../../view/Terminals/SingleTerminal/SingleTerminalChar";
+import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
+import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
   CarriageReturnCursorBehavior,
   DataType,
@@ -14,10 +14,10 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
-} from "src/model/Settings/RxSettings/RxSettings";
-import DisplaySettings from "src/model/Settings/DisplaySettings/DisplaySettings";
-import { ListOnScrollProps } from "react-window";
-import { SelectionController, SelectionInfo } from "src/model/SelectionController/SelectionController";
+} from 'src/model/Settings/RxSettings/RxSettings';
+import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { ListOnScrollProps } from 'react-window';
+import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 
 const START_OF_CONTROL_GLYPHS = 0xe000;
 const START_OF_HEX_GLYPHS = 0xe100;
@@ -66,7 +66,7 @@ export default class SingleTerminal {
    * The filter text to apply to the terminal. If an empty string, no filtering is
    * applied.
    */
-  filterText: string = "";
+  filterText: string = '';
 
   /**
    * The array of terminal rows which should be included in the filtered view
@@ -150,7 +150,7 @@ export default class SingleTerminal {
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
           this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
         }
-        this.partialEscapeCode = "";
+        this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
         this.inIdleState = true;
@@ -168,7 +168,7 @@ export default class SingleTerminal {
 
     this.inIdleState = true;
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = "";
+    this.partialEscapeCode = '';
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
 
@@ -209,7 +209,7 @@ export default class SingleTerminal {
     // to the bottom
     // scrollUpdateWasRequested seems to be true if the list scrolls because of a programmatic call to
     // .scrollToItem(), false if it was because the user moves the mouse wheel
-    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == "forward" && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
+    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
       // User has scrolled to the end of the terminal, so lock the scroll position
       this.scrollLock = true;
       // this.rowToScrollLockTo = this.terminalRows.length - 1;
@@ -281,7 +281,7 @@ export default class SingleTerminal {
 
       const newLineBehavior = this.rxSettings.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
-      if (this.inIdleState && rxByte === "\n".charCodeAt(0)) {
+      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
         // If swallow is disabled, print the new line character. Do this before
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
@@ -308,7 +308,7 @@ export default class SingleTerminal {
           this._cursorDown(1);
           continue;
         } else {
-          throw Error("Invalid new line behavior. newLineBehavior=" + newLineBehavior);
+          throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
         }
       }
 
@@ -317,7 +317,7 @@ export default class SingleTerminal {
 
       const carriageReturnCursorBehavior = this.rxSettings.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
-      if (this.inIdleState && rxByte === "\r".charCodeAt(0)) {
+      if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
@@ -340,7 +340,7 @@ export default class SingleTerminal {
           this._cursorDown(1);
           continue;
         } else {
-          throw Error("Invalid carriage return cursor behavior. carriageReturnCursorBehavior: " + carriageReturnCursorBehavior);
+          throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
         }
       }
 
@@ -363,7 +363,7 @@ export default class SingleTerminal {
         // Add received char to partial escape code
         this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
-        if (this.partialEscapeCode === "\x1B[") {
+        if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
@@ -410,7 +410,8 @@ export default class SingleTerminal {
   }
 
   /**
-   * Parses a CSI sequence.
+   * Parses a CSI sequence. Should be called once all of the CSI sequence has been received.
+   *
    * @param ansiEscapeCode Must be in the form "ESC[<remaining data>". This function will validate
    *    the rest of the code, and perform actions on the terminal as required.
    */
@@ -420,12 +421,12 @@ export default class SingleTerminal {
     //============================================================
     // CUU Cursor Up
     //============================================================
-    if (lastChar === "A") {
+    if (lastChar === 'A') {
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       let numRowsToGoUp = parseInt(numberStr, 10);
       if (Number.isNaN(numRowsToGoUp)) {
@@ -433,15 +434,15 @@ export default class SingleTerminal {
         return;
       }
       this._cursorUp(numRowsToGoUp);
-    } else if (lastChar === "C") {
+    } else if (lastChar === 'C') {
       //============================================================
       // CUC - Cursor Forward
       //============================================================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       const numColsToGoRight = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoRight)) {
@@ -449,15 +450,15 @@ export default class SingleTerminal {
         return;
       }
       this._cursorRight(numColsToGoRight);
-    } else if (lastChar === "D") {
+    } else if (lastChar === 'D') {
       //============================================================
       // CUB Cursor Back
       //============================================================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       const numColsToGoLeft = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoLeft)) {
@@ -465,7 +466,7 @@ export default class SingleTerminal {
         return;
       }
       this._cursorLeft(numColsToGoLeft);
-    } else if (lastChar === "J") {
+    } else if (lastChar === 'J') {
       //============================================================
       // ED Erase in Display
       //============================================================
@@ -473,8 +474,8 @@ export default class SingleTerminal {
       // Extract number in the form ESC[nJ
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '0' (default)
-      if (numberStr === "") {
-        numberStr = "0";
+      if (numberStr === '') {
+        numberStr = '0';
       }
       const numberN = parseInt(numberStr, 10);
       if (Number.isNaN(numberN)) {
@@ -491,7 +492,7 @@ export default class SingleTerminal {
         currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
         // Add cursor char at current position
         const cursorChar = new TerminalChar();
-        cursorChar.char = " ";
+        cursorChar.char = ' ';
         cursorChar.forCursor = true;
         currRow.terminalChars.push(cursorChar);
         // The cursor has not changed row so we do not need to check if this row
@@ -506,7 +507,7 @@ export default class SingleTerminal {
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
-    } else if (lastChar === "m") {
+    } else if (lastChar === 'm') {
       // SGR
       // ==============================
       // console.log('Found m, select graphic rendition code');
@@ -519,11 +520,11 @@ export default class SingleTerminal {
       // Check if there is nothing between the ESC[ and the m, i.e.
       // the entire escape code was just ESC[m. In this case, treat
       // it the same as ESC[0m]
-      if (numbersAndSemicolons === "") {
-        numbersAndSemicolons = "0";
+      if (numbersAndSemicolons === '') {
+        numbersAndSemicolons = '0';
       }
       // Split into individual codes
-      const numberCodeStrings = numbersAndSemicolons.split(";");
+      const numberCodeStrings = numbersAndSemicolons.split(';');
       for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
         const numberCodeString = numberCodeStrings[idx];
         const numberCode = parseInt(numberCodeString, 10);
@@ -572,7 +573,7 @@ export default class SingleTerminal {
       this.partialNumberBuffer.push(rxByte);
 
       let numberAsBigInt = BigInt(0); // This is used for the new line on match feature
-      let numberStr = ""; // This is used for displaying the number in the terminal
+      let numberStr = ''; // This is used for displaying the number in the terminal
       //========================================================================
       // CREATE NUMBER PART OF STRING
       //========================================================================
@@ -592,7 +593,7 @@ export default class SingleTerminal {
           } else if (this.rxSettings.endianness === Endianness.BIG_ENDIAN) {
             byteIdx = idx;
           } else {
-            throw Error("Invalid endianness setting: " + this.rxSettings.endianness);
+            throw Error('Invalid endianness setting: ' + this.rxSettings.endianness);
           }
           let partialHexString = this.partialNumberBuffer[byteIdx].toString(16);
           partialHexString = partialHexString.padStart(2, '0');
@@ -605,7 +606,7 @@ export default class SingleTerminal {
         } else if (this.rxSettings.hexCase === HexCase.LOWERCASE) {
           numberStr = numberStr.toLowerCase();
         } else {
-          throw Error("Invalid hex case setting: " + this.rxSettings.hexCase);
+          throw Error('Invalid hex case setting: ' + this.rxSettings.hexCase);
         }
         numberAsBigInt = BigInt('0x' + numberStr);
         // "0x" is added later after the padding step if enabled
@@ -749,7 +750,7 @@ export default class SingleTerminal {
       // INVALID
       //============
       else {
-        throw Error("Invalid number type: " + this.rxSettings.numberType);
+        throw Error('Invalid number type: ' + this.rxSettings.numberType);
       }
       // console.log('Converted numberStr=', numberStr);
 
@@ -758,13 +759,13 @@ export default class SingleTerminal {
       //========================================================================
       if (this.rxSettings.padValues) {
         // If padding is set to automatic, pad to the largest possible value for the selected number type
-        let paddingChar = " ";
+        let paddingChar = ' ';
         if (this.rxSettings.paddingCharacter === PaddingCharacter.ZERO) {
-          paddingChar = "0";
+          paddingChar = '0';
         } else if (this.rxSettings.paddingCharacter === PaddingCharacter.WHITESPACE) {
-          paddingChar = " ";
+          paddingChar = ' ';
         } else {
-          throw Error("Invalid padding character setting: " + this.rxSettings.paddingCharacter);
+          throw Error('Invalid padding character setting: ' + this.rxSettings.paddingCharacter);
         }
         // If padding is set to automatic, pad to the largest possible value for the selected number type
         let numPaddingChars = this.rxSettings.numPaddingChars.appliedValue;
@@ -801,14 +802,14 @@ export default class SingleTerminal {
           } else if (this.rxSettings.numberType === NumberType.FLOAT64) {
             numPaddingChars = 6;
           } else {
-            throw Error("Invalid number type: " + this.rxSettings.numberType);
+            throw Error('Invalid number type: ' + this.rxSettings.numberType);
           }
         }
 
         // Handle negative numbers combined with zeroes padding by padding after the negative sign
         // (padding negative numbers with spaces is handled the same way as positive numbers, the padding
         // goes before the negative sign).
-        if (this.rxSettings.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === "-") {
+        if (this.rxSettings.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === '-') {
           numberStr = numberStr.slice(1);
           numPaddingChars -= 1; // Negative sign takes up one padding char
           numberStr = '-' + numberStr.padStart(numPaddingChars, paddingChar);
@@ -821,7 +822,7 @@ export default class SingleTerminal {
 
       // Add 0x if hex and setting is enabled
       if (this.rxSettings.numberType === NumberType.HEX && this.rxSettings.prefixHexValuesWith0x) {
-        numberStr = "0x" + numberStr;
+        numberStr = '0x' + numberStr;
       }
 
       //========================================================================
@@ -851,7 +852,7 @@ export default class SingleTerminal {
       // in the settings
       let insertNewLine = false;
       if (this.rxSettings.insertNewLineOnMatchedValue) {
-        const valueToInsertNewLineAsNum = BigInt('0x' +  this.rxSettings.newLineMatchValueAsHex.appliedValue);
+        const valueToInsertNewLineAsNum = BigInt('0x' + this.rxSettings.newLineMatchValueAsHex.appliedValue);
         if (numberAsBigInt == valueToInsertNewLineAsNum) {
           insertNewLine = true;
         }
@@ -933,7 +934,7 @@ export default class SingleTerminal {
       // If there is no character here, add one for cursor
       if (this.cursorPosition[1] === currRow.terminalChars.length) {
         const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = " ";
+        spaceTerminalChar.char = ' ';
         spaceTerminalChar.forCursor = true;
         currRow.terminalChars.push(spaceTerminalChar);
       }
@@ -977,7 +978,7 @@ export default class SingleTerminal {
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
         const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = " ";
+        newTerminalChar.char = ' ';
         // newTerminalChar.forCursor = true;
         newRow.terminalChars.push(newTerminalChar);
       }
@@ -1042,7 +1043,7 @@ export default class SingleTerminal {
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
         const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = " ";
+        newTerminalChar.char = ' ';
         newRow.terminalChars.push(newTerminalChar);
       }
     }
@@ -1092,7 +1093,7 @@ export default class SingleTerminal {
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
         terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
       } else {
-        throw Error("Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=" + nonVisibleCharDisplayBehavior);
+        throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
       }
     }
 
@@ -1132,7 +1133,7 @@ export default class SingleTerminal {
       }
     }
 
-    terminalChar.className = classList.join(" ");
+    terminalChar.className = classList.join(' ');
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position
@@ -1154,7 +1155,7 @@ export default class SingleTerminal {
       // Add space here is there is no text
       if (this.cursorPosition[1] === rowToInsertInto.terminalChars.length) {
         const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = " ";
+        spaceTerminalChar.char = ' ';
         spaceTerminalChar.forCursor = true;
         rowToInsertInto.terminalChars.push(spaceTerminalChar);
       }
@@ -1178,7 +1179,7 @@ export default class SingleTerminal {
     const terminalRow = new TerminalRow(this.uniqueRowIndexCount, false);
     this.uniqueRowIndexCount += 1;
     const terminalChar = new TerminalChar();
-    terminalChar.char = " ";
+    terminalChar.char = ' ';
     terminalChar.forCursor = true;
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
@@ -1216,7 +1217,7 @@ export default class SingleTerminal {
 
   _resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = "";
+    this.partialEscapeCode = '';
     this.inCSISequence = false;
   }
 
@@ -1337,7 +1338,7 @@ export default class SingleTerminal {
     }
     const row = this.terminalRows[rowIdx];
     const rowText = row.getText();
-    if (this.filterText === "") {
+    if (this.filterText === '') {
       // No filter text, so all rows pass
       return true;
     }
@@ -1365,7 +1366,7 @@ export default class SingleTerminal {
       // uniqueRowId. Begin search from the end of the array, as this is where
       // we'll be normally be doing these sorts of operations (e.g. it will be more
       // efficient most of the time)
-      console.log("Row is not in filtered rows, need to insert it at the correct location");
+      console.log('Row is not in filtered rows, need to insert it at the correct location');
       for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
         if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
           // Insert after this index
@@ -1397,5 +1398,5 @@ export default class SingleTerminal {
    */
   clearPartialNumberBuffer = () => {
     this.partialNumberBuffer = [];
-  }
+  };
 }
