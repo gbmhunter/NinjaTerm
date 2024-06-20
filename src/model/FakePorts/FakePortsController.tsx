@@ -309,6 +309,45 @@ export default class FakePortsController {
     );
 
     //=================================================================================
+    // erase in display, clear from start of screen to cursor (ESC[1J)
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'erase in display, clear from start of screen to cursor (ESC[1J) test',
+        'Sends data and then ESC[1J to clear from the start of screen to the cursor.',
+        () => {
+          let sendIdx = 0;
+
+          const intervalId = setInterval(() => {
+            let textToSend = '';
+            if (sendIdx < 50) {
+              textToSend = `Line ${sendIdx}\n`;
+            } else {
+              textToSend = '\x1b[1J';
+            }
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+
+            sendIdx += 1;
+            if (sendIdx === 51) {
+              sendIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
     // erase in display, clear entire screen slow test
     //=================================================================================
     this.fakePorts.push(

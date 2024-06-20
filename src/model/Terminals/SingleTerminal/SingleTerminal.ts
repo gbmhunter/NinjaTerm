@@ -522,14 +522,40 @@ export default class SingleTerminal {
         // Clear from cursor to end of screen. We assume this mean from cursor location to end
         // of all data
         this._clearDataFromCursorToEndOfScreen();
-      } else if (numberN == 2) {
+      } else if (numberN === 1) {
+        // Clear from cursor to start of screen
+        // User could be scrolled anywhere in the scrollback buffer, we don't want to
+        // consider the viewport. Rather, assume cursor is in the last N rows that
+        // would make up the viewport if scrolled to the bottom.
+        const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+        const numRowsInViewport = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+        // Find first row which would be considered part of the terminal if you
+        // excluded scrollback
+        const startRowIdx = this.terminalRows.length - numRowsInViewport;
+        // Make sure the cursor is not above the first row
+        if (this.cursorPosition[0] < startRowIdx) {
+          console.warn('Got ESC[1J (erase in display, from start of screen to cursor) escape code. Cursor is above the first row that would be considered part of the terminal if you excluded scrollback. Not erasing anything.');
+          return;
+        }
+        // Entirely clear all rows from the start row to the row with the cursor
+        for (let rowIdx = startRowIdx; rowIdx < this.cursorPosition[0]; rowIdx += 1) {
+          this.terminalRows[rowIdx].terminalChars = [];
+          this._addOrRemoveRowFromFilteredRows(rowIdx);
+        }
+        // Turns all chars into spaces on the row with the cursor up to the cursor position
+        const currRow = this.terminalRows[this.cursorPosition[0]];
+        for (let charIdx = 0; charIdx < this.cursorPosition[1]; charIdx += 1) {
+          currRow.terminalChars[charIdx].char = ' ';
+          currRow.terminalChars[charIdx].forCursor = false;
+          currRow.terminalChars[charIdx].style = '';
+        }
+      } else if (numberN === 2) {
         // Erase entire screen
         // User could be scrolled anywhere in the scrollback buffer, we don't want to just
         // clear the rows being displayed.
         // 1. Clear all data at or after cursor
         // 2. Move cursor down one row to new row
         // 3. Insert enough empty rows after row with cursor to fill the screen
-        // 4. Scroll so the cursor is at the top left of screen
         this._clearDataFromCursorToEndOfScreen();
         this._cursorDown(1);
         // Add empty rows to fill the screen
@@ -554,11 +580,9 @@ export default class SingleTerminal {
             }
           }
         }
-
-        // Set scroll position so cursor is at top left of screen
-        let scrollPos = (numRowsToAdd + 1)*rowHeight_px;
-        console.log('Calculating scrollPos=', scrollPos);
-        this.scrollPos = scrollPos;
+      } else if (numberN === 3) {
+        // Clear entire screen and delete all lines saved in the scrollback buffer
+        this.clear();
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
@@ -1242,7 +1266,7 @@ export default class SingleTerminal {
   }
 
   /**
-   * Clears all data from the terminal, clears any internal buffers, resets all styles, resets cursor position,
+   * Clears all data from the terminal (including scrollback), clears any internal buffers, resets all styles, resets cursor position,
    * and re-enables scroll lock.
    */
   clear() {
@@ -1465,6 +1489,14 @@ export default class SingleTerminal {
     const idx = this.filteredTerminalRows.indexOf(terminalRowToRemove);
     if (idx !== -1) {
       this.filteredTerminalRows.splice(idx, 1);
+    }
+  }
+
+  _addOrRemoveRowFromFilteredRows = (rowIdx: number) => {
+    if (this._doesRowPassFilter(rowIdx)) {
+      this._addToFilteredRows(this.terminalRows[rowIdx]);
+    } else {
+      this._removeFromFilteredRows(this.terminalRows[rowIdx]);
     }
   }
 

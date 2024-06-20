@@ -1,0 +1,12 @@
+.cursor {
+  /* line-height: 17px; */
+  /* margin-left: 3px; */
+  -webkit-animation: blink 0.8s infinite;
+  animation: blink 0.8s infinite;
+  /* width: 7px; */
+  /* height: 15px; */
+}
+
+h2 {
+  margin-bottom: 10px;
+}
