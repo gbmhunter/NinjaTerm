@@ -26,8 +26,6 @@ const START_OF_HEX_GLYPHS = 0xe100;
  * Represents a single terminal-style user interface.
  */
 export default class SingleTerminal {
-  // PASSED IN VARIABLES
-  //======================================================================
 
   id: string;
 
@@ -37,7 +35,8 @@ export default class SingleTerminal {
 
   onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null;
 
-  // OTHER VARIABLES
+  //======================================================================
+  // POSITION/SIZE VARIABLES
   //======================================================================
 
   // [ row_idx, col_idx ]
@@ -48,11 +47,20 @@ export default class SingleTerminal {
 
   rowToScrollLockTo: number;
 
+  /**
+   * The scroll position of the fixed size list. This is the number of pixels
+   * from the top of the terminal view.
+   *
+   * scrollPos + terminalViewHeightPx = totalTerminalRowsHeightPx
+   * where totalTerminalRowsHeightPx = numTerminalRows * (charSizePx + verticalRowPaddingPx)
+   */
   scrollPos: number;
 
   /*
    * The height of the terminal view in pixels. This does not include any padding,
    * i.e. it's the height that terminal rows will be packed into. Set by the UI.
+   *
+   * The fixed size list uses this state to set it's height.
    */
   terminalViewHeightPx: number = 0;
 
@@ -220,11 +228,34 @@ export default class SingleTerminal {
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
-    // console.log('scrollPos set to:', this.scrollPos);
+    console.log('scrollPos set to:', this.scrollPos);
   }
 
+  /**
+   * Designed to be called from the view whenever the terminal view height changes.
+   *
+   * @param terminalViewHeightPx The height of the terminal view in pixels.
+   */
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
+    console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
     this.terminalViewHeightPx = terminalViewHeightPx;
+  }
+
+  /**
+   * Calculates the start and end row indexes that are visible in the viewport.
+   *
+   * Includes any partial rows, e.g. if rows are only half visible they will be included in
+   * this range.
+   *
+   * @returns An array of [firstRowInViewport, lastRowInViewport].
+   */
+  _calcRowsInViewport() {
+    const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+
+    const firstRowInViewport = Math.floor(this.scrollPos / rowHeight_px);
+    const lastRowInViewport = Math.floor((this.scrollPos + this.terminalViewHeightPx) / rowHeight_px);
+
+    return [firstRowInViewport, lastRowInViewport];
   }
 
   /**
@@ -255,7 +286,7 @@ export default class SingleTerminal {
 
     // Right at the end of adding everything, limit the num. of max. rows in the terminal
     // as determined by the settings
-    this.limitNumRows();
+    this._limitNumRows();
   }
 
   parseAsciiData(data: Uint8Array) {
@@ -471,7 +502,12 @@ export default class SingleTerminal {
       // ED Erase in Display
       //============================================================
       // console.log('Erase in display');
-      // Extract number in the form ESC[nJ
+      // Syntax: ESC[nJ where n is a number:
+      // n=0: Clear from cursor to end of screen (default if no number provided)
+      // n=1: Clear from cursor to start of screen
+      // n=2: Clear entire screen
+      // n=3: Clear entire screen and delete all lines saved in the scrollback buffer
+      // Extract number:
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '0' (default)
       if (numberStr === '') {
@@ -485,25 +521,44 @@ export default class SingleTerminal {
       if (numberN === 0) {
         // Clear from cursor to end of screen. We assume this mean from cursor location to end
         // of all data
-        // First, remove all chars at the cursor position or beyond
-        // on the current row
-        const currRow = this.terminalRows[this.cursorPosition[0]];
-        const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
-        currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
-        // Add cursor char at current position
-        const cursorChar = new TerminalChar();
-        cursorChar.char = ' ';
-        cursorChar.forCursor = true;
-        currRow.terminalChars.push(cursorChar);
-        // The cursor has not changed row so we do not need to check if this row
-        // still passes the filter
-
-        // Remove all soon to be deleted rows from the filtered rows array (if they are present)
-        for (let idx = this.cursorPosition[0] + 1; idx < this.terminalRows.length; idx += 1) {
-          this._removeFromFilteredRows(this.terminalRows[idx]);
+        this._clearDataFromCursorToEndOfScreen();
+      } else if (numberN == 2) {
+        // Erase entire screen
+        // User could be scrolled anywhere in the scrollback buffer, we don't want to just
+        // clear the rows being displayed.
+        // 1. Clear all data at or after cursor
+        // 2. Move cursor down one row to new row
+        // 3. Insert enough empty rows after row with cursor to fill the screen
+        // 4. Scroll so the cursor is at the top left of screen
+        this._clearDataFromCursorToEndOfScreen();
+        this._cursorDown(1);
+        // Add empty rows to fill the screen
+        const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+        // Take the floor, so that if scroll lock is enabled, we will guarantee that the
+        // user can fully see the new row with the cursor on it. This will be there is a chance
+        // there is a visible half-row above the top cursor row, but this is acceptable.
+        // Subtract 1 because we already added a row with the cursor
+        console.log('id=', this.id);
+        console.log('this.terminalViewHeightPx=', this.terminalViewHeightPx, 'rowHeight_px=', rowHeight_px);
+        const numRowsToAdd = Math.floor(this.terminalViewHeightPx / rowHeight_px) - 1;
+        console.log('numRowsToAdd=', numRowsToAdd);
+        // Might not need to add any rows if terminal height is very small
+        // (or 0 if hidden)
+        if (numRowsToAdd > 0) {
+          for (let idx = 0; idx < numRowsToAdd; idx += 1) {
+            this.terminalRows.push(new TerminalRow(this.uniqueRowIndexCount, false));
+            this.uniqueRowIndexCount += 1;
+            // Add to filtered rows if new rows match the filter
+            if (this._doesRowPassFilter(this.terminalRows.length - 1)) {
+              this.filteredTerminalRows.push(this.terminalRows[this.terminalRows.length - 1]);
+            }
+          }
         }
-        // Now remove all rows past the one the cursor is on
-        this.terminalRows.splice(this.cursorPosition[0] + 1);
+
+        // Set scroll position so cursor is at top left of screen
+        let scrollPos = (numRowsToAdd + 1)*rowHeight_px;
+        console.log('Calculating scrollPos=', scrollPos);
+        this.scrollPos = scrollPos;
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
@@ -555,6 +610,30 @@ export default class SingleTerminal {
         }
       }
     }
+  }
+
+  _clearDataFromCursorToEndOfScreen() {
+    // Clear from cursor to end of screen. We assume this mean from cursor location to end
+    // of all data
+    // First, remove all chars at the cursor position or beyond
+    // on the current row
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
+    currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
+    // Add cursor char at current position
+    const cursorChar = new TerminalChar();
+    cursorChar.char = ' ';
+    cursorChar.forCursor = true;
+    currRow.terminalChars.push(cursorChar);
+    // The cursor has not changed row so we do not need to check if this row
+    // still passes the filter
+
+    // Remove all soon to be deleted rows from the filtered rows array (if they are present)
+    for (let idx = this.cursorPosition[0] + 1; idx < this.terminalRows.length; idx += 1) {
+      this._removeFromFilteredRows(this.terminalRows[idx]);
+    }
+    // Now remove all rows past the one the cursor is on
+    this.terminalRows.splice(this.cursorPosition[0] + 1);
   }
 
   /**
@@ -1228,7 +1307,7 @@ export default class SingleTerminal {
   /**
    * Removes the oldest rows of data if needed to make sure it don't exceed the scrollback buffer size.
    */
-  limitNumRows() {
+  _limitNumRows() {
     const maxRows = this.displaySettings.scrollbackBufferSizeRows.appliedValue;
     // console.log('limitNumRows() called. maxRows=', maxRows);
     const numRowsToRemove = this.terminalRows.length - maxRows;
@@ -1366,7 +1445,7 @@ export default class SingleTerminal {
       // uniqueRowId. Begin search from the end of the array, as this is where
       // we'll be normally be doing these sorts of operations (e.g. it will be more
       // efficient most of the time)
-      console.log('Row is not in filtered rows, need to insert it at the correct location');
+      // console.log('Row is not in filtered rows, need to insert it at the correct location');
       for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
         if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
           // Insert after this index

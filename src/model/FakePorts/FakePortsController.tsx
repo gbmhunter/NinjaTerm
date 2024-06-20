@@ -12,12 +12,7 @@ class FakePort {
   connectFunction: () => NodeJS.Timeout | null;
   disconnectFunction: (intervalId: NodeJS.Timeout | null) => void;
 
-  constructor(
-    name: string,
-    description: string,
-    connectFunction: () => NodeJS.Timeout | null,
-    disconnectFunction: (intervalId: NodeJS.Timeout | null) => void
-  ) {
+  constructor(name: string, description: string, connectFunction: () => NodeJS.Timeout | null, disconnectFunction: (intervalId: NodeJS.Timeout | null) => void) {
     this.name = name;
     this.description = description;
     this.intervalId = null;
@@ -153,6 +148,30 @@ export default class FakePortsController {
       )
     );
 
+    // 50 numbered lines all at once
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        '50 numbered lines all at once',
+        'Sends "0\\n1\\n ..." to 49 (50 numbers) all at once. Useful for testing scroll behaviour.',
+        () => {
+          for (let i = 0; i < 50; i++) {
+            const textToSend = `${i}\n`;
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+          }
+          return null;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Do nothing
+        }
+      )
+    );
+
+    //=================================================================================
     // red green, 0.2lps
     //=================================================================================
     this.fakePorts.push(
@@ -161,11 +180,7 @@ export default class FakePortsController {
         'Sends red and green colored text every 5 seconds.',
         () => {
           let stringIdx = 0;
-          const strings =
-            [
-              '\x1b[31mred',
-              '\x1b[32mgreen',
-            ];
+          const strings = ['\x1b[31mred', '\x1b[32mgreen'];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
             let bytesToSend = [];
@@ -198,78 +213,77 @@ export default class FakePortsController {
         'Iterates through all possible ANSI foreground and background colors at 5 items per second.',
         () => {
           let stringIdx = 0;
-          const strings =
-            [
-              // STANDARD FOREGROUNDS
-              // Reset all styles
-              '\x1B[0m\x1B[30mnormal black',
-              '\x1B[31mnormal red',
-              '\x1B[32mnormal green',
-              '\x1B[33mnormal brown/yellow',
-              '\x1B[34mnormal blue',
-              '\x1B[35mnormal magenta',
-              '\x1B[36mnormal cyan',
-              '\x1B[37mnormal grey',
+          const strings = [
+            // STANDARD FOREGROUNDS
+            // Reset all styles
+            '\x1B[0m\x1B[30mnormal black',
+            '\x1B[31mnormal red',
+            '\x1B[32mnormal green',
+            '\x1B[33mnormal brown/yellow',
+            '\x1B[34mnormal blue',
+            '\x1B[35mnormal magenta',
+            '\x1B[36mnormal cyan',
+            '\x1B[37mnormal grey',
 
-              // BOLD FOREGROUNDS
-              // This may give either bold text or bright colors
-              // depending on terminal implementation
-              '\x1B[1m\x1B[30mbold black',
-              '\x1B[31mbold red',
-              '\x1B[32mbold green',
-              '\x1B[33mbold brown/yellow',
-              '\x1B[34mbold blue',
-              '\x1B[35mbold magenta',
-              '\x1B[36mbold cyan',
-              '\x1B[37mbold grey',
+            // BOLD FOREGROUNDS
+            // This may give either bold text or bright colors
+            // depending on terminal implementation
+            '\x1B[1m\x1B[30mbold black',
+            '\x1B[31mbold red',
+            '\x1B[32mbold green',
+            '\x1B[33mbold brown/yellow',
+            '\x1B[34mbold blue',
+            '\x1B[35mbold magenta',
+            '\x1B[36mbold cyan',
+            '\x1B[37mbold grey',
 
-              // BRIGHT FOREGROUNDS
-              '\x1B[0m\x1B[90mbright black',
-              '\x1B[91mbright red',
-              '\x1B[92mbright green',
-              '\x1B[93mbright brown/yellow',
-              '\x1B[94mbright blue',
-              '\x1B[95mbright magenta',
-              '\x1B[96mbright cyan',
-              '\x1B[97mbright white',
+            // BRIGHT FOREGROUNDS
+            '\x1B[0m\x1B[90mbright black',
+            '\x1B[91mbright red',
+            '\x1B[92mbright green',
+            '\x1B[93mbright brown/yellow',
+            '\x1B[94mbright blue',
+            '\x1B[95mbright magenta',
+            '\x1B[96mbright cyan',
+            '\x1B[97mbright white',
 
-              // STANDARD BACKGROUNDS
-              // Reset all styles
-              // For the lighter backgrounds, the text color is changed
-              // to black
-              '\x1B[0m\x1B[40mblack bg',
-              '\x1B[41mred bg',
-              '\x1B[42mgreen bg',
-              '\x1B[43mbrown/yellow bg',
-              '\x1B[44mblue bg',
-              '\x1B[45mmagenta bg',
-              '\x1B[46mcyan bg',
-              '\x1B[47m;30mwhite bg',
+            // STANDARD BACKGROUNDS
+            // Reset all styles
+            // For the lighter backgrounds, the text color is changed
+            // to black
+            '\x1B[0m\x1B[40mblack bg',
+            '\x1B[41mred bg',
+            '\x1B[42mgreen bg',
+            '\x1B[43mbrown/yellow bg',
+            '\x1B[44mblue bg',
+            '\x1B[45mmagenta bg',
+            '\x1B[46mcyan bg',
+            '\x1B[47m;30mwhite bg',
 
-              // BOLD BACKGROUNDS
-              // Set to bold mode
-              // This may give either bold text or bright colors
-              // depending on terminal implementation
-              // NinjaTerm just makes it bright
-              '\x1B[1m\x1B[40mbold black bg',
-              '\x1B[41;30mbold red bg',
-              '\x1B[42;30mbold green bg',
-              '\x1B[43;30mbold yellow bg',
-              '\x1B[44;37mbold blue bg',
-              '\x1B[45mbold magenta bg',
-              '\x1B[46mbold cyan bg',
-              '\x1B[47;30mbold white bg',
+            // BOLD BACKGROUNDS
+            // Set to bold mode
+            // This may give either bold text or bright colors
+            // depending on terminal implementation
+            // NinjaTerm just makes it bright
+            '\x1B[1m\x1B[40mbold black bg',
+            '\x1B[41;30mbold red bg',
+            '\x1B[42;30mbold green bg',
+            '\x1B[43;30mbold yellow bg',
+            '\x1B[44;37mbold blue bg',
+            '\x1B[45mbold magenta bg',
+            '\x1B[46mbold cyan bg',
+            '\x1B[47;30mbold white bg',
 
-              // BRIGHT BACKGROUNDS
-              '\x1B[0m\x1B[100mbright black bg',
-              '\x1B[101;30mbright red bg',
-              '\x1B[102;30mbright green bg',
-              '\x1B[103;30mbright brown/yellow bg',
-              '\x1B[104mbright blue bg',
-              '\x1B[105mbright magenta bg',
-              '\x1B[106mbright cyan bg',
-              '\x1B[107;30mbright white bg',
-            ];
+            // BRIGHT BACKGROUNDS
+            '\x1B[0m\x1B[100mbright black bg',
+            '\x1B[101;30mbright red bg',
+            '\x1B[102;30mbright green bg',
+            '\x1B[103;30mbright brown/yellow bg',
+            '\x1B[104mbright blue bg',
+            '\x1B[105mbright magenta bg',
+            '\x1B[106mbright cyan bg',
+            '\x1B[107;30mbright white bg',
+          ];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
             let bytesToSend = [];
@@ -284,6 +298,76 @@ export default class FakePortsController {
             }
           }, 200);
           return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // erase in display, clear entire screen slow test
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'erase in display, clear entire screen test',
+        'Sends data and then ESC[2J to clear the entire screen.',
+        () => {
+          let sendIdx = 0;
+
+          const intervalId = setInterval(() => {
+            let textToSend = '';
+            if (sendIdx < 50) {
+              textToSend = `Line ${sendIdx}\n`;
+            } else {
+              textToSend = '\x1b[2J';
+            }
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+
+            sendIdx += 1;
+            if (sendIdx === 51) {
+              sendIdx = 0;
+            }
+          }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // erase in display, clear entire screen all at once test
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'erase in display, clear entire screen all at once test',
+        'Sends data and then ESC[2J to clear the entire screen.',
+        () => {
+          let textToSend = '';
+          for (let i = 0; i < 50; i++) {
+            textToSend += `Line ${i}\n`;
+          }
+          textToSend += '\x1b[2J';
+
+          let bytesToSend = [];
+          for (let i = 0; i < textToSend.length; i++) {
+            bytesToSend.push(textToSend.charCodeAt(i));
+          }
+          app.parseRxData(Uint8Array.from(bytesToSend));
+
+          return null;
         },
         (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
@@ -370,7 +454,7 @@ export default class FakePortsController {
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            app.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -493,9 +577,9 @@ export default class FakePortsController {
             if (intervalId !== null) {
               clearInterval(intervalId);
             }
-            const randomWaitTime = Math.random()*1000;
+            const randomWaitTime = Math.random() * 1000;
             intervalId = setInterval(onTimeoutFn, randomWaitTime);
-          }
+          };
 
           intervalId = setInterval(onTimeoutFn, 1000);
           return null;
@@ -522,7 +606,7 @@ export default class FakePortsController {
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            app.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -552,7 +636,7 @@ export default class FakePortsController {
 
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([ testCharIdx ]));
+            app.parseRxData(Uint8Array.from([testCharIdx]));
             testCharIdx += 1;
             if (testCharIdx === 256) {
               testCharIdx = 0;
@@ -582,7 +666,7 @@ export default class FakePortsController {
 
           let numberToSend = 250;
           const intervalId = setInterval(() => {
-            app.parseRxData(Uint8Array.from([ numberToSend & 0xFF, (numberToSend >> 8) & 0xFF]));
+            app.parseRxData(Uint8Array.from([numberToSend & 0xff, (numberToSend >> 8) & 0xff]));
             numberToSend += 1;
             if (numberToSend === 261) {
               numberToSend = 250;
@@ -620,7 +704,7 @@ export default class FakePortsController {
             const array = new ArrayBuffer(2);
             const view = new DataView(array);
             view.setInt16(0, numberToSend, true); // Little endian
-            app.parseRxData(Uint8Array.from([ view.getUint8(0), view.getUint8(1) ]));
+            app.parseRxData(Uint8Array.from([view.getUint8(0), view.getUint8(1)]));
             numberToSend += 1;
             if (numberToSend === 11) {
               numberToSend = -10;

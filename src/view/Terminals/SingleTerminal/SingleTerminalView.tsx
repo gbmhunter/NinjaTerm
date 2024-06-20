@@ -198,7 +198,7 @@ export default observer((props: Props) => {
   }, []);
 
   // WARNING: Must use memoized component here, if not, it gets recreated on each render of
-  // the terminal and the scroll gets messed up. Spent a lot of time working this out :-
+  // the terminal and the scroll gets messed up. Spent a lot of time working this out :-O
   const outerListElementMemoized = useMemo(() => {
     return forwardRef((props, ref: any) => (
       <div
