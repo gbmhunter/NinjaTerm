@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added support for the ESC[1J, ESC[2J and ESC[3J "Erase in Display" ASCII escape codes (ESC[0J was already supported).
 - Added a "Manual" page to the app, which contains the start of a user manual for NinjaTerm.
 
+### Fixed
+
+- Cosmetic cursor at the end of the blurb now blinks again on homepage.
+
 ### Changed
 
 - Switched from a CJS to ESM build in vite. CJS build is deprecated. See https://vitejs.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more info.

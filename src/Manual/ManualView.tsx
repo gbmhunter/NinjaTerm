@@ -10,7 +10,6 @@ import {
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
-import TwitterIcon from '@mui/icons-material/Twitter';
 import HomeIcon from '@mui/icons-material/Home';
 import Grid from '@mui/material/Unstable_Grid2';
 
@@ -41,10 +40,18 @@ const darkTheme = createTheme({
   typography: {
     // Default of 14 was a little small for the landing page, 16 works well
     fontSize: 14,
+    h1: {
+      color: logoColor,
+      fontSize: 48,
+      marginBottom: '10px',
+    },
     h2: {
       color: logoColor,
       fontSize: 32,
-      marginBottom: '10px',
+    },
+    h3: {
+      color: logoColor,
+      fontSize: 24,
     },
   },
   components: {
@@ -112,13 +119,13 @@ export default observer((props: Props) => {
           </Grid>
           <Grid xs={12} sx={{ height: '20px' }} />
 
-          <h1>NinjaTerm Manual</h1>
+          <Typography variant="h1">NinjaTerm Manual</Typography>
 
-          <h2>ANSI Escape Codes</h2>
+          <Typography variant="h2">ANSI Escape Codes</Typography>
 
           <p>NinjaTerm supports a number of the most popular ASCII escape codes for manipulating the terminal. They are commonly used for colouring/styling text (e.g. making errors red), moving the cursor around and deleting data (e.g. clearing the screen, or re-writing an existing row). These features are very useful when making interactive prompts.</p>
 
-          <h3>Erase in Display (ESC[nJ)</h3>
+          <Typography variant="h3">Erase in Display (ESC[nJ)</Typography>
 
           <p>
             The current rows in view are ignored when performing Erase in Display commands, as the user could be viewing old data in the scrollback buffer while the cursor is still

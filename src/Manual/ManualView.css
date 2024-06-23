@@ -7,6 +7,18 @@
   /* height: 15px; */
 }
 
+@keyframes blink {
+  0% {
+    background-color: #222;
+  }
+  50% {
+    background-color: white;
+  }
+  100% {
+    background-color: #222;
+  }
+}
+
 h2 {
   margin-bottom: 10px;
 }

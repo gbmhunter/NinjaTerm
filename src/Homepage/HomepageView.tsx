@@ -77,7 +77,6 @@ export default observer((props: Props) => {
       <Box
         sx={{
           boxSizing: 'border-box',
-          // backgroundColor: '#000000',
           height: '100%',
           width: '100%',
           display: 'flex',
