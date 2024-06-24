@@ -9,23 +9,30 @@ import RxSettings, {
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
+import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
 describe('single terminal tests', () => {
   let app: App;
   let profileManager: AppDataManager;
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
+  let snackbarController: SnackbarController;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
+    // Tests leave app data in local storage, but each test expects to start with
+    // a clean slate (so settings will go to their defaults). Clear local storage before each test.
+    window.localStorage.clear();
     app = new App();
     profileManager = new AppDataManager(app);
     dataProcessingSettings = new RxSettings(profileManager);
     displaySettings = new DisplaySettings(profileManager);
+    snackbarController = new SnackbarController();
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,
       dataProcessingSettings,
       displaySettings,
+      snackbarController,
       null
     );
   });
@@ -144,7 +151,7 @@ describe('single terminal tests', () => {
     expect(singleTerminal.terminalRows[0].terminalChars[4].char).toBe(' ');
   });
 
-  test.only('wrapping flag set correctly', () => {
+  test('wrapping flag set correctly', () => {
     displaySettings.terminalWidthChars.setDispValue('5');
     displaySettings.terminalWidthChars.apply();
     singleTerminal.parseData(stringToUint8Array('0123401234'));

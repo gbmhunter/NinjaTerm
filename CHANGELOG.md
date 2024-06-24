@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Cosmetic cursor at the end of the blurb now blinks again on homepage.
+- Removed a `.only()` from a test which was causing other tests to be skipped.
+- Fixed broken tests in `SingleTerminal.spec.ts` by clearing local storage before each test.
 
 ### Changed
 

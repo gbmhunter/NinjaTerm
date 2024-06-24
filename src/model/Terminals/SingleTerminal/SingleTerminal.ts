@@ -1,8 +1,9 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable, reaction } from 'mobx';
+import { ListOnScrollProps } from 'react-window';
 
-import TerminalRow from '../../../view/Terminals/SingleTerminal/TerminalRow';
-import TerminalChar from '../../../view/Terminals/SingleTerminal/SingleTerminalChar';
+import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
+import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
   CarriageReturnCursorBehavior,
   DataType,
@@ -16,8 +17,8 @@ import RxSettings, {
   PaddingCharacter,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { ListOnScrollProps } from 'react-window';
-import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
+import { SelectionController } from 'src/model/SelectionController/SelectionController';
+import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
 const START_OF_CONTROL_GLYPHS = 0xe000;
 const START_OF_HEX_GLYPHS = 0xe100;
@@ -33,6 +34,12 @@ export default class SingleTerminal {
 
   displaySettings: DisplaySettings;
 
+  snackbarController: SnackbarController;
+
+  /**
+   * Callback that is passed in via constructor. This wall be called whenever a key is pressed
+   * while the terminal is focused.
+   */
   onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null;
 
   //======================================================================
@@ -137,11 +144,21 @@ export default class SingleTerminal {
    */
   partialNumberBuffer: number[] = [];
 
+  /**
+   * Create a new terminal instance.
+   *
+   * @param id A string identifier for this terminal instance.
+   * @param isFocusable If true, the terminal will be allowed to be focused by the user.
+   * @param rxSettings RX settings that the terminal will use.
+   * @param displaySettings Display settings that the terminal will use.
+   * @param onTerminalKeyDown Callback which will be called whenever a key is pressed while the terminal is focused.
+   */
   constructor(
     id: string,
     isFocusable: boolean,
     rxSettings: RxSettings,
     displaySettings: DisplaySettings,
+    snackbarController: SnackbarController,
     onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null
   ) {
     // Save passed in variables and dependencies
@@ -149,6 +166,7 @@ export default class SingleTerminal {
     this.isFocusable = isFocusable;
     this.rxSettings = rxSettings;
     this.displaySettings = displaySettings;
+    this.snackbarController = snackbarController;
     this.onTerminalKeyDown = onTerminalKeyDown;
 
     autorun(() => {
@@ -185,7 +203,7 @@ export default class SingleTerminal {
 
     this.isFocused = false;
 
-    // Register listener for whenever the number type is changed
+    // Register listener for whenever the number type is changed, and clear the partial number buffer.
     reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
 
     makeAutoObservable(this);
@@ -582,11 +600,9 @@ export default class SingleTerminal {
         // 3. Insert enough empty rows after row with cursor to fill the screen
         this._clearDataFromCursorToEndOfScreen();
         this._cursorDown(1);
-        // Add empty rows to fill the screen
+        // Add empty rows to fill the entire terminal (ignoring scrollback buffer)
         // Subtract 1 because we already added a row with the cursor
-        console.log('id=', this.id);
         const numRowsToAdd = this.terminalHeightChars - 1;
-        console.log('numRowsToAdd=', numRowsToAdd);
         // Might not need to add any rows if terminal height is very small
         // (or 0 if hidden)
         if (numRowsToAdd > 0) {

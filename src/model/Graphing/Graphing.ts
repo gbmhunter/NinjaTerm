@@ -2,7 +2,7 @@ import { makeAutoObservable } from 'mobx';
 import Validator from 'validatorjs';
 import { z } from 'zod';
 
-import Snackbar from 'src/model/Snackbar/Snackbar';
+import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import { ApplyableTextField, ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 
 class Point {
@@ -12,7 +12,7 @@ class Point {
 
 class Graphing {
 
-  snackbar: Snackbar;
+  snackbar: SnackbarController;
 
   /**
    * Whether or not graphing is enabled. If true, RX data will be parsed for
@@ -81,7 +81,7 @@ class Graphing {
 
   isApplyable = false;
 
-  constructor(snackbar: Snackbar) {
+  constructor(snackbar: SnackbarController) {
     this.snackbar = snackbar;
 
     // this.graphData.push({ x: 0, y: 0 });

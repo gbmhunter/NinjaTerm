@@ -9,7 +9,7 @@ import { Button } from '@mui/material';
 import packageDotJson from '../../package.json';
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
-import Snackbar from './Snackbar/Snackbar';
+import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
@@ -99,7 +99,7 @@ export class App {
   // Version of the NinjaTerm app. Read from package.json
   version: string;
 
-  snackbar: Snackbar;
+  snackbar: SnackbarController;
 
   shownMainPane: MainPanes;
 
@@ -135,7 +135,7 @@ export class App {
     this.profileManager = new AppDataManager(this);
     this.settings = new Settings(this);
 
-    this.snackbar = new Snackbar();
+    this.snackbar = new SnackbarController();
 
     this.terminals = new Terminals(this);
 
