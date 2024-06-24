@@ -19,6 +19,8 @@ export class AppDataV1 {
   currentAppConfig: RootConfigV2 = new RootConfigV2();
 
   constructor() {
+    this.profiles = [];
+    this.profiles.push(new ProfileV2('Default profile'));
     makeAutoObservable(this);
   }
 }

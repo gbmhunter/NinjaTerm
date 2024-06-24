@@ -11,7 +11,6 @@ import { MacroControllerDataV1 } from './MacroControllerData';
  * Everything in this class must be POD (plain old data) and serializable to JSON.
  */
 export class RootConfigV2 {
-  version = 2;
 
   terminal = {
     macroController: new MacroControllerDataV1(),
@@ -33,7 +32,6 @@ export class RootConfigV2 {
  * Everything in this class must be POD (plain old data) and serializable to JSON.
  */
 export class RootConfigV3 {
-  version = 3;
 
   terminal = {
     macroController: new MacroControllerDataV1(),

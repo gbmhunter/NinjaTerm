@@ -12,6 +12,10 @@ export class LastUsedSerialPort {
   portState: PortState = PortState.CLOSED;
 }
 
+/**
+ * Alias to the up-to-date version of the app data class.
+ */
+export const AppData = AppDataV2;
 type AppData = AppDataV2;
 
 const APP_DATA_STORAGE_KEY = 'appData';

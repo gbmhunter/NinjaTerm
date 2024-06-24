@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added the ability to modify port settings whilst the port is open (port is quickly disconnected and reconnected with new settings).
 - Added support for the ESC[1J, ESC[2J and ESC[3J "Erase in Display" ASCII escape codes (ESC[0J was already supported).
 - Added a "Manual" page to the app, which contains the start of a user manual for NinjaTerm.
+- Added unit tests to make sure app data in local storage can be upgraded correctly. 
 
 ### Fixed
 
