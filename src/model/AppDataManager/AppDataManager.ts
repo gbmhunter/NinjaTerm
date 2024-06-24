@@ -5,6 +5,7 @@ import { App } from '../App';
 import { VariantType } from 'notistack';
 import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
 import { ProfileV3 } from './DataClasses/Profile';
+import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 
 export class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -97,22 +98,34 @@ export class AppDataManager {
 
   /**
    * Use this to update an app data object read from local storage to the latest version.
-   * @param appData
+   *
+   * Does not modify the input object, instead returns a new object with the updated version.
+   *
+   * @param appData The app data object to update.
+   * @returns An object containing the updated app data and a boolean indicating if the app data was changed.
    */
   _updateAppData = (appData: any): { appData: AppData, wasChanged: boolean } => {
     let wasChanged = false;
     let updatedAppData = JSON.parse(JSON.stringify(appData)) as any;
+
+    //=============================================================================
+    // VERSION 1 -> VERSION 2
+    //=============================================================================
     if (updatedAppData.version === 1) {
       console.log('Updating app data from version 1 to version 2...');
       // Convert to v2
-      // Port settings got a new field
-      let appDataV1 = updatedAppData as AppDataV1;
-      let appDataV2 = updatedAppData as AppDataV2;
-      for (let i = 0; i < appDataV1.profiles.length; i++) {
-        appDataV2.profiles[i].rootConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
+      // Port settings got a new field, display settings got two new fields
+      let upgradeRootConfig = (rootConfig: any) => {
+        console.log('Upgrading profile: ', rootConfig);
+        rootConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
+        rootConfig.settings.displaySettings.terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+        rootConfig.settings.displaySettings.terminalHeightChars = 25;
       }
-      appDataV2.currentAppConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
-      appDataV2.version = 2;
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        upgradeRootConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      upgradeRootConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 2;
       wasChanged = true;
     }
 

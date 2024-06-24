@@ -4,7 +4,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Box,
   ButtonPropsColorOverrides,
   Typography,
   Tooltip,

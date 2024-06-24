@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -20,6 +21,11 @@ export const dataViewConfigEnumToDisplayName: {
   [DataViewConfiguration.SEPARATE_TX_RX_TERMINALS]: 'Separate TX/RX terminals',
 };
 
+export enum TerminalHeightMode {
+  AUTO_HEIGHT = 'Auto', // Terminal height is set by the maximum number of whole rows that can fit in the terminal window (will change as the window height changes).
+  FIXED_HEIGHT = 'Fixed', // Terminal height is set to a fixed number of rows specified in the terminal height field.
+}
+
 export default class DisplaySettings {
   profileManager: AppDataManager;
 
@@ -32,6 +38,13 @@ export default class DisplaySettings {
   verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(1));
 
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
+
+  terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+
+  /**
+   * Must be a positive integer in the range [1, 100].
+   */
+  terminalHeightChars = new ApplyableNumberField('25', z.coerce.number().int().min(1).max(100));
 
   scrollbackBufferSizeRows = new ApplyableNumberField('2000', z.coerce.number().int().min(1));
 
@@ -63,12 +76,19 @@ export default class DisplaySettings {
     this._saveConfig();
   };
 
+  setTerminalHeightMode = (value: TerminalHeightMode) => {
+    this.terminalHeightMode = value;
+    this._saveConfig();
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
     config.charSizePx = this.charSizePx.appliedValue;
     config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
     config.terminalWidthChars = this.terminalWidthChars.appliedValue;
+    config.terminalHeightMode = this.terminalHeightMode;
+    config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
 
@@ -84,6 +104,9 @@ export default class DisplaySettings {
     this.verticalRowPaddingPx.apply();
     this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
     this.terminalWidthChars.apply();
+    this.terminalHeightMode = configToLoad.terminalHeightMode;
+    this.terminalHeightChars.setDispValue(configToLoad.terminalHeightChars.toString());
+    this.terminalHeightChars.apply();
     this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
     this.scrollbackBufferSizeRows.apply();
     this.dataViewConfiguration = configToLoad.dataViewConfiguration;

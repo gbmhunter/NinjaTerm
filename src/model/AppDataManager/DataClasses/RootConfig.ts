@@ -1,7 +1,7 @@
 import { RightDrawerConfig } from 'src/model/Terminals/RightDrawer/RightDrawer';
 import { LastUsedSerialPort } from '../AppDataManager';
 import { PortSettingsDataV2, PortSettingsDataV3 } from './PortSettingsData';
-import { DisplaySettingsDataV1 } from './DisplaySettingsData';
+import { DisplaySettingsDataV1, DisplaySettingsDataV2 } from './DisplaySettingsData';
 import { RxSettingsDataV1 } from './RxSettingsData';
 import { TxSettingsDataV1 } from './TxSettingsData';
 import { GeneralSettingsConfig } from './GeneralSettingsData';
@@ -46,7 +46,7 @@ export class RootConfigV3 {
     portSettings: new PortSettingsDataV3(),
     txSettings: new TxSettingsDataV1(),
     rxSettings: new RxSettingsDataV1(),
-    displaySettings: new DisplaySettingsDataV1(),
+    displaySettings: new DisplaySettingsDataV2(),
     generalSettings: new GeneralSettingsConfig(),
   };
 }
