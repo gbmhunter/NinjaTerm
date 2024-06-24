@@ -6,7 +6,7 @@ import RxSettings, {
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
 } from 'src/model/Settings/RxSettings/RxSettings';
-import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
@@ -58,6 +58,45 @@ describe('single terminal tests', () => {
     singleTerminal._cursorUp(1);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
+  });
+
+  test('length of terminal rows limited to terminal height + scrollback', () => {
+    // Change height mode to fixed at set height to 2 rows/chars
+    displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+    displaySettings.terminalHeightChars.setDispValue('2');
+    displaySettings.terminalHeightChars.apply();
+    // Set scrollback buffer size to 1 row
+    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+    displaySettings.scrollbackBufferSizeRows.apply();
+
+    singleTerminal.parseData(stringToUint8Array('row1\nrow2\nrow3'));
+    expect(singleTerminal.terminalRows.length).toBe(3);
+
+    // Add another row, total length should still be 3
+    singleTerminal.parseData(stringToUint8Array('row4\n'));
+    expect(singleTerminal.terminalRows.length).toBe(3);
+  });
+
+  test('cursor up can\'t go into scrollback', () => {
+    // Change height mode to fixed at set height to 2 rows/chars
+    displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+    displaySettings.terminalHeightChars.setDispValue('2');
+    displaySettings.terminalHeightChars.apply();
+    // Set scrollback buffer size to 1 row
+    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+    displaySettings.scrollbackBufferSizeRows.apply();
+
+    singleTerminal.parseData(stringToUint8Array('row1\nrow2\nrow3'));
+    expect(singleTerminal.cursorPosition[0]).toBe(2);
+
+    // Move cursor up 1 row
+    singleTerminal._cursorUp(1);
+    expect(singleTerminal.cursorPosition[0]).toBe(1);
+
+    // Move cursor up 1 row again, should not move the cursor
+    // as the first row is scrollback
+    singleTerminal._cursorUp(1);
+    expect(singleTerminal.cursorPosition[0]).toBe(1);
   });
 
   test('new line printing occurs before cursor is moved', () => {

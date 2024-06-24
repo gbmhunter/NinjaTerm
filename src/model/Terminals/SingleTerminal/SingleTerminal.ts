@@ -46,10 +46,18 @@ export default class SingleTerminal {
   // POSITION/SIZE VARIABLES
   //======================================================================
 
-  // [ row_idx, col_idx ]
+  /**
+   * Holds the current cursor position in the terminalRows array. In the form:
+   * [ row_idx, col_idx ]
+   */
   cursorPosition: [number, number];
 
   // If true, the data pane scroll will be locked at the bottom
+
+  /**
+   * If true, the data view scroll will be locked at the bottom. If false, the user can scroll
+   * around, and the scroll will be updated on new rows so that the existing data stays in view.
+   */
   scrollLock: boolean;
 
   rowToScrollLockTo: number;
@@ -382,6 +390,7 @@ export default class SingleTerminal {
         }
       }
 
+      //========================================================================
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
@@ -540,7 +549,6 @@ export default class SingleTerminal {
       //============================================================
       // ED Erase in Display
       //============================================================
-      // console.log('Erase in display');
       // Syntax: ESC[nJ where n is a number:
       // n=0: Clear from cursor to end of screen (default if no number provided)
       // n=1: Clear from cursor to start of screen
@@ -1080,8 +1088,8 @@ export default class SingleTerminal {
   }
 
   /**
-   * Moves the cursor up the specified number of rows. Does not move the cursor any further
-   * it it reaches the first row.
+   * Moves the cursor up the specified number of rows. Does not move the cursor up
+   * into the scrollback buffer, so that it behaves like a proper terminal.
    * @param numRows The number of rows to move up.
    */
   _cursorUp(numRows: number) {
@@ -1089,6 +1097,11 @@ export default class SingleTerminal {
     for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
       // Never go above the first row!
       if (this.cursorPosition[0] === 0) {
+        return;
+      }
+      // Never go into the scrollback buffer
+      // e.g. 10 terminal rows, terminal height is 2, cursor pos would stop at 7
+      if (this.cursorPosition[0] <= this.terminalRows.length - this.terminalHeightChars) {
         return;
       }
       // If we reach here, we can go up by at least 1
@@ -1364,20 +1377,18 @@ export default class SingleTerminal {
   }
 
   /**
-   * Removes the oldest rows of data if needed to make sure it don't exceed the scrollback buffer size.
+   * Removes the oldest rows of data if needed to make sure the total number of rows in terminalRows does not exceed the terminal height + scrollback buffer size.
    */
   _limitNumRows() {
-    const maxRows = this.displaySettings.scrollbackBufferSizeRows.appliedValue;
-    // console.log('limitNumRows() called. maxRows=', maxRows);
+    // Max. number of rows in the terminalRows array has to take into account the
+    // terminal height and size of the scrollback buffer
+    const maxRows = this.terminalHeightChars + this.displaySettings.scrollbackBufferSizeRows.appliedValue;
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
-      // console.log('No need to remove any rows.');
       return;
     }
-    // console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
     // Remove oldest rows (rows from start of array)
     const deletedRows = this.terminalRows.splice(0, numRowsToRemove);
-    // console.log(`Now has ${this.terminalRows.length} rows.`)
 
     // We need to update the cursor position to point to the
     // same row before we deleted some
