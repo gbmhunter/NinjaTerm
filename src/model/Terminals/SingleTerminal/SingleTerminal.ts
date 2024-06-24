@@ -15,7 +15,7 @@ import RxSettings, {
   NumberType,
   PaddingCharacter,
 } from 'src/model/Settings/RxSettings/RxSettings';
-import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { ListOnScrollProps } from 'react-window';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 
@@ -197,6 +197,27 @@ export default class SingleTerminal {
 
   get verticalRowPaddingPx() {
     return this.displaySettings.verticalRowPaddingPx.appliedValue;
+  }
+
+  /**
+   * Computes the height of the terminal in terms of number of characters. This does not include the scrollback buffer.
+   */
+  get terminalHeightChars() {
+    let terminalHeight_chars;
+    if (this.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT) {
+      const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+      terminalHeight_chars = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+    } else if (this.displaySettings.terminalHeightMode === TerminalHeightMode.FIXED_HEIGHT) {
+      terminalHeight_chars = this.displaySettings.terminalHeightChars.appliedValue;
+    } else {
+      throw Error(`Invalid terminal height mode. terminalHeightMode=${this.displaySettings.terminalHeightMode}`);
+    }
+
+    // Make sure it is at least 1
+    if (terminalHeight_chars < 1) {
+      terminalHeight_chars = 1;
+    }
+    return terminalHeight_chars;
   }
 
   /**
@@ -527,11 +548,14 @@ export default class SingleTerminal {
         // User could be scrolled anywhere in the scrollback buffer, we don't want to
         // consider the viewport. Rather, assume cursor is in the last N rows that
         // would make up the viewport if scrolled to the bottom.
-        const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
-        const numRowsInViewport = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+        // const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+        // const numRowsInViewport = Math.floor(this.terminalViewHeightPx / rowHeight_px);
         // Find first row which would be considered part of the terminal if you
         // excluded scrollback
-        const startRowIdx = this.terminalRows.length - numRowsInViewport;
+        let startRowIdx = this.terminalRows.length - this.terminalHeightChars;
+        if (startRowIdx < 0) {
+          startRowIdx = 0;
+        }
         // Make sure the cursor is not above the first row
         if (this.cursorPosition[0] < startRowIdx) {
           console.warn('Got ESC[1J (erase in display, from start of screen to cursor) escape code. Cursor is above the first row that would be considered part of the terminal if you excluded scrollback. Not erasing anything.');
@@ -559,14 +583,9 @@ export default class SingleTerminal {
         this._clearDataFromCursorToEndOfScreen();
         this._cursorDown(1);
         // Add empty rows to fill the screen
-        const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
-        // Take the floor, so that if scroll lock is enabled, we will guarantee that the
-        // user can fully see the new row with the cursor on it. This will be there is a chance
-        // there is a visible half-row above the top cursor row, but this is acceptable.
         // Subtract 1 because we already added a row with the cursor
         console.log('id=', this.id);
-        console.log('this.terminalViewHeightPx=', this.terminalViewHeightPx, 'rowHeight_px=', rowHeight_px);
-        const numRowsToAdd = Math.floor(this.terminalViewHeightPx / rowHeight_px) - 1;
+        const numRowsToAdd = this.terminalHeightChars - 1;
         console.log('numRowsToAdd=', numRowsToAdd);
         // Might not need to add any rows if terminal height is very small
         // (or 0 if hidden)

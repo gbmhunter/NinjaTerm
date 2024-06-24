@@ -3,7 +3,6 @@ import { expect, test, describe, beforeEach } from 'vitest';
 import { AppData, AppDataManager } from './AppDataManager';
 import { App } from '../App';
 
-import appDataV1Json from 'local-storage-data/appData-v1-app-v4.18.0.json';
 import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
 
 beforeEach(() => {
