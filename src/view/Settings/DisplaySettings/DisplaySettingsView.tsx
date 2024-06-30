@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { App } from 'src/model/App';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { DataViewConfiguration, TerminalHeightMode, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
   app: App;
@@ -78,6 +78,60 @@ export default observer((props: Props) => {
           }}
           applyableTextField={app.settings.displaySettings.terminalWidthChars}
           sx={{ marginBottom: "20px" }}
+        />
+      </Tooltip>
+
+      {/* ============================================================== */}
+      {/* TERMINAL HEIGHT MODE */}
+      {/* ============================================================== */}
+      <Tooltip
+        title="Determines how the terminal height is set (excluding scrollback). When set to auto, the terminal height will be automatically set to the max. number of whole rows that can fit in the terminal height (and it will change as the window height changes). When set to fixed, the terminal height will be set to the number of rows specified in the terminal height field below. Sometimes fixed is needed for compatibility with certain terminal applications. This setting has implications for ASCII escape codes just as Erase in Display."
+        placement="right"
+        enterDelay={500}
+      >
+        <FormControl
+          sx={{ minWidth: 160, marginBottom: '20px' }}
+          size="small"
+        >
+          <InputLabel>Terminal Height Mode</InputLabel>
+          <Select
+            value={app.settings.displaySettings.terminalHeightMode}
+            onChange={(e) => {
+              app.settings.displaySettings.setTerminalHeightMode(e.target.value as TerminalHeightMode);
+            }}
+          >
+            {Object.values(TerminalHeightMode).map((terminalHeightMode) => {
+              return (
+                <MenuItem key={terminalHeightMode} value={terminalHeightMode}>
+                  {terminalHeightMode}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+      </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* TERMINAL HEIGHT (IN CHARS/ROWS) */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="Sets the terminal height (in terms of number of chars a.k.a. rows) when the terminal height mode is set to fixed. Must be a positive integer between 1 and 100."
+        followCursor
+        arrow
+      >
+        <ApplyableTextFieldView
+          id="outlined-basic"
+          label="Terminal Height"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">chars</InputAdornment>
+            ),
+            disabled: app.settings.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT,
+          }}
+          applyableTextField={app.settings.displaySettings.terminalHeightChars}
+          sx={{ marginBottom: '20px' }}
         />
       </Tooltip>
 

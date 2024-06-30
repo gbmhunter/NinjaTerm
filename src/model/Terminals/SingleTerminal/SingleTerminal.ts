@@ -1,8 +1,9 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, reaction } from "mobx";
+import { autorun, makeAutoObservable, reaction } from 'mobx';
+import { ListOnScrollProps } from 'react-window';
 
-import TerminalRow from "../../../view/Terminals/SingleTerminal/TerminalRow";
-import TerminalChar from "../../../view/Terminals/SingleTerminal/SingleTerminalChar";
+import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
+import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
   CarriageReturnCursorBehavior,
   DataType,
@@ -14,10 +15,10 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
-} from "src/model/Settings/RxSettings/RxSettings";
-import DisplaySettings from "src/model/Settings/DisplaySettings/DisplaySettings";
-import { ListOnScrollProps } from "react-window";
-import { SelectionController, SelectionInfo } from "src/model/SelectionController/SelectionController";
+} from 'src/model/Settings/RxSettings/RxSettings';
+import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { SelectionController } from 'src/model/SelectionController/SelectionController';
+import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
 const START_OF_CONTROL_GLYPHS = 0xe000;
 const START_OF_HEX_GLYPHS = 0xe100;
@@ -26,8 +27,6 @@ const START_OF_HEX_GLYPHS = 0xe100;
  * Represents a single terminal-style user interface.
  */
 export default class SingleTerminal {
-  // PASSED IN VARIABLES
-  //======================================================================
 
   id: string;
 
@@ -35,24 +34,48 @@ export default class SingleTerminal {
 
   displaySettings: DisplaySettings;
 
+  snackbarController: SnackbarController;
+
+  /**
+   * Callback that is passed in via constructor. This wall be called whenever a key is pressed
+   * while the terminal is focused.
+   */
   onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null;
 
-  // OTHER VARIABLES
+  //======================================================================
+  // POSITION/SIZE VARIABLES
   //======================================================================
 
-  // [ row_idx, col_idx ]
+  /**
+   * Holds the current cursor position in the terminalRows array. In the form:
+   * [ row_idx, col_idx ]
+   */
   cursorPosition: [number, number];
 
   // If true, the data pane scroll will be locked at the bottom
+
+  /**
+   * If true, the data view scroll will be locked at the bottom. If false, the user can scroll
+   * around, and the scroll will be updated on new rows so that the existing data stays in view.
+   */
   scrollLock: boolean;
 
   rowToScrollLockTo: number;
 
+  /**
+   * The scroll position of the fixed size list. This is the number of pixels
+   * from the top of the terminal view.
+   *
+   * scrollPos + terminalViewHeightPx = totalTerminalRowsHeightPx
+   * where totalTerminalRowsHeightPx = numTerminalRows * (charSizePx + verticalRowPaddingPx)
+   */
   scrollPos: number;
 
   /*
    * The height of the terminal view in pixels. This does not include any padding,
    * i.e. it's the height that terminal rows will be packed into. Set by the UI.
+   *
+   * The fixed size list uses this state to set it's height.
    */
   terminalViewHeightPx: number = 0;
 
@@ -66,7 +89,7 @@ export default class SingleTerminal {
    * The filter text to apply to the terminal. If an empty string, no filtering is
    * applied.
    */
-  filterText: string = "";
+  filterText: string = '';
 
   /**
    * The array of terminal rows which should be included in the filtered view
@@ -129,11 +152,21 @@ export default class SingleTerminal {
    */
   partialNumberBuffer: number[] = [];
 
+  /**
+   * Create a new terminal instance.
+   *
+   * @param id A string identifier for this terminal instance.
+   * @param isFocusable If true, the terminal will be allowed to be focused by the user.
+   * @param rxSettings RX settings that the terminal will use.
+   * @param displaySettings Display settings that the terminal will use.
+   * @param onTerminalKeyDown Callback which will be called whenever a key is pressed while the terminal is focused.
+   */
   constructor(
     id: string,
     isFocusable: boolean,
     rxSettings: RxSettings,
     displaySettings: DisplaySettings,
+    snackbarController: SnackbarController,
     onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null
   ) {
     // Save passed in variables and dependencies
@@ -141,6 +174,7 @@ export default class SingleTerminal {
     this.isFocusable = isFocusable;
     this.rxSettings = rxSettings;
     this.displaySettings = displaySettings;
+    this.snackbarController = snackbarController;
     this.onTerminalKeyDown = onTerminalKeyDown;
 
     autorun(() => {
@@ -150,7 +184,7 @@ export default class SingleTerminal {
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
           this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
         }
-        this.partialEscapeCode = "";
+        this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
         this.inIdleState = true;
@@ -168,7 +202,7 @@ export default class SingleTerminal {
 
     this.inIdleState = true;
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = "";
+    this.partialEscapeCode = '';
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
 
@@ -177,7 +211,7 @@ export default class SingleTerminal {
 
     this.isFocused = false;
 
-    // Register listener for whenever the number type is changed
+    // Register listener for whenever the number type is changed, and clear the partial number buffer.
     reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
 
     makeAutoObservable(this);
@@ -189,6 +223,27 @@ export default class SingleTerminal {
 
   get verticalRowPaddingPx() {
     return this.displaySettings.verticalRowPaddingPx.appliedValue;
+  }
+
+  /**
+   * Computes the height of the terminal in terms of number of characters. This does not include the scrollback buffer.
+   */
+  get terminalHeightChars() {
+    let terminalHeight_chars;
+    if (this.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT) {
+      const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+      terminalHeight_chars = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+    } else if (this.displaySettings.terminalHeightMode === TerminalHeightMode.FIXED_HEIGHT) {
+      terminalHeight_chars = this.displaySettings.terminalHeightChars.appliedValue;
+    } else {
+      throw Error(`Invalid terminal height mode. terminalHeightMode=${this.displaySettings.terminalHeightMode}`);
+    }
+
+    // Make sure it is at least 1
+    if (terminalHeight_chars < 1) {
+      terminalHeight_chars = 1;
+    }
+    return terminalHeight_chars;
   }
 
   /**
@@ -209,7 +264,7 @@ export default class SingleTerminal {
     // to the bottom
     // scrollUpdateWasRequested seems to be true if the list scrolls because of a programmatic call to
     // .scrollToItem(), false if it was because the user moves the mouse wheel
-    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == "forward" && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
+    if (!scrollProps.scrollUpdateWasRequested && scrollProps.scrollDirection == 'forward' && scrollProps.scrollOffset >= totalTerminalRowsHeightPx - this.terminalViewHeightPx) {
       // User has scrolled to the end of the terminal, so lock the scroll position
       this.scrollLock = true;
       // this.rowToScrollLockTo = this.terminalRows.length - 1;
@@ -220,11 +275,34 @@ export default class SingleTerminal {
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
-    // console.log('scrollPos set to:', this.scrollPos);
+    console.log('scrollPos set to:', this.scrollPos);
   }
 
+  /**
+   * Designed to be called from the view whenever the terminal view height changes.
+   *
+   * @param terminalViewHeightPx The height of the terminal view in pixels.
+   */
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
+    console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
     this.terminalViewHeightPx = terminalViewHeightPx;
+  }
+
+  /**
+   * Calculates the start and end row indexes that are visible in the viewport.
+   *
+   * Includes any partial rows, e.g. if rows are only half visible they will be included in
+   * this range.
+   *
+   * @returns An array of [firstRowInViewport, lastRowInViewport].
+   */
+  _calcRowsInViewport() {
+    const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+
+    const firstRowInViewport = Math.floor(this.scrollPos / rowHeight_px);
+    const lastRowInViewport = Math.floor((this.scrollPos + this.terminalViewHeightPx) / rowHeight_px);
+
+    return [firstRowInViewport, lastRowInViewport];
   }
 
   /**
@@ -255,7 +333,7 @@ export default class SingleTerminal {
 
     // Right at the end of adding everything, limit the num. of max. rows in the terminal
     // as determined by the settings
-    this.limitNumRows();
+    this._limitNumRows();
   }
 
   parseAsciiData(data: Uint8Array) {
@@ -281,7 +359,7 @@ export default class SingleTerminal {
 
       const newLineBehavior = this.rxSettings.newLineCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
-      if (this.inIdleState && rxByte === "\n".charCodeAt(0)) {
+      if (this.inIdleState && rxByte === '\n'.charCodeAt(0)) {
         // If swallow is disabled, print the new line character. Do this before
         // performing any cursor movements, as we want the new line char to
         // at the end of the existing line, rather than the start of the new
@@ -308,16 +386,17 @@ export default class SingleTerminal {
           this._cursorDown(1);
           continue;
         } else {
-          throw Error("Invalid new line behavior. newLineBehavior=" + newLineBehavior);
+          throw Error('Invalid new line behavior. newLineBehavior=' + newLineBehavior);
         }
       }
 
+      //========================================================================
       // CARRIAGE RETURN HANDLING
       //========================================================================
 
       const carriageReturnCursorBehavior = this.rxSettings.carriageReturnCursorBehavior;
       // Don't want to interpret new lines if we are half-way through processing an ANSI escape code
-      if (this.inIdleState && rxByte === "\r".charCodeAt(0)) {
+      if (this.inIdleState && rxByte === '\r'.charCodeAt(0)) {
         // If swallow is disabled, print the carriage return character. Do this before
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
@@ -340,7 +419,7 @@ export default class SingleTerminal {
           this._cursorDown(1);
           continue;
         } else {
-          throw Error("Invalid carriage return cursor behavior. carriageReturnCursorBehavior: " + carriageReturnCursorBehavior);
+          throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
         }
       }
 
@@ -363,7 +442,7 @@ export default class SingleTerminal {
         // Add received char to partial escape code
         this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
-        if (this.partialEscapeCode === "\x1B[") {
+        if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
@@ -410,7 +489,8 @@ export default class SingleTerminal {
   }
 
   /**
-   * Parses a CSI sequence.
+   * Parses a CSI sequence. Should be called once all of the CSI sequence has been received.
+   *
    * @param ansiEscapeCode Must be in the form "ESC[<remaining data>". This function will validate
    *    the rest of the code, and perform actions on the terminal as required.
    */
@@ -420,12 +500,12 @@ export default class SingleTerminal {
     //============================================================
     // CUU Cursor Up
     //============================================================
-    if (lastChar === "A") {
+    if (lastChar === 'A') {
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       let numRowsToGoUp = parseInt(numberStr, 10);
       if (Number.isNaN(numRowsToGoUp)) {
@@ -433,15 +513,15 @@ export default class SingleTerminal {
         return;
       }
       this._cursorUp(numRowsToGoUp);
-    } else if (lastChar === "C") {
+    } else if (lastChar === 'C') {
       //============================================================
       // CUC - Cursor Forward
       //============================================================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       const numColsToGoRight = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoRight)) {
@@ -449,15 +529,15 @@ export default class SingleTerminal {
         return;
       }
       this._cursorRight(numColsToGoRight);
-    } else if (lastChar === "D") {
+    } else if (lastChar === 'D') {
       //============================================================
       // CUB Cursor Back
       //============================================================
       // Extract number in the form ESC[nA
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '1' (default)
-      if (numberStr === "") {
-        numberStr = "1";
+      if (numberStr === '') {
+        numberStr = '1';
       }
       const numColsToGoLeft = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoLeft)) {
@@ -465,16 +545,20 @@ export default class SingleTerminal {
         return;
       }
       this._cursorLeft(numColsToGoLeft);
-    } else if (lastChar === "J") {
+    } else if (lastChar === 'J') {
       //============================================================
       // ED Erase in Display
       //============================================================
-      // console.log('Erase in display');
-      // Extract number in the form ESC[nJ
+      // Syntax: ESC[nJ where n is a number:
+      // n=0: Clear from cursor to end of screen (default if no number provided)
+      // n=1: Clear from cursor to start of screen
+      // n=2: Clear entire screen
+      // n=3: Clear entire screen and delete all lines saved in the scrollback buffer
+      // Extract number:
       let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
       // If there was no number provided, assume it was '0' (default)
-      if (numberStr === "") {
-        numberStr = "0";
+      if (numberStr === '') {
+        numberStr = '0';
       }
       const numberN = parseInt(numberStr, 10);
       if (Number.isNaN(numberN)) {
@@ -484,29 +568,68 @@ export default class SingleTerminal {
       if (numberN === 0) {
         // Clear from cursor to end of screen. We assume this mean from cursor location to end
         // of all data
-        // First, remove all chars at the cursor position or beyond
-        // on the current row
-        const currRow = this.terminalRows[this.cursorPosition[0]];
-        const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
-        currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
-        // Add cursor char at current position
-        const cursorChar = new TerminalChar();
-        cursorChar.char = " ";
-        cursorChar.forCursor = true;
-        currRow.terminalChars.push(cursorChar);
-        // The cursor has not changed row so we do not need to check if this row
-        // still passes the filter
-
-        // Remove all soon to be deleted rows from the filtered rows array (if they are present)
-        for (let idx = this.cursorPosition[0] + 1; idx < this.terminalRows.length; idx += 1) {
-          this._removeFromFilteredRows(this.terminalRows[idx]);
+        this._clearDataFromCursorToEndOfScreen();
+      } else if (numberN === 1) {
+        // Clear from cursor to start of screen
+        // User could be scrolled anywhere in the scrollback buffer, we don't want to
+        // consider the viewport. Rather, assume cursor is in the last N rows that
+        // would make up the viewport if scrolled to the bottom.
+        // const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
+        // const numRowsInViewport = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+        // Find first row which would be considered part of the terminal if you
+        // excluded scrollback
+        let startRowIdx = this.terminalRows.length - this.terminalHeightChars;
+        if (startRowIdx < 0) {
+          startRowIdx = 0;
         }
-        // Now remove all rows past the one the cursor is on
-        this.terminalRows.splice(this.cursorPosition[0] + 1);
+        // Make sure the cursor is not above the first row
+        if (this.cursorPosition[0] < startRowIdx) {
+          console.warn('Got ESC[1J (erase in display, from start of screen to cursor) escape code. Cursor is above the first row that would be considered part of the terminal if you excluded scrollback. Not erasing anything.');
+          return;
+        }
+        // Entirely clear all rows from the start row to the row with the cursor
+        for (let rowIdx = startRowIdx; rowIdx < this.cursorPosition[0]; rowIdx += 1) {
+          this.terminalRows[rowIdx].terminalChars = [];
+          this._addOrRemoveRowFromFilteredRows(rowIdx);
+        }
+        // Turns all chars into spaces on the row with the cursor up to the cursor position
+        const currRow = this.terminalRows[this.cursorPosition[0]];
+        for (let charIdx = 0; charIdx < this.cursorPosition[1]; charIdx += 1) {
+          currRow.terminalChars[charIdx].char = ' ';
+          currRow.terminalChars[charIdx].forCursor = false;
+          currRow.terminalChars[charIdx].style = '';
+        }
+      } else if (numberN === 2) {
+        // Erase entire screen
+        // User could be scrolled anywhere in the scrollback buffer, we don't want to just
+        // clear the rows being displayed.
+        // 1. Clear all data at or after cursor
+        // 2. Move cursor down one row to new row
+        // 3. Insert enough empty rows after row with cursor to fill the screen
+        this._clearDataFromCursorToEndOfScreen();
+        this._cursorDown(1);
+        // Add empty rows to fill the entire terminal (ignoring scrollback buffer)
+        // Subtract 1 because we already added a row with the cursor
+        const numRowsToAdd = this.terminalHeightChars - 1;
+        // Might not need to add any rows if terminal height is very small
+        // (or 0 if hidden)
+        if (numRowsToAdd > 0) {
+          for (let idx = 0; idx < numRowsToAdd; idx += 1) {
+            this.terminalRows.push(new TerminalRow(this.uniqueRowIndexCount, false));
+            this.uniqueRowIndexCount += 1;
+            // Add to filtered rows if new rows match the filter
+            if (this._doesRowPassFilter(this.terminalRows.length - 1)) {
+              this.filteredTerminalRows.push(this.terminalRows[this.terminalRows.length - 1]);
+            }
+          }
+        }
+      } else if (numberN === 3) {
+        // Clear entire screen and delete all lines saved in the scrollback buffer
+        this.clear();
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
       }
-    } else if (lastChar === "m") {
+    } else if (lastChar === 'm') {
       // SGR
       // ==============================
       // console.log('Found m, select graphic rendition code');
@@ -519,11 +642,11 @@ export default class SingleTerminal {
       // Check if there is nothing between the ESC[ and the m, i.e.
       // the entire escape code was just ESC[m. In this case, treat
       // it the same as ESC[0m]
-      if (numbersAndSemicolons === "") {
-        numbersAndSemicolons = "0";
+      if (numbersAndSemicolons === '') {
+        numbersAndSemicolons = '0';
       }
       // Split into individual codes
-      const numberCodeStrings = numbersAndSemicolons.split(";");
+      const numberCodeStrings = numbersAndSemicolons.split(';');
       for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
         const numberCodeString = numberCodeStrings[idx];
         const numberCode = parseInt(numberCodeString, 10);
@@ -556,6 +679,30 @@ export default class SingleTerminal {
     }
   }
 
+  _clearDataFromCursorToEndOfScreen() {
+    // Clear from cursor to end of screen. We assume this mean from cursor location to end
+    // of all data
+    // First, remove all chars at the cursor position or beyond
+    // on the current row
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
+    currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
+    // Add cursor char at current position
+    const cursorChar = new TerminalChar();
+    cursorChar.char = ' ';
+    cursorChar.forCursor = true;
+    currRow.terminalChars.push(cursorChar);
+    // The cursor has not changed row so we do not need to check if this row
+    // still passes the filter
+
+    // Remove all soon to be deleted rows from the filtered rows array (if they are present)
+    for (let idx = this.cursorPosition[0] + 1; idx < this.terminalRows.length; idx += 1) {
+      this._removeFromFilteredRows(this.terminalRows[idx]);
+    }
+    // Now remove all rows past the one the cursor is on
+    this.terminalRows.splice(this.cursorPosition[0] + 1);
+  }
+
   /**
    * Parses received data and displays it as numbers on the terminal.
    *
@@ -572,7 +719,7 @@ export default class SingleTerminal {
       this.partialNumberBuffer.push(rxByte);
 
       let numberAsBigInt = BigInt(0); // This is used for the new line on match feature
-      let numberStr = ""; // This is used for displaying the number in the terminal
+      let numberStr = ''; // This is used for displaying the number in the terminal
       //========================================================================
       // CREATE NUMBER PART OF STRING
       //========================================================================
@@ -592,7 +739,7 @@ export default class SingleTerminal {
           } else if (this.rxSettings.endianness === Endianness.BIG_ENDIAN) {
             byteIdx = idx;
           } else {
-            throw Error("Invalid endianness setting: " + this.rxSettings.endianness);
+            throw Error('Invalid endianness setting: ' + this.rxSettings.endianness);
           }
           let partialHexString = this.partialNumberBuffer[byteIdx].toString(16);
           partialHexString = partialHexString.padStart(2, '0');
@@ -605,7 +752,7 @@ export default class SingleTerminal {
         } else if (this.rxSettings.hexCase === HexCase.LOWERCASE) {
           numberStr = numberStr.toLowerCase();
         } else {
-          throw Error("Invalid hex case setting: " + this.rxSettings.hexCase);
+          throw Error('Invalid hex case setting: ' + this.rxSettings.hexCase);
         }
         numberAsBigInt = BigInt('0x' + numberStr);
         // "0x" is added later after the padding step if enabled
@@ -749,7 +896,7 @@ export default class SingleTerminal {
       // INVALID
       //============
       else {
-        throw Error("Invalid number type: " + this.rxSettings.numberType);
+        throw Error('Invalid number type: ' + this.rxSettings.numberType);
       }
       // console.log('Converted numberStr=', numberStr);
 
@@ -758,13 +905,13 @@ export default class SingleTerminal {
       //========================================================================
       if (this.rxSettings.padValues) {
         // If padding is set to automatic, pad to the largest possible value for the selected number type
-        let paddingChar = " ";
+        let paddingChar = ' ';
         if (this.rxSettings.paddingCharacter === PaddingCharacter.ZERO) {
-          paddingChar = "0";
+          paddingChar = '0';
         } else if (this.rxSettings.paddingCharacter === PaddingCharacter.WHITESPACE) {
-          paddingChar = " ";
+          paddingChar = ' ';
         } else {
-          throw Error("Invalid padding character setting: " + this.rxSettings.paddingCharacter);
+          throw Error('Invalid padding character setting: ' + this.rxSettings.paddingCharacter);
         }
         // If padding is set to automatic, pad to the largest possible value for the selected number type
         let numPaddingChars = this.rxSettings.numPaddingChars.appliedValue;
@@ -801,14 +948,14 @@ export default class SingleTerminal {
           } else if (this.rxSettings.numberType === NumberType.FLOAT64) {
             numPaddingChars = 6;
           } else {
-            throw Error("Invalid number type: " + this.rxSettings.numberType);
+            throw Error('Invalid number type: ' + this.rxSettings.numberType);
           }
         }
 
         // Handle negative numbers combined with zeroes padding by padding after the negative sign
         // (padding negative numbers with spaces is handled the same way as positive numbers, the padding
         // goes before the negative sign).
-        if (this.rxSettings.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === "-") {
+        if (this.rxSettings.paddingCharacter == PaddingCharacter.ZERO && numberStr[0] === '-') {
           numberStr = numberStr.slice(1);
           numPaddingChars -= 1; // Negative sign takes up one padding char
           numberStr = '-' + numberStr.padStart(numPaddingChars, paddingChar);
@@ -821,7 +968,7 @@ export default class SingleTerminal {
 
       // Add 0x if hex and setting is enabled
       if (this.rxSettings.numberType === NumberType.HEX && this.rxSettings.prefixHexValuesWith0x) {
-        numberStr = "0x" + numberStr;
+        numberStr = '0x' + numberStr;
       }
 
       //========================================================================
@@ -851,7 +998,7 @@ export default class SingleTerminal {
       // in the settings
       let insertNewLine = false;
       if (this.rxSettings.insertNewLineOnMatchedValue) {
-        const valueToInsertNewLineAsNum = BigInt('0x' +  this.rxSettings.newLineMatchValueAsHex.appliedValue);
+        const valueToInsertNewLineAsNum = BigInt('0x' + this.rxSettings.newLineMatchValueAsHex.appliedValue);
         if (numberAsBigInt == valueToInsertNewLineAsNum) {
           insertNewLine = true;
         }
@@ -933,7 +1080,7 @@ export default class SingleTerminal {
       // If there is no character here, add one for cursor
       if (this.cursorPosition[1] === currRow.terminalChars.length) {
         const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = " ";
+        spaceTerminalChar.char = ' ';
         spaceTerminalChar.forCursor = true;
         currRow.terminalChars.push(spaceTerminalChar);
       }
@@ -941,8 +1088,8 @@ export default class SingleTerminal {
   }
 
   /**
-   * Moves the cursor up the specified number of rows. Does not move the cursor any further
-   * it it reaches the first row.
+   * Moves the cursor up the specified number of rows. Does not move the cursor up
+   * into the scrollback buffer, so that it behaves like a proper terminal.
    * @param numRows The number of rows to move up.
    */
   _cursorUp(numRows: number) {
@@ -950,6 +1097,11 @@ export default class SingleTerminal {
     for (let numRowsGoneUp = 0; numRowsGoneUp < numRows; numRowsGoneUp += 1) {
       // Never go above the first row!
       if (this.cursorPosition[0] === 0) {
+        return;
+      }
+      // Never go into the scrollback buffer
+      // e.g. 10 terminal rows, terminal height is 2, cursor pos would stop at 7
+      if (this.cursorPosition[0] <= this.terminalRows.length - this.terminalHeightChars) {
         return;
       }
       // If we reach here, we can go up by at least 1
@@ -977,7 +1129,7 @@ export default class SingleTerminal {
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
         const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = " ";
+        newTerminalChar.char = ' ';
         // newTerminalChar.forCursor = true;
         newRow.terminalChars.push(newTerminalChar);
       }
@@ -1042,7 +1194,7 @@ export default class SingleTerminal {
       // Add empty spaces in this new row (if needed) up to the current cursor column position
       while (this.cursorPosition[1] >= newRow.terminalChars.length) {
         const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = " ";
+        newTerminalChar.char = ' ';
         newRow.terminalChars.push(newTerminalChar);
       }
     }
@@ -1092,7 +1244,7 @@ export default class SingleTerminal {
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
         terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
       } else {
-        throw Error("Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=" + nonVisibleCharDisplayBehavior);
+        throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
       }
     }
 
@@ -1132,7 +1284,7 @@ export default class SingleTerminal {
       }
     }
 
-    terminalChar.className = classList.join(" ");
+    terminalChar.className = classList.join(' ');
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position
@@ -1154,7 +1306,7 @@ export default class SingleTerminal {
       // Add space here is there is no text
       if (this.cursorPosition[1] === rowToInsertInto.terminalChars.length) {
         const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = " ";
+        spaceTerminalChar.char = ' ';
         spaceTerminalChar.forCursor = true;
         rowToInsertInto.terminalChars.push(spaceTerminalChar);
       }
@@ -1162,7 +1314,7 @@ export default class SingleTerminal {
   }
 
   /**
-   * Clears all data from the terminal, clears any internal buffers, resets all styles, resets cursor position,
+   * Clears all data from the terminal (including scrollback), clears any internal buffers, resets all styles, resets cursor position,
    * and re-enables scroll lock.
    */
   clear() {
@@ -1178,7 +1330,7 @@ export default class SingleTerminal {
     const terminalRow = new TerminalRow(this.uniqueRowIndexCount, false);
     this.uniqueRowIndexCount += 1;
     const terminalChar = new TerminalChar();
-    terminalChar.char = " ";
+    terminalChar.char = ' ';
     terminalChar.forCursor = true;
     terminalRow.terminalChars.push(terminalChar);
     this.terminalRows.push(terminalRow);
@@ -1216,7 +1368,7 @@ export default class SingleTerminal {
 
   _resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = "";
+    this.partialEscapeCode = '';
     this.inCSISequence = false;
   }
 
@@ -1225,20 +1377,18 @@ export default class SingleTerminal {
   }
 
   /**
-   * Removes the oldest rows of data if needed to make sure it don't exceed the scrollback buffer size.
+   * Removes the oldest rows of data if needed to make sure the total number of rows in terminalRows does not exceed the terminal height + scrollback buffer size.
    */
-  limitNumRows() {
-    const maxRows = this.displaySettings.scrollbackBufferSizeRows.appliedValue;
-    // console.log('limitNumRows() called. maxRows=', maxRows);
+  _limitNumRows() {
+    // Max. number of rows in the terminalRows array has to take into account the
+    // terminal height and size of the scrollback buffer
+    const maxRows = this.terminalHeightChars + this.displaySettings.scrollbackBufferSizeRows.appliedValue;
     const numRowsToRemove = this.terminalRows.length - maxRows;
     if (numRowsToRemove <= 0) {
-      // console.log('No need to remove any rows.');
       return;
     }
-    // console.log(`Removing ${numRowsToRemove} from terminal which has ${this.terminalRows.length} rows.`)
     // Remove oldest rows (rows from start of array)
     const deletedRows = this.terminalRows.splice(0, numRowsToRemove);
-    // console.log(`Now has ${this.terminalRows.length} rows.`)
 
     // We need to update the cursor position to point to the
     // same row before we deleted some
@@ -1337,7 +1487,7 @@ export default class SingleTerminal {
     }
     const row = this.terminalRows[rowIdx];
     const rowText = row.getText();
-    if (this.filterText === "") {
+    if (this.filterText === '') {
       // No filter text, so all rows pass
       return true;
     }
@@ -1365,7 +1515,7 @@ export default class SingleTerminal {
       // uniqueRowId. Begin search from the end of the array, as this is where
       // we'll be normally be doing these sorts of operations (e.g. it will be more
       // efficient most of the time)
-      console.log("Row is not in filtered rows, need to insert it at the correct location");
+      // console.log('Row is not in filtered rows, need to insert it at the correct location');
       for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
         if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
           // Insert after this index
@@ -1388,6 +1538,14 @@ export default class SingleTerminal {
     }
   }
 
+  _addOrRemoveRowFromFilteredRows = (rowIdx: number) => {
+    if (this._doesRowPassFilter(rowIdx)) {
+      this._addToFilteredRows(this.terminalRows[rowIdx]);
+    } else {
+      this._removeFromFilteredRows(this.terminalRows[rowIdx]);
+    }
+  }
+
   getSelectionInfoIfWithinTerminal() {
     return SelectionController.getSelectionInfo(window.getSelection(), this.id);
   }
@@ -1397,5 +1555,5 @@ export default class SingleTerminal {
    */
   clearPartialNumberBuffer = () => {
     this.partialNumberBuffer = [];
-  }
+  };
 }

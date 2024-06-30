@@ -9,17 +9,17 @@ import { Button } from '@mui/material';
 import packageDotJson from '../../package.json';
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
-import Snackbar from './Snackbar/Snackbar';
+import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { PortState } from './Settings/PortConfigurationSettings/PortConfigurationSettings';
+import { PortState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
-import { LastUsedSerialPort, ProfileManager } from './ProfileManager/ProfileManager';
+import { LastUsedSerialPort, AppDataManager } from './AppDataManager/AppDataManager';
 
 declare global {
   interface String {
@@ -99,7 +99,7 @@ export class App {
   // Version of the NinjaTerm app. Read from package.json
   version: string;
 
-  snackbar: Snackbar;
+  snackbar: SnackbarController;
 
   shownMainPane: MainPanes;
 
@@ -115,7 +115,7 @@ export class App {
 
   fakePortController: FakePortsController = new FakePortsController(this);
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
 
   selectionController: SelectionController = new SelectionController();
 
@@ -132,10 +132,10 @@ export class App {
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 
-    this.profileManager = new ProfileManager(this);
-    this.settings = new Settings(this.profileManager, this.fakePortController);
+    this.profileManager = new AppDataManager(this);
+    this.settings = new Settings(this);
 
-    this.snackbar = new Snackbar();
+    this.snackbar = new SnackbarController();
 
     this.terminals = new Terminals(this);
 
@@ -170,8 +170,6 @@ export class App {
   }
 
   onLastAppliedProfileNameChanged = () => {
-    console.log('onLastAppliedProfileNameChanged() called. this.profileManager.lastAppliedProfileName=', this.profileManager.lastAppliedProfileName);
-
     // Set the title of the app to the last applied profile name
     document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
   };

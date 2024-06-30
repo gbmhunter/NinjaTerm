@@ -1,14 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 
-import { DisplaySettingsConfig } from '../Settings/DisplaySettings/DisplaySettings';
-import { GeneralSettingsConfig } from '../Settings/GeneralSettings/GeneralSettings';
-import { PortConfigurationConfig, PortState } from '../Settings/PortConfigurationSettings/PortConfigurationSettings';
-import { RxSettingsConfig } from '../Settings/RxSettings/RxSettings';
-import { TxSettingsConfig } from '../Settings/TxSettings/TxSettings';
-import { MacroControllerConfig } from '../Terminals/RightDrawer/Macros/MacroController';
+import { PortState } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
-import { RightDrawerConfig } from '../Terminals/RightDrawer/RightDrawer';
+import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
+import { ProfileV3 } from './DataClasses/Profile';
+import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 
 export class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -16,69 +13,17 @@ export class LastUsedSerialPort {
 }
 
 /**
- * Everything in this class must be POD (plain old data) and serializable to JSON.
+ * Alias to the up-to-date version of the app data class.
  */
-export class RootConfig {
-  version = 2;
-
-  terminal = {
-    macroController: new MacroControllerConfig(),
-    rightDrawer: new RightDrawerConfig(),
-  };
-
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
-
-  settings = {
-    portSettings: new PortConfigurationConfig(),
-    txSettings: new TxSettingsConfig(),
-    rxSettings: new RxSettingsConfig(),
-    displaySettings: new DisplaySettingsConfig(),
-    generalSettings: new GeneralSettingsConfig(),
-  };
-}
-
-/**
- * This class represents all the data stored in a user profile. It is used to store use-specific
- * settings for the application (e.g. all the settings to talk to a particular
- * embedded device). The class is serializable to JSON.
- */
-export class Profile {
-  name: string = '';
-  rootConfig: RootConfig = new RootConfig();
-
-  constructor(name: string) {
-    this.name = name;
-    makeAutoObservable(this);
-  }
-}
-
-/**
- * This class represents all the data that the app needs to store/load from
- * local storage (i.e. the root object). It must be serializable to JSON.
- */
-export class AppData {
-
-  version = 1;
-
-  profiles: Profile[] = [];
-
-  /**
-   * Represents the current application configuration. This is saved regularly so that when the app reloads,
-   * it can restore the last known configuration.
-   */
-  currentAppConfig: RootConfig = new RootConfig();
-
-  constructor() {
-    makeAutoObservable(this);
-  }
-}
+export const AppData = AppDataV2;
+type AppData = AppDataV2;
 
 const APP_DATA_STORAGE_KEY = 'appData';
 
-export class ProfileManager {
+export class AppDataManager {
   app: App;
 
-  appData: AppData = new AppData();
+  appData: AppDataV2 = new AppDataV2();
 
   _profileChangeCallbacks: (() => void)[] = [];
 
@@ -137,24 +82,16 @@ export class ProfileManager {
     if (appDataAsJson === null) {
       // No config key found in users store, create one!
       console.log('App data not found in local storage. Creating default app data.');
-      appData = new AppData();
-      appData.profiles = [];
-      appData.profiles.push(new Profile('Default profile'));
+      appData = new AppDataV2();
       // Save just-created config back to store.
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
     } else {
       // A version of app data was found in local storage. Load it.
       let appDataUnknownVersion = JSON.parse(appDataAsJson);
-      if (appDataUnknownVersion.version == 1) {
-        // Latest version, don't need to convert anything
-        // or save it back
-        appData = appDataUnknownVersion;
-      } else {
-        console.error('Unknown app data version found: ', appDataUnknownVersion.version);
-        appData = new AppData();
-        appData.profiles = [];
-        appData.profiles.push(new Profile('Default profile'));
-        // Save just-created config back to store.
+      let wasChanged;
+      ({ appData, wasChanged } = this._updateAppData(appDataUnknownVersion));
+
+      if (wasChanged) {
         window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
       }
     }
@@ -162,6 +99,54 @@ export class ProfileManager {
     // Load data into class
     this.appData = appData;
   };
+
+  /**
+   * Use this to update an app data object read from local storage to the latest version.
+   *
+   * Does not modify the input object, instead returns a new object with the updated version.
+   *
+   * @param appData The app data object to update.
+   * @returns An object containing the updated app data and a boolean indicating if the app data was changed.
+   */
+  _updateAppData = (appData: any): { appData: AppData, wasChanged: boolean } => {
+    let wasChanged = false;
+    let updatedAppData = JSON.parse(JSON.stringify(appData)) as any;
+
+    //=============================================================================
+    // VERSION 1 -> VERSION 2
+    //=============================================================================
+    if (updatedAppData.version === 1) {
+      console.log('Updating app data from version 1 to version 2...');
+      // Convert to v2
+      // Port settings got a new field, display settings got two new fields
+      let upgradeRootConfig = (rootConfig: any) => {
+        console.log('Upgrading profile: ', rootConfig);
+        rootConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
+        rootConfig.settings.displaySettings.terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+        rootConfig.settings.displaySettings.terminalHeightChars = 25;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        upgradeRootConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      upgradeRootConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 2;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 2) {
+      // Nothing to do, already latest version
+      // updatedAppData = appData;
+      console.log(`App data is at latest version (v${updatedAppData.version}).`);
+    }
+
+    if (updatedAppData.version !== 2) {
+      console.error('Unknown app data version found: ', appData.version);
+      updatedAppData = new AppDataV2();
+      wasChanged = true;
+    }
+
+    return { appData: updatedAppData, wasChanged };
+  }
 
   /**
    * Save the current app configuration to local storage.
@@ -184,7 +169,7 @@ export class ProfileManager {
       newProfileNameToCheck = newProfileName + ' ' + nextProfileNum;
     }
     // At this point newProfileNameToCheck is the name we want
-    const newProfile = new Profile(newProfileNameToCheck);
+    const newProfile = new ProfileV3(newProfileNameToCheck);
     this.appData.profiles.push(newProfile);
     this.saveAppData();
 

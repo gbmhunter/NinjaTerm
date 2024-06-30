@@ -7,6 +7,7 @@ import {
   Autocomplete,
   Button,
   ButtonPropsColorOverrides,
+  Checkbox,
   FormControl,
   FormControlLabel,
   InputAdornment,
@@ -36,7 +37,7 @@ import {
   PortState,
   STOP_BIT_OPTIONS,
   StopBits,
-} from 'src/model/Settings/PortConfigurationSettings/PortConfigurationSettings';
+} from 'src/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 
 import { SettingsCategories } from 'src/model/Settings/Settings';
@@ -73,7 +74,7 @@ export default observer((props: Props) => {
     <Resizable // This what provides the resizing functionality for the right drawer
       className="box"
       width={rightDrawer.drawerWidth_px}
-      onResize={(e, {node, size, handle}) => {
+      onResize={(e, { node, size, handle }) => {
         rightDrawer.setDrawerWidth(size.width);
       }}
       resizeHandles={['w']}
@@ -110,16 +111,8 @@ export default observer((props: Props) => {
         }}
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
-        <Accordion
-          disableGutters
-          expanded={rightDrawer.quickPortSettingsIsExpanded}
-          onChange={rightDrawer.handleQuickPortSettingsAccordionChange}
-          sx={{ width: '100%' }}
-        >
-          <AccordionSummary
-            expandIcon={<ArrowDownwardIcon />}
-            data-testid="quick-port-settings-accordion-summary"
-          >
+        <Accordion disableGutters expanded={rightDrawer.quickPortSettingsIsExpanded} onChange={rightDrawer.handleQuickPortSettingsAccordionChange} sx={{ width: '100%' }}>
+          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
             Quick Port Settings
           </AccordionSummary>
           <AccordionDetails>
@@ -142,7 +135,10 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* BAUD RATE */}
               {/* ============================================================== */}
-              <Tooltip title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected.">
+              <Tooltip
+                title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
+                enterDelay={500}
+              >
                 <Autocomplete
                   freeSolo
                   options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
@@ -152,20 +148,25 @@ export default observer((props: Props) => {
                       label="Baud rate"
                       error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
                       helperText={app.settings.portConfiguration.baudRateErrorMsg}
-                      onKeyDown={(e) => {
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          // Apply baud rate
+                          await app.settings.portConfiguration.setBaudRate();
+                        }
+                        // Prevent the global keydown event from being triggered
                         e.stopPropagation();
-                      }} // Prevents the global keydown event from being triggered
+                      }}
+                      onBlur={async () => {
+                        // Apply baud rate
+                        await app.settings.portConfiguration.setBaudRate();
+                      }}
                     />
                   )}
-                  disabled={app.portState !== PortState.CLOSED}
+                  disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                   sx={{ m: 1, width: 160 }}
                   size="small"
-                  onChange={(event: any, newValue: string | null) => {
-                    console.log('onChange() called. newValue: ', newValue);
-                  }}
                   inputValue={app.settings.portConfiguration.baudRateInputValue}
                   onInputChange={(event, newInputValue) => {
-                    console.log('newInputValue: ', newInputValue);
                     app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
                   }}
                 />
@@ -173,15 +174,15 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* NUM. DATA BITS */}
               {/* ============================================================== */}
-              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right">
+              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right" enterDelay={500}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Num. data bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.numDataBits}
                     label="Num. Data Bits"
-                    disabled={app.portState !== PortState.CLOSED}
-                    onChange={(e) => {
-                      app.settings.portConfiguration.setNumDataBits(e.target.value as number);
+                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    onChange={async (e) => {
+                      await app.settings.portConfiguration.setNumDataBits(e.target.value as number);
                     }}
                   >
                     {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
@@ -200,15 +201,16 @@ export default observer((props: Props) => {
               <Tooltip
                 title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
                 placement="right"
+                enterDelay={500}
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Parity</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.parity}
                     label="Parity"
-                    disabled={app.portState !== PortState.CLOSED}
-                    onChange={(e) => {
-                      app.settings.portConfiguration.setParity(e.target.value as Parity);
+                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    onChange={async (e) => {
+                      await app.settings.portConfiguration.setParity(e.target.value as Parity);
                     }}
                   >
                     {Object.values(Parity).map((parity) => {
@@ -224,15 +226,15 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* STOP BITS */}
               {/* ============================================================== */}
-              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right">
+              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right" enterDelay={500}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Stop bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.stopBits}
                     label="Stop Bits"
-                    disabled={app.portState !== PortState.CLOSED}
-                    onChange={(e) => {
-                      app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
+                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    onChange={async (e) => {
+                      await app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
                     }}
                   >
                     {STOP_BIT_OPTIONS.map((stopBits) => {
@@ -251,15 +253,16 @@ export default observer((props: Props) => {
               <Tooltip
                 title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
                 placement="right"
+                enterDelay={500}
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Flow control</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.flowControl}
                     label="Parity"
-                    disabled={app.portState !== PortState.CLOSED}
-                    onChange={(e) => {
-                      app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
+                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    onChange={async (e) => {
+                      await app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
                     }}
                   >
                     {Object.values(FlowControl).map((flowControl) => {
@@ -273,6 +276,26 @@ export default observer((props: Props) => {
                 </FormControl>
               </Tooltip>
             </div>
+
+            {/* =============================================================== */}
+            {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
+            {/* =============================================================== */}
+            <Tooltip
+              title="Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again."
+              enterDelay={500}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
+                    }}
+                  />
+                }
+                label="Allow settings changes when open (reconnect)"
+              />
+            </Tooltip>
 
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px' }}>
               {/* =============================================================== */}
@@ -327,12 +350,7 @@ export default observer((props: Props) => {
         {/* ======================================================= */}
         {/* OTHER QUICK SETTINGS */}
         {/* ======================================================= */}
-        <Accordion
-          disableGutters
-          expanded={rightDrawer.otherQuickSettingsIsExpanded}
-          onChange={rightDrawer.handleOtherQuickSettingsAccordionChange}
-          sx={{ width: '100%' }}
-        >
+        <Accordion disableGutters expanded={rightDrawer.otherQuickSettingsIsExpanded} onChange={rightDrawer.handleOtherQuickSettingsAccordionChange} sx={{ width: '100%' }}>
           <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</AccordionSummary>
           <AccordionDetails>
             <div style={{ fontSize: '12px' }}>
@@ -447,12 +465,7 @@ export default observer((props: Props) => {
         {/* =============================================================================== */}
         {/* MACROS */}
         {/* =============================================================================== */}
-        <Accordion
-          disableGutters
-          expanded={rightDrawer.macrosIsExpanded}
-          onChange={rightDrawer.handleMacrosAccordionChange}
-          sx={{ width: '100%' }}
-        >
+        <Accordion disableGutters expanded={rightDrawer.macrosIsExpanded} onChange={rightDrawer.handleMacrosAccordionChange} sx={{ width: '100%' }}>
           <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
             Macros
           </AccordionSummary>

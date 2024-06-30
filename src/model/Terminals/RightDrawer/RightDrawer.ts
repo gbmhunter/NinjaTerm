@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { MacroController } from './Macros/MacroController';
 import { App } from 'src/model/App';
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
 export class RightDrawerConfig {
   /**
@@ -25,7 +25,7 @@ export class RightDrawerConfig {
 
 export default class RightDrawer {
 
-  profileManager: ProfileManager;
+  profileManager: AppDataManager;
   macroController: MacroController;
 
   drawerWidth_px = 400;

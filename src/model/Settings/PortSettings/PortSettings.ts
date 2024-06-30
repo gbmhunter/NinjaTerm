@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import { App } from 'src/model/App';
 
 export enum PortState {
   CLOSED,
@@ -34,34 +35,10 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
-export class PortConfigurationConfig {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 2;
+export default class PortSettings {
 
-  baudRate = 115200;
-
-  numDataBits = 8;
-
-  parity = Parity.NONE;
-
-  stopBits: StopBits = 1;
-
-  flowControl = FlowControl.NONE;
-
-  connectToSerialPortAsSoonAsItIsSelected = true;
-
-  resumeConnectionToLastSerialPortOnStartup = true;
-
-  reopenSerialPortIfUnexpectedlyClosed = true;
-}
-
-export default class PortConfiguration {
-
-  profileManager: ProfileManager;
+  app: App
+  profileManager: AppDataManager;
 
   baudRateInputValue: string;
 
@@ -89,8 +66,16 @@ export default class PortConfiguration {
 
   reopenSerialPortIfUnexpectedlyClosed = true;
 
-  constructor(profileManager: ProfileManager) {
-    this.profileManager = profileManager;
+  /**
+   * If true, the port settings UI elements will not be disabled when the port is open, and
+   * the user can change them. Upon any change, the port will be closed and reopened with the
+   * new settings (the Web Serial API does not allow us to change settings while the port is open).
+   */
+  allowSettingsChangesWhenOpen = false;
+
+  constructor(app: App) {
+    this.app = app;
+    this.profileManager = app.profileManager;
     this.baudRateInputValue = this.baudRate.toString();
     // this.config =
     this._loadConfig();
@@ -100,47 +85,50 @@ export default class PortConfiguration {
     makeAutoObservable(this);
   }
 
-  setBaudRate = (baudRate: number) => {
-    this.baudRate = baudRate;
-    this._saveConfig();
-  }
-
   setBaudRateInputValue = (value: string) => {
     this.baudRateInputValue = value;
+  }
 
-    const parsed = this.baudRateValidation.safeParse(value);
-    if (parsed.success) {
-      this.baudRateErrorMsg = '';
-      console.log("Setting baud rate to: ", parsed.data);
-      this.setBaudRate(parsed.data);
-    } else {
+  setBaudRate = async () => {
+    const parsed = this.baudRateValidation.safeParse(this.baudRateInputValue);
+    if (!parsed.success) {
       // We want to keep this simple, just show the first
       // error message
       this.baudRateErrorMsg = parsed.error.errors[0].message;
+      return;
     }
+
+    this.baudRateErrorMsg = '';
+    this.baudRate = parsed.data;
+    this._saveConfig();
+    await this._reconnectIfNeeded();
   }
 
-  setNumDataBits = (numDataBits: number) => {
+  setNumDataBits = async (numDataBits: number) => {
     if (typeof numDataBits !== 'number') {
       throw new Error("numDataBits must be a number");
     }
     this.numDataBits = numDataBits;
     this._saveConfig();
+    await this._reconnectIfNeeded();
   }
 
-  setParity = (parity: Parity) => {
+  setParity = async (parity: Parity) => {
     this.parity = parity;
     this._saveConfig();
+    await this._reconnectIfNeeded();
   }
 
-  setStopBits = (stopBits: StopBits) => {
+  setStopBits = async (stopBits: StopBits) => {
     this.stopBits = stopBits;
     this._saveConfig();
+    await this._reconnectIfNeeded();
   }
 
-  setFlowControl = (flowControl: FlowControl) => {
+  setFlowControl = async (flowControl: FlowControl) => {
     this.flowControl = flowControl;
     this._saveConfig();
+    await this._reconnectIfNeeded();
   }
 
   setConnectToSerialPortAsSoonAsItIsSelected = (value: boolean) => {
@@ -158,20 +146,13 @@ export default class PortConfiguration {
     this._saveConfig();
   }
 
+  setAllowSettingsChangesWhenOpen = (value: boolean) => {
+    this.allowSettingsChangesWhenOpen = value;
+    this._saveConfig();
+  }
+
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
-    //===============================================
-    // UPGRADE PATH
-    //===============================================
-    const latestVersion = new PortConfigurationConfig().version;
-    if (configToLoad.version === latestVersion) {
-      // Do nothing
-    } else {
-      console.log(`Out-of-date config version ${configToLoad.version} found.` +
-                    ` Updating to version ${latestVersion}.`);
-      this._saveConfig();
-      configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
-    }
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
@@ -183,6 +164,7 @@ export default class PortConfiguration {
     this.connectToSerialPortAsSoonAsItIsSelected = configToLoad.connectToSerialPortAsSoonAsItIsSelected;
     this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
     this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
+    this.allowSettingsChangesWhenOpen = configToLoad.allowSettingsChangesWhenOpen;
 
     this.setBaudRateInputValue(this.baudRate.toString());
   };
@@ -198,6 +180,7 @@ export default class PortConfiguration {
     config.connectToSerialPortAsSoonAsItIsSelected = this.connectToSerialPortAsSoonAsItIsSelected;
     config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
     config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
+    config.allowSettingsChangesWhenOpen = this.allowSettingsChangesWhenOpen;
 
     this.profileManager.saveAppData();
   };
@@ -209,7 +192,7 @@ export default class PortConfiguration {
    * @returns The short hand serial port config for displaying to the user.
    */
   get shortSerialConfigName() {
-    return PortConfiguration.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+    return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
   }
 
   static computeShortSerialConfigName(baudRate: number, numDataBits: number, parity: Parity, stopBits: StopBits) {
@@ -220,6 +203,19 @@ export default class PortConfiguration {
     output += parity[0]; // Take first letter of parity, e.g. (n)one, (e)ven, (o)dd
     output += stopBits.toString();
     return output;
+  }
+
+  /**
+   * Designed to be called every time a port setting is changed while the port is open.
+   *
+   * Will close the port and reopen, if port is in the open state.
+   */
+  _reconnectIfNeeded = async () => {
+    if (this.app.portState === PortState.OPENED) {
+      await this.app.closePort({ silenceSnackbar: true});
+      await this.app.openPort({ silenceSnackbar: true});
+      this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
+    }
   }
 }
 

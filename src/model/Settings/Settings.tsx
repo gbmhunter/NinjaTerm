@@ -6,11 +6,12 @@ import { makeAutoObservable } from 'mobx';
 import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
-import PortConfiguration from './PortConfigurationSettings/PortConfigurationSettings';
+import PortSettings from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfileSettings/ProfileSettings';
-import { ProfileManager } from '../ProfileManager/ProfileManager';
+import { AppDataManager } from '../AppDataManager/AppDataManager';
+import { App } from '../App';
 
 
 
@@ -24,12 +25,13 @@ export enum SettingsCategories {
 }
 
 export class Settings {
-  fakePortsController: FakePortsController;
+
+  app: App;
 
   activeSettingsCategory: SettingsCategories =
     SettingsCategories.PORT_CONFIGURATION;
 
-  portConfiguration: PortConfiguration;
+  portConfiguration: PortSettings;
 
   txSettings: TxSettings;
 
@@ -47,15 +49,15 @@ export class Settings {
    * @param appStorage Needed to load/save settings into local storage.
    * @param fakePortController Needed to show the hidden fake port dialog.
    */
-  constructor(profileManager: ProfileManager, fakePortController: FakePortsController) {
-    this.fakePortsController = fakePortController;
+  constructor(app: App) {
+    this.app = app;
 
-    this.portConfiguration = new PortConfiguration(profileManager);
-    this.txSettings = new TxSettings(profileManager);
-    this.rxSettings = new RxSettings(profileManager);
-    this.displaySettings = new DisplaySettings(profileManager);
-    this.generalSettings = new GeneralSettings(profileManager);
-    this.profilesSettings = new ProfilesSettings(profileManager);
+    this.portConfiguration = new PortSettings(this.app);
+    this.txSettings = new TxSettings(this.app.profileManager);
+    this.rxSettings = new RxSettings(this.app.profileManager);
+    this.displaySettings = new DisplaySettings(this.app.profileManager);
+    this.generalSettings = new GeneralSettings(this.app.profileManager);
+    this.profilesSettings = new ProfilesSettings(this.app.profileManager);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
@@ -66,7 +68,7 @@ export class Settings {
   onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     // console.log(event);
     if (event.key === 'f') {
-      this.fakePortsController.setIsDialogOpen(true);
+      this.app.fakePortController.setIsDialogOpen(true);
     }
   }
 }

@@ -5,7 +5,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
-import { PortState } from "src/model/Settings/PortConfigurationSettings/PortConfigurationSettings";
+import { PortState } from "src/model/Settings/PortSettings/PortSettings";
 import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macro";
 
 interface Props {

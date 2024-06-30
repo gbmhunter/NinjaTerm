@@ -9,6 +9,7 @@ import ReactGA from "react-ga4";
 
 import AppView from './view/AppView';
 import HomepageView from './Homepage/HomepageView';
+import ManualView from './Manual/ManualView';
 
 // Google Analytics. Only initialize in production, otherwise things like
 // Playwright tests can spam GA and skew data
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/app",
     element: <AppView />,
+  },
+  {
+    path: "/manual",
+    element: <ManualView />,
   },
 ]);
 

@@ -1,37 +1,10 @@
 import { makeAutoObservable } from "mobx";
 
 import { App } from "src/model/App";
-import { Macro, MacroConfig, MacroDataType, TxStepBreak, TxStepData } from "./Macro";
+import { Macro, TxStepBreak, TxStepData } from "./Macro";
 import { EnterKeyPressBehavior } from "src/model/Settings/TxSettings/TxSettings";
 
-const NUM_MACROS = 8;
-
-const CONFIG_VERSION = 1;
-
-export class MacroControllerConfig {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = CONFIG_VERSION;
-
-  macroConfigs: MacroConfig[] = [];
-
-  constructor() {
-    // Create 8 macros by default and put some example data in the first two. This will
-    // only be applied the first time the user runs the app, after then it will load
-    // saved config from local storage
-    this.macroConfigs = [];
-    for (let i = 0; i < NUM_MACROS; i++) {
-      let macroConfig = new MacroConfig();
-      this.macroConfigs.push(macroConfig);
-    }
-    this.macroConfigs[0].data = 'Hello\\n';
-    this.macroConfigs[1].data = 'deadbeef';
-    this.macroConfigs[1].dataType = MacroDataType.HEX;
-  }
-}
+export const NUM_MACROS = 8;
 
 export class MacroController {
   app: App;
@@ -125,19 +98,6 @@ export class MacroController {
 
   _loadConfig() {
     let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
-
-    //===============================================
-    // UPGRADE PATH
-    //===============================================
-    const latestVersion = new MacroControllerConfig().version;
-    if (configToLoad.version === latestVersion) {
-      // Do nothing
-    } else {
-      console.log(`Out-of-date config version ${configToLoad.version} found.` +
-                    ` Updating to version ${latestVersion}.`);
-      this._saveConfig();
-      configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
-    }
 
     // If we get here we loaded a valid config. Apply config.
     this.recreateMacros(configToLoad.macroConfigs.length);

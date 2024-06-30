@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "version": "4.18.0",
+  "version": "4.19.0",
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
@@ -88,5 +88,6 @@
     "vite-plugin-checker": "^0.6.4",
     "vite-plugin-pwa": "^0.20.0",
     "vitest": "^1.6.0"
-  }
+  },
+  "type": "module"
 }

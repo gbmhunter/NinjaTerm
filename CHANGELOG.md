@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.19.0] - 2024-06-30
+
+### Added
+
+- Added the ability to modify port settings whilst the port is open (port is quickly disconnected and reconnected with new settings).
+- Added support for the ESC[1J, ESC[2J and ESC[3J "Erase in Display" ASCII escape codes (ESC[0J was already supported).
+- Added a "Manual" page to the app, which contains the start of a user manual for NinjaTerm.
+- Added unit tests to make sure app data in local storage can be upgraded correctly.
+
+### Fixed
+
+- Cosmetic cursor at the end of the blurb now blinks again on homepage.
+- Removed a `.only()` from a test which was causing other tests to be skipped.
+- Fixed broken tests in `SingleTerminal.spec.ts` by clearing local storage before each test.
+
+### Changed
+
+- Switched from a CJS to ESM build in vite. CJS build is deprecated. See https://vitejs.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more info.
+- Cursor up escape codes cannot move the cursor up into the scrollback buffer to correctly emulate terminal behaviour.
+
 ## [4.18.0] - 2024-06-16
 
 ### Added
@@ -25,6 +45,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improved the way app data is stored in local storage.
 - Snackbar message when profile is loaded now tells you if already connected port matches the one specified in the profile.
 - Active profile name is updated when the app state is saved to a profile.
+
+### Fixes
+
+- Fixes bug present in v4.17.x where the app would crash relatively often when navigating back to the terminal view from the settings view. This was due to some tooltips containing buttons that were sometimes disabled, without a wrapper div around them.
 
 ## [4.17.1] - 2024-06-11
 
@@ -739,7 +763,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.18.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.19.0...HEAD
+[4.19.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.18.0...v4.19.0
 [4.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...v4.18.0
 [4.17.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.0...v4.17.1
 [4.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.16.0...v4.17.0

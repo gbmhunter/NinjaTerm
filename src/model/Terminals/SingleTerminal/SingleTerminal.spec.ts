@@ -6,26 +6,33 @@ import RxSettings, {
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
 } from 'src/model/Settings/RxSettings/RxSettings';
-import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { ProfileManager } from 'src/model/ProfileManager/ProfileManager';
+import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
+import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
 describe('single terminal tests', () => {
   let app: App;
-  let profileManager: ProfileManager;
+  let profileManager: AppDataManager;
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
+  let snackbarController: SnackbarController;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
+    // Tests leave app data in local storage, but each test expects to start with
+    // a clean slate (so settings will go to their defaults). Clear local storage before each test.
+    window.localStorage.clear();
     app = new App();
-    profileManager = new ProfileManager(app);
+    profileManager = new AppDataManager(app);
     dataProcessingSettings = new RxSettings(profileManager);
     displaySettings = new DisplaySettings(profileManager);
+    snackbarController = new SnackbarController();
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,
       dataProcessingSettings,
       displaySettings,
+      snackbarController,
       null
     );
   });
@@ -51,6 +58,45 @@ describe('single terminal tests', () => {
     singleTerminal._cursorUp(1);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
     expect(singleTerminal.cursorPosition[0]).toBe(0);
+  });
+
+  test('length of terminal rows limited to terminal height + scrollback', () => {
+    // Change height mode to fixed at set height to 2 rows/chars
+    displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+    displaySettings.terminalHeightChars.setDispValue('2');
+    displaySettings.terminalHeightChars.apply();
+    // Set scrollback buffer size to 1 row
+    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+    displaySettings.scrollbackBufferSizeRows.apply();
+
+    singleTerminal.parseData(stringToUint8Array('row1\nrow2\nrow3'));
+    expect(singleTerminal.terminalRows.length).toBe(3);
+
+    // Add another row, total length should still be 3
+    singleTerminal.parseData(stringToUint8Array('row4\n'));
+    expect(singleTerminal.terminalRows.length).toBe(3);
+  });
+
+  test('cursor up can\'t go into scrollback', () => {
+    // Change height mode to fixed at set height to 2 rows/chars
+    displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+    displaySettings.terminalHeightChars.setDispValue('2');
+    displaySettings.terminalHeightChars.apply();
+    // Set scrollback buffer size to 1 row
+    displaySettings.scrollbackBufferSizeRows.setDispValue('1');
+    displaySettings.scrollbackBufferSizeRows.apply();
+
+    singleTerminal.parseData(stringToUint8Array('row1\nrow2\nrow3'));
+    expect(singleTerminal.cursorPosition[0]).toBe(2);
+
+    // Move cursor up 1 row
+    singleTerminal._cursorUp(1);
+    expect(singleTerminal.cursorPosition[0]).toBe(1);
+
+    // Move cursor up 1 row again, should not move the cursor
+    // as the first row is scrollback
+    singleTerminal._cursorUp(1);
+    expect(singleTerminal.cursorPosition[0]).toBe(1);
   });
 
   test('new line printing occurs before cursor is moved', () => {
@@ -144,7 +190,7 @@ describe('single terminal tests', () => {
     expect(singleTerminal.terminalRows[0].terminalChars[4].char).toBe(' ');
   });
 
-  test.only('wrapping flag set correctly', () => {
+  test('wrapping flag set correctly', () => {
     displaySettings.terminalWidthChars.setDispValue('5');
     displaySettings.terminalWidthChars.apply();
     singleTerminal.parseData(stringToUint8Array('0123401234'));

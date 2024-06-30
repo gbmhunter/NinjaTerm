@@ -9,7 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { App } from '../../model/App';
 import { SettingsCategories } from '../../model/Settings/Settings';
 
-import PortConfigurationSettingsView from './PortConfigurationSettings/PortConfigurationSettingsView';
+import PortConfigurationSettingsView from './PortSettings/PortSettingsView';
 import DataProcessingSettingsView from './RxSettings/RxSettingsView';
 import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';

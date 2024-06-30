@@ -11,6 +11,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import InfoIcon from '@mui/icons-material/Info';
 import Grid from '@mui/material/Unstable_Grid2';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';
@@ -76,7 +77,6 @@ export default observer((props: Props) => {
       <Box
         sx={{
           boxSizing: 'border-box',
-          // backgroundColor: '#000000',
           height: '100%',
           width: '100%',
           display: 'flex',
@@ -108,6 +108,9 @@ export default observer((props: Props) => {
           >
             <Button href="/app" variant="contained" size="large" startIcon={<TerminalIcon />}>
               Go to app
+            </Button>
+            <Button href="/manual" variant="outlined" size="large" startIcon={<InfoIcon />}>
+              Manual
             </Button>
             <Button href="https://github.com/gbmhunter/NinjaTerm" target="_blank" variant="outlined" size="large" startIcon={<GitHubIcon />}>
               GitHub
