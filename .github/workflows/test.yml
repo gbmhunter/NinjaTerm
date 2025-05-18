@@ -51,7 +51,7 @@ jobs:
   # See https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md for more details
   merge:
     runs-on: ubuntu-latest
-    needs: upload
+    needs: test
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
