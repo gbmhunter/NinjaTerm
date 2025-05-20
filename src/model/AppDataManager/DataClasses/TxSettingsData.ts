@@ -1,13 +1,6 @@
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
 
-export class TxSettingsDataV1 {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 1;
-
+export class TxSettingsData {
   enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
 
   /**

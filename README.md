@@ -138,6 +138,14 @@ include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Gr
 
 in `vite.config.ts`. This should fix it. You can then uncomment the line again. Toggling this seems to fix this bug, which after reading online might be due to Vite.
 
+## Saving App Data
+
+Settings are stored to the browser's local storage. The app data is saved under the key `appData`. The `AppDataManager` class is responsible for loading the data, updating it to the latest version if out of date, and saving it back to local storage.
+
+The folder `local-storage-data/` contains some example app data files for different versions of the app.
+
+The files with `default` in the name are the default data for that app version. These are used in the unit tests to make sure upgrading app data works correctly.
+
 ## Extensions
 
 * Prettier ESLint: Provides formatting of .tsx files.

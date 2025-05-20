@@ -2,14 +2,7 @@ import { MacroDataType } from 'src/model/Terminals/RightDrawer/Macros/Macro';
 import { NUM_MACROS } from 'src/model/Terminals/RightDrawer/Macros/MacroController';
 import { MacroDataV1 } from './MacroData';
 
-export class MacroControllerDataV1 {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 1;
-
+export class MacroControllerData {
   macroConfigs: MacroDataV1[] = [];
 
   constructor() {

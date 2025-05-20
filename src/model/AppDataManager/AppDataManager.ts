@@ -3,8 +3,8 @@ import { makeAutoObservable } from 'mobx';
 import { PortState } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
-import { AppDataV1, AppDataV2 } from './DataClasses/AppData';
-import { ProfileV3 } from './DataClasses/Profile';
+import { AppData } from './DataClasses/AppData';
+import { Profile } from './DataClasses/Profile';
 import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 
 export class LastUsedSerialPort {
@@ -15,15 +15,14 @@ export class LastUsedSerialPort {
 /**
  * Alias to the up-to-date version of the app data class.
  */
-export const AppData = AppDataV2;
-type AppData = AppDataV2;
+// export const AppData = AppData;
 
 const APP_DATA_STORAGE_KEY = 'appData';
 
 export class AppDataManager {
   app: App;
 
-  appData: AppDataV2 = new AppDataV2();
+  appData: AppData = new AppData();
 
   _profileChangeCallbacks: (() => void)[] = [];
 
@@ -81,8 +80,8 @@ export class AppDataManager {
     let appData: AppData;
     if (appDataAsJson === null) {
       // No config key found in users store, create one!
-      console.log('App data not found in local storage. Creating default app data.');
-      appData = new AppDataV2();
+      console.log('App data not found in local storage. Creating default app data...');
+      appData = new AppData();
       // Save just-created config back to store.
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
     } else {
@@ -133,15 +132,37 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 2 -> VERSION 3
+    //=============================================================================
     if (updatedAppData.version === 2) {
+      console.log('Updating app data from version 2 to version 3...');
+      let updateRootConfig = (rootConfig: any) => {
+        // Add timestamp settings
+        rootConfig.settings.rxSettings.addTimestamps = false;
+        // Remove version for a number of objects as we are now just using the single
+        // "app version" in the root data class
+        delete rootConfig.settings.rxSettings.version;
+        delete rootConfig.terminal.macroController.version;
+        delete rootConfig.settings.displaySettings.version;
+        delete rootConfig.settings.txSettings.version;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateRootConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateRootConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 3;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 3) {
       // Nothing to do, already latest version
-      // updatedAppData = appData;
       console.log(`App data is at latest version (v${updatedAppData.version}).`);
     }
 
-    if (updatedAppData.version !== 2) {
+    if (updatedAppData.version !== 3) {
       console.error('Unknown app data version found: ', appData.version);
-      updatedAppData = new AppDataV2();
+      updatedAppData = new AppData();
       wasChanged = true;
     }
 
@@ -169,7 +190,7 @@ export class AppDataManager {
       newProfileNameToCheck = newProfileName + ' ' + nextProfileNum;
     }
     // At this point newProfileNameToCheck is the name we want
-    const newProfile = new ProfileV3(newProfileNameToCheck);
+    const newProfile = new Profile(newProfileNameToCheck);
     this.appData.profiles.push(newProfile);
     this.saveAppData();
 

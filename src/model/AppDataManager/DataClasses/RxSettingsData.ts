@@ -1,13 +1,9 @@
 import { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
 
-export class RxSettingsDataV1 {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 1;
-
+/**
+ * The most up-to-date representation of the RxSettings data stored in the browser's local storage.
+ */
+export class RxSettingsData {
   /**
    * How to interpret the received data from the serial port.
    */
@@ -48,6 +44,9 @@ export class RxSettingsDataV1 {
   // FLOAT SPECIFIC SETTINGS
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = 5;
+
+  // TIMESTAMP SETTINGS
+  addTimestamps = false;
 
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;

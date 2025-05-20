@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Improved the way app data stored in the browser's local storage is updated to the latest version.
+
 ## [4.19.0] - 2024-06-30
 
 ### Added

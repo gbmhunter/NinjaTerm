@@ -129,9 +129,11 @@ export default class RxSettings {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
+  // TIMESTAMP SETTINGS
+  addTimestamps = false;
+
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;
-
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
@@ -139,6 +141,8 @@ export default class RxSettings {
     this.profileManager.registerOnProfileLoad(() => {
       this._loadConfig();
     });
+
+    // Connect all applyable fields to the save function
     this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this._saveConfig();
     });
@@ -207,6 +211,9 @@ export default class RxSettings {
     this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
     this.floatNumOfDecimalPlaces.apply();
 
+    // TIMESTAMPS SETTINGS
+    this.addTimestamps = configToLoad.addTimestamps;
+
     // OTHER SETTINGS
     this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
   };
@@ -245,6 +252,9 @@ export default class RxSettings {
     // FLOAT SPECIFIC SETTINGS
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
+
+    // TIMESTAMP SETTINGS
+    config.addTimestamps = this.addTimestamps;
 
     // OTHER SETTINGS
     config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
@@ -359,7 +369,16 @@ export default class RxSettings {
   };
 
   //=================================================================
-  // OTHER
+  // TIMESTAMP SETTINGS
+  //=================================================================
+
+  setAddTimestamps = (value: boolean) => {
+    this.addTimestamps = value;
+    this._saveConfig();
+  };
+
+  //=================================================================
+  // OTHER SETTINGS
   //=================================================================
 
   setShowWarningOnRxBreakSignal = (value: boolean) => {

@@ -1,50 +1,29 @@
 import { RightDrawerConfig } from 'src/model/Terminals/RightDrawer/RightDrawer';
 import { LastUsedSerialPort } from '../AppDataManager';
-import { PortSettingsDataV2, PortSettingsDataV3 } from './PortSettingsData';
-import { DisplaySettingsDataV1, DisplaySettingsDataV2 } from './DisplaySettingsData';
-import { RxSettingsDataV1 } from './RxSettingsData';
-import { TxSettingsDataV1 } from './TxSettingsData';
+import { PortSettingsData } from './PortSettingsData';
+import { DisplaySettingsData } from './DisplaySettingsData';
+import { RxSettingsData } from './RxSettingsData';
+import { TxSettingsData } from './TxSettingsData';
 import { GeneralSettingsConfig } from './GeneralSettingsData';
-import { MacroControllerDataV1 } from './MacroControllerData';
+import { MacroControllerData } from './MacroControllerData';
 
 /**
  * Everything in this class must be POD (plain old data) and serializable to JSON.
  */
-export class RootConfigV2 {
+export class RootConfig {
 
   terminal = {
-    macroController: new MacroControllerDataV1(),
+    macroController: new MacroControllerData(),
     rightDrawer: new RightDrawerConfig(),
   };
 
   lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
 
   settings = {
-    portSettings: new PortSettingsDataV2(),
-    txSettings: new TxSettingsDataV1(),
-    rxSettings: new RxSettingsDataV1(),
-    displaySettings: new DisplaySettingsDataV1(),
-    generalSettings: new GeneralSettingsConfig(),
-  };
-}
-
-/**
- * Everything in this class must be POD (plain old data) and serializable to JSON.
- */
-export class RootConfigV3 {
-
-  terminal = {
-    macroController: new MacroControllerDataV1(),
-    rightDrawer: new RightDrawerConfig(),
-  };
-
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
-
-  settings = {
-    portSettings: new PortSettingsDataV3(),
-    txSettings: new TxSettingsDataV1(),
-    rxSettings: new RxSettingsDataV1(),
-    displaySettings: new DisplaySettingsDataV2(),
+    portSettings: new PortSettingsData(),
+    txSettings: new TxSettingsData(),
+    rxSettings: new RxSettingsData(),
+    displaySettings: new DisplaySettingsData(),
     generalSettings: new GeneralSettingsConfig(),
   };
 }
