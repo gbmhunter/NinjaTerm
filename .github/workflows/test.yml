@@ -39,9 +39,22 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
-      - uses: actions/upload-artifact@v3
+      # v3 was deprecated Jan 2025, move to v4
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.os }}
           path: playwright-report/
           retention-days: 30
+
+  # Needed to merge artifacts from different jobs
+  # See https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md for more details
+  merge:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: playwright-report
+          pattern: playwright-report-*
