@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.19.1] - 2025-05-31
+
 ### Fixed
 
 - Removed Umami analytics to fix issue with app loading very slowly if Umami server was down (will revert to using Google Analytics from now on).
