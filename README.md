@@ -69,15 +69,16 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Releasing
 
+1. Create a new branch off of `main` for the changes.
+1. Make changes to the code as required.
 1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or compete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
-1. Commit changes and push to `develop`.
-1. Create pull request on GitHub merging `develop` into `main`.
-1. Once the build on `develop` has been successfully run, merge the `develop` branch into `main` via the merge request.
+1. Commit changes and push to your feature/bug fix branch.
+1. Create pull request on GitHub merging your branch into `main`.
+1. Once the build on `main` has been successfully run, merge your branch into `main` via the merge request.
 1. Tag the branch on main with the version number, e.g. `v4.1.0`.
 1. Create a release on GitHub pointing to the tag.
 1. Enter the CHANGELOG contents into the release body text.
-1. Checkout the `develop` branch and fast-forward it to the new commit on `main`.
 
 ## Deployment
 
