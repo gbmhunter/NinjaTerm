@@ -23,16 +23,6 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-// Enable Umami analytics script in production and disable
-// in dev. environment. Use the umami.disabled key in local storage for doing so
-if (import.meta.env.PROD) {
-  // It's not good enough just to set the key to 0, it needs to be removed
-  window.localStorage.removeItem('umami.disabled');
-} else {
-  console.log('Detected dev. environment, setting umami.disabled in local storage to "1".');
-  window.localStorage.setItem('umami.disabled', '1');
-}
-
 // Create routes. Only 2 routes. The root is the
 // landing page which is static, and then
 // at /app is the main NinjaTerm application
