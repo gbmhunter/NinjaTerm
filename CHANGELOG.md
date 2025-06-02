@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Run unit tests (vitest) in CI after discovering they were not running.
+- Fixed broken unit tests.
 
 ## [4.19.1] - 2025-05-31
 
