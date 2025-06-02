@@ -233,6 +233,7 @@ export default class SingleTerminal {
     if (this.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT) {
       const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
       terminalHeight_chars = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+      // console.log('terminalHeight_chars=', terminalHeight_chars);
     } else if (this.displaySettings.terminalHeightMode === TerminalHeightMode.FIXED_HEIGHT) {
       terminalHeight_chars = this.displaySettings.terminalHeightChars.appliedValue;
     } else {
@@ -275,7 +276,7 @@ export default class SingleTerminal {
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
-    console.log('scrollPos set to:', this.scrollPos);
+    // console.log('scrollPos set to:', this.scrollPos);
   }
 
   /**
@@ -284,7 +285,7 @@ export default class SingleTerminal {
    * @param terminalViewHeightPx The height of the terminal view in pixels.
    */
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
-    console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
+    // console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
     this.terminalViewHeightPx = terminalViewHeightPx;
   }
 

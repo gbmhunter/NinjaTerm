@@ -64,7 +64,7 @@ describe('app data manager tests', () => {
   test('app data can be upgraded from v2', () => {
     const app = new App();
     const appDataManager = new AppDataManager(app);
-    const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0.json', 'utf8'));
+    const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0-default.json', 'utf8'));
     const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV2);
     const latestCorrectAppData = new AppData();
     expect(wasChanged).toEqual(true);

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Improved the way app data stored in the browser's local storage is updated to the latest version.
 
+### Fixed
+
+- Run unit tests (vitest) in CI after discovering they were not running.
+
 ## [4.19.1] - 2025-05-31
 
 ### Fixed
