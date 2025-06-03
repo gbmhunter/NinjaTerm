@@ -12,6 +12,7 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
+  TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import BorderedSection from 'src/view/Components/BorderedSection';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
@@ -51,7 +52,7 @@ function RxSettingsView(props: Props) {
         </BorderedSection>
       </div>
       {/* =============================================================================== */}
-      {/* DATA TYPE = ASCII */}
+      {/* ASCII SETTINGS (only shown if data type is ASCII) */}
       {/* =============================================================================== */}
       <div className="ascii-block" style={{ display: rxSettings.dataType === DataType.ASCII ? 'block' : 'none' }}>
         {/* =============================================================================== */}
@@ -334,7 +335,7 @@ function RxSettingsView(props: Props) {
       </div>{' '}
       {/* End of ASCII block */}
       {/* =============================================================================== */}
-      {/* DATA TYPE = NUMBER */}
+      {/* NUMBER SETTINGS (only shown if data type is NUMBER) */}
       {/* =============================================================================== */}
       <div className="number-block" style={{ display: rxSettings.dataType === DataType.NUMBER ? 'block' : 'none' }}>
         <div className="columns" style={{ display: 'flex' }}>
@@ -699,6 +700,72 @@ function RxSettingsView(props: Props) {
         </div>
       </div>
       {/* End of NUMBER block */}
+      {/* =============================================================================== */}
+      {/* TIMESTAMP SETTINGS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Timestamp Settings" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+        <Tooltip title="If enabled, timestamps will be added to the terminal. Timestamps are added to the start of each new line of received data. The time shown is when the first visible character of the line is received (i.e. ASCII control codes don't count). Timestamps are not added if the line was created due to wrapping of the line above it." placement="right" arrow enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rxSettings.addTimestamps}
+                onChange={(e) => {
+                  rxSettings.setAddTimestamps(e.target.checked);
+                }}
+              />
+            }
+            label="Add timestamps to the terminal."
+          />
+        </Tooltip>
+      <FormControl sx={{ marginTop: '10px', marginLeft: '30px' }} disabled={!rxSettings.addTimestamps}>
+        <FormLabel>Timestamp Format</FormLabel>
+        <RadioGroup
+          value={rxSettings.timestampFormat}
+          onChange={(e) => {
+            rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
+          }}
+        >
+          <Tooltip title="Display timestamps in local time (e.g., YYYY-MM-DD HH:mm:ss.SSS)." placement="right" arrow enterDelay={500}>
+            <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. 2025-06-04T12:00:00.000)" />
+          </Tooltip>
+          <Tooltip title="Display timestamps as Unix time in seconds since epoch (e.g., 1678886400.123)." placement="right" arrow enterDelay={500}>
+            <FormControlLabel value={TimestampFormat.UNIX} control={<Radio />} label="Unix Time (seconds)" />
+          </Tooltip>
+          <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" arrow enterDelay={500}>
+            <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />
+          </Tooltip>
+        </RadioGroup>
+      </FormControl>
+      <Tooltip
+        title="Enter a Moment.js format string. E.g., 'YYYY-MM-DD HH:mm:ss.SSS' for local time, 'X' for Unix timestamp (seconds), 'x' for Unix timestamp (milliseconds)."
+        placement="right"
+        arrow
+        enterDelay={500}
+      >
+        {/*
+          The ApplyableTextFieldView needs to be wrapped in a div for the tooltip to work correctly when the text field is disabled.
+          MUI Tooltip doesn't work directly on disabled elements unless they are wrapped.
+        */}
+        <div style={{
+            marginTop: '10px',
+            marginLeft: '55px',
+            width: '300px',
+            // The div itself might not need to be a flex container or have specific display if ApplyableTextFieldView handles its own width.
+            // However, ensuring it's a block or inline-block can help with layout.
+          }}>
+          <ApplyableTextFieldView
+            name="customTimestampFormatString"
+            label="Custom Timestamp Format"
+            variant="outlined"
+            size="small"
+            applyableTextField={rxSettings.customTimestampFormatString} // Assuming this is an ApplyableStringSetting
+            disabled={!rxSettings.addTimestamps || rxSettings.timestampFormat !== TimestampFormat.CUSTOM}
+            // sx prop for ApplyableTextFieldView itself, if needed for internal styling or if it doesn't take full width of the div.
+            // sx={{ width: '100%' }} // Example: make it take full width of the wrapping div
+          />
+        </div>
+      </Tooltip>
+      </BorderedSection>
       {/* =============================================================================== */}
       {/* OTHER RX SETTINGS */}
       {/* =============================================================================== */}

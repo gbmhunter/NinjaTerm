@@ -1,4 +1,4 @@
-import { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from "src/model/Settings/RxSettings/RxSettings";
+import { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter, TimestampFormat } from "src/model/Settings/RxSettings/RxSettings";
 
 /**
  * The most up-to-date representation of the RxSettings data stored in the browser's local storage.
@@ -47,6 +47,8 @@ export class RxSettingsData {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
+  timestampFormat = TimestampFormat.LOCAL;
+  customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS";
 
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;

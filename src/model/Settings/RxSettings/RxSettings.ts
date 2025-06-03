@@ -77,6 +77,12 @@ export enum Endianness {
   BIG_ENDIAN = 'Big Endian', // MSB is sent first.
 }
 
+export enum TimestampFormat {
+  LOCAL = 'Local',
+  UNIX = 'Unix',
+  CUSTOM = 'Custom',
+}
+
 const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
@@ -131,6 +137,8 @@ export default class RxSettings {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
+  timestampFormat = TimestampFormat.LOCAL;
+  customTimestampFormatString = new ApplyableTextField("YYYY-MM-DD HH:mm:ss.SSS", z.string());
 
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;
@@ -156,6 +164,9 @@ export default class RxSettings {
       this._saveConfig();
     });
     this.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.customTimestampFormatString.setOnApplyChanged(() => {
       this._saveConfig();
     });
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -213,6 +224,9 @@ export default class RxSettings {
 
     // TIMESTAMPS SETTINGS
     this.addTimestamps = configToLoad.addTimestamps;
+    this.timestampFormat = configToLoad.timestampFormat;
+    this.customTimestampFormatString.setDispValue(configToLoad.customTimestampFormatString);
+    this.customTimestampFormatString.apply();
 
     // OTHER SETTINGS
     this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
@@ -253,8 +267,10 @@ export default class RxSettings {
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
 
-    // TIMESTAMP SETTINGS
+    // TIMESTAMPS SETTINGS
     config.addTimestamps = this.addTimestamps;
+    config.timestampFormat = this.timestampFormat;
+    config.customTimestampFormatString = this.customTimestampFormatString.appliedValue;
 
     // OTHER SETTINGS
     config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
@@ -372,8 +388,17 @@ export default class RxSettings {
   // TIMESTAMP SETTINGS
   //=================================================================
 
+  /**
+   * Enable/disable adding timestamps to the start of each line of received data.
+   * @param value True if timestamps should be added to the terminal, false otherwise.
+   */
   setAddTimestamps = (value: boolean) => {
     this.addTimestamps = value;
+    this._saveConfig();
+  };
+
+  setTimestampFormat = (value: TimestampFormat) => {
+    this.timestampFormat = value;
     this._saveConfig();
   };
 
