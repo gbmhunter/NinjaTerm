@@ -183,7 +183,7 @@ export default class SingleTerminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx].charCodeAt(0));
         }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
@@ -368,7 +368,7 @@ export default class SingleTerminal {
         // at the end of the existing line, rather than the start of the new
         // line
         if (!this.rxSettings.swallowNewLine) {
-          this._addVisibleChar(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte);
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
@@ -404,7 +404,7 @@ export default class SingleTerminal {
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
         if (!this.rxSettings.swallowCarriageReturn) {
-          this._addVisibleChar(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte);
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
@@ -425,12 +425,6 @@ export default class SingleTerminal {
           throw Error('Invalid carriage return cursor behavior. carriageReturnCursorBehavior: ' + carriageReturnCursorBehavior);
         }
       }
-
-      // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      // if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
-      //   this._addVisibleChar(rxByte);
-      //   continue;
-      // }
 
       if (rxByte === 0x1b) {
         // console.log('Start of escape sequence found!');
@@ -486,8 +480,8 @@ export default class SingleTerminal {
       }
 
       // If we get here we are not receiving an ANSI escape code,
-      // so send character to terminal
-      this._addVisibleCharAndTimestamp(rxByte);
+      // so send byte to be printed to the terminal.
+      this._maybeAddVisibleByteAndTimestamp(rxByte);
     }
   }
 
@@ -1016,11 +1010,11 @@ export default class SingleTerminal {
       // Add to string to the the terminal
       for (let charIdx = 0; charIdx < numberStr.length; charIdx += 1) {
         const charCode = numberStr.charCodeAt(charIdx);
-        this._addVisibleChar(numberStr.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(numberStr.charCodeAt(charIdx));
       }
       // Append the hex separator string
       for (let charIdx = 0; charIdx < this.rxSettings.numberSeparator.appliedValue.length; charIdx += 1) {
-        this._addVisibleChar(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx));
       }
 
       if (insertNewLine && this.rxSettings.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
@@ -1214,21 +1208,10 @@ export default class SingleTerminal {
    *
    * @param rxByte The byte to add to the terminal.
    */
-  _addVisibleCharAndTimestamp(rxByte: number) {
-    // If at start of line, and line wasn't created due to wrapping, add timestamp
-    const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
-    const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
-    if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
-      const now = new Date();
-      const timestamp = moment(now).format();
-      for (let idx = 0; idx < timestamp.length; idx += 1) {
-        this._addVisibleChar(timestamp.charCodeAt(idx));
-      }
-      // Add a space after the timestamp
-      this._addVisibleChar(' '.charCodeAt(0));
-    }
-    this._addVisibleChar(rxByte);
-  }
+  // _addVisibleCharAndTimestamp(rxByte: number) {
+
+  //   this._maybeAddVisibleByteAndTimestamp(rxByte);
+  // }
 
   /**
    * Wrapper for _addVisibleChar() which lets you add multiple characters at once.
@@ -1236,7 +1219,7 @@ export default class SingleTerminal {
    */
   _addVisibleChars(rxBytes: number[]) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
-      this._addVisibleChar(rxBytes[idx]);
+      this._maybeAddVisibleByteAndTimestamp(rxBytes[idx]);
     }
   }
 
@@ -1249,15 +1232,15 @@ export default class SingleTerminal {
    *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
    *   depending on the data processing settings.
    */
-  _addVisibleChar(rxByte: number) {
+  _maybeAddVisibleByteAndTimestamp(rxByte: number) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
-    const terminalChar = new TerminalChar();
 
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
+    let char = '';
     if (rxByte >= 0x20 && rxByte <= 0x7e) {
       // Is printable ASCII character, no shifting needed
-      terminalChar.char = String.fromCharCode(rxByte);
+      char = String.fromCharCode(rxByte);
     } else {
       // We have either a control char or not in ASCII range (0x80 and above).
       // What we do depends on data processing setting
@@ -1267,17 +1250,38 @@ export default class SingleTerminal {
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) {
         // If the char is a control char (any value <= 0x7F, given we have already matched against visible chars), shift up to the PUA (starts at 0xE000) where our special font has visible glyphs for these.
         if (rxByte <= 0x7f) {
-          terminalChar.char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
+          char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
         } else {
           // Must be a non-ASCII char, so display as hex glyph. These start at 0xE100
-          terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+          char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
         }
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
-        terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+        char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
       } else {
         throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
       }
     }
+
+    // If we get here, we are definitely adding a visible character
+    // If at start of line, and line wasn't created due to wrapping, add timestamp first!
+    const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
+    const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
+    if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
+      const now = new Date();
+      const timestamp = moment(now).format();
+      for (let idx = 0; idx < timestamp.length; idx += 1) {
+        this.addVisibleChar(timestamp[idx]);
+      }
+      // Add a space after the timestamp
+      this.addVisibleChar(' ');
+    }
+
+    this.addVisibleChar(char);
+  }
+
+  addVisibleChar(char: string) {
+    const terminalChar = new TerminalChar();
+    terminalChar.char = char;
 
     // This stores all classes we wish to apply to the char
     let classList = [];
