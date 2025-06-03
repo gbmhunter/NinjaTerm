@@ -1,6 +1,7 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable, reaction } from 'mobx';
 import { ListOnScrollProps } from 'react-window';
+import moment from 'moment';
 
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
@@ -486,7 +487,7 @@ export default class SingleTerminal {
 
       // If we get here we are not receiving an ANSI escape code,
       // so send character to terminal
-      this._addVisibleChar(rxByte);
+      this._addVisibleCharAndTimestamp(rxByte);
     }
   }
 
@@ -1202,14 +1203,29 @@ export default class SingleTerminal {
     }
   }
 
+  /**
+   * Adds a visible character to the terminal at the current cursor position. Also adds a timestamp if:
+   * - The cursor is at the start of a line
+   * - The line wasn't created due to wrapping
+   * - The timestamp setting is enabled
+   *
+   * This should be usually called by higher-level code rather than _addVisibleChar() as it handles
+   * adding a timestamp if needed.
+   *
+   * @param rxByte The byte to add to the terminal.
+   */
   _addVisibleCharAndTimestamp(rxByte: number) {
     // If at start of line, and line wasn't created due to wrapping, add timestamp
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
-    if (rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0) {
-      const timestamp = new Date().toISOString();
+    const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
+    if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
+      const now = new Date();
+      const timestamp = moment(now).format();
       for (let idx = 0; idx < timestamp.length; idx += 1) {
         this._addVisibleChar(timestamp.charCodeAt(idx));
       }
+      // Add a space after the timestamp
+      this._addVisibleChar(' '.charCodeAt(0));
     }
     this._addVisibleChar(rxByte);
   }

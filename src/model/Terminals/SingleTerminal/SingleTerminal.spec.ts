@@ -1,5 +1,7 @@
 import { expect, test, describe, beforeEach } from 'vitest';
 
+import moment from 'moment';
+
 import { stringToUint8Array } from 'src/model/Util/Util';
 import SingleTerminal from './SingleTerminal';
 import RxSettings, {
@@ -10,6 +12,7 @@ import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplayS
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
+import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 
 describe('single terminal tests', () => {
   let app: App;
@@ -383,4 +386,73 @@ describe('single terminal tests', () => {
       expect(singleTerminal.scrollLock).toBe(true);
     });
   });
+
+  describe('timestamp tests', () => {
+    test('timestamp is added to start of first line', () => {
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('123'));
+
+      // The timestamp should have been printed in the format "2025-06-03T16:35:07+12:00 "
+      // This is 26 chars. So the total length of the row should be 26 (timestamp and space) + 3 (data) + 1 (cursor) = 30
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(30);
+
+      // Extract the timestamp from the first row
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, 26).map(char => char.char).join('');
+      const timestampFromTerminal = moment(timestampFromTerminalStr, 'YYYY-MM-DDTHH:mm:ssZ')
+
+      // Get local time in ISO format, in timezone of the machine running the test
+      const now = new Date();
+      const timestamp = moment(now);
+
+      // Check that the timestamp is within 1 second of the current time
+      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+
+      // Now check the rest of the text, which should be "123 "
+      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(26).map(char => char.char).join('');
+      expect(restOfText).toBe('123 ');
+    });
+
+    test('timestamps are added correctly to new lines', () => {
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('123\n'));
+
+      // The timestamp should have been printed in the format "2025-06-03T16:35:07+12:00 "
+      // This is 26 chars. So the total length of the row should be 26 (timestamp and space) + 3 (data) = 29
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(29);
+
+      // There should be no timestamp yet on the second row, since we haven't received a visible character on that row yet
+      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(1);
+
+      // Send some more data
+      singleTerminal.parseData(stringToUint8Array('456'));
+
+      // Should be 2 rows still
+      expect(singleTerminal.terminalRows.length).toBe(2);
+
+      // Now we should have a timestamp and the data on the second row. Should be 30 chars (29 like first row + cursor)
+      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(30);
+    });
+  });
 });
+
+function printTerminalRows(terminalRows: TerminalRow[]) {
+  /**
+   * Helper function to print the terminal rows to the console.
+   */
+  // Iterate over each row and print the terminalChars
+  for (let i = 0; i < terminalRows.length; i += 1) {
+    const row = terminalRows[i];
+    let terminalRowText = '';
+    for (let j = 0; j < row.terminalChars.length; j += 1) {
+      const char = row.terminalChars[j];
+      terminalRowText += char.char;
+    }
+    console.log('row[', i, ']=', terminalRowText);
+  }
+}
