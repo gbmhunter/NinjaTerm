@@ -355,6 +355,7 @@ export default class SingleTerminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
+      //========================================================================
       // NEW LINE HANDLING
       //========================================================================
 
@@ -425,10 +426,10 @@ export default class SingleTerminal {
       }
 
       // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
-        this._addVisibleChar(rxByte);
-        continue;
-      }
+      // if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
+      //   this._addVisibleChar(rxByte);
+      //   continue;
+      // }
 
       if (rxByte === 0x1b) {
         // console.log('Start of escape sequence found!');
@@ -437,9 +438,8 @@ export default class SingleTerminal {
         this.inIdleState = false;
       }
 
-      // If we are not currently processing an escape code
-      // character is to be displayed
-      if (this.inAnsiEscapeCode) {
+      // Process ANSI escape codes
+      if (this.rxSettings.ansiEscapeCodeParsingEnabled && this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
@@ -461,31 +461,32 @@ export default class SingleTerminal {
             this.inIdleState = true;
           }
         }
-      } else {
-        // Not currently receiving ANSI escape code,
-        // so send character to terminal(s)
-        this._addVisibleChar(rxByte);
-      }
 
-      // When we get to the end of parsing, check that if we are still
-      // parsing an escape code, and we've hit the escape code length limit,
-      // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
-      // const maxEscapeCodeLengthChars = 10;
+        // When we get to the end of parsing, check that if we are still
+        // parsing an escape code, and we've hit the escape code length limit,
+        // then bail on escape code parsing. Emit partial code as data and go back to IDLE
+        const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
+        // const maxEscapeCodeLengthChars = 10;
 
-      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
-        console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-        // this.app.snackbar.sendToSnackbar(
-        //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
-        //   'warning');
-        // Remove the ESC byte, and then prepend the rest onto the data to be processed
-        // Got to shift them in backwards
-        for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
-          remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+        if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
+          console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
+          // this.app.snackbar.sendToSnackbar(
+          //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
+          //   'warning');
+          // Remove the ESC byte, and then prepend the rest onto the data to be processed
+          // Got to shift them in backwards
+          for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
+            remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+          }
+          this._resetEscapeCodeParserState();
+          this.inIdleState = true;
         }
-        this._resetEscapeCodeParserState();
-        this.inIdleState = true;
+        continue;
       }
+
+      // If we get here we are not receiving an ANSI escape code,
+      // so send character to terminal
+      this._addVisibleChar(rxByte);
     }
   }
 
@@ -1201,6 +1202,18 @@ export default class SingleTerminal {
     }
   }
 
+  _addVisibleCharAndTimestamp(rxByte: number) {
+    // If at start of line, and line wasn't created due to wrapping, add timestamp
+    const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
+    if (rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0) {
+      const timestamp = new Date().toISOString();
+      for (let idx = 0; idx < timestamp.length; idx += 1) {
+        this._addVisibleChar(timestamp.charCodeAt(idx));
+      }
+    }
+    this._addVisibleChar(rxByte);
+  }
+
   /**
    * Wrapper for _addVisibleChar() which lets you add multiple characters at once.
    * @param rxBytes The printable characters to display.
@@ -1213,7 +1226,8 @@ export default class SingleTerminal {
 
   /**
    * Adds a single printable character to the terminal at the current cursor position.
-   * Cursor is also incremented to next suitable position.
+   * Cursor is also incremented to next suitable position. Nothing will be added if it is a non-visible character
+   * and it has been configured to swallow non-visible characters.
    *
    * @param char Must be a number in the range [0, 255]. If number is in the valid ASCII range, the appropriate character
    *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
