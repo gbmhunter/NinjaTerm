@@ -542,7 +542,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Removed COM ports now dissappear on rescan (when there are no COM ports available), closes #224.
+- Removed COM ports now disappear on rescan (when there are no COM ports available), closes #224.
 - Fixed bug where tab characters were not being displayed correctly on screen, closes #211.
 
 ## [0.9.1] - 2018-10-31
