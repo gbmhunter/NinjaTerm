@@ -7,6 +7,7 @@ import SingleTerminal from './SingleTerminal';
 import RxSettings, {
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
+  TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
@@ -438,6 +439,111 @@ describe('single terminal tests', () => {
       // Now we should have a timestamp and the data on the second row. Should be 30 chars (29 like first row + cursor)
       expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(30);
     });
+
+    test('UNIX_SECONDS timestamp format works', () => {
+      const NUM_CHARS_IN_TIMESTAMP = 11;
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Set timestamp format to UNIX_SECONDS
+      dataProcessingSettings.setTimestampFormat(TimestampFormat.UNIX_SECONDS);
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('123'));
+
+      printTerminalRows(singleTerminal.terminalRows);
+
+      // The timestamp should have been printed in the format "1748991831"
+      // Total length will be 10 (timestamp) + 1 (space) + 3 (data) + 1 (cursor) = 15
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+
+      // Extract the timestamp from the first row
+      let timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      // Remove space from the end
+      timestampFromTerminalStr = timestampFromTerminalStr.slice(0, -1);
+      const timestampFromTerminal = moment(timestampFromTerminalStr, 'X');
+
+      // Get local time in ISO format, in timezone of the machine running the test
+      const now = new Date();
+      const timestamp = moment(now);
+
+      // Check that the timestamp is within 1 second of the current time
+      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+
+      // Now check the rest of the text, which should be "123 "
+      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      expect(restOfText).toBe('123 ');
+    });
+
+    test('UNIX_SECONDS_AND_MILLISECONDS timestamp format works', () => {
+      const NUM_CHARS_IN_TIMESTAMP = 15;
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Set timestamp format to UNIX_SECONDS_AND_MILLISECONDS
+      dataProcessingSettings.setTimestampFormat(TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS);
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('123'));
+
+      printTerminalRows(singleTerminal.terminalRows);
+
+      // The timestamp should have been printed in the format "1748991831.123"
+      // Total length will be 15 (timestamp) + 1 (space) + 3 (data) + 1 (cursor) = 20
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+
+      // Extract the timestamp from the first row
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const timestampFromTerminal = moment(timestampFromTerminalStr, 'x');
+
+      // Get local time in ISO format, in timezone of the machine running the test
+      const now = new Date();
+      const timestamp = moment(now);
+
+      // Check that the timestamp is within 1 second of the current time
+      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+
+      // Now check the rest of the text, which should be "123 "
+      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      expect(restOfText).toBe('123 ');
+    });
+
+    test('custom timestamp format works', () => {
+      const NUM_CHARS_IN_TIMESTAMP = 5;
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Set timestamp format to custom
+      dataProcessingSettings.setTimestampFormat(TimestampFormat.CUSTOM);
+
+      // Set custom timestamp format which is just the year and a space
+      dataProcessingSettings.customTimestampFormatString.setDispValue("YYYY ");
+      dataProcessingSettings.customTimestampFormatString.apply();
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('123'));
+
+      printTerminalRows(singleTerminal.terminalRows);
+
+      // The timestamp should have been printed in the format "2025 "
+      // Total length will be 5 (year + space) + 3 (data) + 1 (cursor) = 9
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+
+      // Extract the timestamp from the first row
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+
+      // Make sure the year is within 1 year of the current year (we could be unlucky and run the test across midnight
+      // and the year changes)
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const timestampYear = parseInt(timestampFromTerminalStr);
+      expect(timestampYear).toBeGreaterThanOrEqual(currentYear - 1);
+      expect(timestampYear).toBeLessThanOrEqual(currentYear + 1);
+
+      // Now check the rest of the text, which should be "123 "
+      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      expect(restOfText).toBe('123 ');
+    });
   });
 });
 
@@ -453,6 +559,6 @@ function printTerminalRows(terminalRows: TerminalRow[]) {
       const char = row.terminalChars[j];
       terminalRowText += char.char;
     }
-    console.log('row[', i, ']=', terminalRowText);
+    console.log(`row[${i}]="${terminalRowText}"`);
   }
 }

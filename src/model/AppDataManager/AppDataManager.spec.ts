@@ -73,6 +73,7 @@ describe('app data manager tests', () => {
     // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
     // Save latest correct app data to a file
     // fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
-    expect(JSON.stringify(appDataUpdated, replacer)).toEqual(JSON.stringify(latestCorrectAppData, replacer));
+    expect(JSON.stringify(appDataUpdated, replacer))
+      .toEqual(JSON.stringify(latestCorrectAppData, replacer));
   });
 });

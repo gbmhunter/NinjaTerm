@@ -79,11 +79,12 @@ export enum Endianness {
 
 export enum TimestampFormat {
   LOCAL = 'Local',
-  UNIX = 'Unix',
+  UNIX_SECONDS = 'UnixSeconds',
+  UNIX_SECONDS_AND_MILLISECONDS = 'UnixSecondsAndMilliseconds',
   CUSTOM = 'Custom',
 }
 
-const CONFIG_KEY = ['settings', 'rx-settings'];
+// const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
 
@@ -138,7 +139,7 @@ export default class RxSettings {
   // TIMESTAMP SETTINGS
   addTimestamps = false;
   timestampFormat = TimestampFormat.LOCAL;
-  customTimestampFormatString = new ApplyableTextField("YYYY-MM-DD HH:mm:ss.SSS", z.string());
+  customTimestampFormatString = new ApplyableTextField("", z.string()); // Default in settings
 
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;

@@ -717,55 +717,68 @@ function RxSettingsView(props: Props) {
             label="Add timestamps to the terminal."
           />
         </Tooltip>
-      <FormControl sx={{ marginTop: '10px', marginLeft: '30px' }} disabled={!rxSettings.addTimestamps}>
-        <FormLabel>Timestamp Format</FormLabel>
-        <RadioGroup
-          value={rxSettings.timestampFormat}
-          onChange={(e) => {
-            rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
-          }}
+        <FormControl sx={{ marginTop: '10px', marginLeft: '30px' }} disabled={!rxSettings.addTimestamps}>
+          <FormLabel>Timestamp Format</FormLabel>
+          <RadioGroup
+            value={rxSettings.timestampFormat}
+            onChange={(e) => {
+              rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
+            }}
+          >
+            <Tooltip title="Display timestamps in local time (e.g. 2025-06-04T12:04:45.832)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. 2025-06-04T12:00:00.000)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. 1678886400)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS} control={<Radio />} label="Unix Time (seconds)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. 1678886400.123)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS} control={<Radio />} label="Unix Time (seconds + milliseconds)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />
+            </Tooltip>
+          </RadioGroup>
+        </FormControl>
+        <Tooltip
+          title="Enter a Moment.js format string. E.g., 'YYYY-MM-DD HH:mm:ss.SSS' for local time, 'X' for Unix timestamp (seconds), 'x' for Unix timestamp (milliseconds)."
+          placement="right"
+          arrow
+          enterDelay={500}
         >
-          <Tooltip title="Display timestamps in local time (e.g., YYYY-MM-DD HH:mm:ss.SSS)." placement="right" arrow enterDelay={500}>
-            <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. 2025-06-04T12:00:00.000)" />
-          </Tooltip>
-          <Tooltip title="Display timestamps as Unix time in seconds since epoch (e.g., 1678886400.123)." placement="right" arrow enterDelay={500}>
-            <FormControlLabel value={TimestampFormat.UNIX} control={<Radio />} label="Unix Time (seconds)" />
-          </Tooltip>
-          <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" arrow enterDelay={500}>
-            <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />
-          </Tooltip>
-        </RadioGroup>
-      </FormControl>
-      <Tooltip
-        title="Enter a Moment.js format string. E.g., 'YYYY-MM-DD HH:mm:ss.SSS' for local time, 'X' for Unix timestamp (seconds), 'x' for Unix timestamp (milliseconds)."
-        placement="right"
-        arrow
-        enterDelay={500}
-      >
-        {/*
-          The ApplyableTextFieldView needs to be wrapped in a div for the tooltip to work correctly when the text field is disabled.
-          MUI Tooltip doesn't work directly on disabled elements unless they are wrapped.
-        */}
-        <div style={{
-            marginTop: '10px',
-            marginLeft: '55px',
-            width: '300px',
-            // The div itself might not need to be a flex container or have specific display if ApplyableTextFieldView handles its own width.
-            // However, ensuring it's a block or inline-block can help with layout.
-          }}>
-          <ApplyableTextFieldView
-            name="customTimestampFormatString"
-            label="Custom Timestamp Format"
-            variant="outlined"
-            size="small"
-            applyableTextField={rxSettings.customTimestampFormatString} // Assuming this is an ApplyableStringSetting
-            disabled={!rxSettings.addTimestamps || rxSettings.timestampFormat !== TimestampFormat.CUSTOM}
-            // sx prop for ApplyableTextFieldView itself, if needed for internal styling or if it doesn't take full width of the div.
-            // sx={{ width: '100%' }} // Example: make it take full width of the wrapping div
-          />
-        </div>
-      </Tooltip>
-      </BorderedSection>
+          {/*
+            The ApplyableTextFieldView needs to be wrapped in a div for the tooltip to work correctly when the text field is disabled.
+            MUI Tooltip doesn't work directly on disabled elements unless they are wrapped.
+          */}
+          <div style={{
+              marginTop: '10px',
+              marginLeft: '55px',
+              width: '300px',
+              // The div itself might not need to be a flex container or have specific display if ApplyableTextFieldView handles its own width.
+              // However, ensuring it's a block or inline-block can help with layout.
+            }}>
+            <ApplyableTextFieldView
+              name="customTimestampFormatString"
+              label="Custom Timestamp Format"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.customTimestampFormatString} // Assuming this is an ApplyableStringSetting
+              disabled={!rxSettings.addTimestamps || rxSettings.timestampFormat !== TimestampFormat.CUSTOM}
+              // sx prop for ApplyableTextFieldView itself, if needed for internal styling or if it doesn't take full width of the div.
+              // sx={{ width: '100%' }} // Example: make it take full width of the wrapping div
+            />
+          </div>
+        </Tooltip>
+        <FormLabel style={{ marginTop: '10px' }}>The custom string must be a valid <a href="https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format/" target="_blank" rel="noopener noreferrer">Moment.js format string</a>. For example:
+          <ul>
+            <li>"YYYY-MM-DDTHH:mm:ssZ" for the ISO8601 format (e.g. "2025-06-04T11:18:50+12:00")</li>
+            <li>"YYYY-MM-DD HH:mm:ss.SSS" for local time in milliseconds without time zone (e.g. "2025-06-04 11:18:50.833")</li>
+            <li>"X" for Unix time in seconds (e.g. "1748992730")</li>
+            <li>"x" for Unix time in milliseconds (e.g. "1748992730833")</li>
+            <li>"X.SSS" for Unix time in seconds with millisecond precision (e.g. "1748992730.833")</li>
+            <li>Any other format string for any other format</li>
+          </ul>
+        </FormLabel>
+      </BorderedSection> {/* END OF TIMESTAMP SETTINGS */}
       {/* =============================================================================== */}
       {/* OTHER RX SETTINGS */}
       {/* =============================================================================== */}

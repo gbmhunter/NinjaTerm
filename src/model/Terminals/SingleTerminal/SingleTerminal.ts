@@ -16,6 +16,7 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
+  TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { SelectionController } from 'src/model/SelectionController/SelectionController';
@@ -1267,13 +1268,34 @@ export default class SingleTerminal {
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
     if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
+      // Need to add timestamp. First, we need to format it based on the timestamp format setting
       const now = new Date();
-      const timestamp = moment(now).format();
-      for (let idx = 0; idx < timestamp.length; idx += 1) {
-        this.addVisibleChar(timestamp[idx]);
+      const timestamp = moment(now)
+      let timestampString = '';
+      if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
+        // Format as local time
+        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ssZ ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
+        // Format as Unix time in seconds
+        timestampString = timestamp.format('X ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS) {
+        // Format as Unix time in seconds with milliseconds
+        // timestampString = timestamp.format('x');
+        // This returns the timestamp in milliseconds, we need to convert to seconds by adding a decimal point
+        // before the last 3 digits
+        timestampString = timestamp.format('X.SSS ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.CUSTOM) {
+        // Format as custom string
+        timestampString = timestamp.format(this.rxSettings.customTimestampFormatString.appliedValue);
+      } else {
+        throw Error('Invalid timestamp format. timestampFormat=' + this.rxSettings.timestampFormat);
+      }
+
+      for (let idx = 0; idx < timestampString.length; idx += 1) {
+        this.addVisibleChar(timestampString[idx]);
       }
       // Add a space after the timestamp
-      this.addVisibleChar(' ');
+      // this.addVisibleChar(' ');
     }
 
     this.addVisibleChar(char);

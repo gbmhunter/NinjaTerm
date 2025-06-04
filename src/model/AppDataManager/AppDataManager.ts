@@ -6,6 +6,7 @@ import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
 import { Profile } from './DataClasses/Profile';
 import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
+import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 
 export class LastUsedSerialPort {
   serialPortInfo: Partial<SerialPortInfo> = {};
@@ -140,6 +141,8 @@ export class AppDataManager {
       let updateRootConfig = (rootConfig: any) => {
         // Add timestamp settings
         rootConfig.settings.rxSettings.addTimestamps = false;
+        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.LOCAL;
+        rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS";
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;
