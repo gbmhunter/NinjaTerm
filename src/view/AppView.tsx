@@ -319,8 +319,25 @@ const AppView = observer((props: Props) => {
               {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
             </div>
 
+            {/* TIMESTAMPS ON/OFF */}
+            <div
+              className={`${styles.onHover} ${styles.centerText}`}
+              onClick={() => {
+                // Go to Settings -> RX Settings where the user can change the timestamp settings
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{
+                backgroundColor: app.settings.rxSettings.addTimestamps ? '#388e3c' : '',
+                padding: '0 10px',
+                width: '150px',
+              }}
+            >
+              {app.settings.rxSettings.addTimestamps ? 'Timestamps ON' : 'Timestamps OFF'}
+            </div>
+
             {/* TX/RX ACTIVITY INDICATORS */}
-            {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
+            {/* Use the key prop here to make React consider this a new element every time the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
             <Box>
               <Box key={app.numBytesTransmitted} className={styles.ledblue}>
                 TX
