@@ -8,7 +8,7 @@ export class DisplaySettingsData {
   terminalHeightChars = 25;
   scrollbackBufferSizeRows = 2000;
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
-  backgroundColor = '#000000'; // Default black
+  backgroundColor = '#000000'; // Default to black
   txColor = '#00FF00'; // Default green
   rxColor = '#FFFF00'; // Default yellow
 }

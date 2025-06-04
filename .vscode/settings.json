@@ -33,6 +33,7 @@
     "Applyable",
     "autorun",
     "autoscroll",
+    "blinkunfocused",
     "chartjs",
     "colour",
     "colours",

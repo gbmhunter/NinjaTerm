@@ -220,7 +220,7 @@ export default observer((props: Props) => {
             <ApplyableTextFieldView
               id="txColor"
               name="txColor"
-              label="TX text color"
+              label="Default TX text color"
               variant="outlined"
               size="small"
               InputProps={{
@@ -237,7 +237,7 @@ export default observer((props: Props) => {
             <ApplyableTextFieldView
               id="rxColor"
               name="rxColor"
-              label="RX text color"
+              label="Default RX text color"
               variant="outlined"
               size="small"
               InputProps={{

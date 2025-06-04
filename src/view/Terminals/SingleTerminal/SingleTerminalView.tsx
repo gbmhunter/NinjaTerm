@@ -11,9 +11,11 @@ import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
+import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
   terminal: SingleTerminal;
+  displaySettings: DisplaySettings;
   directionLabel: string;
   testId: string;
 }
@@ -24,26 +26,8 @@ interface RowProps {
   style: {};
 }
 
-
-
-// const outerListElement = forwardRef((props, ref: any) => (
-//   <div
-//     className="outerListElement"
-//     ref={ref}
-//     onWheel={(event) => {
-//       console.log('onWheel! event: ', event);
-//       if (event.deltaY < 0) {
-//         globalTerminal?.setScrollLock(false);
-//       }
-//     }}
-//     {...props} />
-// ))
-
-// let globalTerminal: Terminal | null = null;
-
 export default observer((props: Props) => {
-  const { terminal, directionLabel, testId } = props;
-  // globalTerminal = terminal;
+  const { terminal, displaySettings, directionLabel, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -248,7 +232,7 @@ export default observer((props: Props) => {
           padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
           boxSizing: 'border-box',
           overflowY: 'hidden',
-          backgroundColor: '#000000',
+          backgroundColor: displaySettings.backgroundColor.appliedValue,
           position: 'relative',
         }}
         onFocus={(e) => {
