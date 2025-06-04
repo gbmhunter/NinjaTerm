@@ -190,7 +190,30 @@ const AppView = observer((props: Props) => {
           {/* ==================================================== */}
           {/* LOGO */}
           {/* ==================================================== */}
-          <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px', marginBottom: '20px' }} />
+          <IconButton
+            onClick={() => {
+              app.setShownMainPane(MainPanes.TERMINAL);
+            }}
+            data-testid="logo-button"
+          >
+            <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
+          </IconButton>
+          <div style={{ marginBottom: '20px' }}></div>
+
+          {/* ==================================================== */}
+          {/* TERMINAL BUTTON */}
+          {/* ==================================================== */}
+          <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.TERMINAL);
+              }}
+              color="primary"
+              data-testid="show-terminal-button"
+            >
+              <TerminalIcon />
+            </IconButton>
+          </Tooltip>
 
           {/* ==================================================== */}
           {/* SETTINGS BUTTON */}
@@ -207,20 +230,6 @@ const AppView = observer((props: Props) => {
             </IconButton>
           </Tooltip>
 
-          {/* ==================================================== */}
-          {/* TERMINAL BUTTON */}
-          {/* ==================================================== */}
-          <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
-            <IconButton
-              onClick={() => {
-                app.setShownMainPane(MainPanes.TERMINAL);
-              }}
-              color="primary"
-              data-testid="show-terminal-button"
-            >
-              <TerminalIcon />
-            </IconButton>
-          </Tooltip>
           {/* ==================================================== */}
           {/* GRAPHING BUTTON */}
           {/* ==================================================== */}

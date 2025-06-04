@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added the ability to add timestamps to the start of each line of received data. Timestamps can be enabled from the Settings->RX Settings menu.
+
 ### Changed
 
 - Improved the way app data stored in the browser's local storage is updated to the latest version.
+- Reordered the left-hand toolbar icons so that the "Show the terminal" button is now the first one.
+- Made the logo in the left-hand toolbar a button which opens the terminal.
 
 ### Fixed
 
