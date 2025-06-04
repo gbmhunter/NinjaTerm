@@ -47,8 +47,8 @@ export class RxSettingsData {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
-  timestampFormat = TimestampFormat.LOCAL;
-  customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS";
+  timestampFormat = TimestampFormat.ISO8601;
+  customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
 
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;

@@ -77,14 +77,21 @@ export enum Endianness {
   BIG_ENDIAN = 'Big Endian', // MSB is sent first.
 }
 
+/**
+ * The different ways to format timestamps that can be added to the start of each line of received data.
+ */
 export enum TimestampFormat {
+  // ISO8601 format (e.g. "2025-06-04T11:18:50+12:00")
+  ISO8601 = 'ISO8601',
+  // e.g. 2025-06-04 11:18:50.833
   LOCAL = 'Local',
+  // e.g. 1748991831
   UNIX_SECONDS = 'UnixSeconds',
+  // e.g. 1748991831.833
   UNIX_SECONDS_AND_MILLISECONDS = 'UnixSecondsAndMilliseconds',
+  // User defined timestamp format
   CUSTOM = 'Custom',
 }
-
-// const CONFIG_KEY = ['settings', 'rx-settings'];
 
 export default class RxSettings {
 
@@ -138,7 +145,7 @@ export default class RxSettings {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
-  timestampFormat = TimestampFormat.LOCAL;
+  timestampFormat = TimestampFormat.ISO8601;
   customTimestampFormatString = new ApplyableTextField("", z.string()); // Default in settings
 
   // OTHER SETTINGS

@@ -544,6 +544,19 @@ describe('single terminal tests', () => {
       const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
       expect(restOfText).toBe('123 ');
     });
+
+    test('timestamp is not added to empty lines', () => {
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      // Send some basic data
+      singleTerminal.parseData(stringToUint8Array('\n'));
+
+      // There should be no timestamp on the first row, since it is empty. There should be a single
+      // placeholder char.
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
+      expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe(' ');
+    });
   });
 });
 

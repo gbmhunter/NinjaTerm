@@ -141,8 +141,8 @@ export class AppDataManager {
       let updateRootConfig = (rootConfig: any) => {
         // Add timestamp settings
         rootConfig.settings.rxSettings.addTimestamps = false;
-        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.LOCAL;
-        rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS";
+        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601;
+        rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;

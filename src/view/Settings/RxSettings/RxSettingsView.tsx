@@ -725,14 +725,17 @@ function RxSettingsView(props: Props) {
               rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
             }}
           >
-            <Tooltip title="Display timestamps in local time (e.g. 2025-06-04T12:04:45.832)." placement="right" arrow enterDelay={500}>
-              <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. 2025-06-04T12:00:00.000)" />
+            <Tooltip title="Display timestamps in ISO8601 format (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.ISO8601} control={<Radio />} label="ISO8601 (e.g. &quot;2025-06-04T12:04:45.832&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. 1678886400)." placement="right" arrow enterDelay={500}>
-              <FormControlLabel value={TimestampFormat.UNIX_SECONDS} control={<Radio />} label="Unix Time (seconds)" />
+            <Tooltip title="Display timestamps in local time (e.g. &quot;2025-06-04 12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. &quot;2025-06-04 12:04:45.832&quot;)" />
             </Tooltip>
-            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. 1678886400.123)." placement="right" arrow enterDelay={500}>
-              <FormControlLabel value={TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS} control={<Radio />} label="Unix Time (seconds + milliseconds)" />
+            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. &quot;1678886400&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS} control={<Radio />} label="Unix Time, in seconds (e.g. &quot;1678886400&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. &quot;1678886400.123&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS} control={<Radio />} label="Unix Time, seconds + milliseconds (e.g. &quot;1678886400.123&quot;)" />
             </Tooltip>
             <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" arrow enterDelay={500}>
               <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />

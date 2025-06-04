@@ -1272,9 +1272,12 @@ export default class SingleTerminal {
       const now = new Date();
       const timestamp = moment(now)
       let timestampString = '';
-      if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
-        // Format as local time
+      if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601) {
+        // Format as ISO8601
         timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ssZ ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
+        // Format as local time (no timezone info)
+        timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');
       } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
         // Format as Unix time in seconds
         timestampString = timestamp.format('X ');
