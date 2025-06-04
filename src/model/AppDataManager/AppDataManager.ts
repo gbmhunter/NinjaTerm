@@ -143,6 +143,10 @@ export class AppDataManager {
         rootConfig.settings.rxSettings.addTimestamps = false;
         rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601;
         rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
+        // Display settings got new color fields
+        rootConfig.settings.displaySettings.backgroundColor = '#000000';
+        rootConfig.settings.displaySettings.txColor = '#00FF00';
+        rootConfig.settings.displaySettings.rxColor = '#FFFF00';
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;

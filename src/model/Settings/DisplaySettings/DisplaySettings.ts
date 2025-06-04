@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 
@@ -50,20 +50,22 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
+  // Color fields
+  backgroundColor = new ApplyableTextField('#000000', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
+  txColor = new ApplyableTextField('#00FF00', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
+  rxColor = new ApplyableTextField('#FFFF00', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this.charSizePx.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.verticalRowPaddingPx.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.terminalWidthChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.scrollbackBufferSizeRows.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
+    this.charSizePx.setOnApplyChanged(() => this._saveConfig());
+    this.verticalRowPaddingPx.setOnApplyChanged(() => this._saveConfig());
+    this.terminalWidthChars.setOnApplyChanged(() => this._saveConfig());
+    this.terminalHeightChars.setOnApplyChanged(() => this._saveConfig());
+    this.scrollbackBufferSizeRows.setOnApplyChanged(() => this._saveConfig());
+    this.backgroundColor.setOnApplyChanged(() => this._saveConfig());
+    this.txColor.setOnApplyChanged(() => this._saveConfig());
+    this.rxColor.setOnApplyChanged(() => this._saveConfig());
+
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {
       this._loadConfig();
@@ -81,6 +83,11 @@ export default class DisplaySettings {
     this._saveConfig();
   };
 
+  setRxColorEqualToTx = () => {
+    this.rxColor.setDispValue(this.txColor.appliedValue);
+    this.rxColor.apply();
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -91,6 +98,9 @@ export default class DisplaySettings {
     config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
+    config.backgroundColor = this.backgroundColor.appliedValue;
+    config.txColor = this.txColor.appliedValue;
+    config.rxColor = this.rxColor.appliedValue;
 
     this.profileManager.saveAppData();
   };
@@ -110,5 +120,11 @@ export default class DisplaySettings {
     this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
     this.scrollbackBufferSizeRows.apply();
     this.dataViewConfiguration = configToLoad.dataViewConfiguration;
+    this.backgroundColor.setDispValue(configToLoad.backgroundColor);
+    this.backgroundColor.apply();
+    this.txColor.setDispValue(configToLoad.txColor);
+    this.txColor.apply();
+    this.rxColor.setDispValue(configToLoad.rxColor);
+    this.rxColor.apply();
   };
 }

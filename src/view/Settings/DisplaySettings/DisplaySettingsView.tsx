@@ -1,8 +1,9 @@
-import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip } from '@mui/material';
+import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { App } from 'src/model/App';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
+import BorderedSection from 'src/view/Components/BorderedSection';
 import { DataViewConfiguration, TerminalHeightMode, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
@@ -13,7 +14,7 @@ export default observer((props: Props) => {
   const { app } = props;
 
   return (
-    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
+    <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column', maxWidth: '500px' }}>
       {/* =============================================================================== */}
       {/* CHAR SIZE */}
       {/* =============================================================================== */}
@@ -189,6 +190,75 @@ export default observer((props: Props) => {
           </Select>
         </FormControl>
       </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* COLOR SETTINGS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Color Settings" childStyle={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <FormLabel style={{ marginTop: '10px' }}>The default colours for the terminal background, TX text, and RX text. If ANSI escape code parsing is enabled, these default colours may be overridden by data.</FormLabel>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          {/* BACKGROUND COLOR */}
+          <Tooltip title="Set the terminal background color." followCursor arrow>
+            <ApplyableTextFieldView
+              id="backgroundColor"
+              name="backgroundColor"
+              label="Background color"
+              variant="outlined"
+              size="small"
+              InputProps={{
+                type: 'color',
+                style: { height: '35px', width: '200px' }
+              }}
+              applyableTextField={app.settings.displaySettings.backgroundColor}
+              sx={{ marginBottom: "0px" }}
+            />
+          </Tooltip>
+
+          {/* TX TEXT COLOR */}
+          <Tooltip title="Set the transmitted (TX) text color." followCursor arrow>
+            <ApplyableTextFieldView
+              id="txColor"
+              name="txColor"
+              label="TX text color"
+              variant="outlined"
+              size="small"
+              InputProps={{
+                type: 'color',
+                style: { height: '35px', width: '200px' }
+              }}
+              applyableTextField={app.settings.displaySettings.txColor}
+              sx={{ marginBottom: "0px" }}
+            />
+          </Tooltip>
+
+          {/* RX TEXT COLOR */}
+          <Tooltip title="Set the received (RX) text color." followCursor arrow>
+            <ApplyableTextFieldView
+              id="rxColor"
+              name="rxColor"
+              label="RX text color"
+              variant="outlined"
+              size="small"
+              InputProps={{
+                type: 'color',
+                style: { height: '35px', width: '200px' }
+              }}
+              applyableTextField={app.settings.displaySettings.rxColor}
+              sx={{ marginBottom: "0px" }}
+            />
+          </Tooltip>
+        </div>
+
+        <Button
+          variant="contained"
+          onClick={() => app.settings.displaySettings.setRxColorEqualToTx()}
+          sx={{ alignSelf: 'flex-start' }}
+        >
+          Set RX color equal to TX
+        </Button>
+      </BorderedSection>
+
     </div>
   );
 });
