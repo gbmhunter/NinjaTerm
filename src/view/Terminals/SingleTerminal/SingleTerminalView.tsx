@@ -228,11 +228,11 @@ export default observer((props: Props) => {
         style={{
           flexGrow: 1,
           // marginBottom: '10px',
-          padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+          padding: '5px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
           boxSizing: 'border-box',
           overflowY: 'hidden',
-          backgroundColor: displaySettings.backgroundColor.appliedValue,
           position: 'relative',
+          backgroundColor: displaySettings.backgroundColor.appliedValue,
           // These are used to set the default text color for the terminal via CSS. ANSI escape codes
           // may override these colors. See SingleTerminalView.css for where these are used.
           '--default-tx-color': terminal.defaultTxColor,
