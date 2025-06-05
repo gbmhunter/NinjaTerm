@@ -419,6 +419,7 @@ describe('single terminal tests', () => {
   //================================================================================
   describe('timestamp tests', () => {
     test('timestamp is added to start of first line', () => {
+      const NUM_CHARS_IN_TIMESTAMP = 26;
       // Enable timestamps setting
       dataProcessingSettings.setAddTimestamps(true);
 
@@ -427,10 +428,10 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "2025-06-03T16:35:07+12:00 "
       // This is 26 chars. So the total length of the row should be 26 (timestamp and space) + 3 (data) + 1 (cursor) = 30
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(30);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
       // Extract the timestamp from the first row
-      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, 26).map(char => char.char).join('');
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
       const timestampFromTerminal = moment(timestampFromTerminalStr, 'YYYY-MM-DDTHH:mm:ssZ')
 
       // Get local time in ISO format, in timezone of the machine running the test
@@ -441,7 +442,7 @@ describe('single terminal tests', () => {
       expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
 
       // Now check the rest of the text, which should be "123 "
-      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(26).map(char => char.char).join('');
+      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
       expect(restOfText).toBe('123 ');
     });
 
@@ -585,6 +586,52 @@ describe('single terminal tests', () => {
       // placeholder char.
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
       expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe(' ');
+    });
+
+    test('timestamps are not added to new lines created due to wrapping', () => {
+      const TERMINAL_WIDTH_CHARS = 30;
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+      // Set the terminal char width to 30 to make it easy to wrap
+      displaySettings.terminalWidthChars.setDispValue(TERMINAL_WIDTH_CHARS.toString());
+      displaySettings.terminalWidthChars.apply();
+
+      // Send 5 chars, which should make it wrap to the next line (1 char on second line) since
+      // the default timestamp length is 26 chars
+      singleTerminal.parseData(stringToUint8Array('12345'), DataDirection.RX);
+
+      // There should be 2 rows, the first with 10 chars and the second with 4
+      expect(singleTerminal.terminalRows.length).toBe(2);
+
+      // Don't validate the timestamp in first line, just make sure it's full of data
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(TERMINAL_WIDTH_CHARS);
+      // Expect the second line to contain the "5" and the cursor
+      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(2);
+      expect(singleTerminal.terminalRows[1].terminalChars[0].char).toBe('5');
+      expect(singleTerminal.terminalRows[1].terminalChars[1].char).toBe(' '); // cursor
+    });
+
+    test('line can wrap in the middle of a timestamp', () => {
+      const NUM_CHARS_IN_TIMESTAMP = 26;
+      // Set terminal width
+      const TERMINAL_WIDTH_CHARS = 20;
+      // Enable timestamps setting
+      dataProcessingSettings.setAddTimestamps(true);
+
+      displaySettings.terminalWidthChars.setDispValue(TERMINAL_WIDTH_CHARS.toString());
+      displaySettings.terminalWidthChars.apply();
+
+      // Send 5 chars. Timestamp itself is 26 chars, so line should wrap part way through the
+      // timestamp.
+      singleTerminal.parseData(stringToUint8Array('12345'), DataDirection.RX);
+
+      // There should be 2 rows
+      expect(singleTerminal.terminalRows.length).toBe(2);
+
+      // Don't validate the timestamp in first line, just make sure it's full of data
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(TERMINAL_WIDTH_CHARS);
+      // Length of second row should be remainder of timestamp length (26 - 20 = 6) + data (5) + cursor (1)
+      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP - TERMINAL_WIDTH_CHARS + 5 + 1);
     });
   });
 });
