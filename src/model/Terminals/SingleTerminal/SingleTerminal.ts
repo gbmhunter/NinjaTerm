@@ -25,10 +25,15 @@ import SnackbarController from 'src/model/SnackbarController/SnackbarController'
 const START_OF_CONTROL_GLYPHS = 0xe000;
 const START_OF_HEX_GLYPHS = 0xe100;
 
+export enum DataDirection {
+  TX = 'TX',
+  RX = 'RX',
+}
+
 /**
  * Represents a single terminal-style user interface.
  */
-export default class SingleTerminal {
+export class SingleTerminal {
 
   id: string;
 
@@ -116,6 +121,10 @@ export default class SingleTerminal {
 
   partialEscapeCode: string;
 
+  defaultBackgroundColor: string;
+  defaultTxColor: string;
+  defaultRxColor: string;
+
   currForegroundColorNum: number | null;
 
   currBackgroundColorNum: number | null;
@@ -184,13 +193,23 @@ export default class SingleTerminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx].charCodeAt(0));
+          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx].charCodeAt(0), DataDirection.RX);
         }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
         this.inIdleState = true;
       }
+    });
+
+    // Register listener for whenever the RX text color is changed
+    this.defaultBackgroundColor = '';
+    this.defaultTxColor = '';
+    this.defaultRxColor = '';
+    autorun(() => {
+      this.defaultBackgroundColor = this.displaySettings.backgroundColor.appliedValue;
+      this.defaultTxColor = this.displaySettings.txColor.appliedValue;
+      this.defaultRxColor = this.displaySettings.rxColor.appliedValue;
     });
 
     this.cursorPosition = [0, 0];
@@ -315,8 +334,10 @@ export default class SingleTerminal {
    * ASCII, HEX).
    *
    * @param data The array of bytes to process.
+   * @param direction The direction of the data (TX or RX). This is needed to allow
+   *    the user to color the data differently based on the direction.
    */
-  parseData(data: Uint8Array) {
+  parseData(data: Uint8Array, direction: DataDirection) {
     // Parse each character
     // console.log("parseData() called. data=", data);
     // const dataAsStr = new TextDecoder().decode(data);
@@ -327,9 +348,9 @@ export default class SingleTerminal {
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
     if (this.rxSettings.dataType === DataType.ASCII) {
-      this.parseAsciiData(data);
+      this._parseAsciiData(data, direction);
     } else if (this.rxSettings.dataType === DataType.NUMBER) {
-      this._parseDataAsNumber(data);
+      this._parseDataAsNumber(data, direction);
     } else {
       throw Error(`Data type ${this.rxSettings.dataType} not supported by parseData().`);
     }
@@ -339,7 +360,7 @@ export default class SingleTerminal {
     this._limitNumRows();
   }
 
-  parseAsciiData(data: Uint8Array) {
+  _parseAsciiData(data: Uint8Array, direction: DataDirection) {
     let remainingData: number[] = [];
     for (let idx = 0; idx < data.length; idx += 1) {
       remainingData.push(data[idx]);
@@ -369,7 +390,7 @@ export default class SingleTerminal {
         // at the end of the existing line, rather than the start of the new
         // line
         if (!this.rxSettings.swallowNewLine) {
-          this._maybeAddVisibleByteAndTimestamp(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
@@ -405,7 +426,7 @@ export default class SingleTerminal {
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
         if (!this.rxSettings.swallowCarriageReturn) {
-          this._maybeAddVisibleByteAndTimestamp(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
@@ -482,7 +503,7 @@ export default class SingleTerminal {
 
       // If we get here we are not receiving an ANSI escape code,
       // so send byte to be printed to the terminal.
-      this._maybeAddVisibleByteAndTimestamp(rxByte);
+      this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
     }
   }
 
@@ -708,7 +729,7 @@ export default class SingleTerminal {
    *
    * @param data The data to parse and display.
    */
-  _parseDataAsNumber(data: Uint8Array) {
+  _parseDataAsNumber(data: Uint8Array, direction: DataDirection) {
     // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.numberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
@@ -1011,11 +1032,11 @@ export default class SingleTerminal {
       // Add to string to the the terminal
       for (let charIdx = 0; charIdx < numberStr.length; charIdx += 1) {
         const charCode = numberStr.charCodeAt(charIdx);
-        this._maybeAddVisibleByteAndTimestamp(numberStr.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(numberStr.charCodeAt(charIdx), direction);
       }
       // Append the hex separator string
       for (let charIdx = 0; charIdx < this.rxSettings.numberSeparator.appliedValue.length; charIdx += 1) {
-        this._maybeAddVisibleByteAndTimestamp(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx), direction);
       }
 
       if (insertNewLine && this.rxSettings.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
@@ -1218,9 +1239,9 @@ export default class SingleTerminal {
    * Wrapper for _addVisibleChar() which lets you add multiple characters at once.
    * @param rxBytes The printable characters to display.
    */
-  _addVisibleChars(rxBytes: number[]) {
+  _addVisibleChars(rxBytes: number[], direction: DataDirection) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
-      this._maybeAddVisibleByteAndTimestamp(rxBytes[idx]);
+      this._maybeAddVisibleByteAndTimestamp(rxBytes[idx], direction);
     }
   }
 
@@ -1233,7 +1254,7 @@ export default class SingleTerminal {
    *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
    *   depending on the data processing settings.
    */
-  _maybeAddVisibleByteAndTimestamp(rxByte: number) {
+  _maybeAddVisibleByteAndTimestamp(rxByte: number, direction: DataDirection) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
 
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
@@ -1295,21 +1316,31 @@ export default class SingleTerminal {
       }
 
       for (let idx = 0; idx < timestampString.length; idx += 1) {
-        this.addVisibleChar(timestampString[idx]);
+        this.addVisibleChar(timestampString[idx], direction);
       }
       // Add a space after the timestamp
       // this.addVisibleChar(' ');
     }
 
-    this.addVisibleChar(char);
+    this.addVisibleChar(char, direction);
   }
 
-  addVisibleChar(char: string) {
+  addVisibleChar(char: string, direction: DataDirection) {
     const terminalChar = new TerminalChar();
     terminalChar.char = char;
 
     // This stores all classes we wish to apply to the char
     let classList = [];
+
+    // Apply a class indicating the direction of the data
+    if (direction === DataDirection.TX) {
+      classList.push('tx');
+    } else if (direction === DataDirection.RX) {
+      classList.push('rx');
+    } else {
+      throw Error('Invalid direction. direction=' + direction);
+    }
+
     // Calculate the foreground class
     // Should be in the form: "f<number", e.g. "f30" or "f90"
     if (this.currForegroundColorNum !== null) {

@@ -1,16 +1,15 @@
 import { IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useRef, ReactElement, useLayoutEffect, forwardRef, useEffect, useCallback, useMemo } from 'react';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { FixedSizeList } from 'react-window';
 
-import SingleTerminal from '../../../model/Terminals/SingleTerminal/SingleTerminal';
+import { SingleTerminal } from 'src/model/Terminals/SingleTerminal/SingleTerminal';
 import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
-import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
+import { SelectionController } from 'src/model/SelectionController/SelectionController';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
@@ -234,7 +233,11 @@ export default observer((props: Props) => {
           overflowY: 'hidden',
           backgroundColor: displaySettings.backgroundColor.appliedValue,
           position: 'relative',
-        }}
+          // These are used to set the default text color for the terminal via CSS. ANSI escape codes
+          // may override these colors. See SingleTerminalView.css for where these are used.
+          '--default-tx-color': terminal.defaultTxColor,
+          '--default-rx-color': terminal.defaultRxColor,
+        } as React.CSSProperties & { [key: string]: string | number }}
         onFocus={(e) => {
           terminal.setIsFocused(true);
         }}
@@ -270,6 +273,9 @@ export default observer((props: Props) => {
             height: '100%',
             // This sets the font for displayed data in the terminal
             fontFamily: 'Consolas, Menlo, monospace',
+
+            // This sets the terminal text color
+            color: terminal.defaultRxColor,
 
             // This sets the font size for data displayed in the terminal
             fontSize: terminal.charSizePx + 'px',
