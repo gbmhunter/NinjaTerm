@@ -1,10 +1,12 @@
-import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel } from '@mui/material';
+import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel, Popover, IconButton } from '@mui/material';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 import { App } from 'src/model/App';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
 import BorderedSection from 'src/view/Components/BorderedSection';
 import { DataViewConfiguration, TerminalHeightMode, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import PopoverColorPicker from 'src/view/Components/PopoverColorPicker';
 
 interface Props {
   app: App;
@@ -12,6 +14,55 @@ interface Props {
 
 export default observer((props: Props) => {
   const { app } = props;
+
+  // State for the color picker popovers. Not relevant enough to put in the app model so
+  // stays in the view.
+  const [bgColorPickerOpen, setBgColorPickerOpen] = useState(false);
+  const [bgAnchorEl, setBgAnchorEl] = useState<HTMLElement | null>(null);
+  const [txColorPickerOpen, setTxColorPickerOpen] = useState(false);
+  const [txAnchorEl, setTxAnchorEl] = useState<HTMLElement | null>(null);
+  const [rxColorPickerOpen, setRxColorPickerOpen] = useState(false);
+  const [rxAnchorEl, setRxAnchorEl] = useState<HTMLElement | null>(null);
+
+  const baseIconStyle = {
+    marginLeft: '10px',
+    width: `20px`, // Adjust size as needed
+    height: `20px`,
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    padding: 0, // Remove default IconButton padding
+    '&:hover': {
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)', // MUI-like hover shadow
+      transform: 'scale(1.05)',
+    },
+  };
+
+  const bgColorPickerIconStyle = {
+    ...baseIconStyle,
+    backgroundColor: app.settings.displaySettings.backgroundColor.appliedValue,
+    '&:hover': {
+      ...baseIconStyle['&:hover'],
+      backgroundColor: app.settings.displaySettings.backgroundColor.appliedValue,
+    },
+  };
+
+  const txColorPickerIconStyle = {
+    ...baseIconStyle,
+    backgroundColor: app.settings.displaySettings.txColor.appliedValue,
+    '&:hover': {
+      ...baseIconStyle['&:hover'],
+      backgroundColor: app.settings.displaySettings.txColor.appliedValue,
+    },
+  };
+
+  const rxColorPickerIconStyle = {
+    ...baseIconStyle,
+    backgroundColor: app.settings.displaySettings.rxColor.appliedValue,
+    '&:hover': {
+      ...baseIconStyle['&:hover'],
+      backgroundColor: app.settings.displaySettings.rxColor.appliedValue,
+    },
+  };
 
   return (
     <div style={{ paddingTop: '20px', display: 'flex', flexDirection: 'column', maxWidth: '500px' }}>
@@ -195,59 +246,81 @@ export default observer((props: Props) => {
       {/* COLOR SETTINGS */}
       {/* =============================================================================== */}
       <BorderedSection title="Color Settings" childStyle={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-      <FormLabel style={{ marginTop: '10px' }}>The default colours for the terminal background, TX text, and RX text. If ANSI escape code parsing is enabled, these default colours may be overridden by data.</FormLabel>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {/* BACKGROUND COLOR */}
-          <Tooltip title="Set the terminal background color." followCursor arrow>
-            <ApplyableTextFieldView
-              id="backgroundColor"
-              name="backgroundColor"
-              label="Background color"
-              variant="outlined"
-              size="small"
-              InputProps={{
-                type: 'color',
-                style: { height: '35px', width: '200px' }
+        <FormLabel style={{ marginTop: '10px' }}>The default colours for the terminal background, TX text, and RX text. If ANSI escape code parsing is enabled, these default colours may be overridden by data.
+          <br />
+          <br />
+          Sending the "reset" ANSI escape code (ESC(39;49m) or the reset all attributes (ESC(0m) will reset the colors to these defaults.
+        </FormLabel>
+        <div> {/* Wrapper for grid and popovers */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'max-content auto', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+            {/* Background Color */}
+            <div>Background color</div>
+            <IconButton
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                setBgAnchorEl(event.currentTarget);
+                setBgColorPickerOpen(true);
               }}
-              applyableTextField={app.settings.displaySettings.backgroundColor}
-              sx={{ marginBottom: "0px" }}
-            />
-          </Tooltip>
+              sx={bgColorPickerIconStyle}
+            >
+            </IconButton>
 
-          {/* TX TEXT COLOR */}
-          <Tooltip title="Set the transmitted (TX) text color." followCursor arrow>
-            <ApplyableTextFieldView
-              id="txColor"
-              name="txColor"
-              label="Default TX text color"
-              variant="outlined"
-              size="small"
-              InputProps={{
-                type: 'color',
-                style: { height: '35px', width: '200px' }
+            {/* TX Text Color */}
+            <div>TX text color</div>
+            <IconButton
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                setTxAnchorEl(event.currentTarget);
+                setTxColorPickerOpen(true);
               }}
-              applyableTextField={app.settings.displaySettings.txColor}
-              sx={{ marginBottom: "0px" }}
-            />
-          </Tooltip>
+              sx={txColorPickerIconStyle}
+            >
+            </IconButton>
 
-          {/* RX TEXT COLOR */}
-          <Tooltip title="Set the received (RX) text color." followCursor arrow>
-            <ApplyableTextFieldView
-              id="rxColor"
-              name="rxColor"
-              label="Default RX text color"
-              variant="outlined"
-              size="small"
-              InputProps={{
-                type: 'color',
-                style: { height: '35px', width: '200px' }
+            {/* RX Text Color */}
+            <div>RX text color</div>
+            <IconButton
+              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                setRxAnchorEl(event.currentTarget);
+                setRxColorPickerOpen(true);
               }}
-              applyableTextField={app.settings.displaySettings.rxColor}
-              sx={{ marginBottom: "0px" }}
-            />
-          </Tooltip>
+              sx={rxColorPickerIconStyle}
+            >
+            </IconButton>
+          </div>
+
+          {/* Popover Color Pickers. These are popovers, not in document flow. */}
+          <PopoverColorPicker
+            show={bgColorPickerOpen}
+            setShow={setBgColorPickerOpen}
+            anchorEl={bgAnchorEl}
+            setAnchorEl={setBgAnchorEl}
+            color={app.settings.displaySettings.backgroundColor.appliedValue}
+            setColor={(color) => {
+              app.settings.displaySettings.backgroundColor.setDispValue(color);
+              app.settings.displaySettings.backgroundColor.apply();
+            }}
+          />
+          <PopoverColorPicker
+            show={txColorPickerOpen}
+            setShow={setTxColorPickerOpen}
+            anchorEl={txAnchorEl}
+            setAnchorEl={setTxAnchorEl}
+            color={app.settings.displaySettings.txColor.appliedValue}
+            setColor={(color) => {
+              app.settings.displaySettings.txColor.setDispValue(color);
+              app.settings.displaySettings.txColor.apply();
+            }}
+          />
+          <PopoverColorPicker
+            show={rxColorPickerOpen}
+            setShow={setRxColorPickerOpen}
+            anchorEl={rxAnchorEl}
+            setAnchorEl={setRxAnchorEl}
+            color={app.settings.displaySettings.rxColor.appliedValue}
+            setColor={(color) => {
+              app.settings.displaySettings.rxColor.setDispValue(color);
+              app.settings.displaySettings.rxColor.apply();
+            }}
+          />
         </div>
 
         <Button
@@ -259,6 +332,53 @@ export default observer((props: Props) => {
         </Button>
       </BorderedSection>
 
+      {/* <Popover
+        open={bgColorPickerOpen}
+        anchorEl={anchorEl}
+        onClose={() => {
+          setBgColorPickerOpen(false);
+          setAnchorEl(null);
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Sketch
+            color={sketchPickerColor}
+            onChange={(color) => {
+              setSketchPickerColor(color.hex);
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <Button
+              size="small"
+              onClick={() => {
+                setBgColorPickerOpen(false);
+                setAnchorEl(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={() => {
+                // app.settings.displaySettings.backgroundColor.setValue(sketchPickerColor);
+                setBgColorPickerOpen(false);
+                setAnchorEl(null);
+              }}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      </Popover> */}
     </div>
   );
 });

@@ -48,6 +48,7 @@
     "ninjaterm",
     "notistack",
     "Overridable",
+    "precaching",
     "scrollback",
     "Scrolllock",
     "SDMMGN",
@@ -55,6 +56,7 @@
     "Umami",
     "validatorjs",
     "vitest",
+    "wicg",
     "x1B",
     "XTAL"
   ],
