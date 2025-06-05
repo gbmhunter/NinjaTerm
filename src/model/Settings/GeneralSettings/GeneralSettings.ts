@@ -41,4 +41,9 @@ export default class GeneralSettings {
     this.whenPastingOnWindowsReplaceCRLFWithLF = configToLoad.whenPastingOnWindowsReplaceCRLFWithLF;
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configToLoad.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
   };
+
+  clearAppDataAndRefresh = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
 }

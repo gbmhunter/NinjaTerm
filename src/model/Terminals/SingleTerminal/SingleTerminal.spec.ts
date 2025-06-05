@@ -235,14 +235,14 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[31mred'), DataDirection.RX);
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(4); // "red" + cursor
       for (let i = 0; i < 3; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toBe('f31');
+        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toContain('f31');
       }
       singleTerminal.clear();
       singleTerminal.parseData(stringToUint8Array('default'), DataDirection.RX);
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(8); // "default" + cursor
       // We expect the class name to be an empty string now, as we have called clear()
       for (let i = 0; i < 7; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toBe('');
+        expect(singleTerminal.terminalRows[0].terminalChars[i].className).not.toContain('f31');
       }
     });
   });

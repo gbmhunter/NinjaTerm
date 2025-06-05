@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added the ability to add timestamps to the start of each line of received data. Timestamps can be enabled from the Settings->RX Settings menu.
+- Added the ability to select the default background, TX text and RX text colors from the Settings->Display menu. ANSI escape code colors commands will override these defaults. This also means you can color TX and RX text differently.
+- Added a "Clear app data and reload app" button to the Settings->General Settings menu which clears all app data in local storage (e.g. profiles, settings changed from their defaults) and reloads the app.
 
 ### Changed
 

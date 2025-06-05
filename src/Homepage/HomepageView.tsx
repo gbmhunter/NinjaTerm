@@ -12,6 +12,7 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Grid from '@mui/material/Unstable_Grid2';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';
@@ -71,6 +72,14 @@ const darkTheme = createTheme({
 interface Props {}
 
 export default observer((props: Props) => {
+  const handleClearData = () => {
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm('Are you sure you want to clear all app data? This action cannot be undone.')) {
+      localStorage.clear();
+      window.location.reload();
+    }
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
