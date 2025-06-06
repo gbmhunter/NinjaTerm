@@ -4,6 +4,8 @@ export const DEFAULT_BACKGROUND_COLOR = '#000000';
 export const DEFAULT_TX_COLOR = '#ffffff';
 export const DEFAULT_RX_COLOR = '#ffffff';
 
+export const DEFAULT_TAB_STOP_WIDTH = 8;
+
 export class DisplaySettingsData {
   charSizePx = 14;
   verticalRowPaddingPx = 5;
@@ -17,5 +19,5 @@ export class DisplaySettingsData {
   defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
   defaultTxTextColor = DEFAULT_TX_COLOR;
   defaultRxTextColor = DEFAULT_RX_COLOR;
-  tabStopWidth = 8;
+  tabStopWidth = DEFAULT_TAB_STOP_WIDTH;
 }

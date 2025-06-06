@@ -191,7 +191,7 @@ export default observer((props: Props) => {
       {/* TAB STOP WIDTH */}
       {/* =============================================================================== */}
       <Tooltip
-        title="The number of spaces for each tab stop. When a tab character is received, the cursor will move to the next tab stop. Must be an integer between 1 and 16."
+        title="The number of spaces for each tab stop. When a tab character is received, the cursor will move to the next tab stop. Must be an integer between 1 and 16. A line will not wrap due to receiving tab characters, the cursor will stay at the end of the line."
         followCursor
         arrow
       >

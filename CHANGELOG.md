@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added the ability to select the default background, TX text and RX text colors from the Settings->Display menu. ANSI escape code colors commands will override these defaults. This also means you can color TX and RX text differently.
 - Added a "Clear app data and reload app" button to the Settings->General Settings menu which clears all app data in local storage (e.g. profiles, settings changed from their defaults) and reloads the app.
 - Added a local echo status indicator to the bottom toolbar.
+- Added support for receiving tab characters and handling them correctly with tab stops.
 
 ### Changed
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Run unit tests (vitest) in CI after discovering they were not running.
 - Fixed broken unit tests.
+- Tooltip entry delay issues fixed in the quick settings accordion.
 
 ## [4.19.1] - 2025-05-31
 

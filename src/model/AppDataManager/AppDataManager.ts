@@ -149,6 +149,8 @@ export class AppDataManager {
         rootConfig.settings.displaySettings.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
         rootConfig.settings.displaySettings.defaultTxTextColor = DEFAULT_TX_COLOR;
         rootConfig.settings.displaySettings.defaultRxTextColor = DEFAULT_RX_COLOR;
+        // Display settings got a new tab stop width field
+        rootConfig.settings.displaySettings.tabStopWidth = 8;
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;

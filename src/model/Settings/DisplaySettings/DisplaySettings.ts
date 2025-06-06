@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import { DEFAULT_TAB_STOP_WIDTH } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -49,7 +50,7 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
-  tabStopWidth = new ApplyableNumberField('8', z.coerce.number().int().min(1).max(16));
+  tabStopWidth = new ApplyableNumberField(DEFAULT_TAB_STOP_WIDTH.toString(), z.coerce.number().int().min(1).max(16));
 
   // Color fields
   // Values can just be made up here, they will be overridden by the settings
@@ -101,9 +102,6 @@ export default class DisplaySettings {
     config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
-    console.log('Saving display settings config. defaultBackgroundColor: ', this.defaultBackgroundColor.appliedValue);
-    console.log('Saving display settings config. defaultTxTextColor: ', this.defaultTxTextColor.appliedValue);
-    console.log('Saving display settings config. defaultRxTextColor: ', this.defaultRxTextColor.appliedValue);
     config.defaultBackgroundColor = this.defaultBackgroundColor.appliedValue;
     config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
     config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
@@ -114,32 +112,26 @@ export default class DisplaySettings {
 
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
-    console.log('Loading display settings config. configToLoad: ', configToLoad);
-    // console.log('Loading display settings config. configToLoad.defaultTxTextColor: ', configToLoad.defaultTxTextColor);
 
     this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
-    this.charSizePx.apply();
+    this.charSizePx.apply({notify: false});
     this.verticalRowPaddingPx.setDispValue(configToLoad.verticalRowPaddingPx.toString());
-    this.verticalRowPaddingPx.apply();
+    this.verticalRowPaddingPx.apply({notify: false});
     this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
-    this.terminalWidthChars.apply();
+    this.terminalWidthChars.apply({notify: false});
     this.terminalHeightMode = configToLoad.terminalHeightMode;
     this.terminalHeightChars.setDispValue(configToLoad.terminalHeightChars.toString());
-    this.terminalHeightChars.apply();
+    this.terminalHeightChars.apply({notify: false});
     this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
-    this.scrollbackBufferSizeRows.apply();
+    this.scrollbackBufferSizeRows.apply({notify: false});
     this.dataViewConfiguration = configToLoad.dataViewConfiguration;
     this.defaultBackgroundColor.setDispValue(configToLoad.defaultBackgroundColor);
     this.defaultBackgroundColor.apply({notify: false});
-    const defaultTxTextColor = configToLoad.defaultTxTextColor;
-    console.log('Loading display settings config. defaultTxTextColor: ', defaultTxTextColor);
-    this.defaultTxTextColor.setDispValue(defaultTxTextColor);
+    this.defaultTxTextColor.setDispValue(configToLoad.defaultTxTextColor);
     this.defaultTxTextColor.apply({notify: false});
     this.defaultRxTextColor.setDispValue(configToLoad.defaultRxTextColor);
     this.defaultRxTextColor.apply({notify: false});
     this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
-    this.tabStopWidth.apply();
-
-    console.log('Loaded display settings config.');
+    this.tabStopWidth.apply({notify: false});
   };
 }
