@@ -47,7 +47,7 @@ export class RxSettingsData {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
-  timestampFormat = TimestampFormat.ISO8601;
+  timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
   customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
 
   // OTHER SETTINGS

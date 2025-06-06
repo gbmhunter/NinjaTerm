@@ -81,8 +81,10 @@ export enum Endianness {
  * The different ways to format timestamps that can be added to the start of each line of received data.
  */
 export enum TimestampFormat {
-  // ISO8601 format (e.g. "2025-06-04T11:18:50+12:00")
-  ISO8601 = 'ISO8601',
+  // ISO8601 format with millisecond precision and no timezone (e.g. "2025-06-04T11:18:50.833")
+  ISO8601_WITHOUT_TIMEZONE = 'ISO8601',
+  // ISO8601 format with millisecond precision and timezone (e.g. "2025-06-04T11:18:50.833+12:00")
+  ISO8601_WITH_TIMEZONE = 'ISO8601WithTimezone',
   // e.g. 2025-06-04 11:18:50.833
   LOCAL = 'Local',
   // e.g. 1748991831
@@ -145,7 +147,7 @@ export default class RxSettings {
 
   // TIMESTAMP SETTINGS
   addTimestamps = false;
-  timestampFormat = TimestampFormat.ISO8601;
+  timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
   customTimestampFormatString = new ApplyableTextField("", z.string()); // Default in settings
 
   // OTHER SETTINGS

@@ -725,8 +725,11 @@ function RxSettingsView(props: Props) {
               rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
             }}
           >
-            <Tooltip title="Display timestamps in ISO8601 format (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
-              <FormControlLabel value={TimestampFormat.ISO8601} control={<Radio />} label="ISO8601 (e.g. &quot;2025-06-04T12:04:45.832&quot;)" />
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.ISO8601_WITHOUT_TIMEZONE} control={<Radio />} label="ISO8601, no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.ISO8601_WITH_TIMEZONE} control={<Radio />} label="ISO8601, with timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)" />
             </Tooltip>
             <Tooltip title="Display timestamps in local time (e.g. &quot;2025-06-04 12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
               <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. &quot;2025-06-04 12:04:45.832&quot;)" />

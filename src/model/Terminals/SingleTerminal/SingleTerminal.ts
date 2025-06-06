@@ -1293,9 +1293,12 @@ export class SingleTerminal {
       const now = new Date();
       const timestamp = moment(now)
       let timestampString = '';
-      if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601) {
-        // Format as ISO8601
-        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ssZ ');
+      if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITHOUT_TIMEZONE) {
+        // Format as ISO8601 with millisecond precision and no timezone
+        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSS ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITH_TIMEZONE) {
+        // Format as ISO8601 with millisecond precision and timezone
+        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSSZ ');
       } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
         // Format as local time (no timezone info)
         timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');

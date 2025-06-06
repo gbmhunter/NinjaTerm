@@ -141,7 +141,7 @@ export class AppDataManager {
       let updateRootConfig = (rootConfig: any) => {
         // Add timestamp settings
         rootConfig.settings.rxSettings.addTimestamps = false;
-        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601;
+        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
         rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
         // Display settings got new color fields
         rootConfig.settings.displaySettings.backgroundColor = '#000000';
