@@ -248,77 +248,128 @@ export default observer((props: Props) => {
       <BorderedSection title="Color Settings" childStyle={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <FormLabel style={{ marginTop: '10px' }}>The default colours for the terminal background, TX text, and RX text. If ANSI escape code parsing is enabled, these default colours may be overridden by data.
           <br />
-          <br />
-          Sending the "reset" ANSI escape code (ESC(39;49m) or the reset all attributes (ESC(0m) will reset the colors to these defaults.
+          Click on the coloured square to change the colour.
         </FormLabel>
-        <div> {/* Wrapper for grid and popovers */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'max-content auto', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-            {/* Background Color */}
-            <div>Background color</div>
-            <IconButton
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                setBgAnchorEl(event.currentTarget);
-                setBgColorPickerOpen(true);
-              }}
-              sx={bgColorPickerIconStyle}
-            >
-            </IconButton>
-
-            {/* TX Text Color */}
-            <div>TX text color</div>
-            <IconButton
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                setTxAnchorEl(event.currentTarget);
-                setTxColorPickerOpen(true);
-              }}
-              sx={txColorPickerIconStyle}
-            >
-            </IconButton>
-
-            {/* RX Text Color */}
-            <div>RX text color</div>
-            <IconButton
-              onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                setRxAnchorEl(event.currentTarget);
-                setRxColorPickerOpen(true);
-              }}
-              sx={rxColorPickerIconStyle}
-            >
-            </IconButton>
-          </div>
-
-          {/* Popover Color Pickers. These are popovers, not in document flow. */}
+        {/* BACKGROUND COLOR */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            label="Background Color"
+            value={app.settings.displaySettings.backgroundColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.backgroundColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.backgroundColor.apply()}
+            error={!app.settings.displaySettings.backgroundColor.isValid}
+            helperText={!app.settings.displaySettings.backgroundColor.isValid ? app.settings.displaySettings.backgroundColor.errorMsg : ''}
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  size="small"
+                  style={bgColorPickerIconStyle}
+                  onClick={(event) => {
+                    setBgAnchorEl(event.currentTarget);
+                    setBgColorPickerOpen(true);
+                  }}
+                  data-testid="bg-color-picker-button"
+                />
+              ),
+            }}
+            sx={{ flexGrow: 1 }}
+          />
           <PopoverColorPicker
             show={bgColorPickerOpen}
             setShow={setBgColorPickerOpen}
             anchorEl={bgAnchorEl}
             setAnchorEl={setBgAnchorEl}
-            color={app.settings.displaySettings.backgroundColor.appliedValue}
-            setColor={(color) => {
-              app.settings.displaySettings.backgroundColor.setDispValue(color);
+            initialColor={app.settings.displaySettings.backgroundColor.appliedValue}
+            onApply={(newColor) => {
+              app.settings.displaySettings.backgroundColor.setDispValue(newColor);
               app.settings.displaySettings.backgroundColor.apply();
+              setBgColorPickerOpen(false);
             }}
+            onCancel={() => {
+              setBgColorPickerOpen(false);
+            }}
+          />
+        </div>
+
+        {/* TX TEXT COLOR */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            label="TX Text Color"
+            value={app.settings.displaySettings.txColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.txColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.txColor.apply()}
+            error={!app.settings.displaySettings.txColor.isValid}
+            helperText={!app.settings.displaySettings.txColor.isValid ? app.settings.displaySettings.txColor.errorMsg : ''}
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  size="small"
+                  style={txColorPickerIconStyle}
+                  onClick={(event) => {
+                    setTxAnchorEl(event.currentTarget);
+                    setTxColorPickerOpen(true);
+                  }}
+                />
+              ),
+            }}
+            sx={{ flexGrow: 1 }}
           />
           <PopoverColorPicker
             show={txColorPickerOpen}
             setShow={setTxColorPickerOpen}
             anchorEl={txAnchorEl}
             setAnchorEl={setTxAnchorEl}
-            color={app.settings.displaySettings.txColor.appliedValue}
-            setColor={(color) => {
-              app.settings.displaySettings.txColor.setDispValue(color);
+            initialColor={app.settings.displaySettings.txColor.appliedValue}
+            onApply={(newColor) => {
+              app.settings.displaySettings.txColor.setDispValue(newColor);
               app.settings.displaySettings.txColor.apply();
+              setTxColorPickerOpen(false);
             }}
+            onCancel={() => {
+              setTxColorPickerOpen(false);
+            }}
+          />
+        </div>
+
+        {/* RX TEXT COLOR */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <TextField
+            label="RX Text Color"
+            value={app.settings.displaySettings.rxColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.rxColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.rxColor.apply()}
+            error={!app.settings.displaySettings.rxColor.isValid}
+            helperText={!app.settings.displaySettings.rxColor.isValid ? app.settings.displaySettings.rxColor.errorMsg : ''}
+            size="small"
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  size="small"
+                  style={rxColorPickerIconStyle}
+                  onClick={(event) => {
+                    setRxAnchorEl(event.currentTarget);
+                    setRxColorPickerOpen(true);
+                  }}
+                />
+              ),
+            }}
+            sx={{ flexGrow: 1 }}
           />
           <PopoverColorPicker
             show={rxColorPickerOpen}
             setShow={setRxColorPickerOpen}
             anchorEl={rxAnchorEl}
             setAnchorEl={setRxAnchorEl}
-            color={app.settings.displaySettings.rxColor.appliedValue}
-            setColor={(color) => {
-              app.settings.displaySettings.rxColor.setDispValue(color);
+            initialColor={app.settings.displaySettings.rxColor.appliedValue}
+            onApply={(newColor) => {
+              app.settings.displaySettings.rxColor.setDispValue(newColor);
               app.settings.displaySettings.rxColor.apply();
+              setRxColorPickerOpen(false);
+            }}
+            onCancel={() => {
+              setRxColorPickerOpen(false);
             }}
           />
         </div>
