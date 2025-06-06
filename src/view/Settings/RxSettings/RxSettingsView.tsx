@@ -714,7 +714,7 @@ function RxSettingsView(props: Props) {
                 }}
               />
             }
-            label="Add timestamps to the terminal."
+            label="Add timestamps to the data."
           />
         </Tooltip>
         <FormControl sx={{ marginTop: '10px', marginLeft: '30px' }} disabled={!rxSettings.addTimestamps}>
