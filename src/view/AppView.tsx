@@ -289,41 +289,65 @@ const AppView = observer((props: Props) => {
               justifyContent: 'end',
               alignItems: 'center',
               fontSize: '0.9rem',
-              gap: '20px',
+              gap: '10px',
               height: '25px',
             }}
           >
             {/* DATA TYPE */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 // Go to Settings -> RX Settings where the user can change the data type
                 app.setShownMainPane(MainPanes.SETTINGS);
                 app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
               }}
-              style={{ padding: '0 10px' }}
+              style={{ padding: '0 5px', width: '70px' }}
             >
               {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
             </div>
 
+            {/* LOCAL TX ECHO ON/OFF */}
+            <div
+              className={`${styles.onHover} ${styles.centerText}`}
+              onClick={() => {
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{
+                backgroundColor: app.settings.rxSettings.localTxEcho ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '100px',
+              }}
+            >
+              {app.settings.rxSettings.localTxEcho ? 'Echo ON' : 'Echo OFF'}
+            </div>
+
             {/* LOGGING ON/OFF */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 app.setShownMainPane(MainPanes.LOGGING);
               }}
-              style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}
+              style={{
+                backgroundColor: app.logging.isLogging ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '110px',
+              }}
             >
               {app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
             </div>
 
             {/* GRAPHING ON/OFF */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 app.setShownMainPane(MainPanes.GRAPHING);
               }}
-              style={{ backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '', padding: '0 10px' }}
+              style={{
+                backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '120px',
+              }}
             >
               {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
             </div>
@@ -338,7 +362,7 @@ const AppView = observer((props: Props) => {
               }}
               style={{
                 backgroundColor: app.settings.rxSettings.addTimestamps ? '#388e3c' : '',
-                padding: '0 10px',
+                padding: '0 5px',
                 width: '150px',
               }}
             >
