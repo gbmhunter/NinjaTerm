@@ -43,13 +43,21 @@ export default class ProfilesSettings {
       // Nothing to do if no profile is selected
       return;
     }
-    const selectedProfile = this.profileManager.appData.profiles[this.selectedProfiles[0] as number];
+    const selectedProfileIdx = this.selectedProfiles[0] as number;
+    const selectedProfile = this.profileManager.appData.profiles[selectedProfileIdx];
     if (selectedProfile.name === this.profileNameText) {
       // The profile name hasn't changed so nothing to do
       return;
     }
     // If we get here profile name has changed
+    const oldProfileName = selectedProfile.name; // Store the old name
     selectedProfile.name = this.profileNameText;
+
+    // If the renamed profile was the currently active one, update lastAppliedProfileName
+    if (this.profileManager.lastAppliedProfileName === oldProfileName) {
+      this.profileManager.lastAppliedProfileName = this.profileNameText;
+    }
+
     // Profile name has changed so save the profiles
     this.profileManager.saveAppData();
   }
