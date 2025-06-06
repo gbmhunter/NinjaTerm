@@ -31,7 +31,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       <div style={{ display: 'flex' }}>
         <BorderedSection title="Data Type" childStyle={{ display: 'flex', flexDirection: 'column', width: '500px' }}>
-          <FormControl>
+          <FormControl sx={{ width: 'fit-content' }}>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
               value={rxSettings.dataType}
@@ -157,7 +157,7 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* NEW LINE BEHAVIOR */}
-              <FormControl>
+              <FormControl sx={{ width: 'fit-content' }}>
                 <FormLabel>When a \n byte is received:</FormLabel>
                 <RadioGroup
                   value={rxSettings.newLineCursorBehavior}
@@ -230,7 +230,7 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* CARRIAGE RETURN CURSOR BEHAVIOR */}
-              <FormControl>
+              <FormControl sx={{ width: 'fit-content' }}>
                 <FormLabel>When a \r byte is received:</FormLabel>
                 <RadioGroup
                   value={rxSettings.carriageReturnCursorBehavior}
@@ -299,7 +299,7 @@ function RxSettingsView(props: Props) {
             }}
           >
             {/* RADIO GROUP */}
-            <FormControl>
+            <FormControl sx={{ width: 'fit-content' }}>
               <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
               <RadioGroup
                 value={rxSettings.nonVisibleCharDisplayBehavior}
@@ -717,7 +717,7 @@ function RxSettingsView(props: Props) {
             label="Add timestamps to the data."
           />
         </Tooltip>
-        <FormControl sx={{ marginTop: '10px', marginLeft: '30px' }} disabled={!rxSettings.addTimestamps}>
+        <FormControl sx={{ marginTop: '10px', marginLeft: '30px', width: 'fit-content' }} disabled={!rxSettings.addTimestamps}>
           <FormLabel>Timestamp Format</FormLabel>
           <RadioGroup
             value={rxSettings.timestampFormat}
