@@ -12,18 +12,34 @@ import { MacroControllerData } from './MacroControllerData';
  */
 export class RootConfig {
 
-  terminal = {
-    macroController: new MacroControllerData(),
-    rightDrawer: new RightDrawerConfig(),
+  terminal: {
+    macroController: MacroControllerData;
+    rightDrawer: RightDrawerConfig;
   };
 
-  lastUsedSerialPort: LastUsedSerialPort = new LastUsedSerialPort();
+  lastUsedSerialPort: LastUsedSerialPort;
 
-  settings = {
-    portSettings: new PortSettingsData(),
-    txSettings: new TxSettingsData(),
-    rxSettings: new RxSettingsData(),
-    displaySettings: new DisplaySettingsData(),
-    generalSettings: new GeneralSettingsConfig(),
+  settings: {
+    portSettings: PortSettingsData;
+    txSettings: TxSettingsData;
+    rxSettings: RxSettingsData;
+    displaySettings: DisplaySettingsData;
+    generalSettings: GeneralSettingsConfig;
   };
+
+  constructor() {
+    this.terminal = {
+      macroController: new MacroControllerData(),
+      rightDrawer: new RightDrawerConfig(),
+    };
+    this.lastUsedSerialPort = new LastUsedSerialPort();
+    this.settings = {
+      portSettings: new PortSettingsData(),
+      txSettings: new TxSettingsData(),
+      rxSettings: new RxSettingsData(),
+      displaySettings: new DisplaySettingsData(),
+      generalSettings: new GeneralSettingsConfig(),
+    };
+    console.log('RootConfig check. Settings.displaySettings.defaultTxTextColor: ', this.settings.displaySettings.defaultTxTextColor);
+  }
 }

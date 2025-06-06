@@ -39,28 +39,28 @@ export default observer((props: Props) => {
 
   const bgColorPickerIconStyle = {
     ...baseIconStyle,
-    backgroundColor: app.settings.displaySettings.backgroundColor.appliedValue,
+    backgroundColor: app.settings.displaySettings.defaultBackgroundColor.appliedValue,
     '&:hover': {
       ...baseIconStyle['&:hover'],
-      backgroundColor: app.settings.displaySettings.backgroundColor.appliedValue,
+      backgroundColor: app.settings.displaySettings.defaultBackgroundColor.appliedValue,
     },
   };
 
   const txColorPickerIconStyle = {
     ...baseIconStyle,
-    backgroundColor: app.settings.displaySettings.txColor.appliedValue,
+    backgroundColor: app.settings.displaySettings.defaultTxTextColor.appliedValue,
     '&:hover': {
       ...baseIconStyle['&:hover'],
-      backgroundColor: app.settings.displaySettings.txColor.appliedValue,
+      backgroundColor: app.settings.displaySettings.defaultTxTextColor.appliedValue,
     },
   };
 
   const rxColorPickerIconStyle = {
     ...baseIconStyle,
-    backgroundColor: app.settings.displaySettings.rxColor.appliedValue,
+    backgroundColor: app.settings.displaySettings.defaultRxTextColor.appliedValue,
     '&:hover': {
       ...baseIconStyle['&:hover'],
-      backgroundColor: app.settings.displaySettings.rxColor.appliedValue,
+      backgroundColor: app.settings.displaySettings.defaultRxTextColor.appliedValue,
     },
   };
 
@@ -254,11 +254,11 @@ export default observer((props: Props) => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TextField
             label="Background Color"
-            value={app.settings.displaySettings.backgroundColor.dispValue}
-            onChange={(e) => app.settings.displaySettings.backgroundColor.setDispValue(e.target.value)}
-            onBlur={() => app.settings.displaySettings.backgroundColor.apply()}
-            error={!app.settings.displaySettings.backgroundColor.isValid}
-            helperText={!app.settings.displaySettings.backgroundColor.isValid ? app.settings.displaySettings.backgroundColor.errorMsg : ''}
+            value={app.settings.displaySettings.defaultBackgroundColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.defaultBackgroundColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.defaultBackgroundColor.apply()}
+            error={!app.settings.displaySettings.defaultBackgroundColor.isValid}
+            helperText={!app.settings.displaySettings.defaultBackgroundColor.isValid ? app.settings.displaySettings.defaultBackgroundColor.errorMsg : ''}
             size="small"
             InputProps={{
               endAdornment: (
@@ -280,10 +280,10 @@ export default observer((props: Props) => {
             setShow={setBgColorPickerOpen}
             anchorEl={bgAnchorEl}
             setAnchorEl={setBgAnchorEl}
-            initialColor={app.settings.displaySettings.backgroundColor.appliedValue}
+            initialColor={app.settings.displaySettings.defaultBackgroundColor.appliedValue}
             onApply={(newColor) => {
-              app.settings.displaySettings.backgroundColor.setDispValue(newColor);
-              app.settings.displaySettings.backgroundColor.apply();
+              app.settings.displaySettings.defaultBackgroundColor.setDispValue(newColor);
+              app.settings.displaySettings.defaultBackgroundColor.apply();
               setBgColorPickerOpen(false);
             }}
             onCancel={() => {
@@ -296,11 +296,11 @@ export default observer((props: Props) => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TextField
             label="TX Text Color"
-            value={app.settings.displaySettings.txColor.dispValue}
-            onChange={(e) => app.settings.displaySettings.txColor.setDispValue(e.target.value)}
-            onBlur={() => app.settings.displaySettings.txColor.apply()}
-            error={!app.settings.displaySettings.txColor.isValid}
-            helperText={!app.settings.displaySettings.txColor.isValid ? app.settings.displaySettings.txColor.errorMsg : ''}
+            value={app.settings.displaySettings.defaultTxTextColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.defaultTxTextColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.defaultTxTextColor.apply()}
+            error={!app.settings.displaySettings.defaultTxTextColor.isValid}
+            helperText={!app.settings.displaySettings.defaultTxTextColor.isValid ? app.settings.displaySettings.defaultTxTextColor.errorMsg : ''}
             size="small"
             InputProps={{
               endAdornment: (
@@ -321,10 +321,10 @@ export default observer((props: Props) => {
             setShow={setTxColorPickerOpen}
             anchorEl={txAnchorEl}
             setAnchorEl={setTxAnchorEl}
-            initialColor={app.settings.displaySettings.txColor.appliedValue}
+            initialColor={app.settings.displaySettings.defaultTxTextColor.appliedValue}
             onApply={(newColor) => {
-              app.settings.displaySettings.txColor.setDispValue(newColor);
-              app.settings.displaySettings.txColor.apply();
+              app.settings.displaySettings.defaultTxTextColor.setDispValue(newColor);
+              app.settings.displaySettings.defaultTxTextColor.apply();
               setTxColorPickerOpen(false);
             }}
             onCancel={() => {
@@ -337,11 +337,11 @@ export default observer((props: Props) => {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <TextField
             label="RX Text Color"
-            value={app.settings.displaySettings.rxColor.dispValue}
-            onChange={(e) => app.settings.displaySettings.rxColor.setDispValue(e.target.value)}
-            onBlur={() => app.settings.displaySettings.rxColor.apply()}
-            error={!app.settings.displaySettings.rxColor.isValid}
-            helperText={!app.settings.displaySettings.rxColor.isValid ? app.settings.displaySettings.rxColor.errorMsg : ''}
+            value={app.settings.displaySettings.defaultRxTextColor.dispValue}
+            onChange={(e) => app.settings.displaySettings.defaultRxTextColor.setDispValue(e.target.value)}
+            onBlur={() => app.settings.displaySettings.defaultRxTextColor.apply()}
+            error={!app.settings.displaySettings.defaultRxTextColor.isValid}
+            helperText={!app.settings.displaySettings.defaultRxTextColor.isValid ? app.settings.displaySettings.defaultRxTextColor.errorMsg : ''}
             size="small"
             InputProps={{
               endAdornment: (
@@ -362,10 +362,10 @@ export default observer((props: Props) => {
             setShow={setRxColorPickerOpen}
             anchorEl={rxAnchorEl}
             setAnchorEl={setRxAnchorEl}
-            initialColor={app.settings.displaySettings.rxColor.appliedValue}
+            initialColor={app.settings.displaySettings.defaultRxTextColor.appliedValue}
             onApply={(newColor) => {
-              app.settings.displaySettings.rxColor.setDispValue(newColor);
-              app.settings.displaySettings.rxColor.apply();
+              app.settings.displaySettings.defaultRxTextColor.setDispValue(newColor);
+              app.settings.displaySettings.defaultRxTextColor.apply();
               setRxColorPickerOpen(false);
             }}
             onCancel={() => {

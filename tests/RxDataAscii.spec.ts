@@ -78,10 +78,10 @@ test.describe('RX data', () => {
 
     await appTestHarness.openPortAndGoToTerminalView();
     await page.evaluate(({TX_COLOR, RX_COLOR}) => {
-      window.app.settings.displaySettings.txColor.setDispValue(TX_COLOR);
-      window.app.settings.displaySettings.txColor.apply();
-      window.app.settings.displaySettings.rxColor.setDispValue(RX_COLOR);
-      window.app.settings.displaySettings.rxColor.apply();
+      window.app.settings.displaySettings.defaultTxTextColor.setDispValue(TX_COLOR);
+      window.app.settings.displaySettings.defaultTxTextColor.apply();
+      window.app.settings.displaySettings.defaultRxTextColor.setDispValue(RX_COLOR);
+      window.app.settings.displaySettings.defaultRxTextColor.apply();
     }, {TX_COLOR, RX_COLOR});
     await appTestHarness.sendTextToTerminal('\x1B[31mred\x1B[mreset');
 
@@ -112,10 +112,10 @@ test.describe('RX data', () => {
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
     await page.evaluate(({TX_COLOR, RX_COLOR}) => {
-      window.app.settings.displaySettings.txColor.setDispValue(TX_COLOR);
-      window.app.settings.displaySettings.txColor.apply();
-      window.app.settings.displaySettings.rxColor.setDispValue(RX_COLOR);
-      window.app.settings.displaySettings.rxColor.apply();
+      window.app.settings.displaySettings.defaultTxTextColor.setDispValue(TX_COLOR);
+      window.app.settings.displaySettings.defaultTxTextColor.apply();
+      window.app.settings.displaySettings.defaultRxTextColor.setDispValue(RX_COLOR);
+      window.app.settings.displaySettings.defaultRxTextColor.apply();
     }, {TX_COLOR, RX_COLOR});
     // ESC[m should be interpreted as ESC[0m
     await appTestHarness.sendTextToTerminal('\x1B[31mred\x1B[0mreset');

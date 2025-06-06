@@ -8,10 +8,11 @@ import { RootConfig } from "./RootConfig";
  */
 export class Profile {
   name: string = '';
-  rootConfig: RootConfig = new RootConfig();
+  rootConfig: RootConfig;
 
   constructor(name: string) {
     this.name = name;
+    this.rootConfig = new RootConfig();
     makeAutoObservable(this);
   }
 }

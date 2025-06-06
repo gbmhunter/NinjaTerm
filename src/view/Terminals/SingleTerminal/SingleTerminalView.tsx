@@ -232,7 +232,7 @@ export default observer((props: Props) => {
           boxSizing: 'border-box',
           overflowY: 'hidden',
           position: 'relative',
-          backgroundColor: displaySettings.backgroundColor.appliedValue,
+          backgroundColor: displaySettings.defaultBackgroundColor.appliedValue,
           // These are used to set the default text color for the terminal via CSS. ANSI escape codes
           // may override these colors. See SingleTerminalView.css for where these are used.
           '--default-tx-color': terminal.defaultTxColor,

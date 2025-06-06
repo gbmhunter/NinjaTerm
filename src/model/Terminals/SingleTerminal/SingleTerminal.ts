@@ -207,9 +207,9 @@ export class SingleTerminal {
     this.defaultTxColor = '';
     this.defaultRxColor = '';
     autorun(() => {
-      this.defaultBackgroundColor = this.displaySettings.backgroundColor.appliedValue;
-      this.defaultTxColor = this.displaySettings.txColor.appliedValue;
-      this.defaultRxColor = this.displaySettings.rxColor.appliedValue;
+      this.defaultBackgroundColor = this.displaySettings.defaultBackgroundColor.appliedValue;
+      this.defaultTxColor = this.displaySettings.defaultTxTextColor.appliedValue;
+      this.defaultRxColor = this.displaySettings.defaultRxTextColor.appliedValue;
     });
 
     this.cursorPosition = [0, 0];
