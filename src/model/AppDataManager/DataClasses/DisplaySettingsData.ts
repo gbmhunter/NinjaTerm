@@ -17,4 +17,5 @@ export class DisplaySettingsData {
   defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
   defaultTxTextColor = DEFAULT_TX_COLOR;
   defaultRxTextColor = DEFAULT_RX_COLOR;
+  tabStopWidth = 8;
 }

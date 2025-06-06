@@ -188,6 +188,30 @@ export default observer((props: Props) => {
       </Tooltip>
 
       {/* =============================================================================== */}
+      {/* TAB STOP WIDTH */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="The number of spaces for each tab stop. When a tab character is received, the cursor will move to the next tab stop. Must be an integer between 1 and 16."
+        followCursor
+        arrow
+      >
+        <ApplyableTextFieldView
+          id="outlined-basic"
+          name="tabStopWidth"
+          label="Tab Stop Width"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">spaces</InputAdornment>
+            ),
+          }}
+          applyableTextField={app.settings.displaySettings.tabStopWidth}
+          sx={{ marginBottom: "20px" }}
+        />
+      </Tooltip>
+
+      {/* =============================================================================== */}
       {/* SCROLLBACK BUFFER SIZE */}
       {/* =============================================================================== */}
       <Tooltip

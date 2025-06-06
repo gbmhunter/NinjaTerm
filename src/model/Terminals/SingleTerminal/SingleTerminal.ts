@@ -448,6 +448,28 @@ export class SingleTerminal {
         }
       }
 
+      //========================================================================
+      // TAB HANDLING
+      //========================================================================
+      if (this.inIdleState && rxByte === 0x09) { // 0x09 is the ASCII code for tab
+        const tabStopWidth = this.displaySettings.tabStopWidth.appliedValue;
+        const currentColumn = this.cursorPosition[1];
+        let spacesToNextTabStop = tabStopWidth - (currentColumn % tabStopWidth);
+
+        // Ensure tab does not go beyond the terminal width
+        const remainingColumns = this.displaySettings.terminalWidthChars.appliedValue - currentColumn;
+        if (spacesToNextTabStop > remainingColumns) {
+          spacesToNextTabStop = remainingColumns;
+        }
+
+        this._cursorRight(spacesToNextTabStop);
+        // Optionally, if you want to print the tab character itself or spaces:
+        // for (let i = 0; i < spacesToNextTabStop; i++) {
+        //   this._maybeAddVisibleByteAndTimestamp(' '.charCodeAt(0), direction);
+        // }
+        continue;
+      }
+
       if (rxByte === 0x1b) {
         // console.log('Start of escape sequence found!');
         this._resetEscapeCodeParserState();

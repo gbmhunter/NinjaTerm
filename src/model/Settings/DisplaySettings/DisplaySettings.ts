@@ -49,6 +49,8 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
+  tabStopWidth = new ApplyableNumberField('8', z.coerce.number().int().min(1).max(16));
+
   // Color fields
   // Values can just be made up here, they will be overridden by the settings
   defaultBackgroundColor = new ApplyableTextField('', z.string());
@@ -65,6 +67,7 @@ export default class DisplaySettings {
     this.defaultBackgroundColor.setOnApplyChanged(() => this._saveConfig());
     this.defaultTxTextColor.setOnApplyChanged(() => this._saveConfig());
     this.defaultRxTextColor.setOnApplyChanged(() => this._saveConfig());
+    this.tabStopWidth.setOnApplyChanged(() => this._saveConfig());
 
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {
@@ -104,6 +107,7 @@ export default class DisplaySettings {
     config.defaultBackgroundColor = this.defaultBackgroundColor.appliedValue;
     config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
     config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
+    config.tabStopWidth = this.tabStopWidth.appliedValue;
 
     this.profileManager.saveAppData();
   };
@@ -133,6 +137,8 @@ export default class DisplaySettings {
     this.defaultTxTextColor.apply({notify: false});
     this.defaultRxTextColor.setDispValue(configToLoad.defaultRxTextColor);
     this.defaultRxTextColor.apply({notify: false});
+    this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
+    this.tabStopWidth.apply();
 
     console.log('Loaded display settings config.');
   };

@@ -639,6 +639,96 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP - TERMINAL_WIDTH_CHARS + 5 + 1);
     });
   });
+
+  //================================================================================
+  // Tab tests
+  //================================================================================
+  describe('tab tests', () => {
+    test('tab moves cursor to next tab stop (default 8 spaces)', () => {
+      singleTerminal.parseData(stringToUint8Array('123\t'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition[0]).toBe(0);
+      expect(singleTerminal.cursorPosition[1]).toBe(8);
+      // Check that spaces were added up to the cursor
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(9); // 8 spaces + cursor
+      for (let i = 3; i < 8; i++) {
+        expect(singleTerminal.terminalRows[0].terminalChars[i].char).toBe(' ');
+      }
+    });
+
+    test('tab moves cursor to next tab stop (custom 4 spaces)', () => {
+      displaySettings.tabStopWidth.setDispValue('4');
+      displaySettings.tabStopWidth.apply();
+      singleTerminal.parseData(stringToUint8Array('1\t'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition[0]).toBe(0);
+      expect(singleTerminal.cursorPosition[1]).toBe(4);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(5); // 4 spaces + cursor
+      for (let i = 1; i < 4; i++) {
+        expect(singleTerminal.terminalRows[0].terminalChars[i].char).toBe(' ');
+      }
+    });
+
+    test('tab at end of line should not wrap but go to end of line', () => {
+      displaySettings.terminalWidthChars.setDispValue('10');
+      displaySettings.terminalWidthChars.apply();
+      displaySettings.tabStopWidth.setDispValue('4');
+      displaySettings.tabStopWidth.apply();
+      // Fill up most of the line (9 chars), then tab. Cursor is at col 9.
+      // Terminal width is 10. Tab should fill 1 space to col 10.
+      singleTerminal.parseData(stringToUint8Array('123456789\t'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition[0]).toBe(0); // Should stay on the same line
+      expect(singleTerminal.cursorPosition[1]).toBe(10); // Should be at the end of the line (terminal width)
+      expect(singleTerminal.terminalRows.length).toBe(1); // Should be only one row
+      // Original 9 chars + 1 space for tab + 1 char for cursor = 11
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
+      expect(singleTerminal.terminalRows[0].terminalChars[9].char).toBe(' '); // The space added by tab
+      expect(singleTerminal.terminalRows[0].terminalChars[9].forCursor).toBe(false);
+      expect(singleTerminal.terminalRows[0].terminalChars[10].char).toBe(' '); // The cursor char
+      expect(singleTerminal.terminalRows[0].terminalChars[10].forCursor).toBe(true);
+    });
+
+    test('tab when already at a tab stop moves to next tab stop', () => {
+      displaySettings.tabStopWidth.setDispValue('4');
+      displaySettings.tabStopWidth.apply();
+      singleTerminal.parseData(stringToUint8Array('1234\t'), DataDirection.RX); // Cursor at col 4
+      expect(singleTerminal.cursorPosition[0]).toBe(0);
+      expect(singleTerminal.cursorPosition[1]).toBe(8);
+    });
+
+    test('tab when remaining space is less than tab stop width', () => {
+      displaySettings.terminalWidthChars.setDispValue('10');
+      displaySettings.terminalWidthChars.apply();
+      displaySettings.tabStopWidth.setDispValue('8');
+      displaySettings.tabStopWidth.apply();
+      singleTerminal.parseData(stringToUint8Array('1234567\t'), DataDirection.RX); // 7 chars, cursor at col 7
+      // Next tab stop is at col 8. Only 1 space needed.
+      expect(singleTerminal.cursorPosition[0]).toBe(0);
+      expect(singleTerminal.cursorPosition[1]).toBe(8);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(9);
+      expect(singleTerminal.terminalRows[0].terminalChars[7].char).toBe(' ');
+    });
+
+    test('a line full of tab stops should not wrap', () => {
+      displaySettings.terminalWidthChars.setDispValue('10');
+      displaySettings.terminalWidthChars.apply();
+      displaySettings.tabStopWidth.setDispValue('4');
+      displaySettings.tabStopWidth.apply();
+
+      // 3 tab at 4 spaces each would be 12 chars, but terminal width is 10, so the cursor should stop at the last (10th) position
+      singleTerminal.parseData(stringToUint8Array('\t\t\t'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition[0]).toBe(0);
+      expect(singleTerminal.cursorPosition[1]).toBe(10);
+      expect(singleTerminal.terminalRows.length).toBe(1);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
+      // Now sending two printable chars should place 1 at the last position
+      // on the first line, and the second char at the start of the second line
+      singleTerminal.parseData(stringToUint8Array('12'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition[0]).toBe(1);
+      expect(singleTerminal.cursorPosition[1]).toBe(1);
+      expect(singleTerminal.terminalRows.length).toBe(2);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
+      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(2);
+    });
+  });
 });
 
 function printTerminalRows(terminalRows: TerminalRow[]) {
