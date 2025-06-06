@@ -1,8 +1,9 @@
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { FixedSizeList } from 'react-window';
 
 import { SingleTerminal } from 'src/model/Terminals/SingleTerminal/SingleTerminal';
@@ -264,6 +265,33 @@ export default observer((props: Props) => {
         >
           {directionLabel}
         </div>
+        {/* ======================================================= */}
+        {/* CLIPBOARD COPY BUTTON */}
+        {/* ======================================================= */}
+        <Tooltip
+          title="Copy all the text in this terminal (including the scrollback buffer) to the clipboard."
+          enterNextDelay={1000}>
+        <IconButton
+          onClick={() => {
+            terminal.copyAllTextToClipboard();
+          }}
+          sx={{
+            position: 'absolute',
+            top: '0px',
+            right: '30px', // Adjust this to position next to the directionLabel
+            padding: '5px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            zIndex: 1, // Ensure it's above other elements
+          }}
+        >
+          <ContentCopyIcon
+            sx={{
+              width: '20px', // Smaller icon
+              height: '20px',
+            }}
+          />
+        </IconButton>
+        </Tooltip>
         {/* ======================================================= */}
         {/* CONTAINER HOLDING FIXED-SIZE LIST */}
         {/* ======================================================= */}

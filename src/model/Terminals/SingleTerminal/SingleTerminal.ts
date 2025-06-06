@@ -238,6 +238,22 @@ export class SingleTerminal {
     makeAutoObservable(this);
   }
 
+  //======================================================================
+  // PUBLIC METHODS
+  //======================================================================
+
+  copyAllTextToClipboard() {
+    const textToCopy = this.terminalRows
+      .map((row) => row.terminalChars.map((char) => char.char).join(''))
+      .join('\n');
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      this.snackbarController.sendToSnackbar('Copied to clipboard', 'success');
+    }).catch(err => {
+      this.snackbarController.sendToSnackbar('Failed to copy to clipboard', 'error');
+      console.error('Failed to copy text to clipboard:', err);
+    });
+  }
+
   get charSizePx() {
     return this.displaySettings.charSizePx.appliedValue;
   }

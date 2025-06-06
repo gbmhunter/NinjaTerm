@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added a "Clear app data and reload app" button to the Settings->General Settings menu which clears all app data in local storage (e.g. profiles, settings changed from their defaults) and reloads the app.
 - Added a local echo status indicator to the bottom toolbar.
 - Added support for receiving tab characters and handling them correctly with tab stops.
+- Added a small "Copy all text" button to each terminal which copies all the text in that terminal (including the scrollback buffer) to the clipboard.
 
 ### Changed
 
