@@ -14,23 +14,7 @@ export class DisplaySettingsData {
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
   // Declare properties without direct initialization using same-module consts
-  defaultBackgroundColor: string;
-  defaultTxTextColor: string;
-  defaultRxTextColor: string;
-
-  constructor() {
-    // Assign from consts inside the constructor
-    this.defaultBackgroundColor = '#000000';
-    this.defaultTxTextColor = '#eeeeee';
-    this.defaultRxTextColor = '#ffffff';
-
-    console.log('DisplaySettingsData constructor called.');
-    console.log('this.defaultBackgroundColor:', this.defaultBackgroundColor);
-    console.log('this.defaultTxTextColor:', this.defaultTxTextColor);
-    console.log('this.defaultRxTextColor:', this.defaultRxTextColor);
-
-    console.log('DEFAULT_BACKGROUND_COLOR (const):', DEFAULT_BACKGROUND_COLOR);
-    console.log('DEFAULT_TX_COLOR (const):', DEFAULT_TX_COLOR);
-    console.log('DEFAULT_RX_COLOR (const):', DEFAULT_RX_COLOR);
-  }
+  defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+  defaultTxTextColor = DEFAULT_TX_COLOR;
+  defaultRxTextColor = DEFAULT_RX_COLOR;
 }

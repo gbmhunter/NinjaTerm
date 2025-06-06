@@ -85,18 +85,6 @@ export class AppDataManager {
       // No config key found in users store, create one!
       console.log('App data not found in local storage. Creating default app data...');
       appData = new AppData();
-
-      // ADDED DIRECT CHECK LOGS
-      if (appData && appData.currentAppConfig && appData.currentAppConfig.settings && appData.currentAppConfig.settings.displaySettings) {
-        console.log('AppDataManager direct check - displaySettings.defaultBackgroundColor:', appData.currentAppConfig.settings.displaySettings.defaultBackgroundColor);
-        console.log('AppDataManager direct check - displaySettings.defaultTxTextColor:', appData.currentAppConfig.settings.displaySettings.defaultTxTextColor);
-        console.log('AppDataManager direct check - displaySettings.defaultRxTextColor:', appData.currentAppConfig.settings.displaySettings.defaultRxTextColor);
-        console.log('AppDataManager direct check - displaySettings object:', appData.currentAppConfig.settings.displaySettings);
-      } else {
-        console.error('AppDataManager direct check - appData.currentAppConfig.settings.displaySettings is not correctly initialized!');
-      }
-
-      console.log('Just-created app data: ', appData);
       // Save just-created config back to store.
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
     } else {
@@ -158,9 +146,9 @@ export class AppDataManager {
         rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
         rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
         // Display settings got new color fields
-        rootConfig.settings.displaySettings.backgroundColor = DEFAULT_BACKGROUND_COLOR;
-        rootConfig.settings.displaySettings.txColor = DEFAULT_TX_COLOR;
-        rootConfig.settings.displaySettings.rxColor = DEFAULT_RX_COLOR;
+        rootConfig.settings.displaySettings.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
+        rootConfig.settings.displaySettings.defaultTxTextColor = DEFAULT_TX_COLOR;
+        rootConfig.settings.displaySettings.defaultRxTextColor = DEFAULT_RX_COLOR;
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;

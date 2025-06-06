@@ -18,7 +18,7 @@
     "@types/react-transition-group": "^4.4.10",
     "@types/w3c-web-serial": "^1.0.6",
     "@uiw/react-color": "^2.5.5",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "4.5.1",
     "chart.js": "^4.4.3",
     "kofi-button": "^1.1.1",
     "mobx": "^6.12.4",
@@ -36,8 +36,8 @@
     "serve": "^14.2.3",
     "typescript": "^5.4.5",
     "validatorjs": "^3.22.1",
-    "vite": "^5.3.1",
-    "vite-tsconfig-paths": "^4.3.2",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "5.1.4",
     "web-vitals": "^4.1.1",
     "workbox-background-sync": "^7.1.0",
     "workbox-broadcast-update": "^7.1.0",
@@ -88,7 +88,7 @@
     "postcss": "^8.4.38",
     "postcss-nesting": "^12.1.5",
     "vite-plugin-checker": "^0.6.4",
-    "vite-plugin-pwa": "^0.20.0",
+    "vite-plugin-pwa": "1.0.0",
     "vitest": "^1.6.0"
   },
   "type": "module"

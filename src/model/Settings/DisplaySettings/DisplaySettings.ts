@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import { c } from 'vite/dist/node/types.d-aGj9QkWt';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -52,9 +51,9 @@ export default class DisplaySettings {
 
   // Color fields
   // Values can just be made up here, they will be overridden by the settings
-  defaultBackgroundColor = new ApplyableTextField('', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
-  defaultTxTextColor = new ApplyableTextField('', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
-  defaultRxTextColor = new ApplyableTextField('', z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be a valid hex color"));
+  defaultBackgroundColor = new ApplyableTextField('', z.string());
+  defaultTxTextColor = new ApplyableTextField('', z.string());
+  defaultRxTextColor = new ApplyableTextField('', z.string());
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
@@ -99,6 +98,9 @@ export default class DisplaySettings {
     config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
+    console.log('Saving display settings config. defaultBackgroundColor: ', this.defaultBackgroundColor.appliedValue);
+    console.log('Saving display settings config. defaultTxTextColor: ', this.defaultTxTextColor.appliedValue);
+    console.log('Saving display settings config. defaultRxTextColor: ', this.defaultRxTextColor.appliedValue);
     config.defaultBackgroundColor = this.defaultBackgroundColor.appliedValue;
     config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
     config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
@@ -109,6 +111,7 @@ export default class DisplaySettings {
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
     console.log('Loading display settings config. configToLoad: ', configToLoad);
+    // console.log('Loading display settings config. configToLoad.defaultTxTextColor: ', configToLoad.defaultTxTextColor);
 
     this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
     this.charSizePx.apply();
@@ -123,10 +126,14 @@ export default class DisplaySettings {
     this.scrollbackBufferSizeRows.apply();
     this.dataViewConfiguration = configToLoad.dataViewConfiguration;
     this.defaultBackgroundColor.setDispValue(configToLoad.defaultBackgroundColor);
-    this.defaultBackgroundColor.apply();
-    this.defaultTxTextColor.setDispValue(configToLoad.defaultTxTextColor);
-    this.defaultTxTextColor.apply();
+    this.defaultBackgroundColor.apply({notify: false});
+    const defaultTxTextColor = configToLoad.defaultTxTextColor;
+    console.log('Loading display settings config. defaultTxTextColor: ', defaultTxTextColor);
+    this.defaultTxTextColor.setDispValue(defaultTxTextColor);
+    this.defaultTxTextColor.apply({notify: false});
     this.defaultRxTextColor.setDispValue(configToLoad.defaultRxTextColor);
-    this.defaultRxTextColor.apply();
+    this.defaultRxTextColor.apply({notify: false});
+
+    console.log('Loaded display settings config.');
   };
 }
