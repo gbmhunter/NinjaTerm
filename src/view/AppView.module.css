@@ -49,3 +49,7 @@
   cursor: pointer;
   background-color: #404040;
 }
+
+.centerText {
+  text-align: center;
+}

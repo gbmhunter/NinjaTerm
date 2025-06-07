@@ -1,6 +1,8 @@
-import { Checkbox, FormControlLabel, Tooltip } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { observer } from "mobx-react-lite";
+import React, { useState } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 import BorderedSection from "src/view/Components/BorderedSection";
 
@@ -10,6 +12,20 @@ interface Props {
 
 function GeneralSettingsView(props: Props) {
   const { generalSettings } = props;
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+
+  const handleOpenConfirmDialog = () => {
+    setOpenConfirmDialog(true);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setOpenConfirmDialog(false);
+  };
+
+  const handleConfirmClearData = () => {
+    generalSettings.clearAppDataAndRefresh();
+    handleCloseConfirmDialog();
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
@@ -65,6 +81,49 @@ function GeneralSettingsView(props: Props) {
           </Tooltip>
         </div>
       </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* APP DATA */}
+      {/* =============================================================================== */}
+      <BorderedSection title="App Data">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "600px",
+          }}
+        >
+          <Button variant="outlined" size="large" startIcon={<DeleteForeverIcon />} onClick={handleOpenConfirmDialog} color="error">
+            Clear app data and reload app
+          </Button>
+        </div>
+      </BorderedSection>
+
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCloseConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Confirm Action"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to clear all app data and reload?<br/>
+            <br/>
+            You will lose all profiles and all settings will be reset to default. Logged data saved to disk will NOT be deleted.<br/>
+            <br/>
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmClearData} color="error" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

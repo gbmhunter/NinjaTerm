@@ -12,6 +12,7 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
+  TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import BorderedSection from 'src/view/Components/BorderedSection';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
@@ -30,7 +31,7 @@ function RxSettingsView(props: Props) {
       {/* =============================================================================== */}
       <div style={{ display: 'flex' }}>
         <BorderedSection title="Data Type" childStyle={{ display: 'flex', flexDirection: 'column', width: '500px' }}>
-          <FormControl>
+          <FormControl sx={{ width: 'fit-content' }}>
             <FormLabel>How to interpret RX data:</FormLabel>
             <RadioGroup
               value={rxSettings.dataType}
@@ -51,7 +52,7 @@ function RxSettingsView(props: Props) {
         </BorderedSection>
       </div>
       {/* =============================================================================== */}
-      {/* DATA TYPE = ASCII */}
+      {/* ASCII SETTINGS (only shown if data type is ASCII) */}
       {/* =============================================================================== */}
       <div className="ascii-block" style={{ display: rxSettings.dataType === DataType.ASCII ? 'block' : 'none' }}>
         {/* =============================================================================== */}
@@ -156,7 +157,7 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* NEW LINE BEHAVIOR */}
-              <FormControl>
+              <FormControl sx={{ width: 'fit-content' }}>
                 <FormLabel>When a \n byte is received:</FormLabel>
                 <RadioGroup
                   value={rxSettings.newLineCursorBehavior}
@@ -229,7 +230,7 @@ function RxSettingsView(props: Props) {
               }}
             >
               {/* CARRIAGE RETURN CURSOR BEHAVIOR */}
-              <FormControl>
+              <FormControl sx={{ width: 'fit-content' }}>
                 <FormLabel>When a \r byte is received:</FormLabel>
                 <RadioGroup
                   value={rxSettings.carriageReturnCursorBehavior}
@@ -298,7 +299,7 @@ function RxSettingsView(props: Props) {
             }}
           >
             {/* RADIO GROUP */}
-            <FormControl>
+            <FormControl sx={{ width: 'fit-content' }}>
               <FormLabel>For all received bytes in the range 0x00-0xFF that are not visible ASCII characters AND that are not swallowed above:</FormLabel>
               <RadioGroup
                 value={rxSettings.nonVisibleCharDisplayBehavior}
@@ -334,7 +335,7 @@ function RxSettingsView(props: Props) {
       </div>{' '}
       {/* End of ASCII block */}
       {/* =============================================================================== */}
-      {/* DATA TYPE = NUMBER */}
+      {/* NUMBER SETTINGS (only shown if data type is NUMBER) */}
       {/* =============================================================================== */}
       <div className="number-block" style={{ display: rxSettings.dataType === DataType.NUMBER ? 'block' : 'none' }}>
         <div className="columns" style={{ display: 'flex' }}>
@@ -699,6 +700,91 @@ function RxSettingsView(props: Props) {
         </div>
       </div>
       {/* End of NUMBER block */}
+      {/* =============================================================================== */}
+      {/* TIMESTAMP SETTINGS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Timestamp Settings" childStyle={{ display: 'flex', flexDirection: 'column' }}>
+        <Tooltip title="If enabled, timestamps will be added to the terminal. Timestamps are added to the start of each new line of received data. The time shown is when the first visible character of the line is received (i.e. ASCII control codes don't count). Timestamps are not added if the line was created due to wrapping of the line above it." placement="right" arrow enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={rxSettings.addTimestamps}
+                onChange={(e) => {
+                  rxSettings.setAddTimestamps(e.target.checked);
+                }}
+              />
+            }
+            label="Add timestamps to the data."
+          />
+        </Tooltip>
+        <FormControl sx={{ marginTop: '10px', marginLeft: '30px', width: 'fit-content' }} disabled={!rxSettings.addTimestamps}>
+          <FormLabel>Timestamp Format</FormLabel>
+          <RadioGroup
+            value={rxSettings.timestampFormat}
+            onChange={(e) => {
+              rxSettings.setTimestampFormat(e.target.value as any); // Assuming TimestampFormat enum exists and is imported
+            }}
+          >
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.ISO8601_WITHOUT_TIMEZONE} control={<Radio />} label="ISO8601, no timezone (e.g. &quot;2025-06-04T12:04:45.832&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps in the ISO8601 format with millisecond precision and timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.ISO8601_WITH_TIMEZONE} control={<Radio />} label="ISO8601, with timezone (e.g. &quot;2025-06-04T12:04:45.832+12:00&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps in local time (e.g. &quot;2025-06-04 12:04:45.832&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.LOCAL} control={<Radio />} label="Local Time (e.g. &quot;2025-06-04 12:04:45.832&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps as a Unix time with seconds precision (e.g. &quot;1678886400&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS} control={<Radio />} label="Unix Time, in seconds (e.g. &quot;1678886400&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps as a Unix time with in seconds with millisecond precision (e.g. &quot;1678886400.123&quot;)." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS} control={<Radio />} label="Unix Time, seconds + milliseconds (e.g. &quot;1678886400.123&quot;)" />
+            </Tooltip>
+            <Tooltip title="Display timestamps using a custom Moment.js format string." placement="right" arrow enterDelay={500}>
+              <FormControlLabel value={TimestampFormat.CUSTOM} control={<Radio />} label="Custom Format" />
+            </Tooltip>
+          </RadioGroup>
+        </FormControl>
+        <Tooltip
+          title="Enter a Moment.js format string. E.g., 'YYYY-MM-DD HH:mm:ss.SSS' for local time, 'X' for Unix timestamp (seconds), 'x' for Unix timestamp (milliseconds)."
+          placement="right"
+          arrow
+          enterDelay={500}
+        >
+          {/*
+            The ApplyableTextFieldView needs to be wrapped in a div for the tooltip to work correctly when the text field is disabled.
+            MUI Tooltip doesn't work directly on disabled elements unless they are wrapped.
+          */}
+          <div style={{
+              marginTop: '10px',
+              marginLeft: '55px',
+              width: '300px',
+              // The div itself might not need to be a flex container or have specific display if ApplyableTextFieldView handles its own width.
+              // However, ensuring it's a block or inline-block can help with layout.
+            }}>
+            <ApplyableTextFieldView
+              name="customTimestampFormatString"
+              label="Custom Timestamp Format"
+              variant="outlined"
+              size="small"
+              applyableTextField={rxSettings.customTimestampFormatString} // Assuming this is an ApplyableStringSetting
+              disabled={!rxSettings.addTimestamps || rxSettings.timestampFormat !== TimestampFormat.CUSTOM}
+              // sx prop for ApplyableTextFieldView itself, if needed for internal styling or if it doesn't take full width of the div.
+              // sx={{ width: '100%' }} // Example: make it take full width of the wrapping div
+            />
+          </div>
+        </Tooltip>
+        <FormLabel style={{ marginTop: '10px' }}>The custom string must be a valid <a href="https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format/" target="_blank" rel="noopener noreferrer">Moment.js format string</a>. For example:
+          <ul>
+            <li>"YYYY-MM-DDTHH:mm:ssZ" for the ISO8601 format (e.g. "2025-06-04T11:18:50+12:00")</li>
+            <li>"YYYY-MM-DD HH:mm:ss.SSS" for local time in milliseconds without time zone (e.g. "2025-06-04 11:18:50.833")</li>
+            <li>"X" for Unix time in seconds (e.g. "1748992730")</li>
+            <li>"x" for Unix time in milliseconds (e.g. "1748992730833")</li>
+            <li>"X.SSS" for Unix time in seconds with millisecond precision (e.g. "1748992730.833")</li>
+            <li>Any other format string for any other format</li>
+          </ul>
+        </FormLabel>
+      </BorderedSection> {/* END OF TIMESTAMP SETTINGS */}
       {/* =============================================================================== */}
       {/* OTHER RX SETTINGS */}
       {/* =============================================================================== */}

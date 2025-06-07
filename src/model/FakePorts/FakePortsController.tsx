@@ -148,6 +148,34 @@ export default class FakePortsController {
       )
     );
 
+    // hello world, 20lps
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'hello world, 20lps',
+        'Sends 20 "Hello, world!\\n"s every second.',
+        () => {
+          const intervalId = setInterval(() => {
+            for (let i = 0; i < 20; i++) {
+              const textToSend = 'Hello, world!\n';
+              let bytesToSend = [];
+              for (let i = 0; i < textToSend.length; i++) {
+                bytesToSend.push(textToSend.charCodeAt(i));
+              }
+              app.parseRxData(Uint8Array.from(bytesToSend));
+            }
+          }, 1000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     // 50 numbered lines all at once
     //=================================================================================
     this.fakePorts.push(

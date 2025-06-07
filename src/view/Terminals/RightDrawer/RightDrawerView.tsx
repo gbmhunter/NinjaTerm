@@ -70,6 +70,16 @@ export default observer((props: Props) => {
     return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} macroIdx={index} />;
   });
 
+  const tooltipSettings = {
+    followCursor: true,
+    arrow: true,
+    placement: 'left' as const, // Needed to keep typescript happy
+    // Do not use enterDelay, this does not work for successive tooltips (they
+    // enter immediately if used shortly after the first)
+    enterNextDelay: 1000,
+    leaveDelay: 50,
+  };
+
   return (
     <Resizable // This what provides the resizing functionality for the right drawer
       className="box"
@@ -137,7 +147,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               <Tooltip
                 title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
-                enterDelay={500}
+                {...tooltipSettings}
               >
                 <Autocomplete
                   freeSolo
@@ -174,7 +184,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* NUM. DATA BITS */}
               {/* ============================================================== */}
-              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right" enterDelay={500}>
+              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." {...tooltipSettings}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Num. data bits</InputLabel>
                   <Select
@@ -200,8 +210,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               <Tooltip
                 title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
-                placement="right"
-                enterDelay={500}
+                {...tooltipSettings}
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Parity</InputLabel>
@@ -226,7 +235,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* STOP BITS */}
               {/* ============================================================== */}
-              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right" enterDelay={500}>
+              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' {...tooltipSettings}>
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Stop bits</InputLabel>
                   <Select
@@ -252,8 +261,7 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               <Tooltip
                 title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
-                placement="right"
-                enterDelay={500}
+                {...tooltipSettings}
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Flow control</InputLabel>
@@ -282,7 +290,7 @@ export default observer((props: Props) => {
             {/* =============================================================== */}
             <Tooltip
               title="Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again."
-              enterDelay={500}
+              {...tooltipSettings}
             >
               <FormControlLabel
                 control={
@@ -384,7 +392,7 @@ export default observer((props: Props) => {
                   </ul>
                 </div>
               }
-              placement="left"
+              {...tooltipSettings}
             >
               <FormControl size="small" style={{ minWidth: '210px', marginBottom: '10px' }}>
                 <InputLabel>Data View Configuration</InputLabel>
@@ -412,7 +420,7 @@ export default observer((props: Props) => {
               {/* =============================================================================== */}
               {/* CHAR SIZE */}
               {/* =============================================================================== */}
-              <Tooltip title="The font size (in pixels) of characters displayed in the terminal." followCursor arrow>
+              <Tooltip title="The font size (in pixels) of characters displayed in the terminal." {...tooltipSettings}>
                 <ApplyableTextFieldView
                   id="outlined-basic"
                   name="charSizePx"
@@ -445,7 +453,7 @@ export default observer((props: Props) => {
             {/* ==================================================================== */}
             {/* SEND BREAK BUTTON */}
             {/* ==================================================================== */}
-            <Tooltip title="Click this to send the break signal for 200ms to the serial port.">
+            <Tooltip title="Click this to send the break signal for 200ms to the serial port." {...tooltipSettings}>
               <span>
                 <Button
                   variant="outlined"

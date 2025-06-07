@@ -190,7 +190,30 @@ const AppView = observer((props: Props) => {
           {/* ==================================================== */}
           {/* LOGO */}
           {/* ==================================================== */}
-          <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px', marginBottom: '20px' }} />
+          <IconButton
+            onClick={() => {
+              app.setShownMainPane(MainPanes.TERMINAL);
+            }}
+            data-testid="logo-button"
+          >
+            <img src={LogoImage} alt="NinjaTerm logo." style={{ width: '30px' }} />
+          </IconButton>
+          <div style={{ marginBottom: '20px' }}></div>
+
+          {/* ==================================================== */}
+          {/* TERMINAL BUTTON */}
+          {/* ==================================================== */}
+          <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
+            <IconButton
+              onClick={() => {
+                app.setShownMainPane(MainPanes.TERMINAL);
+              }}
+              color="primary"
+              data-testid="show-terminal-button"
+            >
+              <TerminalIcon />
+            </IconButton>
+          </Tooltip>
 
           {/* ==================================================== */}
           {/* SETTINGS BUTTON */}
@@ -207,20 +230,6 @@ const AppView = observer((props: Props) => {
             </IconButton>
           </Tooltip>
 
-          {/* ==================================================== */}
-          {/* TERMINAL BUTTON */}
-          {/* ==================================================== */}
-          <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
-            <IconButton
-              onClick={() => {
-                app.setShownMainPane(MainPanes.TERMINAL);
-              }}
-              color="primary"
-              data-testid="show-terminal-button"
-            >
-              <TerminalIcon />
-            </IconButton>
-          </Tooltip>
           {/* ==================================================== */}
           {/* GRAPHING BUTTON */}
           {/* ==================================================== */}
@@ -280,47 +289,88 @@ const AppView = observer((props: Props) => {
               justifyContent: 'end',
               alignItems: 'center',
               fontSize: '0.9rem',
-              gap: '20px',
+              gap: '10px',
               height: '25px',
             }}
           >
             {/* DATA TYPE */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 // Go to Settings -> RX Settings where the user can change the data type
                 app.setShownMainPane(MainPanes.SETTINGS);
                 app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
               }}
-              style={{ padding: '0 10px' }}
+              style={{ padding: '0 5px', width: '70px' }}
             >
               {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
             </div>
 
+            {/* LOCAL TX ECHO ON/OFF */}
+            <div
+              className={`${styles.onHover} ${styles.centerText}`}
+              onClick={() => {
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{
+                backgroundColor: app.settings.rxSettings.localTxEcho ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '100px',
+              }}
+            >
+              {app.settings.rxSettings.localTxEcho ? 'Echo ON' : 'Echo OFF'}
+            </div>
+
             {/* LOGGING ON/OFF */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 app.setShownMainPane(MainPanes.LOGGING);
               }}
-              style={{ backgroundColor: app.logging.isLogging ? '#388e3c' : '', padding: '0 10px' }}
+              style={{
+                backgroundColor: app.logging.isLogging ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '110px',
+              }}
             >
               {app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
             </div>
 
             {/* GRAPHING ON/OFF */}
             <div
-              className={styles.onHover}
+              className={`${styles.onHover} ${styles.centerText}`}
               onClick={() => {
                 app.setShownMainPane(MainPanes.GRAPHING);
               }}
-              style={{ backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '', padding: '0 10px' }}
+              style={{
+                backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '120px',
+              }}
             >
               {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
             </div>
 
+            {/* TIMESTAMPS ON/OFF */}
+            <div
+              className={`${styles.onHover} ${styles.centerText}`}
+              onClick={() => {
+                // Go to Settings -> RX Settings where the user can change the timestamp settings
+                app.setShownMainPane(MainPanes.SETTINGS);
+                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+              }}
+              style={{
+                backgroundColor: app.settings.rxSettings.addTimestamps ? '#388e3c' : '',
+                padding: '0 5px',
+                width: '150px',
+              }}
+            >
+              {app.settings.rxSettings.addTimestamps ? 'Timestamps ON' : 'Timestamps OFF'}
+            </div>
+
             {/* TX/RX ACTIVITY INDICATORS */}
-            {/* Use the key prop here to make React consider this a new element everytime the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
+            {/* Use the key prop here to make React consider this a new element every time the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
             <Box>
               <Box key={app.numBytesTransmitted} className={styles.ledblue}>
                 TX

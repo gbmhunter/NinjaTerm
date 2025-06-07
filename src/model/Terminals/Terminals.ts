@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { makeAutoObservable } from 'mobx';
 
 import { App } from 'src/model/App';
-import SingleTerminal from './SingleTerminal/SingleTerminal';
+import { SingleTerminal } from './SingleTerminal/SingleTerminal';
 import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import RightDrawer from './RightDrawer/RightDrawer';
 

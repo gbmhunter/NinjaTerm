@@ -66,15 +66,18 @@ export class ApplyableTextField extends ApplyableField {
     })
   }
 
-  apply() {
+  apply(options?: { notify?: boolean }) {
     if (!this.isValid) {
-      return
+      return;
     }
     const oldAppliedValue = this.appliedValue;
     // For a text field, we just need to copy the value
     // no conversion to a different type needed
     this.appliedValue = this.dispValue;
-    if (this.appliedValue !== oldAppliedValue) {
+
+    const shouldNotify = options?.notify !== false; // Default to true if options.notify is not explicitly false
+
+    if (shouldNotify && this.appliedValue !== oldAppliedValue) {
       this.onApplyChanged();
     }
   }
@@ -94,7 +97,7 @@ export class ApplyableNumberField extends ApplyableField {
     })
   }
 
-  apply() {
+  apply(options?: { notify?: boolean }) {
     if (!this.isValid) {
       return
     }
@@ -102,7 +105,9 @@ export class ApplyableNumberField extends ApplyableField {
     const oldAppliedValue = this.appliedValue;
     // Convert displayed string into a number
     this.appliedValue = Number(this.dispValue);
-    if (this.appliedValue !== oldAppliedValue) {
+    const shouldNotify = options?.notify !== false; // Default to true if options.notify is not explicitly false
+
+    if (shouldNotify && this.appliedValue !== oldAppliedValue) {
       this.onApplyChanged();
     }
   }

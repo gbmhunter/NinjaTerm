@@ -36,8 +36,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      # This will run both unit tests (npx vitest run) and Playwright tests (npx playwright test)
+      - name: Run tests
+        run: npm run test
 
       # v3 was deprecated Jan 2025, move to v4
       - uses: actions/upload-artifact@v4

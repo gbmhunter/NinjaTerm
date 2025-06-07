@@ -73,6 +73,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 1. Make changes to the code as required.
 1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or compete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
+1. If you have updated the app data structure, save a copy of the default app data created by the app to `local-storage-data/`. You can do this by running the app, clearing app data in `Settings > General Settings`, loading up the Chrome dev. tools, and copying the key `appData` from local storage.
 1. Commit changes and push to your feature/bug fix branch.
 1. Create pull request on GitHub merging your branch into `main`.
 1. Once the build on `main` has been successfully run, merge your branch into `main` via the merge request.
@@ -138,6 +139,14 @@ include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Gr
 ```
 
 in `vite.config.ts`. This should fix it. You can then uncomment the line again. Toggling this seems to fix this bug, which after reading online might be due to Vite.
+
+## Saving App Data
+
+Settings are stored to the browser's local storage. The app data is saved under the key `appData`. The `AppDataManager` class is responsible for loading the data, updating it to the latest version if out of date, and saving it back to local storage.
+
+The folder `local-storage-data/` contains some example app data files for different versions of the app.
+
+The files with `default` in the name are the default data for that app version. These are used in the unit tests to make sure upgrading app data works correctly.
 
 ## Extensions
 

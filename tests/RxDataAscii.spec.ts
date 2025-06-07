@@ -72,32 +72,51 @@ test.describe('RX data', () => {
   test('ESC[m should reset CSI styles', async ({ page }) => {
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
+
+    const TX_COLOR = 'rgb(0, 255, 0)'; // green
+    const RX_COLOR = 'rgb(255, 255, 0)'; // yellow
+
     await appTestHarness.openPortAndGoToTerminalView();
+    await page.evaluate(({TX_COLOR, RX_COLOR}) => {
+      window.app.settings.displaySettings.defaultTxTextColor.setDispValue(TX_COLOR);
+      window.app.settings.displaySettings.defaultTxTextColor.apply();
+      window.app.settings.displaySettings.defaultRxTextColor.setDispValue(RX_COLOR);
+      window.app.settings.displaySettings.defaultRxTextColor.apply();
+    }, {TX_COLOR, RX_COLOR});
     await appTestHarness.sendTextToTerminal('\x1B[31mred\x1B[mreset');
 
     // Check that all data is displayed correctly in terminal
     // After "red", the word "reset" should be back to the default
-    // style
+    // color set in the display settings
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 's' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 't' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: ' ' , style: { color: 'rgb(255, 255, 255)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: RX_COLOR } }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
   });
 
   test('ESC[0m should reset CSI styles', async ({ page }) => {
+    const TX_COLOR = 'rgb(0, 255, 0)'; // green
+    const RX_COLOR = 'rgb(255, 255, 0)'; // yellow
+
     const appTestHarness = new AppTestHarness(page);
     await appTestHarness.setupPage();
     await appTestHarness.openPortAndGoToTerminalView();
+    await page.evaluate(({TX_COLOR, RX_COLOR}) => {
+      window.app.settings.displaySettings.defaultTxTextColor.setDispValue(TX_COLOR);
+      window.app.settings.displaySettings.defaultTxTextColor.apply();
+      window.app.settings.displaySettings.defaultRxTextColor.setDispValue(RX_COLOR);
+      window.app.settings.displaySettings.defaultRxTextColor.apply();
+    }, {TX_COLOR, RX_COLOR});
     // ESC[m should be interpreted as ESC[0m
     await appTestHarness.sendTextToTerminal('\x1B[31mred\x1B[0mreset');
 
@@ -109,12 +128,12 @@ test.describe('RX data', () => {
         new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(170, 0, 0)' } }),
         new ExpectedTerminalChar({ char: 'd' , style: { color: 'rgb(170, 0, 0)' } }),
-        new ExpectedTerminalChar({ char: 'r' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 's' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 'e' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: 't' , style: { color: 'rgb(255, 255, 255)' } }),
-        new ExpectedTerminalChar({ char: ' ' , style: { color: 'rgb(255, 255, 255)' } }),
+        new ExpectedTerminalChar({ char: 'r' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 's' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 'e' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: 't' , style: { color: RX_COLOR } }),
+        new ExpectedTerminalChar({ char: ' ' , style: { color: RX_COLOR } }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
