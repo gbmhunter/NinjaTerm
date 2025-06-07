@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [4.20.0] - 2025-06-07
+
+### Added
+
+- Added the ability to add timestamps to the start of each line of received data. Timestamps can be enabled from the Settings->RX Settings menu.
+- Added the ability to select the default background, TX text and RX text colors from the Settings->Display menu. ANSI escape code colors commands will override these defaults. This also means you can color TX and RX text differently.
+- Added a "Clear app data and reload app" button to the Settings->General Settings menu which clears all app data in local storage (e.g. profiles, settings changed from their defaults) and reloads the app.
+- Added a local echo status indicator to the bottom toolbar.
+- Added support for receiving tab characters and handling them correctly with tab stops.
+- Added a small "Copy all text" button to each terminal which copies all the text in that terminal (including the scrollback buffer) to the clipboard.
+- Added autoscroll lock on TX setting to the Settings->Display menu. When enabled (the default), the TX terminal and TX/RX terminals will automatically scroll to the bottom when the user presses a key inside the terminal.
+
+### Changed
+
+- Improved the way app data stored in the browser's local storage is updated to the latest version.
+- Reordered the left-hand toolbar icons so that the "Show the terminal" button is now the first one.
+- Made the logo in the left-hand toolbar a button which opens the terminal.
+
+### Fixed
+
+- Run unit tests (vitest) in CI after discovering they were not running.
+- Fixed broken unit tests.
+- Tooltip entry delay issues fixed in the quick settings accordion.
+
 ## [4.19.1] - 2025-05-31
 
 ### Fixed
@@ -770,7 +794,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.19.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.20.0...HEAD
+[4.20.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.19.1...v4.20.0
 [4.19.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.19.0...v4.19.1
 [4.19.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.18.0...v4.19.0
 [4.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.17.1...v4.18.0

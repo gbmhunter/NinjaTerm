@@ -1,0 +1,322 @@
+{
+  "version": 2,
+  "profiles": [
+    {
+      "name": "Default profile",
+      "rootConfig": {
+        "terminal": {
+          "macroController": {
+            "version": 1,
+            "macroConfigs": [
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "Hello\\n",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "HEX",
+                "data": "deadbeef",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              },
+              {
+                "version": 1,
+                "name": "",
+                "dataType": "ASCII",
+                "data": "",
+                "processEscapeChars": true,
+                "sendOnEnterValueForEveryNewLineInTextBox": false,
+                "sendBreakAtEndOfEveryLineOfHex": false
+              }
+            ]
+          },
+          "rightDrawer": {
+            "version": 1,
+            "showRightDrawer": true,
+            "rightDrawerWidth_px": 400,
+            "quickPortSettingsIsExpanded": true,
+            "otherQuickSettingsIsExpanded": false,
+            "macrosIsExpanded": true
+          }
+        },
+        "lastUsedSerialPort": {
+          "serialPortInfo": {},
+          "portState": 0
+        },
+        "settings": {
+          "portSettings": {
+            "baudRate": 115200,
+            "numDataBits": 8,
+            "parity": "none",
+            "stopBits": 1,
+            "flowControl": "none",
+            "connectToSerialPortAsSoonAsItIsSelected": true,
+            "resumeConnectionToLastSerialPortOnStartup": true,
+            "reopenSerialPortIfUnexpectedlyClosed": true,
+            "allowSettingsChangesWhenOpen": false
+          },
+          "txSettings": {
+            "version": 1,
+            "enterKeyPressBehavior": "Send LF",
+            "backspaceKeyPressBehavior": 0,
+            "deleteKeyPressBehavior": 2,
+            "send0x01Thru0x1AWhenCtrlAThruZPressed": true,
+            "sendEscCharWhenAltKeyPressed": true
+          },
+          "rxSettings": {
+            "version": 1,
+            "dataType": 0,
+            "ansiEscapeCodeParsingEnabled": true,
+            "maxEscapeCodeLengthChars": 10,
+            "localTxEcho": false,
+            "newLineCursorBehavior": 2,
+            "swallowNewLine": true,
+            "carriageReturnCursorBehavior": 0,
+            "swallowCarriageReturn": true,
+            "nonVisibleCharDisplayBehavior": 1,
+            "numberType": "Hex",
+            "endianness": "Little Endian",
+            "numberSeparator": " ",
+            "preventValuesWrappingAcrossRows": true,
+            "insertNewLineOnMatchedValue": false,
+            "newLineMatchValueAsHex": "00",
+            "newLinePlacementOnHexValue": 0,
+            "padValues": true,
+            "paddingCharacter": 1,
+            "numPaddingChars": -1,
+            "numBytesPerHexNumber": 1,
+            "hexCase": 0,
+            "prefixHexValuesWith0x": false,
+            "floatStringConversionMethod": "toString()",
+            "floatNumOfDecimalPlaces": 5,
+            "showWarningOnRxBreakSignal": true
+          },
+          "displaySettings": {
+            "version": 1,
+            "charSizePx": 14,
+            "verticalRowPaddingPx": 5,
+            "terminalWidthChars": 120,
+            "terminalHeightMode": "Auto",
+            "terminalHeightChars": 25,
+            "scrollbackBufferSizeRows": 2000,
+            "dataViewConfiguration": 0
+          },
+          "generalSettings": {
+            "version": 1,
+            "whenPastingOnWindowsReplaceCRLFWithLF": true,
+            "whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping": true
+          }
+        }
+      }
+    }
+  ],
+  "currentAppConfig": {
+    "terminal": {
+      "macroController": {
+        "version": 1,
+        "macroConfigs": [
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "Hello\\n",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "HEX",
+            "data": "deadbeef",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          },
+          {
+            "version": 1,
+            "name": "",
+            "dataType": "ASCII",
+            "data": "",
+            "processEscapeChars": true,
+            "sendOnEnterValueForEveryNewLineInTextBox": false,
+            "sendBreakAtEndOfEveryLineOfHex": false
+          }
+        ]
+      },
+      "rightDrawer": {
+        "version": 1,
+        "showRightDrawer": true,
+        "rightDrawerWidth_px": 400,
+        "quickPortSettingsIsExpanded": true,
+        "otherQuickSettingsIsExpanded": false,
+        "macrosIsExpanded": true
+      }
+    },
+    "lastUsedSerialPort": {
+      "serialPortInfo": {},
+      "portState": 0
+    },
+    "settings": {
+      "portSettings": {
+        "baudRate": 115200,
+        "numDataBits": 8,
+        "parity": "none",
+        "stopBits": 1,
+        "flowControl": "none",
+        "connectToSerialPortAsSoonAsItIsSelected": true,
+        "resumeConnectionToLastSerialPortOnStartup": true,
+        "reopenSerialPortIfUnexpectedlyClosed": true,
+        "allowSettingsChangesWhenOpen": false
+      },
+      "txSettings": {
+        "version": 1,
+        "enterKeyPressBehavior": "Send LF",
+        "backspaceKeyPressBehavior": 0,
+        "deleteKeyPressBehavior": 2,
+        "send0x01Thru0x1AWhenCtrlAThruZPressed": true,
+        "sendEscCharWhenAltKeyPressed": true
+      },
+      "rxSettings": {
+        "version": 1,
+        "dataType": 0,
+        "ansiEscapeCodeParsingEnabled": true,
+        "maxEscapeCodeLengthChars": 10,
+        "localTxEcho": false,
+        "newLineCursorBehavior": 2,
+        "swallowNewLine": true,
+        "carriageReturnCursorBehavior": 0,
+        "swallowCarriageReturn": true,
+        "nonVisibleCharDisplayBehavior": 1,
+        "numberType": "Hex",
+        "endianness": "Little Endian",
+        "numberSeparator": " ",
+        "preventValuesWrappingAcrossRows": true,
+        "insertNewLineOnMatchedValue": false,
+        "newLineMatchValueAsHex": "00",
+        "newLinePlacementOnHexValue": 0,
+        "padValues": true,
+        "paddingCharacter": 1,
+        "numPaddingChars": -1,
+        "numBytesPerHexNumber": 1,
+        "hexCase": 0,
+        "prefixHexValuesWith0x": false,
+        "floatStringConversionMethod": "toString()",
+        "floatNumOfDecimalPlaces": 5,
+        "showWarningOnRxBreakSignal": true
+      },
+      "displaySettings": {
+        "version": 1,
+        "charSizePx": 14,
+        "verticalRowPaddingPx": 5,
+        "terminalWidthChars": 120,
+        "terminalHeightMode": "Auto",
+        "terminalHeightChars": 25,
+        "scrollbackBufferSizeRows": 2000,
+        "dataViewConfiguration": 0
+      },
+      "generalSettings": {
+        "version": 1,
+        "whenPastingOnWindowsReplaceCRLFWithLF": true,
+        "whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping": true
+      }
+    }
+  }
+}

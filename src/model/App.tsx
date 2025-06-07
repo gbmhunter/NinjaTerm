@@ -15,7 +15,7 @@ import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
 import { PortState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
-import SingleTerminal from './Terminals/SingleTerminal/SingleTerminal';
+import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
 import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
@@ -527,8 +527,8 @@ export class App {
     // console.log('parseRxData() called. rxData=', rxData);
     // Send received data to both the single TX/RX terminal
     // and the RX terminal
-    this.terminals.txRxTerminal.parseData(rxData);
-    this.terminals.rxTerminal.parseData(rxData);
+    this.terminals.txRxTerminal.parseData(rxData, DataDirection.RX);
+    this.terminals.rxTerminal.parseData(rxData, DataDirection.RX);
     this.graphing.parseData(rxData);
     this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
@@ -755,6 +755,17 @@ export class App {
       return;
     }
 
+    // Make the terminal that the key was pressed in autoscroll to the bottom
+    // if the setting is enabled.
+    if (this.settings.displaySettings.autoScrollLockOnTx) {
+      if (this.terminals.txTerminal.isFocused) {
+        this.terminals.txTerminal.setScrollLock(true);
+      }
+      if (this.terminals.txRxTerminal.isFocused) {
+        this.terminals.txRxTerminal.setScrollLock(true);
+      }
+    }
+
     // Serial port is open, let's send it to the serial
     // port
 
@@ -906,11 +917,11 @@ export class App {
 
     // Allow the serial port to be closed later.
     writer?.releaseLock();
-    this.terminals.txTerminal.parseData(bytesToWrite);
+    this.terminals.txTerminal.parseData(bytesToWrite, DataDirection.TX);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.
     if (this.settings.rxSettings.localTxEcho) {
-      this.terminals.txRxTerminal.parseData(bytesToWrite);
+      this.terminals.txRxTerminal.parseData(bytesToWrite, DataDirection.TX);
     }
 
     // Also send this data to the logger, it may need it

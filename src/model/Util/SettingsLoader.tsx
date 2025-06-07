@@ -58,37 +58,37 @@ export function updateConfigFromSerializable(serializedSettings: any, configObje
  * @param configObject The config object to serialize.
  * @returns A serializable object that can be stored in local storage.
  */
-export function createSerializableObjectFromConfig(configObject: any) {
-  let serializableConfig: any = {};
-  Object.keys(configObject).forEach(function (key, index) {
-    // PRIMITIVE TYPES
-    //============================================================
-    if (typeof configObject[key] == "number"
-        || typeof configObject[key] == "string"
-        || typeof configObject[key] == "boolean") {
-      // Primitive types can be directly assigned
-      serializableConfig[key] = configObject[key];
-    }
-    // OBJECTS
-    //============================================================
-    else if (typeof configObject[key] == "object") {
-      // ApplyableTextField
-      //===============================
-      if (configObject[key] instanceof ApplyableTextField) {
-        serializableConfig[key] = configObject[key].appliedValue;
-      }
-      // ApplyableNumberField
-      //===============================
-      else if (configObject[key] instanceof ApplyableNumberField) {
-        // Store the applied value, which will be a number
-        serializableConfig[key] = configObject[key].appliedValue;
-      } else {
-        console.error("Unknown object type for key:", key);
-      }
-    } else {
-      console.error("Unknown type for key:", key);
-    }
-  });
+// export function createSerializableObjectFromConfig(configObject: any) {
+//   let serializableConfig: any = {};
+//   Object.keys(configObject).forEach(function (key, index) {
+//     // PRIMITIVE TYPES
+//     //============================================================
+//     if (typeof configObject[key] == "number"
+//         || typeof configObject[key] == "string"
+//         || typeof configObject[key] == "boolean") {
+//       // Primitive types can be directly assigned
+//       serializableConfig[key] = configObject[key];
+//     }
+//     // OBJECTS
+//     //============================================================
+//     else if (typeof configObject[key] == "object") {
+//       // ApplyableTextField
+//       //===============================
+//       if (configObject[key] instanceof ApplyableTextField) {
+//         serializableConfig[key] = configObject[key].appliedValue;
+//       }
+//       // ApplyableNumberField
+//       //===============================
+//       else if (configObject[key] instanceof ApplyableNumberField) {
+//         // Store the applied value, which will be a number
+//         serializableConfig[key] = configObject[key].appliedValue;
+//       } else {
+//         console.error("Unknown object type for key:", key);
+//       }
+//     } else {
+//       console.error("Unknown type for key:", key);
+//     }
+//   });
 
-  return serializableConfig;
-}
+//   return serializableConfig;
+// }

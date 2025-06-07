@@ -1,19 +1,21 @@
-import { IconButton } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useRef, ReactElement, useLayoutEffect, forwardRef, useEffect, useCallback, useMemo } from 'react';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { FixedSizeList } from 'react-window';
 
-import SingleTerminal from '../../../model/Terminals/SingleTerminal/SingleTerminal';
+import { SingleTerminal } from 'src/model/Terminals/SingleTerminal/SingleTerminal';
 import TerminalRow from './TerminalRow';
 import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
-import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
+import { SelectionController } from 'src/model/SelectionController/SelectionController';
+import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 interface Props {
   terminal: SingleTerminal;
+  displaySettings: DisplaySettings;
   directionLabel: string;
   testId: string;
 }
@@ -24,26 +26,8 @@ interface RowProps {
   style: {};
 }
 
-
-
-// const outerListElement = forwardRef((props, ref: any) => (
-//   <div
-//     className="outerListElement"
-//     ref={ref}
-//     onWheel={(event) => {
-//       console.log('onWheel! event: ', event);
-//       if (event.deltaY < 0) {
-//         globalTerminal?.setScrollLock(false);
-//       }
-//     }}
-//     {...props} />
-// ))
-
-// let globalTerminal: Terminal | null = null;
-
 export default observer((props: Props) => {
-  const { terminal, directionLabel, testId } = props;
-  // globalTerminal = terminal;
+  const { terminal, displaySettings, directionLabel, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
@@ -245,12 +229,16 @@ export default observer((props: Props) => {
         style={{
           flexGrow: 1,
           // marginBottom: '10px',
-          padding: '15px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
+          padding: '5px', // This is what adds some space between the outside edges of the terminal and the shown text in the react-window
           boxSizing: 'border-box',
           overflowY: 'hidden',
-          backgroundColor: '#000000',
           position: 'relative',
-        }}
+          backgroundColor: displaySettings.defaultBackgroundColor.appliedValue,
+          // These are used to set the default text color for the terminal via CSS. ANSI escape codes
+          // may override these colors. See SingleTerminalView.css for where these are used.
+          '--default-tx-color': terminal.defaultTxColor,
+          '--default-rx-color': terminal.defaultRxColor,
+        } as React.CSSProperties & { [key: string]: string | number }}
         onFocus={(e) => {
           terminal.setIsFocused(true);
         }}
@@ -278,6 +266,33 @@ export default observer((props: Props) => {
           {directionLabel}
         </div>
         {/* ======================================================= */}
+        {/* CLIPBOARD COPY BUTTON */}
+        {/* ======================================================= */}
+        <Tooltip
+          title="Copy all the text in this terminal (including the scrollback buffer) to the clipboard."
+          enterNextDelay={1000}>
+        <IconButton
+          onClick={() => {
+            terminal.copyAllTextToClipboard();
+          }}
+          sx={{
+            position: 'absolute',
+            top: '0px',
+            right: '30px', // Adjust this to position next to the directionLabel
+            padding: '5px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            zIndex: 1, // Ensure it's above other elements
+          }}
+        >
+          <ContentCopyIcon
+            sx={{
+              width: '20px', // Smaller icon
+              height: '20px',
+            }}
+          />
+        </IconButton>
+        </Tooltip>
+        {/* ======================================================= */}
         {/* CONTAINER HOLDING FIXED-SIZE LIST */}
         {/* ======================================================= */}
         <div
@@ -286,6 +301,9 @@ export default observer((props: Props) => {
             height: '100%',
             // This sets the font for displayed data in the terminal
             fontFamily: 'Consolas, Menlo, monospace',
+
+            // This sets the terminal text color
+            color: terminal.defaultRxColor,
 
             // This sets the font size for data displayed in the terminal
             fontSize: terminal.charSizePx + 'px',

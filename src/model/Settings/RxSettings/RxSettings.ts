@@ -77,7 +77,23 @@ export enum Endianness {
   BIG_ENDIAN = 'Big Endian', // MSB is sent first.
 }
 
-const CONFIG_KEY = ['settings', 'rx-settings'];
+/**
+ * The different ways to format timestamps that can be added to the start of each line of received data.
+ */
+export enum TimestampFormat {
+  // ISO8601 format with millisecond precision and no timezone (e.g. "2025-06-04T11:18:50.833")
+  ISO8601_WITHOUT_TIMEZONE = 'ISO8601',
+  // ISO8601 format with millisecond precision and timezone (e.g. "2025-06-04T11:18:50.833+12:00")
+  ISO8601_WITH_TIMEZONE = 'ISO8601WithTimezone',
+  // e.g. 2025-06-04 11:18:50.833
+  LOCAL = 'Local',
+  // e.g. 1748991831
+  UNIX_SECONDS = 'UnixSeconds',
+  // e.g. 1748991831.833
+  UNIX_SECONDS_AND_MILLISECONDS = 'UnixSecondsAndMilliseconds',
+  // User defined timestamp format
+  CUSTOM = 'Custom',
+}
 
 export default class RxSettings {
 
@@ -129,9 +145,13 @@ export default class RxSettings {
   floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
   floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
 
+  // TIMESTAMP SETTINGS
+  addTimestamps = false;
+  timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
+  customTimestampFormatString = new ApplyableTextField("", z.string()); // Default in settings
+
   // OTHER SETTINGS
   showWarningOnRxBreakSignal = true;
-
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
@@ -139,6 +159,8 @@ export default class RxSettings {
     this.profileManager.registerOnProfileLoad(() => {
       this._loadConfig();
     });
+
+    // Connect all applyable fields to the save function
     this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
       this._saveConfig();
     });
@@ -152,6 +174,9 @@ export default class RxSettings {
       this._saveConfig();
     });
     this.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
+      this._saveConfig();
+    });
+    this.customTimestampFormatString.setOnApplyChanged(() => {
       this._saveConfig();
     });
     makeAutoObservable(this); // Make sure this is at the end of the constructor
@@ -207,6 +232,12 @@ export default class RxSettings {
     this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
     this.floatNumOfDecimalPlaces.apply();
 
+    // TIMESTAMPS SETTINGS
+    this.addTimestamps = configToLoad.addTimestamps;
+    this.timestampFormat = configToLoad.timestampFormat;
+    this.customTimestampFormatString.setDispValue(configToLoad.customTimestampFormatString);
+    this.customTimestampFormatString.apply();
+
     // OTHER SETTINGS
     this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
   };
@@ -245,6 +276,11 @@ export default class RxSettings {
     // FLOAT SPECIFIC SETTINGS
     config.floatStringConversionMethod = this.floatStringConversionMethod;
     config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
+
+    // TIMESTAMPS SETTINGS
+    config.addTimestamps = this.addTimestamps;
+    config.timestampFormat = this.timestampFormat;
+    config.customTimestampFormatString = this.customTimestampFormatString.appliedValue;
 
     // OTHER SETTINGS
     config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
@@ -359,7 +395,25 @@ export default class RxSettings {
   };
 
   //=================================================================
-  // OTHER
+  // TIMESTAMP SETTINGS
+  //=================================================================
+
+  /**
+   * Enable/disable adding timestamps to the start of each line of received data.
+   * @param value True if timestamps should be added to the terminal, false otherwise.
+   */
+  setAddTimestamps = (value: boolean) => {
+    this.addTimestamps = value;
+    this._saveConfig();
+  };
+
+  setTimestampFormat = (value: TimestampFormat) => {
+    this.timestampFormat = value;
+    this._saveConfig();
+  };
+
+  //=================================================================
+  // OTHER SETTINGS
   //=================================================================
 
   setShowWarningOnRxBreakSignal = (value: boolean) => {

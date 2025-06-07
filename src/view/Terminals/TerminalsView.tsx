@@ -46,16 +46,16 @@ export default observer((props: Props) => {
   let terminals;
   if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SINGLE_TERMINAL) {
     // Show only 1 terminal
-    terminals = <SingleTerminalView terminal={app.terminals.txRxTerminal} directionLabel="TX/RX" testId="tx-rx-terminal-view" />;
+    terminals = <SingleTerminalView terminal={app.terminals.txRxTerminal} displaySettings={app.settings.displaySettings} directionLabel="TX/RX" testId="tx-rx-terminal-view" />;
   } else if (app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
     // Shows 2 terminals, 1 for TX data and 1 for RX data
     terminals = (
-      <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: '50%', display: 'flex' }}>
-          <SingleTerminalView terminal={app.terminals.txTerminal} directionLabel="TX" testId="tx-terminal-view" />
+      <div style={{ flexGrow: 1, height: '100%', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <div style={{ height: 'calc(50% - 2.5px)', display: 'flex' }}>
+          <SingleTerminalView terminal={app.terminals.txTerminal} displaySettings={app.settings.displaySettings} directionLabel="TX" testId="tx-terminal-view" />
         </div>
-        <div style={{ height: '50%', display: 'flex' }}>
-          <SingleTerminalView terminal={app.terminals.rxTerminal} directionLabel="RX" testId="rx-terminal-view" />
+        <div style={{ height: 'calc(50% - 2.5px)', display: 'flex' }}>
+          <SingleTerminalView terminal={app.terminals.rxTerminal} displaySettings={app.settings.displaySettings} directionLabel="RX" testId="rx-terminal-view" />
         </div>
       </div>
     );

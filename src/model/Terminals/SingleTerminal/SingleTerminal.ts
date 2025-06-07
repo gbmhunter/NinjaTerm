@@ -1,6 +1,7 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable, reaction } from 'mobx';
 import { ListOnScrollProps } from 'react-window';
+import moment from 'moment';
 
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
@@ -15,6 +16,7 @@ import RxSettings, {
   NonVisibleCharDisplayBehaviors,
   NumberType,
   PaddingCharacter,
+  TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { SelectionController } from 'src/model/SelectionController/SelectionController';
@@ -23,10 +25,15 @@ import SnackbarController from 'src/model/SnackbarController/SnackbarController'
 const START_OF_CONTROL_GLYPHS = 0xe000;
 const START_OF_HEX_GLYPHS = 0xe100;
 
+export enum DataDirection {
+  TX = 'TX',
+  RX = 'RX',
+}
+
 /**
  * Represents a single terminal-style user interface.
  */
-export default class SingleTerminal {
+export class SingleTerminal {
 
   id: string;
 
@@ -114,6 +121,10 @@ export default class SingleTerminal {
 
   partialEscapeCode: string;
 
+  defaultBackgroundColor: string;
+  defaultTxColor: string;
+  defaultRxColor: string;
+
   currForegroundColorNum: number | null;
 
   currBackgroundColorNum: number | null;
@@ -182,13 +193,23 @@ export default class SingleTerminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this._addVisibleChar(this.partialEscapeCode[idx].charCodeAt(0));
+          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx].charCodeAt(0), DataDirection.RX);
         }
         this.partialEscapeCode = '';
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
         this.inIdleState = true;
       }
+    });
+
+    // Register listener for whenever the RX text color is changed
+    this.defaultBackgroundColor = '';
+    this.defaultTxColor = '';
+    this.defaultRxColor = '';
+    autorun(() => {
+      this.defaultBackgroundColor = this.displaySettings.defaultBackgroundColor.appliedValue;
+      this.defaultTxColor = this.displaySettings.defaultTxTextColor.appliedValue;
+      this.defaultRxColor = this.displaySettings.defaultRxTextColor.appliedValue;
     });
 
     this.cursorPosition = [0, 0];
@@ -217,6 +238,22 @@ export default class SingleTerminal {
     makeAutoObservable(this);
   }
 
+  //======================================================================
+  // PUBLIC METHODS
+  //======================================================================
+
+  copyAllTextToClipboard() {
+    const textToCopy = this.terminalRows
+      .map((row) => row.terminalChars.map((char) => char.char).join(''))
+      .join('\n');
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      this.snackbarController.sendToSnackbar('Copied to clipboard', 'success');
+    }).catch(err => {
+      this.snackbarController.sendToSnackbar('Failed to copy to clipboard', 'error');
+      console.error('Failed to copy text to clipboard:', err);
+    });
+  }
+
   get charSizePx() {
     return this.displaySettings.charSizePx.appliedValue;
   }
@@ -233,6 +270,7 @@ export default class SingleTerminal {
     if (this.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT) {
       const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
       terminalHeight_chars = Math.floor(this.terminalViewHeightPx / rowHeight_px);
+      // console.log('terminalHeight_chars=', terminalHeight_chars);
     } else if (this.displaySettings.terminalHeightMode === TerminalHeightMode.FIXED_HEIGHT) {
       terminalHeight_chars = this.displaySettings.terminalHeightChars.appliedValue;
     } else {
@@ -275,7 +313,7 @@ export default class SingleTerminal {
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
-    console.log('scrollPos set to:', this.scrollPos);
+    // console.log('scrollPos set to:', this.scrollPos);
   }
 
   /**
@@ -284,7 +322,7 @@ export default class SingleTerminal {
    * @param terminalViewHeightPx The height of the terminal view in pixels.
    */
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
-    console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
+    // console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
     this.terminalViewHeightPx = terminalViewHeightPx;
   }
 
@@ -312,8 +350,10 @@ export default class SingleTerminal {
    * ASCII, HEX).
    *
    * @param data The array of bytes to process.
+   * @param direction The direction of the data (TX or RX). This is needed to allow
+   *    the user to color the data differently based on the direction.
    */
-  parseData(data: Uint8Array) {
+  parseData(data: Uint8Array, direction: DataDirection) {
     // Parse each character
     // console.log("parseData() called. data=", data);
     // const dataAsStr = new TextDecoder().decode(data);
@@ -324,9 +364,9 @@ export default class SingleTerminal {
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
 
     if (this.rxSettings.dataType === DataType.ASCII) {
-      this.parseAsciiData(data);
+      this._parseAsciiData(data, direction);
     } else if (this.rxSettings.dataType === DataType.NUMBER) {
-      this._parseDataAsNumber(data);
+      this._parseDataAsNumber(data, direction);
     } else {
       throw Error(`Data type ${this.rxSettings.dataType} not supported by parseData().`);
     }
@@ -336,7 +376,7 @@ export default class SingleTerminal {
     this._limitNumRows();
   }
 
-  parseAsciiData(data: Uint8Array) {
+  _parseAsciiData(data: Uint8Array, direction: DataDirection) {
     let remainingData: number[] = [];
     for (let idx = 0; idx < data.length; idx += 1) {
       remainingData.push(data[idx]);
@@ -354,6 +394,7 @@ export default class SingleTerminal {
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
 
+      //========================================================================
       // NEW LINE HANDLING
       //========================================================================
 
@@ -365,7 +406,7 @@ export default class SingleTerminal {
         // at the end of the existing line, rather than the start of the new
         // line
         if (!this.rxSettings.swallowNewLine) {
-          this._addVisibleChar(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
         }
 
         // Based of the set new line behavior in the settings, perform the appropriate action
@@ -401,7 +442,7 @@ export default class SingleTerminal {
         // performing any cursor movements, as we want the carriage return char to
         // at the end line, rather than at the start
         if (!this.rxSettings.swallowCarriageReturn) {
-          this._addVisibleChar(rxByte);
+          this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
         }
 
         // Based of the set carriage return cursor behavior in the settings, perform the appropriate action
@@ -423,9 +464,25 @@ export default class SingleTerminal {
         }
       }
 
-      // Check if ANSI escape code parsing is disabled, and if so, skip parsing
-      if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
-        this._addVisibleChar(rxByte);
+      //========================================================================
+      // TAB HANDLING
+      //========================================================================
+      if (this.inIdleState && rxByte === 0x09) { // 0x09 is the ASCII code for tab
+        const tabStopWidth = this.displaySettings.tabStopWidth.appliedValue;
+        const currentColumn = this.cursorPosition[1];
+        let spacesToNextTabStop = tabStopWidth - (currentColumn % tabStopWidth);
+
+        // Ensure tab does not go beyond the terminal width
+        const remainingColumns = this.displaySettings.terminalWidthChars.appliedValue - currentColumn;
+        if (spacesToNextTabStop > remainingColumns) {
+          spacesToNextTabStop = remainingColumns;
+        }
+
+        this._cursorRight(spacesToNextTabStop);
+        // Optionally, if you want to print the tab character itself or spaces:
+        // for (let i = 0; i < spacesToNextTabStop; i++) {
+        //   this._maybeAddVisibleByteAndTimestamp(' '.charCodeAt(0), direction);
+        // }
         continue;
       }
 
@@ -436,9 +493,8 @@ export default class SingleTerminal {
         this.inIdleState = false;
       }
 
-      // If we are not currently processing an escape code
-      // character is to be displayed
-      if (this.inAnsiEscapeCode) {
+      // Process ANSI escape codes
+      if (this.rxSettings.ansiEscapeCodeParsingEnabled && this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += String.fromCharCode(rxByte);
         // console.log('partialEscapeCode=', this.partialEscapeCode);
@@ -460,31 +516,32 @@ export default class SingleTerminal {
             this.inIdleState = true;
           }
         }
-      } else {
-        // Not currently receiving ANSI escape code,
-        // so send character to terminal(s)
-        this._addVisibleChar(rxByte);
-      }
 
-      // When we get to the end of parsing, check that if we are still
-      // parsing an escape code, and we've hit the escape code length limit,
-      // then bail on escape code parsing. Emit partial code as data and go back to IDLE
-      const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
-      // const maxEscapeCodeLengthChars = 10;
+        // When we get to the end of parsing, check that if we are still
+        // parsing an escape code, and we've hit the escape code length limit,
+        // then bail on escape code parsing. Emit partial code as data and go back to IDLE
+        const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
+        // const maxEscapeCodeLengthChars = 10;
 
-      if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
-        console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-        // this.app.snackbar.sendToSnackbar(
-        //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
-        //   'warning');
-        // Remove the ESC byte, and then prepend the rest onto the data to be processed
-        // Got to shift them in backwards
-        for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
-          remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+        if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
+          console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
+          // this.app.snackbar.sendToSnackbar(
+          //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
+          //   'warning');
+          // Remove the ESC byte, and then prepend the rest onto the data to be processed
+          // Got to shift them in backwards
+          for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
+            remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+          }
+          this._resetEscapeCodeParserState();
+          this.inIdleState = true;
         }
-        this._resetEscapeCodeParserState();
-        this.inIdleState = true;
+        continue;
       }
+
+      // If we get here we are not receiving an ANSI escape code,
+      // so send byte to be printed to the terminal.
+      this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
     }
   }
 
@@ -710,7 +767,7 @@ export default class SingleTerminal {
    *
    * @param data The data to parse and display.
    */
-  _parseDataAsNumber(data: Uint8Array) {
+  _parseDataAsNumber(data: Uint8Array, direction: DataDirection) {
     // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.numberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
@@ -1013,11 +1070,11 @@ export default class SingleTerminal {
       // Add to string to the the terminal
       for (let charIdx = 0; charIdx < numberStr.length; charIdx += 1) {
         const charCode = numberStr.charCodeAt(charIdx);
-        this._addVisibleChar(numberStr.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(numberStr.charCodeAt(charIdx), direction);
       }
       // Append the hex separator string
       for (let charIdx = 0; charIdx < this.rxSettings.numberSeparator.appliedValue.length; charIdx += 1) {
-        this._addVisibleChar(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx));
+        this._maybeAddVisibleByteAndTimestamp(this.rxSettings.numberSeparator.appliedValue.charCodeAt(charIdx), direction);
       }
 
       if (insertNewLine && this.rxSettings.newLinePlacementOnHexValue === NewLinePlacementOnHexValue.AFTER) {
@@ -1201,32 +1258,49 @@ export default class SingleTerminal {
   }
 
   /**
+   * Adds a visible character to the terminal at the current cursor position. Also adds a timestamp if:
+   * - The cursor is at the start of a line
+   * - The line wasn't created due to wrapping
+   * - The timestamp setting is enabled
+   *
+   * This should be usually called by higher-level code rather than _addVisibleChar() as it handles
+   * adding a timestamp if needed.
+   *
+   * @param rxByte The byte to add to the terminal.
+   */
+  // _addVisibleCharAndTimestamp(rxByte: number) {
+
+  //   this._maybeAddVisibleByteAndTimestamp(rxByte);
+  // }
+
+  /**
    * Wrapper for _addVisibleChar() which lets you add multiple characters at once.
    * @param rxBytes The printable characters to display.
    */
-  _addVisibleChars(rxBytes: number[]) {
+  _addVisibleChars(rxBytes: number[], direction: DataDirection) {
     for (let idx = 0; idx < rxBytes.length; idx += 1) {
-      this._addVisibleChar(rxBytes[idx]);
+      this._maybeAddVisibleByteAndTimestamp(rxBytes[idx], direction);
     }
   }
 
   /**
    * Adds a single printable character to the terminal at the current cursor position.
-   * Cursor is also incremented to next suitable position.
+   * Cursor is also incremented to next suitable position. Nothing will be added if it is a non-visible character
+   * and it has been configured to swallow non-visible characters.
    *
    * @param char Must be a number in the range [0, 255]. If number is in the valid ASCII range, the appropriate character
    *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
    *   depending on the data processing settings.
    */
-  _addVisibleChar(rxByte: number) {
+  _maybeAddVisibleByteAndTimestamp(rxByte: number, direction: DataDirection) {
     // console.log('addVisibleChar() called. rxByte=', rxByte);
-    const terminalChar = new TerminalChar();
 
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
+    let char = '';
     if (rxByte >= 0x20 && rxByte <= 0x7e) {
       // Is printable ASCII character, no shifting needed
-      terminalChar.char = String.fromCharCode(rxByte);
+      char = String.fromCharCode(rxByte);
     } else {
       // We have either a control char or not in ASCII range (0x80 and above).
       // What we do depends on data processing setting
@@ -1236,20 +1310,78 @@ export default class SingleTerminal {
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS) {
         // If the char is a control char (any value <= 0x7F, given we have already matched against visible chars), shift up to the PUA (starts at 0xE000) where our special font has visible glyphs for these.
         if (rxByte <= 0x7f) {
-          terminalChar.char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
+          char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
         } else {
           // Must be a non-ASCII char, so display as hex glyph. These start at 0xE100
-          terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+          char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
         }
       } else if (nonVisibleCharDisplayBehavior == NonVisibleCharDisplayBehaviors.HEX_GLYPHS) {
-        terminalChar.char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+        char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
       } else {
         throw Error('Invalid nonVisibleCharDisplayBehavior. nonVisibleCharDisplayBehavior=' + nonVisibleCharDisplayBehavior);
       }
     }
 
+    // If we get here, we are definitely adding a visible character
+    // If at start of line, and line wasn't created due to wrapping, add timestamp first!
+    const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
+    const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
+    if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
+      // Need to add timestamp. First, we need to format it based on the timestamp format setting
+      const now = new Date();
+      const timestamp = moment(now)
+      let timestampString = '';
+      if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITHOUT_TIMEZONE) {
+        // Format as ISO8601 with millisecond precision and no timezone
+        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSS ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITH_TIMEZONE) {
+        // Format as ISO8601 with millisecond precision and timezone
+        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSSZ ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
+        // Format as local time (no timezone info)
+        timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
+        // Format as Unix time in seconds
+        timestampString = timestamp.format('X ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS) {
+        // Format as Unix time in seconds with milliseconds
+        // timestampString = timestamp.format('x');
+        // This returns the timestamp in milliseconds, we need to convert to seconds by adding a decimal point
+        // before the last 3 digits
+        timestampString = timestamp.format('X.SSS ');
+      } else if (this.rxSettings.timestampFormat === TimestampFormat.CUSTOM) {
+        // Format as custom string
+        timestampString = timestamp.format(this.rxSettings.customTimestampFormatString.appliedValue);
+      } else {
+        throw Error('Invalid timestamp format. timestampFormat=' + this.rxSettings.timestampFormat);
+      }
+
+      for (let idx = 0; idx < timestampString.length; idx += 1) {
+        this.addVisibleChar(timestampString[idx], direction);
+      }
+      // Add a space after the timestamp
+      // this.addVisibleChar(' ');
+    }
+
+    this.addVisibleChar(char, direction);
+  }
+
+  addVisibleChar(char: string, direction: DataDirection) {
+    const terminalChar = new TerminalChar();
+    terminalChar.char = char;
+
     // This stores all classes we wish to apply to the char
     let classList = [];
+
+    // Apply a class indicating the direction of the data
+    if (direction === DataDirection.TX) {
+      classList.push('tx');
+    } else if (direction === DataDirection.RX) {
+      classList.push('rx');
+    } else {
+      throw Error('Invalid direction. direction=' + direction);
+    }
+
     // Calculate the foreground class
     // Should be in the form: "f<number", e.g. "f30" or "f90"
     if (this.currForegroundColorNum !== null) {

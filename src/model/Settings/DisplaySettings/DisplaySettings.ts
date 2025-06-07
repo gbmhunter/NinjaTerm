@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+import { DEFAULT_TAB_STOP_WIDTH } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -50,20 +50,28 @@ export default class DisplaySettings {
 
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
 
+  tabStopWidth = new ApplyableNumberField(DEFAULT_TAB_STOP_WIDTH.toString(), z.coerce.number().int().min(1).max(16));
+
+  // Color fields
+  // Values can just be made up here, they will be overridden by the settings
+  defaultBackgroundColor = new ApplyableTextField('', z.string());
+  defaultTxTextColor = new ApplyableTextField('', z.string());
+  defaultRxTextColor = new ApplyableTextField('', z.string());
+
+  autoScrollLockOnTx: boolean = true;
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this.charSizePx.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.verticalRowPaddingPx.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.terminalWidthChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.scrollbackBufferSizeRows.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
+    this.charSizePx.setOnApplyChanged(() => this._saveConfig());
+    this.verticalRowPaddingPx.setOnApplyChanged(() => this._saveConfig());
+    this.terminalWidthChars.setOnApplyChanged(() => this._saveConfig());
+    this.terminalHeightChars.setOnApplyChanged(() => this._saveConfig());
+    this.scrollbackBufferSizeRows.setOnApplyChanged(() => this._saveConfig());
+    this.defaultBackgroundColor.setOnApplyChanged(() => this._saveConfig());
+    this.defaultTxTextColor.setOnApplyChanged(() => this._saveConfig());
+    this.defaultRxTextColor.setOnApplyChanged(() => this._saveConfig());
+    this.tabStopWidth.setOnApplyChanged(() => this._saveConfig());
+
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {
       this._loadConfig();
@@ -81,6 +89,16 @@ export default class DisplaySettings {
     this._saveConfig();
   };
 
+  setRxColorEqualToTx = () => {
+    this.defaultRxTextColor.setDispValue(this.defaultTxTextColor.appliedValue);
+    this.defaultRxTextColor.apply();
+  };
+
+  setAutoScrollLockOnTx = (value: boolean) => {
+    this.autoScrollLockOnTx = value;
+    this._saveConfig();
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -91,6 +109,11 @@ export default class DisplaySettings {
     config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
+    config.defaultBackgroundColor = this.defaultBackgroundColor.appliedValue;
+    config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
+    config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
+    config.tabStopWidth = this.tabStopWidth.appliedValue;
+    config.autoScrollLockOnTx = this.autoScrollLockOnTx;
 
     this.profileManager.saveAppData();
   };
@@ -99,16 +122,25 @@ export default class DisplaySettings {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
     this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
-    this.charSizePx.apply();
+    this.charSizePx.apply({notify: false});
     this.verticalRowPaddingPx.setDispValue(configToLoad.verticalRowPaddingPx.toString());
-    this.verticalRowPaddingPx.apply();
+    this.verticalRowPaddingPx.apply({notify: false});
     this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
-    this.terminalWidthChars.apply();
+    this.terminalWidthChars.apply({notify: false});
     this.terminalHeightMode = configToLoad.terminalHeightMode;
     this.terminalHeightChars.setDispValue(configToLoad.terminalHeightChars.toString());
-    this.terminalHeightChars.apply();
+    this.terminalHeightChars.apply({notify: false});
     this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
-    this.scrollbackBufferSizeRows.apply();
+    this.scrollbackBufferSizeRows.apply({notify: false});
     this.dataViewConfiguration = configToLoad.dataViewConfiguration;
+    this.defaultBackgroundColor.setDispValue(configToLoad.defaultBackgroundColor);
+    this.defaultBackgroundColor.apply({notify: false});
+    this.defaultTxTextColor.setDispValue(configToLoad.defaultTxTextColor);
+    this.defaultTxTextColor.apply({notify: false});
+    this.defaultRxTextColor.setDispValue(configToLoad.defaultRxTextColor);
+    this.defaultRxTextColor.apply({notify: false});
+    this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
+    this.tabStopWidth.apply({notify: false});
+    this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx === undefined ? true : configToLoad.autoScrollLockOnTx;
   };
 }

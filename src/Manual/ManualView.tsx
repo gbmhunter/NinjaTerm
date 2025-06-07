@@ -3,7 +3,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import {
   Box,
   Button,
-  IconButton,
   Typography,
   // Grid,
 } from '@mui/material';
@@ -148,6 +147,41 @@ export default observer((props: Props) => {
             ESC[3J (clear all data from terminal and scrollback buffer) will delete all data in the terminal and the scrollback buffer. This is the same as pressing the clear
             button in the terminal view.
           </p>
+
+          <Typography variant="h2">Timestamps</Typography>
+          <p>
+            You can enable timestamps for received data, which will appear at the start of each new line. This feature is available in <code>Settings &gt; RX Settings</code>.
+          </p>
+
+          <p>
+            The format of the timestamp is customizable, with a number of common formats predefined, as well as the ability to enter a custom format.
+          </p>
+
+          <Typography variant="h2">Bottom Toolbar</Typography>
+          <p>The bottom toolbar provides a quick overview of the current state of the application. Many of the bits of information are clickable, allowing you to quickly navigate to the relevant settings.</p>
+
+          <Typography variant="h2">Other Terminal Features</Typography>
+
+          <Typography variant="h3">Copy All Text Button</Typography>
+          <p>
+            Each terminal window has a "Copy all text" button, allowing you to quickly copy the entire content of that terminal, including its scrollback buffer, to your clipboard. You can also copy text by selecting it and pressing <code>Ctrl+Shift+C</code>, although the selection only works if it is all on screen.
+          </p>
+
+          <Typography variant="h3">Auto Scroll Lock on TX</Typography>
+          <p>
+            By default, if you enter TX data into a terminal it will jump to the bottom of the terminal and lock the scroll. You can disable this in <code>Settings &gt; Display</code>.
+          </p>
+
+          <Typography variant="h3">Customizable Default Background, TX Text, and RX Text Colors</Typography>
+          <p>
+            Tailor your terminal's appearance by setting default colors for the background, TX (transmitted) text, and RX (received) text. Find these options in <code>Settings &gt; Display</code>. Note that ANSI escape codes for colors can override these defaults if ANSI escape code parsing is enabled.
+          </p>
+
+          <Typography variant="h3">Clear App Data</Typography>
+          <p>
+            A "Clear app data and reload app" button in <code>Settings &gt; General Settings</code> allows you to easily reset all application data stored in your browser (like profiles and settings) and start fresh.
+          </p>
+
         </Grid>
       </Box>
     </ThemeProvider>

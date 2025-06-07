@@ -17,6 +17,16 @@
   --vga-bright-white: rgb(255, 255, 255);
 }
 
+/* DEFAULT TX/RX COLORS */
+/*================================================================*/
+.tx {
+  color: var(--default-tx-color);
+}
+
+.rx {
+  color: var(--default-rx-color);
+}
+
 /* NON-BRIGHT COLORS */
 /*================================================================*/
 
