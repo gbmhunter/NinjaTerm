@@ -58,6 +58,8 @@ export default class DisplaySettings {
   defaultTxTextColor = new ApplyableTextField('', z.string());
   defaultRxTextColor = new ApplyableTextField('', z.string());
 
+  autoScrollLockOnTx: boolean = true;
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this.charSizePx.setOnApplyChanged(() => this._saveConfig());
@@ -92,6 +94,11 @@ export default class DisplaySettings {
     this.defaultRxTextColor.apply();
   };
 
+  setAutoScrollLockOnTx = (value: boolean) => {
+    this.autoScrollLockOnTx = value;
+    this._saveConfig();
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -106,6 +113,7 @@ export default class DisplaySettings {
     config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
     config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
     config.tabStopWidth = this.tabStopWidth.appliedValue;
+    config.autoScrollLockOnTx = this.autoScrollLockOnTx;
 
     this.profileManager.saveAppData();
   };
@@ -133,5 +141,6 @@ export default class DisplaySettings {
     this.defaultRxTextColor.apply({notify: false});
     this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
     this.tabStopWidth.apply({notify: false});
+    this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx === undefined ? true : configToLoad.autoScrollLockOnTx;
   };
 }

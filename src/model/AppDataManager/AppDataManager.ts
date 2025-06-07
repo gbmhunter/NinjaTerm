@@ -151,6 +151,9 @@ export class AppDataManager {
         rootConfig.settings.displaySettings.defaultRxTextColor = DEFAULT_RX_COLOR;
         // Display settings got a new tab stop width field
         rootConfig.settings.displaySettings.tabStopWidth = 8;
+        // Display settings gets the new autoScrollLockOnTx field
+        rootConfig.settings.displaySettings.autoScrollLockOnTx = true;
+
         // Remove version for a number of objects as we are now just using the single
         // "app version" in the root data class
         delete rootConfig.settings.rxSettings.version;

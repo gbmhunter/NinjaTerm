@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added a local echo status indicator to the bottom toolbar.
 - Added support for receiving tab characters and handling them correctly with tab stops.
 - Added a small "Copy all text" button to each terminal which copies all the text in that terminal (including the scrollback buffer) to the clipboard.
+- Added autoscroll lock on TX setting to the Settings->Display menu. When enabled (the default), the TX terminal and TX/RX terminals will automatically scroll to the bottom when the user presses a key inside the terminal.
 
 ### Changed
 

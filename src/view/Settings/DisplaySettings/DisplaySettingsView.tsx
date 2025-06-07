@@ -1,4 +1,4 @@
-import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel, Popover, IconButton } from '@mui/material';
+import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel, Popover, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -234,6 +234,29 @@ export default observer((props: Props) => {
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* AUTO SCROLL LOCK ON TX */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="Automatically lock scroll to the bottom of the terminal when you send data (TX)."
+        placement="right"
+        enterDelay={500}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.displaySettings.autoScrollLockOnTx}
+              onChange={(e) => {
+                app.settings.displaySettings.setAutoScrollLockOnTx(e.target.checked);
+              }}
+            />
+          }
+          label="Auto Scroll Lock on TX"
+          sx={{ marginBottom: '20px' }}
+        />
+      </Tooltip>
+
       {/* =============================================================================== */}
       {/* DATA VIEW CONFIGURATION */}
       {/* =============================================================================== */}

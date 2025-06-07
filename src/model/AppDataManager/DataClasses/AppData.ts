@@ -6,7 +6,8 @@ import { RootConfig } from "./RootConfig";
 export const LATEST_VERSION = 3;
 
 export class AppData {
-
+  // Version of the AppData class.
+  // Increment this whenever the AppData class structure changes.
   version = LATEST_VERSION;
 
   profiles: Profile[] = [];

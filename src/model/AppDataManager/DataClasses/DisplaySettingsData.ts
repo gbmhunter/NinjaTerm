@@ -20,4 +20,5 @@ export class DisplaySettingsData {
   defaultTxTextColor = DEFAULT_TX_COLOR;
   defaultRxTextColor = DEFAULT_RX_COLOR;
   tabStopWidth = DEFAULT_TAB_STOP_WIDTH;
+  autoScrollLockOnTx = true;
 }

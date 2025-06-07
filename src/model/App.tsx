@@ -755,6 +755,17 @@ export class App {
       return;
     }
 
+    // Make the terminal that the key was pressed in autoscroll to the bottom
+    // if the setting is enabled.
+    if (this.settings.displaySettings.autoScrollLockOnTx) {
+      if (this.terminals.txTerminal.isFocused) {
+        this.terminals.txTerminal.setScrollLock(true);
+      }
+      if (this.terminals.txRxTerminal.isFocused) {
+        this.terminals.txRxTerminal.setScrollLock(true);
+      }
+    }
+
     // Serial port is open, let's send it to the serial
     // port
 
