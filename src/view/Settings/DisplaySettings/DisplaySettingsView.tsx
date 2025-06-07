@@ -239,7 +239,7 @@ export default observer((props: Props) => {
       {/* AUTO SCROLL LOCK ON TX */}
       {/* =============================================================================== */}
       <Tooltip
-        title="Automatically lock scroll to the bottom of the terminal when you send data (TX)."
+        title="Automatically jump to the bottom of the terminal and scroll lock when you type TX data into a terminal."
         placement="right"
         enterDelay={500}
       >
