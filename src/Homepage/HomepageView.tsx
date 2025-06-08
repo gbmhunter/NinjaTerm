@@ -12,8 +12,8 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Grid from '@mui/material/Unstable_Grid2';
+import { useEffect } from 'react';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';
 import AnsiEscapeCodeColoursGif from './ansi-escape-code-colours.gif';
@@ -72,17 +72,38 @@ const darkTheme = createTheme({
 interface Props {}
 
 export default observer((props: Props) => {
-  const handleClearData = () => {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm('Are you sure you want to clear all app data? This action cannot be undone.')) {
-      localStorage.clear();
-      window.location.reload();
+  useEffect(() => {
+    document.title = "NinjaTerm - Web-Based Serial Port Terminal for Embedded Developers";
+  }, []);
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "NinjaTerm",
+    "alternateName": "Ninja Term",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Cross-platform (Web-based)",
+    "description": "NinjaTerm is a free, open-source, web-based serial port terminal for embedded developers. View debug data, send commands, and streamline your embedded development workflow with features like ANSI escape code support, graphing, logging, filtering and more.",
+    "keywords": "NinjaTerm, Ninja Term, terminal, serial port, serial terminal, web serial, developer tool, embedded, IoT, microcontroller, firmware, debug, open source, serial monitor",
+    "url": "https://ninjaterm.mbedded.ninja/",
+    "potentialAction": {
+      "@type": "ViewAction",
+      "target": "https://ninjaterm.mbedded.ninja/app" // Link to the app itself
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
     }
   };
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Box
         sx={{
           boxSizing: 'border-box',
