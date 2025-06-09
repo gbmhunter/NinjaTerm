@@ -602,60 +602,162 @@ export default class FakePortsController {
       )
     );
 
-    // mcu modules
+    // noisy sine wave, 5points/s
     //=================================================================================
-    // This intervalId is a hacky way of allowing for variable intervals
-    let intervalId: NodeJS.Timeout | null = null;
     this.fakePorts.push(
       new FakePort(
-        'mcu modules',
-        'Fake MCU data from different modules.',
+        'noisy sine wave, 5points/s',
+        'Generates a noisy sine wave (value\\n format) at 5 points per second.',
         () => {
-          const messages = [
-            'TEMP: Measured temperature = 21C.',
-            'TEMP: Measured temperature = 24C.',
-            '\x1B[31;1mTEMP: ERROR - Temperature (56C) is too high.\x1B[0m',
-            '\x1B[31;1mGPS: ERROR - GPS signal has been lost.\x1B[0m',
-            '\x1B[31;1mSLEEP: ERROR - Requested sleep while peripherals still active.\x1B[0m',
-            'CLOCK: Time is now 14:23:45',
-            'CLOCK: Time is now 09:12:24',
-            'CLOCK: Time is now 03:02:54',
-            'WATCHDOG: Watchdog fed.',
-            '\x1B[31;1mWATCHDOG: ERROR - Watchdog expired. Resetting micro...\x1B[0m',
-            'BLU: New device found.',
-            'BLU: Connecting to new device...',
-            'BLU: Bluetooth connection refreshed.',
-            'BLU: Starting advertising...',
-            'SLEEP: In low power mode.',
-            'SLEEP: In medium power mode.',
-            'SLEEP: In high power mode.',
-            'SLEEP: Sleeping...',
-            'XTAL: External crystal frequency changed to 20MHz.',
-            'XTAL: External crystal frequency changed to 40MHz.',
-            'LED: Status LED set to mode: FLASHING.',
-            'LED: Status LED set to mode: CONTINUOUS.',
-            'LED: Status LED set to mode: OFF.',
-          ];
+          // Disable ANSI escape code parsing for graph data, as it's likely not needed
+          // and could interfere if the generated numbers accidentally form escape codes.
+          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
 
-          const onTimeoutFn = () => {
-            const randomIndex = Math.floor(Math.random() * messages.length);
-            const rxData = new TextEncoder().encode(messages[randomIndex] + '\n');
-            app.parseRxData(rxData);
-            if (intervalId !== null) {
-              clearInterval(intervalId);
-            }
-            const randomWaitTime = Math.random() * 1000;
-            intervalId = setInterval(onTimeoutFn, randomWaitTime);
-          };
+          let n = 0; // Iteration counter for sine wave progression
+          const intervalMilliseconds = 200; // 5 points per second (1000ms / 200ms = 5)
 
-          intervalId = setInterval(onTimeoutFn, 1000);
-          return null;
+          const amplitude = 50; // Amplitude of the sine wave
+          // Number of data points to complete one full sine wave cycle.
+          // e.g., 50 points * 0.2s/point = 10 seconds per cycle.
+          const pointsPerCycle = 50;
+          const angularStep = (2 * Math.PI) / pointsPerCycle;
+          const noiseMagnitude = 10; // Max deviation due to noise (noise will be +/- noiseMagnitude/2)
+
+          const intervalId = setInterval(() => {
+            const sineValue = amplitude * Math.sin(n * angularStep);
+            // Generate noise between -noiseMagnitude/2 and +noiseMagnitude/2
+            const noise = (Math.random() - 0.5) * noiseMagnitude;
+            const noisyValue = sineValue + noise;
+
+            // Format as "x=<data>,y=<data>\n"
+            const textToSend = `x=${n},y=${noisyValue.toFixed(2)}\n`;
+            const bytesToSend = new TextEncoder().encode(textToSend);
+            app.parseRxData(bytesToSend);
+
+            n++; // Increment for the next point in the sine wave
+          }, intervalMilliseconds);
+
+          return intervalId;
         },
-        (_: NodeJS.Timeout | null) => {
+        (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
           if (intervalId !== null) {
             clearInterval(intervalId);
           }
+        }
+      )
+    );
+
+    // mcu modules
+    //=================================================================================
+    // This intervalId is a hacky way of allowing for variable intervals
+    let intervalId_mcuModules: NodeJS.Timeout | null = null;
+    let isFirstLogMessageEver = true; // To handle the very first log differently
+    const prompt_mcuModules = "\x1B[1;32muart~: \x1B[0m";
+
+    this.fakePorts.push(
+      new FakePort(
+        'mcu modules (Zephyr-like shell)',
+        'Simulates MCU data from different modules with a Zephyr-like shell interface, timestamps, and a persistent prompt.',
+        () => {
+          // Helper to get a timestamp string
+          const getCurrentTimestamp = () => {
+            const now = new Date();
+            // Pad function for single digit numbers
+            const pad = (num: number) => num.toString().padStart(2, '0');
+            const padMs = (num: number) => num.toString().padStart(3, '0');
+            return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}.${padMs(now.getMilliseconds())}`;
+          };
+
+          // Expanded messages for a more realistic embedded log feel
+          const messages = [
+            "SYSTEM: Power on. Initializing peripherals...",
+            "SYSTEM: Boot sequence complete. Application started.",
+            "RTC: Current time synchronized from NTP.",
+            "\x1B[1;31mERROR: RTC time is out of sync. Fallback to system time.\x1B[0m",
+            "GPS: Acquiring satellite fix...",
+            "GPS: Got location fix. Latitude: 40.7128 N, Longitude: 74.0060 W",
+            "\x1B[1;33mGPS: WARNING - Weak signal. Positional accuracy may be reduced.\x1B[0m",
+            "CELLULAR: Searching for network...",
+            "CELLULAR: Registered on network. Operator: FakeMobile, Signal: -75 dBm",
+            "CELLULAR: Established connection to server api.fakedomain.com.",
+            "\x1B[1;31mCELLULAR: ERROR - Failed to connect to server. Timeout.\x1B[0m",
+            "WIFI: Scanning for networks...",
+            "WIFI: Connected to AP 'MySecureNet'. IP: 192.168.1.123",
+            "\x1B[1;33mWIFI: WARNING - Connection unstable. Retrying handshake.\x1B[0m",
+            "SENSOR: Temperature reading: 23.5 C",
+            "SENSOR: Humidity reading: 45.2 %RH",
+            "MEMORY: Free heap: 32768 bytes.",
+            "\x1B[1;33mMEMORY: WARNING - Low memory. 2048 bytes remaining.\x1B[0m",
+            "STORAGE: Data packet saved to flash. Record ID: 1024",
+            "BLE: Advertising started. Device name: NinjaDevice_XYZ",
+            "BLE: Client connected. Address: AA:BB:CC:DD:EE:FF",
+            "\x1B[1;31mBLE: ERROR - Unexpected disconnect from client.\x1B[0m",
+            "ADC: Battery voltage: 3.85V",
+            "SYSTEM: Entering low power mode."
+          ];
+
+          // isFirstLogMessageEver is now correctly scoped from the outer closure
+
+          // Initial setup when fake port connects:
+          // NO initial prompt is printed here. onTimeoutFn handles the first prompt.
+
+          const onTimeoutFn = () => {
+            let outputString = "";
+            const timestamp = getCurrentTimestamp();
+            const randomIndex = Math.floor(Math.random() * messages.length);
+            const logMessage = messages[randomIndex];
+            const promptLength = prompt_mcuModules.length;
+
+            if (isFirstLogMessageEver) {
+              // For the very first log message, no clearing is needed.
+              outputString += `${timestamp} ${logMessage}\n`;
+              outputString += prompt_mcuModules;
+              isFirstLogMessageEver = false;
+            } else {
+              // For subsequent messages:
+              // 1. Move cursor left by prompt length (to start of the old prompt).
+              outputString += `\x1B[${promptLength}D`;
+              // 2. Clear from cursor to end of screen (ESC[0J or ESC[J).
+              outputString += "\x1B[J";
+              // 3. Print new log (on the line that was the old prompt), then newline.
+              outputString += `${timestamp} ${logMessage}\n`;
+              // 4. Print new prompt (on the line below new log).
+              outputString += prompt_mcuModules;
+            }
+
+            app.parseRxData(new TextEncoder().encode(outputString));
+
+            if (intervalId_mcuModules !== null) {
+              clearInterval(intervalId_mcuModules);
+            }
+            const randomWaitTime = Math.random() * 2000 + 500;
+            intervalId_mcuModules = setInterval(onTimeoutFn, randomWaitTime);
+          };
+
+          // Schedule the first call to onTimeoutFn.
+          const randomInitialWaitTime = Math.random() * 2000 + 500;
+          intervalId_mcuModules = setInterval(onTimeoutFn, randomInitialWaitTime);
+
+          return null;
+        },
+        (_: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId_mcuModules !== null) {
+            clearInterval(intervalId_mcuModules);
+            intervalId_mcuModules = null;
+          }
+          // When disconnecting, attempt to clear the last prompt and screen below it.
+          let finalClear = "";
+          if (!isFirstLogMessageEver) { // Only if at least one log/prompt cycle happened
+            finalClear += `\x1B[${prompt_mcuModules.length}D`; // Move to start of last prompt
+            finalClear += "\x1B[J";      // Clear from cursor to end of screen
+          }
+          finalClear += "\n"; // Add a newline for a clean state, regardless of whether clear was sent.
+          app.parseRxData(new TextEncoder().encode(finalClear));
+
+          // Reset flag for next connection. This is crucial.
+          isFirstLogMessageEver = true;
         }
       )
     );
