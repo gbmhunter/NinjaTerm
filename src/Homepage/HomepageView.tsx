@@ -12,17 +12,17 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Grid from '@mui/material/Unstable_Grid2';
+import { useEffect } from 'react';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';
-import AnsiEscapeCodeColoursGif from './ansi-escape-code-colours.gif';
-import GraphingGif from './graphing.gif';
-import SmartScrollGif from './smart-scroll.gif';
-import ControlCharAndHexCodeGlyphsGif from './control-char-and-hex-code-glyphs.gif';
-import LoggingGif from './logging.gif';
-import FilteringGif from './filtering.gif';
-import NumberTypesGif from './number-types.gif';
+import AnsiEscapeCodeColoursWebM from './ansi-escape-code-colours.webm';
+import GraphingWebM from './graphing.webm';
+import SmartScrollWebM from './smart-scroll.webm';
+import ControlCharAndHexCodeGlyphsWebM from './control-char-and-hex-code-glyphs.webm';
+import LoggingWebM from './logging.webm';
+import FilteringWebM from './filtering.webm';
+import NumberTypesWebM from './number-types.webm';
 
 import './HomepageView.css';
 
@@ -72,17 +72,38 @@ const darkTheme = createTheme({
 interface Props {}
 
 export default observer((props: Props) => {
-  const handleClearData = () => {
-    // eslint-disable-next-line no-restricted-globals
-    if (confirm('Are you sure you want to clear all app data? This action cannot be undone.')) {
-      localStorage.clear();
-      window.location.reload();
+  useEffect(() => {
+    document.title = "NinjaTerm - Web-Based Serial Port Terminal for Embedded Developers";
+  }, []);
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "NinjaTerm",
+    "alternateName": "Ninja Term",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Cross-platform (Web-based)",
+    "description": "NinjaTerm is a free, open-source, web-based serial port terminal for embedded developers. View debug data, send commands, and streamline your embedded development workflow with features like ANSI escape code support, graphing, logging, filtering and more.",
+    "keywords": "NinjaTerm, Ninja Term, terminal, serial port, serial terminal, web serial, developer tool, embedded, IoT, microcontroller, firmware, debug, open source, serial monitor, graphing, logging, filtering, smart scrolling, number types",
+    "url": "https://ninjaterm.mbedded.ninja/",
+    "potentialAction": {
+      "@type": "ViewAction",
+      "target": "https://ninjaterm.mbedded.ninja/app" // Link to the app itself
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
     }
   };
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <Box
         sx={{
           boxSizing: 'border-box',
@@ -181,7 +202,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={AnsiEscapeCodeColoursGif} alt="Demonstration of ANSI escape codes in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={AnsiEscapeCodeColoursWebM}>
+                    <source src={AnsiEscapeCodeColoursWebM} type="video/webm" />
+                    Demonstration of ANSI escape codes in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -207,7 +231,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={GraphingGif} alt="Demonstration of graphing in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={GraphingWebM}>
+                    <source src={GraphingWebM} type="video/webm" />
+                    Demonstration of graphing in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -234,7 +261,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={SmartScrollGif} alt="Demonstration of smart scrolling in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={SmartScrollWebM}>
+                    <source src={SmartScrollWebM} type="video/webm" />
+                    Demonstration of smart scrolling in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -261,12 +291,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img
-                    src={ControlCharAndHexCodeGlyphsGif}
-                    alt="Demonstration of ASCII control character and hex code glyphs in NinjaTerm."
-                    width="900px"
-                    style={{ margin: 'auto' }}
-                  />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={ControlCharAndHexCodeGlyphsWebM}>
+                    <source src={ControlCharAndHexCodeGlyphsWebM} type="video/webm" />
+                    Demonstration of ASCII control character and hex code glyphs in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -292,7 +320,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={LoggingGif} alt="Demonstration of logging functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={LoggingWebM}>
+                    <source src={LoggingWebM} type="video/webm" />
+                    Demonstration of logging functionality in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -318,7 +349,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={FilteringGif} alt="Demonstration of filtering functionality in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={FilteringWebM}>
+                    <source src={FilteringWebM} type="video/webm" />
+                    Demonstration of filtering functionality in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
@@ -344,7 +378,10 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <img src={NumberTypesGif} alt="Demonstration of number parsing in NinjaTerm." width="900px" style={{ margin: 'auto' }} />
+                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={NumberTypesWebM}>
+                    <source src={NumberTypesWebM} type="video/webm" />
+                    Demonstration of number parsing in NinjaTerm.
+                  </video>
                 </div>
               </div>
             </Grid>
