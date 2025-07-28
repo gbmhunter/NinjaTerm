@@ -73,6 +73,9 @@ export default class PortSettings {
    */
   allowSettingsChangesWhenOpen = false;
 
+  availableSerialPorts: any = [];
+  selectedSerialPort: any = null;
+
   constructor(app: App) {
     this.app = app;
     this.profileManager = app.profileManager;
@@ -149,6 +152,23 @@ export default class PortSettings {
   setAllowSettingsChangesWhenOpen = (value: boolean) => {
     this.allowSettingsChangesWhenOpen = value;
     this._saveConfig();
+  }
+
+  scanForSerialPorts = async () => {
+    // this.availableSerialPorts = await navigator.serial.getPorts();
+
+    const result = await (window as any).electronAPI.serial.listPorts();
+    console.log('scanForSerialPorts() result=', result);
+    if (result.success) {
+      this.availableSerialPorts = result.ports;
+    } else {
+      this.availableSerialPorts = [];
+      this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
+    }
+  }
+
+  setSelectedSerialPort = (port: any) => {
+    this.selectedSerialPort = port;
   }
 
   _loadConfig = () => {

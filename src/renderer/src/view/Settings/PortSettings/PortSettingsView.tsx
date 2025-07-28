@@ -11,9 +11,18 @@ import {
   FormControlLabel,
   Autocomplete,
   TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Radio,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 
 import { App, PortType } from 'src/model/App';
 import {
@@ -35,9 +44,89 @@ interface Props {
 function PortSettingsView(props: Props) {
   const { app } = props;
 
+  // Scan for serial ports when the component mounts. This will happen every time the user
+  // navigates to the Port Configuration tab.
+  useEffect(() => {
+    app.settings.portConfiguration.scanForSerialPorts();
+  }, []); // Empty dependency array means this runs once when component mounts
+
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <div style={{ height: '20px' }}></div>
+
+      <div style={{ width: '100%', marginBottom: 16 }}>
+        <Typography variant="h6" gutterBottom>
+          Available Serial Ports
+        </Typography>
+        <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">Select</TableCell>
+                <TableCell>Port Path</TableCell>
+                <TableCell>Friendly Name</TableCell>
+                <TableCell>Manufacturer</TableCell>
+                <TableCell>Product ID</TableCell>
+                <TableCell>Vendor ID</TableCell>
+                <TableCell>Serial Number</TableCell>
+                <TableCell>Location ID</TableCell>
+                <TableCell>PNP ID</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(app.settings.portConfiguration.availableSerialPorts || []).length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                    No serial ports found. Click "Rescan" to search for ports.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                app.settings.portConfiguration.availableSerialPorts.map((port: any, idx: number) => (
+                  <TableRow
+                    key={port.path || idx}
+                    hover
+                    selected={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                  >
+                    <TableCell padding="checkbox">
+                      <Radio
+                        checked={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                        onChange={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                        value={port.path}
+                        name="serial-port-selection"
+                      />
+                    </TableCell>
+                    <TableCell>{port.path || 'Unknown'}</TableCell>
+                    <TableCell>{port.friendlyName || 'n/a'}</TableCell>
+                    <TableCell>{port.manufacturer || 'n/a'}</TableCell>
+                    <TableCell>{port.productId || 'n/a'}</TableCell>
+                    <TableCell>{port.vendorId || 'n/a'}</TableCell>
+                    <TableCell>{port.serialNumber || 'n/a'}</TableCell>
+                    <TableCell>{port.locationId || 'n/a'}</TableCell>
+                    <TableCell sx={{
+                      maxWidth: 400,
+                      wordBreak: 'break-all',
+                    }}>
+                      {port.pnpId || 'n/a'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+      <Button
+        variant="outlined"
+        size="medium"
+        sx={{ m: 1 }}
+        onClick={async () => {
+          await app.settings.portConfiguration.scanForSerialPorts();
+        }}
+      >
+        Rescan
+      </Button>
 
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
         {/* ============================================================== */}
