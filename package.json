@@ -33,6 +33,7 @@
     "react-router-dom": "^6.23.1",
     "react-transition-group": "^4.4.5",
     "react-window": "^1.8.10",
+    "serialport": "^13.0.0",
     "serve": "^14.2.3",
     "typescript": "^5.4.5",
     "validatorjs": "^3.22.1",
@@ -53,11 +54,14 @@
     "workbox-streams": "^7.1.0",
     "zod": "^3.23.8"
   },
+  "main": "out/main/index.js",
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite build && vite preview",
-    "test": "tsc && vitest run && playwright test"
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite dev",
+    "test": "tsc && vitest run && playwright test",
+    "test-electron": "tsc && vitest run && playwright test --config=playwright-electron.config.ts"
   },
   "eslintConfig": {
     "extends": [
@@ -79,16 +83,18 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.54.1",
     "@types/react-resizable": "^3.0.7",
     "@types/react-window": "^1.8.8",
     "@types/wicg-file-system-access": "^2023.10.5",
+    "electron": "^37.2.4",
+    "electron-vite": "^3.1.0",
     "jest-canvas-mock": "^2.5.2",
     "jsdom": "^24.1.0",
+    "playwright-electron": "^0.5.0",
     "postcss": "^8.4.38",
     "postcss-nesting": "^12.1.5",
     "vite-plugin-checker": "^0.6.4",
-    "vite-plugin-pwa": "1.0.0",
     "vitest": "^1.6.0"
   },
   "type": "module"

@@ -6,7 +6,8 @@ import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
 
 // Import package.json to read out the version number
-import packageDotJson from '../../package.json';
+declare const __PACKAGE_JSON__: { version: string };
+const packageDotJson = __PACKAGE_JSON__;
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
 import SnackbarController from './SnackbarController/SnackbarController';
@@ -959,54 +960,7 @@ export class App {
     this.shownMainPane = newPane;
   }
 
-  swOnNeedRefresh(updateSw: (reloadPage?: boolean | undefined) => Promise<void>) {
-    console.log('onNeedRefresh() called.');
-    this.snackbar.sendToSnackbar(
-      'A new version of NinjaTerm is available. Click Reload to update.',
-      'info',
-      (snackbarId) => (
-        <>
-          <Button
-            onClick={() => {
-              updateSw(true);
-            }}
-            color="info"
-            variant="text"
-            sx={{
-              color: 'rgb(33, 150, 243)',
-              backgroundColor: 'white',
-            }}
-          >
-            Reload
-          </Button>
-          <Button
-            onClick={() => {
-              closeSnackbar(snackbarId);
-            }}
-            color="info"
-            variant="text"
-            sx={{
-              color: 'white',
-              // backgroundColor: 'white'
-            }}
-          >
-            Close
-          </Button>
-        </>
-      ),
-      true // Make this snackbar persist until the user clicks either of the buttons
-    );
-  }
-
-  swOnOfflineReady() {
-    console.log('onOfflineReady() called.');
-    this.snackbar.sendToSnackbar('NinjaTerm is offline ready.', 'info');
-  }
-
-  swOnRegisterError(error: any) {
-    console.log('onRegisterError() called.');
-    console.error(error.message);
-  }
+  // PWA methods removed - not needed in Electron app
 
   setShowCircularProgressModal(show: boolean) {
     this.showCircularProgressModal = show;

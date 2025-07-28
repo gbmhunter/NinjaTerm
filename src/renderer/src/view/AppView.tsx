@@ -9,12 +9,7 @@ import SaveAsIcon from '@mui/icons-material/SaveAs';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
-// I got the following error here:
-// error TS2307: Cannot find module 'virtual:pwa-register' or its corresponding type declarations.
-// even with "vite-plugin-pwa/client" in the types array inside tsconfig.json. So getting typescript
-// to ignore this import for now.
-// @ts-ignore:next-line
-import { registerSW } from 'virtual:pwa-register';
+// PWA functionality removed - not needed in Electron app
 
 import { App, MainPanes } from '../model/App';
 import { PortState } from '../model/Settings/PortSettings/PortSettings';
@@ -95,34 +90,12 @@ window.SelectionController = SelectionController;
 
 const AppView = observer((props: Props) => {
   useEffect(() => {
-    // We need to register the service worker AFTER the app
-    // has rendered, because it we do it before we won't
-    // be able to enqueue a snackbar to tell the user there
-    // is an update available
-    const updateSW = registerSW({
-      onNeedRefresh() {
-        app.swOnNeedRefresh(updateSW);
-      },
-      onOfflineReady() {
-        app.swOnOfflineReady();
-      },
-      // @ts-ignore:next-line
-      onRegisterError(error) {
-        app.swOnRegisterError(error);
-      },
-    });
-
+    // Initialize the app after it has rendered
     const initFn = async () => {
       await app.onAppUiLoaded();
     };
 
     initFn().catch(console.error);
-
-    // Uncomment this if you want to test out the snackbar
-    // for development reasons
-    // app.swOnNeedRefresh((reloadPage) => {
-    //   return Promise.resolve();
-    // })
   }, []);
 
   // SELECT CORRECT MAIN PANE
