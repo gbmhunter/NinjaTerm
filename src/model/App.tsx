@@ -755,17 +755,6 @@ export class App {
       return;
     }
 
-    // Make the terminal that the key was pressed in autoscroll to the bottom
-    // if the setting is enabled.
-    if (this.settings.displaySettings.autoScrollLockOnTx) {
-      if (this.terminals.txTerminal.isFocused) {
-        this.terminals.txTerminal.setScrollLock(true);
-      }
-      if (this.terminals.txRxTerminal.isFocused) {
-        this.terminals.txRxTerminal.setScrollLock(true);
-      }
-    }
-
     // Serial port is open, let's send it to the serial
     // port
 
@@ -778,6 +767,7 @@ export class App {
     // List of all alphanumeric chars
     const alphabeticChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz';
     const alphaNumericChars = alphabeticChars + '0123456789';
+    let sendBreakSignal = false;
     if (event.key === 'Control' || event.key === 'Shift' || event.key === 'Alt') {
       // Don't send anything if a control/shift/alt key was pressed by itself
       return;
@@ -786,7 +776,9 @@ export class App {
     // Ctrl-Shift-B: Send break signal
     //===========================================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'B') {
-      await this.sendBreakSignal();
+      // Set flag to true, this is handled at the bottom of the function
+      // and determines whether we send the break signal or data.
+      sendBreakSignal = true;
     } else if (event.ctrlKey) {
       // Most presses with the Ctrl key held down should do nothing. One exception is
       // if sending 0x01-0x1A when Ctrl-A through Ctrl-Z is pressed is enabled
@@ -877,7 +869,29 @@ export class App {
       console.log('Unsupported char! event=', event);
       return;
     }
-    await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
+
+    // If we get here, we are either:
+    // 1. Sending a break signal
+    // 2. Sending data
+    // In all other cases, we would have returned by now.
+    // It is now safe to enable autoscroll to the bottom
+    // if the setting is enabled. If we had done it above it would be buggy,
+    // for example the user could be pressing Ctrl-Shift-C to copy text to the clipboard
+    // and the autoscroll would suddenly be enabled.
+    if (this.settings.displaySettings.autoScrollLockOnTx) {
+      if (this.terminals.txTerminal.isFocused) {
+        this.terminals.txTerminal.setScrollLock(true);
+      }
+      if (this.terminals.txRxTerminal.isFocused) {
+        this.terminals.txRxTerminal.setScrollLock(true);
+      }
+    }
+
+    if (sendBreakSignal) {
+      await this.sendBreakSignal();
+    } else {
+      await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
+    }
   };
 
   /**
