@@ -10,7 +10,8 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HomeIcon from '@mui/icons-material/Home';
-import Grid from '@mui/material/Unstable_Grid2';
+// import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 
 import './ManualView.css';
 import GitHubReadmeLogoPng from './github-readme-logo.png';

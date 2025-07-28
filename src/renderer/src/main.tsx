@@ -8,8 +8,6 @@ import {
 import ReactGA from "react-ga4";
 
 import AppView from './view/AppView';
-import HomepageView from './Homepage/HomepageView';
-import ManualView from './Manual/ManualView';
 
 // Initialize Electron adapters if running in Electron
 import { initializeElectronSerialAdapter } from './services/ElectronSerialAdapter';
@@ -31,21 +29,11 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-// Create routes. Only 2 routes. The root is the
-// landing page which is static, and then
-// at /app is the main NinjaTerm application
+// Create routes for Electron app. Load directly into the terminal application.
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomepageView />,
-  },
-  {
-    path: "/app",
     element: <AppView />,
-  },
-  {
-    path: "/manual",
-    element: <ManualView />,
   },
 ]);
 

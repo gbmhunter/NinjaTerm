@@ -12,7 +12,7 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import { useEffect } from 'react';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';

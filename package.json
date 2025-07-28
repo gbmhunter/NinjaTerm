@@ -58,8 +58,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:electron": "electron-vite build",
+    "build:web": "cd web-homepage && npm run build",
+    "build:all": "npm run build:electron && npm run build:web",
     "preview": "electron-vite preview",
     "start": "electron-vite dev",
+    "dev:web": "cd web-homepage && npm run dev",
     "test": "tsc && vitest run && playwright test",
     "test-electron": "tsc && vitest run && playwright test --config=playwright-electron.config.ts"
   },
