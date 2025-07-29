@@ -65,7 +65,9 @@
     "start": "electron-vite dev",
     "dev:web": "cd web-homepage && npm run dev",
     "test": "tsc && vitest run && playwright test",
-    "test-electron": "tsc && vitest run && playwright test --config=playwright-electron.config.ts"
+    "test:web": "tsc && vitest run && playwright test",
+    "test:electron": "tsc && vitest run && playwright test --config=playwright-electron.config.ts",
+    "test:all": "npm run test:web && npm run test:electron"
   },
   "eslintConfig": {
     "extends": [

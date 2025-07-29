@@ -14,7 +14,9 @@
       "Bash(cp:*)",
       "Bash(rm:*)",
       "Bash(npm run dev:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(npm test:*)"
     ],
     "deny": []
   }
