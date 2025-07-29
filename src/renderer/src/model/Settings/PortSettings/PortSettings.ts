@@ -157,9 +157,9 @@ export default class PortSettings {
   scanForSerialPorts = async () => {
     // this.availableSerialPorts = await navigator.serial.getPorts();
 
-    const result = await (window as any).electronAPI.serial.listPorts();
+    const result = await window.electronAPI.serial.listPorts();
     console.log('scanForSerialPorts() result=', result);
-    
+
     runInAction(() => {
       if (result.success) {
         this.availableSerialPorts = result.ports;

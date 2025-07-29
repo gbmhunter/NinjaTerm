@@ -8,9 +8,10 @@ import { Profile } from './DataClasses/Profile';
 import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
+import { PortInfo } from '@serialport/bindings-interface';
 
 export class LastUsedSerialPort {
-  serialPortInfo: Partial<SerialPortInfo> = {};
+  path: string = '';
   portState: PortState = PortState.CLOSED;
 }
 
@@ -235,16 +236,16 @@ export class AppDataManager {
 
     // Check the last connected serial port of the profile and compare with
     // currently connected one
-    const profileSerialPortInfoJson = JSON.stringify(profile.rootConfig.lastUsedSerialPort.serialPortInfo);
-    const currentSerialPortInfoJson = JSON.stringify(this.appData.currentAppConfig.lastUsedSerialPort.serialPortInfo);
+    const profileLastUsedPortPath = profile.rootConfig.lastUsedSerialPort.path;
+    const currentPortPath = this.appData.currentAppConfig.lastUsedSerialPort.path;
 
     let weNeedToConnect = false;
-    let matchedAvailablePorts: SerialPort[] = [];
+    let matchedAvailablePorts: PortInfo[] = [];
     let snackbarMessage = `Profile "${profile.name}" loaded.`;
     let snackbarVariant: VariantType = 'success';
-    if (profileSerialPortInfoJson == '{}') {
+    if (profileLastUsedPortPath == '{}') {
       weNeedToConnect = false;
-    } else if (profileSerialPortInfoJson === currentSerialPortInfoJson) {
+    } else if (profileLastUsedPortPath === currentPortPath) {
       // Same serial port, no need to disconnect and connect
       // Note there is a chance we are not connected to the right one due to
       // ambiguity...but if already connected it is a better user experience to
@@ -254,8 +255,13 @@ export class AppDataManager {
     } else {
       // They are both different and the profile one is non-empty. Check to see if the profile ports is available
       console.log('Port infos are both different and non-empty. Checking if ports are available...');
-      const availablePorts = await navigator.serial.getPorts();
-      matchedAvailablePorts = availablePorts.filter((port) => JSON.stringify(port.getInfo()) === profileSerialPortInfoJson);
+      // const availablePorts = await navigator.serial.getPorts();
+      const availablePortsResult = await window.electronAPI.serial.listPorts();
+      if (!availablePortsResult.success) {
+        throw new Error('Failed to list available ports.');
+      }
+      const availablePorts = availablePortsResult.ports!;
+      matchedAvailablePorts = availablePorts.filter((port) => port.path === profileLastUsedPortPath);
 
       if (matchedAvailablePorts.length === 0) {
         // The profile port is not available
@@ -298,7 +304,7 @@ export class AppDataManager {
     if (weNeedToConnect) {
       this.app.setSelectedPort(matchedAvailablePorts[0]);
       await this.app.openPort({ silenceSnackbar: true });
-      snackbarMessage += '\nConnected to port with info: "' + profileSerialPortInfoJson + '".';
+      snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
     }
 
     // Post message to snackbar

@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { PortInfo } from '@serialport/bindings-interface';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -48,11 +49,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // Type definitions for the exposed API
 export interface ElectronAPI {
   serial: {
-    listPorts(): Promise<{ success: boolean; ports?: any[]; error?: string }>;
+    listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
     openPort(portPath: string, options: any): Promise<{ success: boolean; error?: string }>;
     closePort(portPath: string): Promise<{ success: boolean; error?: string }>;
     writeData(portPath: string, data: number[]): Promise<{ success: boolean; error?: string }>;
-    onDataReceived(callback: (portPath: string, data: number[]) => void): void;
+    onDataReceived(callback: (portPath: string, data: Buffer) => void): void;
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
