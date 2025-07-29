@@ -66,8 +66,8 @@ function PortSettingsView(props: Props) {
                 <TableCell>Port Path</TableCell>
                 <TableCell>Friendly Name</TableCell>
                 <TableCell>Manufacturer</TableCell>
-                <TableCell>Product ID</TableCell>
                 <TableCell>Vendor ID</TableCell>
+                <TableCell>Product ID</TableCell>
                 <TableCell>Serial Number</TableCell>
                 <TableCell>Location ID</TableCell>
                 <TableCell>PNP ID</TableCell>
@@ -100,12 +100,22 @@ function PortSettingsView(props: Props) {
                     <TableCell>{port.path || 'Unknown'}</TableCell>
                     <TableCell>{port.friendlyName || 'n/a'}</TableCell>
                     <TableCell>{port.manufacturer || 'n/a'}</TableCell>
-                    <TableCell>{port.productId || 'n/a'}</TableCell>
                     <TableCell>{port.vendorId || 'n/a'}</TableCell>
-                    <TableCell>{port.serialNumber || 'n/a'}</TableCell>
-                    <TableCell>{port.locationId || 'n/a'}</TableCell>
+                    <TableCell>{port.productId || 'n/a'}</TableCell>
+                    <TableCell
+                      sx={{
+                        minWidth: 100,
+                        wordBreak: 'break-all',
+                      }}
+                    >{port.serialNumber || 'n/a'}</TableCell>
+                    <TableCell
+                      sx={{
+                        minWidth: 100,
+                        wordBreak: 'break-all',
+                      }}
+                    >{port.locationId || 'n/a'}</TableCell>
                     <TableCell sx={{
-                      maxWidth: 400,
+                      minWidth: 200,
                       wordBreak: 'break-all',
                     }}>
                       {port.pnpId || 'n/a'}
@@ -363,21 +373,6 @@ function PortSettingsView(props: Props) {
 
       <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
         {/* =============================================================== */}
-        {/* SELECT PORT BUTTON */}
-        {/* =============================================================== */}
-        <Button
-          variant="outlined"
-          onClick={() => {
-            app.scanForPorts();
-          }}
-          // Only let user select a new port if current one is closed
-          disabled={app.portState !== PortState.CLOSED}
-          data-testid="request-port-access"
-          sx={{ width: '150px' }}
-        >
-          Select Port
-        </Button>
-        {/* =============================================================== */}
         {/* OPEN/CLOSE BUTTON */}
         {/* =============================================================== */}
         <Button
@@ -401,7 +396,7 @@ function PortSettingsView(props: Props) {
           }}
           // Disabled when port is closed and no port is selected, or if the baud rate is invalid
           disabled={
-            (app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+            (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
           }
           sx={{ width: '150px' }}
           data-testid="open-close-button"
@@ -409,25 +404,6 @@ function PortSettingsView(props: Props) {
           {portStateToButtonProps[app.portState].text}
         </Button>
       </div>
-
-      <div style={{ height: '20px' }}></div>
-      {/* =============================================================== */}
-      {/* INFO ON SELECTED SERIAL PORT */}
-      {/* =============================================================== */}
-      <Typography
-        sx={{
-          color: (theme) => (app.port !== null ? theme.palette.text.primary : theme.palette.text.disabled),
-        }}
-      >
-        Selected Port Product ID: {app.serialPortInfo?.usbProductId}
-      </Typography>
-      <Typography
-        sx={{
-          color: (theme) => (app.port !== null ? theme.palette.text.primary : theme.palette.text.disabled),
-        }}
-      >
-        Selected Port Vendor ID: {app.serialPortInfo?.usbVendorId}
-      </Typography>
 
       <div style={{ height: '20px' }}></div>
       {/* =============================================================== */}

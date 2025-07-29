@@ -3,6 +3,13 @@ import * as path from 'path';
 import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
 
+const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
+const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
+
+// 1ms was too fast -- resulted in many small chunks being sent to the renderer process
+// and too many IPC calls
+const RX_DATA_BATCH_TIMEOUT_MS = 20;
+
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
 
@@ -54,8 +61,25 @@ app.on('activate', () => {
   }
 });
 
-// Serial port management
+// Hold all active serial ports. The key is the port path which should be unique.
 const activeSerialPorts = new Map<string, SerialPort>();
+
+// Data batching for high-performance serial communication
+const dataBatches = new Map<string, Buffer[]>();
+const batchTimeouts = new Map<string, NodeJS.Timeout>();
+
+function sendBatchedData(portPath: string) {
+  const batch = dataBatches.get(portPath);
+  if (batch && batch.length > 0) {
+    // Concatenate all buffers in the batch
+    const combinedBuffer = Buffer.concat(batch);
+    console.log('sendBatchedData() sending batch of size=', combinedBuffer.length);
+    mainWindow?.webContents.send('serial:data-received', portPath, combinedBuffer);
+
+    // Clear the batch
+    dataBatches.set(portPath, []);
+  }
+}
 
 // IPC handlers for serial port operations
 ipcMain.handle('serial:list-ports', async () => {
@@ -92,9 +116,35 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       });
     });
 
-    // Set up data handlers
+    // Initialize batching for this port
+    dataBatches.set(portPath, []);
+
+    // Set up data handlers with batching for high performance
     port.on('data', (data: Buffer) => {
-      mainWindow?.webContents.send('serial:data-received', portPath, Array.from(data));
+      // Add data to batch
+      const batch = dataBatches.get(portPath);
+      if (batch) {
+        batch.push(data);
+
+        // Clear existing timeout
+        const existingTimeout = batchTimeouts.get(portPath);
+        if (existingTimeout) {
+          clearTimeout(existingTimeout);
+        }
+
+        // Send immediately if batch is getting large, or set timeout for small batches
+        if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
+          // Send large batches immediately
+          sendBatchedData(portPath);
+        } else {
+          // For small batches, wait a bit to collect more data
+          const timeout = setTimeout(() => {
+            sendBatchedData(portPath);
+            batchTimeouts.delete(portPath);
+          }, RX_DATA_BATCH_TIMEOUT_MS); // Very short timeout (1ms) to batch rapid data
+          batchTimeouts.set(portPath, timeout);
+        }
+      }
     });
 
     port.on('error', (error: Error) => {
@@ -102,6 +152,17 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
     });
 
     port.on('close', () => {
+      // Send any remaining batched data before closing
+      sendBatchedData(portPath);
+
+      // Clean up batching data
+      const timeout = batchTimeouts.get(portPath);
+      if (timeout) {
+        clearTimeout(timeout);
+        batchTimeouts.delete(portPath);
+      }
+      dataBatches.delete(portPath);
+
       activeSerialPorts.delete(portPath);
       mainWindow?.webContents.send('serial:port-closed', portPath);
     });
@@ -130,11 +191,34 @@ ipcMain.handle('serial:close-port', async (event, portPath: string) => {
       });
     });
 
+    // Clean up batching data (this will also happen in port.on('close') but being safe)
+    const timeout = batchTimeouts.get(portPath);
+    if (timeout) {
+      clearTimeout(timeout);
+      batchTimeouts.delete(portPath);
+    }
+    dataBatches.delete(portPath);
+
     activeSerialPorts.delete(portPath);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
   }
+});
+
+ipcMain.handle('serial:close-all-ports', async () => {
+  for (const [portPath, port] of activeSerialPorts) {
+    await port.close();
+  }
+
+  // Clean up all batching data
+  for (const timeout of batchTimeouts.values()) {
+    clearTimeout(timeout);
+  }
+  batchTimeouts.clear();
+  dataBatches.clear();
+
+  activeSerialPorts.clear();
 });
 
 ipcMain.handle('serial:write-data', async (event, portPath: string, data: number[]) => {
@@ -181,7 +265,7 @@ ipcMain.handle('fs:select-directory', async () => {
 ipcMain.handle('fs:write-file', async (event, filePath: string, data: number[], append: boolean = true) => {
   try {
     const buffer = Buffer.from(data);
-    
+
     if (append) {
       await fs.appendFile(filePath, buffer);
     } else {
@@ -222,5 +306,13 @@ app.on('before-quit', () => {
       console.error(`Error closing port ${portPath}:`, error);
     }
   }
+
+  // Clean up all batching data
+  for (const timeout of batchTimeouts.values()) {
+    clearTimeout(timeout);
+  }
+  batchTimeouts.clear();
+  dataBatches.clear();
+
   activeSerialPorts.clear();
 });

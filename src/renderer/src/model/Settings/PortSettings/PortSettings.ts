@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
@@ -159,12 +159,15 @@ export default class PortSettings {
 
     const result = await (window as any).electronAPI.serial.listPorts();
     console.log('scanForSerialPorts() result=', result);
-    if (result.success) {
-      this.availableSerialPorts = result.ports;
-    } else {
-      this.availableSerialPorts = [];
-      this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
-    }
+    
+    runInAction(() => {
+      if (result.success) {
+        this.availableSerialPorts = result.ports;
+      } else {
+        this.availableSerialPorts = [];
+        this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
+      }
+    });
   }
 
   setSelectedSerialPort = (port: any) => {

@@ -126,7 +126,7 @@ export class App {
   constructor(testing = false) {
     this.testing = testing;
     if (this.testing) {
-      console.log('Warning, testing mode is enabled.');
+      console.log('Warning, testing mode is enabled!');
     }
 
     // Read out the version number from package.json
@@ -155,16 +155,15 @@ export class App {
 
     this.logging = new Logging(this);
 
-    if (navigator.serial !== undefined) {
-      navigator.serial.addEventListener('connect', (event) => {
-        console.log('connect. event: ', event);
-        this.onSerialPortConnected(event.target as SerialPort);
-      });
-    }
+    // Serial port connection handling is now managed through the ElectronSerialAdapter
 
     // Listen for changes to the last applied profile name, and update the app title
     reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
     this.onLastAppliedProfileNameChanged();
+
+    // Close any existing ports which might be open in the main process, and remove
+    // all IPC event listeners.
+    (window as any).electronAPI.serial.closeAllPortsAndRemoveListeners();
 
     makeAutoObservable(this); // Make sure this near the end
   }
@@ -180,9 +179,7 @@ export class App {
    * This is used to do things that can only be done once the UI is ready, e.g. enqueueSnackbar items.
    */
   async onAppUiLoaded() {
-    if (this.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup) {
-      await this.tryToLoadPreviouslyUsedPort();
-    }
+    // Auto-reconnection on startup is now handled through the PortSettings selectedSerialPort
 
     // Send 1 random tip to snackbar on app load
     // Choose random tip from array
@@ -200,141 +197,14 @@ export class App {
     this.serialPortInfo = port.getInfo();
   };
 
-  onSerialPortConnected(serialPort: SerialPort) {
-    console.log('onSerialPortConnected() called.');
-
-    if (this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-      // Check to see if this is the serial port we want to reopen
-
-      const lastUsedPortInfo = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-      if (lastUsedPortInfo === null) {
-        return;
-      }
-
-      const lastUsedPortInfoStr = JSON.stringify(lastUsedPortInfo.serialPortInfo);
-      const serialPortInfoStr = JSON.stringify(serialPort.getInfo());
-
-      if (lastUsedPortInfoStr === serialPortInfoStr) {
-        console.log('Found previously used port, reopening it.');
-        runInAction(() => {
-          this.port = serialPort;
-          this.serialPortInfo = serialPort.getInfo();
-        });
-        this.openPort();
-      }
-    }
-  }
-
-  async tryToLoadPreviouslyUsedPort() {
-    // getPorts() returns ports that the user has previously approved
-    // this app to be able to access
-    let approvedPorts = await navigator.serial.getPorts();
-
-    // const lastUsedSerialPort = this.appStorage.data.lastUsedSerialPort;
-    const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-    if (lastUsedSerialPort === null) {
-      // Did not find last used serial port data in local storage, so do nothing
-      return;
-    }
-
-    const lastUsedPortInfoStr = JSON.stringify(lastUsedSerialPort.serialPortInfo);
-    // If the JSON representation of the last used port is just "{}",
-    // it means that the last used port didn't contain any valuable
-    // information to uniquely identify it, so don't bother trying to
-    // find it again!
-    if (lastUsedPortInfoStr === '{}') {
-      return;
-    }
-    // Check list of approved ports to see if any match the last opened ports
-    // USB vendor ID and product ID. If so, open.
-    for (let i = 0; i < approvedPorts.length; i += 1) {
-      const approvedPort = approvedPorts[i];
-      const approvedPortInfo = approvedPort.getInfo();
-      const approvedPortInfoStr = JSON.stringify(approvedPort.getInfo());
-      if (approvedPortInfoStr === lastUsedPortInfoStr) {
-        // Found a match, open it
-        runInAction(async () => {
-          this.port = approvedPort;
-          this.serialPortInfo = approvedPortInfo;
-
-          if (lastUsedSerialPort.portState === PortState.OPENED) {
-            await this.openPort({ silenceSnackbar: true });
-            this.snackbar.sendToSnackbar(`Automatically opening last used port with info=${lastUsedPortInfoStr}.`, 'success');
-          } else if (lastUsedSerialPort.portState === PortState.CLOSED) {
-            this.snackbar.sendToSnackbar(`Automatically selecting last used port with info=${lastUsedPortInfoStr}.`, 'success');
-          }
-        });
-        return;
-      }
-    }
-  }
+  // Serial port connection and auto-reconnection is now handled through PortSettings
 
   setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
     this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
   }
 
-  /**
-   * Scans the computer for available serial ports, and updates availablePortInfos.
-   *
-   * Based of https://developer.chrome.com/en/articles/serial/
-   */
-  async scanForPorts() {
-    // Prompt user to select any serial port.
-    if ('serial' in window.navigator) {
-      // The Web Serial API is supported.
-
-      let localPort: SerialPort;
-
-      // If the user clicks cancel, a DOMException is thrown
-      try {
-        // This makes a browser controlled modal pop-up in
-        // where the user selects a serial port
-        localPort = await window.navigator.serial.requestPort();
-      } catch (error) {
-        // The only reason I know of that occurs an error to be thrown is
-        // when the user clicks cancel.
-        this.snackbar.sendToSnackbar('User cancelled port selection.', 'warning');
-        return;
-      }
-      runInAction(() => {
-        this.port = localPort;
-        this.serialPortInfo = this.port.getInfo();
-        // Save the info for this port, so we can automatically re-open
-        // it on app re-open in the future
-        let lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-        lastUsedSerialPort.serialPortInfo = JSON.parse(JSON.stringify(this.serialPortInfo));
-        this.profileManager.saveAppData();
-      });
-      if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
-        await this.openPort();
-        // Go to the terminal pane, only if opening was successful
-        if (this.portState === PortState.OPENED) {
-          this.setShownMainPane(MainPanes.TERMINAL);
-        }
-      }
-    } else {
-      this.snackbar.sendToSnackbar(
-        <div>
-          <p style={{ maxWidth: '500px' }}>
-            Could not find the Web Serial API (navigator.serial) provided by the browser. Natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome, Edge,
-            Brave) and Opera. Firefox is supported but you have to install the{' '}
-            <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
-              WebSerial for Firefox extension
-            </a>{' '}
-            first. Unfortunately as of June 2024 Safari is not supported.
-          </p>
-          <p style={{ maxWidth: '500px' }}>
-            See{' '}
-            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility" target="_blank">
-              https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility
-            </a>{' '}
-            for a compatibility table.
-          </p>
-        </div>,
-        'error'
-      );
-    }
-  }
+  // Current port path for IPC communication
+  private currentPortPath: string | null = null;
 
   /**
    * Opens the selected serial port using settings from the Port Configuration view.
@@ -345,69 +215,92 @@ export class App {
    */
   async openPort({ silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
-      // Show the circular progress modal when trying to open the port. If the port opening is going to fail, sometimes it takes
-      // a few seconds for awaiting open() to complete, so this prevents the user from trying to open the port again while we wait
-      this.setShowCircularProgressModal(true);
-      try {
-        // Convert from our flow control enum to the Web Serial API's
-        let flowControlType: FlowControlType;
-        if (this.settings.portConfiguration.flowControl === 'none') {
-          flowControlType = 'none';
-        } else if (this.settings.portConfiguration.flowControl === 'hardware') {
-          flowControlType = 'hardware';
-        } else {
-          throw Error(`Unsupported flow control type ${this.settings.portConfiguration.flowControl}.`);
-        }
-        await this.port?.open({
-          baudRate: this.settings.portConfiguration.baudRate, // This might be custom
-          dataBits: this.settings.portConfiguration.numDataBits,
-          parity: this.settings.portConfiguration.parity as ParityType,
-          stopBits: this.settings.portConfiguration.stopBits,
-          flowControl: flowControlType,
-          bufferSize: 10000,
-        }); // Default buffer size is only 256 (presumably bytes), which is not enough regularly causes buffer overrun errors
-      } catch (error) {
-        if (error instanceof DOMException) {
-          if (error.name === 'NetworkError') {
-            const msg = 'Serial port is already in use by another program.\n' + 'Reported error from port.open():\n' + `${error}`;
-            this.snackbar.sendToSnackbar(msg, 'error');
-            console.error(msg);
-          } else {
-            const msg = `Unrecognized DOMException error with name=${error.name} occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
-            this.snackbar.sendToSnackbar(msg, 'error');
-            console.error(msg);
-          }
-        } else {
-          // Type of error not recognized or seen before
-          const msg = `Unrecognized error occurred when trying to open serial port.\n` + 'Reported error from port.open():\n' + `${error}`;
-          this.snackbar.sendToSnackbar(msg, 'error');
-          console.error(msg);
-        }
-
-        this.setShowCircularProgressModal(false);
-
-        // An error occurred whilst calling port.open(), so DO NOT continue, port
-        // cannot be considered open
+      // Get the selected port from PortSettings
+      const selectedPort = this.settings.portConfiguration.selectedSerialPort;
+      if (!selectedPort) {
+        this.snackbar.sendToSnackbar('No serial port selected. Please select a port from the Port Settings.', 'error');
         return false;
       }
+
+      // Show the circular progress modal when trying to open the port
+      this.setShowCircularProgressModal(true);
+
+      try {
+        // Make direct IPC call to open the port
+        const result = await (window as any).electronAPI.serial.openPort(selectedPort.path, {
+          baudRate: this.settings.portConfiguration.baudRate,
+          dataBits: this.settings.portConfiguration.numDataBits,
+          parity: this.settings.portConfiguration.parity,
+          stopBits: this.settings.portConfiguration.stopBits,
+          flowControl: this.settings.portConfiguration.flowControl,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        // Store the current port path for IPC communication
+        this.currentPortPath = selectedPort.path;
+
+        // Set up IPC event listeners for data reception
+        // The listeners are cleared in the app constructor. This is useful during development with hot reloading, if we
+        // didn't do this, the listeners would be added multiple times.
+        (window as any).electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
+          if (portPath === this.currentPortPath) {
+            console.log('onDataReceived() called. data.length=', data.length);
+            // Buffer can be used directly as Uint8Array - much faster than conversion
+            const uint8Array = new Uint8Array(data);
+            this.parseRxData(uint8Array);
+          }
+        });
+
+        // Listen for errors
+        (window as any).electronAPI.serial.onError((portPath: string, error: string) => {
+          if (portPath === this.currentPortPath) {
+            this.snackbar.sendToSnackbar(`Serial port error: ${error}`, 'error');
+            this.handlePortError();
+          }
+        });
+
+        // Listen for port close events
+        (window as any).electronAPI.serial.onPortClosed((portPath: string) => {
+          if (portPath === this.currentPortPath) {
+            this.handleUnexpectedPortClose();
+          }
+        });
+
+        // Save port info for reconnection
+        const portInfo = {
+          usbVendorId: selectedPort.vendorId ? parseInt(selectedPort.vendorId, 16) : undefined,
+          usbProductId: selectedPort.productId ? parseInt(selectedPort.productId, 16) : undefined,
+        };
+
+        runInAction(() => {
+          this.serialPortInfo = portInfo;
+          this.portState = PortState.OPENED;
+          this.keepReading = true;
+        });
+
+        const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
+        lastUsedSerialPort.serialPortInfo = JSON.parse(JSON.stringify(portInfo));
+        lastUsedSerialPort.portState = PortState.OPENED;
+        this.profileManager.saveAppData();
+
+      } catch (error) {
+        const msg = `Error opening serial port: ${error}`;
+        this.snackbar.sendToSnackbar(msg, 'error');
+        console.error(msg);
+        this.setShowCircularProgressModal(false);
+        return false;
+      }
+
       if (!silenceSnackbar) {
         this.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
 
       this.setShowCircularProgressModal(false);
 
-      runInAction(() => {
-        this.portState = PortState.OPENED;
-        this.keepReading = true;
-        this.closedPromise = this.readUntilClosed();
-      });
-
-      const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-      lastUsedSerialPort.portState = PortState.OPENED;
-      this.profileManager.saveAppData();
-
-      // Create custom GA4 event to see how many ports have
-      // been opened in NinjaTerm :-)
+      // Create custom GA4 event to see how many ports have been opened in NinjaTerm
       ReactGA.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
@@ -420,96 +313,39 @@ export class App {
     this.terminals.rxTerminal.clearPartialNumberBuffer();
     this.terminals.txRxTerminal.clearPartialNumberBuffer();
 
+    // Navigate to the terminal pane if option is selected in Port Configuration settings
+    if (this.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+      this.setShownMainPane(MainPanes.TERMINAL);
+    }
+
     return true;
   }
 
-  /** Continuously reads from the serial port until:
-   *  1) keepReading is set to false and then reader.cancel() is called to break out of inner read() loop
-   *  2) Fatal error is thrown in read(), which causes port.readable to become null
+  /**
+   * Handles serial port errors
    */
-  async readUntilClosed() {
-    // port.readable will become null when a fatal error occurs
-    while (this.port?.readable && this.keepReading) {
-      this.reader = this.port.readable.getReader();
-      try {
-        while (true) {
-          const { value, done } = await this.reader.read();
-          if (done) {
-            // reader.cancel() has been called.
-            // console.log('reader.read() returned done.');
-            break;
-          }
-          // value is a Uint8Array.
-          this.parseRxData(value);
-        }
-      } catch (error) {
-        // console.log('reader.read() threw an error. error=', error, 'port.readable="', this.port?.readable, '" (null indicates fatal error)');
-        // These error are described at https://wicg.github.io/serial/
-        // @ts-ignore:
-        if (error instanceof DOMException) {
-          // console.log('Exception was DOMException. error.name=', error.name);
-          // BufferOverrunError: Rendering couldn't get up with input data,
-          // potentially make buffer size to port.open() larger or speed up processing/rendering
-          // if this occurs often. This is non-fatal, port.readable will not be null
-          if (error.name === 'BufferOverrunError') {
-            this.snackbar.sendToSnackbar(
-              'RX buffer overrun occurred. Too much data is coming in for the app to handle.\n' + 'Returned error from reader.read():\n' + `${error}`,
-              'warning'
-            );
-          } else if (error.name === 'BreakError') {
-            // The user has the ability to disable these warnings as break signals
-            // might be expected in certain use cases (e.g. framing of raw data)
-            if (this.settings.rxSettings.showWarningOnRxBreakSignal) {
-              this.snackbar.sendToSnackbar(
-                'Received break signal.\n' +
-                  'You can disable this warning in the RX Settings view if break signals are expected.\n' +
-                  'Returned error from reader.read():\n' +
-                  `${error}`,
-                'warning'
-              );
-            }
-          } else if (error.name === 'FramingError') {
-            this.snackbar.sendToSnackbar('Encountered framing error.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
-          } else if (error.name === 'ParityError') {
-            this.snackbar.sendToSnackbar('Encountered parity error.\n' + 'Returned error from reader.read():\n' + `${error}`, 'warning');
-          } else if (error.name === 'NetworkError') {
-            this.snackbar.sendToSnackbar(
-              'Encountered network error. This usually means the a USB serial port was unplugged from the computer.\n' + 'Returned error from reader.read():\n' + `${error}`,
-              'error'
-            ); // This is a fatal error
-          } else {
-            const msg =
-              `Unrecognized DOMException error with name=${error.name} occurred when trying to read from serial port.\n` + 'Reported error from port.read():\n' + `${error}`;
-            this.snackbar.sendToSnackbar(msg, 'error');
-            console.log(msg);
-            console.log('port.readable: ', this.port?.readable);
-          }
-        } else {
-          this.snackbar.sendToSnackbar(`Serial port was removed unexpectedly.\nReturned error from reader.read():\n${error}`, 'error');
-        }
-      } finally {
-        // Allow the serial port to be closed later.
-        this.reader.releaseLock();
-      }
-    }
+  private handlePortError() {
+    // Handle various error types here if needed
+    console.log('Serial port error occurred');
+  }
 
-    await this.port!.close();
-
-    // If keepReading is true, this means close() was not called, and it's an unexpected
-    // fatal error from the serial port which has caused us to close. In this case, handle
-    // the clean-up and state transition here.
+  /**
+   * Handles unexpected port close events
+   */
+  private handleUnexpectedPortClose() {
+    console.log('handleUnexpectedPortClose() called');
     if (this.keepReading === true) {
       if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
         this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
       } else {
         this.setPortState(PortState.CLOSED);
       }
-      this.reader = null;
-      this.closedPromise = null;
-      // Set port to null as we might have "lost" it, i.e. might
-      // have been removed/disappeared
-      this.port = null;
+      this.currentPortPath = null;
     }
+    // Remove all event listeners
+    (window as any).electronAPI.serial.removeAllListeners('serial:data-received');
+    (window as any).electronAPI.serial.removeAllListeners('serial:error');
+    (window as any).electronAPI.serial.removeAllListeners('serial:port-closed');
   }
 
   setPortState(newPortState: PortState) {
@@ -538,27 +374,30 @@ export class App {
   async closePort({ goToReopenState = false, silenceSnackbar = false } = {}) {
     if (this.lastSelectedPortType === PortType.REAL) {
       this.keepReading = false;
-      // Force reader.read() to resolve immediately and subsequently
-      // call reader.releaseLock() in the loop example above.
-      this.reader?.cancel();
 
-      if (this.closedPromise === null) {
-        throw Error('this.closedPromise was null when trying to close port.');
+      if (this.currentPortPath && (window as any).electronAPI) {
+        try {
+          // Make direct IPC call to close the port
+          const result = await (window as any).electronAPI.serial.closePort(this.currentPortPath);
+          if (!result.success) {
+            console.error('Error closing port:', result.error);
+          }
+        } catch (error) {
+          console.error('Error closing port:', error);
+        }
       }
-      await this.closedPromise;
 
       if (goToReopenState) {
-        // this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
         this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
       } else {
-        // this.setPortState(PortState.CLOSED);
         this.portState = PortState.CLOSED;
       }
+
       if (!silenceSnackbar) {
         this.snackbar.sendToSnackbar('Serial port closed.', 'success');
       }
-      this.reader = null;
-      this.closedPromise = null;
+
+      this.currentPortPath = null;
       const lastUsedSerialPort = this.profileManager.appData.currentAppConfig.lastUsedSerialPort;
       lastUsedSerialPort.portState = PortState.CLOSED;
       this.profileManager.saveAppData();
@@ -899,22 +738,8 @@ export class App {
    * Sends a break signal to the serial port for 200ms. Port must be open otherwise an error will be shown.
    */
   async sendBreakSignal() {
-    // TODO: Get types for setSignals() and remove ts-ignore
-    try {
-      // @ts-ignore
-      await this.port.setSignals({ break: true });
-      // 200ms seems like a standard break time
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      // @ts-ignore
-      await this.port.setSignals({ break: false });
-      // Emit message to user
-      this.snackbar.sendToSnackbar('Break signal sent.', 'success');
-    } catch (error) {
-      // As per https://wicg.github.io/serial/#dom-serialport-setsignals
-      // If the operating system fails to change the state of any of these signals for any reason, queue a
-      // global task on the relevant global object of this using the serial port task source to reject promise with a "NetworkError" DOMException.
-      this.snackbar.sendToSnackbar(`Error sending break signal. error: ${error}.`, 'error');
-    }
+    // TODO: Implement break signal support in the main process IPC handlers
+    this.snackbar.sendToSnackbar('Break signal not yet implemented in Electron version.', 'warning');
   }
 
   /**
@@ -926,12 +751,19 @@ export class App {
    * @param bytesToWrite
    */
   async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
-    const writer = this.port?.writable?.getWriter();
+    if (this.currentPortPath && (window as any).electronAPI) {
+      try {
+        // Make direct IPC call to write data
+        const result = await (window as any).electronAPI.serial.writeData(this.currentPortPath, Array.from(bytesToWrite));
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to write data');
+        }
+      } catch (error) {
+        this.snackbar.sendToSnackbar(`Error writing to serial port: ${error}`, 'error');
+        return;
+      }
+    }
 
-    await writer?.write(bytesToWrite);
-
-    // Allow the serial port to be closed later.
-    writer?.releaseLock();
     this.terminals.txTerminal.parseData(bytesToWrite, DataDirection.TX);
     // Check if local TX echo is enabled, and if so, send the data to
     // the combined single terminal.

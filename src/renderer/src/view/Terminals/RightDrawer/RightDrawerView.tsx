@@ -312,14 +312,16 @@ export default observer((props: Props) => {
               <Button
                 variant="outlined"
                 onClick={() => {
-                  app.scanForPorts();
+                  // Navigate to Port Settings where users can select a port
+                  app.setShownMainPane(MainPanes.SETTINGS);
+                  app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
                 }}
                 // Only let user select a new port if current one is closed
                 disabled={app.portState !== PortState.CLOSED}
                 data-testid="request-port-access"
                 sx={{ width: '150px' }}
               >
-                Select Port
+                Port Settings
               </Button>
               {/* =============================================================== */}
               {/* OPEN/CLOSE BUTTON */}

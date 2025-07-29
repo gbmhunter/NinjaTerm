@@ -9,7 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openPort: (portPath: string, options: any) => ipcRenderer.invoke('serial:open-port', portPath, options),
     closePort: (portPath: string) => ipcRenderer.invoke('serial:close-port', portPath),
     writeData: (portPath: string, data: number[]) => ipcRenderer.invoke('serial:write-data', portPath, data),
-    
+
     // Event listeners
     onDataReceived: (callback: (portPath: string, data: number[]) => void) => {
       ipcRenderer.on('serial:data-received', (event, portPath, data) => callback(portPath, data));
@@ -20,17 +20,25 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onPortClosed: (callback: (portPath: string) => void) => {
       ipcRenderer.on('serial:port-closed', (event, portPath) => callback(portPath));
     },
-    
+
     // Remove listeners
     removeAllListeners: (channel: string) => {
       ipcRenderer.removeAllListeners(channel);
-    }
+    },
+
+    // Close all ports
+    closeAllPortsAndRemoveListeners: () => {
+      ipcRenderer.removeAllListeners('serial:data-received');
+      ipcRenderer.removeAllListeners('serial:error');
+      ipcRenderer.removeAllListeners('serial:port-closed');
+      ipcRenderer.invoke('serial:close-all-ports');
+    },
   },
 
   // File system operations
   fs: {
     selectDirectory: () => ipcRenderer.invoke('fs:select-directory'),
-    writeFile: (filePath: string, data: number[], append?: boolean) => 
+    writeFile: (filePath: string, data: number[], append?: boolean) =>
       ipcRenderer.invoke('fs:write-file', filePath, data, append),
     getFileSize: (filePath: string) => ipcRenderer.invoke('fs:get-file-size', filePath),
     fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath)
