@@ -156,12 +156,24 @@ export class App {
     // all IPC event listeners.
     (window as any).electronAPI.serial.closeAllPortsAndRemoveListeners();
 
+    // Set up cleanup on window unload
+    window.addEventListener('beforeunload', this.cleanup);
+
     makeAutoObservable(this); // Make sure this near the end
   }
 
   onLastAppliedProfileNameChanged = () => {
     // Set the title of the app to the last applied profile name
     document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
+  };
+
+  /**
+   * Cleanup method called when the app is shutting down.
+   * Stops any active polling and cleans up resources.
+   */
+  cleanup = () => {
+    this.stopPollingForReconnection();
+    window.removeEventListener('beforeunload', this.cleanup);
   };
 
   /**
@@ -195,6 +207,10 @@ export class App {
 
   // Current port path for IPC communication
   private currentPortPath: string | null = null;
+
+  // Auto-reconnection polling
+  private reconnectionPollingInterval: NodeJS.Timeout | null = null;
+  private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 2 seconds
 
   /**
    * Opens the selected serial port using settings from the Port Configuration view.
@@ -262,6 +278,8 @@ export class App {
         });
 
         runInAction(() => {
+          // Stop any existing polling since we're now connected
+          this.stopPollingForReconnection();
           // Save port info for reconnection - selectedPort is already a PortInfo object
           this.serialPortInfo = selectedPort;
           this.portState = PortState.OPENED;
@@ -329,6 +347,8 @@ export class App {
     // If the port was closed unexpectedly, we might want to reopen it
     if (this.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
       this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+      // Start polling for the port to become available again
+      this.startPollingForReconnection();
     } else {
       this.setPortState(PortState.CLOSED);
     }
@@ -341,6 +361,70 @@ export class App {
 
   setPortState(newPortState: PortState) {
     this.portState = newPortState;
+  }
+
+  /**
+   * Starts polling for the previously used port to become available again.
+   * This is called when the port state is set to CLOSED_BUT_WILL_REOPEN.
+   */
+  private startPollingForReconnection() {
+    if (this.reconnectionPollingInterval) {
+      clearInterval(this.reconnectionPollingInterval);
+    }
+
+    console.log('Starting polling for port reconnection...');
+
+    this.reconnectionPollingInterval = setInterval(async () => {
+      try {
+        // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
+        if (this.portState !== PortState.CLOSED_BUT_WILL_REOPEN) {
+          this.stopPollingForReconnection();
+          return;
+        }
+
+        // Get the last used port path
+        const lastUsedPortPath = this.profileManager.appData.currentAppConfig.lastUsedSerialPort.path;
+        if (!lastUsedPortPath) {
+          console.log('No last used port path found, stopping polling');
+          this.stopPollingForReconnection();
+          return;
+        }
+
+        // Check if the port is available
+        const result = await window.electronAPI.serial.listPorts();
+        if (!result.success) {
+          console.error('Failed to list ports during reconnection polling:', result.error);
+          return;
+        }
+
+        const availablePorts = result.ports || [];
+        const matchingPort = availablePorts.find(port => port.path === lastUsedPortPath);
+
+        if (matchingPort) {
+          console.log('Found matching port for reconnection:', matchingPort.path);
+          this.stopPollingForReconnection();
+
+          // Set the selected port and attempt to reconnect
+          this.setSelectedPort(matchingPort);
+          await this.openPort({ silenceSnackbar: false });
+
+          this.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
+        }
+      } catch (error) {
+        console.error('Error during reconnection polling:', error);
+      }
+    }, this.RECONNECTION_POLLING_INTERVAL_MS);
+  }
+
+  /**
+   * Stops polling for port reconnection and clears the polling interval.
+   */
+  private stopPollingForReconnection() {
+    if (this.reconnectionPollingInterval) {
+      console.log('Stopping polling for port reconnection');
+      clearInterval(this.reconnectionPollingInterval);
+      this.reconnectionPollingInterval = null;
+    }
   }
 
   /**
@@ -382,7 +466,11 @@ export class App {
       runInAction(() => {
         if (goToReopenState) {
           this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
+          // Start polling for the port to become available again
+          this.startPollingForReconnection();
         } else {
+          // Stop polling if we're explicitly closing the port
+          this.stopPollingForReconnection();
           this.portState = PortState.CLOSED;
         }
       });
@@ -409,6 +497,7 @@ export class App {
   }
 
   stopWaitingToReopenPort() {
+    this.stopPollingForReconnection();
     this.portState = PortState.CLOSED;
   }
 
