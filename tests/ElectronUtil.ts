@@ -2,6 +2,9 @@ import { expect, Page, Locator, _electron as electron } from '@playwright/test';
 import { ElectronApplication } from 'playwright';
 import { ExpectedTerminalChar } from './Util';
 
+// Re-export ExpectedTerminalChar so it can be imported from ElectronUtil
+export { ExpectedTerminalChar };
+
 export class ElectronAppTestHarness {
   /**
    * This array is used to store the data that is written to the serial port from the app.
@@ -22,12 +25,38 @@ export class ElectronAppTestHarness {
    * Call this before any tests.
    */
   setupElectronApp = async () => {
-    // Launch Electron app
-    this.electronApp = await electron.launch({ 
+    // Launch Electron app with headless configuration
+    const launchOptions: any = {
       args: ['.'],
       // Enable debugging if needed
       // executablePath: require('electron'), // if you want to use a specific Electron version
-    });
+    };
+
+    // Add headless configuration following Playwright's recommended approach
+    // See: https://github.com/microsoft/playwright/issues/13288
+    if (process.env.CI || process.env.HEADLESS) {
+      // Core headless flags
+      launchOptions.args.push('--no-sandbox');
+      launchOptions.args.push('--disable-gpu');
+      launchOptions.args.push('--disable-dev-shm-usage');
+      launchOptions.args.push('--disable-extensions');
+      launchOptions.args.push('--disable-features=VizDisplayCompositor');
+      launchOptions.args.push('--disable-background-timer-throttling');
+      launchOptions.args.push('--disable-backgrounding-occluded-windows');
+      launchOptions.args.push('--disable-renderer-backgrounding');
+      launchOptions.args.push('--disable-web-security');
+      launchOptions.args.push('--no-first-run');
+      launchOptions.args.push('--disable-features=TranslateUI');
+      launchOptions.args.push('--disable-ipc-flooding-protection');
+      
+      // Set headless environment
+      launchOptions.env = {
+        ...process.env,
+        DISPLAY: process.env.DISPLAY || ':99', // For Xvfb
+      };
+    }
+
+    this.electronApp = await electron.launch(launchOptions);
     
     // Get the first window that the app opens
     this.page = await this.electronApp.firstWindow();
@@ -142,13 +171,24 @@ export class ElectronAppTestHarness {
    * Helper method to dismiss tooltips and click an element
    */
   private dismissTooltipsAndClick = async (selector: string) => {
-    // Press Escape to dismiss any tooltips
+    // Press Escape multiple times to dismiss any tooltips
     await this.page.keyboard.press('Escape');
     await this.page.waitForTimeout(100);
+    await this.page.keyboard.press('Escape');
+    await this.page.waitForTimeout(200);
     
-    // Wait for element and click
+    // Wait for element and click with force if needed
     await this.page.waitForSelector(selector, { timeout: 5000 });
-    await this.page.click(selector);
+    
+    // Try clicking with force to bypass tooltip interference
+    try {
+      await this.page.click(selector, { force: true });
+    } catch (error) {
+      // If force click fails, try again after more escape presses
+      await this.page.keyboard.press('Escape');
+      await this.page.waitForTimeout(300);
+      await this.page.click(selector, { force: true });
+    }
   };
 
   /**
@@ -269,7 +309,8 @@ export class ElectronAppTestHarness {
   };
 
   enableGraphing = async () => {
-    await this.page.getByTestId('show-graphing-pane-button').click();
+    await this.dismissTooltipsAndClick('[data-testid="show-graphing-pane-button"]');
+    await this.page.waitForTimeout(300);
     await this.page.getByLabel('Enable Graphing').click();
   };
 

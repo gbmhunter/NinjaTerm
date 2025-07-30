@@ -16,10 +16,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Reduce workers to minimize Electron windows - 1 for CI/headless, 2 for local development */
+  workers: process.env.CI ? 1 : (process.env.HEADLESS ? 1 : 2),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
   
   /* Configure projects for Electron */
   projects: [
@@ -28,9 +28,9 @@ export default defineConfig({
       testMatch: /.*\.electron\.spec\.ts/,
       use: {
         // Electron-specific settings
-        trace: 'on-first-retry',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
+        trace: process.env.CI || process.env.HEADLESS ? 'off' : 'on-first-retry',
+        screenshot: process.env.CI || process.env.HEADLESS ? 'off' : 'only-on-failure',
+        video: process.env.CI || process.env.HEADLESS ? 'off' : 'retain-on-failure',
       },
     },
   ],

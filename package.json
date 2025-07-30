@@ -66,7 +66,9 @@
     "dev:web": "cd web-homepage && npm run dev",
     "test": "tsc && vitest run && playwright test",
     "test:web": "tsc && vitest run && playwright test",
-    "test:electron": "tsc && vitest run && playwright test --config=playwright-electron.config.ts",
+    "test:electron": "playwright test",
+    "test:electron:headless": "cross-env HEADLESS=1 playwright test",
+    "test:electron:ci": "cross-env CI=1 HEADLESS=1 playwright test",
     "test:all": "npm run test:web && npm run test:electron"
   },
   "eslintConfig": {
@@ -93,6 +95,7 @@
     "@types/react-resizable": "^3.0.7",
     "@types/react-window": "^1.8.8",
     "@types/wicg-file-system-access": "^2023.10.5",
+    "cross-env": "^10.0.0",
     "electron": "^37.2.4",
     "electron-vite": "^3.1.0",
     "jest-canvas-mock": "^2.5.2",
