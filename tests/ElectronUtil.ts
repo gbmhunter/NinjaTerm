@@ -1,3 +1,4 @@
+// See https://www.electronjs.org/docs/latest/tutorial/automated-testing#using-playwright
 import { expect, Page, Locator, _electron as electron } from '@playwright/test';
 import { ElectronApplication } from 'playwright';
 import { ExpectedTerminalChar } from './Util';
@@ -14,6 +15,8 @@ export class ElectronAppTestHarness {
   writtenData: number[] = [];
 
   electronApp: ElectronApplication;
+
+  /** The main page of the Electron app. Saved in setupElectronApp(). */
   page: Page;
 
   constructor() {
@@ -36,19 +39,19 @@ export class ElectronAppTestHarness {
     // See: https://github.com/microsoft/playwright/issues/13288
     if (process.env.CI || process.env.HEADLESS) {
       // Core headless flags
-      launchOptions.args.push('--no-sandbox');
-      launchOptions.args.push('--disable-gpu');
-      launchOptions.args.push('--disable-dev-shm-usage');
-      launchOptions.args.push('--disable-extensions');
-      launchOptions.args.push('--disable-features=VizDisplayCompositor');
-      launchOptions.args.push('--disable-background-timer-throttling');
-      launchOptions.args.push('--disable-backgrounding-occluded-windows');
-      launchOptions.args.push('--disable-renderer-backgrounding');
-      launchOptions.args.push('--disable-web-security');
-      launchOptions.args.push('--no-first-run');
-      launchOptions.args.push('--disable-features=TranslateUI');
-      launchOptions.args.push('--disable-ipc-flooding-protection');
-      
+      // launchOptions.args.push('--no-sandbox');
+      // launchOptions.args.push('--disable-gpu');
+      // launchOptions.args.push('--disable-dev-shm-usage');
+      // launchOptions.args.push('--disable-extensions');
+      // launchOptions.args.push('--disable-features=VizDisplayCompositor');
+      // launchOptions.args.push('--disable-background-timer-throttling');
+      // launchOptions.args.push('--disable-backgrounding-occluded-windows');
+      // launchOptions.args.push('--disable-renderer-backgrounding');
+      // launchOptions.args.push('--disable-web-security');
+      // launchOptions.args.push('--no-first-run');
+      // launchOptions.args.push('--disable-features=TranslateUI');
+      // launchOptions.args.push('--disable-ipc-flooding-protection');
+
       // Set headless environment
       launchOptions.env = {
         ...process.env,
@@ -57,15 +60,15 @@ export class ElectronAppTestHarness {
     }
 
     this.electronApp = await electron.launch(launchOptions);
-    
-    // Get the first window that the app opens
+
+    // Get the first window that the app opens. This is the main window.
     this.page = await this.electronApp.firstWindow();
-    
+
+    // Capture internal Electron console logs and route to Playwright console with [ELECTRON] prefix
+    this.page.on('console', (msg) => console.log(`[ELECTRON]: ${msg.text()}`));
+
     // Wait for the app to be ready
     await this.page.waitForLoadState('domcontentloaded');
-
-    // Set up console logging
-    this.page.on('console', (msg) => console.log(`[ELECTRON]: ${msg.text()}`));
 
     // Set up data capture for serial port writes
     await this.setupDataCapture();
@@ -94,17 +97,17 @@ export class ElectronAppTestHarness {
     await this.page.addInitScript(() => {
       // Store the original electronAPI functions
       const originalElectronAPI = (window as any).electronAPI;
-      
+
       if (originalElectronAPI && originalElectronAPI.serial) {
         const originalWriteData = originalElectronAPI.serial.writeData;
-        
+
         // Override writeData to capture the data being written
         originalElectronAPI.serial.writeData = async (portPath: string, data: number[]) => {
           // Capture the data for testing
           for (const byte of data) {
             (window as any).captureWrittenData(byte);
           }
-          
+
           // Call the original function (though it might fail since no real port is connected)
           try {
             return await originalWriteData(portPath, data);
@@ -143,15 +146,15 @@ export class ElectronAppTestHarness {
           productId: '5678',
           friendlyName: 'Test Port'
         };
-        
+
         // Set up the port configuration
         app.settings.portConfiguration.availableSerialPorts = [fakePort];
         app.settings.portConfiguration.setSelectedSerialPort(fakePort);
-        
+
         // Set the port state to opened directly to avoid actual serial communication
         app.portState = 1; // PortState.OPENED
         app.currentPortPath = fakePort.path;
-        
+
         // Set up the serial port info for reconnection
         app.serialPortInfo = fakePort;
       }
@@ -162,7 +165,7 @@ export class ElectronAppTestHarness {
 
     // Ensure we're on the terminal view
     await this.dismissTooltipsAndClick('[data-testid="show-terminal-button"]');
-    
+
     // Wait for terminal to be ready
     await this.page.waitForSelector('[data-testid="tx-rx-terminal-view"]', { timeout: 5000 });
   };
@@ -176,10 +179,10 @@ export class ElectronAppTestHarness {
     await this.page.waitForTimeout(100);
     await this.page.keyboard.press('Escape');
     await this.page.waitForTimeout(200);
-    
+
     // Wait for element and click with force if needed
     await this.page.waitForSelector(selector, { timeout: 5000 });
-    
+
     // Try clicking with force to bypass tooltip interference
     try {
       await this.page.click(selector, { force: true });
@@ -317,14 +320,14 @@ export class ElectronAppTestHarness {
   changeTerminalWidth = async (newWidth: number) => {
     await this.goToDisplaySettings();
     await this.page.waitForTimeout(500); // Wait for settings dialog to fully open
-    
+
     // Clear and fill the terminal width field
     const widthField = this.page.locator("[name='terminalWidthChars']");
     await widthField.clear();
     await widthField.fill(String(newWidth));
     await this.page.keyboard.press('Enter');
     await this.page.waitForTimeout(300); // Wait for setting to apply
-    
+
     // Go back to terminal view
     await this.dismissTooltipsAndClick('[data-testid="show-terminal-button"]');
   };

@@ -16,11 +16,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Reduce workers to minimize Electron windows - 1 for CI/headless, 2 for local development */
-  workers: process.env.CI ? 1 : (process.env.HEADLESS ? 1 : 2),
+  // Workers sets how many tests run in parallel.
+  workers: process.env.CI ? 8 : (process.env.HEADLESS ? 8 : 8),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'html',
-  
+
   /* Configure projects for Electron */
   projects: [
     {
@@ -36,5 +36,5 @@ export default defineConfig({
   ],
 
   /* Build the app before running tests */
-  globalSetup: './tests/electron-setup.ts',
+  // globalSetup: './tests/electron-setup.ts',
 });
