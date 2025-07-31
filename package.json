@@ -134,7 +134,8 @@
     "files": [
       "out/**/*",
       "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "img/logo/v3/logo512.png"
     ],
     "extraMetadata": {
       "main": "out/main/index.js"
@@ -146,7 +147,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "public/logo512.png",
+      "icon": "img/logo/v3/logo512.png",
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     },
     "nsis": {
@@ -163,7 +164,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "public/logo512.png",
+      "icon": "img/logo/v3/logo512.png",
       "category": "public.app-category.developer-tools",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
@@ -193,7 +194,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "public/logo512.png",
+      "icon": "img/logo/v3/logo512.png",
       "category": "Development",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
