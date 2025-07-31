@@ -3,6 +3,9 @@ import { expect, Page, Locator, _electron as electron } from '@playwright/test';
 import { ElectronApplication } from 'playwright';
 import * as os from 'os';
 import * as path from 'path';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 // Re-export ExpectedTerminalChar so it can be imported from ElectronUtil
 export class ExpectedTerminalChar {
@@ -55,8 +58,7 @@ export class ElectronAppTestHarness {
 
     // In CI environment on Linux, wait a bit for Xvfb to be ready
     if ((process.env.CI || process.env.HEADLESS) && process.platform === 'linux') {
-      console.log('[DEBUG] Waiting for X server to be ready...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     // Launch Electron app with headless configuration and isolated user data
@@ -68,8 +70,6 @@ export class ElectronAppTestHarness {
     // Add headless configuration following Playwright's recommended approach
     // See: https://github.com/microsoft/playwright/issues/13288
     if (process.env.CI || process.env.HEADLESS) {
-      console.log('[DEBUG] Running in CI/headless mode');
-      
       // Core headless flags for CI/headless environment
       launchOptions.args.push('--no-sandbox');
       launchOptions.args.push('--disable-gpu');
@@ -104,12 +104,8 @@ export class ElectronAppTestHarness {
       };
     }
 
-    console.log('[DEBUG] Launch options:', JSON.stringify(launchOptions, null, 2));
-
     try {
-      console.log('[DEBUG] Attempting to launch Electron app...');
       this.electronApp = await electron.launch(launchOptions);
-      console.log('[DEBUG] Electron app launched successfully');
     } catch (error) {
       console.error('[ERROR] Failed to launch Electron app:', error);
       throw new Error(`Failed to launch Electron app: ${error.message}`);
@@ -120,9 +116,7 @@ export class ElectronAppTestHarness {
 
     // Get the first window that the app opens. This is the main window.
     try {
-      console.log('[DEBUG] Waiting for first window...');
       this.page = await this.electronApp.firstWindow();
-      console.log('[DEBUG] First window acquired successfully');
     } catch (error) {
       console.error('[ERROR] Failed to get first window:', error);
       throw new Error(`Failed to get first window: ${error.message}`);
