@@ -1,4 +1,4 @@
-name: Tests
+name: Build and Test
 
 on:
   push:
@@ -8,7 +8,11 @@ on:
 
 jobs:
   test-electron:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
     - name: Checkout code
@@ -26,16 +30,19 @@ jobs:
     - name: Run unit tests
       run: npm run test:unit
 
-    - name: Install Xvfb
+    - name: Install Xvfb (Ubuntu only)
+      if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y xvfb
 
     - name: Build Electron app
       run: npm run build
 
-    - name: Install Playwright browsers
+    - name: Install Playwright browsers (Ubuntu only)
+      if: matrix.os == 'ubuntu-latest'
       run: npx playwright install --with-deps
 
     - name: Run Electron tests (headless)
+      if: matrix.os == 'ubuntu-latest'
       run: |
         export DISPLAY=:99
         # Start Xvfb in the background and wait for it to be ready
@@ -43,7 +50,14 @@ jobs:
         sleep 3
         npm run test:electron:ci
 
-    - name: Upload test results
+    - name: Test Electron app build (no packaging)
+      run: npx electron-builder --dir
+      env:
+        # Skip notarization and signing in PR builds
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+
+    - name: Upload test results (Ubuntu only)
+      if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       if: failure()
       with:
