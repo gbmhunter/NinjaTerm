@@ -1,8 +1,7 @@
 /* eslint-disable testing-library/prefer-screen-queries */
 import { test } from '@playwright/test';
 
-import { ExpectedTerminalChar } from './Util';
-import { ElectronAppTestHarness } from './ElectronUtil';
+import { ElectronAppTestHarness, ExpectedTerminalChar } from './ElectronUtil';
 
 let appTestHarness: ElectronAppTestHarness;
 

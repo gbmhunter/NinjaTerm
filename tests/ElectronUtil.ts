@@ -1,12 +1,31 @@
 // See https://www.electronjs.org/docs/latest/tutorial/automated-testing#using-playwright
 import { expect, Page, Locator, _electron as electron } from '@playwright/test';
 import { ElectronApplication } from 'playwright';
-import { ExpectedTerminalChar } from './Util';
 import * as os from 'os';
 import * as path from 'path';
 
 // Re-export ExpectedTerminalChar so it can be imported from ElectronUtil
-export { ExpectedTerminalChar };
+export class ExpectedTerminalChar {
+  char: string;
+
+  style: { [key: string]: string } | null;
+
+  classNames: string | null;
+
+  constructor({
+    char,
+    style = null,
+    classNames = null,
+  }: {
+    char: string;
+    style?: { [key: string]: string } | null;
+    classNames?: string | null;
+  }) {
+    this.char = char;
+    this.style = style;
+    this.classNames = classNames;
+  }
+}
 
 export class ElectronAppTestHarness {
   /**

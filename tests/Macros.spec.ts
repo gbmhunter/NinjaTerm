@@ -2,7 +2,6 @@
 import { test, expect } from '@playwright/test';
 
 import { ElectronAppTestHarness } from './ElectronUtil';
-import { AppTestHarness } from './Util';
 
 let appTestHarness: ElectronAppTestHarness;
 
