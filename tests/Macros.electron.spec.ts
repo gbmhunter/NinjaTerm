@@ -2,6 +2,7 @@
 import { test, expect } from '@playwright/test';
 
 import { ElectronAppTestHarness } from './ElectronUtil';
+import { AppTestHarness } from './Util';
 
 let appTestHarness: ElectronAppTestHarness;
 
@@ -14,147 +15,92 @@ test.afterEach(async () => {
   await appTestHarness.closeElectronApp();
 });
 
-test.describe('Macros (Electron)', () => {
-
-  test('should be able to create and send a macro', async () => {
+test.describe('macros', () => {
+  test('default macros are present', async () => {
     await appTestHarness.openPortAndGoToTerminalView();
-    
-    // Open the right drawer (where macros are)
-    await appTestHarness.page.getByTestId('right-drawer-button').click();
-    
-    // Wait for drawer to open
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Look for "Add Macro" button or similar
-    const addMacroButton = appTestHarness.page.getByText('Add Macro').first();
-    if (await addMacroButton.isVisible()) {
-      await addMacroButton.click();
-    } else {
-      // Try clicking on an empty macro slot
-      await appTestHarness.page.locator('[data-testid="macro-row"]').first().click();
-    }
-    
-    // Wait for macro dialog to open
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Fill in macro details
-    await appTestHarness.page.locator('input[placeholder*="name"], input[label*="Name"]').first().fill('Test Macro');
-    await appTestHarness.page.locator('textarea, input[type="text"]').last().fill('Hello from macro\\n');
-    
-    // Save the macro
-    await appTestHarness.page.getByText('Save', { exact: true }).click();
-    
-    // Wait for dialog to close
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Clear written data to test macro transmission
-    appTestHarness.writtenData = [];
-    
-    // Click the macro to send it
-    await appTestHarness.page.getByText('Test Macro').click();
-    
-    // Wait for transmission
-    await appTestHarness.page.waitForTimeout(200);
-    
-    // Check that the macro data was transmitted
-    // "Hello from macro\n" should be transmitted
-    const expectedText = 'Hello from macro\n';
-    const expectedBytes = Array.from(expectedText).map(char => char.charCodeAt(0));
-    
-    expect(appTestHarness.writtenData).toEqual(expectedBytes);
+
+    await expect(await appTestHarness.page.getByTestId('macro-data-0')).toHaveValue('Hello\\n');
+    // Click on macro's "more settings"
+    await appTestHarness.page.getByTestId('macro-more-settings-0').click();
+
+    // Make sure the ASCII radio button is selected
+    await expect(await appTestHarness.page.getByTestId('macro-data-type-ascii-rb')).toBeChecked();
+
+    // Close the modal
+    await appTestHarness.page.getByTestId('macro-settings-modal-close-button').click();
+
+    // Make sure MACRO 1 is set to HEX and has the value "deadbeef"
+    await expect(await appTestHarness.page.getByTestId('macro-data-1')).toHaveValue('deadbeef');
+    await appTestHarness.page.getByTestId('macro-more-settings-1').click();
+    await expect(await appTestHarness.page.getByTestId('macro-data-type-hex-rb')).toBeChecked();
+    await appTestHarness.page.getByTestId('macro-settings-modal-close-button').click();
+
+    // Now change the value of MACRO 0
+    await appTestHarness.page.getByTestId('macro-data-0').fill('new value');
+
+    // Refresh the page
+    await appTestHarness.page.reload();
+
+    // Make sure the value of MACRO 0 is still "new value"
+    await expect(await appTestHarness.page.getByTestId('macro-data-0')).toHaveValue('new value');
   });
 
-  test('should be able to edit an existing macro', async () => {
+  test('macros are remembered across refresh', async () => {
     await appTestHarness.openPortAndGoToTerminalView();
-    
-    // Open the right drawer
-    await appTestHarness.page.getByTestId('right-drawer-button').click();
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // First, create a macro if one doesn't exist
-    const existingMacro = appTestHarness.page.getByText('Test Macro');
-    if (!(await existingMacro.isVisible())) {
-      // Create a new macro first
-      const addMacroButton = appTestHarness.page.getByText('Add Macro').first();
-      if (await addMacroButton.isVisible()) {
-        await addMacroButton.click();
-      } else {
-        await appTestHarness.page.locator('[data-testid="macro-row"]').first().click();
-      }
-      
-      await appTestHarness.page.waitForTimeout(500);
-      await appTestHarness.page.locator('input[placeholder*="name"], input[label*="Name"]').first().fill('Edit Test');
-      await appTestHarness.page.locator('textarea, input[type="text"]').last().fill('Original text');
-      await appTestHarness.page.getByText('Save', { exact: true }).click();
-      await appTestHarness.page.waitForTimeout(500);
-    }
-    
-    // Right-click or double-click to edit the macro
-    const macroElement = appTestHarness.page.getByText('Edit Test').or(appTestHarness.page.getByText('Test Macro')).first();
-    await macroElement.dblclick();
-    
-    // Wait for edit dialog
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Modify the macro data
-    const dataField = appTestHarness.page.locator('textarea, input[type="text"]').last();
-    await dataField.clear();
-    await dataField.fill('Modified text\\n');
-    
-    // Save changes
-    await appTestHarness.page.getByText('Save', { exact: true }).click();
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Test the modified macro
-    appTestHarness.writtenData = [];
-    await macroElement.click();
-    await appTestHarness.page.waitForTimeout(200);
-    
-    // Check that the modified data was transmitted
-    const expectedText = 'Modified text\n';
-    const expectedBytes = Array.from(expectedText).map(char => char.charCodeAt(0));
-    
-    expect(appTestHarness.writtenData).toEqual(expectedBytes);
+
+    // Change the value of MACRO 0
+    await appTestHarness.page.getByTestId('macro-data-0').fill('new value');
+
+    // Refresh the page
+    await appTestHarness.page.reload();
+
+    // Make sure the value of MACRO 0 is still "new value"
+    await expect(await appTestHarness.page.getByTestId('macro-data-0')).toHaveValue('new value');
   });
 
-  test('should handle macro with escape sequences', async () => {
+  test('macro sends out correct ASCII data', async () => {
     await appTestHarness.openPortAndGoToTerminalView();
-    
-    // Open the right drawer
-    await appTestHarness.page.getByTestId('right-drawer-button').click();
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Create a macro with escape sequences
-    const addMacroButton = appTestHarness.page.getByText('Add Macro').first();
-    if (await addMacroButton.isVisible()) {
-      await addMacroButton.click();
-    } else {
-      await appTestHarness.page.locator('[data-testid="macro-row"]').first().click();
-    }
-    
-    await appTestHarness.page.waitForTimeout(500);
-    await appTestHarness.page.locator('input[placeholder*="name"], input[label*="Name"]').first().fill('ESC Macro');
-    
-    // Use escape sequences that should be interpreted
-    await appTestHarness.page.locator('textarea, input[type="text"]').last().fill('\\x1B[31mRed Text\\x1B[0m');
-    
-    await appTestHarness.page.getByText('Save', { exact: true }).click();
-    await appTestHarness.page.waitForTimeout(500);
-    
-    // Send the macro
-    appTestHarness.writtenData = [];
-    await appTestHarness.page.getByText('ESC Macro').click();
-    await appTestHarness.page.waitForTimeout(200);
-    
-    // Check that escape sequences were properly converted
-    // \\x1B should become 0x1B (ESC character)
-    const expectedBytes = [
-      0x1B, 0x5B, 0x33, 0x31, 0x6D, // \x1B[31m (red)
-      0x52, 0x65, 0x64, 0x20, 0x54, 0x65, 0x78, 0x74, // "Red Text"
-      0x1B, 0x5B, 0x30, 0x6D // \x1B[0m (reset)
-    ];
-    
-    expect(appTestHarness.writtenData).toEqual(expectedBytes);
+
+    await appTestHarness.page.getByTestId('macro-data-0').fill('abc123');
+    // Hit the send button
+    await appTestHarness.page.getByTestId('macro-0-send-button').click();
+
+    const utf8EncodeText = new TextEncoder();
+    const expectedText = utf8EncodeText.encode('abc123');
+    await appTestHarness.updateWrittenDataFromMainProcess();
+    expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
   });
 
+  test('turning off "process escape chars" works', async () => {
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    await appTestHarness.page.getByTestId('macro-more-settings-0').click();
+    // Uncheck the process escape chars checkbox
+    await appTestHarness.page.getByTestId('macro-process-escape-chars-cb').uncheck();
+    await appTestHarness.page.getByTestId('macro-settings-modal-close-button').click();
+
+    await appTestHarness.page.getByTestId('macro-data-0').fill('abc123\\n');
+    await appTestHarness.page.getByTestId('macro-0-send-button').click();
+
+    const utf8EncodeText = new TextEncoder();
+    // The \n should not be processed into LF, should still be separate \ and n chars
+    const expectedText = utf8EncodeText.encode('abc123\\n');
+    await appTestHarness.updateWrittenDataFromMainProcess();
+    expect(appTestHarness.writtenData).toEqual(Array.from(expectedText));
+  });
+
+  test('macro sends out correct hex data', async () => {
+    await appTestHarness.openPortAndGoToTerminalView();
+
+    // Change macro 0 to hex
+    await appTestHarness.page.getByTestId('macro-more-settings-0').click();
+    // Check the hex radio button
+    await appTestHarness.page.getByTestId('macro-data-type-hex-rb').click();
+    await appTestHarness.page.getByTestId('macro-settings-modal-close-button').click();
+    await appTestHarness.page.getByTestId('macro-data-0').fill('78abff');
+    await appTestHarness.page.getByTestId('macro-0-send-button').click();
+
+    await appTestHarness.updateWrittenDataFromMainProcess();
+    expect(appTestHarness.writtenData).toEqual(Array.from([0x78, 0xAB, 0xFF]));
+  });
 });
