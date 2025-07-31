@@ -143,11 +143,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "arm64"]
-        },
-        {
-          "target": "portable",
-          "arch": ["x64", "arm64"]
+          "arch": ["x64"]
         }
       ],
       "icon": "img/logo/v3/icon-256x256.png",
