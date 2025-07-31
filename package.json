@@ -1,7 +1,7 @@
 {
   "name": "ninjaterm",
   "productName": "NinjaTerm",
-  "version": "4.20.2",
+  "version": "5.0.0",
   "description": "A modern, powerful serial terminal for developers and engineers",
   "author": {
     "name": "NinjaTerm Team",
@@ -146,7 +146,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "img/logo/v3/icon-256x256.png",
+      "icon": "public/logo512.png",
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     },
     "nsis": {
@@ -163,7 +163,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "img/logo/v3/icon-256x256.png",
+      "icon": "public/logo512.png",
       "category": "public.app-category.developer-tools",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
@@ -193,7 +193,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "img/logo/v3/icon-256x256.png",
+      "icon": "public/logo512.png",
       "category": "Development",
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },

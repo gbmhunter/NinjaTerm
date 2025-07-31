@@ -5,7 +5,7 @@ import { defineConfig } from '@playwright/test';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './e2e-tests',
 
   // Default timeout is 30s, but this quite long...
   timeout: 60 * 1000, // Increased timeout for CI environment
