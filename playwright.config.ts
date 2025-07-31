@@ -25,7 +25,7 @@ export default defineConfig({
   projects: [
     {
       name: 'electron',
-      testMatch: /.*\.electron\.spec\.ts/,
+      testMatch: /.*\.spec\.ts/,
       use: {
         // Electron-specific settings
         trace: process.env.CI || process.env.HEADLESS ? 'off' : 'on-first-retry',
