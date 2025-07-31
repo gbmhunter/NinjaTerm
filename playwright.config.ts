@@ -8,7 +8,7 @@ export default defineConfig({
   testDir: './tests',
 
   // Default timeout is 30s, but this quite long...
-  timeout: 30 * 1000,
+  timeout: 60 * 1000, // Increased timeout for CI environment
 
   /* Run tests in files in parallel */
   fullyParallel: true,

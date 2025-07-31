@@ -53,44 +53,80 @@ export class ElectronAppTestHarness {
     // If we don't do this, user data (e.g. "local storage") will persist between tests
     const tempUserDataDir = path.join(os.tmpdir(), `ninjaterm-test-${Date.now()}-${Math.random().toString(36).substring(7)}`);
 
+    // In CI environment on Linux, wait a bit for Xvfb to be ready
+    if ((process.env.CI || process.env.HEADLESS) && process.platform === 'linux') {
+      console.log('[DEBUG] Waiting for X server to be ready...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
     // Launch Electron app with headless configuration and isolated user data
     const launchOptions: any = {
+      executablePath: require('electron'),
       args: ['.', `--user-data-dir=${tempUserDataDir}`],
-      // Enable debugging if needed
-      // executablePath: require('electron'), // if you want to use a specific Electron version
     };
 
     // Add headless configuration following Playwright's recommended approach
     // See: https://github.com/microsoft/playwright/issues/13288
     if (process.env.CI || process.env.HEADLESS) {
-      // Core headless flags
-      // launchOptions.args.push('--no-sandbox');
-      // launchOptions.args.push('--disable-gpu');
-      // launchOptions.args.push('--disable-dev-shm-usage');
-      // launchOptions.args.push('--disable-extensions');
-      // launchOptions.args.push('--disable-features=VizDisplayCompositor');
-      // launchOptions.args.push('--disable-background-timer-throttling');
-      // launchOptions.args.push('--disable-backgrounding-occluded-windows');
-      // launchOptions.args.push('--disable-renderer-backgrounding');
-      // launchOptions.args.push('--disable-web-security');
-      // launchOptions.args.push('--no-first-run');
-      // launchOptions.args.push('--disable-features=TranslateUI');
-      // launchOptions.args.push('--disable-ipc-flooding-protection');
+      console.log('[DEBUG] Running in CI/headless mode');
+      
+      // Core headless flags for CI/headless environment
+      launchOptions.args.push('--no-sandbox');
+      launchOptions.args.push('--disable-gpu');
+      launchOptions.args.push('--disable-dev-shm-usage');
+      launchOptions.args.push('--disable-extensions');
+      launchOptions.args.push('--disable-features=VizDisplayCompositor');
+      launchOptions.args.push('--disable-background-timer-throttling');
+      launchOptions.args.push('--disable-backgrounding-occluded-windows');
+      launchOptions.args.push('--disable-renderer-backgrounding');
+      launchOptions.args.push('--disable-web-security');
+      launchOptions.args.push('--no-first-run');
+      launchOptions.args.push('--disable-features=TranslateUI');
+      launchOptions.args.push('--disable-ipc-flooding-protection');
+      
+      // Platform-specific headless flags
+      if (process.platform === 'win32') {
+        launchOptions.args.push('--disable-features=VizDisplayCompositor,VizServiceDisplay');
+        launchOptions.args.push('--use-gl=swiftshader');
+        launchOptions.args.push('--disable-software-rasterizer');
+      } else if (process.platform === 'linux') {
+        // Linux-specific flags for CI environment
+        launchOptions.args.push('--use-gl=swiftshader');
+        launchOptions.args.push('--disable-software-rasterizer');
+        launchOptions.args.push('--disable-gpu-sandbox');
+        launchOptions.args.push('--disable-features=VizDisplayCompositor,VizServiceDisplay');
+      }
 
       // Set headless environment
       launchOptions.env = {
         ...process.env,
-        DISPLAY: process.env.DISPLAY || ':99', // For Xvfb
+        DISPLAY: process.env.DISPLAY || ':99', // For Xvfb on Linux
       };
     }
 
-    this.electronApp = await electron.launch(launchOptions);
+    console.log('[DEBUG] Launch options:', JSON.stringify(launchOptions, null, 2));
+
+    try {
+      console.log('[DEBUG] Attempting to launch Electron app...');
+      this.electronApp = await electron.launch(launchOptions);
+      console.log('[DEBUG] Electron app launched successfully');
+    } catch (error) {
+      console.error('[ERROR] Failed to launch Electron app:', error);
+      throw new Error(`Failed to launch Electron app: ${error.message}`);
+    }
 
     // Mock IPC handlers at the main process level before the app starts
     await this.setupIPCMocking();
 
     // Get the first window that the app opens. This is the main window.
-    this.page = await this.electronApp.firstWindow();
+    try {
+      console.log('[DEBUG] Waiting for first window...');
+      this.page = await this.electronApp.firstWindow();
+      console.log('[DEBUG] First window acquired successfully');
+    } catch (error) {
+      console.error('[ERROR] Failed to get first window:', error);
+      throw new Error(`Failed to get first window: ${error.message}`);
+    }
 
     // Capture internal Electron console logs and route to Playwright console with [ELECTRON] prefix
     this.page.on('console', (msg) => console.log(`[ELECTRON]: ${msg.text()}`));
