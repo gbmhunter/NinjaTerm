@@ -65,6 +65,7 @@
     "start": "electron-vite dev",
     "dev:web": "cd web-homepage && npm run dev",
     "test": "tsc && vitest run && playwright test",
+    "test:unit": "vitest run",
     "test:web": "tsc && vitest run && playwright test",
     "test:electron": "playwright test",
     "test:electron:headless": "cross-env HEADLESS=1 playwright test",
