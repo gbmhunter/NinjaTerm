@@ -4,7 +4,7 @@ import { ElectronApplication, Page } from 'playwright';
 let electronApp: ElectronApplication;
 let window: Page;
 
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   // Launch Electron app
   electronApp = await electron.launch({ 
     args: ['.'] 
@@ -17,7 +17,7 @@ test.beforeAll(async () => {
   await window.waitForLoadState('domcontentloaded');
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
   await electronApp.close();
 });
 

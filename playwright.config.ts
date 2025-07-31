@@ -36,5 +36,5 @@ export default defineConfig({
   ],
 
   /* Build the app before running tests */
-  // globalSetup: './tests/electron-setup.ts',
+  globalSetup: './tests/electron-setup.ts',
 });

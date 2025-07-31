@@ -18,7 +18,9 @@
       "Bash(npx playwright test:*)",
       "Bash(npm test:*)",
       "Bash(chmod:*)",
-      "Bash(set HEADLESS=1)"
+      "Bash(set HEADLESS=1)",
+      "Bash(cross-env CI=1 npx playwright test tests/IpcMocking.electron.spec.ts)",
+      "Bash(CI=1 npx playwright test tests/IpcMocking.electron.spec.ts)"
     ],
     "deny": []
   }

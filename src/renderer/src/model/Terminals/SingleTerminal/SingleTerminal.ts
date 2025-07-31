@@ -270,7 +270,6 @@ export class SingleTerminal {
     if (this.displaySettings.terminalHeightMode === TerminalHeightMode.AUTO_HEIGHT) {
       const rowHeight_px = this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue;
       terminalHeight_chars = Math.floor(this.terminalViewHeightPx / rowHeight_px);
-      // console.log('terminalHeight_chars=', terminalHeight_chars);
     } else if (this.displaySettings.terminalHeightMode === TerminalHeightMode.FIXED_HEIGHT) {
       terminalHeight_chars = this.displaySettings.terminalHeightChars.appliedValue;
     } else {
@@ -294,7 +293,6 @@ export class SingleTerminal {
    * @param scrollProps The scroll props passed from the fixed sized list scroll event.
    */
   fixedSizedListOnScroll(scrollProps: ListOnScrollProps) {
-    // console.log('fixedSizedListOnScroll() called. scrollProps=', scrollProps);
     // Calculate the total height of all terminal rows
     const totalTerminalRowsHeightPx = this.terminalRows.length * (this.displaySettings.charSizePx.appliedValue + this.displaySettings.verticalRowPaddingPx.appliedValue);
 
@@ -307,13 +305,11 @@ export class SingleTerminal {
       this.scrollLock = true;
       // this.rowToScrollLockTo = this.terminalRows.length - 1;
       this.scrollPos = totalTerminalRowsHeightPx - this.terminalViewHeightPx;
-      // console.log('User reached end, locking scroll to this.scrollPos: ', this.scrollPos, 'scrollOffset: ', scrollProps.scrollOffset);
       return;
     }
 
     // User hasn't scrolled to bottom of terminal, so update scroll position
     this.scrollPos = scrollProps.scrollOffset;
-    // console.log('scrollPos set to:', this.scrollPos);
   }
 
   /**
@@ -322,7 +318,6 @@ export class SingleTerminal {
    * @param terminalViewHeightPx The height of the terminal view in pixels.
    */
   setTerminalViewHeightPx(terminalViewHeightPx: number) {
-    // console.log('setTerminalViewHeightPx() called. terminalViewHeightPx=', terminalViewHeightPx);
     this.terminalViewHeightPx = terminalViewHeightPx;
   }
 
@@ -355,9 +350,6 @@ export class SingleTerminal {
    */
   parseData(data: Uint8Array, direction: DataDirection) {
     // Parse each character
-    // console.log("parseData() called. data=", data);
-    // const dataAsStr = new TextDecoder().decode(data);
-
     // This variable can get modified during the loop, for example if a partial escape code
     // reaches it's length limit, the ESC char is stripped and the remainder of the partial is
     // prepending onto dataAsStr for further processing
@@ -487,7 +479,6 @@ export class SingleTerminal {
       }
 
       if (rxByte === 0x1b) {
-        // console.log('Start of escape sequence found!');
         this._resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
         this.inIdleState = false;
@@ -497,20 +488,14 @@ export class SingleTerminal {
       if (this.rxSettings.ansiEscapeCodeParsingEnabled && this.inAnsiEscapeCode) {
         // Add received char to partial escape code
         this.partialEscapeCode += String.fromCharCode(rxByte);
-        // console.log('partialEscapeCode=', this.partialEscapeCode);
         if (this.partialEscapeCode === '\x1B[') {
           this.inCSISequence = true;
         }
 
         if (this.inCSISequence) {
-          // console.log('In CSI sequence');
           // Wait for alphabetic character to end CSI sequence
           const charStr = String.fromCharCode(rxByte);
           if (charStr.toUpperCase() !== charStr.toLowerCase()) {
-            // console.log(
-            //   'Received terminating letter of CSI sequence! Escape code = ',
-            //   this.partialEscapeCode
-            // );
             this._parseCSISequence(this.partialEscapeCode);
             this._resetEscapeCodeParserState();
             this.inIdleState = true;
@@ -712,9 +697,7 @@ export class SingleTerminal {
           // Skip processing this number, but continue with the rest
           continue;
         }
-        // console.log('numberCode=', numberCode);
         if (numberCode === 0) {
-          // console.log('Clearing all SGR styles...');
           this.clearStyle();
         } else if (numberCode === 1) {
           // Got the "bold or increased intensity" code
@@ -768,7 +751,6 @@ export class SingleTerminal {
    * @param data The data to parse and display.
    */
   _parseDataAsNumber(data: Uint8Array, direction: DataDirection) {
-    // console.log("_parseDataAsNumber() called. data=", data, "length: ", data.length, "selectedNumberType=", this.rxSettings.numberType);
     for (let idx = 0; idx < data.length; idx += 1) {
       const rxByte = data[idx];
 
@@ -955,7 +937,6 @@ export class SingleTerminal {
       else {
         throw Error('Invalid number type: ' + this.rxSettings.numberType);
       }
-      // console.log('Converted numberStr=', numberStr);
 
       //========================================================================
       // ADD PADDING
@@ -1021,7 +1002,6 @@ export class SingleTerminal {
           numberStr = numberStr.padStart(numPaddingChars, paddingChar);
         }
       }
-      // console.log('After padding, numberStr=', numberStr);
 
       // Add 0x if hex and setting is enabled
       if (this.rxSettings.numberType === NumberType.HEX && this.rxSettings.prefixHexValuesWith0x) {
@@ -1293,8 +1273,6 @@ export class SingleTerminal {
    *   depending on the data processing settings.
    */
   _maybeAddVisibleByteAndTimestamp(rxByte: number, direction: DataDirection) {
-    // console.log('addVisibleChar() called. rxByte=', rxByte);
-
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
     let char = '';
@@ -1647,7 +1625,6 @@ export class SingleTerminal {
       // uniqueRowId. Begin search from the end of the array, as this is where
       // we'll be normally be doing these sorts of operations (e.g. it will be more
       // efficient most of the time)
-      // console.log('Row is not in filtered rows, need to insert it at the correct location');
       for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
         if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
           // Insert after this index

@@ -5,12 +5,12 @@ import { ExpectedTerminalChar, ElectronAppTestHarness } from './ElectronUtil';
 
 let appTestHarness: ElectronAppTestHarness;
 
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   appTestHarness = new ElectronAppTestHarness();
   await appTestHarness.setupElectronApp();
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
   await appTestHarness.closeElectronApp();
 });
 

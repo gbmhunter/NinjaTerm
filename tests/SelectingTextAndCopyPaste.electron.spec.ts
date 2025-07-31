@@ -55,12 +55,12 @@ async function getNormalizedClipboardText(page: Page) {
 
 let appTestHarness: ElectronAppTestHarness;
 
-test.beforeAll(async () => {
+test.beforeEach(async () => {
   appTestHarness = new ElectronAppTestHarness();
   await appTestHarness.setupElectronApp();
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
   await appTestHarness.closeElectronApp();
 });
 
@@ -276,6 +276,9 @@ test.describe('Selecting Text (Electron)', () => {
       navigator.clipboard.writeText(textToWrite);
     }, textToWrite);
 
+    // Clear any previous data
+    appTestHarness.writtenData = [];
+
     // Make sure the TXRX terminal is in focus
     await appTestHarness.page.click('#tx-rx-terminal');
 
@@ -287,6 +290,8 @@ test.describe('Selecting Text (Electron)', () => {
 
     // Need to poll this, as the data is written to the port asynchronously
     await expect(async () => {
+      // Retrieve captured data from the main process
+      await appTestHarness.updateWrittenDataFromMainProcess();
       expect(appTestHarness.writtenData).toEqual(expectedData);
     }).toPass();
   });
@@ -304,6 +309,9 @@ test.describe('Selecting Text (Electron)', () => {
       navigator.clipboard.writeText(textToWrite);
     }, textToWrite);
 
+    // Clear any previous data
+    appTestHarness.writtenData = [];
+
     // Make sure the TXRX terminal is in focus
     await appTestHarness.page.click('#tx-rx-terminal');
 
@@ -315,6 +323,8 @@ test.describe('Selecting Text (Electron)', () => {
 
     // Need to poll this, as the data is written to the port asynchronously
     await expect(async () => {
+      // Retrieve captured data from the main process
+      await appTestHarness.updateWrittenDataFromMainProcess();
       expect(appTestHarness.writtenData).toEqual(expectedData);
     }).toPass();
   });

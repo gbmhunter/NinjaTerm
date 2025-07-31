@@ -2,6 +2,8 @@
 import { expect, Page, Locator, _electron as electron } from '@playwright/test';
 import { ElectronApplication } from 'playwright';
 import { ExpectedTerminalChar } from './Util';
+import * as os from 'os';
+import * as path from 'path';
 
 // Re-export ExpectedTerminalChar so it can be imported from ElectronUtil
 export { ExpectedTerminalChar };
@@ -28,9 +30,13 @@ export class ElectronAppTestHarness {
    * Call this before any tests.
    */
   setupElectronApp = async () => {
-    // Launch Electron app with headless configuration
+    // Create a unique temporary user data directory for complete test isolation
+    // If we don't do this, user data (e.g. "local storage") will persist between tests
+    const tempUserDataDir = path.join(os.tmpdir(), `ninjaterm-test-${Date.now()}-${Math.random().toString(36).substring(7)}`);
+
+    // Launch Electron app with headless configuration and isolated user data
     const launchOptions: any = {
-      args: ['.'],
+      args: ['.', `--user-data-dir=${tempUserDataDir}`],
       // Enable debugging if needed
       // executablePath: require('electron'), // if you want to use a specific Electron version
     };
@@ -61,6 +67,9 @@ export class ElectronAppTestHarness {
 
     this.electronApp = await electron.launch(launchOptions);
 
+    // Mock IPC handlers at the main process level before the app starts
+    await this.setupIPCMocking();
+
     // Get the first window that the app opens. This is the main window.
     this.page = await this.electronApp.firstWindow();
 
@@ -85,39 +94,88 @@ export class ElectronAppTestHarness {
   };
 
   /**
-   * Sets up data capture to track what data is written to serial ports.
+   * Sets up IPC mocking at the main process level.
+   */
+  private setupIPCMocking = async () => {
+    // Mock IPC handlers in the main process
+    await this.electronApp.evaluate(async ({ ipcMain }) => {
+      // Remove existing handlers first
+      ipcMain.removeHandler('serial:list-ports');
+      ipcMain.removeHandler('serial:open-port');
+      ipcMain.removeHandler('serial:close-port');
+      ipcMain.removeHandler('serial:write-data');
+
+      // Set up mock handlers
+      ipcMain.handle('serial:list-ports', async () => {
+        console.log('[MOCK] Main process: serial:list-ports');
+        return {
+          success: true,
+          ports: [
+            {
+              path: '/dev/ttyTEST',
+              manufacturer: 'Test Manufacturer',
+              serialNumber: 'TEST123',
+              vendorId: '1234',
+              productId: '5678',
+              friendlyName: 'Test Port'
+            }
+          ]
+        };
+      });
+
+      ipcMain.handle('serial:open-port', async (event, portPath, options) => {
+        console.log(`[MOCK] Main process: serial:open-port ${portPath}`);
+        return { success: true };
+      });
+
+      ipcMain.handle('serial:close-port', async (event, portPath) => {
+        console.log(`[MOCK] Main process: serial:close-port ${portPath}`);
+        return { success: true };
+      });
+
+      ipcMain.handle('serial:write-data', async (event, portPath, data) => {
+        console.log(`[MOCK] Main process: serial:write-data ${portPath}, ${data.length} bytes`);
+
+        // Store the data globally for the test to retrieve
+        if (!global._testWrittenData) {
+          global._testWrittenData = [];
+        }
+        global._testWrittenData.push(...data);
+
+        return { success: true };
+      });
+
+      console.log('[MOCK] IPC handlers mocked successfully');
+    });
+  };
+
+  /**
+   * Sets up data capture for testing.
    */
   private setupDataCapture = async () => {
-    // Expose a function to capture written data
-    await this.page.exposeFunction('captureWrittenData', (data: number) => {
-      this.writtenData.push(data);
-    });
-
-    // Override the serial write functionality to capture data
+    // Store mock callbacks for event simulation
     await this.page.addInitScript(() => {
-      // Store the original electronAPI functions
-      const originalElectronAPI = (window as any).electronAPI;
-
-      if (originalElectronAPI && originalElectronAPI.serial) {
-        const originalWriteData = originalElectronAPI.serial.writeData;
-
-        // Override writeData to capture the data being written
-        originalElectronAPI.serial.writeData = async (portPath: string, data: number[]) => {
-          // Capture the data for testing
-          for (const byte of data) {
-            (window as any).captureWrittenData(byte);
-          }
-
-          // Call the original function (though it might fail since no real port is connected)
-          try {
-            return await originalWriteData(portPath, data);
-          } catch (error) {
-            // Return success for testing purposes
-            return { success: true };
-          }
-        };
-      }
+      const mockCallbacks: { [key: string]: Function[] } = {};
+      (window as any)._mockSerialCallbacks = mockCallbacks;
     });
+
+    // Initialize the global test data storage in the main process
+    await this.electronApp.evaluate(() => {
+      global._testWrittenData = [];
+    });
+  };
+
+  /**
+   * Retrieves captured written data from the main process and updates writtenData.
+   */
+  updateWrittenDataFromMainProcess = async () => {
+    const capturedData = await this.electronApp.evaluate(() => {
+      const data = global._testWrittenData || [];
+      global._testWrittenData = []; // Clear after retrieving
+      return data;
+    });
+
+    this.writtenData.push(...capturedData);
   };
 
   /**
@@ -132,35 +190,34 @@ export class ElectronAppTestHarness {
     await this.page.keyboard.press('Escape');
     await this.page.waitForTimeout(200);
 
-    // For testing, we'll set up a fake port directly through JavaScript
-    // This avoids the complex UI interactions that can be flaky
-    await this.page.evaluate(() => {
+    // Now use the app's normal flow but with mocked IPC calls
+    // First, trigger port scanning to populate the list (this will use our mock listPorts)
+    await this.page.evaluate(async () => {
       const app = (window as any).app;
       if (app && app.settings && app.settings.portConfiguration) {
-        // Create a fake port
-        const fakePort = {
-          path: '/dev/ttyTEST',
-          manufacturer: 'Test Manufacturer',
-          serialNumber: 'TEST123',
-          vendorId: '1234',
-          productId: '5678',
-          friendlyName: 'Test Port'
-        };
+        // Trigger the normal port scanning process
+        await app.settings.portConfiguration.scanForSerialPorts();
 
-        // Set up the port configuration
-        app.settings.portConfiguration.availableSerialPorts = [fakePort];
-        app.settings.portConfiguration.setSelectedSerialPort(fakePort);
-
-        // Set the port state to opened directly to avoid actual serial communication
-        app.portState = 1; // PortState.OPENED
-        app.currentPortPath = fakePort.path;
-
-        // Set up the serial port info for reconnection
-        app.serialPortInfo = fakePort;
+        // The mocked listPorts will return our fake port, so select it
+        const availablePorts = app.settings.portConfiguration.availableSerialPorts;
+        if (availablePorts && availablePorts.length > 0) {
+          app.settings.portConfiguration.setSelectedSerialPort(availablePorts[0]);
+        }
       }
     });
 
-    // Wait a moment for the state to settle
+    // Wait for the port list to be populated
+    await this.page.waitForTimeout(300);
+
+    // Open the port using the app's normal flow (this will use our mocked openPort)
+    await this.page.evaluate(async () => {
+      const app = (window as any).app;
+      if (app && app.openPort) {
+        await app.openPort({ silenceSnackbar: true });
+      }
+    });
+
+    // Wait for the port to be "opened"
     await this.page.waitForTimeout(500);
 
     // Ensure we're on the terminal view
@@ -215,6 +272,49 @@ export class ElectronAppTestHarness {
     await this.page.evaluate((bytesToSend) => {
       (window as any).app.parseRxData(Uint8Array.from(bytesToSend));
     }, bytesToSend);
+  };
+
+  /**
+   * Simulates data received from the serial port via IPC event (alternative method).
+   * This triggers the normal IPC data received flow.
+   */
+  simulateSerialDataReceived = async (portPath: string, data: number[]) => {
+    await this.page.evaluate(({ portPath, data }) => {
+      const callbacks = (window as any)._mockSerialCallbacks;
+      if (callbacks && callbacks['data-received']) {
+        callbacks['data-received'].forEach((callback: Function) => {
+          callback(portPath, data);
+        });
+      }
+    }, { portPath, data });
+  };
+
+  /**
+   * Simulates a serial port error via IPC event.
+   */
+  simulateSerialError = async (portPath: string, error: string) => {
+    await this.page.evaluate(({ portPath, error }) => {
+      const callbacks = (window as any)._mockSerialCallbacks;
+      if (callbacks && callbacks['error']) {
+        callbacks['error'].forEach((callback: Function) => {
+          callback(portPath, error);
+        });
+      }
+    }, { portPath, error });
+  };
+
+  /**
+   * Simulates a serial port being closed via IPC event.
+   */
+  simulateSerialPortClosed = async (portPath: string) => {
+    await this.page.evaluate((portPath) => {
+      const callbacks = (window as any)._mockSerialCallbacks;
+      if (callbacks && callbacks['port-closed']) {
+        callbacks['port-closed'].forEach((callback: Function) => {
+          callback(portPath);
+        });
+      }
+    }, portPath);
   };
 
   /**

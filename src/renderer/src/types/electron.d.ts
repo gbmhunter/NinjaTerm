@@ -4,7 +4,7 @@ export interface ElectronAPI {
     openPort(portPath: string, options: any): Promise<{ success: boolean; error?: string }>;
     closePort(portPath: string): Promise<{ success: boolean; error?: string }>;
     writeData(portPath: string, data: number[]): Promise<{ success: boolean; error?: string }>;
-    onDataReceived(callback: (portPath: string, data: number[]) => void): void;
+    onDataReceived(callback: (portPath: string, data: Buffer) => void): void;
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
