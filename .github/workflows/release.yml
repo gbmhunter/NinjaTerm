@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Check out Git repository
+      uses: actions/checkout@v4
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Rebuild native modules (fallback)
+      run: npm rebuild --build-from-source=false
+      continue-on-error: true
+
+    - name: Build Electron app
+      run: npm run build
+
+    - name: Build/release Electron app
+      uses: samuelmeuli/action-electron-builder@v1
+      with:
+        github_token: ${{ secrets.github_token }}
+        release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        max_attempts: 3
+      env:
+        # macOS notarization
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        # Windows code signing
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
