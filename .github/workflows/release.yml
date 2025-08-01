@@ -11,8 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        # os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - name: Check out Git repository
@@ -34,24 +33,19 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
-    - name: Debug working directory
-      run: |
-        pwd
-        ls -la
-        echo "Checking if NinjaTerm file exists:"
-        ls -la NinjaTerm 2>/dev/null || echo "No NinjaTerm file found"
-        echo "Checking package.json main field:"
-        node -e "console.log(require('./package.json').main)"
-
-    - name: Build/release Electron app
-      run: npx electron-builder --dir
+    - name: Build/release Electron app (Windows)
+      if: matrix.os == 'windows-latest'
+      run: npx electron-builder --win --publish always
       env:
-        # macOS notarization
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         # Windows code signing
         CSC_LINK: ${{ secrets.CSC_LINK }}
         CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build/release Electron app (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: npx electron-builder --linux --publish always
+      env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
