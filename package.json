@@ -68,13 +68,12 @@
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
+    "dev:web": "cd web-homepage && npm run dev",
     "build": "electron-vite build",
     "build:electron": "electron-vite build",
     "build:web": "cd web-homepage && npm run build",
     "build:all": "npm run build:electron && npm run build:web",
     "preview": "electron-vite preview",
-    "start": "electron-vite dev",
-    "dev:web": "cd web-homepage && npm run dev",
     "test": "tsc && vitest run && playwright test",
     "test:unit": "vitest run",
     "test:web": "tsc && vitest run && playwright test",
@@ -86,7 +85,6 @@
     "dist:win": "npm run build && electron-builder --win",
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",
-    "dist:all": "npm run build && electron-builder --win --mac --linux",
     "publish": "npm run build && electron-builder --publish=always"
   },
   "eslintConfig": {
