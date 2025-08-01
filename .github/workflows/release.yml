@@ -33,12 +33,14 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
+    - name: Debug build output
+      run: |
+        ls -la out/
+        ls -la out/main/
+        cat package.json | grep -A5 -B5 '"main"'
+
     - name: Build/release Electron app
-      uses: samuelmeuli/action-electron-builder@v1
-      with:
-        github_token: ${{ secrets.github_token }}
-        release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        max_attempts: 3
+      run: npx electron-builder --publish always
       env:
         # macOS notarization
         APPLE_ID: ${{ secrets.APPLE_ID }}
