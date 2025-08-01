@@ -163,7 +163,8 @@
       ],
       "icon": "img/logo/v3/logo512.png",
       "category": "public.app-category.developer-tools",
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "executableName": "NinjaTerm"
     },
     "dmg": {
       "title": "NinjaTerm ${version}",
