@@ -1,6 +1,6 @@
 {
   "name": "ninjaterm",
-  "productName": "NinjaTerm",
+  "productName": "Ninja Term",
   "version": "5.0.0",
   "description": "A modern, powerful serial terminal for developers and engineers",
   "author": {
@@ -127,7 +127,7 @@
   },
   "build": {
     "appId": "com.ninjaterm.app",
-    "productName": "NinjaTerm",
+    "productName": "Ninja Term",
     "directories": {
       "output": "dist"
     },
@@ -155,17 +155,8 @@
       "shortcutName": "NinjaTerm"
     },
     "mac": {
-      "target": [
-        {
-          "target": "dmg",
-          "arch": ["x64", "arm64"]
-        }
-      ],
-      "icon": "img/logo/v3/logo512.png",
-      "category": "public.app-category.developer-tools",
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "executableName": "NinjaTerm",
-      "bundleVersion": "5.0.0"
+      "target": "dmg",
+      "icon": "img/logo/v3/logo512.png"
     },
     "dmg": {
       "title": "NinjaTerm ${version}",

@@ -34,8 +34,17 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
+    - name: Debug working directory
+      run: |
+        pwd
+        ls -la
+        echo "Checking if NinjaTerm file exists:"
+        ls -la NinjaTerm 2>/dev/null || echo "No NinjaTerm file found"
+        echo "Checking package.json main field:"
+        node -e "console.log(require('./package.json').main)"
+
     - name: Build/release Electron app
-      run: npx electron-builder --mac --publish always
+      run: npx electron-builder --dir
       env:
         # macOS notarization
         APPLE_ID: ${{ secrets.APPLE_ID }}
