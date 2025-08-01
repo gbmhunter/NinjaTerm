@@ -82,6 +82,21 @@ export class App {
 
   numBytesTransmitted: number;
 
+  // Rate tracking for TX/RX
+  rxRateBps: number = 0;
+  txRateBps: number = 0;
+  
+  // Time window for rate calculation (in milliseconds)  
+  private readonly RATE_CALCULATION_WINDOW_MS = 3000; // 3 seconds
+  private readonly RATE_UPDATE_INTERVAL_MS = 500; // Update every 500ms
+  
+  // Arrays to track byte counts over time
+  private rxDataPoints: Array<{ timestamp: number; bytes: number }> = [];
+  private txDataPoints: Array<{ timestamp: number; bytes: number }> = [];
+  
+  // Timer for rate calculations
+  private rateCalculationInterval: NodeJS.Timeout | null = null;
+
   // If true app is being tested by code.
   // Used for force terminal height to value when browser is not
   // available to determine height
@@ -159,6 +174,9 @@ export class App {
     // Set up cleanup on window unload
     window.addEventListener('beforeunload', this.cleanup);
 
+    // Start rate calculation timer
+    this.startRateCalculation();
+
     makeAutoObservable(this); // Make sure this near the end
   }
 
@@ -173,6 +191,7 @@ export class App {
    */
   cleanup = () => {
     this.stopPollingForReconnection();
+    this.stopRateCalculation();
     window.removeEventListener('beforeunload', this.cleanup);
   };
 
@@ -428,6 +447,87 @@ export class App {
   }
 
   /**
+   * Starts the rate calculation timer.
+   */
+  private startRateCalculation() {
+    if (this.rateCalculationInterval) {
+      clearInterval(this.rateCalculationInterval);
+    }
+    
+    this.rateCalculationInterval = setInterval(() => {
+      this.updateTransmissionRates();
+    }, this.RATE_UPDATE_INTERVAL_MS);
+  }
+
+  /**
+   * Stops the rate calculation timer.
+   */
+  private stopRateCalculation() {
+    if (this.rateCalculationInterval) {
+      clearInterval(this.rateCalculationInterval);
+      this.rateCalculationInterval = null;
+    }
+  }
+
+  /**
+   * Updates the transmission rates by calculating averages over the time window.
+   */
+  private updateTransmissionRates() {
+    const now = Date.now();
+    const cutoffTime = now - this.RATE_CALCULATION_WINDOW_MS;
+    
+    // Remove old data points
+    this.rxDataPoints = this.rxDataPoints.filter(point => point.timestamp > cutoffTime);
+    this.txDataPoints = this.txDataPoints.filter(point => point.timestamp > cutoffTime);
+    
+    // Calculate rates (bytes per second)
+    const rxTotalBytes = this.rxDataPoints.reduce((sum, point) => sum + point.bytes, 0);
+    const txTotalBytes = this.txDataPoints.reduce((sum, point) => sum + point.bytes, 0);
+    
+    const timeWindowInSeconds = this.RATE_CALCULATION_WINDOW_MS / 1000;
+    
+    runInAction(() => {
+      this.rxRateBps = rxTotalBytes / timeWindowInSeconds;
+      this.txRateBps = txTotalBytes / timeWindowInSeconds;
+    });
+  }
+
+  /**
+   * Records a data point for RX rate calculation.
+   */
+  private recordRxDataPoint(bytes: number) {
+    this.rxDataPoints.push({
+      timestamp: Date.now(),
+      bytes: bytes
+    });
+  }
+
+  /**
+   * Records a data point for TX rate calculation.
+   */
+  private recordTxDataPoint(bytes: number) {
+    this.txDataPoints.push({
+      timestamp: Date.now(),
+      bytes: bytes
+    });
+  }
+
+  /**
+   * Formats a rate in bytes per second to a human-readable string.
+   */
+  formatRate(rateBps: number): string {
+    if (rateBps === 0) {
+      return '0 B/s';
+    } else if (rateBps < 1000) {
+      return `${Math.round(rateBps)} B/s`;
+    } else if (rateBps < 1000000) {
+      return `${(rateBps / 1000).toFixed(1)} kB/s`;
+    } else {
+      return `${(rateBps / 1000000).toFixed(1)} MB/s`;
+    }
+  }
+
+  /**
    * In normal operation this is called from the readUntilClose() function above.
    *
    * Unit tests call this instead of mocking out the serial port read() function
@@ -444,6 +544,9 @@ export class App {
     this.graphing.parseData(rxData);
     this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
+    
+    // Record data point for rate calculation
+    this.recordRxDataPoint(rxData.length);
   }
 
   /**
@@ -866,6 +969,9 @@ export class App {
     runInAction(() => {
       this.numBytesTransmitted += bytesToWrite.length;
     });
+    
+    // Record data point for rate calculation
+    this.recordTxDataPoint(bytesToWrite.length);
   }
 
   clearAllData() {

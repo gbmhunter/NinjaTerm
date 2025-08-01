@@ -342,17 +342,23 @@ const AppView = observer((props: Props) => {
               {app.settings.rxSettings.addTimestamps ? 'Timestamps ON' : 'Timestamps OFF'}
             </div>
 
-            {/* TX/RX ACTIVITY INDICATORS */}
+            {/* TX/RX ACTIVITY INDICATORS WITH RATES */}
             {/* Use the key prop here to make React consider this a new element every time the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
-            <Box>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Box key={app.numBytesTransmitted} className={styles.ledblue}>
                 TX
               </Box>
+              <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
+                {app.formatRate(app.txRateBps)}
+              </div>
             </Box>
-            <Box>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <Box key={app.numBytesReceived} className={styles.ledyellow}>
                 RX
               </Box>
+              <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
+                {app.formatRate(app.rxRateBps)}
+              </div>
             </Box>
 
             {/* PORT CONFIG */}
