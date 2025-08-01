@@ -137,9 +137,6 @@
       "package.json",
       "img/logo/v3/logo512.png"
     ],
-    "extraMetadata": {
-      "main": "out/main/index.js"
-    },
     "win": {
       "target": [
         {
