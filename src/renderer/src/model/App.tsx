@@ -97,6 +97,12 @@ export class App {
   // Timer for rate calculations
   private rateCalculationInterval: NodeJS.Timeout | null = null;
 
+  // CPU usage tracking
+  cpuUsagePercent: number = 0;
+  
+  // CPU monitoring variables - measuring overall renderer process load
+  private readonly CPU_MEASUREMENT_WINDOW_MS = 1000; // 1 second window
+
   // If true app is being tested by code.
   // Used for force terminal height to value when browser is not
   // available to determine height
@@ -177,6 +183,9 @@ export class App {
     // Start rate calculation timer
     this.startRateCalculation();
 
+    // Initialize CPU monitoring
+    this.startCpuMonitoring();
+
     makeAutoObservable(this); // Make sure this near the end
   }
 
@@ -192,6 +201,7 @@ export class App {
   cleanup = () => {
     this.stopPollingForReconnection();
     this.stopRateCalculation();
+    this.stopCpuMonitoring();
     window.removeEventListener('beforeunload', this.cleanup);
   };
 
@@ -525,6 +535,72 @@ export class App {
     } else {
       return `${(rateBps / 1000000).toFixed(1)} MB/s`;
     }
+  }
+
+  /**
+   * Starts CPU monitoring by using a more comprehensive approach that measures
+   * the main thread's busy vs idle time including React rendering.
+   */
+  private startCpuMonitoring() {
+    let lastFrameTime = performance.now();
+    let frameStartTime = performance.now();
+    let busyTime = 0;
+    let measurementStartTime = performance.now();
+    
+    const measureCpuUsage = () => {
+      const now = performance.now();
+      
+      // Track the time spent in each frame
+      const frameDuration = now - frameStartTime;
+      frameStartTime = now;
+      
+      // If this frame took longer than 16.67ms (60fps), count the extra time as "busy"
+      const targetFrameTime = 1000 / 60; // 16.67ms for 60fps
+      if (frameDuration > targetFrameTime) {
+        busyTime += (frameDuration - targetFrameTime);
+      }
+      
+      const totalElapsed = now - measurementStartTime;
+      
+      // Calculate CPU usage every second
+      if (totalElapsed >= this.CPU_MEASUREMENT_WINDOW_MS) {
+        // Simple approach: measure how much time we're taking longer than ideal frame times
+        // This captures both data processing and rendering overhead
+        const cpuUsage = Math.min(100, (busyTime / totalElapsed) * 100);
+        
+        runInAction(() => {
+          this.cpuUsagePercent = cpuUsage;
+        });
+        
+        // Reset counters
+        busyTime = 0;
+        measurementStartTime = now;
+      }
+      
+      // Use requestIdleCallback to get more accurate idle time measurements
+      if (typeof requestIdleCallback !== 'undefined') {
+        requestIdleCallback((deadline) => {
+          // If we have very little idle time, we're CPU bound
+          const availableTime = deadline.timeRemaining();
+          if (availableTime < 1) { // Less than 1ms idle time indicates high CPU usage
+            busyTime += 5; // Add penalty for no idle time
+          }
+        });
+      }
+      
+      // Continue monitoring
+      requestAnimationFrame(measureCpuUsage);
+    };
+    
+    measureCpuUsage();
+  }
+
+  /**
+   * Stops CPU monitoring.
+   */
+  private stopCpuMonitoring() {
+    // CPU monitoring is handled by requestAnimationFrame and requestIdleCallback
+    // These will stop when the window is unloaded
   }
 
   /**

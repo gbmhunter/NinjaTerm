@@ -361,6 +361,18 @@ const AppView = observer((props: Props) => {
               </div>
             </Box>
 
+            {/* CPU USAGE INDICATOR */}
+            <div
+              className={`${styles.onHover} ${styles.centerText}`}
+              style={{
+                backgroundColor: app.cpuUsagePercent > 80 ? '#d32f2f' : app.cpuUsagePercent > 60 ? '#f57c00' : '',
+                padding: '0 5px',
+                width: '80px',
+              }}
+            >
+              CPU {Math.round(app.cpuUsagePercent)}%
+            </div>
+
             {/* PORT CONFIG */}
             {/* Show port configuration in short hand, e.g. "115200 8n1" */}
             <div

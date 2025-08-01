@@ -73,7 +73,6 @@ function sendBatchedData(portPath: string) {
   if (batch && batch.length > 0) {
     // Concatenate all buffers in the batch
     const combinedBuffer = Buffer.concat(batch);
-    console.log('sendBatchedData() sending batch of size=', combinedBuffer.length);
     mainWindow?.webContents.send('serial:data-received', portPath, combinedBuffer);
 
     // Clear the batch
