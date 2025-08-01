@@ -1,13 +1,13 @@
 {
   "name": "ninjaterm",
-  "productName": "Ninja Term",
+  "productName": "NinjaTerm",
   "version": "5.0.0",
   "description": "A modern, powerful serial terminal for developers and engineers",
   "author": {
-    "name": "NinjaTerm Team",
-    "email": "support@ninjaterm.com"
+    "name": "Geoffrey Hunter",
+    "email": "gbmhunter@gmail.com"
   },
-  "homepage": "https://ninjaterm.com",
+  "homepage": "https://ninjaterm.mbedded.ninja/",
   "repository": {
     "type": "git",
     "url": "https://github.com/gbmhunter/NinjaTerm.git"
@@ -127,7 +127,7 @@
   },
   "build": {
     "appId": "com.ninjaterm.app",
-    "productName": "Ninja Term",
+    "productName": "NinjaTerm",
     "directories": {
       "output": "dist"
     },
