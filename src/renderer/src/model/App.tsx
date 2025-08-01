@@ -633,6 +633,7 @@ export class App {
     // Update not available
     electronAPI.updater.onUpdateNotAvailable((updateInfo: any) => {
       console.log('No updates available');
+      this.snackbar.sendToSnackbar('No updates available. You are running the latest version.', 'info');
     });
 
     // Update error
