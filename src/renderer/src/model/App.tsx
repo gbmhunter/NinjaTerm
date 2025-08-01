@@ -85,15 +85,15 @@ export class App {
   // Rate tracking for TX/RX
   rxRateBps: number = 0;
   txRateBps: number = 0;
-  
-  // Time window for rate calculation (in milliseconds)  
+
+  // Time window for rate calculation (in milliseconds)
   private readonly RATE_CALCULATION_WINDOW_MS = 3000; // 3 seconds
   private readonly RATE_UPDATE_INTERVAL_MS = 500; // Update every 500ms
-  
+
   // Arrays to track byte counts over time
   private rxDataPoints: Array<{ timestamp: number; bytes: number }> = [];
   private txDataPoints: Array<{ timestamp: number; bytes: number }> = [];
-  
+
   // Timer for rate calculations
   private rateCalculationInterval: NodeJS.Timeout | null = null;
 
@@ -272,7 +272,7 @@ export class App {
         // didn't do this, the listeners would be added multiple times.
         window.electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
           if (portPath === this.currentPortPath) {
-            console.log('onDataReceived() called. data.length=', data.length);
+            // console.log('onDataReceived() called. data.length=', data.length);
             // Buffer can be used directly as Uint8Array - much faster than conversion
             const uint8Array = new Uint8Array(data);
             this.parseRxData(uint8Array);
@@ -453,7 +453,7 @@ export class App {
     if (this.rateCalculationInterval) {
       clearInterval(this.rateCalculationInterval);
     }
-    
+
     this.rateCalculationInterval = setInterval(() => {
       this.updateTransmissionRates();
     }, this.RATE_UPDATE_INTERVAL_MS);
@@ -475,17 +475,17 @@ export class App {
   private updateTransmissionRates() {
     const now = Date.now();
     const cutoffTime = now - this.RATE_CALCULATION_WINDOW_MS;
-    
+
     // Remove old data points
     this.rxDataPoints = this.rxDataPoints.filter(point => point.timestamp > cutoffTime);
     this.txDataPoints = this.txDataPoints.filter(point => point.timestamp > cutoffTime);
-    
+
     // Calculate rates (bytes per second)
     const rxTotalBytes = this.rxDataPoints.reduce((sum, point) => sum + point.bytes, 0);
     const txTotalBytes = this.txDataPoints.reduce((sum, point) => sum + point.bytes, 0);
-    
+
     const timeWindowInSeconds = this.RATE_CALCULATION_WINDOW_MS / 1000;
-    
+
     runInAction(() => {
       this.rxRateBps = rxTotalBytes / timeWindowInSeconds;
       this.txRateBps = txTotalBytes / timeWindowInSeconds;
@@ -544,7 +544,7 @@ export class App {
     this.graphing.parseData(rxData);
     this.logging.handleRxData(rxData);
     this.numBytesReceived += rxData.length;
-    
+
     // Record data point for rate calculation
     this.recordRxDataPoint(rxData.length);
   }
@@ -969,7 +969,7 @@ export class App {
     runInAction(() => {
       this.numBytesTransmitted += bytesToWrite.length;
     });
-    
+
     // Record data point for rate calculation
     this.recordTxDataPoint(bytesToWrite.length);
   }
