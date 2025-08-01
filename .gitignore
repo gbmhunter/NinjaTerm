@@ -27,6 +27,6 @@ yarn-error.log*
 /playwright-report/
 /playwright/.cache/
 
-.claude/settings.local.
+.claude/settings.local.json
 
 out/

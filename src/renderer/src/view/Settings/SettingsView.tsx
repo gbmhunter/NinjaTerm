@@ -37,7 +37,7 @@ function SettingsDialog(props: Props) {
       <DisplaySettingsView app={app} />
     ),
     [SettingsCategories.GENERAL]: (
-      <GeneralSettingsView generalSettings={app.settings.generalSettings} />
+      <GeneralSettingsView generalSettings={app.settings.generalSettings} app={app} />
     ),
     [SettingsCategories.PROFILES]: (
       <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />

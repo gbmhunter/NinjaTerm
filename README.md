@@ -97,9 +97,9 @@ NOTE: Since then, the app has been migrated from using `create-react-app`` (whic
 
 The source code is under `src/`. The React-based user interfaces are in `.tsx` files, and the MobX "models" (you could kind of call them stores) are typically in `.ts` files. There is generally 1 model file per React view to store all the stateful information relating to that view. 
 
-## Progressive Web App (PWA)
+## Web App
 
-NinjaTerm is a progressive web app (PWA). This means it can be "installed" by the user and can run offline. Most of this functionality is provided by "Vite PWA". The configuration for the PWA is defined in `vite.config.ts`.
+NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm.
 
 ## Graphing
 

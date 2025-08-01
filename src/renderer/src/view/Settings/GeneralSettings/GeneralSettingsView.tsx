@@ -2,16 +2,19 @@ import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, Dia
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
+import { App } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 
 import BorderedSection from "src/view/Components/BorderedSection";
 
 interface Props {
   generalSettings: GeneralSettings;
+  app: App;
 }
 
 function GeneralSettingsView(props: Props) {
-  const { generalSettings } = props;
+  const { generalSettings, app } = props;
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   const handleOpenConfirmDialog = () => {
@@ -79,6 +82,32 @@ function GeneralSettingsView(props: Props) {
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* APP UPDATES */}
+      {/* =============================================================================== */}
+      <BorderedSection title="App Updates">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            maxWidth: "600px",
+          }}
+        >
+          <Button 
+            variant="outlined" 
+            size="large" 
+            startIcon={<SystemUpdateIcon />} 
+            onClick={() => app.checkForUpdates()}
+            style={{ marginBottom: "10px" }}
+          >
+            Check for Updates
+          </Button>
+          <div style={{ fontSize: "0.875rem", color: "text.secondary", marginTop: "8px" }}>
+            NinjaTerm automatically checks for updates on startup. Click the button above to manually check for updates.
+          </div>
         </div>
       </BorderedSection>
 

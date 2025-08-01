@@ -177,6 +177,9 @@ export class App {
     // all IPC event listeners.
     (window as any).electronAPI.serial.closeAllPortsAndRemoveListeners();
 
+    // Set up auto-updater event listeners
+    this.setupAutoUpdater();
+
     // Set up cleanup on window unload
     window.addEventListener('beforeunload', this.cleanup);
 
@@ -202,6 +205,12 @@ export class App {
     this.stopPollingForReconnection();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
+    
+    // Clean up auto-updater listeners
+    if ((window as any).electronAPI?.updater) {
+      (window as any).electronAPI.updater.removeAllUpdateListeners();
+    }
+    
     window.removeEventListener('beforeunload', this.cleanup);
   };
 
@@ -601,6 +610,103 @@ export class App {
   private stopCpuMonitoring() {
     // CPU monitoring is handled by requestAnimationFrame and requestIdleCallback
     // These will stop when the window is unloaded
+  }
+
+  /**
+   * Sets up auto-updater event listeners for handling update notifications.
+   */
+  private setupAutoUpdater() {
+    if (!(window as any).electronAPI?.updater) {
+      return; // Auto-updater not available (e.g., in web version)
+    }
+
+    const electronAPI = (window as any).electronAPI;
+
+    // Update available - show notification
+    electronAPI.updater.onUpdateAvailable((updateInfo: any) => {
+      this.snackbar.sendToSnackbar(
+        `Update v${updateInfo.version} is available and will be downloaded in the background.`,
+        'info'
+      );
+    });
+
+    // Update not available
+    electronAPI.updater.onUpdateNotAvailable((updateInfo: any) => {
+      console.log('No updates available');
+    });
+
+    // Update error
+    electronAPI.updater.onUpdateError((error: any) => {
+      this.snackbar.sendToSnackbar(
+        `Update error: ${error.message || error}`,
+        'error'
+      );
+    });
+
+    // Download progress
+    electronAPI.updater.onDownloadProgress((progressObj: any) => {
+      const percent = Math.round(progressObj.percent);
+      console.log(`Update download progress: ${percent}%`);
+      // Could add a progress indicator to the UI here if desired
+    });
+
+    // Update downloaded - show install notification
+    electronAPI.updater.onUpdateDownloaded((updateInfo: any) => {
+      this.snackbar.sendToSnackbar(
+        `Update v${updateInfo.version} has been downloaded. Restart NinjaTerm to install.`,
+        'success',
+        {
+          persist: true,
+          action: (key) => (
+            <Button
+              onClick={() => {
+                closeSnackbar(key);
+                this.installUpdate();
+              }}
+              style={{ color: 'white' }}
+            >
+              Restart & Install
+            </Button>
+          ),
+        }
+      );
+    });
+  }
+
+  /**
+   * Manually check for updates.
+   */
+  async checkForUpdates() {
+    if (!(window as any).electronAPI?.updater) {
+      this.snackbar.sendToSnackbar('Auto-updater not available in this version.', 'warning');
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.updater.checkForUpdates();
+      if (result.success) {
+        this.snackbar.sendToSnackbar('Checking for updates...', 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Update check failed: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Update check failed: ${error}`, 'error');
+    }
+  }
+
+  /**
+   * Install downloaded update and restart the application.
+   */
+  async installUpdate() {
+    if (!(window as any).electronAPI?.updater) {
+      return;
+    }
+
+    try {
+      await (window as any).electronAPI.updater.quitAndInstall();
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to install update: ${error}`, 'error');
+    }
   }
 
   /**

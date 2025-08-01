@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.0.0] - 2025-08-02
+
+### Added
+
+- NinjaTerm is now available as a desktop application for Windows and Linux (macOS coming soon). Web version is still available but won't be updated anymore.
+- Added TX/RX bandwidth indicators in the bottom status bar showing live transmission rates.
+- Added CPU usage indicator in the bottom status bar showing the renderer process load.
+
 ## [4.20.2] - 2025-07-28
 
 ### Fixed
@@ -811,7 +819,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v4.20.2...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.0...HEAD
+[5.0.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.20.2...v5.0.0
 [4.20.2]: https://github.com/gbmhunter/NinjaTerm/compare/v4.20.1...v4.20.2
 [4.20.1]: https://github.com/gbmhunter/NinjaTerm/compare/v4.20.0...v4.20.1
 [4.20.0]: https://github.com/gbmhunter/NinjaTerm/compare/v4.19.1...v4.20.0

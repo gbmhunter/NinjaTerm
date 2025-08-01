@@ -43,6 +43,38 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.invoke('fs:write-file', filePath, data, append),
     getFileSize: (filePath: string) => ipcRenderer.invoke('fs:get-file-size', filePath),
     fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath)
+  },
+
+  // Auto-updater operations
+  updater: {
+    checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
+    quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
+    
+    // Event listeners for update events
+    onUpdateAvailable: (callback: (updateInfo: any) => void) => {
+      ipcRenderer.on('update-available', (event, updateInfo) => callback(updateInfo));
+    },
+    onUpdateNotAvailable: (callback: (updateInfo: any) => void) => {
+      ipcRenderer.on('update-not-available', (event, updateInfo) => callback(updateInfo));
+    },
+    onUpdateError: (callback: (error: any) => void) => {
+      ipcRenderer.on('update-error', (event, error) => callback(error));
+    },
+    onDownloadProgress: (callback: (progressObj: any) => void) => {
+      ipcRenderer.on('download-progress', (event, progressObj) => callback(progressObj));
+    },
+    onUpdateDownloaded: (callback: (updateInfo: any) => void) => {
+      ipcRenderer.on('update-downloaded', (event, updateInfo) => callback(updateInfo));
+    },
+    
+    // Remove listeners
+    removeAllUpdateListeners: () => {
+      ipcRenderer.removeAllListeners('update-available');
+      ipcRenderer.removeAllListeners('update-not-available');
+      ipcRenderer.removeAllListeners('update-error');
+      ipcRenderer.removeAllListeners('download-progress');
+      ipcRenderer.removeAllListeners('update-downloaded');
+    }
   }
 });
 
@@ -63,6 +95,16 @@ export interface ElectronAPI {
     writeFile(filePath: string, data: number[], append?: boolean): Promise<{ success: boolean; error?: string }>;
     getFileSize(filePath: string): Promise<{ success: boolean; size?: number; error?: string }>;
     fileExists(filePath: string): Promise<{ success: boolean; exists?: boolean; error?: string }>;
+  };
+  updater: {
+    checkForUpdates(): Promise<{ success: boolean; updateInfo?: any; error?: string }>;
+    quitAndInstall(): Promise<{ success: boolean; error?: string }>;
+    onUpdateAvailable(callback: (updateInfo: any) => void): void;
+    onUpdateNotAvailable(callback: (updateInfo: any) => void): void;
+    onUpdateError(callback: (error: any) => void): void;
+    onDownloadProgress(callback: (progressObj: any) => void): void;
+    onUpdateDownloaded(callback: (updateInfo: any) => void): void;
+    removeAllUpdateListeners(): void;
   };
 }
 

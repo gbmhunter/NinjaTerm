@@ -31,6 +31,8 @@
     "@uiw/react-color": "^2.5.5",
     "@vitejs/plugin-react": "4.5.1",
     "chart.js": "^4.4.3",
+    "electron-log": "^5.4.2",
+    "electron-updater": "^6.6.2",
     "kofi-button": "^1.1.1",
     "mobx": "^6.12.4",
     "mobx-react-lite": "^4.0.7",
@@ -139,7 +141,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "img/logo/v3/logo512.png",
@@ -175,11 +179,17 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "img/logo/v3/logo512.png",

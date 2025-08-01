@@ -1,4 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
+import log from 'electron-log';
 import * as path from 'path';
 import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
@@ -9,6 +12,43 @@ const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
 // 1ms was too fast -- resulted in many small chunks being sent to the renderer process
 // and too many IPC calls
 const RX_DATA_BATCH_TIMEOUT_MS = 20;
+
+// Configure auto-updater logging
+autoUpdater.logger = log;
+(autoUpdater.logger as any).transports.file.level = 'info';
+
+// Auto-updater event handlers
+autoUpdater.on('checking-for-update', () => {
+  log.info('Checking for update...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  log.info('Update available.');
+  mainWindow?.webContents.send('update-available', info);
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  log.info('Update not available.');
+  mainWindow?.webContents.send('update-not-available', info);
+});
+
+autoUpdater.on('error', (err) => {
+  log.error('Error in auto-updater. ' + err);
+  mainWindow?.webContents.send('update-error', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+  log.info(log_message);
+  mainWindow?.webContents.send('download-progress', progressObj);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  log.info('Update downloaded');
+  mainWindow?.webContents.send('update-downloaded', info);
+});
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
@@ -42,7 +82,18 @@ function createWindow(): void {
 }
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Start auto-updater after app is ready and window is created
+  // Only check for updates in production builds
+  if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
+    // Check for updates 5 seconds after startup
+    setTimeout(() => {
+      autoUpdater.checkForUpdatesAndNotify();
+    }, 5000);
+  }
+});
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
@@ -292,6 +343,28 @@ ipcMain.handle('fs:file-exists', async (event, filePath: string) => {
     return { success: true, exists: true };
   } catch (error) {
     return { success: true, exists: false };
+  }
+});
+
+// Auto-updater IPC handlers
+ipcMain.handle('updater:check-for-updates', async () => {
+  try {
+    if (process.env.NODE_ENV === 'development') {
+      return { success: false, error: 'Updates not available in development mode' };
+    }
+    const result = await autoUpdater.checkForUpdates();
+    return { success: true, updateInfo: result?.updateInfo };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('updater:quit-and-install', async () => {
+  try {
+    autoUpdater.quitAndInstall();
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
   }
 });
 
