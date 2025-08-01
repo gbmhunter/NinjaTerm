@@ -34,17 +34,8 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
-    - name: Debug build output
-      run: |
-        ls -la out/
-        ls -la out/main/
-        cat package.json | grep -A5 -B5 '"main"'
-        echo "Current directory: $(pwd)"
-        echo "Repository name: ${GITHUB_REPOSITORY##*/}"
-        ls -la img/logo/v3/ || echo "Logo directory not found"
-
     - name: Build/release Electron app
-      run: DEBUG=electron-builder npx electron-builder --mac --publish always
+      run: npx electron-builder --mac --publish always
       env:
         # macOS notarization
         APPLE_ID: ${{ secrets.APPLE_ID }}
