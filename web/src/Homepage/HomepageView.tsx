@@ -5,6 +5,7 @@ import {
   Button,
   IconButton,
   Typography,
+  CircularProgress,
   // Grid,
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -12,8 +13,11 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
+import DownloadIcon from '@mui/icons-material/Download';
+import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
+import LinuxIcon from '@mui/icons-material/Memory'; // Using Memory icon as a Linux representation
 import Grid from '@mui/material/Unstable_Grid2';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import GitHubReadmeLogoPng from './github-readme-logo.png';
 import AnsiEscapeCodeColoursWebM from './ansi-escape-code-colours.webm';
@@ -69,12 +73,61 @@ const darkTheme = createTheme({
   },
 });
 
+interface GitHubAsset {
+  name: string;
+  browser_download_url: string;
+}
+
+interface GitHubRelease {
+  tag_name: string;
+  assets: GitHubAsset[];
+}
+
 interface Props {}
 
 export default observer((props: Props) => {
+  const [release, setRelease] = useState<GitHubRelease | null>(null);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     document.title = "NinjaTerm - Web-Based Serial Port Terminal for Embedded Developers";
+    
+    // Fetch latest release data
+    const fetchLatestRelease = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('https://api.github.com/repos/gbmhunter/NinjaTerm/releases/latest');
+        if (response.ok) {
+          const releaseData = await response.json();
+          setRelease(releaseData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch release data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestRelease();
   }, []);
+
+  // Helper functions to get download URLs
+  const getWindowsDownloadUrl = () => {
+    if (!release) return null;
+    const windowsAsset = release.assets.find(asset => 
+      asset.name.includes('Setup') && asset.name.endsWith('.exe')
+    );
+    return windowsAsset?.browser_download_url || null;
+  };
+
+  const getLinuxDownloadUrl = () => {
+    if (!release) return null;
+    // Prioritize x86_64/x64 architecture for Linux
+    const linuxAsset = release.assets.find(asset => 
+      asset.name.endsWith('.AppImage') && (asset.name.includes('x86_64') || asset.name.includes('x64'))
+    );
+    return linuxAsset?.browser_download_url || null;
+  };
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -128,21 +181,86 @@ export default observer((props: Props) => {
             </span>
           </Grid>
           <Grid xs={12} sx={{ height: '20px' }} />
+          
+          {/* Primary Download Buttons */}
           <Grid
             xs={12}
             sx={{
               display: 'flex',
               justifyContent: 'center',
               gap: '20px',
+              flexWrap: 'wrap',
+              marginBottom: '20px',
             }}
           >
-            <Button href="/app" variant="contained" size="large" startIcon={<TerminalIcon />}>
-              Go to app
+            {loading ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <CircularProgress size={20} />
+                <Typography>Loading latest release...</Typography>
+              </Box>
+            ) : (
+              <>
+                <Button
+                  href={getWindowsDownloadUrl() || undefined}
+                  disabled={!getWindowsDownloadUrl()}
+                  variant="contained"
+                  size="large"
+                  startIcon={<DesktopWindowsIcon />}
+                  sx={{
+                    minWidth: '200px',
+                    backgroundColor: primaryColor,
+                    '&:hover': { backgroundColor: '#D16A2A' },
+                  }}
+                >
+                  Download for Windows
+                </Button>
+                <Button
+                  href={getLinuxDownloadUrl() || undefined}
+                  disabled={!getLinuxDownloadUrl()}
+                  variant="contained"
+                  size="large"
+                  startIcon={<LinuxIcon />}
+                  sx={{
+                    minWidth: '200px',
+                    backgroundColor: primaryColor,
+                    '&:hover': { backgroundColor: '#D16A2A' },
+                  }}
+                >
+                  Download for Linux
+                </Button>
+              </>
+            )}
+          </Grid>
+
+          {/* Version Info */}
+          {release && (
+            <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+              <Typography variant="body2" sx={{ color: '#888', fontSize: '14px' }}>
+                Latest version: {release.tag_name}
+              </Typography>
+            </Grid>
+          )}
+
+          {/* Secondary Options */}
+          <Grid
+            xs={12}
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '15px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <Button href="/app" variant="outlined" size="medium" startIcon={<TerminalIcon />}>
+              Goto Web App
             </Button>
-            <Button href="/manual" variant="outlined" size="large" startIcon={<InfoIcon />}>
+            <Button href="/manual" variant="outlined" size="medium" startIcon={<InfoIcon />}>
               Manual
             </Button>
-            <Button href="https://github.com/gbmhunter/NinjaTerm" target="_blank" variant="outlined" size="large" startIcon={<GitHubIcon />}>
+            <Button href="https://github.com/gbmhunter/NinjaTerm/releases" target="_blank" variant="outlined" size="medium" startIcon={<DownloadIcon />}>
+              More releases
+            </Button>
+            <Button href="https://github.com/gbmhunter/NinjaTerm" target="_blank" variant="outlined" size="medium" startIcon={<GitHubIcon />}>
               GitHub
             </Button>
           </Grid>
