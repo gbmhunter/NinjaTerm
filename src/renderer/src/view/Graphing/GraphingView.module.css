@@ -1,0 +1,12 @@
+.controlPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+  border: 1px solid #505050;
+  border-radius: 5px;
+  /* Provide a little glow to give 3D look */
+  box-shadow: 0px 0px 5px 0px #505050;
+  width: max-content;
+  padding: 10px;
+}

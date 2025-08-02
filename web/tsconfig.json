@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ESNext"
+    ],
+    // If typescript can't find a particular type, chances are you need to add something
+    // to this array
+    "types": [
+      "vite/client",
+      "node",
+      "dom-serial",
+      "vite-plugin-pwa/client",
+      "@types/wicg-file-system-access",
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./", // Allow relative imports from src/ dir
+    "rootDir": "./", // Allow code to back out of src/ if needed, e.g. to access package.json
+  },
+  "include": [
+    "src",
+    // "node_modules/vite-plugin-pwa/client.d.ts",
+  ],
+}

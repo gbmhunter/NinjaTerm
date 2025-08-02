@@ -1,0 +1,417 @@
+import {
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  ButtonPropsColorOverrides,
+  Typography,
+  Tooltip,
+  Checkbox,
+  FormControlLabel,
+  Autocomplete,
+  TextField,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Radio,
+} from '@mui/material';
+import { OverridableStringUnion } from '@mui/types';
+import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
+
+import { App, PortType } from 'src/model/App';
+import {
+  PortState,
+  DEFAULT_BAUD_RATES,
+  NUM_DATA_BITS_OPTIONS,
+  Parity,
+  STOP_BIT_OPTIONS,
+  StopBits,
+  FlowControl,
+} from 'src/model/Settings/PortSettings/PortSettings';
+import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
+import styles from './PortSettingsView.module.css';
+
+interface Props {
+  app: App;
+}
+
+function PortSettingsView(props: Props) {
+  const { app } = props;
+
+  // Scan for serial ports when the component mounts. This will happen every time the user
+  // navigates to the Port Configuration tab.
+  useEffect(() => {
+    app.settings.portConfiguration.scanForSerialPorts();
+  }, []); // Empty dependency array means this runs once when component mounts
+
+  return (
+    <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+      <div style={{ height: '20px' }}></div>
+
+      <div style={{ width: '100%', marginBottom: 16 }}>
+        <Typography variant="h6" gutterBottom>
+          Available Serial Ports
+        </Typography>
+        <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">Select</TableCell>
+                <TableCell>Port Path</TableCell>
+                <TableCell>Friendly Name</TableCell>
+                <TableCell>Manufacturer</TableCell>
+                <TableCell>Vendor ID</TableCell>
+                <TableCell>Product ID</TableCell>
+                <TableCell>Serial Number</TableCell>
+                <TableCell>Location ID</TableCell>
+                <TableCell>PNP ID</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(app.settings.portConfiguration.availableSerialPorts || []).length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                    No serial ports found. Click "Rescan" to search for ports.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                app.settings.portConfiguration.availableSerialPorts.map((port: any, idx: number) => (
+                  <TableRow
+                    key={port.path || idx}
+                    hover
+                    selected={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                  >
+                    <TableCell padding="checkbox">
+                      <Radio
+                        checked={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                        onChange={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                        value={port.path}
+                        name="serial-port-selection"
+                      />
+                    </TableCell>
+                    <TableCell>{port.path || 'Unknown'}</TableCell>
+                    <TableCell>{port.friendlyName || 'n/a'}</TableCell>
+                    <TableCell>{port.manufacturer || 'n/a'}</TableCell>
+                    <TableCell>{port.vendorId || 'n/a'}</TableCell>
+                    <TableCell>{port.productId || 'n/a'}</TableCell>
+                    <TableCell
+                      sx={{
+                        minWidth: 100,
+                        wordBreak: 'break-all',
+                      }}
+                    >{port.serialNumber || 'n/a'}</TableCell>
+                    <TableCell
+                      sx={{
+                        minWidth: 100,
+                        wordBreak: 'break-all',
+                      }}
+                    >{port.locationId || 'n/a'}</TableCell>
+                    <TableCell sx={{
+                      minWidth: 200,
+                      wordBreak: 'break-all',
+                    }}>
+                      {port.pnpId || 'n/a'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+      <Button
+        variant="outlined"
+        size="medium"
+        sx={{ m: 1 }}
+        onClick={async () => {
+          await app.settings.portConfiguration.scanForSerialPorts();
+        }}
+      >
+        Rescan
+      </Button>
+
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+        {/* ============================================================== */}
+        {/* BAUD RATE */}
+        {/* ============================================================== */}
+        <Tooltip
+          title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
+          enterDelay={500}
+        >
+          <Autocomplete
+            freeSolo
+            options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Baud rate"
+                error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
+                helperText={app.settings.portConfiguration.baudRateErrorMsg}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    // Apply baud rate
+                    await app.settings.portConfiguration.setBaudRate();
+                  }
+                  // Prevent the global keydown event from being triggered
+                  e.stopPropagation();
+                }}
+                onBlur={async () => {
+                  // Apply baud rate
+                  await app.settings.portConfiguration.setBaudRate();
+                }}
+              />
+            )}
+            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+            sx={{ m: 1, width: 160 }}
+            size="small"
+            inputValue={app.settings.portConfiguration.baudRateInputValue}
+            onInputChange={(event, newInputValue) => {
+              app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
+            }}
+          />
+        </Tooltip>
+        {/* ============================================================== */}
+        {/* NUM. DATA BITS */}
+        {/* ============================================================== */}
+        <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right" enterDelay={500}>
+          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+            <InputLabel>Num. data bits</InputLabel>
+            <Select
+              value={app.settings.portConfiguration.numDataBits}
+              label="Num. Data Bits"
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              onChange={(e) => {
+                app.settings.portConfiguration.setNumDataBits(e.target.value as number);
+              }}
+            >
+              {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
+                return (
+                  <MenuItem key={numDataBits} value={numDataBits}>
+                    {numDataBits.toString()}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Tooltip>
+        {/* ============================================================== */}
+        {/* PARITY */}
+        {/* ============================================================== */}
+        <Tooltip
+          title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
+          placement="right"
+          enterDelay={500}
+        >
+          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+            <InputLabel>Parity</InputLabel>
+            <Select
+              value={app.settings.portConfiguration.parity}
+              label="Parity"
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              onChange={(e) => {
+                app.settings.portConfiguration.setParity(e.target.value as Parity);
+              }}
+            >
+              {Object.values(Parity).map((parity) => {
+                return (
+                  <MenuItem key={parity} value={parity}>
+                    {parity}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Tooltip>
+        {/* ============================================================== */}
+        {/* STOP BITS */}
+        {/* ============================================================== */}
+        <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right" enterDelay={500}>
+          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+            <InputLabel>Stop bits</InputLabel>
+            <Select
+              value={app.settings.portConfiguration.stopBits}
+              label="Stop Bits"
+              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              onChange={(e) => {
+                app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
+              }}
+            >
+              {STOP_BIT_OPTIONS.map((stopBits) => {
+                return (
+                  <MenuItem key={stopBits} value={stopBits}>
+                    {stopBits.toString()}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Tooltip>
+      </div>
+
+      {/* ============================================================== */}
+      {/* FLOW CONTROL */}
+      {/* ============================================================== */}
+      <Tooltip
+        title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
+        placement="right"
+        enterDelay={500}
+      >
+        <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+          <InputLabel>Flow control</InputLabel>
+          <Select
+            value={app.settings.portConfiguration.flowControl}
+            label="Parity"
+            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+            onChange={(e) => {
+              app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
+            }}
+          >
+            {Object.values(FlowControl).map((flowControl) => {
+              return (
+                <MenuItem key={flowControl} value={flowControl}>
+                  {flowControl}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+      </Tooltip>
+
+      <div style={{ height: '20px' }}></div>
+
+      {/* =============================================================== */}
+      {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
+      {/* =============================================================== */}
+      <Tooltip
+        title={
+          <div>
+            Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
+            <br />
+            This setting is more relevant for the quick port settings in the right-hand drawer on the terminal view.
+          </div>
+        }
+        enterDelay={500}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              onChange={(e) => {
+                app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
+              }}
+            />
+          }
+          label="Allow settings changes when open (will reconnect)"
+        />
+      </Tooltip>
+
+      {/* =============================================================== */}
+      {/* OPEN AND GO TO TERMINAL CHECKBOX */}
+      {/* =============================================================== */}
+      <Tooltip title="Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!" enterDelay={500}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
+              onChange={(e) => {
+                app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
+              }}
+              data-testid="connect-and-go-to-terminal-checkbox"
+            />
+          }
+          label="Open serial port and go to the terminal as soon as it is selected"
+        />
+      </Tooltip>
+      {/* =============================================================== */}
+      {/* RECONNECT ON STARTUP CHECKBOX */}
+      {/* =============================================================== */}
+      <Tooltip
+        title="On startup, if NinjaTerm can find last used serial port it will reselect it. If it was previously in the CONNECTED state, the port will also be re-opened."
+        enterDelay={500}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
+              onChange={(e) => {
+                app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
+              }}
+            />
+          }
+          label="Resume connection to last serial port on app startup"
+        />
+      </Tooltip>
+      {/* =============================================================== */}
+      {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
+      {/* =============================================================== */}
+      <Tooltip
+        title="If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
+        enterDelay={500}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed}
+              onChange={(e) => {
+                app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(e.target.checked);
+              }}
+            />
+          }
+          label="Reopen serial port when available if it unexpectedly closes"
+        />
+      </Tooltip>
+
+      <div style={{ height: '20px' }}></div>
+
+      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+        {/* =============================================================== */}
+        {/* OPEN/CLOSE BUTTON */}
+        {/* =============================================================== */}
+        <Button
+          variant="contained"
+          color={
+            portStateToButtonProps[app.portState].color as OverridableStringUnion<
+              'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+              ButtonPropsColorOverrides
+            >
+          }
+          onClick={() => {
+            if (app.portState === PortState.CLOSED) {
+              app.openPort();
+            } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+              app.stopWaitingToReopenPort();
+            } else if (app.portState === PortState.OPENED) {
+              app.closePort();
+            } else {
+              throw Error('Invalid port state.');
+            }
+          }}
+          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
+          disabled={
+            (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+          }
+          sx={{ width: '150px' }}
+          data-testid="open-close-button"
+        >
+          {portStateToButtonProps[app.portState].text}
+        </Button>
+      </div>
+
+      <div style={{ height: '20px' }}></div>
+      {/* =============================================================== */}
+      {/* PORT CONNECTED/DISCONNECTED STATUS */}
+      {/* =============================================================== */}
+      <Typography>Status: {PortState[app.portState]}</Typography>
+    </div>
+  );
+}
+
+export default observer(PortSettingsView);
