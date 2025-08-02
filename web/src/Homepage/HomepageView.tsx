@@ -14,8 +14,8 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InfoIcon from '@mui/icons-material/Info';
 import DownloadIcon from '@mui/icons-material/Download';
-import DesktopWindowsIcon from '@mui/icons-material/DesktopWindows';
-import LinuxIcon from '@mui/icons-material/Memory'; // Using Memory icon as a Linux representation
+import WindowsLogoPng from './windows-logo.png';
+import LinuxLogoPng from './linux-logo.png';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useEffect, useState } from 'react';
 
@@ -91,7 +91,7 @@ export default observer((props: Props) => {
 
   useEffect(() => {
     document.title = "NinjaTerm - Web-Based Serial Port Terminal for Embedded Developers";
-    
+
     // Fetch latest release data
     const fetchLatestRelease = async () => {
       setLoading(true);
@@ -114,7 +114,7 @@ export default observer((props: Props) => {
   // Helper functions to get download URLs
   const getWindowsDownloadUrl = () => {
     if (!release) return null;
-    const windowsAsset = release.assets.find(asset => 
+    const windowsAsset = release.assets.find(asset =>
       asset.name.includes('Setup') && asset.name.endsWith('.exe')
     );
     return windowsAsset?.browser_download_url || null;
@@ -123,7 +123,7 @@ export default observer((props: Props) => {
   const getLinuxDownloadUrl = () => {
     if (!release) return null;
     // Prioritize x86_64/x64 architecture for Linux
-    const linuxAsset = release.assets.find(asset => 
+    const linuxAsset = release.assets.find(asset =>
       asset.name.endsWith('.AppImage') && (asset.name.includes('x86_64') || asset.name.includes('x64'))
     );
     return linuxAsset?.browser_download_url || null;
@@ -181,7 +181,7 @@ export default observer((props: Props) => {
             </span>
           </Grid>
           <Grid xs={12} sx={{ height: '20px' }} />
-          
+
           {/* Primary Download Buttons */}
           <Grid
             xs={12}
@@ -205,28 +205,40 @@ export default observer((props: Props) => {
                   disabled={!getWindowsDownloadUrl()}
                   variant="contained"
                   size="large"
-                  startIcon={<DesktopWindowsIcon />}
+                  startIcon={<img src={WindowsLogoPng} alt="Windows" style={{ width: '20px', height: '20px' }} />}
                   sx={{
                     minWidth: '200px',
                     backgroundColor: primaryColor,
                     '&:hover': { backgroundColor: '#D16A2A' },
                   }}
                 >
-                  Download for Windows
+                  Download for Windows (x86_64)
                 </Button>
                 <Button
                   href={getLinuxDownloadUrl() || undefined}
                   disabled={!getLinuxDownloadUrl()}
                   variant="contained"
                   size="large"
-                  startIcon={<LinuxIcon />}
+                  startIcon={<img src={LinuxLogoPng} alt="Linux" style={{ width: '20px', height: '20px' }} />}
                   sx={{
                     minWidth: '200px',
                     backgroundColor: primaryColor,
                     '&:hover': { backgroundColor: '#D16A2A' },
                   }}
                 >
-                  Download for Linux
+                  Download for Linux (x86_64)
+                </Button>
+                <Button
+                  href="https://github.com/gbmhunter/NinjaTerm/releases"
+                  target="_blank"
+                  variant="outlined"
+                  size="large"
+                  startIcon={<DownloadIcon />}
+                  sx={{
+                    minWidth: '150px',
+                  }}
+                >
+                  More releases
                 </Button>
               </>
             )}
@@ -257,9 +269,6 @@ export default observer((props: Props) => {
             <Button href="/manual" variant="outlined" size="medium" startIcon={<InfoIcon />}>
               Manual
             </Button>
-            <Button href="https://github.com/gbmhunter/NinjaTerm/releases" target="_blank" variant="outlined" size="medium" startIcon={<DownloadIcon />}>
-              More releases
-            </Button>
             <Button href="https://github.com/gbmhunter/NinjaTerm" target="_blank" variant="outlined" size="medium" startIcon={<GitHubIcon />}>
               GitHub
             </Button>
@@ -268,15 +277,17 @@ export default observer((props: Props) => {
 
           <Grid xs={12}>
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
-              NinjaTerm is an open source and free web-based application designed for viewing debug serial port data and sending commands when developing firmware for an embedded
+              NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for an embedded
               device (e.g. microcontroller).
             </Typography>
 
-            <Typography variant="h2" style={{ marginBottom: '20px' }}>
-            Browser Support
-          </Typography>
+            <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
+              If you are looking for a serious terminal for continual use, the installable desktop versions are recommended. If you are looking for a quick way to view some serial data without having to install anything, the web-based version is for you!
+            </Typography>
+
+            <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
             <p>
-              Natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome,
+              For the web-based version, natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome,
               Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
               <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
                 WebSerial for Firefox extension
@@ -290,6 +301,7 @@ export default observer((props: Props) => {
               </a>{' '}
               for a compatibility table.
             </p>
+            </Typography>
           </Grid>
 
           <Grid xs={12} sx={{ height: '20px' }} />
