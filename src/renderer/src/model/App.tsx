@@ -653,23 +653,23 @@ export class App {
 
     // Update downloaded - show install notification
     electronAPI.updater.onUpdateDownloaded((updateInfo: any) => {
+      const actionButton = (key: any) => (
+        <Button
+          onClick={() => {
+            closeSnackbar(key);
+            this.installUpdate();
+          }}
+          style={{ color: 'white' }}
+        >
+          Restart & Install
+        </Button>
+      );
+      
       this.snackbar.sendToSnackbar(
         `Update v${updateInfo.version} has been downloaded. Restart NinjaTerm to install.`,
         'success',
-        {
-          persist: true,
-          action: (key) => (
-            <Button
-              onClick={() => {
-                closeSnackbar(key);
-                this.installUpdate();
-              }}
-              style={{ color: 'white' }}
-            >
-              Restart & Install
-            </Button>
-          ),
-        }
+        actionButton,
+        true // persist
       );
     });
   }
