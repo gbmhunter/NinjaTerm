@@ -17,18 +17,39 @@ const RX_DATA_BATCH_TIMEOUT_MS = 20;
 autoUpdater.logger = log;
 (autoUpdater.logger as any).transports.file.level = 'info';
 
+// Configure auto-updater to always check the latest release
+autoUpdater.channel = 'latest';
+autoUpdater.allowPrerelease = false;
+autoUpdater.allowDowngrade = false;
+
+// Explicitly set the GitHub repository for updates
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
+  autoUpdater.setFeedURL({
+    provider: 'github',
+    owner: 'gbmhunter',
+    repo: 'NinjaTerm',
+    private: false
+  });
+}
+
 // Auto-updater event handlers
 autoUpdater.on('checking-for-update', () => {
   log.info('Checking for update...');
+  log.info(`Current version: ${app.getVersion()}`);
+  log.info(`Update channel: ${autoUpdater.channel}`);
 });
 
 autoUpdater.on('update-available', (info) => {
   log.info('Update available.');
+  log.info(`Available version: ${info.version}`);
+  log.info(`Current version: ${app.getVersion()}`);
   mainWindow?.webContents.send('update-available', info);
 });
 
 autoUpdater.on('update-not-available', (info) => {
   log.info('Update not available.');
+  log.info(`Current version: ${app.getVersion()}`);
+  log.info(`Latest version: ${info.version}`);
   mainWindow?.webContents.send('update-not-available', info);
 });
 
@@ -352,9 +373,16 @@ ipcMain.handle('updater:check-for-updates', async () => {
     if (process.env.NODE_ENV === 'development') {
       return { success: false, error: 'Updates not available in development mode' };
     }
+    
+    log.info('Manual update check initiated');
+    log.info(`Current app version: ${app.getVersion()}`);
+    log.info(`Update channel: ${autoUpdater.channel}`);
+    log.info(`Feed URL: ${JSON.stringify(autoUpdater.getFeedURL())}`);
+    
     const result = await autoUpdater.checkForUpdates();
     return { success: true, updateInfo: result?.updateInfo };
   } catch (error) {
+    log.error(`Manual update check failed: ${(error as Error).message}`);
     return { success: false, error: (error as Error).message };
   }
 });
