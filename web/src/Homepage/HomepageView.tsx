@@ -90,7 +90,7 @@ export default observer((props: Props) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = "NinjaTerm - Web-Based Serial Port Terminal for Embedded Developers";
+    document.title = "NinjaTerm - A serial port terminal that's got your back.";
 
     // Fetch latest release data
     const fetchLatestRelease = async () => {
