@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.0.4] - 2025-08-02
+
+### Fixed
+
+- Fixed bug where app would crash on auto-update just after new version was downloaded.
+
 ## [5.0.3] - 2025-08-02
 
 ### Changed
@@ -838,7 +844,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.3...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...HEAD
+[5.0.4]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.3...v5.0.4
 [5.0.3]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.1...v5.0.2
 [5.0.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.0...v5.0.1
