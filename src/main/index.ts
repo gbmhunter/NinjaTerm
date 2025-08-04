@@ -112,9 +112,32 @@ app.whenReady().then(() => {
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds
   if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
-    // Check for updates 5 seconds after startup
-    setTimeout(() => {
-      autoUpdater.checkForUpdatesAndNotify();
+    // Check for updates 5 seconds after startup, but only if auto-updates are enabled
+    setTimeout(async () => {
+      try {
+        const autoUpdatesResult = await mainWindow?.webContents.executeJavaScript(`
+          (() => {
+            try {
+              const appDataJson = localStorage.getItem('appData');
+              if (!appDataJson) return true; // Default to enabled
+              const appData = JSON.parse(appDataJson);
+              return appData.autoUpdatesEnabled ?? true;
+            } catch (error) {
+              return true; // Default to enabled on error
+            }
+          })()
+        `);
+
+        if (autoUpdatesResult) {
+          log.info('Auto-updates enabled, checking for updates...');
+          autoUpdater.checkForUpdatesAndNotify();
+        } else {
+          log.info('Auto-updates disabled, skipping update check.');
+        }
+      } catch (error) {
+        log.error('Failed to check auto-updates setting, defaulting to enabled:', error);
+        autoUpdater.checkForUpdatesAndNotify();
+      }
     }, 5000);
   }
 });
@@ -396,6 +419,28 @@ ipcMain.handle('updater:quit-and-install', async () => {
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('updater:get-auto-updates-enabled', async () => {
+  // The "auto-updates enabled" setting is stored in the app data which is handled by the renderer process.
+  // This IPC handler is used to get the setting from the renderer process.
+  try {
+    const result = await mainWindow?.webContents.executeJavaScript(`
+      (() => {
+        try {
+          const appDataJson = localStorage.getItem('appData');
+          if (!appDataJson) return true; // Default to enabled
+          const appData = JSON.parse(appDataJson);
+          return appData.autoUpdatesEnabled ?? true;
+        } catch (error) {
+          return true; // Default to enabled on error
+        }
+      })()
+    `);
+    return { success: true, enabled: result };
+  } catch (error) {
+    return { success: false, error: (error as Error).message, enabled: true };
   }
 });
 

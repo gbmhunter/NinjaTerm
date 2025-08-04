@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added global app setting for enabling/disabling automatic updates.
+
 ### Fixed
 
 - Fixed bug where available serial ports table was not disabled when the port was open.

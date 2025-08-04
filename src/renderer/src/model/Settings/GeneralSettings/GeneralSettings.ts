@@ -7,6 +7,10 @@ export default class GeneralSettings {
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
 
+  get autoUpdatesEnabled() {
+    return this.profileManager.appData.autoUpdatesEnabled;
+  }
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
@@ -24,6 +28,11 @@ export default class GeneralSettings {
   setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
     this._saveConfig();
+  };
+
+  setAutoUpdatesEnabled = (value: boolean) => {
+    this.profileManager.appData.autoUpdatesEnabled = value;
+    this.profileManager.saveAppData();
   };
 
   _saveConfig = () => {

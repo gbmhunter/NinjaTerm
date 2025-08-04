@@ -6,7 +6,7 @@ import { SettingsData } from './SettingsData';
 /**
  * Everything in this class must be POD (plain old data) and serializable to JSON.
  */
-export class RootConfig {
+export class ProfileConfig {
 
   terminal = {
     macroController: new MacroControllerData(),

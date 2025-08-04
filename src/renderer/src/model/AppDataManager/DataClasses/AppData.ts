@@ -1,9 +1,9 @@
 import { makeAutoObservable } from "mobx";
 
 import { Profile } from "./Profile";
-import { RootConfig } from "./RootConfig";
+import { ProfileConfig } from "./ProfileConfig";
 
-export const LATEST_VERSION = 3;
+export const LATEST_VERSION = 4;
 
 export class AppData {
   // Version of the AppData class.
@@ -16,7 +16,13 @@ export class AppData {
    * Represents the current application configuration. This is saved regularly so that when the app reloads,
    * it can restore the last known configuration.
    */
-  currentAppConfig = new RootConfig();
+  currentAppConfig = new ProfileConfig();
+
+  /**
+   * Global app setting for enabling/disabling automatic updates.
+   * This is stored at the app level rather than per-profile since it affects the entire application.
+   */
+  autoUpdatesEnabled = true;
 
   constructor() {
     this.profiles = [];

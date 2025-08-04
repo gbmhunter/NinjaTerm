@@ -170,12 +170,23 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 3 -> VERSION 4
+    //=============================================================================
     if (updatedAppData.version === 3) {
+      console.log('Updating app data from version 3 to version 4...');
+      // Add auto-updates setting to app data (global setting, not per profile)
+      updatedAppData.autoUpdatesEnabled = true;
+      updatedAppData.version = 4;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 4) {
       // Nothing to do, already latest version
       console.log(`App data is at latest version (v${updatedAppData.version}).`);
     }
 
-    if (updatedAppData.version !== 3) {
+    if (updatedAppData.version !== 4) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

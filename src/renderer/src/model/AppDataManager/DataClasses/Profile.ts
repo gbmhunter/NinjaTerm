@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { RootConfig } from "./RootConfig";
+import { ProfileConfig } from "./ProfileConfig";
 
 /**
  * This class represents all the data stored in a user profile. It is used to store use-specific
@@ -8,11 +8,11 @@ import { RootConfig } from "./RootConfig";
  */
 export class Profile {
   name: string = '';
-  rootConfig: RootConfig;
+  rootConfig: ProfileConfig;
 
   constructor(name: string) {
     this.name = name;
-    this.rootConfig = new RootConfig();
+    this.rootConfig = new ProfileConfig();
     makeAutoObservable(this);
   }
 }
