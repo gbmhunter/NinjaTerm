@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where available serial ports table was not disabled when the port was open.
+
 ## [5.0.4] - 2025-08-02
 
 ### Fixed

@@ -347,7 +347,7 @@ export default observer((props: Props) => {
                 }}
                 // Disabled when port is closed and no port is selected, or if the baud rate is invalid
                 disabled={
-                  (app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+                  (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
                 }
                 sx={{ width: '150px' }}
                 data-testid="open-close-button"
