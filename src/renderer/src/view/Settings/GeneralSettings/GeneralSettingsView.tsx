@@ -40,7 +40,7 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
           <Tooltip
@@ -93,7 +93,7 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
           <Tooltip
@@ -116,17 +116,17 @@ function GeneralSettingsView(props: Props) {
               sx={{ marginBottom: "10px" }}
             />
           </Tooltip>
-          <Button 
-            variant="outlined" 
-            size="large" 
-            startIcon={<SystemUpdateIcon />} 
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<SystemUpdateIcon />}
             onClick={() => app.checkForUpdates()}
-            style={{ marginBottom: "10px" }}
+            style={{ marginBottom: "10px", width: "300px" }}
           >
             Check for Updates
           </Button>
           <div style={{ fontSize: "0.875rem", color: "text.secondary", marginTop: "8px" }}>
-            {generalSettings.autoUpdatesEnabled 
+            {generalSettings.autoUpdatesEnabled
               ? "NinjaTerm automatically checks for updates on startup. Click the button above to manually check for updates."
               : "Automatic updates are disabled. Click the button above to manually check for updates."
             }
@@ -142,10 +142,10 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
-          <Button variant="outlined" size="large" startIcon={<DeleteForeverIcon />} onClick={handleOpenConfirmDialog} color="error">
+          <Button variant="outlined" size="large" startIcon={<DeleteForeverIcon />} onClick={handleOpenConfirmDialog} color="error" style={{ width: "500px" }}>
             Clear app data and reload app
           </Button>
         </div>
