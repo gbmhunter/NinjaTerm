@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
@@ -75,6 +75,9 @@ autoUpdater.on('update-downloaded', (info) => {
 let mainWindow: BrowserWindow;
 
 function createWindow(): void {
+  // Remove the default menu. No top menu bar is needed.
+  Menu.setApplicationMenu(null);
+
   // Create the browser window
   mainWindow = new BrowserWindow({
     height: 900,
@@ -105,7 +108,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
-  
+
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds
   if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
@@ -373,12 +376,12 @@ ipcMain.handle('updater:check-for-updates', async () => {
     if (process.env.NODE_ENV === 'development') {
       return { success: false, error: 'Updates not available in development mode' };
     }
-    
+
     log.info('Manual update check initiated');
     log.info(`Current app version: ${app.getVersion()}`);
     log.info(`Update channel: ${autoUpdater.channel}`);
     log.info(`Feed URL: ${JSON.stringify(autoUpdater.getFeedURL())}`);
-    
+
     const result = await autoUpdater.checkForUpdates();
     return { success: true, updateInfo: result?.updateInfo };
   } catch (error) {
