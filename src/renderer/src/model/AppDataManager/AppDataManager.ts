@@ -177,6 +177,19 @@ export class AppDataManager {
       console.log('Updating app data from version 3 to version 4...');
       // Add auto-updates setting to app data (global setting, not per profile)
       updatedAppData.autoUpdatesEnabled = true;
+
+      // We switched from using Web Serial to the node serialport library here. Now we can get the actual path of
+      // the serial port and we use that as the ID.
+      // This updates to the new ID format, but will lose all users last used serial port info
+      // (this is ok)
+      // Need to set lastUsedSerialPort":{"path":"","portState":0}
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.lastUsedSerialPort = { path: '', portState: PortState.CLOSED };
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
       updatedAppData.version = 4;
       wasChanged = true;
     }

@@ -286,6 +286,9 @@ export default observer((props: Props) => {
             </Typography>
 
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
+              <p>
+                The Linux <code>.AppImage</code> requires FUSE to be installed (<code>sudo apt install fuse</code> on Debian-based distros).
+              </p>
             <p>
               For the web-based version, natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome,
               Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}

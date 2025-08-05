@@ -99,7 +99,7 @@ The source code is under `src/`. The React-based user interfaces are in `.tsx` f
 
 ## Web App
 
-NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm.
+NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm. The `web` directory is a project in it's own right, see it's `README.md` for more details.
 
 ## Graphing
 

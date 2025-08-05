@@ -11,7 +11,7 @@ const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
 
 // 1ms was too fast -- resulted in many small chunks being sent to the renderer process
 // and too many IPC calls
-const RX_DATA_BATCH_TIMEOUT_MS = 20;
+const RX_DATA_BATCH_TIMEOUT_MS = 10;
 
 // Configure auto-updater logging
 autoUpdater.logger = log;
@@ -189,6 +189,7 @@ ipcMain.handle('serial:list-ports', async () => {
 });
 
 ipcMain.handle('serial:open-port', async (event, portPath: string, options: any) => {
+  console.log('serial:open-port called. portPath: ', portPath, ' options: ', options);
   try {
     if (activeSerialPorts.has(portPath)) {
       return { success: false, error: 'Port already open' };
@@ -203,12 +204,26 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       autoOpen: false
     });
 
+    // I have seen the port.open() callback not get called in some cases, so add a timeout here so
+    // the app does not hang indefinitely.
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const timeout = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          reject(new Error('Timeout while opening serial port'));
+        }
+      }, 5*1000); // 5 seconds timeout
+
       port.open((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         }
       });
     });

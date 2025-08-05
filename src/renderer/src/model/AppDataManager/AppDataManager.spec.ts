@@ -61,19 +61,19 @@ describe('app data manager tests', () => {
   //   expect(JSON.stringify(appDataUpdated, replacer)).toEqual(JSON.stringify(latestCorrectAppData, replacer));
   // });
 
-  // test('app data can be upgraded from v2', () => {
-  //   const app = new App();
-  //   const appDataManager = new AppDataManager(app);
-  //   const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0-default.json', 'utf8'));
-  //   const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV2);
-  //   const latestCorrectAppData = new AppData();
-  //   expect(wasChanged).toEqual(true);
-  //   expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
-  //   // Save the updated app data to a file
-  //   // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
-  //   // Save latest correct app data to a file
-  //   // fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
-  //   expect(JSON.stringify(appDataUpdated, replacer))
-  //     .toEqual(JSON.stringify(latestCorrectAppData, replacer));
-  // });
+  test('app data can be upgraded from v2', () => {
+    const app = new App();
+    const appDataManager = new AppDataManager(app);
+    const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0-default.json', 'utf8'));
+    const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV2);
+    const latestCorrectAppData = new AppData();
+    expect(wasChanged).toEqual(true);
+    expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
+    // Save the updated app data to a file
+    // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
+    // Save latest correct app data to a file
+    // fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
+    expect(JSON.stringify(appDataUpdated, replacer))
+      .toEqual(JSON.stringify(latestCorrectAppData, replacer));
+  });
 });
