@@ -49,6 +49,35 @@ class Graphing {
 
   yVarPrefix = new ApplyableTextField('y=', z.string());
 
+  /**
+   * Whether multiple values per line are enabled
+   */
+  multipleValuesPerLine = false;
+
+  valueSeparators = [
+    'Comma (,)',
+    'Space ( )',
+    'Custom',
+  ]
+
+  valueSeparator = this.valueSeparators[0];
+
+  customValueSeparator = new ApplyableTextField(',', z.string());
+
+  xVarModes = [
+    'Counter', // Incremental counter for each value
+    'Time Per Value', // Time per individual value (not per line)
+    'In Data', // X values also parsed from data
+  ]
+
+  xVarMode = this.xVarModes[0];
+
+  /**
+   * Whether to clear existing plot data when new values arrive.
+   * Only applicable when multipleValuesPerLine is enabled.
+   */
+  clearPlotOnNewValues = true;
+
   axisRangeModes = [
     'Auto',
     'Fixed',
@@ -109,6 +138,22 @@ class Graphing {
     this.yAxisRangeMode = value;
   }
 
+  setMultipleValuesPerLine = (value: boolean) => {
+    this.multipleValuesPerLine = value;
+  }
+
+  setValueSeparator = (value: string) => {
+    this.valueSeparator = value;
+  }
+
+  setXVarMode = (value: string) => {
+    this.xVarMode = value;
+  }
+
+  setClearPlotOnNewValues = (value: boolean) => {
+    this.clearPlotOnNewValues = value;
+  }
+
   /**
    * Takes incoming streamed data and extracts any data points out of it.
    *
@@ -139,61 +184,13 @@ class Graphing {
           continue;
         }
 
-        // Get the Y value. Grab the entire line after the Y variable prefix,
-        // and call parseFloat on it. This will stop at the first non-numeric
-        // character (but will allow things like "."), which is what we want.
-        let yValStr = '';
-        for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
-          yValStr += this.rxDataBuffer[j];
-        }
-        const yVal = parseFloat(yValStr);
-        // Bail if y value is NaN
-        if (isNaN(yVal)) {
-          this.snackbar.sendToSnackbar(
-            'Graphing received NaN value for y-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
-            'warning');
-          this.rxDataBuffer = '';
-          continue;
-        }
-
-        // Get the X value
-        let xVal;
-        if (this.xVarSource === 'Received Time') {
-          // Get the time since the last reset in ms, then convert to s
-          xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
-        } else if (this.xVarSource === 'Counter') {
-          // Use the number of data points as the X value
-          xVal = this.graphData.length;
-        } else if (this.xVarSource === 'In Data') {
-          const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
-          if (xVarPrefixIdx === -1) {
-            // This line does not contain the X variable prefix, so skip it
-            this.rxDataBuffer = '';
-            continue;
-          }
-          // Get the X value. Grab the entire line after the X variable prefix,
-          // and call parseFloat on it. This will stop at the first non-numeric
-          // character (but will allow things like "."), which is what we want.
-          let xValStr = '';
-          for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
-            xValStr += this.rxDataBuffer[j];
-          }
-          xVal = parseFloat(xValStr);
-          // Bail if y value is NaN
-          if (isNaN(xVal)) {
-            this.snackbar.sendToSnackbar(
-              'Graphing received NaN value for x-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
-              'warning');
-            this.rxDataBuffer = '';
-            continue;
-          }
-
+        if (this.multipleValuesPerLine) {
+          // Extract multiple values per line
+          this.parseMultipleValues();
         } else {
-          throw new Error('Unsupported X variable source: ' + this.xVarSource);
+          // Single value per line (original behavior)
+          this.parseSingleValue();
         }
-
-        // If we get here both x and y values should be valid
-        this.addDataPoint(xVal, yVal);
 
         // Since data separator has been received and line has been parsed,
         // now clear the buffer
@@ -211,6 +208,161 @@ class Graphing {
     }
 
     // console.log('graphData: ' + JSON.stringify(this.graphData));
+  }
+
+  /**
+   * Parse a single value from the buffer (original behavior)
+   */
+  parseSingleValue = () => {
+    // Get the Y value. Grab the entire line after the Y variable prefix,
+    // and call parseFloat on it. This will stop at the first non-numeric
+    // character (but will allow things like "."), which is what we want.
+    const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+    let yValStr = '';
+    for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+      yValStr += this.rxDataBuffer[j];
+    }
+    const yVal = parseFloat(yValStr);
+    // Bail if y value is NaN
+    if (isNaN(yVal)) {
+      this.snackbar.sendToSnackbar(
+        'Graphing received NaN value for y-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+        'warning');
+      return;
+    }
+
+    // Get the X value
+    let xVal;
+    if (this.xVarSource === 'Received Time') {
+      // Get the time since the last reset in ms, then convert to s
+      xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
+    } else if (this.xVarSource === 'Counter') {
+      // Use the number of data points as the X value
+      xVal = this.graphData.length;
+    } else if (this.xVarSource === 'In Data') {
+      const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
+      if (xVarPrefixIdx === -1) {
+        // This line does not contain the X variable prefix, so skip it
+        return;
+      }
+      // Get the X value. Grab the entire line after the X variable prefix,
+      // and call parseFloat on it. This will stop at the first non-numeric
+      // character (but will allow things like "."), which is what we want.
+      let xValStr = '';
+      for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+        xValStr += this.rxDataBuffer[j];
+      }
+      xVal = parseFloat(xValStr);
+      // Bail if x value is NaN
+      if (isNaN(xVal)) {
+        this.snackbar.sendToSnackbar(
+          'Graphing received NaN value for x-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+          'warning');
+        return;
+      }
+    } else {
+      throw new Error('Unsupported X variable source: ' + this.xVarSource);
+    }
+
+    // If we get here both x and y values should be valid
+    this.addDataPoint(xVal, yVal);
+  }
+
+  /**
+   * Parse multiple values from the buffer
+   */
+  parseMultipleValues = () => {
+    // Clear existing data if the toggle is enabled
+    if (this.clearPlotOnNewValues) {
+      this.graphData = [];
+    }
+
+    const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+    
+    // Get the data string after the Y variable prefix
+    let dataStr = '';
+    for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+      dataStr += this.rxDataBuffer[j];
+    }
+    
+    // Determine the separator to use
+    let separator = ',';
+    if (this.valueSeparator === 'Comma (,)') {
+      separator = ',';
+    } else if (this.valueSeparator === 'Space ( )') {
+      separator = ' ';
+    } else if (this.valueSeparator === 'Custom') {
+      separator = this.customValueSeparator.appliedValue;
+    }
+    
+    // Split the data string and parse Y values
+    const yValStrings = dataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
+    const yValues: number[] = [];
+    
+    for (const yValStr of yValStrings) {
+      const yVal = parseFloat(yValStr);
+      if (!isNaN(yVal)) {
+        yValues.push(yVal);
+      }
+    }
+    
+    if (yValues.length === 0) {
+      this.snackbar.sendToSnackbar(
+        'Graphing: No valid Y values found in line. rxDataBuffer: ' + this.rxDataBuffer,
+        'warning');
+      return;
+    }
+
+    // Handle X values based on xVarMode
+    const xValues: number[] = [];
+    const currentTime = (Date.now() - this.timeAtReset_ms)/1000.0;
+    
+    if (this.xVarMode === 'Counter') {
+      // Use incremental counter for each value
+      for (let i = 0; i < yValues.length; i++) {
+        xValues.push(this.graphData.length + i);
+      }
+    } else if (this.xVarMode === 'Time Per Value') {
+      // Use same timestamp for all values in the line
+      for (let i = 0; i < yValues.length; i++) {
+        xValues.push(currentTime);
+      }
+    } else if (this.xVarMode === 'In Data') {
+      // Parse X values from data similar to Y values
+      const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
+      if (xVarPrefixIdx === -1) {
+        // No X data found, fall back to counter
+        for (let i = 0; i < yValues.length; i++) {
+          xValues.push(this.graphData.length + i);
+        }
+      } else {
+        // Get X data string
+        let xDataStr = '';
+        for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+          xDataStr += this.rxDataBuffer[j];
+        }
+        
+        // Split X data
+        const xValStrings = xDataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
+        
+        for (let i = 0; i < yValues.length; i++) {
+          if (i < xValStrings.length) {
+            const xVal = parseFloat(xValStrings[i]);
+            xValues.push(isNaN(xVal) ? this.graphData.length + i : xVal);
+          } else {
+            // If not enough X values, use counter
+            xValues.push(this.graphData.length + i);
+          }
+        }
+      }
+    } else {
+      throw new Error('Unsupported X variable mode: ' + this.xVarMode);
+    }
+
+    // Add all data points
+    for (let i = 0; i < yValues.length; i++) {
+      this.addDataPoint(xValues[i], yValues[i]);
+    }
   }
 
   addDataPoint = (x: number, y: number) => {

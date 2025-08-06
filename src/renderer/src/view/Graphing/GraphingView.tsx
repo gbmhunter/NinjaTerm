@@ -242,6 +242,136 @@ export default observer((props: Props) => {
               sx={{ width: "200px" }}
             />
           </Tooltip>
+
+          {/* MULTIPLE VALUES PER LINE */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Enable parsing multiple comma/space-separated values from each line instead of just one value per line."
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Switch
+                  name="multipleValuesPerLine"
+                  checked={app.graphing.multipleValuesPerLine}
+                  onChange={(e) => {
+                    app.graphing.setMultipleValuesPerLine(e.target.checked);
+                  }}
+                />
+              }
+              label="Multiple Values Per Line"
+            />
+          </Tooltip>
+
+          {/* VALUE SEPARATOR */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerLine && (
+            <Tooltip
+              title="The character that separates multiple values within a single line."
+              followCursor
+              arrow
+            >
+              <FormControl sx={{ width: 160 }} size="small">
+                <InputLabel>Value Separator</InputLabel>
+                <Select
+                  value={app.graphing.valueSeparator}
+                  label="Value Separator"
+                  onChange={(e) => {
+                    app.graphing.setValueSeparator(e.target.value);
+                  }}
+                >
+                  {app.graphing.valueSeparators.map((separator: string) => {
+                    return (
+                      <MenuItem key={separator} value={separator}>
+                        {separator}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+          )}
+
+          {/* CUSTOM VALUE SEPARATOR */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerLine && app.graphing.valueSeparator === 'Custom' && (
+            <Tooltip
+              title="Custom character(s) to use as value separator."
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                label="Custom Separator"
+                name="customValueSeparator"
+                size="small"
+                variant="outlined"
+                applyableTextField={app.graphing.customValueSeparator}
+                sx={{ width: "150px" }}
+              />
+            </Tooltip>
+          )}
+
+          {/* X VAR MODE (for multiple values) */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerLine && (
+            <Tooltip
+              title={
+                <div>
+                  How to assign X values when multiple Y values are parsed from one line:
+                  <ul>
+                    <li>Counter: Use incremental counter for each value</li>
+                    <li>Time Per Value: Use same timestamp for all values in the line</li>
+                    <li>In Data: Parse X values from data just like Y values</li>
+                  </ul>
+                </div>
+              }
+              followCursor
+              arrow
+            >
+              <FormControl sx={{ width: 160 }} size="small">
+                <InputLabel>X Value Mode</InputLabel>
+                <Select
+                  value={app.graphing.xVarMode}
+                  label="X Value Mode"
+                  onChange={(e) => {
+                    app.graphing.setXVarMode(e.target.value);
+                  }}
+                >
+                  {app.graphing.xVarModes.map((mode: string) => {
+                    return (
+                      <MenuItem key={mode} value={mode}>
+                        {mode}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+          )}
+
+          {/* CLEAR PLOT ON NEW VALUES */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerLine && (
+            <Tooltip
+              title="When enabled, the plot is cleared each time new data arrives. Useful for displaying snapshots of data rather than accumulating over time."
+              followCursor
+              arrow
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="clearPlotOnNewValues"
+                    checked={app.graphing.clearPlotOnNewValues}
+                    onChange={(e) => {
+                      app.graphing.setClearPlotOnNewValues(e.target.checked);
+                    }}
+                  />
+                }
+                label="Clear Plot On New Values"
+              />
+            </Tooltip>
+          )}
         </div>
 
         {/* CONTROL PANEL 3: X-AXIS RANGE */}
