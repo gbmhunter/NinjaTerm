@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, globalShortcut } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
@@ -88,6 +88,13 @@ function createWindow(): void {
     },
     icon: path.join(__dirname, '../../img/logo/v3/icon-256x256.png')
   });
+
+  // Install shortcut so user can press "F5" to reload the app. Useful for development,
+  // might be useful in prod?
+  globalShortcut.register('f5', function() {
+    console.log('f5 is pressed')
+    mainWindow.reload()
+  })
 
   // Load the app
   if (process.env.NODE_ENV === 'development') {

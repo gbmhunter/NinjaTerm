@@ -80,15 +80,21 @@ class Graphing {
 
   xAxisRangeMode = this.axisRangeModes[0];
 
-  xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+  xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
 
-  xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
+  xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+    (val) => val > this.xAxisRangeMin.appliedValue,
+    { message: "Maximum must be greater than minimum" }
+  ));
 
   yAxisRangeMode = this.axisRangeModes[0];
 
-  yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+  yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
 
-  yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
+  yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+    (val) => val > this.yAxisRangeMin.appliedValue,
+    { message: "Maximum must be greater than minimum" }
+  ));
 
   xVarUnit = 's';
 
@@ -115,9 +121,9 @@ class Graphing {
     this.xVarPrefix.setOnApplyChanged(() => this._saveConfig());
     this.yVarPrefix.setOnApplyChanged(() => this._saveConfig());
     this.customValueSeparator.setOnApplyChanged(() => this._saveConfig());
-    this.xAxisRangeMin.setOnApplyChanged(() => this._saveConfig());
+    this.xAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
     this.xAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
-    this.yAxisRangeMin.setOnApplyChanged(() => this._saveConfig());
+    this.yAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
     this.yAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
 
     // Load initial settings
@@ -296,13 +302,13 @@ class Graphing {
     }
 
     const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
-    
+
     // Get the data string after the Y variable prefix
     let dataStr = '';
     for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
       dataStr += this.rxDataBuffer[j];
     }
-    
+
     // Determine the separator to use
     let separator = ',';
     if (this.valueSeparator === 'Comma (,)') {
@@ -312,18 +318,18 @@ class Graphing {
     } else if (this.valueSeparator === 'Custom') {
       separator = this.customValueSeparator.appliedValue;
     }
-    
+
     // Split the data string and parse Y values
     const yValStrings = dataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
     const yValues: number[] = [];
-    
+
     for (const yValStr of yValStrings) {
       const yVal = parseFloat(yValStr);
       if (!isNaN(yVal)) {
         yValues.push(yVal);
       }
     }
-    
+
     if (yValues.length === 0) {
       this.snackbar.sendToSnackbar(
         'Graphing: No valid Y values found in line. rxDataBuffer: ' + this.rxDataBuffer,
@@ -334,7 +340,7 @@ class Graphing {
     // Handle X values based on xVarSource
     const xValues: number[] = [];
     const currentTime = (Date.now() - this.timeAtReset_ms)/1000.0;
-    
+
     if (this.xVarSource === 'Counter') {
       // Use incremental counter for each value
       for (let i = 0; i < yValues.length; i++) {
@@ -359,10 +365,10 @@ class Graphing {
         for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
           xDataStr += this.rxDataBuffer[j];
         }
-        
+
         // Split X data
         const xValStrings = xDataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
-        
+
         for (let i = 0; i < yValues.length; i++) {
           if (i < xValStrings.length) {
             const xVal = parseFloat(xValStrings[i]);
@@ -491,6 +497,15 @@ class Graphing {
     this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
     this.yAxisRangeMax.apply({notify: false});
     this.xVarUnit = configToLoad.xVarUnit;
+  };
+
+  _onMinRangeChanged = () => {
+    // When min values change, re-validate the max fields by re-running their validation
+    this.xAxisRangeMax.setDispValue(this.xAxisRangeMax.dispValue);
+    this.yAxisRangeMax.setDispValue(this.yAxisRangeMax.dispValue);
+    
+    // Save config
+    this._saveConfig();
   };
 }
 

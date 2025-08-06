@@ -120,20 +120,31 @@ export default observer((props: Props) => {
 
           {/* MAX BUFFER SIZE */}
           {/* ============================================================== */}
-          <Tooltip
-            title="The max. size the graphing receiving buffer can grow to waiting for a data separator. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              label="Max. Buffer Size"
-              name="maxBufferSize" // Must match the name of the field in the graphing settings
-              size="small"
-              variant="outlined"
-              applyableTextField={app.graphing.maxBufferSize}
-              sx={{ width: "200px" }}
-            />
-          </Tooltip>
+          <div>
+            <Tooltip
+              title="The max. size the graphing receiving buffer can grow to waiting for a buffer delimiter. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                label="Max. Buffer Size"
+                name="maxBufferSize" // Must match the name of the field in the graphing settings
+                size="small"
+                variant="outlined"
+                applyableTextField={app.graphing.maxBufferSize}
+                sx={{ width: "200px" }}
+              />
+            </Tooltip>
+            <Tooltip
+              title="The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when the buffer delimiter is received."
+              followCursor
+              arrow
+            >
+              <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
+              </div>
+            </Tooltip>
+          </div>
 
           {/* MAX NUM. DATA POINTS */}
           {/* ============================================================== */}
@@ -322,7 +333,7 @@ export default observer((props: Props) => {
           {/* ============================================================== */}
           {app.graphing.multipleValuesPerBuffer && (
             <Tooltip
-              title="When enabled, the plot is cleared each time new data arrives. Useful for displaying snapshots of data rather than accumulating over time."
+              title="When enabled, the plot is cleared each time new data arrives in a buffer. Useful for displaying snapshots of data rather than accumulating over time."
               followCursor
               arrow
             >
