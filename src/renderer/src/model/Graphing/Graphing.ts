@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import { ApplyableTextField, ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
 class Point {
   x: number = 0;
@@ -13,6 +14,7 @@ class Point {
 class Graphing {
 
   snackbar: SnackbarController;
+  appDataManager: AppDataManager;
 
   /**
    * Whether or not graphing is enabled. If true, RX data will be parsed for
@@ -33,7 +35,7 @@ class Graphing {
   /**
      * The maximum size of the receive buffer before it is cleared.
      */
-  maxBufferSize = new ApplyableNumberField('100', z.coerce.number().int().min(1).max(1000));
+  maxBufferSize = new ApplyableNumberField('1000', z.coerce.number().int().min(1).max(10000));
 
   maxNumDataPoints = new ApplyableNumberField('500', z.coerce.number().int().min(1).max(2000));
 
@@ -64,13 +66,6 @@ class Graphing {
 
   customValueSeparator = new ApplyableTextField(',', z.string());
 
-  xVarModes = [
-    'Counter', // Incremental counter for each value
-    'Time Per Value', // Time per individual value (not per line)
-    'In Data', // X values also parsed from data
-  ]
-
-  xVarMode = this.xVarModes[0];
 
   /**
    * Whether to clear existing plot data when new values arrive.
@@ -110,8 +105,26 @@ class Graphing {
 
   isApplyable = false;
 
-  constructor(snackbar: SnackbarController) {
+  constructor(snackbar: SnackbarController, appDataManager: AppDataManager) {
     this.snackbar = snackbar;
+    this.appDataManager = appDataManager;
+
+    // Set up callbacks to save config when ApplyableTextField/ApplyableNumberField values change
+    this.maxBufferSize.setOnApplyChanged(() => this._saveConfig());
+    this.maxNumDataPoints.setOnApplyChanged(() => this._saveConfig());
+    this.xVarPrefix.setOnApplyChanged(() => this._saveConfig());
+    this.yVarPrefix.setOnApplyChanged(() => this._saveConfig());
+    this.customValueSeparator.setOnApplyChanged(() => this._saveConfig());
+    this.xAxisRangeMin.setOnApplyChanged(() => this._saveConfig());
+    this.xAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
+    this.yAxisRangeMin.setOnApplyChanged(() => this._saveConfig());
+    this.yAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
+
+    // Load initial settings
+    this._loadConfig();
+
+    // Register callback to load settings when profile changes
+    this.appDataManager.registerOnProfileLoad(this._loadConfig);
 
     // this.graphData.push({ x: 0, y: 0 });
     // this.graphData.push({ x: 10, y: 10 });
@@ -120,38 +133,43 @@ class Graphing {
 
   setGraphingEnabled = (graphingEnabled: boolean) => {
     this.graphingEnabled = graphingEnabled;
+    this._saveConfig();
   }
 
   setDataSeparator = (value: string) => {
     this.dataSeparator = value;
+    this._saveConfig();
   }
 
   setXVarSource = (value: string) => {
     this.xVarSource = value;
+    this._saveConfig();
   }
 
   setXAxisRangeMode = (value: string) => {
     this.xAxisRangeMode = value;
+    this._saveConfig();
   }
 
   setYAxisRangeMode = (value: string) => {
     this.yAxisRangeMode = value;
+    this._saveConfig();
   }
 
   setMultipleValuesPerLine = (value: boolean) => {
     this.multipleValuesPerLine = value;
+    this._saveConfig();
   }
 
   setValueSeparator = (value: string) => {
     this.valueSeparator = value;
+    this._saveConfig();
   }
 
-  setXVarMode = (value: string) => {
-    this.xVarMode = value;
-  }
 
   setClearPlotOnNewValues = (value: boolean) => {
     this.clearPlotOnNewValues = value;
+    this._saveConfig();
   }
 
   /**
@@ -313,21 +331,21 @@ class Graphing {
       return;
     }
 
-    // Handle X values based on xVarMode
+    // Handle X values based on xVarSource
     const xValues: number[] = [];
     const currentTime = (Date.now() - this.timeAtReset_ms)/1000.0;
     
-    if (this.xVarMode === 'Counter') {
+    if (this.xVarSource === 'Counter') {
       // Use incremental counter for each value
       for (let i = 0; i < yValues.length; i++) {
         xValues.push(this.graphData.length + i);
       }
-    } else if (this.xVarMode === 'Time Per Value') {
+    } else if (this.xVarSource === 'Received Time') {
       // Use same timestamp for all values in the line
       for (let i = 0; i < yValues.length; i++) {
         xValues.push(currentTime);
       }
-    } else if (this.xVarMode === 'In Data') {
+    } else if (this.xVarSource === 'In Data') {
       // Parse X values from data similar to Y values
       const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
       if (xVarPrefixIdx === -1) {
@@ -356,7 +374,7 @@ class Graphing {
         }
       }
     } else {
-      throw new Error('Unsupported X variable mode: ' + this.xVarMode);
+      throw new Error('Unsupported X variable source: ' + this.xVarSource);
     }
 
     // Add all data points
@@ -417,6 +435,63 @@ class Graphing {
     this.yAxisRangeMin.apply();
     this.yAxisRangeMax.apply();
   }
+
+  _saveConfig = () => {
+    let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+
+    config.graphingEnabled = this.graphingEnabled;
+    config.dataSeparator = this.dataSeparator;
+    config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
+    config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
+    config.xVarSource = this.xVarSource;
+    config.xVarPrefix = this.xVarPrefix.appliedValue;
+    config.yVarPrefix = this.yVarPrefix.appliedValue;
+    config.multipleValuesPerLine = this.multipleValuesPerLine;
+    config.valueSeparator = this.valueSeparator;
+    config.customValueSeparator = this.customValueSeparator.appliedValue;
+    config.clearPlotOnNewValues = this.clearPlotOnNewValues;
+    config.xAxisRangeMode = this.xAxisRangeMode;
+    config.xAxisRangeMin = this.xAxisRangeMin.appliedValue.toString();
+    config.xAxisRangeMax = this.xAxisRangeMax.appliedValue.toString();
+    config.yAxisRangeMode = this.yAxisRangeMode;
+    config.yAxisRangeMin = this.yAxisRangeMin.appliedValue.toString();
+    config.yAxisRangeMax = this.yAxisRangeMax.appliedValue.toString();
+    config.xVarUnit = this.xVarUnit;
+
+    this.appDataManager.saveAppData();
+  };
+
+  _loadConfig = () => {
+    let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+
+    this.graphingEnabled = configToLoad.graphingEnabled;
+    this.dataSeparator = configToLoad.dataSeparator;
+    this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
+    this.maxBufferSize.apply({notify: false});
+    this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
+    this.maxNumDataPoints.apply({notify: false});
+    this.xVarSource = configToLoad.xVarSource;
+    this.xVarPrefix.setDispValue(configToLoad.xVarPrefix);
+    this.xVarPrefix.apply({notify: false});
+    this.yVarPrefix.setDispValue(configToLoad.yVarPrefix);
+    this.yVarPrefix.apply({notify: false});
+    this.multipleValuesPerLine = configToLoad.multipleValuesPerLine;
+    this.valueSeparator = configToLoad.valueSeparator;
+    this.customValueSeparator.setDispValue(configToLoad.customValueSeparator);
+    this.customValueSeparator.apply({notify: false});
+    this.clearPlotOnNewValues = configToLoad.clearPlotOnNewValues;
+    this.xAxisRangeMode = configToLoad.xAxisRangeMode;
+    this.xAxisRangeMin.setDispValue(configToLoad.xAxisRangeMin);
+    this.xAxisRangeMin.apply({notify: false});
+    this.xAxisRangeMax.setDispValue(configToLoad.xAxisRangeMax);
+    this.xAxisRangeMax.apply({notify: false});
+    this.yAxisRangeMode = configToLoad.yAxisRangeMode;
+    this.yAxisRangeMin.setDispValue(configToLoad.yAxisRangeMin);
+    this.yAxisRangeMin.apply({notify: false});
+    this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
+    this.yAxisRangeMax.apply({notify: false});
+    this.xVarUnit = configToLoad.xVarUnit;
+  };
 }
 
 export default Graphing;

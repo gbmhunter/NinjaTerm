@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added global app setting for enabling/disabling automatic updates.
+- Added support for graphing arrays of received data on a single line.
 
 ### Fixed
 

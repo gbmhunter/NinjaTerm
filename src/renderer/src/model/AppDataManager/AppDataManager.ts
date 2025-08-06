@@ -185,6 +185,27 @@ export class AppDataManager {
       // Need to set lastUsedSerialPort":{"path":"","portState":0}
       let updateProfileConfig = (rootConfig: any) => {
         rootConfig.lastUsedSerialPort = { path: '', portState: PortState.CLOSED };
+        // Add graphing settings to each profile
+        rootConfig.settings.graphingSettings = {
+          graphingEnabled: false,
+          dataSeparator: 'LF (\\n)',
+          maxBufferSize: '1000',
+          maxNumDataPoints: '500',
+          xVarSource: 'Received Time',
+          xVarPrefix: 'x=',
+          yVarPrefix: 'y=',
+          multipleValuesPerLine: false,
+          valueSeparator: 'Comma (,)',
+          customValueSeparator: ',',
+          clearPlotOnNewValues: true,
+          xAxisRangeMode: 'Auto',
+          xAxisRangeMin: '0',
+          xAxisRangeMax: '100',
+          yAxisRangeMode: 'Auto',
+          yAxisRangeMin: '0',
+          yAxisRangeMax: '100',
+          xVarUnit: 's'
+        };
       }
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
         updateProfileConfig(updatedAppData.profiles[i].rootConfig);

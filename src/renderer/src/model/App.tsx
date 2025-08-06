@@ -163,7 +163,7 @@ export class App {
     this.shownMainPane = MainPanes.TERMINAL;
 
     // Create graphing instance. Graphing is disabled by default.
-    this.graphing = new Graphing(this.snackbar);
+    this.graphing = new Graphing(this.snackbar, this.profileManager);
 
     this.logging = new Logging(this);
 

@@ -121,7 +121,7 @@ export default observer((props: Props) => {
           {/* MAX BUFFER SIZE */}
           {/* ============================================================== */}
           <Tooltip
-            title="The max. size the graphing receiving buffer can grow to waiting for a data separator. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-1000]."
+            title="The max. size the graphing receiving buffer can grow to waiting for a data separator. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
             followCursor
             arrow
           >
@@ -223,6 +223,7 @@ export default observer((props: Props) => {
               variant="outlined"
               applyableTextField={app.graphing.xVarPrefix}
               sx={{ width: "200px" }}
+              disabled={app.graphing.xVarSource !== "In Data"}
             />
           </Tooltip>
 
@@ -312,43 +313,6 @@ export default observer((props: Props) => {
             </Tooltip>
           )}
 
-          {/* X VAR MODE (for multiple values) */}
-          {/* ============================================================== */}
-          {app.graphing.multipleValuesPerLine && (
-            <Tooltip
-              title={
-                <div>
-                  How to assign X values when multiple Y values are parsed from one line:
-                  <ul>
-                    <li>Counter: Use incremental counter for each value</li>
-                    <li>Time Per Value: Use same timestamp for all values in the line</li>
-                    <li>In Data: Parse X values from data just like Y values</li>
-                  </ul>
-                </div>
-              }
-              followCursor
-              arrow
-            >
-              <FormControl sx={{ width: 160 }} size="small">
-                <InputLabel>X Value Mode</InputLabel>
-                <Select
-                  value={app.graphing.xVarMode}
-                  label="X Value Mode"
-                  onChange={(e) => {
-                    app.graphing.setXVarMode(e.target.value);
-                  }}
-                >
-                  {app.graphing.xVarModes.map((mode: string) => {
-                    return (
-                      <MenuItem key={mode} value={mode}>
-                        {mode}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Tooltip>
-          )}
 
           {/* CLEAR PLOT ON NEW VALUES */}
           {/* ============================================================== */}
