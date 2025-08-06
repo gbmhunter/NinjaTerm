@@ -24,13 +24,13 @@ class Graphing {
 
   graphData: Point[] = [];
 
-  dataSeparators = [
+  bufferDelimiters = [
     'LF (\\n)',
     'CR (\\r)',
     'Custom',
   ]
 
-  dataSeparator = this.dataSeparators[0];
+  bufferDelimiter = this.bufferDelimiters[0];
 
   /**
      * The maximum size of the receive buffer before it is cleared.
@@ -52,9 +52,9 @@ class Graphing {
   yVarPrefix = new ApplyableTextField('y=', z.string());
 
   /**
-   * Whether multiple values per line are enabled
+   * Whether multiple values per buffer are enabled
    */
-  multipleValuesPerLine = false;
+  multipleValuesPerBuffer = false;
 
   valueSeparators = [
     'Comma (,)',
@@ -69,7 +69,7 @@ class Graphing {
 
   /**
    * Whether to clear existing plot data when new values arrive.
-   * Only applicable when multipleValuesPerLine is enabled.
+   * Only applicable when multipleValuesPerBuffer is enabled.
    */
   clearPlotOnNewValues = true;
 
@@ -136,8 +136,8 @@ class Graphing {
     this._saveConfig();
   }
 
-  setDataSeparator = (value: string) => {
-    this.dataSeparator = value;
+  setBufferDelimiter = (value: string) => {
+    this.bufferDelimiter = value;
     this._saveConfig();
   }
 
@@ -156,8 +156,8 @@ class Graphing {
     this._saveConfig();
   }
 
-  setMultipleValuesPerLine = (value: boolean) => {
-    this.multipleValuesPerLine = value;
+  setMultipleValuesPerBuffer = (value: boolean) => {
+    this.multipleValuesPerBuffer = value;
     this._saveConfig();
   }
 
@@ -202,11 +202,11 @@ class Graphing {
           continue;
         }
 
-        if (this.multipleValuesPerLine) {
-          // Extract multiple values per line
+        if (this.multipleValuesPerBuffer) {
+          // Extract multiple values per buffer
           this.parseMultipleValues();
         } else {
-          // Single value per line (original behavior)
+          // Single value per buffer (original behavior)
           this.parseSingleValue();
         }
 
@@ -440,13 +440,13 @@ class Graphing {
     let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     config.graphingEnabled = this.graphingEnabled;
-    config.dataSeparator = this.dataSeparator;
+    config.bufferDelimiter = this.bufferDelimiter;
     config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
     config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
     config.xVarSource = this.xVarSource;
     config.xVarPrefix = this.xVarPrefix.appliedValue;
     config.yVarPrefix = this.yVarPrefix.appliedValue;
-    config.multipleValuesPerLine = this.multipleValuesPerLine;
+    config.multipleValuesPerBuffer = this.multipleValuesPerBuffer;
     config.valueSeparator = this.valueSeparator;
     config.customValueSeparator = this.customValueSeparator.appliedValue;
     config.clearPlotOnNewValues = this.clearPlotOnNewValues;
@@ -465,7 +465,7 @@ class Graphing {
     let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     this.graphingEnabled = configToLoad.graphingEnabled;
-    this.dataSeparator = configToLoad.dataSeparator;
+    this.bufferDelimiter = configToLoad.bufferDelimiter;
     this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
     this.maxBufferSize.apply({notify: false});
     this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
@@ -475,7 +475,7 @@ class Graphing {
     this.xVarPrefix.apply({notify: false});
     this.yVarPrefix.setDispValue(configToLoad.yVarPrefix);
     this.yVarPrefix.apply({notify: false});
-    this.multipleValuesPerLine = configToLoad.multipleValuesPerLine;
+    this.multipleValuesPerBuffer = configToLoad.multipleValuesPerBuffer;
     this.valueSeparator = configToLoad.valueSeparator;
     this.customValueSeparator.setDispValue(configToLoad.customValueSeparator);
     this.customValueSeparator.apply({notify: false});

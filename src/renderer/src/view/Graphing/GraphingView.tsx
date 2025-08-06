@@ -91,26 +91,26 @@ export default observer((props: Props) => {
         }}
       >
         <div id="group-1" className={styles.controlPanel}>
-          {/* DATA SEPARATOR */}
+          {/* BUFFER DELIMITER */}
           {/* ============================================================== */}
           <Tooltip
-            title="The character that separates data points in the input data stream."
+            title="The character sequence which triggers processing for data points from data that has accumulated in the buffer since the last sequence."
             followCursor
             arrow
           >
             <FormControl sx={{ width: 160 }} size="small">
-              <InputLabel>Data Separator</InputLabel>
+              <InputLabel>Buffer Delimiter</InputLabel>
               <Select
-                value={app.graphing.dataSeparator}
-                label="Data Separator"
+                value={app.graphing.bufferDelimiter || 'LF (\\n)'}
+                label="Buffer Delimiter"
                 onChange={(e) => {
-                  app.graphing.setDataSeparator(e.target.value);
+                  app.graphing.setBufferDelimiter(e.target.value);
                 }}
               >
-                {app.graphing.dataSeparators.map((dataSeparator: string) => {
+                {app.graphing.bufferDelimiters.map((bufferDelimiter: string) => {
                   return (
-                    <MenuItem key={dataSeparator} value={dataSeparator}>
-                      {dataSeparator}
+                    <MenuItem key={bufferDelimiter} value={bufferDelimiter}>
+                      {bufferDelimiter}
                     </MenuItem>
                   );
                 })}
@@ -154,6 +154,7 @@ export default observer((props: Props) => {
         </div>
 
         <div id="group-2" className={styles.controlPanel}>
+          {/* ============================================================== */}
           {/* X VAR SOURCE */}
           {/* ============================================================== */}
           <Tooltip
@@ -192,7 +193,7 @@ export default observer((props: Props) => {
                 data-testid="x-var-source"
                 label="X Variable Source"
                 labelId="label-id"
-                value={app.graphing.xVarSource}
+                value={app.graphing.xVarSource || 'Received Time'}
                 onChange={(e) => {
                   app.graphing.setXVarSource(e.target.value);
                 }}
@@ -208,6 +209,7 @@ export default observer((props: Props) => {
             </FormControl>
           </Tooltip>
 
+          {/* ============================================================== */}
           {/* X VAR PREFIX */}
           {/* ============================================================== */}
           <Tooltip
@@ -227,6 +229,7 @@ export default observer((props: Props) => {
             />
           </Tooltip>
 
+          {/* ============================================================== */}
           {/* Y VAR PREFIX */}
           {/* ============================================================== */}
           <Tooltip
@@ -244,30 +247,31 @@ export default observer((props: Props) => {
             />
           </Tooltip>
 
-          {/* MULTIPLE VALUES PER LINE */}
+          {/* ============================================================== */}
+          {/* MULTIPLE VALUES PER BUFFER */}
           {/* ============================================================== */}
           <Tooltip
-            title="Enable parsing multiple comma/space-separated values from each line instead of just one value per line."
+            title="Enable parsing multiple comma/space-separated values from each buffer instead of just one value per buffer."
             followCursor
             arrow
           >
             <FormControlLabel
               control={
                 <Switch
-                  name="multipleValuesPerLine"
-                  checked={app.graphing.multipleValuesPerLine}
+                  name="multipleValuesPerBuffer"
+                  checked={app.graphing.multipleValuesPerBuffer}
                   onChange={(e) => {
-                    app.graphing.setMultipleValuesPerLine(e.target.checked);
+                    app.graphing.setMultipleValuesPerBuffer(e.target.checked);
                   }}
                 />
               }
-              label="Multiple Values Per Line"
+              label="Multiple Values Per Buffer"
             />
           </Tooltip>
 
           {/* VALUE SEPARATOR */}
           {/* ============================================================== */}
-          {app.graphing.multipleValuesPerLine && (
+          {app.graphing.multipleValuesPerBuffer && (
             <Tooltip
               title="The character that separates multiple values within a single line."
               followCursor
@@ -276,7 +280,7 @@ export default observer((props: Props) => {
               <FormControl sx={{ width: 160 }} size="small">
                 <InputLabel>Value Separator</InputLabel>
                 <Select
-                  value={app.graphing.valueSeparator}
+                  value={app.graphing.valueSeparator || 'Comma (,)'}
                   label="Value Separator"
                   onChange={(e) => {
                     app.graphing.setValueSeparator(e.target.value);
@@ -296,7 +300,7 @@ export default observer((props: Props) => {
 
           {/* CUSTOM VALUE SEPARATOR */}
           {/* ============================================================== */}
-          {app.graphing.multipleValuesPerLine && app.graphing.valueSeparator === 'Custom' && (
+          {app.graphing.multipleValuesPerBuffer && app.graphing.valueSeparator === 'Custom' && (
             <Tooltip
               title="Custom character(s) to use as value separator."
               followCursor
@@ -316,7 +320,7 @@ export default observer((props: Props) => {
 
           {/* CLEAR PLOT ON NEW VALUES */}
           {/* ============================================================== */}
-          {app.graphing.multipleValuesPerLine && (
+          {app.graphing.multipleValuesPerBuffer && (
             <Tooltip
               title="When enabled, the plot is cleared each time new data arrives. Useful for displaying snapshots of data rather than accumulating over time."
               followCursor
@@ -367,7 +371,7 @@ export default observer((props: Props) => {
                 data-testid="x-axis-range-mode"
                 label="X Axis Range Mode"
                 name="xAxisRangeMode"
-                value={app.graphing.xAxisRangeMode}
+                value={app.graphing.xAxisRangeMode || 'Auto'}
                 onChange={(e) => {
                   app.graphing.setXAxisRangeMode(e.target.value);
                 }}
@@ -459,7 +463,7 @@ export default observer((props: Props) => {
               <Select
                 data-testid="y-axis-range-mode"
                 label="Y Axis Range Mode"
-                value={app.graphing.yAxisRangeMode}
+                value={app.graphing.yAxisRangeMode || 'Auto'}
                 onChange={(e) => {
                   app.graphing.setYAxisRangeMode(e.target.value);
                 }}

@@ -188,13 +188,13 @@ export class AppDataManager {
         // Add graphing settings to each profile
         rootConfig.settings.graphingSettings = {
           graphingEnabled: false,
-          dataSeparator: 'LF (\\n)',
+          bufferDelimiter: 'LF (\\n)',
           maxBufferSize: '1000',
           maxNumDataPoints: '500',
           xVarSource: 'Received Time',
           xVarPrefix: 'x=',
           yVarPrefix: 'y=',
-          multipleValuesPerLine: false,
+          multipleValuesPerBuffer: false,
           valueSeparator: 'Comma (,)',
           customValueSeparator: ',',
           clearPlotOnNewValues: true,

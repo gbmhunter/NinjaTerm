@@ -9,7 +9,7 @@ export class GraphingSettingsData {
    */
   graphingEnabled = false;
 
-  dataSeparator = 'LF (\\n)';
+  bufferDelimiter = 'LF (\\n)';
 
   /**
    * The maximum size of the receive buffer before it is cleared.
@@ -25,9 +25,9 @@ export class GraphingSettingsData {
   yVarPrefix = 'y=';
 
   /**
-   * Whether multiple values per line are enabled
+   * Whether multiple values per buffer are enabled
    */
-  multipleValuesPerLine = false;
+  multipleValuesPerBuffer = false;
 
   valueSeparator = 'Comma (,)';
 
@@ -35,7 +35,7 @@ export class GraphingSettingsData {
 
   /**
    * Whether to clear existing plot data when new values arrive.
-   * Only applicable when multipleValuesPerLine is enabled.
+   * Only applicable when multipleValuesPerBuffer is enabled.
    */
   clearPlotOnNewValues = true;
 
