@@ -133,7 +133,10 @@ export default observer((props: Props) => {
             }
           }}
           startIcon={portStateToButtonProps[app.portState].icon}
-          disabled={app.portState === PortState.CLOSED && app.port === null && app.lastSelectedPortType === PortType.REAL}
+          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
+          disabled={
+            (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+          }
           sx={responsiveButtonStyle}
           data-testid="open-close-button"
         >

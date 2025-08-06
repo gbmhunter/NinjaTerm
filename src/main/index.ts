@@ -9,9 +9,8 @@ import * as fs from 'fs/promises';
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
 const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
 
-// 1ms was too fast -- resulted in many small chunks being sent to the renderer process
-// and too many IPC calls
-const RX_DATA_BATCH_TIMEOUT_MS = 10;
+// Set maximum delay to 50ms for any received char before sending to renderer
+const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
 // Configure auto-updater logging
 autoUpdater.logger = log;
@@ -236,25 +235,29 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       // Add data to batch
       const batch = dataBatches.get(portPath);
       if (batch) {
+        const isFirstChar = batch.length === 0;
         batch.push(data);
 
-        // Clear existing timeout
-        const existingTimeout = batchTimeouts.get(portPath);
-        if (existingTimeout) {
-          clearTimeout(existingTimeout);
-        }
-
-        // Send immediately if batch is getting large, or set timeout for small batches
-        if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
-          // Send large batches immediately
-          sendBatchedData(portPath);
-        } else {
-          // For small batches, wait a bit to collect more data
+        // If this is the first character in a new batch, start the 20ms timer
+        if (isFirstChar) {
+          // Start timer for 20ms after receiving the first char
           const timeout = setTimeout(() => {
             sendBatchedData(portPath);
             batchTimeouts.delete(portPath);
-          }, RX_DATA_BATCH_TIMEOUT_MS); // Very short timeout (1ms) to batch rapid data
+          }, RX_DATA_BATCH_TIMEOUT_MS);
           batchTimeouts.set(portPath, timeout);
+        } else {
+          // For subsequent chars, check if batch is getting too large
+          if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
+            // Clear the existing timeout and send large batches immediately
+            const existingTimeout = batchTimeouts.get(portPath);
+            if (existingTimeout) {
+              clearTimeout(existingTimeout);
+              batchTimeouts.delete(portPath);
+            }
+            sendBatchedData(portPath);
+          }
+          // Otherwise, just accumulate data and let the timer handle it
         }
       }
     });
