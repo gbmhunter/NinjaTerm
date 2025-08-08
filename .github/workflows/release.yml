@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-15]
 
     steps:
     - name: Check out Git repository
@@ -51,7 +51,7 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build/release Electron app (Mac)
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-15'
       run: npx electron-builder --mac --publish always
       env:
         # Publish to GitHub Releases
