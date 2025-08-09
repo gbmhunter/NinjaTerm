@@ -201,7 +201,10 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       dataBits: options.dataBits || 8,
       parity: options.parity || 'none',
       stopBits: options.stopBits || 1,
-      autoOpen: false
+      autoOpen: false,
+      // Sets the size of the read and write buffers. Defaults to 64k, which causes lag problems if NinjaTerm UI cannot keep up (buffer starts filling up
+      // and NinjaTerms starts "receiving" data from a long time in the past, this is confusing to the user).
+      highWaterMark: 1024,
     });
 
     // I have seen the port.open() callback not get called in some cases, so add a timeout here so
