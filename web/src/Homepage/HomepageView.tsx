@@ -88,9 +88,46 @@ interface Props {}
 export default observer((props: Props) => {
   const [release, setRelease] = useState<GitHubRelease | null>(null);
   const [loading, setLoading] = useState(false);
+  const [userPlatform, setUserPlatform] = useState<{os: string, arch: string} | null>(null);
 
   useEffect(() => {
     document.title = "NinjaTerm - A serial port terminal that's got your back.";
+
+    // Detect user's platform and architecture
+    const detectPlatform = () => {
+      const userAgent = navigator.userAgent;
+      let os = '';
+      let arch = '';
+
+      // Detect OS
+      if (userAgent.includes('Win')) {
+        os = 'win';
+      } else if (userAgent.includes('Mac')) {
+        os = 'mac';
+      } else if (userAgent.includes('Linux')) {
+        os = 'linux';
+      }
+
+      // Detect architecture
+      if (userAgent.includes('x86_64') || userAgent.includes('Win64') || userAgent.includes('WOW64')) {
+        arch = 'x64';
+      } else if (userAgent.includes('arm64') || userAgent.includes('aarch64')) {
+        arch = 'arm64';
+      } else if (userAgent.includes('Intel Mac')) {
+        arch = 'x64';
+      } else if (os === 'mac' && !userAgent.includes('Intel')) {
+        // Modern Macs without Intel in user agent are likely Apple Silicon
+        arch = 'arm64';
+      } else if (os === 'win' || os === 'linux') {
+        // Default to x64 for Windows/Linux if unclear
+        arch = 'x64';
+      }
+
+      // Only set platform if we have both OS and arch
+      if (os && arch) {
+        setUserPlatform({ os, arch });
+      }
+    };
 
     // Fetch latest release data
     const fetchLatestRelease = async () => {
@@ -108,25 +145,65 @@ export default observer((props: Props) => {
       }
     };
 
+    detectPlatform();
     fetchLatestRelease();
   }, []);
 
   // Helper functions to get download URLs
-  const getWindowsDownloadUrl = () => {
+  const getPlatformDownloadUrl = (os: string, arch: string) => {
     if (!release) return null;
-    const windowsAsset = release.assets.find(asset =>
-      asset.name.includes('Setup') && asset.name.endsWith('.exe')
-    );
-    return windowsAsset?.browser_download_url || null;
+
+    if (os === 'win' && arch === 'x64') {
+      const windowsAsset = release.assets.find(asset =>
+        asset.name.includes('Setup') && asset.name.includes('x64') && asset.name.endsWith('.exe')
+      );
+      return windowsAsset?.browser_download_url || null;
+    }
+
+    if (os === 'mac') {
+      const macAsset = release.assets.find(asset =>
+        asset.name.endsWith('.dmg') && 
+        (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64'))
+      );
+      return macAsset?.browser_download_url || null;
+    }
+
+    if (os === 'linux') {
+      const linuxAsset = release.assets.find(asset =>
+        asset.name.endsWith('.AppImage') &&
+        (arch === 'arm64' ? asset.name.includes('arm64') : 
+         asset.name.includes('x64') || asset.name.includes('x86_64'))
+      );
+      return linuxAsset?.browser_download_url || null;
+    }
+
+    return null;
   };
 
-  const getLinuxDownloadUrl = () => {
-    if (!release) return null;
-    // Prioritize x86_64/x64 architecture for Linux
-    const linuxAsset = release.assets.find(asset =>
-      asset.name.endsWith('.AppImage') && (asset.name.includes('x86_64') || asset.name.includes('x64'))
-    );
-    return linuxAsset?.browser_download_url || null;
+  const getPlatformLabel = (os: string, arch: string) => {
+    const osLabels: {[key: string]: string} = {
+      'win': 'Windows',
+      'mac': 'macOS',
+      'linux': 'Linux'
+    };
+    const archLabels: {[key: string]: string} = {
+      'x64': 'x64',
+      'arm64': 'ARM64'
+    };
+    return `${osLabels[os]} (${archLabels[arch]})`;
+  };
+
+  const getPlatformIcon = (os: string) => {
+    if (os === 'win') {
+      return <img src={WindowsLogoPng} alt="Windows" style={{ width: '20px', height: '20px' }} />;
+    }
+    if (os === 'linux') {
+      return <img src={LinuxLogoPng} alt="Linux" style={{ width: '20px', height: '20px' }} />;
+    }
+    if (os === 'mac') {
+      return <span style={{ fontSize: '20px' }}>🍎</span>;
+    }
+    return <DownloadIcon />;
   };
 
   const structuredData = {
@@ -200,34 +277,21 @@ export default observer((props: Props) => {
               </Box>
             ) : (
               <>
-                <Button
-                  href={getWindowsDownloadUrl() || undefined}
-                  disabled={!getWindowsDownloadUrl()}
-                  variant="contained"
-                  size="large"
-                  startIcon={<img src={WindowsLogoPng} alt="Windows" style={{ width: '20px', height: '20px' }} />}
-                  sx={{
-                    minWidth: '200px',
-                    backgroundColor: primaryColor,
-                    '&:hover': { backgroundColor: '#D16A2A' },
-                  }}
-                >
-                  Download for Windows (x86_64)
-                </Button>
-                <Button
-                  href={getLinuxDownloadUrl() || undefined}
-                  disabled={!getLinuxDownloadUrl()}
-                  variant="contained"
-                  size="large"
-                  startIcon={<img src={LinuxLogoPng} alt="Linux" style={{ width: '20px', height: '20px' }} />}
-                  sx={{
-                    minWidth: '200px',
-                    backgroundColor: primaryColor,
-                    '&:hover': { backgroundColor: '#D16A2A' },
-                  }}
-                >
-                  Download for Linux (x86_64)
-                </Button>
+                {userPlatform && getPlatformDownloadUrl(userPlatform.os, userPlatform.arch) && (
+                  <Button
+                    href={getPlatformDownloadUrl(userPlatform.os, userPlatform.arch) || undefined}
+                    variant="contained"
+                    size="large"
+                    startIcon={getPlatformIcon(userPlatform.os)}
+                    sx={{
+                      minWidth: '250px',
+                      backgroundColor: primaryColor,
+                      '&:hover': { backgroundColor: '#D16A2A' },
+                    }}
+                  >
+                    Download for {getPlatformLabel(userPlatform.os, userPlatform.arch)}
+                  </Button>
+                )}
                 <Button
                   href="https://github.com/gbmhunter/NinjaTerm/releases"
                   target="_blank"
@@ -238,7 +302,7 @@ export default observer((props: Props) => {
                     minWidth: '150px',
                   }}
                 >
-                  More releases
+                  All Downloads
                 </Button>
               </>
             )}
