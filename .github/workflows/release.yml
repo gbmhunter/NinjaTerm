@@ -33,6 +33,9 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
+    #===============================================================
+    # NOTE: More build config is in package.json under the "build" key.
+    #===============================================================
     - name: Build/release Electron app (Windows)
       if: matrix.os == 'windows-latest'
       run: |
