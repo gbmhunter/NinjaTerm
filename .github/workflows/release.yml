@@ -36,11 +36,11 @@ jobs:
     - name: Build/release Electron app (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        npx electron-builder --win --publish always 2>&1 | tee build-output.log
-        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
-          echo "::error::Publishing was skipped due to incompatible release type"
+        npx electron-builder --win --publish always 2>&1 | Tee-Object build-output.log
+        if (Select-String "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log) {
+          Write-Output "::error::Publishing was skipped due to incompatible release type"
           exit 1
-        fi
+        }
       env:
         # Windows code signing
         CSC_LINK: ${{ secrets.CSC_LINK }}
