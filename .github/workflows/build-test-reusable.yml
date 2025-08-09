@@ -1,13 +1,21 @@
-name: Build and Test
+name: Build and Test (Reusable)
 
 on:
-  push:
-    branches: [ main, dev ]
-  pull_request:
-    branches: [ main, dev ]
+  workflow_call:
+    inputs:
+      run-electron-tests:
+        description: 'Whether to run Electron tests'
+        required: false
+        default: true
+        type: boolean
+      skip-build-test:
+        description: 'Whether to skip the electron-builder test (--dir)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
-  test-electron:
+  build-and-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -38,11 +46,11 @@ jobs:
       run: npm run build
 
     - name: Install Playwright browsers (Ubuntu only)
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && inputs.run-electron-tests
       run: npx playwright install --with-deps
 
     - name: Run Electron tests (headless)
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' && inputs.run-electron-tests
       run: |
         export DISPLAY=:99
         # Start Xvfb in the background and wait for it to be ready
@@ -51,16 +59,8 @@ jobs:
         npm run test:electron:ci
 
     - name: Test Electron app build (no packaging)
+      if: ${{ !inputs.skip-build-test }}
       run: npx electron-builder --dir
       env:
-        # Skip notarization and signing in PR builds
+        # Skip notarization and signing in test builds
         CSC_IDENTITY_AUTO_DISCOVERY: false
-
-    # - name: Upload test results (Ubuntu only)
-    #   if: matrix.os == 'ubuntu-latest'
-    #   uses: actions/upload-artifact@v4
-    #   if: failure()
-    #   with:
-    #     name: playwright-report
-    #     path: playwright-report/
-    #     retention-days: 30

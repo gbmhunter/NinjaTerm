@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-15]
 
     steps:
     - name: Check out Git repository
@@ -33,9 +33,17 @@ jobs:
     - name: Build Electron app
       run: npm run build
 
+    #===============================================================
+    # NOTE: More build config is in package.json under the "build" key.
+    #===============================================================
     - name: Build/release Electron app (Windows)
       if: matrix.os == 'windows-latest'
-      run: npx electron-builder --win --publish always
+      run: |
+        npx electron-builder --win --publish always 2>&1 | Tee-Object build-output.log
+        if (Select-String "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log) {
+          Write-Output "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        }
       env:
         # Windows code signing
         CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -45,7 +53,24 @@ jobs:
 
     - name: Build/release Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'
-      run: npx electron-builder --linux --publish always
+      run: |
+        npx electron-builder --linux --publish always 2>&1 | tee build-output.log
+        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
+          echo "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        fi
+      env:
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build/release Electron app (Mac)
+      if: matrix.os == 'macos-15'
+      run: |
+        npx electron-builder --mac --publish always 2>&1 | tee build-output.log
+        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
+          echo "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        fi
       env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

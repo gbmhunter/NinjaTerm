@@ -163,7 +163,7 @@ export class App {
     this.shownMainPane = MainPanes.TERMINAL;
 
     // Create graphing instance. Graphing is disabled by default.
-    this.graphing = new Graphing(this.snackbar);
+    this.graphing = new Graphing(this.snackbar, this.profileManager);
 
     this.logging = new Logging(this);
 
@@ -793,12 +793,20 @@ export class App {
    *   if it's a TXRX or TX terminal, the port is open and the key press is relevant.
    * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
    * - Pressing "f" while on the Port Configuration settings.
+   * - Pressing F5 to reload the app.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
     // console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
     if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
+    }
+    //============================================
+    // F5 RELOAD SHORTCUT
+    //============================================
+    else if (event.key === 'F5') {
+      // F5 is pressed, reload the app
+      window.location.reload();
     }
     //============================================
     // COPY KEYBOARD SHORTCUT

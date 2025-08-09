@@ -40,7 +40,7 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
           <Tooltip
@@ -93,20 +93,43 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
-          <Button 
-            variant="outlined" 
-            size="large" 
-            startIcon={<SystemUpdateIcon />} 
+          <Tooltip
+            title="When enabled, NinjaTerm will automatically check for updates on startup. When disabled, you can still manually check for updates using the button below."
+            placement="top"
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={generalSettings.autoUpdatesEnabled}
+                  onChange={(e) => {
+                    generalSettings.setAutoUpdatesEnabled(e.target.checked);
+                  }}
+                  data-testid="auto-updates-enabled"
+                />
+              }
+              label="Enable automatic updates"
+              sx={{ marginBottom: "10px" }}
+            />
+          </Tooltip>
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<SystemUpdateIcon />}
             onClick={() => app.checkForUpdates()}
-            style={{ marginBottom: "10px" }}
+            style={{ marginBottom: "10px", width: "300px" }}
           >
             Check for Updates
           </Button>
           <div style={{ fontSize: "0.875rem", color: "text.secondary", marginTop: "8px" }}>
-            NinjaTerm automatically checks for updates on startup. Click the button above to manually check for updates.
+            {generalSettings.autoUpdatesEnabled
+              ? "NinjaTerm automatically checks for updates on startup. Click the button above to manually check for updates."
+              : "Automatic updates are disabled. Click the button above to manually check for updates."
+            }
           </div>
         </div>
       </BorderedSection>
@@ -119,10 +142,10 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            maxWidth: "600px",
+            width: "600px",
           }}
         >
-          <Button variant="outlined" size="large" startIcon={<DeleteForeverIcon />} onClick={handleOpenConfirmDialog} color="error">
+          <Button variant="outlined" size="large" startIcon={<DeleteForeverIcon />} onClick={handleOpenConfirmDialog} color="error" style={{ width: "500px" }}>
             Clear app data and reload app
           </Button>
         </div>

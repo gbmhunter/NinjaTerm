@@ -170,12 +170,57 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 3 -> VERSION 4
+    //=============================================================================
     if (updatedAppData.version === 3) {
+      console.log('Updating app data from version 3 to version 4...');
+      // Add auto-updates setting to app data (global setting, not per profile)
+      updatedAppData.autoUpdatesEnabled = true;
+
+      // We switched from using Web Serial to the node serialport library here. Now we can get the actual path of
+      // the serial port and we use that as the ID.
+      // This updates to the new ID format, but will lose all users last used serial port info
+      // (this is ok)
+      // Need to set lastUsedSerialPort":{"path":"","portState":0}
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.lastUsedSerialPort = { path: '', portState: PortState.CLOSED };
+        // Add graphing settings to each profile
+        rootConfig.settings.graphingSettings = {
+          graphingEnabled: false,
+          bufferDelimiter: 'LF (\\n)',
+          maxBufferSize: '1000',
+          maxNumDataPoints: '500',
+          xVarSource: 'Received Time',
+          xVarPrefix: 'x=',
+          yVarPrefix: 'y=',
+          multipleValuesPerBuffer: false,
+          valueSeparator: 'Comma (,)',
+          customValueSeparator: ',',
+          clearPlotOnNewValues: true,
+          xAxisRangeMode: 'Auto',
+          xAxisRangeMin: '0',
+          xAxisRangeMax: '100',
+          yAxisRangeMode: 'Auto',
+          yAxisRangeMin: '0',
+          yAxisRangeMax: '100',
+          xVarUnit: 's'
+        };
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 4;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 4) {
       // Nothing to do, already latest version
       console.log(`App data is at latest version (v${updatedAppData.version}).`);
     }
 
-    if (updatedAppData.version !== 3) {
+    if (updatedAppData.version !== 4) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

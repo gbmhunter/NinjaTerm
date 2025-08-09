@@ -4,6 +4,7 @@ import { z } from 'zod';
 
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import { ApplyableTextField, ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
+import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
 class Point {
   x: number = 0;
@@ -13,6 +14,7 @@ class Point {
 class Graphing {
 
   snackbar: SnackbarController;
+  appDataManager: AppDataManager;
 
   /**
    * Whether or not graphing is enabled. If true, RX data will be parsed for
@@ -22,18 +24,18 @@ class Graphing {
 
   graphData: Point[] = [];
 
-  dataSeparators = [
+  bufferDelimiters = [
     'LF (\\n)',
     'CR (\\r)',
     'Custom',
   ]
 
-  dataSeparator = this.dataSeparators[0];
+  bufferDelimiter = this.bufferDelimiters[0];
 
   /**
      * The maximum size of the receive buffer before it is cleared.
      */
-  maxBufferSize = new ApplyableNumberField('100', z.coerce.number().int().min(1).max(1000));
+  maxBufferSize = new ApplyableNumberField('1000', z.coerce.number().int().min(1).max(10000));
 
   maxNumDataPoints = new ApplyableNumberField('500', z.coerce.number().int().min(1).max(2000));
 
@@ -49,6 +51,28 @@ class Graphing {
 
   yVarPrefix = new ApplyableTextField('y=', z.string());
 
+  /**
+   * Whether multiple values per buffer are enabled
+   */
+  multipleValuesPerBuffer = false;
+
+  valueSeparators = [
+    'Comma (,)',
+    'Space ( )',
+    'Custom',
+  ]
+
+  valueSeparator = this.valueSeparators[0];
+
+  customValueSeparator = new ApplyableTextField(',', z.string());
+
+
+  /**
+   * Whether to clear existing plot data when new values arrive.
+   * Only applicable when multipleValuesPerBuffer is enabled.
+   */
+  clearPlotOnNewValues = true;
+
   axisRangeModes = [
     'Auto',
     'Fixed',
@@ -56,15 +80,21 @@ class Graphing {
 
   xAxisRangeMode = this.axisRangeModes[0];
 
-  xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+  xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
 
-  xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
+  xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+    (val) => val > this.xAxisRangeMin.appliedValue,
+    { message: "Maximum must be greater than minimum" }
+  ));
 
   yAxisRangeMode = this.axisRangeModes[0];
 
-  yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number().int().min(0));
+  yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
 
-  yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().int().min(0));
+  yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+    (val) => val > this.yAxisRangeMin.appliedValue,
+    { message: "Maximum must be greater than minimum" }
+  ));
 
   xVarUnit = 's';
 
@@ -81,8 +111,26 @@ class Graphing {
 
   isApplyable = false;
 
-  constructor(snackbar: SnackbarController) {
+  constructor(snackbar: SnackbarController, appDataManager: AppDataManager) {
     this.snackbar = snackbar;
+    this.appDataManager = appDataManager;
+
+    // Set up callbacks to save config when ApplyableTextField/ApplyableNumberField values change
+    this.maxBufferSize.setOnApplyChanged(() => this._saveConfig());
+    this.maxNumDataPoints.setOnApplyChanged(() => this._saveConfig());
+    this.xVarPrefix.setOnApplyChanged(() => this._saveConfig());
+    this.yVarPrefix.setOnApplyChanged(() => this._saveConfig());
+    this.customValueSeparator.setOnApplyChanged(() => this._saveConfig());
+    this.xAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
+    this.xAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
+    this.yAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
+    this.yAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
+
+    // Load initial settings
+    this._loadConfig();
+
+    // Register callback to load settings when profile changes
+    this.appDataManager.registerOnProfileLoad(this._loadConfig);
 
     // this.graphData.push({ x: 0, y: 0 });
     // this.graphData.push({ x: 10, y: 10 });
@@ -91,22 +139,43 @@ class Graphing {
 
   setGraphingEnabled = (graphingEnabled: boolean) => {
     this.graphingEnabled = graphingEnabled;
+    this._saveConfig();
   }
 
-  setDataSeparator = (value: string) => {
-    this.dataSeparator = value;
+  setBufferDelimiter = (value: string) => {
+    this.bufferDelimiter = value;
+    this._saveConfig();
   }
 
   setXVarSource = (value: string) => {
     this.xVarSource = value;
+    this._saveConfig();
   }
 
   setXAxisRangeMode = (value: string) => {
     this.xAxisRangeMode = value;
+    this._saveConfig();
   }
 
   setYAxisRangeMode = (value: string) => {
     this.yAxisRangeMode = value;
+    this._saveConfig();
+  }
+
+  setMultipleValuesPerBuffer = (value: boolean) => {
+    this.multipleValuesPerBuffer = value;
+    this._saveConfig();
+  }
+
+  setValueSeparator = (value: string) => {
+    this.valueSeparator = value;
+    this._saveConfig();
+  }
+
+
+  setClearPlotOnNewValues = (value: boolean) => {
+    this.clearPlotOnNewValues = value;
+    this._saveConfig();
   }
 
   /**
@@ -139,61 +208,13 @@ class Graphing {
           continue;
         }
 
-        // Get the Y value. Grab the entire line after the Y variable prefix,
-        // and call parseFloat on it. This will stop at the first non-numeric
-        // character (but will allow things like "."), which is what we want.
-        let yValStr = '';
-        for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
-          yValStr += this.rxDataBuffer[j];
-        }
-        const yVal = parseFloat(yValStr);
-        // Bail if y value is NaN
-        if (isNaN(yVal)) {
-          this.snackbar.sendToSnackbar(
-            'Graphing received NaN value for y-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
-            'warning');
-          this.rxDataBuffer = '';
-          continue;
-        }
-
-        // Get the X value
-        let xVal;
-        if (this.xVarSource === 'Received Time') {
-          // Get the time since the last reset in ms, then convert to s
-          xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
-        } else if (this.xVarSource === 'Counter') {
-          // Use the number of data points as the X value
-          xVal = this.graphData.length;
-        } else if (this.xVarSource === 'In Data') {
-          const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
-          if (xVarPrefixIdx === -1) {
-            // This line does not contain the X variable prefix, so skip it
-            this.rxDataBuffer = '';
-            continue;
-          }
-          // Get the X value. Grab the entire line after the X variable prefix,
-          // and call parseFloat on it. This will stop at the first non-numeric
-          // character (but will allow things like "."), which is what we want.
-          let xValStr = '';
-          for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
-            xValStr += this.rxDataBuffer[j];
-          }
-          xVal = parseFloat(xValStr);
-          // Bail if y value is NaN
-          if (isNaN(xVal)) {
-            this.snackbar.sendToSnackbar(
-              'Graphing received NaN value for x-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
-              'warning');
-            this.rxDataBuffer = '';
-            continue;
-          }
-
+        if (this.multipleValuesPerBuffer) {
+          // Extract multiple values per buffer
+          this.parseMultipleValues();
         } else {
-          throw new Error('Unsupported X variable source: ' + this.xVarSource);
+          // Single value per buffer (original behavior)
+          this.parseSingleValue();
         }
-
-        // If we get here both x and y values should be valid
-        this.addDataPoint(xVal, yVal);
 
         // Since data separator has been received and line has been parsed,
         // now clear the buffer
@@ -211,6 +232,161 @@ class Graphing {
     }
 
     // console.log('graphData: ' + JSON.stringify(this.graphData));
+  }
+
+  /**
+   * Parse a single value from the buffer (original behavior)
+   */
+  parseSingleValue = () => {
+    // Get the Y value. Grab the entire line after the Y variable prefix,
+    // and call parseFloat on it. This will stop at the first non-numeric
+    // character (but will allow things like "."), which is what we want.
+    const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+    let yValStr = '';
+    for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+      yValStr += this.rxDataBuffer[j];
+    }
+    const yVal = parseFloat(yValStr);
+    // Bail if y value is NaN
+    if (isNaN(yVal)) {
+      this.snackbar.sendToSnackbar(
+        'Graphing received NaN value for y-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+        'warning');
+      return;
+    }
+
+    // Get the X value
+    let xVal;
+    if (this.xVarSource === 'Received Time') {
+      // Get the time since the last reset in ms, then convert to s
+      xVal = (Date.now() - this.timeAtReset_ms)/1000.0;
+    } else if (this.xVarSource === 'Counter') {
+      // Use the number of data points as the X value
+      xVal = this.graphData.length;
+    } else if (this.xVarSource === 'In Data') {
+      const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
+      if (xVarPrefixIdx === -1) {
+        // This line does not contain the X variable prefix, so skip it
+        return;
+      }
+      // Get the X value. Grab the entire line after the X variable prefix,
+      // and call parseFloat on it. This will stop at the first non-numeric
+      // character (but will allow things like "."), which is what we want.
+      let xValStr = '';
+      for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+        xValStr += this.rxDataBuffer[j];
+      }
+      xVal = parseFloat(xValStr);
+      // Bail if x value is NaN
+      if (isNaN(xVal)) {
+        this.snackbar.sendToSnackbar(
+          'Graphing received NaN value for x-axis. Skipping data point. rxDataBuffer: ' + this.rxDataBuffer,
+          'warning');
+        return;
+      }
+    } else {
+      throw new Error('Unsupported X variable source: ' + this.xVarSource);
+    }
+
+    // If we get here both x and y values should be valid
+    this.addDataPoint(xVal, yVal);
+  }
+
+  /**
+   * Parse multiple values from the buffer
+   */
+  parseMultipleValues = () => {
+    // Clear existing data if the toggle is enabled
+    if (this.clearPlotOnNewValues) {
+      this.graphData = [];
+    }
+
+    const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+
+    // Get the data string after the Y variable prefix
+    let dataStr = '';
+    for (let j = yVarPrefixIdx + this.yVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+      dataStr += this.rxDataBuffer[j];
+    }
+
+    // Determine the separator to use
+    let separator = ',';
+    if (this.valueSeparator === 'Comma (,)') {
+      separator = ',';
+    } else if (this.valueSeparator === 'Space ( )') {
+      separator = ' ';
+    } else if (this.valueSeparator === 'Custom') {
+      separator = this.customValueSeparator.appliedValue;
+    }
+
+    // Split the data string and parse Y values
+    const yValStrings = dataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
+    const yValues: number[] = [];
+
+    for (const yValStr of yValStrings) {
+      const yVal = parseFloat(yValStr);
+      if (!isNaN(yVal)) {
+        yValues.push(yVal);
+      }
+    }
+
+    if (yValues.length === 0) {
+      this.snackbar.sendToSnackbar(
+        'Graphing: No valid Y values found in line. rxDataBuffer: ' + this.rxDataBuffer,
+        'warning');
+      return;
+    }
+
+    // Handle X values based on xVarSource
+    const xValues: number[] = [];
+    const currentTime = (Date.now() - this.timeAtReset_ms)/1000.0;
+
+    if (this.xVarSource === 'Counter') {
+      // Use incremental counter for each value
+      for (let i = 0; i < yValues.length; i++) {
+        xValues.push(this.graphData.length + i);
+      }
+    } else if (this.xVarSource === 'Received Time') {
+      // Use same timestamp for all values in the line
+      for (let i = 0; i < yValues.length; i++) {
+        xValues.push(currentTime);
+      }
+    } else if (this.xVarSource === 'In Data') {
+      // Parse X values from data similar to Y values
+      const xVarPrefixIdx = this.rxDataBuffer.indexOf(this.xVarPrefix.appliedValue);
+      if (xVarPrefixIdx === -1) {
+        // No X data found, fall back to counter
+        for (let i = 0; i < yValues.length; i++) {
+          xValues.push(this.graphData.length + i);
+        }
+      } else {
+        // Get X data string
+        let xDataStr = '';
+        for (let j = xVarPrefixIdx + this.xVarPrefix.appliedValue.length; j < this.rxDataBuffer.length; j++) {
+          xDataStr += this.rxDataBuffer[j];
+        }
+
+        // Split X data
+        const xValStrings = xDataStr.split(separator).map(s => s.trim()).filter(s => s.length > 0);
+
+        for (let i = 0; i < yValues.length; i++) {
+          if (i < xValStrings.length) {
+            const xVal = parseFloat(xValStrings[i]);
+            xValues.push(isNaN(xVal) ? this.graphData.length + i : xVal);
+          } else {
+            // If not enough X values, use counter
+            xValues.push(this.graphData.length + i);
+          }
+        }
+      }
+    } else {
+      throw new Error('Unsupported X variable source: ' + this.xVarSource);
+    }
+
+    // Add all data points
+    for (let i = 0; i < yValues.length; i++) {
+      this.addDataPoint(xValues[i], yValues[i]);
+    }
   }
 
   addDataPoint = (x: number, y: number) => {
@@ -265,6 +441,72 @@ class Graphing {
     this.yAxisRangeMin.apply();
     this.yAxisRangeMax.apply();
   }
+
+  _saveConfig = () => {
+    let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+
+    config.graphingEnabled = this.graphingEnabled;
+    config.bufferDelimiter = this.bufferDelimiter;
+    config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
+    config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
+    config.xVarSource = this.xVarSource;
+    config.xVarPrefix = this.xVarPrefix.appliedValue;
+    config.yVarPrefix = this.yVarPrefix.appliedValue;
+    config.multipleValuesPerBuffer = this.multipleValuesPerBuffer;
+    config.valueSeparator = this.valueSeparator;
+    config.customValueSeparator = this.customValueSeparator.appliedValue;
+    config.clearPlotOnNewValues = this.clearPlotOnNewValues;
+    config.xAxisRangeMode = this.xAxisRangeMode;
+    config.xAxisRangeMin = this.xAxisRangeMin.appliedValue.toString();
+    config.xAxisRangeMax = this.xAxisRangeMax.appliedValue.toString();
+    config.yAxisRangeMode = this.yAxisRangeMode;
+    config.yAxisRangeMin = this.yAxisRangeMin.appliedValue.toString();
+    config.yAxisRangeMax = this.yAxisRangeMax.appliedValue.toString();
+    config.xVarUnit = this.xVarUnit;
+
+    this.appDataManager.saveAppData();
+  };
+
+  _loadConfig = () => {
+    let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+
+    this.graphingEnabled = configToLoad.graphingEnabled;
+    this.bufferDelimiter = configToLoad.bufferDelimiter;
+    this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
+    this.maxBufferSize.apply({notify: false});
+    this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
+    this.maxNumDataPoints.apply({notify: false});
+    this.xVarSource = configToLoad.xVarSource;
+    this.xVarPrefix.setDispValue(configToLoad.xVarPrefix);
+    this.xVarPrefix.apply({notify: false});
+    this.yVarPrefix.setDispValue(configToLoad.yVarPrefix);
+    this.yVarPrefix.apply({notify: false});
+    this.multipleValuesPerBuffer = configToLoad.multipleValuesPerBuffer;
+    this.valueSeparator = configToLoad.valueSeparator;
+    this.customValueSeparator.setDispValue(configToLoad.customValueSeparator);
+    this.customValueSeparator.apply({notify: false});
+    this.clearPlotOnNewValues = configToLoad.clearPlotOnNewValues;
+    this.xAxisRangeMode = configToLoad.xAxisRangeMode;
+    this.xAxisRangeMin.setDispValue(configToLoad.xAxisRangeMin);
+    this.xAxisRangeMin.apply({notify: false});
+    this.xAxisRangeMax.setDispValue(configToLoad.xAxisRangeMax);
+    this.xAxisRangeMax.apply({notify: false});
+    this.yAxisRangeMode = configToLoad.yAxisRangeMode;
+    this.yAxisRangeMin.setDispValue(configToLoad.yAxisRangeMin);
+    this.yAxisRangeMin.apply({notify: false});
+    this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
+    this.yAxisRangeMax.apply({notify: false});
+    this.xVarUnit = configToLoad.xVarUnit;
+  };
+
+  _onMinRangeChanged = () => {
+    // When min values change, re-validate the max fields by re-running their validation
+    this.xAxisRangeMax.setDispValue(this.xAxisRangeMax.dispValue);
+    this.yAxisRangeMax.setDispValue(this.yAxisRangeMax.dispValue);
+    
+    // Save config
+    this._saveConfig();
+  };
 }
 
 export default Graphing;

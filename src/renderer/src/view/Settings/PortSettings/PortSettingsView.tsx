@@ -50,6 +50,11 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
+  const isPortSettingsDisabled = app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
+  // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
+  // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.
+  const isTableDisabled = app.portState !== PortState.CLOSED;
+
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <div style={{ height: '20px' }}></div>
@@ -84,17 +89,21 @@ function PortSettingsView(props: Props) {
                 app.settings.portConfiguration.availableSerialPorts.map((port: any, idx: number) => (
                   <TableRow
                     key={port.path || idx}
-                    hover
+                    hover={!isTableDisabled}
                     selected={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
-                    sx={{ cursor: 'pointer' }}
-                    onClick={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                    sx={{
+                      cursor: isTableDisabled ? 'not-allowed' : 'pointer',
+                      opacity: isTableDisabled ? 0.5 : 1
+                    }}
+                    onClick={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
                   >
                     <TableCell padding="checkbox">
                       <Radio
                         checked={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
-                        onChange={() => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                        onChange={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
                         value={port.path}
                         name="serial-port-selection"
+                        disabled={isTableDisabled}
                       />
                     </TableCell>
                     <TableCell>{port.path || 'Unknown'}</TableCell>
@@ -169,7 +178,7 @@ function PortSettingsView(props: Props) {
                 }}
               />
             )}
-            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+            disabled={isPortSettingsDisabled}
             sx={{ m: 1, width: 160 }}
             size="small"
             inputValue={app.settings.portConfiguration.baudRateInputValue}
@@ -187,7 +196,7 @@ function PortSettingsView(props: Props) {
             <Select
               value={app.settings.portConfiguration.numDataBits}
               label="Num. Data Bits"
-              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              disabled={isPortSettingsDisabled}
               onChange={(e) => {
                 app.settings.portConfiguration.setNumDataBits(e.target.value as number);
               }}
@@ -215,7 +224,7 @@ function PortSettingsView(props: Props) {
             <Select
               value={app.settings.portConfiguration.parity}
               label="Parity"
-              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              disabled={isPortSettingsDisabled}
               onChange={(e) => {
                 app.settings.portConfiguration.setParity(e.target.value as Parity);
               }}
@@ -239,7 +248,7 @@ function PortSettingsView(props: Props) {
             <Select
               value={app.settings.portConfiguration.stopBits}
               label="Stop Bits"
-              disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+              disabled={isPortSettingsDisabled}
               onChange={(e) => {
                 app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
               }}
@@ -269,7 +278,7 @@ function PortSettingsView(props: Props) {
           <Select
             value={app.settings.portConfiguration.flowControl}
             label="Parity"
-            disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+            disabled={isPortSettingsDisabled}
             onChange={(e) => {
               app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
             }}

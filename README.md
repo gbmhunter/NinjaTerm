@@ -33,6 +33,12 @@ Start the app in the `dev` environment:
 npm run start
 ```
 
+## To Build The App
+
+```bash
+npm run build
+```
+
 ## Testing
 
 Both unit tests and end-to-end tests can be run with:
@@ -47,7 +53,7 @@ Unit tests are run with `vitest`, which has good integration with Vite.
 
 To run just the unit tests, use the command:
 
-```
+```shell
 npx vitest run
 ```
 
@@ -85,21 +91,9 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automatically deploys when the `main` branch is updated. Netlify also creates preview deploys on pull requests (link will be automatically posted into the PR comments).
 
-## Code Architecture
-
-Create React App (CRA) with the typescript PWA template [docs here](https://create-react-app.dev/docs/making-a-progressive-web-app/) was used as a starting point for development:
-
-```bash
-npx create-react-app my-app --template cra-template-pwa-typescript
-```
-
-NOTE: Since then, the app has been migrated from using `create-react-app`` (which uses the Webpack compiler) to using the Vite compiler.
-
-The source code is under `src/`. The React-based user interfaces are in `.tsx` files, and the MobX "models" (you could kind of call them stores) are typically in `.ts` files. There is generally 1 model file per React view to store all the stateful information relating to that view. 
-
 ## Web App
 
-NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm.
+NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm. The `web` directory is a project in it's own right, see it's `README.md` for more details.
 
 ## Graphing
 

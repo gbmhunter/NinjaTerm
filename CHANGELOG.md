@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.1.0] - 2025-08-09
+
+### Added
+
+- Added global app setting for enabling/disabling automatic updates.
+- Added support for graphing arrays of received data on a single line.
+- Added "Num. bytes in buffer" label to graph view.
+
+### Fixed
+
+- Fixed bug where available serial ports table was not disabled when the port was open.
+
+### Changed
+
+- Removed default menu bar from app.
+
 ## [5.0.4] - 2025-08-02
 
 ### Fixed
@@ -844,7 +860,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...v5.1.0
 [5.0.4]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.3...v5.0.4
 [5.0.3]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.2...v5.0.3
 [5.0.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.1...v5.0.2

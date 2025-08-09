@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
@@ -9,9 +9,8 @@ import * as fs from 'fs/promises';
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
 const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
 
-// 1ms was too fast -- resulted in many small chunks being sent to the renderer process
-// and too many IPC calls
-const RX_DATA_BATCH_TIMEOUT_MS = 20;
+// Set maximum delay to 50ms for any received char before sending to renderer
+const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
 // Configure auto-updater logging
 autoUpdater.logger = log;
@@ -75,6 +74,9 @@ autoUpdater.on('update-downloaded', (info) => {
 let mainWindow: BrowserWindow;
 
 function createWindow(): void {
+  // Remove the default menu. No top menu bar is needed.
+  Menu.setApplicationMenu(null);
+
   // Create the browser window
   mainWindow = new BrowserWindow({
     height: 900,
@@ -86,6 +88,7 @@ function createWindow(): void {
     },
     icon: path.join(__dirname, '../../img/logo/v3/icon-256x256.png')
   });
+
 
   // Load the app
   if (process.env.NODE_ENV === 'development') {
@@ -105,13 +108,36 @@ function createWindow(): void {
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
-  
+
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds
   if (!process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
-    // Check for updates 5 seconds after startup
-    setTimeout(() => {
-      autoUpdater.checkForUpdatesAndNotify();
+    // Check for updates 5 seconds after startup, but only if auto-updates are enabled
+    setTimeout(async () => {
+      try {
+        const autoUpdatesResult = await mainWindow?.webContents.executeJavaScript(`
+          (() => {
+            try {
+              const appDataJson = localStorage.getItem('appData');
+              if (!appDataJson) return true; // Default to enabled
+              const appData = JSON.parse(appDataJson);
+              return appData.autoUpdatesEnabled ?? true;
+            } catch (error) {
+              return true; // Default to enabled on error
+            }
+          })()
+        `);
+
+        if (autoUpdatesResult) {
+          log.info('Auto-updates enabled, checking for updates...');
+          autoUpdater.checkForUpdatesAndNotify();
+        } else {
+          log.info('Auto-updates disabled, skipping update check.');
+        }
+      } catch (error) {
+        log.error('Failed to check auto-updates setting, defaulting to enabled:', error);
+        autoUpdater.checkForUpdatesAndNotify();
+      }
     }, 5000);
   }
 });
@@ -163,6 +189,7 @@ ipcMain.handle('serial:list-ports', async () => {
 });
 
 ipcMain.handle('serial:open-port', async (event, portPath: string, options: any) => {
+  console.log('serial:open-port called. portPath: ', portPath, ' options: ', options);
   try {
     if (activeSerialPorts.has(portPath)) {
       return { success: false, error: 'Port already open' };
@@ -174,15 +201,32 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       dataBits: options.dataBits || 8,
       parity: options.parity || 'none',
       stopBits: options.stopBits || 1,
-      autoOpen: false
+      autoOpen: false,
+      // Sets the size of the read and write buffers. Defaults to 64k, which causes lag problems if NinjaTerm UI cannot keep up (buffer starts filling up
+      // and NinjaTerms starts "receiving" data from a long time in the past, this is confusing to the user).
+      highWaterMark: 1024,
     });
 
+    // I have seen the port.open() callback not get called in some cases, so add a timeout here so
+    // the app does not hang indefinitely.
     await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      const timeout = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          reject(new Error('Timeout while opening serial port'));
+        }
+      }, 5*1000); // 5 seconds timeout
+
       port.open((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
+        if (!settled) {
+          settled = true;
+          clearTimeout(timeout);
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
         }
       });
     });
@@ -195,25 +239,29 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
       // Add data to batch
       const batch = dataBatches.get(portPath);
       if (batch) {
+        const isFirstChar = batch.length === 0;
         batch.push(data);
 
-        // Clear existing timeout
-        const existingTimeout = batchTimeouts.get(portPath);
-        if (existingTimeout) {
-          clearTimeout(existingTimeout);
-        }
-
-        // Send immediately if batch is getting large, or set timeout for small batches
-        if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
-          // Send large batches immediately
-          sendBatchedData(portPath);
-        } else {
-          // For small batches, wait a bit to collect more data
+        // If this is the first character in a new batch, start the 20ms timer
+        if (isFirstChar) {
+          // Start timer for 20ms after receiving the first char
           const timeout = setTimeout(() => {
             sendBatchedData(portPath);
             batchTimeouts.delete(portPath);
-          }, RX_DATA_BATCH_TIMEOUT_MS); // Very short timeout (1ms) to batch rapid data
+          }, RX_DATA_BATCH_TIMEOUT_MS);
           batchTimeouts.set(portPath, timeout);
+        } else {
+          // For subsequent chars, check if batch is getting too large
+          if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
+            // Clear the existing timeout and send large batches immediately
+            const existingTimeout = batchTimeouts.get(portPath);
+            if (existingTimeout) {
+              clearTimeout(existingTimeout);
+              batchTimeouts.delete(portPath);
+            }
+            sendBatchedData(portPath);
+          }
+          // Otherwise, just accumulate data and let the timer handle it
         }
       }
     });
@@ -373,12 +421,12 @@ ipcMain.handle('updater:check-for-updates', async () => {
     if (process.env.NODE_ENV === 'development') {
       return { success: false, error: 'Updates not available in development mode' };
     }
-    
+
     log.info('Manual update check initiated');
     log.info(`Current app version: ${app.getVersion()}`);
     log.info(`Update channel: ${autoUpdater.channel}`);
     log.info(`Feed URL: ${JSON.stringify(autoUpdater.getFeedURL())}`);
-    
+
     const result = await autoUpdater.checkForUpdates();
     return { success: true, updateInfo: result?.updateInfo };
   } catch (error) {
@@ -393,6 +441,28 @@ ipcMain.handle('updater:quit-and-install', async () => {
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('updater:get-auto-updates-enabled', async () => {
+  // The "auto-updates enabled" setting is stored in the app data which is handled by the renderer process.
+  // This IPC handler is used to get the setting from the renderer process.
+  try {
+    const result = await mainWindow?.webContents.executeJavaScript(`
+      (() => {
+        try {
+          const appDataJson = localStorage.getItem('appData');
+          if (!appDataJson) return true; // Default to enabled
+          const appData = JSON.parse(appDataJson);
+          return appData.autoUpdatesEnabled ?? true;
+        } catch (error) {
+          return true; // Default to enabled on error
+        }
+      })()
+    `);
+    return { success: true, enabled: result };
+  } catch (error) {
+    return { success: false, error: (error as Error).message, enabled: true };
   }
 });
 

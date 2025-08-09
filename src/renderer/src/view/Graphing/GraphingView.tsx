@@ -91,26 +91,26 @@ export default observer((props: Props) => {
         }}
       >
         <div id="group-1" className={styles.controlPanel}>
-          {/* DATA SEPARATOR */}
+          {/* BUFFER DELIMITER */}
           {/* ============================================================== */}
           <Tooltip
-            title="The character that separates data points in the input data stream."
+            title="The character sequence which triggers processing for data points from data that has accumulated in the buffer since the last sequence."
             followCursor
             arrow
           >
             <FormControl sx={{ width: 160 }} size="small">
-              <InputLabel>Data Separator</InputLabel>
+              <InputLabel>Buffer Delimiter</InputLabel>
               <Select
-                value={app.graphing.dataSeparator}
-                label="Data Separator"
+                value={app.graphing.bufferDelimiter || 'LF (\\n)'}
+                label="Buffer Delimiter"
                 onChange={(e) => {
-                  app.graphing.setDataSeparator(e.target.value);
+                  app.graphing.setBufferDelimiter(e.target.value);
                 }}
               >
-                {app.graphing.dataSeparators.map((dataSeparator: string) => {
+                {app.graphing.bufferDelimiters.map((bufferDelimiter: string) => {
                   return (
-                    <MenuItem key={dataSeparator} value={dataSeparator}>
-                      {dataSeparator}
+                    <MenuItem key={bufferDelimiter} value={bufferDelimiter}>
+                      {bufferDelimiter}
                     </MenuItem>
                   );
                 })}
@@ -120,20 +120,31 @@ export default observer((props: Props) => {
 
           {/* MAX BUFFER SIZE */}
           {/* ============================================================== */}
-          <Tooltip
-            title="The max. size the graphing receiving buffer can grow to waiting for a data separator. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-1000]."
-            followCursor
-            arrow
-          >
-            <ApplyableTextFieldView
-              label="Max. Buffer Size"
-              name="maxBufferSize" // Must match the name of the field in the graphing settings
-              size="small"
-              variant="outlined"
-              applyableTextField={app.graphing.maxBufferSize}
-              sx={{ width: "200px" }}
-            />
-          </Tooltip>
+          <div>
+            <Tooltip
+              title="The max. size the graphing receiving buffer can grow to waiting for a buffer delimiter. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                label="Max. Buffer Size"
+                name="maxBufferSize" // Must match the name of the field in the graphing settings
+                size="small"
+                variant="outlined"
+                applyableTextField={app.graphing.maxBufferSize}
+                sx={{ width: "200px" }}
+              />
+            </Tooltip>
+            <Tooltip
+              title="The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when the buffer delimiter is received."
+              followCursor
+              arrow
+            >
+              <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
+              </div>
+            </Tooltip>
+          </div>
 
           {/* MAX NUM. DATA POINTS */}
           {/* ============================================================== */}
@@ -154,6 +165,7 @@ export default observer((props: Props) => {
         </div>
 
         <div id="group-2" className={styles.controlPanel}>
+          {/* ============================================================== */}
           {/* X VAR SOURCE */}
           {/* ============================================================== */}
           <Tooltip
@@ -192,7 +204,7 @@ export default observer((props: Props) => {
                 data-testid="x-var-source"
                 label="X Variable Source"
                 labelId="label-id"
-                value={app.graphing.xVarSource}
+                value={app.graphing.xVarSource || 'Received Time'}
                 onChange={(e) => {
                   app.graphing.setXVarSource(e.target.value);
                 }}
@@ -208,6 +220,7 @@ export default observer((props: Props) => {
             </FormControl>
           </Tooltip>
 
+          {/* ============================================================== */}
           {/* X VAR PREFIX */}
           {/* ============================================================== */}
           <Tooltip
@@ -223,9 +236,11 @@ export default observer((props: Props) => {
               variant="outlined"
               applyableTextField={app.graphing.xVarPrefix}
               sx={{ width: "200px" }}
+              disabled={app.graphing.xVarSource !== "In Data"}
             />
           </Tooltip>
 
+          {/* ============================================================== */}
           {/* Y VAR PREFIX */}
           {/* ============================================================== */}
           <Tooltip
@@ -242,6 +257,100 @@ export default observer((props: Props) => {
               sx={{ width: "200px" }}
             />
           </Tooltip>
+
+          {/* ============================================================== */}
+          {/* MULTIPLE VALUES PER BUFFER */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Enable parsing multiple comma/space-separated values from each buffer instead of just one value per buffer."
+            followCursor
+            arrow
+          >
+            <FormControlLabel
+              control={
+                <Switch
+                  name="multipleValuesPerBuffer"
+                  checked={app.graphing.multipleValuesPerBuffer}
+                  onChange={(e) => {
+                    app.graphing.setMultipleValuesPerBuffer(e.target.checked);
+                  }}
+                />
+              }
+              label="Multiple Values Per Buffer"
+            />
+          </Tooltip>
+
+          {/* VALUE SEPARATOR */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerBuffer && (
+            <Tooltip
+              title="The character that separates multiple values within a single line."
+              followCursor
+              arrow
+            >
+              <FormControl sx={{ width: 160 }} size="small">
+                <InputLabel>Value Separator</InputLabel>
+                <Select
+                  value={app.graphing.valueSeparator || 'Comma (,)'}
+                  label="Value Separator"
+                  onChange={(e) => {
+                    app.graphing.setValueSeparator(e.target.value);
+                  }}
+                >
+                  {app.graphing.valueSeparators.map((separator: string) => {
+                    return (
+                      <MenuItem key={separator} value={separator}>
+                        {separator}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+          )}
+
+          {/* CUSTOM VALUE SEPARATOR */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerBuffer && app.graphing.valueSeparator === 'Custom' && (
+            <Tooltip
+              title="Custom character(s) to use as value separator."
+              followCursor
+              arrow
+            >
+              <ApplyableTextFieldView
+                label="Custom Separator"
+                name="customValueSeparator"
+                size="small"
+                variant="outlined"
+                applyableTextField={app.graphing.customValueSeparator}
+                sx={{ width: "150px" }}
+              />
+            </Tooltip>
+          )}
+
+
+          {/* CLEAR PLOT ON NEW VALUES */}
+          {/* ============================================================== */}
+          {app.graphing.multipleValuesPerBuffer && (
+            <Tooltip
+              title="When enabled, the plot is cleared each time new data arrives in a buffer. Useful for displaying snapshots of data rather than accumulating over time."
+              followCursor
+              arrow
+            >
+              <FormControlLabel
+                control={
+                  <Switch
+                    name="clearPlotOnNewValues"
+                    checked={app.graphing.clearPlotOnNewValues}
+                    onChange={(e) => {
+                      app.graphing.setClearPlotOnNewValues(e.target.checked);
+                    }}
+                  />
+                }
+                label="Clear Plot On New Values"
+              />
+            </Tooltip>
+          )}
         </div>
 
         {/* CONTROL PANEL 3: X-AXIS RANGE */}
@@ -273,7 +382,7 @@ export default observer((props: Props) => {
                 data-testid="x-axis-range-mode"
                 label="X Axis Range Mode"
                 name="xAxisRangeMode"
-                value={app.graphing.xAxisRangeMode}
+                value={app.graphing.xAxisRangeMode || 'Auto'}
                 onChange={(e) => {
                   app.graphing.setXAxisRangeMode(e.target.value);
                 }}
@@ -365,7 +474,7 @@ export default observer((props: Props) => {
               <Select
                 data-testid="y-axis-range-mode"
                 label="Y Axis Range Mode"
-                value={app.graphing.yAxisRangeMode}
+                value={app.graphing.yAxisRangeMode || 'Auto'}
                 onChange={(e) => {
                   app.graphing.setYAxisRangeMode(e.target.value);
                 }}
