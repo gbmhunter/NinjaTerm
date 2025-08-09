@@ -166,7 +166,8 @@
           ]
         }
       ],
-      "icon": "img/logo/v3/logo512.png"
+      "icon": "img/logo/v3/logo512.png",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "dmg": {
       "title": "NinjaTerm ${version}",
