@@ -16,6 +16,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import DownloadIcon from '@mui/icons-material/Download';
 import WindowsLogoPng from './windows-logo.png';
 import LinuxLogoPng from './linux-logo.png';
+import MacLogoPng from './mac-logo.png';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useEffect, useState } from 'react';
 
@@ -162,7 +163,7 @@ export default observer((props: Props) => {
 
     if (os === 'mac') {
       const macAsset = release.assets.find(asset =>
-        asset.name.endsWith('.dmg') && 
+        asset.name.endsWith('.dmg') &&
         (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64'))
       );
       return macAsset?.browser_download_url || null;
@@ -171,7 +172,7 @@ export default observer((props: Props) => {
     if (os === 'linux') {
       const linuxAsset = release.assets.find(asset =>
         asset.name.endsWith('.AppImage') &&
-        (arch === 'arm64' ? asset.name.includes('arm64') : 
+        (arch === 'arm64' ? asset.name.includes('arm64') :
          asset.name.includes('x64') || asset.name.includes('x86_64'))
       );
       return linuxAsset?.browser_download_url || null;
@@ -201,7 +202,7 @@ export default observer((props: Props) => {
       return <img src={LinuxLogoPng} alt="Linux" style={{ width: '20px', height: '20px' }} />;
     }
     if (os === 'mac') {
-      return <span style={{ fontSize: '20px' }}>🍎</span>;
+      return <img src={MacLogoPng} alt="macOS" style={{ width: '20px', height: '20px' }} />;
     }
     return <DownloadIcon />;
   };
@@ -293,8 +294,7 @@ export default observer((props: Props) => {
                   </Button>
                 )}
                 <Button
-                  href="https://github.com/gbmhunter/NinjaTerm/releases"
-                  target="_blank"
+                  href="#downloads"
                   variant="outlined"
                   size="large"
                   startIcon={<DownloadIcon />}
@@ -350,9 +350,6 @@ export default observer((props: Props) => {
             </Typography>
 
             <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
-              <p>
-                The Linux <code>.AppImage</code> requires FUSE to be installed (<code>sudo apt install fuse</code> on Debian-based distros).
-              </p>
             <p>
               For the web-based version, natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome,
               Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
@@ -372,6 +369,209 @@ export default observer((props: Props) => {
           </Grid>
 
           <Grid xs={12} sx={{ height: '20px' }} />
+
+          <Typography variant="h2" style={{ marginBottom: '20px' }} id="downloads">
+            Downloads
+          </Typography>
+
+          {/* Downloads Section */}
+          <Grid container xs={12} spacing={2} sx={{ marginBottom: '40px' }}>
+            <Grid xs={12}>
+              <Typography style={{ marginBottom: '20px', fontSize: '18px' }}>
+                Download NinjaTerm for your operating system. If you're not sure which version to download, use the platform-specific button above or check the explanations below:
+              </Typography>
+            </Grid>
+
+            {/* Windows Downloads */}
+            <Grid xs={12} md={6}>
+              <div style={{
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #444',
+                borderRadius: '8px',
+                padding: '20px',
+                height: '100%'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <img src={WindowsLogoPng} alt="Windows" style={{ width: '24px', height: '24px', marginRight: '10px', filter: 'brightness(0) saturate(100%) invert(64%) sepia(20%) saturate(1653%) hue-rotate(347deg) brightness(99%) contrast(89%)' }} />
+                  <Typography variant="h6" style={{ color: '#E47F37' }}>Windows</Typography>
+                </div>
+
+                {release && release.assets
+                  .filter(asset => asset.name.includes('Setup') && asset.name.endsWith('.exe'))
+                  .map(asset => (
+                    <div key={asset.name} style={{ marginBottom: '10px' }}>
+                      <Button
+                        href={asset.browser_download_url}
+                        variant="outlined"
+                        size="small"
+                        startIcon={<DownloadIcon />}
+                        sx={{ marginBottom: '8px', minWidth: '200px' }}
+                      >
+                        {asset.name}
+                      </Button>
+                      <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                        {asset.name.includes('x64') ?
+                          'For modern Windows computers (64-bit). This works on most Windows PCs made after 2010.' :
+                          'Standard Windows installer'
+                        }
+                      </Typography>
+                    </div>
+                  ))
+                }
+                {(!release || release.assets.filter(asset => asset.name.includes('Setup') && asset.name.endsWith('.exe')).length === 0) && (
+                  <Typography variant="body2" style={{ color: '#888' }}>Loading Windows downloads...</Typography>
+                )}
+              </div>
+            </Grid>
+
+            {/* macOS Downloads */}
+            <Grid xs={12} md={6}>
+              <div style={{
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #444',
+                borderRadius: '8px',
+                padding: '20px',
+                height: '100%'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <img src={MacLogoPng} alt="macOS" style={{ width: '24px', height: '24px', marginRight: '10px', filter: 'brightness(0) saturate(100%) invert(64%) sepia(20%) saturate(1653%) hue-rotate(347deg) brightness(99%) contrast(89%)' }} />
+                  <Typography variant="h6" style={{ color: '#E47F37' }}>macOS</Typography>
+                </div>
+
+                {release && release.assets
+                  .filter(asset => asset.name.endsWith('.dmg'))
+                  .map(asset => (
+                    <div key={asset.name} style={{ marginBottom: '10px' }}>
+                      <Button
+                        href={asset.browser_download_url}
+                        variant="outlined"
+                        size="small"
+                        startIcon={<DownloadIcon />}
+                        sx={{ marginBottom: '8px', minWidth: '200px' }}
+                      >
+                        {asset.name}
+                      </Button>
+                      <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                        {asset.name.includes('arm64') ?
+                          'For Apple Silicon Macs (M1, M2, M3 chips). Choose this if you have a Mac made after late 2020.' :
+                          asset.name.includes('x64') ?
+                          'For Intel Macs (older Macs with Intel processors). Choose this if you have a Mac made before 2021.' :
+                          'macOS installer'
+                        }
+                      </Typography>
+                    </div>
+                  ))
+                }
+                {(!release || release.assets.filter(asset => asset.name.endsWith('.dmg')).length === 0) && (
+                  <Typography variant="body2" style={{ color: '#888' }}>Loading macOS downloads...</Typography>
+                )}
+              </div>
+            </Grid>
+
+            {/* Linux Downloads */}
+            <Grid xs={12}>
+              <div style={{
+                backgroundColor: '#2a2a2a',
+                border: '1px solid #444',
+                borderRadius: '8px',
+                padding: '20px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                  <img src={LinuxLogoPng} alt="Linux" style={{ width: '24px', height: '24px', marginRight: '10px', filter: 'brightness(0) saturate(100%) invert(64%) sepia(20%) saturate(1653%) hue-rotate(347deg) brightness(99%) contrast(89%)' }} />
+                  <Typography variant="h6" style={{ color: '#E47F37' }}>Linux</Typography>
+                </div>
+
+                <Grid container spacing={2}>
+                  {/* AppImage Downloads */}
+                  <Grid xs={12} md={6}>
+                    <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>AppImage (Recommended)</Typography>
+                    <Typography variant="body2" style={{ color: '#ccc', marginBottom: '15px', fontSize: '14px' }}>
+                      Portable applications that work on most Linux distributions. No installation required - just download, make executable, and run. <code>.AppImage</code> does require FUSE to be installed (<code>sudo apt install fuse</code> on Debian-based distros).
+                    </Typography>
+                    {release && release.assets
+                      .filter(asset => asset.name.endsWith('.AppImage'))
+                      .map(asset => (
+                        <div key={asset.name} style={{ marginBottom: '10px' }}>
+                          <Button
+                            href={asset.browser_download_url}
+                            variant="outlined"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            sx={{ marginBottom: '8px', minWidth: '250px' }}
+                          >
+                            {asset.name}
+                          </Button>
+                          <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                            {asset.name.includes('arm64') ?
+                              'For ARM64 computers (Raspberry Pi 4+, some newer laptops with ARM processors)' :
+                              'For standard Linux computers (x86_64). This works on most Linux PCs and laptops.'
+                            }
+                          </Typography>
+                        </div>
+                      ))
+                    }
+                  </Grid>
+
+                  {/* DEB Downloads */}
+                  <Grid xs={12} md={6}>
+                    <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>DEB Packages</Typography>
+                    <Typography variant="body2" style={{ color: '#ccc', marginBottom: '15px', fontSize: '14px' }}>
+                      For Debian-based distributions (Ubuntu, Linux Mint, Elementary OS, etc.). Install with: <code>sudo dpkg -i filename.deb</code>.
+                    </Typography>
+                    {release && release.assets
+                      .filter(asset => asset.name.endsWith('.deb'))
+                      .map(asset => (
+                        <div key={asset.name} style={{ marginBottom: '10px' }}>
+                          <Button
+                            href={asset.browser_download_url}
+                            variant="outlined"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            sx={{ marginBottom: '8px', minWidth: '250px' }}
+                          >
+                            {asset.name}
+                          </Button>
+                          <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                            {asset.name.includes('arm64') ?
+                              'For ARM64 computers (Raspberry Pi 4+, some newer laptops with ARM processors)' :
+                              'For standard Linux computers (x86_64). This works on most Linux PCs and laptops.'
+                            }
+                          </Typography>
+                        </div>
+                      ))
+                    }
+                  </Grid>
+                </Grid>
+
+                {(!release || (release.assets.filter(asset => asset.name.endsWith('.AppImage') || asset.name.endsWith('.deb')).length === 0)) && (
+                  <Typography variant="body2" style={{ color: '#888' }}>Loading Linux downloads...</Typography>
+                )}
+              </div>
+            </Grid>
+
+            {/* Architecture Help */}
+            <Grid xs={12}>
+              <div style={{
+                backgroundColor: '#1a1a1a',
+                border: '1px solid #333',
+                borderRadius: '8px',
+                padding: '15px'
+              }}>
+                <Typography variant="h6" style={{ color: '#E47F37', marginBottom: '10px' }}>
+                  Not sure which architecture to choose?
+                </Typography>
+                <Typography variant="body2" style={{ color: '#ccc', marginBottom: '8px' }}>
+                  <strong>x64/x86_64:</strong> Standard 64-bit processors. This is what most computers use (Intel Core i3/i5/i7, AMD Ryzen, older Macs).
+                </Typography>
+                <Typography variant="body2" style={{ color: '#ccc', marginBottom: '8px' }}>
+                  <strong>ARM64:</strong> Newer ARM-based processors. This includes Apple Silicon Macs (M1/M2/M3), Raspberry Pi 4+, and some newer Windows laptops.
+                </Typography>
+                <Typography variant="body2" style={{ color: '#ccc' }}>
+                  <strong>When in doubt:</strong> Try x64 first - it works on most computers. If it doesn't work, then try ARM64.
+                </Typography>
+              </div>
+            </Grid>
+          </Grid>
 
           <Typography variant="h2" style={{ marginBottom: '20px' }}>
             Features
