@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.1.1] - 2025-08-10
+
+### Fixed
+
+- The MacOS x86 build now has the architecture added to the filename, fixing bug where correct download was not shown.
+
 ## [5.1.0] - 2025-08-09
 
 ### Added
@@ -860,7 +866,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.1...HEAD
+[5.1.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...v5.1.0
 [5.0.4]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.3...v5.0.4
 [5.0.3]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.2...v5.0.3
