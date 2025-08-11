@@ -11,6 +11,37 @@ class Point {
   y: number = 0;
 }
 
+type XAxisType = 'data' | 'counter' | 'timestamp';
+
+class PlotTrace {
+  id: string;
+  name: string;
+  color: string;
+  xType: XAxisType;
+  data: Point[] = [];
+  counter: number = 0;
+  
+  constructor(id: string, name: string, color: string, xType: XAxisType) {
+    this.id = id;
+    this.name = name;
+    this.color = color;
+    this.xType = xType;
+    makeAutoObservable(this);
+  }
+}
+
+class Plot {
+  id: string;
+  title: string;
+  traces: Map<string, PlotTrace> = new Map();
+  
+  constructor(id: string, title: string) {
+    this.id = id;
+    this.title = title;
+    makeAutoObservable(this);
+  }
+}
+
 class Graphing {
 
   snackbar: SnackbarController;
@@ -22,7 +53,8 @@ class Graphing {
    */
   graphingEnabled = false;
 
-  graphData: Point[] = [];
+  graphData: Point[] = [];  // Legacy single plot data
+  plots: Map<string, Plot> = new Map();  // New multi-plot data
 
   bufferDelimiters = [
     'LF (\\n)',
@@ -201,19 +233,26 @@ class Graphing {
       if (char === '\n') {
         // console.log('Found data separator.')
         // Found a data separator, so parse the data
-        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
-        if (yVarPrefixIdx === -1) {
-          // This line does not contain the Y variable prefix, so skip it
-          this.rxDataBuffer = '';
-          continue;
-        }
-
-        if (this.multipleValuesPerBuffer) {
-          // Extract multiple values per buffer
-          this.parseMultipleValues();
+        
+        // Check if this is a plot command
+        if (this.rxDataBuffer.trim().startsWith('#PLOT:')) {
+          this.parsePlotCommand(this.rxDataBuffer.trim());
         } else {
-          // Single value per buffer (original behavior)
-          this.parseSingleValue();
+          // Legacy parsing for backward compatibility
+          const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+          if (yVarPrefixIdx === -1) {
+            // This line does not contain the Y variable prefix, so skip it
+            this.rxDataBuffer = '';
+            continue;
+          }
+
+          if (this.multipleValuesPerBuffer) {
+            // Extract multiple values per buffer
+            this.parseMultipleValues();
+          } else {
+            // Single value per buffer (original behavior)
+            this.parseSingleValue();
+          }
         }
 
         // Since data separator has been received and line has been parsed,
@@ -413,7 +452,17 @@ class Graphing {
    */
   resetData = () => {
     this.graphData = [];
+    this.resetAllPlots();
     this.timeAtReset_ms = Date.now();
+  }
+
+  resetAllPlots = () => {
+    for (const plot of this.plots.values()) {
+      for (const trace of plot.traces.values()) {
+        trace.data = [];
+        trace.counter = 0;
+      }
+    }
   }
 
   updateXRangeFromData = () => {
@@ -440,6 +489,196 @@ class Graphing {
 
     this.yAxisRangeMin.apply();
     this.yAxisRangeMax.apply();
+  }
+
+  parsePlotCommand = (command: string) => {
+    try {
+      // Remove #PLOT: prefix
+      const commandBody = command.substring(6);
+      const [action, ...paramParts] = commandBody.split(',');
+      const params = this.parseCommandParams(paramParts.join(','));
+
+      switch (action) {
+        case 'CREATE':
+          this.handleCreatePlot(params);
+          break;
+        case 'DELETE':
+          this.handleDeletePlot(params);
+          break;
+        case 'CLEAR':
+          this.handleClearPlot(params);
+          break;
+        case 'TRACE':
+          this.handleCreateTrace(params);
+          break;
+        case 'DATA':
+          this.handleAddData(params);
+          break;
+        default:
+          this.snackbar.sendToSnackbar(`Unknown plot command: ${action}`, 'warning');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error parsing plot command: ${error}`, 'error');
+    }
+  }
+
+  parseCommandParams = (paramString: string): Map<string, string> => {
+    const params = new Map<string, string>();
+    if (!paramString.trim()) return params;
+
+    const parts = paramString.split(',');
+    for (const part of parts) {
+      const [key, ...valueParts] = part.split('=');
+      if (key && valueParts.length > 0) {
+        params.set(key.trim(), valueParts.join('=').trim());
+      }
+    }
+    return params;
+  }
+
+  handleCreatePlot = (params: Map<string, string>) => {
+    const id = params.get('id');
+    const title = params.get('title') || id || 'Unnamed Plot';
+    
+    if (!id) {
+      this.snackbar.sendToSnackbar('PLOT:CREATE requires id parameter', 'warning');
+      return;
+    }
+
+    const plot = new Plot(id, title);
+    this.plots.set(id, plot);
+  }
+
+  handleDeletePlot = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    if (!plotId) {
+      this.snackbar.sendToSnackbar('PLOT:DELETE requires plot parameter', 'warning');
+      return;
+    }
+
+    this.plots.delete(plotId);
+  }
+
+  handleClearPlot = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    const traceId = params.get('trace');
+
+    if (traceId && plotId) {
+      // Clear specific trace in specific plot
+      const plot = this.plots.get(plotId);
+      if (plot) {
+        const trace = plot.traces.get(traceId);
+        if (trace) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    } else if (traceId) {
+      // Clear trace in all plots
+      for (const plot of this.plots.values()) {
+        const trace = plot.traces.get(traceId);
+        if (trace) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    } else if (plotId) {
+      // Clear all traces in specific plot
+      const plot = this.plots.get(plotId);
+      if (plot) {
+        for (const trace of plot.traces.values()) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    }
+  }
+
+  handleCreateTrace = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    const traceId = params.get('id');
+    const name = params.get('name') || traceId || 'Unnamed Trace';
+    const color = params.get('color') || '#0af20e';
+    const xType = (params.get('xtype') as XAxisType) || 'timestamp';
+
+    if (!plotId || !traceId) {
+      this.snackbar.sendToSnackbar('PLOT:TRACE requires plot and id parameters', 'warning');
+      return;
+    }
+
+    const plot = this.plots.get(plotId);
+    if (!plot) {
+      this.snackbar.sendToSnackbar(`Plot ${plotId} does not exist`, 'warning');
+      return;
+    }
+
+    if (!['data', 'counter', 'timestamp'].includes(xType)) {
+      this.snackbar.sendToSnackbar(`Invalid xtype: ${xType}. Must be data, counter, or timestamp`, 'warning');
+      return;
+    }
+
+    const trace = new PlotTrace(traceId, name, color, xType);
+    plot.traces.set(traceId, trace);
+  }
+
+  handleAddData = (params: Map<string, string>) => {
+    const traceId = params.get('trace');
+    const dataStr = params.get('data');
+
+    if (!traceId || !dataStr) {
+      this.snackbar.sendToSnackbar('PLOT:DATA requires trace and data parameters', 'warning');
+      return;
+    }
+
+    // Find the trace in any plot
+    let targetTrace: PlotTrace | null = null;
+    for (const plot of this.plots.values()) {
+      const trace = plot.traces.get(traceId);
+      if (trace) {
+        targetTrace = trace;
+        break;
+      }
+    }
+
+    if (!targetTrace) {
+      this.snackbar.sendToSnackbar(`Trace ${traceId} does not exist`, 'warning');
+      return;
+    }
+
+    const currentTime = (Date.now() - this.timeAtReset_ms) / 1000.0;
+
+    // Parse multiple data points separated by semicolons
+    const dataPoints = dataStr.split(';').map(s => s.trim()).filter(s => s.length > 0);
+
+    for (const dataPoint of dataPoints) {
+      const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+      
+      if (values.length === 0) continue;
+
+      if (targetTrace.xType === 'data') {
+        // Expect x,y pairs
+        for (let i = 0; i < values.length; i += 2) {
+          if (i + 1 < values.length) {
+            targetTrace.data.push({ x: values[i], y: values[i + 1] });
+          }
+        }
+      } else if (targetTrace.xType === 'counter') {
+        // Use counter for x, values are y
+        for (const yValue of values) {
+          targetTrace.data.push({ x: targetTrace.counter++, y: yValue });
+        }
+      } else if (targetTrace.xType === 'timestamp') {
+        // Use timestamp for x, values are y
+        for (const yValue of values) {
+          targetTrace.data.push({ x: currentTime, y: yValue });
+        }
+      }
+    }
+
+    // Apply max data points limit to trace
+    while (targetTrace.data.length > this.maxNumDataPoints.appliedValue) {
+      targetTrace.data.shift();
+    }
   }
 
   _saveConfig = () => {

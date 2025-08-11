@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added support for command-based graphing.
+
 ## [5.1.1] - 2025-08-10
 
 ### Fixed

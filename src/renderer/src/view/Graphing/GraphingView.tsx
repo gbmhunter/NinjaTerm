@@ -8,8 +8,12 @@ import {
   Switch,
   TextField,
   Tooltip,
+  IconButton,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { observer } from "mobx-react-lite";
+import { useState } from "react";
 
 import { App } from "src/model/App";
 import styles from "./GraphingView.module.css";
@@ -36,6 +40,7 @@ interface Props {
  */
 export default observer((props: Props) => {
   const { app } = props;
+  const [isControlsExpanded, setIsControlsExpanded] = useState(true);
 
   // Calculate x-axis label based on x variable source
   const xVarSource = app.graphing.xVarSource;
@@ -61,30 +66,83 @@ export default observer((props: Props) => {
         width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: "20px",
+        overflow: "hidden", // Prevent outer container from scrolling
       }}
     >
-      {/* ENABLE GRAPHING */}
-      {/* ============================================================== */}
-      <FormControlLabel
-        control={
-          <Switch
-            name="enableGraphing"
-            checked={app.graphing.graphingEnabled}
-            onChange={(e) => {
-              app.graphing.setGraphingEnabled(e.target.checked);
-            }}
-          />
-        }
-        label="Enable Graphing"
-        sx={{
-          marginLeft: "20px",
-        }}
-      />
-
+      {/* COLLAPSIBLE CONTROLS SECTION */}
       <div
-        id="row-of-controls"
         style={{
+          flexShrink: 0, // Don't shrink the controls
+          padding: "10px 20px",
+          borderBottom: "1px solid #444",
+        }}
+      >
+        {/* ALWAYS VISIBLE ROW */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "20px",
+            minHeight: "48px",
+          }}
+        >
+          {/* ENABLE GRAPHING */}
+          <FormControlLabel
+            control={
+              <Switch
+                name="enableGraphing"
+                checked={app.graphing.graphingEnabled}
+                onChange={(e) => {
+                  app.graphing.setGraphingEnabled(e.target.checked);
+                }}
+              />
+            }
+            label="Enable Graphing"
+          />
+
+          {/* RESET BUTTON */}
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={() => {
+              app.graphing.resetData();
+            }}
+            sx={{ width: "120px" }}
+          >
+            Reset
+          </Button>
+
+          {/* STATS */}
+          <span style={{ color: '#fff', fontSize: '14px' }}>
+            Data: {app.graphing.graphData.length} | Plots: {app.graphing.plots.size}
+          </span>
+
+          {/* SPACER */}
+          <div style={{ flexGrow: 1 }} />
+
+          {/* EXPAND/COLLAPSE BUTTON */}
+          <IconButton
+            onClick={() => setIsControlsExpanded(!isControlsExpanded)}
+            sx={{ color: '#fff' }}
+          >
+            {isControlsExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </IconButton>
+        </div>
+
+        {/* EXPANDED CONTROLS */}
+        {isControlsExpanded && (
+          <div
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+          >
+            <div
+              id="row-of-controls"
+              style={{
           display: "flex",
           flexDirection: "row",
           gap: "20px",
@@ -536,106 +594,168 @@ export default observer((props: Props) => {
 
         </div> {/* CONTROL PANEL 4: Y AXIS LIMITS */}
 
-      </div>
+            </div> {/* END CONTROL PANELS ROW */}
+          </div>
+        )} {/* END EXPANDED CONTROLS */}
+      </div> {/* END COLLAPSIBLE CONTROLS SECTION */}
 
-      {/* BUTTON ROW */}
-      {/* ============================================================== */}
+      {/* SCROLLABLE PLOTS SECTION */}
       <div
-        aria-label="row-of-buttons"
         style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "20px",
+          flexGrow: 1, // Take remaining space
+          overflow: "auto", // Allow scrolling
+          padding: "0 20px 20px 20px", // Padding for plots
         }}
       >
-        {/* RESET BUTTON */}
-        {/* ============================================================== */}
-        <Button
-          variant="outlined"
-          color="warning"
-          onClick={() => {
-            app.graphing.resetData();
-          }}
-          sx={{ width: "150px" }}
-        >
-          Reset
-        </Button>
 
-        <span>Num. data points: {app.graphing.graphData.length}</span>
-      </div> {/* BUTTON ROW */}
-
-      {/* GRAPH (uses chart.js) */}
+      {/* LEGACY GRAPH (uses chart.js) - shown when no plots exist */}
       {/* ============================================================== */}
+      {app.graphing.plots.size === 0 && (
+        <div style={{
+          width: "100%",
+          height: "500px",
+        }}>
+          <Scatter
+            data={{
+              datasets: [
+                {
+                  label: "Legacy Dataset",
+                  data: app.graphing.graphData.slice(), // Convert MobX observable to JS object
+                  animation: false,
+                  showLine: true, // Scatter plots by default don't show the line
+                  borderColor: "#0af20e", // Line colour
+                  borderWidth: 1, // Line width
+                  pointBackgroundColor: "#0af20e", // Point colour
+                },
+              ],
+            }}
+            options={{
+              maintainAspectRatio: false, // This is needed to chart to assume size of parent div
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: xVarLabel,
+                  },
+                  ticks: {
+                    color: '#fff', // Color of the x-axis labels
+                  },
+                  grid: {
+                    color: '#ffffff44', // Color of the x-axis grid lines
+                  },
+                  border: {
+                    width: 2,
+                    color: '#fff', // <-------------- Color of the x-axis
+                  },
+                  min: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMin.appliedValue : undefined,
+                  max: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMax.appliedValue : undefined,
+                },
+                y: {
+                  title: {
+                    display: true,
+                    text: yVarLabel,
+                  },
+                  ticks: {
+                    color: '#fff', // Color of the x-axis labels
+                  },
+                  grid: {
+                    color: '#ffffff44', // Color of the x-axis grid lines
+                  },
+                  border: {
+                    width: 2,
+                    color: '#fff', // <-------------- Color of the x-axis
+                  },
+                  min: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMin.appliedValue : undefined,
+                  max: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMax.appliedValue : undefined,
+                },
+              },
+              plugins: {
+                legend: {
+                  display: false, // Hide the legend
+                },
+              }
+            }}
+          />
+        </div>
+      )}
 
-      {/* This sets the height of the graph */}
-      <div style={{
-        width: "100%",
-        height: "500px",
-        // backgroundColor: '#111'
-      }}>
-        <Scatter
-          data={{
-            datasets: [
-              {
-                label: "A dataset",
-                data: app.graphing.graphData.slice(), // Convert MobX observable to JS object
-                animation: false,
-                showLine: true, // Scatter plots by default don't show the line
-                borderColor: "#0af20e", // Line colour
-                borderWidth: 1, // Line width
-                pointBackgroundColor: "#0af20e", // Point colour
-              },
-            ],
-          }}
-          options={{
-            maintainAspectRatio: false, // This is needed to chart to assume size of parent div
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: xVarLabel,
+      {/* NEW MULTI-PLOT GRAPHS */}
+      {/* ============================================================== */}
+      {Array.from(app.graphing.plots.values()).map((plot) => (
+        <div key={plot.id} style={{ marginTop: "20px" }}>
+          <h3 style={{ color: '#fff', marginBottom: '10px' }}>{plot.title}</h3>
+          <div style={{
+            width: "100%",
+            height: "400px",
+          }}>
+            <Scatter
+              data={{
+                datasets: Array.from(plot.traces.values()).map((trace) => ({
+                  label: trace.name,
+                  data: trace.data.slice(), // Convert MobX observable to JS object
+                  animation: false,
+                  showLine: true,
+                  borderColor: trace.color,
+                  borderWidth: 2,
+                  pointBackgroundColor: trace.color,
+                  pointRadius: 2,
+                })),
+              }}
+              options={{
+                maintainAspectRatio: false,
+                scales: {
+                  x: {
+                    title: {
+                      display: true,
+                      text: "X Axis",
+                    },
+                    ticks: {
+                      color: '#fff',
+                    },
+                    grid: {
+                      color: '#ffffff44',
+                    },
+                    border: {
+                      width: 2,
+                      color: '#fff',
+                    },
+                    min: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMin.appliedValue : undefined,
+                    max: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMax.appliedValue : undefined,
+                  },
+                  y: {
+                    title: {
+                      display: true,
+                      text: "Y Axis",
+                    },
+                    ticks: {
+                      color: '#fff',
+                    },
+                    grid: {
+                      color: '#ffffff44',
+                    },
+                    border: {
+                      width: 2,
+                      color: '#fff',
+                    },
+                    min: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMin.appliedValue : undefined,
+                    max: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMax.appliedValue : undefined,
+                  },
                 },
-                ticks: {
-                  color: '#fff', // Color of the x-axis labels
-                },
-                grid: {
-                  color: '#ffffff44', // Color of the x-axis grid lines
-                },
-                border: {
-                  width: 2,
-                  color: '#fff', // <-------------- Color of the x-axis
-                },
-                min: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMin.appliedValue : undefined,
-                max: app.graphing.xAxisRangeMode === "Fixed" ? app.graphing.xAxisRangeMax.appliedValue : undefined,
-              },
-              y: {
-                title: {
-                  display: true,
-                  text: yVarLabel,
-                },
-                ticks: {
-                  color: '#fff', // Color of the x-axis labels
-                },
-                grid: {
-                  color: '#ffffff44', // Color of the x-axis grid lines
-                },
-                border: {
-                  width: 2,
-                  color: '#fff', // <-------------- Color of the x-axis
-                },
-                min: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMin.appliedValue : undefined,
-                max: app.graphing.yAxisRangeMode === "Fixed" ? app.graphing.yAxisRangeMax.appliedValue : undefined,
-              },
-            },
-            plugins: {
-              legend: {
-                display: false, // Hide the legend
-              },
-            }
-          }}
-        />
-      </div>
+                plugins: {
+                  legend: {
+                    display: plot.traces.size > 1, // Show legend when multiple traces
+                    labels: {
+                      color: '#fff'
+                    }
+                  },
+                }
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      
+      </div> {/* END SCROLLABLE PLOTS SECTION */}
     </div>
   );
 });
