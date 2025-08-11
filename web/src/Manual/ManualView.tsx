@@ -192,17 +192,45 @@ export default observer((props: Props) => {
 
           <Typography variant="h2">Graphing</Typography>
           <p>
-            NinjaTerm provides powerful real-time graphing capabilities for visualizing serial data. The graphing system supports:
-            <ol>
-              <li>Simple prefix-based parsing: Character sequences to trigger data extraction for the input data can be specified in the graphing settings.</li>
-              <li>An advanced ASCII text command-based protocol for complex multi-plot scenarios: Special commands like <code>#PLOT:CREATE ...</code> and <code>#PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
-            </ol>
+            NinjaTerm provides powerful real-time graphing capabilities for visualizing serial data. The graphing system supports two different approaches:
           </p>
+          <ol>
+            <li><b>Simple prefix-based parsing</b>: Character sequences to trigger data extraction for the input data can be specified in the graphing settings.</li>
+            <li><b>An advanced ASCII text command-based protocol</b> for complex multi-plot scenarios: Special commands like <code>#PLOT:CREATE ...</code> and <code>#PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
+          </ol>
+
+          <p>Both approaches are text based (ASCII encoded data), and require a character sequence to denote the end of a frame, which triggers the graphing system to look for data in the buffer since the last end of frame character. This defaults to the <code>LF</code> character (0x0A), which is normally suitable when intermixing the data with other text such as log messages.</p>
 
           <Typography variant="h3">Prefix Based Graphing</Typography>
           <p>
-            Enable graphing in the Graphing tab and configure prefixes to extract data from your serial stream. For example, with <code>y=</code> as the Y variable prefix, data like <code>y=25.6</code> will be plotted.
+            This is the simplest approach. Enable graphing in the Graphing tab and configure prefixes to extract data from your serial stream. For example, with <code>y=</code> as the Y variable prefix, data like <code>y=25.6</code> will be plotted.
           </p>
+
+          <p>For example, your MCU might be outputting temperature data every second, intermixed with other log messages like this (line endings are LF):</p>
+
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`2025-08-12 12:00:00 - MCU has booted. Firmware version 1.0.0.
+2025-08-12 12:00:01 - Starting temperature measurements...
+2025-08-12 12:00:02 - Temperature: 26.1 degC
+2025-08-12 12:00:03 - Temperature: 25.9 degC
+2025-08-12 12:00:04 - Some other message...
+2025-08-12 12:00:05 - Temperature: 26.0 degC
+2025-08-12 12:00:06 - Temperature: 26.3 degC
+2025-08-12 12:00:07 - Temperature: 26.1 degC`}
+          </pre>
+
+          <p>You can configure NinjaTerm to extract the temperature data from the serial stream with the following settings on the Graphing view:</p>
+
+          <ul>
+            <li>"Buffer Delimiter" to "LF (\n)" (this is the default)</li>
+            <li>"X Variable Source" to "Received Time"</li>
+            <li>"Y Variable Prefix" to "Temperature:"</li>
+            <li>"Y Variable Suffix" to "degC"</li>
+          </ul>
+
+          <p>The result will be a graph of the temperature data over time.</p>
+
+          <p>You can also configure the graphing settings to use a different delimiter, or to use a different variable source (e.g. a counter or a timestamp).</p>
 
           <Typography variant="h3">Command Based Graphing</Typography>
           <p>
