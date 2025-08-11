@@ -241,12 +241,12 @@ export default observer((props: Props) => {
 
           <Typography variant="h4">Graph Management Commands</Typography>
 
-          <p>All graphing related commands start with <code>#PLOT:</code>.</p>
+          <p>All graphing related commands start with <code>#PLOT:</code>. The command does not need be at the start of a graphing frame (i.e. random data can occur before the <code>#PLOT:</code> command). This allows commands to work with logging frameworks that automatically prefix all lines with timestamps and other metadata (e.g. module name, file name, function name, etc).</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a new plot (a plot is a single x/y graph with a titles, axes and traces)
 // A trace is a single data series (e.g. line) on a plot.
-#PLOT:CREATE,id=plot1,title="Sensor Data"
+#PLOT:CREATE,id=plot1,title="Sensor Data"$
 
 // Delete a plot
 #PLOT:DELETE,plot=plot1
@@ -255,7 +255,28 @@ export default observer((props: Props) => {
 #PLOT:CLEAR,plot=plot1`}
           </pre>
 
+          <p><code>PLOT</code> commands have to either end with the end of frame character (e.g. <code>LF</code>) or a <code>$</code> character. You can just use LF in the simple case. If you want to send multiple commands in a single frame (e.g. in a single line of LF is the end of frame sequence), you can use the <code>$</code> character to indicate the end of the frame and then use <code>#</code> to start the next command. The following example shows how to send multiple commands in a single frame:</p>
+
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:CREATE,id=plot1$#PLOT:TRACE,plot=plot1,id=trace1$#PLOT:DATA,trace=trace1,data=1,2,3,4,5$`}
+          </pre>
+
           <Typography variant="h4">Trace Management Commands</Typography>
+
+          <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>#PLOT:TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp`}
+          </pre>
+
+          <p>A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down)</p>
+
+          <p><code>xtype</code> is the type of data to use for the x-axis. There are three options:</p>
+          <ul>
+            <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm.</li>
+            <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace.</li>
+            <li><code>data</code>: The x-axis will be the data itself (e.g. a counter or a timestamp).</li>
+          </ul>
+
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create traces with different x-axis data types
 #PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp

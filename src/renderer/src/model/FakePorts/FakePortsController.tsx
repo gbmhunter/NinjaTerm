@@ -966,22 +966,20 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Multi-plot Graphing Demo - Environmental Sensors
+    // Command Based Graphing Demo - Single Plot, Single Trace
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Multi-plot Demo: Environmental Sensors',
-        'Demonstrates multi-plot graphing with temperature, humidity, and pressure sensors using timestamp x-axis.',
+        'Command Based Graphing Demo: Single Plot, Single Trace',
+        'Demonstrates command based graphing with a single plot and a single trace. Uses a single command per line.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           app.graphing.setGraphingEnabled(true);
-          
+
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '#PLOT:CREATE,id=env,title="Environmental Sensors"\n',
+            '#PLOT:CREATE,id=env,title="Temperature"\n',
             '#PLOT:TRACE,plot=env,id=temp,name="Temperature (deg C)",color=#FF4444,xtype=timestamp\n',
-            '#PLOT:TRACE,plot=env,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp\n',
-            '#PLOT:TRACE,plot=env,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp\n'
           ];
 
           // Send setup commands immediately
@@ -993,20 +991,8 @@ export default class FakePortsController {
           const intervalId = setInterval(() => {
             // Simulate temperature: 20-30°C with daily variation
             const temp = 25 + 5 * Math.sin(Date.now() / 100000) + (Math.random() - 0.5) * 2;
-            
-            // Simulate humidity: 40-80% inversely related to temperature
-            const humidity = 60 - (temp - 25) * 2 + (Math.random() - 0.5) * 10;
-            
-            // Simulate pressure: 1000-1020 hPa with slow variation
-            const pressure = 1013 + 7 * Math.sin(Date.now() / 200000) + (Math.random() - 0.5) * 3;
-
             const tempCommand = `#PLOT:DATA,trace=temp,data=${temp.toFixed(1)}\n`;
-            const humidityCommand = `#PLOT:DATA,trace=humidity,data=${humidity.toFixed(1)}\n`;
-            const pressureCommand = `#PLOT:DATA,trace=pressure,data=${pressure.toFixed(1)}\n`;
-
             app.parseRxData(new TextEncoder().encode(tempCommand));
-            app.parseRxData(new TextEncoder().encode(humidityCommand));
-            app.parseRxData(new TextEncoder().encode(pressureCommand));
           }, 1000); // 1 Hz
 
           return intervalId;
@@ -1020,16 +1006,16 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Multi-plot Graphing Demo - Accelerometer Data (Counter X-axis)
+    // Command Based Graphing Demo - Accelerometer Data (Counter X-axis)
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Multi-plot Demo: Accelerometer (Counter X-axis)',
-        'Demonstrates counter-based x-axis with accelerometer X, Y, Z data.',
+        'Command Based Graphing Demo: Single Plot, 3 Traces',
+        'Demonstrates command based graphing with a single plot and multiple traces. Uses a single command per line.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           app.graphing.setGraphingEnabled(true);
-          
+
           // Setup sequence - create plot and traces
           const setupCommands = [
             '#PLOT:CREATE,id=accel,title="Accelerometer Data"\n',
@@ -1071,20 +1057,19 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Multi-plot Graphing Demo - XY Position Data (Data X-axis)
+    // Command Based Graphing Demo - XY Position Data (Data X-axis)
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Multi-plot Demo: XY Position (Data X-axis)',
-        'Demonstrates explicit x,y coordinate plotting for position tracking.',
+        'Command Based Graphing Demo: XY Position (Data X-axis)',
+        'Demonstrates command based graphing with explicit x,y coordinate plotting for position tracking.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           app.graphing.setGraphingEnabled(true);
-          
+
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '#PLOT:CREATE,id=pos,title="Position Tracking"\n',
-            '#PLOT:TRACE,plot=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data\n'
+            '#PLOT:CREATE,id=pos,title="Position Tracking"$#PLOT:TRACE,plot=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data$\n'
           ];
 
           for (const command of setupCommands) {
@@ -1118,21 +1103,19 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Multi-plot Graphing Demo - Multiple Data Points Per Command
+    // Command Based Graphing Demo - Multiple Data Points Per Command
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Multi-plot Demo: Batch Data (Multiple Points)',
-        'Demonstrates sending multiple data points in a single command.',
+        'Command Based Graphing Demo: Batch Data (Multiple Points)',
+        'Demonstrates command based graphing with sending multiple data points in a single command.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           app.graphing.setGraphingEnabled(true);
-          
+
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '#PLOT:CREATE,id=batch,title="Batch Data Processing"\n',
-            '#PLOT:TRACE,plot=batch,id=signal,name="Signal Samples",color=#00FFFF,xtype=counter\n',
-            '#PLOT:TRACE,plot=batch,id=filtered,name="Filtered Signal",color=#FFFF00,xtype=counter\n'
+            '#PLOT:CREATE,id=batch,title="Batch Data Processing"$#PLOT:TRACE,plot=batch,id=signal,name="Signal Samples",color=#00FFFF,xtype=counter$#PLOT:TRACE,plot=batch,id=filtered,name="Filtered Signal",color=#FFFF00,xtype=counter$\n'
           ];
 
           for (const command of setupCommands) {
@@ -1144,12 +1127,12 @@ export default class FakePortsController {
             // Generate a batch of 8 samples at once
             const samples = [];
             const filteredSamples = [];
-            
+
             for (let i = 0; i < 8; i++) {
               // Raw noisy signal
               const rawSample = Math.sin((sampleBatch * 8 + i) * 0.1) * 10 + (Math.random() - 0.5) * 5;
               samples.push(rawSample.toFixed(2));
-              
+
               // Simple moving average filter (simulated)
               const filteredSample = Math.sin((sampleBatch * 8 + i) * 0.1) * 10;
               filteredSamples.push(filteredSample.toFixed(2));
@@ -1176,15 +1159,15 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Multi-plot Graphing Demo - Dynamic Plot Management
+    // Command Based Graphing Demo - Dynamic Plot Management
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Multi-plot Demo: Dynamic Plot Management',
-        'Demonstrates creating, clearing, and deleting plots dynamically.',
+        'Command Based Graphing Demo: Dynamic Plot Management',
+        'Demonstrates command based graphing with creating, clearing, and deleting plots dynamically.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
-          
+
           let phase = 0; // 0: setup, 1: data, 2: clear, 3: new plot, 4: more data, 5: delete
           let dataCounter = 0;
 
@@ -1192,69 +1175,66 @@ export default class FakePortsController {
             if (phase === 0) {
               // Initial setup - create first plot
               const setupCommands = [
-                '#PLOT:CREATE,id=dynamic1,title="Dynamic Plot 1"\n',
-                '#PLOT:TRACE,plot=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter\n',
-                '#PLOT:TRACE,plot=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter\n'
+                '#PLOT:CREATE,id=dynamic1,title="Dynamic Plot 1"$#PLOT:TRACE,plot=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter$#PLOT:TRACE,plot=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter$\n'
               ];
-              
+
               for (const command of setupCommands) {
                 app.parseRxData(new TextEncoder().encode(command));
               }
               phase = 1;
               dataCounter = 0;
-              
+
             } else if (phase === 1) {
               // Send data for 5 seconds
               const wave1 = Math.sin(dataCounter * 0.2) * 10;
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
-              
+
               app.parseRxData(new TextEncoder().encode(`#PLOT:DATA,trace=wave1,data=${wave1.toFixed(2)}\n`));
               app.parseRxData(new TextEncoder().encode(`#PLOT:DATA,trace=wave2,data=${wave2.toFixed(2)}\n`));
-              
+
               dataCounter++;
               if (dataCounter >= 10) {
                 phase = 2;
                 dataCounter = 0;
               }
-              
+
             } else if (phase === 2) {
               // Clear one trace
               app.parseRxData(new TextEncoder().encode('#PLOT:CLEAR,trace=wave1\n'));
               app.parseRxData(new TextEncoder().encode('Cleared wave1 trace\n'));
               phase = 3;
-              
+
             } else if (phase === 3) {
               // Create second plot
               const setupCommands = [
-                '#PLOT:CREATE,id=dynamic2,title="Dynamic Plot 2"\n',
-                '#PLOT:TRACE,plot=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp\n'
+                '#PLOT:CREATE,id=dynamic2,title="Dynamic Plot 2"$#PLOT:TRACE,plot=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp$\n'
               ];
-              
+
               for (const command of setupCommands) {
                 app.parseRxData(new TextEncoder().encode(command));
               }
               phase = 4;
               dataCounter = 0;
-              
+
             } else if (phase === 4) {
               // Send data to both plots
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
               const ramp = (dataCounter % 20) * 0.5; // Sawtooth wave
-              
+
               app.parseRxData(new TextEncoder().encode(`#PLOT:DATA,trace=wave2,data=${wave2.toFixed(2)}\n`));
               app.parseRxData(new TextEncoder().encode(`#PLOT:DATA,trace=ramp,data=${ramp.toFixed(2)}\n`));
-              
+
               dataCounter++;
               if (dataCounter >= 10) {
                 phase = 5;
               }
-              
+
             } else if (phase === 5) {
               // Delete first plot and restart cycle
               app.parseRxData(new TextEncoder().encode('#PLOT:DELETE,plot=dynamic1\n'));
               app.parseRxData(new TextEncoder().encode('Deleted dynamic1 plot. Restarting cycle...\n'));
               phase = 0;
-              
+
               // Wait a bit longer before restarting
               setTimeout(() => {
                 app.parseRxData(new TextEncoder().encode('#PLOT:DELETE,plot=dynamic2\n'));
@@ -1281,15 +1261,10 @@ export default class FakePortsController {
         'Demonstrates multiple plots with different x-axis types in one demo.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
-          
+
           // Setup sequence - create multiple plots with different x-axis types
           const setupCommands = [
-            '#PLOT:CREATE,id=freqs,title="Frequency Response"\n',
-            '#PLOT:TRACE,plot=freqs,id=magnitude,name="Magnitude (dB)",color=#FF0000,xtype=data\n',
-            
-            '#PLOT:CREATE,id=time,title="Time Series"\n',
-            '#PLOT:TRACE,plot=time,id=input,name="Input Signal",color=#00AA00,xtype=timestamp\n',
-            '#PLOT:TRACE,plot=time,id=output,name="Output Signal",color=#AA0000,xtype=timestamp\n'
+            '#PLOT:CREATE,id=freqs,title="Frequency Response"$#PLOT:TRACE,plot=freqs,id=magnitude,name="Magnitude (dB)",color=#FF0000,xtype=data$#PLOT:CREATE,id=time,title="Time Series"$#PLOT:TRACE,plot=time,id=input,name="Input Signal",color=#00AA00,xtype=timestamp$#PLOT:TRACE,plot=time,id=output,name="Output Signal",color=#AA0000,xtype=timestamp$\n'
           ];
 
           for (const command of setupCommands) {
@@ -1298,17 +1273,17 @@ export default class FakePortsController {
 
           let freqIndex = 0;
           const frequencies = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]; // Hz
-          
+
           const intervalId = setInterval(() => {
             // Update frequency response (x,y data)
             if (freqIndex < frequencies.length) {
               const freq = frequencies[freqIndex];
               // Simulate low-pass filter response
               const magnitude = -20 * Math.log10(1 + Math.pow(freq / 100, 2)); // -3dB at 100Hz
-              
+
               const freqCommand = `#PLOT:DATA,trace=magnitude,data=${freq},${magnitude.toFixed(1)}\n`;
               app.parseRxData(new TextEncoder().encode(freqCommand));
-              
+
               freqIndex++;
             } else {
               // Reset frequency sweep
@@ -1319,13 +1294,13 @@ export default class FakePortsController {
             // Update time series (timestamp data)
             const inputSignal = Math.sin(Date.now() / 200) * 5 + (Math.random() - 0.5) * 1;
             const outputSignal = inputSignal * 0.7; // Attenuated output
-            
+
             const inputCommand = `#PLOT:DATA,trace=input,data=${inputSignal.toFixed(2)}\n`;
             const outputCommand = `#PLOT:DATA,trace=output,data=${outputSignal.toFixed(2)}\n`;
-            
+
             app.parseRxData(new TextEncoder().encode(inputCommand));
             app.parseRxData(new TextEncoder().encode(outputCommand));
-            
+
           }, 300);
 
           return intervalId;

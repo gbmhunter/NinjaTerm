@@ -20,7 +20,7 @@ class PlotTrace {
   xType: XAxisType;
   data: Point[] = [];
   counter: number = 0;
-  
+
   constructor(id: string, name: string, color: string, xType: XAxisType) {
     this.id = id;
     this.name = name;
@@ -34,7 +34,7 @@ class Plot {
   id: string;
   title: string;
   traces: Map<string, PlotTrace> = new Map();
-  
+
   constructor(id: string, title: string) {
     this.id = id;
     this.title = title;
@@ -233,10 +233,10 @@ class Graphing {
       if (char === '\n') {
         // console.log('Found data separator.')
         // Found a data separator, so parse the data
-        
-        // Check if this is a plot command
-        if (this.rxDataBuffer.trim().startsWith('#PLOT:')) {
-          this.parsePlotCommand(this.rxDataBuffer.trim());
+
+        // Check if this buffer contains plot commands
+        if (this.rxDataBuffer.includes('#PLOT:')) {
+          this.parsePlotCommands(this.rxDataBuffer);
         } else {
           // Legacy parsing for backward compatibility
           const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
@@ -491,6 +491,56 @@ class Graphing {
     this.yAxisRangeMax.apply();
   }
 
+  parsePlotCommands = (buffer: string) => {
+    try {
+      // Extract all #PLOT: commands from the buffer
+      const commands = this.extractPlotCommands(buffer);
+
+      // Process each command in order
+      for (const command of commands) {
+        this.parsePlotCommand(command);
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error parsing plot commands: ${error}`, 'error');
+    }
+  }
+
+  extractPlotCommands = (buffer: string): string[] => {
+    const commands: string[] = [];
+    let startIndex = 0;
+
+    while (true) {
+      // Find the next #PLOT: command
+      const plotIndex = buffer.indexOf('#PLOT:', startIndex);
+      if (plotIndex === -1) {
+        break; // No more commands
+      }
+
+      // Find the end of this command (either $ or end of buffer)
+      const dollarIndex = buffer.indexOf('$', plotIndex);
+      let commandEnd: number;
+
+      if (dollarIndex === -1) {
+        // No $ found, command goes to end of buffer
+        commandEnd = buffer.length;
+      } else {
+        // $ found, command ends at $
+        commandEnd = dollarIndex;
+      }
+
+      // Extract the command (including #PLOT: prefix)
+      const command = buffer.substring(plotIndex, commandEnd).trim();
+      if (command.length > 0) {
+        commands.push(command);
+      }
+
+      // Continue searching after this command
+      startIndex = commandEnd + 1;
+    }
+
+    return commands;
+  }
+
   parsePlotCommand = (command: string) => {
     try {
       // Remove #PLOT: prefix
@@ -536,19 +586,34 @@ class Graphing {
     return params;
   }
 
+  /**
+   * Handles the PLOT:CREATE command.
+   * @param params - The parameters of the command.
+   */
   handleCreatePlot = (params: Map<string, string>) => {
     const id = params.get('id');
-    const title = params.get('title') || id || 'Unnamed Plot';
-    
     if (!id) {
       this.snackbar.sendToSnackbar('PLOT:CREATE requires id parameter', 'warning');
       return;
+    }
+    let title = params.get('title') || id;
+    // If title exists, strip quotes from start and end if they exist
+    // (user might have provided the title in the form "title="My Data" or title=my_data)
+    // If title doesn't exist, fallback to using the id
+    if (title) {
+      title = title.replace(/^"|"$/g, '');
+    } else {
+      title = id;
     }
 
     const plot = new Plot(id, title);
     this.plots.set(id, plot);
   }
 
+  /**
+   * Handles the PLOT:DELETE command.
+   * @param params - The parameters of the command.
+   */
   handleDeletePlot = (params: Map<string, string>) => {
     const plotId = params.get('plot');
     if (!plotId) {
@@ -559,6 +624,10 @@ class Graphing {
     this.plots.delete(plotId);
   }
 
+  /**
+   * Handles the PLOT:CLEAR command.
+   * @param params - The parameters of the command.
+   */
   handleClearPlot = (params: Map<string, string>) => {
     const plotId = params.get('plot');
     const traceId = params.get('trace');
@@ -594,17 +663,30 @@ class Graphing {
     }
   }
 
+  /**
+   * Handles the PLOT:TRACE command.
+   * @param params - The parameters of the command.
+   */
   handleCreateTrace = (params: Map<string, string>) => {
     const plotId = params.get('plot');
     const traceId = params.get('id');
-    const name = params.get('name') || traceId || 'Unnamed Trace';
-    const color = params.get('color') || '#0af20e';
-    const xType = (params.get('xtype') as XAxisType) || 'timestamp';
 
     if (!plotId || !traceId) {
       this.snackbar.sendToSnackbar('PLOT:TRACE requires plot and id parameters', 'warning');
       return;
     }
+
+    let name = params.get('name');
+    // If name exists, strip quotes from start and end if they exist
+    // (user might have provided the name in the form "name="My Data" or name=my_data)
+    if (name) {
+      name = name.replace(/^"|"$/g, '');
+    } else {
+      name = traceId;
+    }
+
+    const color = params.get('color') || '#0af20e';
+    const xType = (params.get('xtype') as XAxisType) || 'timestamp';
 
     const plot = this.plots.get(plotId);
     if (!plot) {
@@ -621,6 +703,10 @@ class Graphing {
     plot.traces.set(traceId, trace);
   }
 
+  /**
+   * Handles the PLOT:DATA command.
+   * @param params - The parameters of the command.
+   */
   handleAddData = (params: Map<string, string>) => {
     const traceId = params.get('trace');
     const dataStr = params.get('data');
@@ -652,7 +738,7 @@ class Graphing {
 
     for (const dataPoint of dataPoints) {
       const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
-      
+
       if (values.length === 0) continue;
 
       if (targetTrace.xType === 'data') {
@@ -742,7 +828,7 @@ class Graphing {
     // When min values change, re-validate the max fields by re-running their validation
     this.xAxisRangeMax.setDispValue(this.xAxisRangeMax.dispValue);
     this.yAxisRangeMax.setDispValue(this.yAxisRangeMax.dispValue);
-    
+
     // Save config
     this._saveConfig();
   };
