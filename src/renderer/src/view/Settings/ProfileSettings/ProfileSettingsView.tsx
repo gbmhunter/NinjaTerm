@@ -42,7 +42,7 @@ function ProfileSettingsView(props: Props) {
     const dataType = RxSettings.computeDataTypeNameForToolbarDisplay(rxSettings.dataType, rxSettings.numberType);
 
     const lastUsedSerialPort = profile.rootConfig.lastUsedSerialPort;
-    const lastUsedSerialPortInfoJson = JSON.stringify(lastUsedSerialPort.serialPortInfo);
+    const lastUsedSerialPortInfoJson = JSON.stringify({ path: lastUsedSerialPort.path, portState: lastUsedSerialPort.portState });
     rows.push({
       id: idx,
       name: profile.name,

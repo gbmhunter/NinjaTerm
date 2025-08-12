@@ -85,7 +85,7 @@ export class ElectronSerialPort {
         this.readableController = controller;
         
         // Listen for data from the main process
-        electronAPI.serial.onDataReceived((portPath: string, data: number[]) => {
+        electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
           if (portPath === this.portPath && this.readableController) {
             const uint8Array = new Uint8Array(data);
             this.readableController.enqueue(uint8Array);
