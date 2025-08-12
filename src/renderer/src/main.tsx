@@ -5,14 +5,6 @@ import ReactGA from "react-ga4";
 
 import AppView from './view/AppView';
 
-// Initialize Electron adapters if running in Electron
-import { initializeElectronSerialAdapter } from './services/ElectronSerialAdapter';
-import { initializeElectronFileSystemAdapter } from './services/ElectronFileSystemAdapter';
-
-// Initialize adapters before the app starts
-initializeElectronSerialAdapter();
-initializeElectronFileSystemAdapter();
-
 // Google Analytics. Only initialize in production, otherwise things like
 // Playwright tests can spam GA and skew data
 if (import.meta.env.PROD) {
