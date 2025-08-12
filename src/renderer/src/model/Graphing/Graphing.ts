@@ -516,16 +516,16 @@ class Graphing {
         break; // No more commands
       }
 
-      // Find the end of this command (either $ or end of buffer)
-      const dollarIndex = buffer.indexOf('$', plotIndex);
+      // Find the end of this command (either ; or end of buffer)
+      const semicolonIndex = buffer.indexOf(';', plotIndex);
       let commandEnd: number;
 
-      if (dollarIndex === -1) {
-        // No $ found, command goes to end of buffer
+      if (semicolonIndex === -1) {
+        // No ; found, command goes to end of buffer
         commandEnd = buffer.length;
       } else {
-        // $ found, command ends at $
-        commandEnd = dollarIndex;
+        // ; found, command ends at ;
+        commandEnd = semicolonIndex;
       }
 
       // Extract the command (including #PLOT: prefix)
@@ -733,8 +733,8 @@ class Graphing {
 
     const currentTime = (Date.now() - this.timeAtReset_ms) / 1000.0;
 
-    // Parse multiple data points separated by semicolons
-    const dataPoints = dataStr.split(';').map(s => s.trim()).filter(s => s.length > 0);
+    // Parse multiple data points separated by pipes
+    const dataPoints = dataStr.split('|').map(s => s.trim()).filter(s => s.length > 0);
 
     for (const dataPoint of dataPoints) {
       const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));

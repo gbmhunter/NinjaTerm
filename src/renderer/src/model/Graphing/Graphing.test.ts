@@ -55,14 +55,14 @@ describe('Graphing - Command-based functionality', () => {
       expect(commands).toEqual(['#PLOT:CREATE,id=test,title="Test Plot"']);
     });
 
-    it('should extract single command with $ terminator', () => {
-      const buffer = '#PLOT:CREATE,id=test,title="Test Plot"$';
+    it('should extract single command with ; terminator', () => {
+      const buffer = '#PLOT:CREATE,id=test,title="Test Plot";';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual(['#PLOT:CREATE,id=test,title="Test Plot"']);
     });
 
-    it('should extract multiple commands with $ terminators', () => {
-      const buffer = '#PLOT:CREATE,id=plot1$#PLOT:TRACE,plot=plot1,id=trace1$#PLOT:DATA,trace=trace1,data=1,2,3$';
+    it('should extract multiple commands with ; terminators', () => {
+      const buffer = '#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=1,2,3;';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
         '#PLOT:CREATE,id=plot1',
@@ -72,7 +72,7 @@ describe('Graphing - Command-based functionality', () => {
     });
 
     it('should handle commands with text before and after', () => {
-      const buffer = 'Some log message #PLOT:CREATE,id=test$ more text #PLOT:DELETE,plot=test$ end';
+      const buffer = 'Some log message #PLOT:CREATE,id=test; more text #PLOT:DELETE,plot=test; end';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
         '#PLOT:CREATE,id=test',
@@ -397,8 +397,8 @@ describe('Graphing - Command-based functionality', () => {
       expect(trace?.data[0].y).toBe(25.6);
     });
 
-    it('should add multiple x,y pairs to data trace using semicolon separator', () => {
-      const params = new Map([['trace', 'position'], ['data', '1.0,25.6;2.0,26.1;3.0,25.9']]);
+    it('should add multiple x,y pairs to data trace using pipe separator', () => {
+      const params = new Map([['trace', 'position'], ['data', '1.0,25.6|2.0,26.1|3.0,25.9']]);
       graphing.handleAddData(params);
       
       const plot = graphing.plots.get('plot1');
@@ -450,11 +450,11 @@ describe('Graphing - Command-based functionality', () => {
     it('should handle complete workflow with multiple commands', () => {
       const buffer = `
         Log message 1
-        #PLOT:CREATE,id=sensors,title="Environmental Sensors"$
-        #PLOT:TRACE,plot=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp$
-        #PLOT:TRACE,plot=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter$
-        #PLOT:DATA,trace=temp,data=25.6$
-        #PLOT:DATA,trace=humidity,data=67.2$
+        #PLOT:CREATE,id=sensors,title="Environmental Sensors";
+        #PLOT:TRACE,plot=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
+        #PLOT:TRACE,plot=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter;
+        #PLOT:DATA,trace=temp,data=25.6;
+        #PLOT:DATA,trace=humidity,data=67.2;
         Log message 2
       `;
       
@@ -484,7 +484,7 @@ describe('Graphing - Command-based functionality', () => {
     });
 
     it('should handle parsing errors gracefully', () => {
-      const buffer = '#PLOT:INVALID_COMMAND,param=value$';
+      const buffer = '#PLOT:INVALID_COMMAND,param=value;';
       
       graphing.parsePlotCommands(buffer);
       
@@ -497,7 +497,7 @@ describe('Graphing - Command-based functionality', () => {
 
   describe('parseData integration with plot commands', () => {
     it('should detect and parse plot commands in data stream', () => {
-      const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test"$\n');
+      const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
       
       graphing.parseData(data);
       
@@ -512,7 +512,7 @@ describe('Graphing - Command-based functionality', () => {
       graphing.parseData(legacyData);
       
       // Then add command-based data
-      const commandData = new TextEncoder().encode('#PLOT:CREATE,id=test$#PLOT:TRACE,plot=test,id=trace1$#PLOT:DATA,trace=trace1,data=30.0$\n');
+      const commandData = new TextEncoder().encode('#PLOT:CREATE,id=test;#PLOT:TRACE,plot=test,id=trace1;#PLOT:DATA,trace=trace1,data=30.0;\n');
       graphing.parseData(commandData);
       
       // Check both legacy and new data exist

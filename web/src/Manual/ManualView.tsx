@@ -246,7 +246,7 @@ export default observer((props: Props) => {
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a new plot (a plot is a single x/y graph with a titles, axes and traces)
 // A trace is a single data series (e.g. line) on a plot.
-#PLOT:CREATE,id=plot1,title="Sensor Data"$
+#PLOT:CREATE,id=plot1,title="Sensor Data";
 
 // Delete a plot
 #PLOT:DELETE,plot=plot1
@@ -255,10 +255,10 @@ export default observer((props: Props) => {
 #PLOT:CLEAR,plot=plot1`}
           </pre>
 
-          <p><code>PLOT</code> commands have to either end with the end of frame character (e.g. <code>LF</code>) or a <code>$</code> character. You can just use LF in the simple case. If you want to send multiple commands in a single frame (e.g. in a single line of LF is the end of frame sequence), you can use the <code>$</code> character to indicate the end of the frame and then use <code>#</code> to start the next command. The following example shows how to send multiple commands in a single frame:</p>
+          <p><code>PLOT</code> commands have to either end with the end of graphing frame character (e.g. <code>LF</code>, this is set in the Graphing settings) or a <code>;</code> character. You can just use LF in the simple case. If you want to send multiple commands in a single frame (e.g. in a single line of LF is the end of frame sequence), you can use the <code>;</code> character to indicate the end of the command and then use <code>#</code> to start the next command. The following example shows how to send multiple commands in a single frame:</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:CREATE,id=plot1$#PLOT:TRACE,plot=plot1,id=trace1$#PLOT:DATA,trace=trace1,data=1,2,3,4,5$`}
+{`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=1,2,3,4,5;`}
           </pre>
 
           <Typography variant="h4">Trace Management Commands</Typography>
@@ -272,9 +272,9 @@ export default observer((props: Props) => {
 
           <p><code>xtype</code> is the type of data to use for the x-axis. There are three options:</p>
           <ul>
-            <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm.</li>
-            <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace.</li>
-            <li><code>data</code>: The x-axis will be the data itself (e.g. a counter or a timestamp).</li>
+            <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm. In the <code>PLOT:DATA</code> command you supply y-values only. Works well when you a slowly sending single values back per <code>PLOT:DATA</code> command (e.g. reading a temperature sensor once per second).</li>
+            <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace. In the <code>PLOT:DATA</code> command you supply the y-values only. Works well for arrays of data where each point has been sampled at a regular interval (e.g. an ADC taking 1024 samples and returning all the data in a single <code>PLOT:DATA</code> command).</li>
+            <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
           </ul>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
@@ -287,17 +287,23 @@ export default observer((props: Props) => {
 #PLOT:CLEAR,trace=temp`}
           </pre>
 
-          <Typography variant="h4">Data Commands with X-Axis Types</Typography>
+          <Typography variant="h4">Data Commands</Typography>
 
-          <Typography variant="h5">1. X-Axis Type: data (x,y pairs)</Typography>
-          <p>Use when you want to specify both x and y values explicitly:</p>
+          <p>Once you have created a plot and a trace on the plot, use the <code>PLOT:DATA</code> command to add data points to the trace. This will draw the points on the graph.</p>
+
+          <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
+          <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`// Single data point
-#PLOT:DATA,trace=position,data=123.45,25.6
+{`#PLOT:DATA,trace=temp,data=1.23`}
+</pre>
 
-// Multiple data points (semicolon separated)
-#PLOT:DATA,trace=position,data=124.45,26.1;125.45,26.8;126.45,27.2`}
+          <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:DATA,trace=temp,data=1.25,1.28,1.31`}
           </pre>
+
+          <p>Remember that the timestamp is the time the data is received by NinjaTerm. Due to buffering, processing time and other work your computer might be doing, this timestamp might be quite different to the time the data was measured. If you need more accurate time stamping (e.g. better than 10-100ms resolution), timestamp the data on the microcontroller and use <code>xtype=data</code> instead, bundling the timestamp as the x value.</p>
 
           <Typography variant="h5">2. X-Axis Type: counter (auto-incrementing)</Typography>
           <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
@@ -309,14 +315,10 @@ export default observer((props: Props) => {
 #PLOT:DATA,trace=accel,data=9.82,9.85,9.79,9.83`}
           </pre>
 
-          <Typography variant="h5">3. X-Axis Type: timestamp (arrival time)</Typography>
-          <p>Use when you want x values to be the time data arrives at NinjaTerm:</p>
+          <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
+          <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`// Single y value (x = current timestamp)
-#PLOT:DATA,trace=temp,data=1.23
-
-// Multiple y values (comma separated, all get same timestamp)
-#PLOT:DATA,trace=temp,data=1.25,1.28,1.31`}
+{`#PLOT:DATA,trace=position,data=124.45,26.1|125.45,26.8|126.45,27.2`}
           </pre>
 
           <Typography variant="h4">Complete Example</Typography>
@@ -344,12 +346,25 @@ export default observer((props: Props) => {
           <Typography variant="h4">Command Protocol Notes</Typography>
           <ul>
             <li>Commands must start with <code>#PLOT:</code></li>
+            <li>Commands are terminated with <code>;</code> character or end of frame (LF)</li>
             <li>Parameters are comma-separated key=value pairs</li>
             <li>Color values can be hex codes (e.g., <code>#FF0000</code>) or standard color names</li>
             <li>Trace IDs must be unique within their plot context</li>
             <li>The command protocol is fully backward compatible with existing prefix-based graphing</li>
-            <li>Multiple data points in a single DATA command can be separated by semicolons (for x,y pairs) or commas (for y-only values)</li>
+            <li>Multiple data points in a single DATA command can be separated by pipes (for x,y pairs) or commas (for y-only values)</li>
           </ul>
+
+          <Typography variant="h4">Enhanced Data Examples</Typography>
+          <p>Example showing the new syntax with multiple x,y data pairs separated by pipes:</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`// Example with multiple x,y data pairs using pipe separator
+#PLOT:DATA,trace=temp,data=1,25|2,16|3,18;
+
+// Complete workflow example
+#PLOT:CREATE,id=sensors,title="Temperature Log";
+#PLOT:TRACE,plot=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
+#PLOT:DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;`}
+          </pre>
 
         </Grid>
       </Box>
