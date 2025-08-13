@@ -631,11 +631,31 @@ class Graphing {
     const params = new Map<string, string>();
     if (!paramString.trim()) return params;
 
-    const parts = paramString.split(',');
+    // Handle square bracket syntax for data arrays: data=[1,2,3,4,5]
+    const bracketReplacements = new Map<string, string>();
+    let processedParamString = paramString;
+    const bracketMatches = paramString.match(/(\w+)=\[([^\]]+)\]/g);
+    
+    if (bracketMatches) {
+      for (const match of bracketMatches) {
+        const [, key, value] = match.match(/(\w+)=\[([^\]]+)\]/)!;
+        // Create a unique placeholder to avoid comma splitting issues
+        const placeholder = `__BRACKET_${key}_${Math.random().toString(36).substring(2)}__`;
+        bracketReplacements.set(placeholder, value);
+        processedParamString = processedParamString.replace(match, `${key}=${placeholder}`);
+      }
+    }
+
+    const parts = processedParamString.split(',');
     for (const part of parts) {
       const [key, ...valueParts] = part.split('=');
       if (key && valueParts.length > 0) {
-        params.set(key.trim(), valueParts.join('=').trim());
+        let value = valueParts.join('=').trim();
+        // Replace any placeholders with actual values
+        for (const [placeholder, actualValue] of bracketReplacements.entries()) {
+          value = value.replace(placeholder, actualValue);
+        }
+        params.set(key.trim(), value);
       }
     }
     return params;
@@ -788,22 +808,25 @@ class Graphing {
 
     const currentTime = (Date.now() - this.timeAtReset_ms) / 1000.0;
 
-    // Parse multiple data points separated by pipes
-    const dataPoints = dataStr.split('|').map(s => s.trim()).filter(s => s.length > 0);
+    if (targetTrace.xType === 'data') {
+      // For data traces, expect x,y pairs separated by pipes: "x1,y1|x2,y2|x3,y3"
+      const dataPoints = dataStr.split('|').map(s => s.trim()).filter(s => s.length > 0);
 
-    for (const dataPoint of dataPoints) {
-      const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+      for (const dataPoint of dataPoints) {
+        const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
 
-      if (values.length === 0) continue;
-
-      if (targetTrace.xType === 'data') {
         // Expect x,y pairs
         for (let i = 0; i < values.length; i += 2) {
           if (i + 1 < values.length) {
             targetTrace.data.push({ x: values[i], y: values[i + 1] });
           }
         }
-      } else if (targetTrace.xType === 'counter') {
+      }
+    } else {
+      // For counter and timestamp traces, expect comma-separated y values: "y1,y2,y3,y4,y5"
+      const values = dataStr.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+
+      if (targetTrace.xType === 'counter') {
         // Use counter for x, values are y
         for (const yValue of values) {
           targetTrace.data.push({ x: targetTrace.counter++, y: yValue });

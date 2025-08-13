@@ -62,12 +62,12 @@ describe('graphing tests', () => {
     });
 
     it('should extract multiple commands with ; terminators', () => {
-      const buffer = '#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=1,2,3;';
+      const buffer = '#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=[1,2,3];';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
         '#PLOT:CREATE,id=plot1',
         '#PLOT:TRACE,plot=plot1,id=trace1',
-        '#PLOT:DATA,trace=trace1,data=1,2,3'
+        '#PLOT:DATA,trace=trace1,data=[1,2,3]'
       ]);
     });
 
@@ -115,6 +115,12 @@ describe('graphing tests', () => {
     it('should handle empty parameter string', () => {
       const params = graphing.parseCommandParams('');
       expect(params.size).toBe(0);
+    });
+
+    it('should parse square bracket syntax for data arrays', () => {
+      const params = graphing.parseCommandParams('trace=trace1,data=[1,2,3,4,5]');
+      expect(params.get('trace')).toBe('trace1');
+      expect(params.get('data')).toBe('1,2,3,4,5');
     });
   }); // describe('parseCommandParams() works', () => {
 
@@ -532,13 +538,16 @@ describe('graphing tests', () => {
     });
 
     it('should handle a bunch of graphing commands', () => {
+      // Use Advanced Cmd Mode for command-based graphing
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+
       const encodeAndCallParseData = (dataAsString: string) => {
         const data = new TextEncoder().encode(dataAsString);
         graphing.parseData(data);
       }
       encodeAndCallParseData('#PLOT:CREATE,id=plot1,title="Plot 1";\n');
-      encodeAndCallParseData('#PLOT:TRACE,plot=plot1,id=trace1;\n');
-      encodeAndCallParseData('PLOT:DATA,trace=no_load,data=-165,-162,-158,-153,-150,-145,-141,-136,-132,-127,-122,-117,-112,-107,-103,-97,-93,-86,-81,-77,-71,-66,-61,-55,-50,-45,-39,-34,-29,-23,-16,-4,1,3,2,2,3,3,2,3,2,2,2,2,2,2,2,3,2,3,3,2,3,3,2,3,3,2,2,2,2,2,1,2,2,2,3,2,2,2,2,2,2,2,2,1,3,2,2,2,2,2,3,2,2,2,2,2,2,2,2,1,1,1,0,0,1,0,0,0,-1,-1,-1,-3,-5,-8,-9,-11,-13,-16,-19,-21,-24,-27,-31,-34,-37,-41,-43,-47,-50,-53,-56,-59,-63,-67,-71,-74,-78,-82,-86,-90,-94,-98,-102,-107,-111,-115,-119,-123,-125,-130,-136,-139,-143,-146,-151,-156,-161,-168,-174,-179,-183,-189,-194,-199,-203,-209,-214,-218,-222,-226,-229,-233,-237,-241,-246,-248,-252,-255,-259,-261,-264,-267,-269,-271,-272,-273,-274,-275,-275,-275,-275,-275,-274,-273,-272,-271,-270,-270,-268,-267,-264,-264,-262,-259,-257,-256,-253,-250,;');
+      encodeAndCallParseData('#PLOT:TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('#PLOT:DATA,trace=trace1,data=[1,2,3,4,5];\n');
 
       const plots = graphing.plots;
       // Should be 1 plot
@@ -549,7 +558,31 @@ describe('graphing tests', () => {
       expect(plot?.traces.size).toBe(1);
       const trace = plot?.traces.get('trace1');
       expect(trace).toBeDefined();
-      expect(trace?.data.length).toBe(1);
+      expect(trace?.data.length).toBe(5); // 5 comma-separated values
+    });
+
+    it('a comma after the last data element is ok', () => {
+      // Use Advanced Cmd Mode for command-based graphing
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+
+      const encodeAndCallParseData = (dataAsString: string) => {
+        const data = new TextEncoder().encode(dataAsString);
+        graphing.parseData(data);
+      }
+      encodeAndCallParseData('#PLOT:CREATE,id=plot1,title="Plot 1";\n');
+      encodeAndCallParseData('#PLOT:TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('#PLOT:DATA,trace=trace1,data=[1,2,3,4,5,];\n');
+
+      const plots = graphing.plots;
+      // Should be 1 plot
+      expect(plots.size).toBe(1);
+      const plot = plots.get('plot1');
+      expect(plot).toBeDefined();
+      expect(plot?.title).toBe('Plot 1');
+      expect(plot?.traces.size).toBe(1);
+      const trace = plot?.traces.get('trace1');
+      expect(trace).toBeDefined();
+      expect(trace?.data.length).toBe(5); // 5 comma-separated values
     });
   }); // describe('parseData() works', () => {
 

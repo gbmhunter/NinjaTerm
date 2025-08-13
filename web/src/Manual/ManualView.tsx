@@ -258,7 +258,7 @@ export default observer((props: Props) => {
           <p><code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=1,2,3,4,5;`}
+{`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=[1,2,3,4,5];`}
           </pre>
 
           <Typography variant="h4">Trace Management Commands</Typography>
@@ -295,12 +295,14 @@ export default observer((props: Props) => {
           <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`#PLOT:DATA,trace=temp,data=1.23;`}
-</pre>
+          </pre>
+
+          <p>You are allowed to send an extra comma after the last data value (IMO all data formats should allow this, I'm looking at you, JSON!), so you don't have to add conditional logic in your firmware to not generate the comma on the last data value.</p>
 
           <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
 
 <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=temp,data=1.25,1.28,1.31;`}
+{`#PLOT:DATA,trace=temp,data=[1.25,1.28,1.31];`}
           </pre>
 
           <p>Remember that the timestamp is the time the data is received by NinjaTerm. Due to buffering, processing time and other work your computer might be doing, this timestamp might be quite different to the time the data was measured. If you need more accurate time stamping (e.g. better than 10-100ms resolution), timestamp the data on the microcontroller and use <code>xtype=data</code> instead, bundling the timestamp as the x value.</p>
@@ -312,13 +314,13 @@ export default observer((props: Props) => {
 #PLOT:DATA,trace=accel,data=9.81;
 
 // Multiple y values (comma separated, x auto-increments for each)
-#PLOT:DATA,trace=accel,data=9.82,9.85,9.79,9.83;`}
+#PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
           </pre>
 
           <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
           <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=position,data=124.45,26.1|125.45,26.8|126.45,27.2;`}
+{`#PLOT:DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
           </pre>
 
           <Typography variant="h4">Complete Example</Typography>
@@ -338,10 +340,20 @@ export default observer((props: Props) => {
 #PLOT:DATA,trace=pressure,data=1013.25;
 
 // Send more data points
-#PLOT:DATA,trace=temp,data=25.8,26.1,25.9;
-#PLOT:DATA,trace=humidity,data=68.1,67.8,69.2;
-#PLOT:DATA,trace=pressure,data=1013.1,1012.9,1013.3;`}
+#PLOT:DATA,trace=temp,data=[25.8,26.1,25.9];
+#PLOT:DATA,trace=humidity,data=[68.1,67.8,69.2];
+#PLOT:DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
           </pre>
+
+          <Typography variant="h4">Data Array Syntax</Typography>
+          <p>When providing multiple data points in a single <code>PLOT:DATA</code> command, you must enclose the comma-separated values in square brackets. This prevents confusion between parameter separators and data separators.</p>
+
+          <p><strong>Examples:</strong></p>
+          <ul>
+            <li>Single value: <code>data=25.6</code></li>
+            <li>Multiple values: <code>data=[25.6,26.1,25.9]</code></li>
+            <li>Invalid (old syntax): <code>data=25.6,26.1,25.9</code> - this won't work because the commas are interpreted as parameter separators</li>
+          </ul>
 
           <Typography variant="h4">Command Protocol Notes</Typography>
           <ul>
