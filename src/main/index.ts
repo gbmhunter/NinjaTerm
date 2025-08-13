@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
@@ -463,6 +463,15 @@ ipcMain.handle('updater:get-auto-updates-enabled', async () => {
     return { success: true, enabled: result };
   } catch (error) {
     return { success: false, error: (error as Error).message, enabled: true };
+  }
+});
+
+ipcMain.handle('shell:open-external', async (event, url: string) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
   }
 });
 

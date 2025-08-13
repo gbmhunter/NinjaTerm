@@ -1255,67 +1255,6 @@ export default class FakePortsController {
       )
     );
 
-    //=================================================================================
-    // Multi-plot Graphing Demo - Mixed Data Types (XY Pairs + Counter)
-    //=================================================================================
-    this.fakePorts.push(
-      new FakePort(
-        'Multi-plot Demo: Mixed Data Types',
-        'Demonstrates multiple plots with different x-axis types in one demo.',
-        () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
-
-          // Setup sequence - create multiple plots with different x-axis types
-          const setupCommands = [
-            '#PLOT:CREATE,id=freqs,title="Frequency Response";#PLOT:TRACE,plot=freqs,id=magnitude,name="Magnitude (dB)",color=#FF0000,xtype=data;#PLOT:CREATE,id=time,title="Time Series";#PLOT:TRACE,plot=time,id=input,name="Input Signal",color=#00AA00,xtype=timestamp;#PLOT:TRACE,plot=time,id=output,name="Output Signal",color=#AA0000,xtype=timestamp;\n'
-          ];
-
-          for (const command of setupCommands) {
-            app.parseRxData(new TextEncoder().encode(command));
-          }
-
-          let freqIndex = 0;
-          const frequencies = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]; // Hz
-
-          const intervalId = setInterval(() => {
-            // Update frequency response (x,y data)
-            if (freqIndex < frequencies.length) {
-              const freq = frequencies[freqIndex];
-              // Simulate low-pass filter response
-              const magnitude = -20 * Math.log10(1 + Math.pow(freq / 100, 2)); // -3dB at 100Hz
-
-              const freqCommand = `#PLOT:DATA,trace=magnitude,data=${freq},${magnitude.toFixed(1)};\n`;
-              app.parseRxData(new TextEncoder().encode(freqCommand));
-
-              freqIndex++;
-            } else {
-              // Reset frequency sweep
-              app.parseRxData(new TextEncoder().encode('#PLOT:CLEAR,trace=magnitude;\n'));
-              freqIndex = 0;
-            }
-
-            // Update time series (timestamp data)
-            const inputSignal = Math.sin(Date.now() / 200) * 5 + (Math.random() - 0.5) * 1;
-            const outputSignal = inputSignal * 0.7; // Attenuated output
-
-            const inputCommand = `#PLOT:DATA,trace=input,data=${inputSignal.toFixed(2)};\n`;
-            const outputCommand = `#PLOT:DATA,trace=output,data=${outputSignal.toFixed(2)};\n`;
-
-            app.parseRxData(new TextEncoder().encode(inputCommand));
-            app.parseRxData(new TextEncoder().encode(outputCommand));
-
-          }, 300);
-
-          return intervalId;
-        },
-        (intervalId: NodeJS.Timeout | null) => {
-          if (intervalId !== null) {
-            clearInterval(intervalId);
-          }
-        }
-      )
-    );
-
     makeAutoObservable(this);
   }
 

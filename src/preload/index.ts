@@ -75,6 +75,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners('download-progress');
       ipcRenderer.removeAllListeners('update-downloaded');
     }
+  },
+
+  // Shell operations
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:open-external', url)
   }
 });
 
@@ -105,6 +110,9 @@ export interface ElectronAPI {
     onDownloadProgress(callback: (progressObj: any) => void): void;
     onUpdateDownloaded(callback: (updateInfo: any) => void): void;
     removeAllUpdateListeners(): void;
+  };
+  shell: {
+    openExternal(url: string): Promise<{ success: boolean; error?: string }>;
   };
 }
 

@@ -154,9 +154,10 @@ export default observer((props: Props) => {
           {/* DETECTION MODE */}
           {/* ============================================================== */}
           <Tooltip
-            title="Choose how graphing data is detected and parsed. Basic Prefix Mode uses processing triggers and y= prefix (legacy). Advanced Cmd Mode uses #PLOT: commands with ; termination."
+            title="Choose how graphing data is detected and parsed. Basic Prefix Mode uses processing triggers and y= prefix (legacy). Advanced Cmd Mode uses #PLOT: commands. See the online NinjaTerm manual for more details."
             followCursor
             arrow
+            placement="right"
           >
             <FormControl sx={{ width: 200 }} size="small">
               <InputLabel>Detection Mode</InputLabel>
@@ -173,6 +174,31 @@ export default observer((props: Props) => {
             </FormControl>
           </Tooltip>
           {/* ============================================================== */}
+          {/* OPEN MANUAL */}
+          {/* ============================================================== */}
+          <Tooltip
+            title="Open the NinjaTerm manual in your browser. This contains information on the graphing system and how to use it."
+            followCursor
+            arrow
+            placement="right"
+          >
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              sx={{ width: 200, textTransform: "none" }}
+              onClick={async () => {
+                try {
+                  await window.electronAPI.shell.openExternal("https://ninjaterm.mbedded.ninja/manual");
+                } catch (error) {
+                  console.error("Failed to open manual:", error);
+                }
+              }}
+            >
+              Open Manual
+            </Button>
+          </Tooltip>
+          {/* ============================================================== */}
           {/* PROCESSING TRIGGER */}
           {/* ============================================================== */}
           <Tooltip
@@ -183,6 +209,7 @@ export default observer((props: Props) => {
             }
             followCursor
             arrow
+            placement="right"
           >
             <FormControl sx={{ width: 200 }} size="small">
               <InputLabel>Processing Trigger</InputLabel>
@@ -215,6 +242,7 @@ export default observer((props: Props) => {
               }
               followCursor
               arrow
+              placement="right"
             >
               <ApplyableTextFieldView
                 label="Max. Buffer Size"
@@ -225,6 +253,9 @@ export default observer((props: Props) => {
                 sx={{ width: "200px" }}
               />
             </Tooltip>
+            {/* ============================================================== */}
+            {/* NUM. BYTES IN BUFFER */}
+            {/* ============================================================== */}
             <Tooltip
               title={
                 app.graphing.detectionMode === DetectionMode.ADVANCED_CMD
@@ -233,6 +264,7 @@ export default observer((props: Props) => {
               }
               followCursor
               arrow
+              placement="right"
             >
               <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
                 Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
@@ -243,9 +275,10 @@ export default observer((props: Props) => {
           {/* MAX NUM. DATA POINTS */}
           {/* ============================================================== */}
           <Tooltip
-            title="The max. number of previous data points to display. Must be an integer in the range [1-2000]. Increasing this will increase the CPU usage."
+            title="The max. number of previous data points to display per trace. Must be an integer in the range [1-2000]. Increasing this will increase the CPU usage."
             followCursor
             arrow
+            placement="right"
           >
             <ApplyableTextFieldView
               label="Max. Num. Data Points"
