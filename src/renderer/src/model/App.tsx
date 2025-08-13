@@ -99,7 +99,7 @@ export class App {
 
   // CPU usage tracking
   cpuUsagePercent: number = 0;
-  
+
   // CPU monitoring variables - measuring overall renderer process load
   private readonly CPU_MEASUREMENT_WINDOW_MS = 1000; // 1 second window
 
@@ -205,12 +205,12 @@ export class App {
     this.stopPollingForReconnection();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
-    
+
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
       (window as any).electronAPI.updater.removeAllUpdateListeners();
     }
-    
+
     window.removeEventListener('beforeunload', this.cleanup);
   };
 
@@ -444,7 +444,7 @@ export class App {
 
           // Set the selected port and attempt to reconnect
           this.setSelectedPort(matchingPort);
-          await this.openPort({ silenceSnackbar: false });
+          await this.openPort({ silenceSnackbar: true });
 
           this.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
         }
@@ -555,37 +555,37 @@ export class App {
     let frameStartTime = performance.now();
     let busyTime = 0;
     let measurementStartTime = performance.now();
-    
+
     const measureCpuUsage = () => {
       const now = performance.now();
-      
+
       // Track the time spent in each frame
       const frameDuration = now - frameStartTime;
       frameStartTime = now;
-      
+
       // If this frame took longer than 16.67ms (60fps), count the extra time as "busy"
       const targetFrameTime = 1000 / 60; // 16.67ms for 60fps
       if (frameDuration > targetFrameTime) {
         busyTime += (frameDuration - targetFrameTime);
       }
-      
+
       const totalElapsed = now - measurementStartTime;
-      
+
       // Calculate CPU usage every second
       if (totalElapsed >= this.CPU_MEASUREMENT_WINDOW_MS) {
         // Simple approach: measure how much time we're taking longer than ideal frame times
         // This captures both data processing and rendering overhead
         const cpuUsage = Math.min(100, (busyTime / totalElapsed) * 100);
-        
+
         runInAction(() => {
           this.cpuUsagePercent = cpuUsage;
         });
-        
+
         // Reset counters
         busyTime = 0;
         measurementStartTime = now;
       }
-      
+
       // Use requestIdleCallback to get more accurate idle time measurements
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback((deadline) => {
@@ -596,11 +596,11 @@ export class App {
           }
         });
       }
-      
+
       // Continue monitoring
       requestAnimationFrame(measureCpuUsage);
     };
-    
+
     measureCpuUsage();
   }
 
@@ -621,6 +621,14 @@ export class App {
     }
 
     const electronAPI = (window as any).electronAPI;
+
+    // Remove any existing listeners first to prevent memory leaks during hot reloads. If this is not done,
+    // you eventually get warnings like this in the console:
+    // VM4 sandbox_bundle:2 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 update-not-available listeners added. Use emitter.setMaxListeners() to increase limit
+    // at _addListener (node:electron/js2c/sandbox_bundle:2:43268)
+    // at IpcRenderer.addListener (node:electron/js2c/sandbox_bundle:2:46156)
+    // at Object.onUpdateNotAvailable (<anonymous>:49:28)
+    electronAPI.updater.removeAllUpdateListeners();
 
     // Update available - show notification
     electronAPI.updater.onUpdateAvailable((updateInfo: any) => {
@@ -664,7 +672,7 @@ export class App {
           Restart & Install
         </Button>
       );
-      
+
       this.snackbar.sendToSnackbar(
         `Update v${updateInfo.version} has been downloaded. Restart NinjaTerm to install.`,
         'success',

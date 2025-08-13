@@ -194,7 +194,7 @@ describe('graphing tests', () => {
         ['plot', 'plot1'],
         ['id', 'trace1'],
         ['name', '"Temperature"'],
-        ['color', '#FF0000'],
+        ['color', '#00FF00'],
         ['xtype', 'timestamp']
       ]);
       graphing.handleCreateTrace(params);
@@ -204,7 +204,7 @@ describe('graphing tests', () => {
       expect(trace).toBeDefined();
       expect(trace?.id).toBe('trace1');
       expect(trace?.name).toBe('Temperature'); // Quotes stripped
-      expect(trace?.color).toBe('#FF0000');
+      expect(trace?.color).toBe('#00FF00');
       expect(trace?.xType).toBe('timestamp');
     });
 

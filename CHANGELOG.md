@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added support for command-based graphing.
 
+### Changed
+
+- Collapsed the two snackbar messages that pop up when a port is automatically reconnected into one.
+
 ## [5.1.1] - 2025-08-10
 
 ### Fixed
