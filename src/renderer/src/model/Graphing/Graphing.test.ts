@@ -39,7 +39,7 @@ const mockAppDataManager = {
   saveAppData: vi.fn()
 } as unknown as AppDataManager;
 
-describe('Graphing - Command-based functionality', () => {
+describe('graphing tests', () => {
   let graphing: Graphing;
 
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('Graphing - Command-based functionality', () => {
     graphing.setGraphingEnabled(true);
   });
 
-  describe('extractPlotCommands', () => {
+  describe('extractPlotCommands() works', () => {
     it('should not extract incomplete command without ; terminator', () => {
       const buffer = '#PLOT:CREATE,id=test,title="Test Plot"';
       const commands = graphing.extractPlotCommands(buffer);
@@ -91,9 +91,9 @@ describe('Graphing - Command-based functionality', () => {
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([]);
     });
-  });
+  }); // describe('extractPlotCommands() works', () => {
 
-  describe('parseCommandParams', () => {
+  describe('parseCommandParams() works', () => {
     it('should parse single parameter', () => {
       const params = graphing.parseCommandParams('id=test');
       expect(params.get('id')).toBe('test');
@@ -116,13 +116,13 @@ describe('Graphing - Command-based functionality', () => {
       const params = graphing.parseCommandParams('');
       expect(params.size).toBe(0);
     });
-  });
+  }); // describe('parseCommandParams() works', () => {
 
-  describe('handleCreatePlot', () => {
+  describe('handleCreatePlot() works', () => {
     it('should create plot with id and title', () => {
       const params = new Map([['id', 'test1'], ['title', '"My Plot"']]);
       graphing.handleCreatePlot(params);
-      
+
       const plot = graphing.plots.get('test1');
       expect(plot).toBeDefined();
       expect(plot?.id).toBe('test1');
@@ -132,7 +132,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should create plot with id only (title defaults to id)', () => {
       const params = new Map([['id', 'test2']]);
       graphing.handleCreatePlot(params);
-      
+
       const plot = graphing.plots.get('test2');
       expect(plot).toBeDefined();
       expect(plot?.id).toBe('test2');
@@ -142,16 +142,16 @@ describe('Graphing - Command-based functionality', () => {
     it('should send warning when id is missing', () => {
       const params = new Map([['title', 'No ID']]);
       graphing.handleCreatePlot(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'PLOT:CREATE requires id parameter',
         'warning'
       );
       expect(graphing.plots.size).toBe(0);
     });
-  });
+  }); // describe('handleCreatePlot() works', () => {
 
-  describe('handleDeletePlot', () => {
+  describe('handleDeletePlot() works', () => {
     beforeEach(() => {
       // Create a test plot
       const params = new Map([['id', 'test'], ['title', 'Test Plot']]);
@@ -161,22 +161,22 @@ describe('Graphing - Command-based functionality', () => {
     it('should delete existing plot', () => {
       const params = new Map([['plot', 'test']]);
       graphing.handleDeletePlot(params);
-      
+
       expect(graphing.plots.has('test')).toBe(false);
     });
 
     it('should send warning when plot parameter is missing', () => {
       const params = new Map();
       graphing.handleDeletePlot(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'PLOT:DELETE requires plot parameter',
         'warning'
       );
     });
-  });
+  }); // describe('handleDeletePlot() works', () => {
 
-  describe('handleCreateTrace', () => {
+  describe('handleCreateTrace() works', () => {
     beforeEach(() => {
       // Create a test plot
       const params = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
@@ -192,7 +192,7 @@ describe('Graphing - Command-based functionality', () => {
         ['xtype', 'timestamp']
       ]);
       graphing.handleCreateTrace(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('trace1');
       expect(trace).toBeDefined();
@@ -208,7 +208,7 @@ describe('Graphing - Command-based functionality', () => {
         ['id', 'trace2']
       ]);
       graphing.handleCreateTrace(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('trace2');
       expect(trace).toBeDefined();
@@ -220,7 +220,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should send warning when plot or id is missing', () => {
       const params = new Map([['id', 'trace1']]);
       graphing.handleCreateTrace(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'PLOT:TRACE requires plot and id parameters',
         'warning'
@@ -233,7 +233,7 @@ describe('Graphing - Command-based functionality', () => {
         ['id', 'trace1']
       ]);
       graphing.handleCreateTrace(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'Plot nonexistent does not exist',
         'warning'
@@ -247,25 +247,25 @@ describe('Graphing - Command-based functionality', () => {
         ['xtype', 'invalid']
       ]);
       graphing.handleCreateTrace(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'Invalid xtype: invalid. Must be data, counter, or timestamp',
         'warning'
       );
     });
-  });
+  }); // describe('handleCreateTrace() works', () => {
 
-  describe('handleClearPlot', () => {
+  describe('handleClearPlot() works', () => {
     beforeEach(() => {
       // Create test plot with traces
       const plotParams = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
       graphing.handleCreatePlot(plotParams);
-      
+
       const traceParams1 = new Map([['plot', 'plot1'], ['id', 'trace1']]);
       const traceParams2 = new Map([['plot', 'plot1'], ['id', 'trace2']]);
       graphing.handleCreateTrace(traceParams1);
       graphing.handleCreateTrace(traceParams2);
-      
+
       // Add some test data
       const plot = graphing.plots.get('plot1');
       plot?.traces.get('trace1')?.data.push({ x: 1, y: 2 });
@@ -277,11 +277,11 @@ describe('Graphing - Command-based functionality', () => {
     it('should clear specific trace in specific plot', () => {
       const params = new Map([['plot', 'plot1'], ['trace', 'trace1']]);
       graphing.handleClearPlot(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace1 = plot?.traces.get('trace1');
       const trace2 = plot?.traces.get('trace2');
-      
+
       expect(trace1?.data.length).toBe(0);
       expect(trace1?.counter).toBe(0);
       expect(trace2?.data.length).toBe(1); // Should not be cleared
@@ -291,24 +291,24 @@ describe('Graphing - Command-based functionality', () => {
     it('should clear all traces in specific plot', () => {
       const params = new Map([['plot', 'plot1']]);
       graphing.handleClearPlot(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace1 = plot?.traces.get('trace1');
       const trace2 = plot?.traces.get('trace2');
-      
+
       expect(trace1?.data.length).toBe(0);
       expect(trace1?.counter).toBe(0);
       expect(trace2?.data.length).toBe(0);
       expect(trace2?.counter).toBe(0);
     });
-  });
+  }); // describe('handleClearPlot() works', () => {
 
-  describe('handleAddData', () => {
+  describe('handleAddData() works', () => {
     beforeEach(() => {
       // Create test plot with different trace types
       const plotParams = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
       graphing.handleCreatePlot(plotParams);
-      
+
       // Timestamp trace
       const timestampTrace = new Map([
         ['plot', 'plot1'],
@@ -316,7 +316,7 @@ describe('Graphing - Command-based functionality', () => {
         ['xtype', 'timestamp']
       ]);
       graphing.handleCreateTrace(timestampTrace);
-      
+
       // Counter trace
       const counterTrace = new Map([
         ['plot', 'plot1'],
@@ -324,7 +324,7 @@ describe('Graphing - Command-based functionality', () => {
         ['xtype', 'counter']
       ]);
       graphing.handleCreateTrace(counterTrace);
-      
+
       // Data trace
       const dataTrace = new Map([
         ['plot', 'plot1'],
@@ -339,7 +339,7 @@ describe('Graphing - Command-based functionality', () => {
       const startTime = Date.now();
       graphing.handleAddData(params);
       const endTime = Date.now();
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(1);
@@ -352,7 +352,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should add multiple data points to timestamp trace', () => {
       const params = new Map([['trace', 'temp'], ['data', '25.6,26.1,25.9']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(3);
@@ -367,7 +367,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should add data to counter trace', () => {
       const params = new Map([['trace', 'counter'], ['data', '9.81']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('counter');
       expect(trace?.data.length).toBe(1);
@@ -379,7 +379,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should add multiple data points to counter trace', () => {
       const params = new Map([['trace', 'counter'], ['data', '9.81,9.82,9.79']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('counter');
       expect(trace?.data.length).toBe(3);
@@ -395,7 +395,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should add x,y pairs to data trace', () => {
       const params = new Map([['trace', 'position'], ['data', '1.0,25.6']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('position');
       expect(trace?.data.length).toBe(1);
@@ -406,7 +406,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should add multiple x,y pairs to data trace using pipe separator', () => {
       const params = new Map([['trace', 'position'], ['data', '1.0,25.6|2.0,26.1|3.0,25.9']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('position');
       expect(trace?.data.length).toBe(3);
@@ -418,7 +418,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should send warning when trace or data parameter is missing', () => {
       const params = new Map([['data', '25.6']]);
       graphing.handleAddData(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'PLOT:DATA requires trace and data parameters',
         'warning'
@@ -428,7 +428,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should send warning when trace does not exist', () => {
       const params = new Map([['trace', 'nonexistent'], ['data', '25.6']]);
       graphing.handleAddData(params);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'Trace nonexistent does not exist',
         'warning'
@@ -439,20 +439,20 @@ describe('Graphing - Command-based functionality', () => {
       // Set a low limit for testing
       graphing.maxNumDataPoints.setDispValue('2');
       graphing.maxNumDataPoints.apply();
-      
+
       // Add more data points than the limit
       const params = new Map([['trace', 'temp'], ['data', '1,2,3,4,5']]);
       graphing.handleAddData(params);
-      
+
       const plot = graphing.plots.get('plot1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(2); // Should be limited
       expect(trace?.data[0].y).toBe(4); // Oldest points removed
       expect(trace?.data[1].y).toBe(5);
     });
-  });
+  }); // describe('handleAddData() works', () => {
 
-  describe('parsePlotCommands integration', () => {
+  describe('parsePlotCommands() works', () => {
     it('should handle complete workflow with multiple commands', () => {
       const buffer = `
         Log message 1
@@ -463,14 +463,14 @@ describe('Graphing - Command-based functionality', () => {
         #PLOT:DATA,trace=humidity,data=67.2;
         Log message 2
       `;
-      
+
       graphing.parsePlotCommands(buffer);
-      
+
       // Verify plot was created
       const plot = graphing.plots.get('sensors');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Environmental Sensors');
-      
+
       // Verify traces were created
       const tempTrace = plot?.traces.get('temp');
       const humidityTrace = plot?.traces.get('humidity');
@@ -480,7 +480,7 @@ describe('Graphing - Command-based functionality', () => {
       expect(tempTrace?.color).toBe('#FF0000');
       expect(humidityTrace?.name).toBe('Humidity');
       expect(humidityTrace?.color).toBe('#0000FF');
-      
+
       // Verify data was added
       expect(tempTrace?.data.length).toBe(1);
       expect(tempTrace?.data[0].y).toBe(25.6);
@@ -491,22 +491,22 @@ describe('Graphing - Command-based functionality', () => {
 
     it('should handle parsing errors gracefully', () => {
       const buffer = '#PLOT:INVALID_COMMAND,param=value;';
-      
+
       graphing.parsePlotCommands(buffer);
-      
+
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
         'Unknown plot command: INVALID_COMMAND',
         'warning'
       );
     });
-  });
+  }); // describe('parsePlotCommands() works', () => {
 
-  describe('parseData integration with plot commands', () => {
+  describe('parseData() works', () => {
     it('should detect and parse plot commands in data stream', () => {
       const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
-      
+
       graphing.parseData(data);
-      
+
       const plot = graphing.plots.get('test');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Test');
@@ -516,21 +516,42 @@ describe('Graphing - Command-based functionality', () => {
       // First add some legacy data
       const legacyData = new TextEncoder().encode('y=25.6\n');
       graphing.parseData(legacyData);
-      
+
       // Then add command-based data
       const commandData = new TextEncoder().encode('#PLOT:CREATE,id=test;#PLOT:TRACE,plot=test,id=trace1;#PLOT:DATA,trace=trace1,data=30.0;\n');
       graphing.parseData(commandData);
-      
+
       // Check both legacy and new data exist
       expect(graphing.graphData.length).toBe(1); // Legacy data
       expect(graphing.graphData[0].y).toBe(25.6);
-      
+
       const plot = graphing.plots.get('test');
       const trace = plot?.traces.get('trace1');
       expect(trace?.data.length).toBe(1);
       expect(trace?.data[0].y).toBe(30.0);
     });
-  });
+
+    it('should handle a bunch of graphing commands', () => {
+      const encodeAndCallParseData = (dataAsString: string) => {
+        const data = new TextEncoder().encode(dataAsString);
+        graphing.parseData(data);
+      }
+      encodeAndCallParseData('#PLOT:CREATE,id=plot1,title="Plot 1";\n');
+      encodeAndCallParseData('#PLOT:TRACE,plot=plot1,id=trace1;\n');
+      encodeAndCallParseData('PLOT:DATA,trace=no_load,data=-165,-162,-158,-153,-150,-145,-141,-136,-132,-127,-122,-117,-112,-107,-103,-97,-93,-86,-81,-77,-71,-66,-61,-55,-50,-45,-39,-34,-29,-23,-16,-4,1,3,2,2,3,3,2,3,2,2,2,2,2,2,2,3,2,3,3,2,3,3,2,3,3,2,2,2,2,2,1,2,2,2,3,2,2,2,2,2,2,2,2,1,3,2,2,2,2,2,3,2,2,2,2,2,2,2,2,1,1,1,0,0,1,0,0,0,-1,-1,-1,-3,-5,-8,-9,-11,-13,-16,-19,-21,-24,-27,-31,-34,-37,-41,-43,-47,-50,-53,-56,-59,-63,-67,-71,-74,-78,-82,-86,-90,-94,-98,-102,-107,-111,-115,-119,-123,-125,-130,-136,-139,-143,-146,-151,-156,-161,-168,-174,-179,-183,-189,-194,-199,-203,-209,-214,-218,-222,-226,-229,-233,-237,-241,-246,-248,-252,-255,-259,-261,-264,-267,-269,-271,-272,-273,-274,-275,-275,-275,-275,-275,-274,-273,-272,-271,-270,-270,-268,-267,-264,-264,-262,-259,-257,-256,-253,-250,;');
+
+      const plots = graphing.plots;
+      // Should be 1 plot
+      expect(plots.size).toBe(1);
+      const plot = plots.get('plot1');
+      expect(plot).toBeDefined();
+      expect(plot?.title).toBe('Plot 1');
+      expect(plot?.traces.size).toBe(1);
+      const trace = plot?.traces.get('trace1');
+      expect(trace).toBeDefined();
+      expect(trace?.data.length).toBe(1);
+    });
+  }); // describe('parseData() works', () => {
 
   describe('Detection Mode Tests', () => {
     it('should default to Basic Prefix Mode', () => {
@@ -544,20 +565,20 @@ describe('Graphing - Command-based functionality', () => {
 
     it('should parse legacy data in Basic Prefix Mode', () => {
       graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
-      
+
       const data = new TextEncoder().encode('y=25.6\n');
       graphing.parseData(data);
-      
+
       expect(graphing.graphData.length).toBe(1);
       expect(graphing.graphData[0].y).toBe(25.6);
     });
 
     it('should parse plot commands in Basic Prefix Mode when processing trigger is received', () => {
       graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
-      
+
       const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
       graphing.parseData(data);
-      
+
       const plot = graphing.plots.get('test');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Test');
@@ -565,10 +586,10 @@ describe('Graphing - Command-based functionality', () => {
 
     it('should parse plot commands in Advanced Cmd Mode on processing trigger', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      
+
       const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
       graphing.parseData(data);
-      
+
       const plot = graphing.plots.get('test');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Test');
@@ -576,42 +597,42 @@ describe('Graphing - Command-based functionality', () => {
 
     it('should not parse commands without processing trigger in Advanced Cmd Mode', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      
+
       const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";');
       graphing.parseData(data);
-      
+
       const plot = graphing.plots.get('test');
       expect(plot).toBeUndefined();
     });
 
     it('should ignore legacy data in Advanced Cmd Mode', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      
+
       const data = new TextEncoder().encode('y=25.6\n');
       graphing.parseData(data);
-      
+
       expect(graphing.graphData.length).toBe(0);
     });
 
     it('should ignore legacy data in Advanced Cmd Mode even with semicolon and processing trigger', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      
+
       const data = new TextEncoder().encode('y=25.6;\n');
       graphing.parseData(data);
-      
+
       expect(graphing.graphData.length).toBe(0);
     });
 
     it('should process mixed commands and clear buffer properly in Advanced Cmd Mode', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      
+
       // Send multiple commands in sequence with processing triggers
       const data1 = new TextEncoder().encode('#PLOT:CREATE,id=test1;\n');
       const data2 = new TextEncoder().encode('#PLOT:CREATE,id=test2;\n');
-      
+
       graphing.parseData(data1);
       graphing.parseData(data2);
-      
+
       expect(graphing.plots.has('test1')).toBe(true);
       expect(graphing.plots.has('test2')).toBe(true);
     });
@@ -619,7 +640,7 @@ describe('Graphing - Command-based functionality', () => {
     it('should handle getTriggerChar correctly', () => {
       graphing.setProcessingTrigger('LF (\\n)');
       expect(graphing.getTriggerChar()).toBe('\n');
-      
+
       graphing.setProcessingTrigger('CR (\\r)');
       expect(graphing.getTriggerChar()).toBe('\r');
     });
@@ -627,10 +648,10 @@ describe('Graphing - Command-based functionality', () => {
     it('should use CR trigger in Basic Prefix Mode', () => {
       graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
       graphing.setProcessingTrigger('CR (\\r)');
-      
+
       const data = new TextEncoder().encode('y=42.0\r');
       graphing.parseData(data);
-      
+
       expect(graphing.graphData.length).toBe(1);
       expect(graphing.graphData[0].y).toBe(42.0);
     });

@@ -261,7 +261,12 @@ class Graphing {
   }
 
   /**
-   * Takes incoming streamed data and extracts any data points out of it.
+   * Takes incoming streamed data from the serial port and handles all related graphing logic based on relevant data in the stream.
+   *
+   * This includes:
+   * - Looking for prefixes in simple mode.
+   * - Looking for #PLOT: commands in advanced mode.
+   * - Accumulating data in a buffer until the processing trigger is received.
    *
    * Does nothing if graphing is not enabled.
    *
@@ -873,7 +878,7 @@ class Graphing {
     this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
     this.yAxisRangeMax.apply({notify: false});
     this.xVarUnit = configToLoad.xVarUnit;
-    
+
     // Load detection mode with fallback to Basic Prefix Mode for backward compatibility
     this.detectionMode = (configToLoad.detectionMode as DetectionMode) || DetectionMode.BASIC_PREFIX;
   };
