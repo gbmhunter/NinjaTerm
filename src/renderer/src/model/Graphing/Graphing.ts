@@ -13,6 +13,15 @@ class Point {
 
 type XAxisType = 'data' | 'counter' | 'timestamp';
 
+export enum DetectionMode {
+  BASIC_PREFIX = 'Basic Prefix Mode',
+  ADVANCED_CMD = 'Advanced Cmd Mode'
+}
+
+/**
+ * Represents a single trace (data series, e.g. x and y values) for a plot. One plot
+ * can contain multiple traces.
+ */
 class PlotTrace {
   id: string;
   name: string;
@@ -30,9 +39,18 @@ class PlotTrace {
   }
 }
 
+/**
+ * Represents a single plot. A plot can contain multiple traces. Multiple plots can be
+ * shown in the UI, they are stacked vertically.
+ */
 class Plot {
   id: string;
   title: string;
+
+  /**
+   * Contains all traces for this plot. The key is the trace ID. Javascript keeps entries
+   * in insertion order, so the first trace added will be the first in the map.
+   */
   traces: Map<string, PlotTrace> = new Map();
 
   constructor(id: string, title: string) {
@@ -54,15 +72,27 @@ class Graphing {
   graphingEnabled = false;
 
   graphData: Point[] = [];  // Legacy single plot data
-  plots: Map<string, Plot> = new Map();  // New multi-plot data
 
-  bufferDelimiters = [
+  /**
+   * Contains all the plots that are being displayed. The key is the plot ID. Javascript
+   * keeps entries in insertion order, so they will be shown in order of creation.
+   */
+  plots: Map<string, Plot> = new Map();
+
+  processingTriggers = [
     'LF (\\n)',
     'CR (\\r)',
     'Custom',
   ]
 
-  bufferDelimiter = this.bufferDelimiters[0];
+  processingTrigger = this.processingTriggers[0];
+
+  /**
+   * The detection mode determines how graphing data is parsed.
+   * Basic Prefix Mode: Uses processing triggers and y= prefix (legacy)
+   * Advanced Cmd Mode: Uses #PLOT: commands with ; termination
+   */
+  detectionMode = DetectionMode.BASIC_PREFIX;
 
   /**
      * The maximum size of the receive buffer before it is cleared.
@@ -174,8 +204,8 @@ class Graphing {
     this._saveConfig();
   }
 
-  setBufferDelimiter = (value: string) => {
-    this.bufferDelimiter = value;
+  setProcessingTrigger = (value: string) => {
+    this.processingTrigger = value;
     this._saveConfig();
   }
 
@@ -211,6 +241,26 @@ class Graphing {
   }
 
   /**
+   * Returns the character that should be used as the processing trigger
+   * based on the current processingTrigger setting.
+   */
+  getTriggerChar = (): string => {
+    switch (this.processingTrigger) {
+      case 'LF (\\n)':
+        return '\n';
+      case 'CR (\\r)':
+        return '\r';
+      default:
+        return '\n'; // Default to LF
+    }
+  }
+
+  setDetectionMode = (mode: DetectionMode) => {
+    this.detectionMode = mode;
+    this._saveConfig();
+  }
+
+  /**
    * Takes incoming streamed data and extracts any data points out of it.
    *
    * Does nothing if graphing is not enabled.
@@ -230,33 +280,34 @@ class Graphing {
       // console.log('char: ' + char.charCodeAt(0));
       this.rxDataBuffer += char;
       // console.log('rxDataBuffer: ' + this.rxDataBuffer);
-      if (char === '\n') {
-        // console.log('Found data separator.')
-        // Found a data separator, so parse the data
 
-        // Check if this buffer contains plot commands
-        if (this.rxDataBuffer.includes('#PLOT:')) {
-          this.parsePlotCommands(this.rxDataBuffer);
-        } else {
-          // Legacy parsing for backward compatibility
-          const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
-          if (yVarPrefixIdx === -1) {
-            // This line does not contain the Y variable prefix, so skip it
-            this.rxDataBuffer = '';
-            continue;
+      // Both modes use processing trigger to trigger processing
+      const triggerChar = this.getTriggerChar();
+      if (char === triggerChar) {
+        if (this.detectionMode === DetectionMode.ADVANCED_CMD) {
+          // Advanced command mode: only process plot commands
+          if (this.rxDataBuffer.includes('#PLOT:')) {
+            this.parsePlotCommands(this.rxDataBuffer);
           }
-
-          if (this.multipleValuesPerBuffer) {
-            // Extract multiple values per buffer
-            this.parseMultipleValues();
+        } else {
+          // Basic prefix mode: support both plot commands and legacy parsing
+          if (this.rxDataBuffer.includes('#PLOT:')) {
+            this.parsePlotCommands(this.rxDataBuffer);
           } else {
-            // Single value per buffer (original behavior)
-            this.parseSingleValue();
+            // Legacy parsing for backward compatibility
+            const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+            if (yVarPrefixIdx !== -1) {
+              if (this.multipleValuesPerBuffer) {
+                // Extract multiple values per buffer
+                this.parseMultipleValues();
+              } else {
+                // Single value per buffer (original behavior)
+                this.parseSingleValue();
+              }
+            }
           }
         }
-
-        // Since data separator has been received and line has been parsed,
-        // now clear the buffer
+        // Clear the buffer after parsing
         this.rxDataBuffer = '';
       }
 
@@ -516,17 +567,16 @@ class Graphing {
         break; // No more commands
       }
 
-      // Find the end of this command (either ; or end of buffer)
+      // Find the end of this command (must end with ;)
       const semicolonIndex = buffer.indexOf(';', plotIndex);
-      let commandEnd: number;
 
       if (semicolonIndex === -1) {
-        // No ; found, command goes to end of buffer
-        commandEnd = buffer.length;
-      } else {
-        // ; found, command ends at ;
-        commandEnd = semicolonIndex;
+        // No ; found, skip this incomplete command
+        break;
       }
+
+      // ; found, command ends at ;
+      const commandEnd = semicolonIndex;
 
       // Extract the command (including #PLOT: prefix)
       const command = buffer.substring(plotIndex, commandEnd).trim();
@@ -771,7 +821,7 @@ class Graphing {
     let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     config.graphingEnabled = this.graphingEnabled;
-    config.bufferDelimiter = this.bufferDelimiter;
+    config.processingTrigger = this.processingTrigger;
     config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
     config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
     config.xVarSource = this.xVarSource;
@@ -788,6 +838,7 @@ class Graphing {
     config.yAxisRangeMin = this.yAxisRangeMin.appliedValue.toString();
     config.yAxisRangeMax = this.yAxisRangeMax.appliedValue.toString();
     config.xVarUnit = this.xVarUnit;
+    config.detectionMode = this.detectionMode;
 
     this.appDataManager.saveAppData();
   };
@@ -796,7 +847,7 @@ class Graphing {
     let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     this.graphingEnabled = configToLoad.graphingEnabled;
-    this.bufferDelimiter = configToLoad.bufferDelimiter;
+    this.processingTrigger = configToLoad.processingTrigger;
     this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
     this.maxBufferSize.apply({notify: false});
     this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
@@ -822,6 +873,9 @@ class Graphing {
     this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
     this.yAxisRangeMax.apply({notify: false});
     this.xVarUnit = configToLoad.xVarUnit;
+    
+    // Load detection mode with fallback to Basic Prefix Mode for backward compatibility
+    this.detectionMode = (configToLoad.detectionMode as DetectionMode) || DetectionMode.BASIC_PREFIX;
   };
 
   _onMinRangeChanged = () => {

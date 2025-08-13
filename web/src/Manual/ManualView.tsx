@@ -199,7 +199,7 @@ export default observer((props: Props) => {
             <li><b>An advanced ASCII text command-based protocol</b> for complex multi-plot scenarios: Special commands like <code>#PLOT:CREATE ...</code> and <code>#PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
           </ol>
 
-          <p>Both approaches are text based (ASCII encoded data), and require a character sequence to denote the end of a frame, which triggers the graphing system to look for data in the buffer since the last end of frame character. This defaults to the <code>LF</code> character (0x0A), which is normally suitable when intermixing the data with other text such as log messages.</p>
+          <p>Both approaches are text based (ASCII encoded data), and require a character sequence to denote the end of a frame, which triggers the graphing system to look for data in the buffer since the last end of frame character. This defaults to the <code>LF</code> character (0x0A), which is normally suitable when intermixing the data with other text such as log messages. The processing trigger sequence is also needed to make sure the buffer is cleared at the right point -- we don't want to clear the buffer half way through receiving graph data.</p>
 
           <Typography variant="h3">Prefix Based Graphing</Typography>
           <p>
@@ -222,7 +222,7 @@ export default observer((props: Props) => {
           <p>You can configure NinjaTerm to extract the temperature data from the serial stream with the following settings on the Graphing view:</p>
 
           <ul>
-            <li>"Buffer Delimiter" to "LF (\n)" (this is the default)</li>
+            <li>"Processing Trigger" to "LF (\n)" (this is the default)</li>
             <li>"X Variable Source" to "Received Time"</li>
             <li>"Y Variable Prefix" to "Temperature:"</li>
             <li>"Y Variable Suffix" to "degC"</li>
@@ -249,13 +249,13 @@ export default observer((props: Props) => {
 #PLOT:CREATE,id=plot1,title="Sensor Data";
 
 // Delete a plot
-#PLOT:DELETE,plot=plot1
+#PLOT:DELETE,plot=plot1;
 
 // Clear all traces in a plot
-#PLOT:CLEAR,plot=plot1`}
+#PLOT:CLEAR,plot=plot1;`}
           </pre>
 
-          <p><code>PLOT</code> commands have to either end with the end of graphing frame character (e.g. <code>LF</code>, this is set in the Graphing settings) or a <code>;</code> character. You can just use LF in the simple case. If you want to send multiple commands in a single frame (e.g. in a single line of LF is the end of frame sequence), you can use the <code>;</code> character to indicate the end of the command and then use <code>#</code> to start the next command. The following example shows how to send multiple commands in a single frame:</p>
+          <p><code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=1,2,3,4,5;`}
@@ -265,7 +265,7 @@ export default observer((props: Props) => {
 
           <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>#PLOT:TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp`}
+{`#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
           </pre>
 
           <p>A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down)</p>
@@ -279,12 +279,12 @@ export default observer((props: Props) => {
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create traces with different x-axis data types
-#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp
-#PLOT:TRACE,plot=plot1,id=accel,name="Acceleration",color=#0000FF,xtype=counter
-#PLOT:TRACE,plot=plot1,id=position,name="Position",color=#00FF00,xtype=data
+#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
+#PLOT:TRACE,plot=plot1,id=accel,name="Acceleration",color=#0000FF,xtype=counter;
+#PLOT:TRACE,plot=plot1,id=position,name="Position",color=#00FF00,xtype=data;
 
 // Clear a specific trace
-#PLOT:CLEAR,trace=temp`}
+#PLOT:CLEAR,trace=temp;`}
           </pre>
 
           <Typography variant="h4">Data Commands</Typography>
@@ -294,13 +294,13 @@ export default observer((props: Props) => {
           <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
           <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=temp,data=1.23`}
+{`#PLOT:DATA,trace=temp,data=1.23;`}
 </pre>
 
           <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
 
 <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=temp,data=1.25,1.28,1.31`}
+{`#PLOT:DATA,trace=temp,data=1.25,1.28,1.31;`}
           </pre>
 
           <p>Remember that the timestamp is the time the data is received by NinjaTerm. Due to buffering, processing time and other work your computer might be doing, this timestamp might be quite different to the time the data was measured. If you need more accurate time stamping (e.g. better than 10-100ms resolution), timestamp the data on the microcontroller and use <code>xtype=data</code> instead, bundling the timestamp as the x value.</p>
@@ -309,44 +309,44 @@ export default observer((props: Props) => {
           <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Single y value (x auto-increments)
-#PLOT:DATA,trace=accel,data=9.81
+#PLOT:DATA,trace=accel,data=9.81;
 
 // Multiple y values (comma separated, x auto-increments for each)
-#PLOT:DATA,trace=accel,data=9.82,9.85,9.79,9.83`}
+#PLOT:DATA,trace=accel,data=9.82,9.85,9.79,9.83;`}
           </pre>
 
           <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
           <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=position,data=124.45,26.1|125.45,26.8|126.45,27.2`}
+{`#PLOT:DATA,trace=position,data=124.45,26.1|125.45,26.8|126.45,27.2;`}
           </pre>
 
           <Typography variant="h4">Complete Example</Typography>
           <p>Here's a complete example showing how to create a multi-trace plot:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a plot for sensor data
-#PLOT:CREATE,id=sensors,title="Environmental Sensors"
+#PLOT:CREATE,id=sensors,title="Environmental Sensors";
 
 // Create traces for different sensor types
-#PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp
-#PLOT:TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp
-#PLOT:TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp
+#PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
+#PLOT:TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
+#PLOT:TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
 
 // Send data (your firmware would send these)
-#PLOT:DATA,trace=temp,data=25.6
-#PLOT:DATA,trace=humidity,data=67.2
-#PLOT:DATA,trace=pressure,data=1013.25
+#PLOT:DATA,trace=temp,data=25.6;
+#PLOT:DATA,trace=humidity,data=67.2;
+#PLOT:DATA,trace=pressure,data=1013.25;
 
 // Send more data points
-#PLOT:DATA,trace=temp,data=25.8,26.1,25.9
-#PLOT:DATA,trace=humidity,data=68.1,67.8,69.2
-#PLOT:DATA,trace=pressure,data=1013.1,1012.9,1013.3`}
+#PLOT:DATA,trace=temp,data=25.8,26.1,25.9;
+#PLOT:DATA,trace=humidity,data=68.1,67.8,69.2;
+#PLOT:DATA,trace=pressure,data=1013.1,1012.9,1013.3;`}
           </pre>
 
           <Typography variant="h4">Command Protocol Notes</Typography>
           <ul>
-            <li>Commands must start with <code>#PLOT:</code></li>
-            <li>Commands are terminated with <code>;</code> character or end of frame (LF)</li>
+            <li>Commands must start with <code>#PLOT:</code> and end with <code>;</code></li>
+            <li>Commands without proper <code>;</code> termination will be ignored</li>
             <li>Parameters are comma-separated key=value pairs</li>
             <li>Color values can be hex codes (e.g., <code>#FF0000</code>) or standard color names</li>
             <li>Trace IDs must be unique within their plot context</li>

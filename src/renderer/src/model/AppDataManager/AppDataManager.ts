@@ -188,7 +188,7 @@ export class AppDataManager {
         // Add graphing settings to each profile
         rootConfig.settings.graphingSettings = {
           graphingEnabled: false,
-          bufferDelimiter: 'LF (\\n)',
+          processingTrigger: 'LF (\\n)',
           maxBufferSize: '1000',
           maxNumDataPoints: '500',
           xVarSource: 'Received Time',
@@ -204,7 +204,8 @@ export class AppDataManager {
           yAxisRangeMode: 'Auto',
           yAxisRangeMin: '0',
           yAxisRangeMax: '100',
-          xVarUnit: 's'
+          xVarUnit: 's',
+          detectionMode: 'Basic Prefix Mode'
         };
       }
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
@@ -216,11 +217,44 @@ export class AppDataManager {
     }
 
     if (updatedAppData.version === 4) {
+      console.log('Updating app data from version 4 to version 5...');
+      // Add detection mode to graphing settings for all profiles
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
+        if (graphingSettings && !graphingSettings.detectionMode) {
+          graphingSettings.detectionMode = 'Basic Prefix Mode';
+        }
+      }
+      updatedAppData.version = 5;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 5) {
+      console.log('Updating app data from version 5 to version 6...');
+      // Rename bufferDelimiter to processingTrigger in graphing settings for all profiles
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
+        if (graphingSettings && graphingSettings.bufferDelimiter !== undefined) {
+          graphingSettings.processingTrigger = graphingSettings.bufferDelimiter;
+          delete graphingSettings.bufferDelimiter;
+        }
+      }
+      // Also update current app config
+      const currentGraphingSettings = updatedAppData.currentAppConfig.settings.graphingSettings;
+      if (currentGraphingSettings && currentGraphingSettings.bufferDelimiter !== undefined) {
+        currentGraphingSettings.processingTrigger = currentGraphingSettings.bufferDelimiter;
+        delete currentGraphingSettings.bufferDelimiter;
+      }
+      updatedAppData.version = 6;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version === 6) {
       // Nothing to do, already latest version
       console.log(`App data is at latest version (v${updatedAppData.version}).`);
     }
 
-    if (updatedAppData.version !== 4) {
+    if (updatedAppData.version !== 6) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

@@ -16,6 +16,7 @@ import { observer } from "mobx-react-lite";
 import { useState } from "react";
 
 import { App } from "src/model/App";
+import { DetectionMode } from "src/model/Graphing/Graphing";
 import styles from "./GraphingView.module.css";
 
 import {
@@ -149,38 +150,69 @@ export default observer((props: Props) => {
         }}
       >
         <div id="group-1" className={styles.controlPanel}>
-          {/* BUFFER DELIMITER */}
+          {/* ============================================================== */}
+          {/* DETECTION MODE */}
           {/* ============================================================== */}
           <Tooltip
-            title="The character sequence which triggers processing for data points from data that has accumulated in the buffer since the last sequence."
+            title="Choose how graphing data is detected and parsed. Basic Prefix Mode uses processing triggers and y= prefix (legacy). Advanced Cmd Mode uses #PLOT: commands with ; termination."
             followCursor
             arrow
           >
-            <FormControl sx={{ width: 160 }} size="small">
-              <InputLabel>Buffer Delimiter</InputLabel>
+            <FormControl sx={{ width: 200 }} size="small">
+              <InputLabel>Detection Mode</InputLabel>
               <Select
-                value={app.graphing.bufferDelimiter || 'LF (\\n)'}
-                label="Buffer Delimiter"
+                value={app.graphing.detectionMode}
+                label="Detection Mode"
                 onChange={(e) => {
-                  app.graphing.setBufferDelimiter(e.target.value);
+                  app.graphing.setDetectionMode(e.target.value as DetectionMode);
                 }}
               >
-                {app.graphing.bufferDelimiters.map((bufferDelimiter: string) => {
+                <MenuItem value={DetectionMode.BASIC_PREFIX}>{DetectionMode.BASIC_PREFIX}</MenuItem>
+                <MenuItem value={DetectionMode.ADVANCED_CMD}>{DetectionMode.ADVANCED_CMD}</MenuItem>
+              </Select>
+            </FormControl>
+          </Tooltip>
+          {/* ============================================================== */}
+          {/* PROCESSING TRIGGER */}
+          {/* ============================================================== */}
+          <Tooltip
+            title={
+              app.graphing.detectionMode === DetectionMode.ADVANCED_CMD
+                ? "The character sequence that triggers processing of accumulated command data. Commands are parsed when this trigger is received."
+                : "The character sequence which triggers processing for data points from data that has accumulated in the buffer since the last sequence."
+            }
+            followCursor
+            arrow
+          >
+            <FormControl sx={{ width: 200 }} size="small">
+              <InputLabel>Processing Trigger</InputLabel>
+              <Select
+                value={app.graphing.processingTrigger || 'LF (\\n)'}
+                label="Processing Trigger"
+                onChange={(e) => {
+                  app.graphing.setProcessingTrigger(e.target.value);
+                }}
+              >
+                {app.graphing.processingTriggers.map((processingTrigger: string) => {
                   return (
-                    <MenuItem key={bufferDelimiter} value={bufferDelimiter}>
-                      {bufferDelimiter}
+                    <MenuItem key={processingTrigger} value={processingTrigger}>
+                      {processingTrigger}
                     </MenuItem>
                   );
                 })}
               </Select>
             </FormControl>
           </Tooltip>
-
+          {/* ============================================================== */}
           {/* MAX BUFFER SIZE */}
           {/* ============================================================== */}
           <div>
             <Tooltip
-              title="The max. size the graphing receiving buffer can grow to waiting for a buffer delimiter. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
+              title={
+                app.graphing.detectionMode === DetectionMode.ADVANCED_CMD
+                  ? "The max. size the graphing receiving buffer can grow to waiting for command termination (;). The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
+                  : "The max. size the graphing receiving buffer can grow to waiting for a processing trigger. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
+              }
               followCursor
               arrow
             >
@@ -194,7 +226,11 @@ export default observer((props: Props) => {
               />
             </Tooltip>
             <Tooltip
-              title="The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when the buffer delimiter is received."
+              title={
+                app.graphing.detectionMode === DetectionMode.ADVANCED_CMD
+                  ? "The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when a command terminator (;) is received."
+                  : "The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when the processing trigger is received."
+              }
               followCursor
               arrow
             >
@@ -203,7 +239,7 @@ export default observer((props: Props) => {
               </div>
             </Tooltip>
           </div>
-
+          {/* ============================================================== */}
           {/* MAX NUM. DATA POINTS */}
           {/* ============================================================== */}
           <Tooltip
@@ -256,7 +292,7 @@ export default observer((props: Props) => {
             arrow
             placement="right"
           >
-            <FormControl sx={{ width: 160 }} size="small">
+            <FormControl sx={{ width: 160 }} size="small" disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}>
               <InputLabel>X Variable Source</InputLabel>
               <Select
                 data-testid="x-var-source"
@@ -294,7 +330,7 @@ export default observer((props: Props) => {
               variant="outlined"
               applyableTextField={app.graphing.xVarPrefix}
               sx={{ width: "200px" }}
-              disabled={app.graphing.xVarSource !== "In Data"}
+              disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD || app.graphing.xVarSource !== "In Data"}
             />
           </Tooltip>
 
@@ -313,6 +349,7 @@ export default observer((props: Props) => {
               variant="outlined"
               applyableTextField={app.graphing.yVarPrefix}
               sx={{ width: "200px" }}
+              disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}
             />
           </Tooltip>
 
@@ -332,6 +369,7 @@ export default observer((props: Props) => {
                   onChange={(e) => {
                     app.graphing.setMultipleValuesPerBuffer(e.target.checked);
                   }}
+                  disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}
                 />
               }
               label="Multiple Values Per Buffer"
@@ -346,7 +384,7 @@ export default observer((props: Props) => {
               followCursor
               arrow
             >
-              <FormControl sx={{ width: 160 }} size="small">
+              <FormControl sx={{ width: 160 }} size="small" disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}>
                 <InputLabel>Value Separator</InputLabel>
                 <Select
                   value={app.graphing.valueSeparator || 'Comma (,)'}
@@ -382,6 +420,7 @@ export default observer((props: Props) => {
                 variant="outlined"
                 applyableTextField={app.graphing.customValueSeparator}
                 sx={{ width: "150px" }}
+                disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}
               />
             </Tooltip>
           )}
@@ -403,6 +442,7 @@ export default observer((props: Props) => {
                     onChange={(e) => {
                       app.graphing.setClearPlotOnNewValues(e.target.checked);
                     }}
+                    disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}
                   />
                 }
                 label="Clear Plot On New Values"
@@ -754,7 +794,7 @@ export default observer((props: Props) => {
           </div>
         </div>
       ))}
-      
+
       </div> {/* END SCROLLABLE PLOTS SECTION */}
     </div>
   );

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import Graphing from './Graphing';
+import Graphing, { DetectionMode } from './Graphing';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 
@@ -14,7 +14,7 @@ const mockAppDataManager = {
       settings: {
         graphingSettings: {
           graphingEnabled: false,
-          bufferDelimiter: 'LF (\\n)',
+          processingTrigger: 'LF (\\n)',
           maxBufferSize: '1000',
           maxNumDataPoints: '500',
           xVarSource: 'Received Time',
@@ -49,10 +49,10 @@ describe('Graphing - Command-based functionality', () => {
   });
 
   describe('extractPlotCommands', () => {
-    it('should extract single command without $ terminator', () => {
+    it('should not extract incomplete command without ; terminator', () => {
       const buffer = '#PLOT:CREATE,id=test,title="Test Plot"';
       const commands = graphing.extractPlotCommands(buffer);
-      expect(commands).toEqual(['#PLOT:CREATE,id=test,title="Test Plot"']);
+      expect(commands).toEqual([]);
     });
 
     it('should extract single command with ; terminator', () => {
@@ -78,6 +78,12 @@ describe('Graphing - Command-based functionality', () => {
         '#PLOT:CREATE,id=test',
         '#PLOT:DELETE,plot=test'
       ]);
+    });
+
+    it('should only extract properly terminated commands', () => {
+      const buffer = '#PLOT:CREATE,id=test1;#PLOT:CREATE,id=test2';
+      const commands = graphing.extractPlotCommands(buffer);
+      expect(commands).toEqual(['#PLOT:CREATE,id=test1']);
     });
 
     it('should return empty array when no commands found', () => {
@@ -523,6 +529,110 @@ describe('Graphing - Command-based functionality', () => {
       const trace = plot?.traces.get('trace1');
       expect(trace?.data.length).toBe(1);
       expect(trace?.data[0].y).toBe(30.0);
+    });
+  });
+
+  describe('Detection Mode Tests', () => {
+    it('should default to Basic Prefix Mode', () => {
+      expect(graphing.detectionMode).toBe(DetectionMode.BASIC_PREFIX);
+    });
+
+    it('should be able to set detection mode', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      expect(graphing.detectionMode).toBe(DetectionMode.ADVANCED_CMD);
+    });
+
+    it('should parse legacy data in Basic Prefix Mode', () => {
+      graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
+      
+      const data = new TextEncoder().encode('y=25.6\n');
+      graphing.parseData(data);
+      
+      expect(graphing.graphData.length).toBe(1);
+      expect(graphing.graphData[0].y).toBe(25.6);
+    });
+
+    it('should parse plot commands in Basic Prefix Mode when processing trigger is received', () => {
+      graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
+      
+      const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
+      graphing.parseData(data);
+      
+      const plot = graphing.plots.get('test');
+      expect(plot).toBeDefined();
+      expect(plot?.title).toBe('Test');
+    });
+
+    it('should parse plot commands in Advanced Cmd Mode on processing trigger', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      
+      const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";\n');
+      graphing.parseData(data);
+      
+      const plot = graphing.plots.get('test');
+      expect(plot).toBeDefined();
+      expect(plot?.title).toBe('Test');
+    });
+
+    it('should not parse commands without processing trigger in Advanced Cmd Mode', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      
+      const data = new TextEncoder().encode('#PLOT:CREATE,id=test,title="Test";');
+      graphing.parseData(data);
+      
+      const plot = graphing.plots.get('test');
+      expect(plot).toBeUndefined();
+    });
+
+    it('should ignore legacy data in Advanced Cmd Mode', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      
+      const data = new TextEncoder().encode('y=25.6\n');
+      graphing.parseData(data);
+      
+      expect(graphing.graphData.length).toBe(0);
+    });
+
+    it('should ignore legacy data in Advanced Cmd Mode even with semicolon and processing trigger', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      
+      const data = new TextEncoder().encode('y=25.6;\n');
+      graphing.parseData(data);
+      
+      expect(graphing.graphData.length).toBe(0);
+    });
+
+    it('should process mixed commands and clear buffer properly in Advanced Cmd Mode', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+      
+      // Send multiple commands in sequence with processing triggers
+      const data1 = new TextEncoder().encode('#PLOT:CREATE,id=test1;\n');
+      const data2 = new TextEncoder().encode('#PLOT:CREATE,id=test2;\n');
+      
+      graphing.parseData(data1);
+      graphing.parseData(data2);
+      
+      expect(graphing.plots.has('test1')).toBe(true);
+      expect(graphing.plots.has('test2')).toBe(true);
+    });
+
+    it('should handle getTriggerChar correctly', () => {
+      graphing.setProcessingTrigger('LF (\\n)');
+      expect(graphing.getTriggerChar()).toBe('\n');
+      
+      graphing.setProcessingTrigger('CR (\\r)');
+      expect(graphing.getTriggerChar()).toBe('\r');
+    });
+
+    it('should use CR trigger in Basic Prefix Mode', () => {
+      graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
+      graphing.setProcessingTrigger('CR (\\r)');
+      
+      const data = new TextEncoder().encode('y=42.0\r');
+      graphing.parseData(data);
+      
+      expect(graphing.graphData.length).toBe(1);
+      expect(graphing.graphData[0].y).toBe(42.0);
     });
   });
 });
