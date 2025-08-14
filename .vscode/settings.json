@@ -67,8 +67,10 @@
     "vitest",
     "wicg",
     "x1B",
+    "xlabel",
     "XTAL",
-    "xtype"
+    "xtype",
+    "ylabel"
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -780,7 +780,8 @@ export default observer((props: Props) => {
                   x: {
                     title: {
                       display: true,
-                      text: "X Axis",
+                      text: plot.xlabel,
+                      color: '#fff',
                     },
                     ticks: {
                       color: '#fff',
@@ -798,7 +799,8 @@ export default observer((props: Props) => {
                   y: {
                     title: {
                       display: true,
-                      text: "Y Axis",
+                      text: plot.ylabel,
+                      color: '#fff',
                     },
                     ticks: {
                       color: '#fff',
@@ -816,7 +818,8 @@ export default observer((props: Props) => {
                 },
                 plugins: {
                   legend: {
-                    display: plot.traces.size > 1, // Show legend when multiple traces
+                    // display: plot.traces.size > 1, // Show legend when multiple traces
+                    display: true, // Always show the legend
                     labels: {
                       color: '#fff'
                     }

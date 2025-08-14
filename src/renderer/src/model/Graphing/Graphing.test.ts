@@ -143,6 +143,51 @@ describe('graphing tests', () => {
       expect(plot).toBeDefined();
       expect(plot?.id).toBe('test2');
       expect(plot?.title).toBe('test2');
+      expect(plot?.xlabel).toBe('X Axis'); // Default xlabel
+      expect(plot?.ylabel).toBe('Y Axis'); // Default ylabel
+    });
+
+    it('should create plot with custom axis labels', () => {
+      const params = new Map([
+        ['id', 'test3'],
+        ['title', '"Temperature vs Time"'],
+        ['xlabel', '"Time [s]"'],
+        ['ylabel', '"Temperature [°C]"']
+      ]);
+      graphing.handleCreatePlot(params);
+
+      const plot = graphing.plots.get('test3');
+      expect(plot).toBeDefined();
+      expect(plot?.id).toBe('test3');
+      expect(plot?.title).toBe('Temperature vs Time'); // Quotes stripped
+      expect(plot?.xlabel).toBe('Time [s]'); // Quotes stripped
+      expect(plot?.ylabel).toBe('Temperature [°C]'); // Quotes stripped
+    });
+
+    it('should create plot with partial axis labels (only xlabel specified)', () => {
+      const params = new Map([
+        ['id', 'test4'],
+        ['xlabel', '"Voltage [V]"']
+      ]);
+      graphing.handleCreatePlot(params);
+
+      const plot = graphing.plots.get('test4');
+      expect(plot).toBeDefined();
+      expect(plot?.xlabel).toBe('Voltage [V]'); // Custom xlabel
+      expect(plot?.ylabel).toBe('Y Axis'); // Default ylabel
+    });
+
+    it('should create plot with partial axis labels (only ylabel specified)', () => {
+      const params = new Map([
+        ['id', 'test5'],
+        ['ylabel', '"Current [A]"']
+      ]);
+      graphing.handleCreatePlot(params);
+
+      const plot = graphing.plots.get('test5');
+      expect(plot).toBeDefined();
+      expect(plot?.xlabel).toBe('X Axis'); // Default xlabel
+      expect(plot?.ylabel).toBe('Current [A]'); // Custom ylabel
     });
 
     it('should send warning when id is missing', () => {
@@ -219,8 +264,33 @@ describe('graphing tests', () => {
       const trace = plot?.traces.get('trace2');
       expect(trace).toBeDefined();
       expect(trace?.name).toBe('trace2'); // Defaults to id
-      expect(trace?.color).toBe('#0af20e'); // Default color
+      expect(trace?.color).toBe('#0af20e'); // First default color (green)
       expect(trace?.xType).toBe('timestamp'); // Default xtype
+    });
+
+    it('should assign different default colors to multiple traces', () => {
+      // Create multiple traces without specifying colors
+      const trace1Params = new Map([['plot', 'plot1'], ['id', 'trace1']]);
+      const trace2Params = new Map([['plot', 'plot1'], ['id', 'trace2']]);
+      const trace3Params = new Map([['plot', 'plot1'], ['id', 'trace3']]);
+
+      graphing.handleCreateTrace(trace1Params);
+      graphing.handleCreateTrace(trace2Params);
+      graphing.handleCreateTrace(trace3Params);
+
+      const plot = graphing.plots.get('plot1');
+      const trace1 = plot?.traces.get('trace1');
+      const trace2 = plot?.traces.get('trace2');
+      const trace3 = plot?.traces.get('trace3');
+
+      expect(trace1?.color).toBe('#0af20e'); // Green (first color)
+      expect(trace2?.color).toBe('#ff0000'); // Red (second color)
+      expect(trace3?.color).toBe('#0080ff'); // Blue (third color)
+
+      // Verify all colors are different
+      expect(trace1?.color).not.toBe(trace2?.color);
+      expect(trace2?.color).not.toBe(trace3?.color);
+      expect(trace1?.color).not.toBe(trace3?.color);
     });
 
     it('should send warning when plot or id is missing', () => {
@@ -493,6 +563,41 @@ describe('graphing tests', () => {
       expect(humidityTrace?.data.length).toBe(1);
       expect(humidityTrace?.data[0].y).toBe(67.2);
       expect(humidityTrace?.data[0].x).toBe(0); // Counter starts at 0
+    });
+
+    it('should handle complete workflow with axis labels', () => {
+      const buffer = `
+        #PLOT:CREATE,id=voltage_plot,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";
+        #PLOT:TRACE,plot=voltage_plot,id=input_voltage,name="Input Voltage",color=#FF0000;
+        #PLOT:TRACE,plot=voltage_plot,id=output_voltage,name="Output Voltage",color=#00FF00;
+        #PLOT:DATA,trace=input_voltage,data=12.5;
+        #PLOT:DATA,trace=output_voltage,data=5.0;
+      `;
+
+      graphing.parsePlotCommands(buffer);
+
+      // Verify plot was created with custom axis labels
+      const plot = graphing.plots.get('voltage_plot');
+      expect(plot).toBeDefined();
+      expect(plot?.title).toBe('Voltage Monitoring');
+      expect(plot?.xlabel).toBe('Time [s]');
+      expect(plot?.ylabel).toBe('Voltage [V]');
+
+      // Verify traces were created
+      const inputTrace = plot?.traces.get('input_voltage');
+      const outputTrace = plot?.traces.get('output_voltage');
+      expect(inputTrace).toBeDefined();
+      expect(outputTrace).toBeDefined();
+      expect(inputTrace?.name).toBe('Input Voltage');
+      expect(inputTrace?.color).toBe('#FF0000');
+      expect(outputTrace?.name).toBe('Output Voltage');
+      expect(outputTrace?.color).toBe('#00FF00');
+
+      // Verify data was added
+      expect(inputTrace?.data.length).toBe(1);
+      expect(inputTrace?.data[0].y).toBe(12.5);
+      expect(outputTrace?.data.length).toBe(1);
+      expect(outputTrace?.data[0].y).toBe(5.0);
     });
 
     it('should handle parsing errors gracefully', () => {

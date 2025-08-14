@@ -245,21 +245,29 @@ export default observer((props: Props) => {
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a new plot (a plot is a single x/y graph with a titles, axes and traces)
-// A trace is a single data series (e.g. line) on a plot.
 #PLOT:CREATE,id=plot1,title="Sensor Data";
 
-// Delete a plot
-#PLOT:DELETE,plot=plot1;
-
-// Clear all traces in a plot
-#PLOT:CLEAR,plot=plot1;`}
+// Create a plot with custom axis labels
+#PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";`}
           </pre>
 
-          <p><code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
+          <p>All <code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
+
+          <Typography variant="h5">PLOT:CREATE Parameters</Typography>
+          <p>The <code>PLOT:CREATE</code> command supports the following parameters:</p>
+          <ul>
+            <li><code>id</code> (required): Unique identifier for the plot</li>
+            <li><code>title</code> (optional): Plot title displayed above the graph. Defaults to the plot ID if not specified</li>
+            <li><code>xlabel</code> (optional): Custom label for the X-axis. Defaults to "X Axis" if not specified. Example: <code>xlabel="Time [s]"</code></li>
+            <li><code>ylabel</code> (optional): Custom label for the Y-axis. Defaults to "Y Axis" if not specified. Example: <code>ylabel="Voltage [V]"</code></li>
+          </ul>
+          <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=[1,2,3,4,5];`}
           </pre>
+
+          <p>Do not use non-ASCII characters in the commands as NinjaTerm does not support Unicode encodings such as UTF-8! For example, don't use the Omega symbol for the units of resistance in the axis labels!</p>
 
           <Typography variant="h4">Trace Management Commands</Typography>
 
@@ -277,15 +285,7 @@ export default observer((props: Props) => {
             <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
           </ul>
 
-          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`// Create traces with different x-axis data types
-#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
-#PLOT:TRACE,plot=plot1,id=accel,name="Acceleration",color=#0000FF,xtype=counter;
-#PLOT:TRACE,plot=plot1,id=position,name="Position",color=#00FF00,xtype=data;
-
-// Clear a specific trace
-#PLOT:CLEAR,trace=temp;`}
-          </pre>
+          <p><code>color</code> set the trace color, both for dots that indicate the data points and the line that joins them. It is a hex code, e.g. <code>#FF0000</code> for red. Transparency is also supported by adding the alpha value as another 2-digit hex value at the end. 00 is fully transparent, FF is fully opaque. e.g. <code>#FF000080</code> for a 50% transparent red. Transparency can be useful when you have multiple overlapping traces on a single plot.</p>
 
           <Typography variant="h4">Data Commands</Typography>
 
@@ -324,10 +324,10 @@ export default observer((props: Props) => {
           </pre>
 
           <Typography variant="h4">Complete Example</Typography>
-          <p>Here's a complete example showing how to create a multi-trace plot:</p>
+          <p>Here's a complete example showing how to create a multi-trace plot with custom axis labels:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`// Create a plot for sensor data
-#PLOT:CREATE,id=sensors,title="Environmental Sensors";
+{`// Create a plot for sensor data with custom axis labels
+#PLOT:CREATE,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
 
 // Create traces for different sensor types
 #PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;

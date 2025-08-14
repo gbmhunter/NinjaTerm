@@ -46,6 +46,8 @@ class PlotTrace {
 class Plot {
   id: string;
   title: string;
+  xlabel: string;
+  ylabel: string;
 
   /**
    * Contains all traces for this plot. The key is the trace ID. Javascript keeps entries
@@ -53,9 +55,11 @@ class Plot {
    */
   traces: Map<string, PlotTrace> = new Map();
 
-  constructor(id: string, title: string) {
+  constructor(id: string, title: string, xlabel: string = 'X Axis', ylabel: string = 'Y Axis') {
     this.id = id;
     this.title = title;
+    this.xlabel = xlabel;
+    this.ylabel = ylabel;
     makeAutoObservable(this);
   }
 }
@@ -70,6 +74,30 @@ class Graphing {
    * graphing data.
    */
   graphingEnabled = false;
+
+  /**
+   * Array of colors to cycle through when no color is specified for traces.
+   * These are chosen to be visually distinct and work well on dark backgrounds.
+   */
+  private defaultTraceColors = [
+    '#0af20e', // Green (original default)
+    '#ff0000', // Red
+    '#0080ff', // Blue
+    '#ff8000', // Orange
+    '#ff00ff', // Magenta
+    '#00ffff', // Cyan
+    '#ffff00', // Yellow
+    '#8000ff', // Purple
+    '#00ff80', // Light Green
+    '#ff8080', // Light Red
+    '#8080ff', // Light Blue
+    '#ff4000', // Red-Orange
+  ];
+
+  /**
+   * Counter to track which default color to assign next.
+   */
+  private nextColorIndex = 0;
 
   graphData: Point[] = [];  // Legacy single plot data
 
@@ -510,6 +538,7 @@ class Graphing {
     this.graphData = [];
     this.resetAllPlots();
     this.timeAtReset_ms = Date.now();
+    this.nextColorIndex = 0; // Reset color cycling when data is reset
   }
 
   resetAllPlots = () => {
@@ -519,6 +548,16 @@ class Graphing {
         trace.counter = 0;
       }
     }
+  }
+
+  /**
+   * Gets the next default color for a trace, cycling through the available colors.
+   * @returns A hex color string
+   */
+  private getNextDefaultColor = (): string => {
+    const color = this.defaultTraceColors[this.nextColorIndex];
+    this.nextColorIndex = (this.nextColorIndex + 1) % this.defaultTraceColors.length;
+    return color;
   }
 
   updateXRangeFromData = () => {
@@ -635,7 +674,7 @@ class Graphing {
     const bracketReplacements = new Map<string, string>();
     let processedParamString = paramString;
     const bracketMatches = paramString.match(/(\w+)=\[([^\]]+)\]/g);
-    
+
     if (bracketMatches) {
       for (const match of bracketMatches) {
         const [, key, value] = match.match(/(\w+)=\[([^\]]+)\]/)!;
@@ -681,7 +720,19 @@ class Graphing {
       title = id;
     }
 
-    const plot = new Plot(id, title);
+    // Handle xlabel parameter
+    let xlabel = params.get('xlabel') || 'X Axis';
+    if (xlabel) {
+      xlabel = xlabel.replace(/^"|"$/g, '');
+    }
+
+    // Handle ylabel parameter
+    let ylabel = params.get('ylabel') || 'Y Axis';
+    if (ylabel) {
+      ylabel = ylabel.replace(/^"|"$/g, '');
+    }
+
+    const plot = new Plot(id, title, xlabel, ylabel);
     this.plots.set(id, plot);
   }
 
@@ -760,7 +811,7 @@ class Graphing {
       name = traceId;
     }
 
-    const color = params.get('color') || '#0af20e';
+    const color = params.get('color') || this.getNextDefaultColor();
     const xType = (params.get('xtype') as XAxisType) || 'timestamp';
 
     const plot = this.plots.get(plotId);
