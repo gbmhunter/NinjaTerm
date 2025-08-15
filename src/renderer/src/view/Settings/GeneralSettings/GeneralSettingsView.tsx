@@ -58,23 +58,25 @@ function GeneralSettingsView(props: Props) {
       //   testResults: []
       // };
 
-      // Format results for display
-      const summary = `Performance Test Results:
-- Overall Health: ${results.summary.overallHealthy ? 'Healthy ✅' : 'Needs Attention ⚠️'}
-- Average Processing Time: ${results.summary.avgProcessingTime.toFixed(2)}ms
-- Average Frame Rate: ${results.summary.avgFrameRate.toFixed(1)} fps
-- Max Data Rate Tested: ${(results.summary.maxDataRate / 1024).toFixed(1)} KB/s
+      // Format results as a compact table
+      const tableHeader = `Performance Test Results:
 
-Bottlenecks Found: ${results.summary.bottlenecks.length}
-${results.summary.bottlenecks.map(b => '• ' + b).join('\n')}
+${'Test'.padEnd(30)} | ${'Target'.padEnd(8)} | ${'Actual'.padEnd(8)} | ${'Proc'.padEnd(7)} | ${'FPS'.padEnd(7)} | ${'CPU'.padEnd(4)} | Status
+${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'-'.repeat(7)} | ${'-'.repeat(4)} | ------`;
 
-Recommendations:
-${results.recommendations.map(r => '• ' + r).join('\n')}
+      const tableRows = results.testResults.map(r => {
+        const testName = r.scenarioName.replace(' - Terminal View', '').replace(' - Graphing View', '').padEnd(30);
+        const targetRate = `${(r.targetBytesPerSecond / 1024).toFixed(1)}KB/s`.padEnd(8);
+        const actualRate = `${(r.actualBytesPerSecond / 1024).toFixed(1)}KB/s`.padEnd(8);
+        const avgProc = `${r.avgProcessingTimeMs.toFixed(1)}ms`.padEnd(7);
+        const frameRate = `${r.avgFrameRate.toFixed(0)}fps`.padEnd(7);
+        const cpu = `${r.cpuUsagePercent.toFixed(0)}%`.padEnd(4);
+        const health = r.isHealthy ? '✅ OK' : '⚠️ Poor';
+        
+        return `${testName} | ${targetRate} | ${actualRate} | ${avgProc} | ${frameRate} | ${cpu} | ${health}`;
+      }).join('\n');
 
-Test Details:
-${results.testResults.map(r =>
-  `• ${r.scenarioName}: ${r.avgProcessingTimeMs.toFixed(2)}ms avg, ${r.avgFrameRate.toFixed(1)} fps, ${r.isHealthy ? 'Healthy' : 'Degraded'}`
-).join('\n')}`;
+      const summary = `${tableHeader}\n${tableRows}`;
 
       console.log('Setting perf test results to:');
       console.log(summary);
@@ -271,10 +273,17 @@ ${results.testResults.map(r =>
           {generalSettings.performanceTestResults && (
             <Alert
               ref={resultsRef}
-              severity={generalSettings.performanceTestResults.includes('Healthy ✅') ? "success" : "warning"}
-              sx={{ marginBottom: "16px" }}
+              severity={generalSettings.performanceTestResults.includes('✅ OK') ? "success" : "warning"}
+              sx={{ marginBottom: "16px", maxWidth: "100%", overflow: "auto" }}
             >
-              <Typography variant="body2" component="pre" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+              <Typography variant="body2" component="pre" style={{ 
+                whiteSpace: 'pre', 
+                fontFamily: 'Consolas, "Courier New", monospace', 
+                fontSize: '13px',
+                lineHeight: '1.4',
+                overflow: 'auto',
+                margin: 0
+              }}>
                 {generalSettings.performanceTestResults}
               </Typography>
             </Alert>
