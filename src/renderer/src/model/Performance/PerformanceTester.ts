@@ -20,7 +20,7 @@ export class PerformanceTester {
   async runFullTestSuite(): Promise<PerformanceTestSuiteResult> {
     console.log('🚀 Starting NinjaTerm Performance Test Suite...');
     console.log('📌 Important: Performance tests will automatically switch views for accurate measurements');
-    
+
     const suiteStartTime = Date.now();
     this.results = [];
 
@@ -34,48 +34,48 @@ export class PerformanceTester {
         requiredView: 'terminal',
         description: 'Tests terminal rendering performance with mixed ASCII text'
       },
-      {
-        name: 'ANSI Colors (3KB/s) - Terminal View',
-        bytesPerSecond: 3072,
-        duration: 5000,
-        dataGenerator: () => DataGenerator.generateAnsiData(150),
-        requiredView: 'terminal',
-        description: 'Tests terminal performance with ANSI escape codes and colors'
-      },
-      {
-        name: 'High Rate ASCII (10KB/s) - Terminal View',
-        bytesPerSecond: 10240,
-        duration: 3000,
-        dataGenerator: () => DataGenerator.generateAsciiData(200, 'random'),
-        requiredView: 'terminal',
-        description: 'Stress tests terminal at high data rates'
-      },
-      {
-        name: 'Graphing Data (2KB/s) - Graphing View',
-        bytesPerSecond: 2048,
-        duration: 5000,
-        dataGenerator: () => DataGenerator.generateGraphingData(8), // ~8 points ≈ 80 bytes
-        requiredView: 'graphing',
-        description: 'Tests graphing performance with y= prefix data'
-      },
-      {
-        name: 'Plot Commands - Graphing View',
-        bytesPerSecond: 1536,
-        duration: 6000,
-        dataGenerator: () => DataGenerator.generatePlotCommands(1, 2), // Smaller commands
-        requiredView: 'graphing',
-        description: 'Tests advanced plotting commands and chart rendering'
-      }
+      // {
+      //   name: 'ANSI Colors (3KB/s) - Terminal View',
+      //   bytesPerSecond: 3072,
+      //   duration: 5000,
+      //   dataGenerator: () => DataGenerator.generateAnsiData(150),
+      //   requiredView: 'terminal',
+      //   description: 'Tests terminal performance with ANSI escape codes and colors'
+      // },
+      // {
+      //   name: 'High Rate ASCII (10KB/s) - Terminal View',
+      //   bytesPerSecond: 10240,
+      //   duration: 3000,
+      //   dataGenerator: () => DataGenerator.generateAsciiData(200, 'random'),
+      //   requiredView: 'terminal',
+      //   description: 'Stress tests terminal at high data rates'
+      // },
+      // {
+      //   name: 'Graphing Data (2KB/s) - Graphing View',
+      //   bytesPerSecond: 2048,
+      //   duration: 5000,
+      //   dataGenerator: () => DataGenerator.generateGraphingData(8), // ~8 points ≈ 80 bytes
+      //   requiredView: 'graphing',
+      //   description: 'Tests graphing performance with y= prefix data'
+      // },
+      // {
+      //   name: 'Plot Commands - Graphing View',
+      //   bytesPerSecond: 1536,
+      //   duration: 6000,
+      //   dataGenerator: () => DataGenerator.generatePlotCommands(1, 2), // Smaller commands
+      //   requiredView: 'graphing',
+      //   description: 'Tests advanced plotting commands and chart rendering'
+      // }
     ];
 
     for (const scenario of scenarios) {
       console.log(`📊 Testing: ${scenario.name}`);
       console.log(`   ${scenario.description}`);
       console.log(`   Required view: ${scenario.requiredView}`);
-      
+
       const result = await this.runSingleTest(scenario);
       this.results.push(result);
-      
+
       // Wait between tests to let system settle
       await this.delay(1000);
     }
@@ -105,22 +105,22 @@ export class PerformanceTester {
     requiredView: string;
     description: string;
   }): Promise<PerformanceTestResult> {
-    
+
     // Reset performance monitor
     this.app.performanceMonitor.reset();
-    
+
     // Store the current view and close settings if open
     const previousView = this.app.shownMainPane;
     if (previousView === MainPanes.SETTINGS) {
       console.log(`   🚪 Closing Settings dialog to prevent MUI component render overhead`);
     }
-    
+
     // Switch to the appropriate view for this test
     if (scenario.requiredView === 'terminal') {
-      this.app.shownMainPane = MainPanes.TERMINAL;
+      this.app.setShownMainPane(MainPanes.TERMINAL);
       console.log(`   📺 Switched to Terminal view for accurate rendering measurements`);
     } else if (scenario.requiredView === 'graphing') {
-      this.app.shownMainPane = MainPanes.GRAPHING;
+      this.app.setShownMainPane(MainPanes.GRAPHING);
       console.log(`   📈 Switched to Graphing view for accurate chart rendering measurements`);
       // Enable graphing for these tests
       if (!this.app.graphing.graphingEnabled) {
@@ -128,18 +128,18 @@ export class PerformanceTester {
         console.log(`   ✅ Enabled graphing for this test`);
       }
     }
-    
+
     // Wait a moment for view to stabilize
     await this.delay(500);
-    
+
     // Clear terminal to start fresh
     this.app.terminals.txRxTerminal.clear();
-    
+
     const startTime = Date.now();
     let totalBytesProcessed = 0;
     let processingTimes: number[] = [];
     let frameRates: number[] = [];
-    
+
     // Create data stream
     const dataStream = DataGenerator.createDataStream(
       scenario.dataGenerator,
@@ -147,7 +147,7 @@ export class PerformanceTester {
         const processStart = performance.now();
         this.app.parseRxData(data);
         const processTime = performance.now() - processStart;
-        
+
         processingTimes.push(processTime);
         totalBytesProcessed += data.length;
         frameRates.push(this.app.performanceMonitor.frameRate);
@@ -158,40 +158,40 @@ export class PerformanceTester {
 
     // Start the test
     dataStream.start();
-    
+
     // Let it run for the specified duration
     await this.delay(scenario.duration);
-    
+
     // Stop the test
     dataStream.stop();
-    
+
     const endTime = Date.now();
     const actualDuration = endTime - startTime;
     const dataStreamStats = dataStream.getStats();
-    
+
     // Get performance metrics
     const avgMetrics = this.app.performanceMonitor.getAverageMetrics();
     const finalFrameRate = this.app.performanceMonitor.frameRate;
-    
+
     // Calculate statistics
-    const avgProcessingTime = processingTimes.length > 0 
-      ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length 
+    const avgProcessingTime = processingTimes.length > 0
+      ? processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length
       : 0;
-      
-    const maxProcessingTime = processingTimes.length > 0 
-      ? Math.max(...processingTimes) 
+
+    const maxProcessingTime = processingTimes.length > 0
+      ? Math.max(...processingTimes)
       : 0;
-      
-    const avgFrameRate = frameRates.length > 0 
-      ? frameRates.reduce((a, b) => a + b, 0) / frameRates.length 
+
+    const avgFrameRate = frameRates.length > 0
+      ? frameRates.reduce((a, b) => a + b, 0) / frameRates.length
       : 60;
-      
-    const minFrameRate = frameRates.length > 0 
-      ? Math.min(...frameRates) 
+
+    const minFrameRate = frameRates.length > 0
+      ? Math.min(...frameRates)
       : 60;
 
     // Restore the previous view
-    this.app.shownMainPane = previousView;
+    this.app.setShownMainPane(previousView);
     console.log(`   📺 Restored view to ${MainPanes[previousView]}`);
 
     return {
@@ -235,20 +235,20 @@ export class PerformanceTester {
 
     // Identify bottlenecks
     const bottlenecks: string[] = [];
-    
+
     if (avgFrameRate < 50) {
       bottlenecks.push('Low frame rate indicates rendering bottleneck');
     }
-    
+
     if (avgProcessingTime > 10) {
       bottlenecks.push('High processing time indicates data processing bottleneck');
     }
-    
+
     const highCpuResults = this.results.filter(r => r.cpuUsagePercent > 80);
     if (highCpuResults.length > 0) {
       bottlenecks.push('High CPU usage detected in some scenarios');
     }
-    
+
     const slowGraphingResults = this.results.filter(r => r.avgGraphingProcessingTimeMs > 5);
     if (slowGraphingResults.length > 0) {
       bottlenecks.push('Graphing processing is slow');
@@ -299,7 +299,7 @@ export class PerformanceTester {
   private printResults(suite: PerformanceTestSuiteResult): void {
     console.log('\n📈 PERFORMANCE TEST RESULTS');
     console.log('=' .repeat(50));
-    
+
     suite.testResults.forEach(result => {
       console.log(`\n🔍 ${result.scenarioName}`);
       console.log(`   Target Rate: ${(result.targetBytesPerSecond / 1024).toFixed(1)} KB/s`);

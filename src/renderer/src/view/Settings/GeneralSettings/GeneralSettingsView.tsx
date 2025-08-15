@@ -2,7 +2,7 @@ import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, Dia
 import { observer } from "mobx-react-lite";
 import React, { useState, useRef } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
-import { App } from "src/model/App";
+import { App, MainPanes } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -19,8 +19,6 @@ interface Props {
 function GeneralSettingsView(props: Props) {
   const { generalSettings, app } = props;
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-  const [isRunningPerfTest, setIsRunningPerfTest] = useState(false);
-  const [perfTestResults, setPerfTestResults] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleOpenConfirmDialog = () => {
@@ -36,25 +34,29 @@ function GeneralSettingsView(props: Props) {
     handleCloseConfirmDialog();
   };
 
+  /**
+   * This function is responsible for running the performance tests and
+   * displaying the results.
+   */
   const handleRunPerformanceTest = async () => {
     console.log('handleRunPerformanceTest() called.');
-    setIsRunningPerfTest(true);
-    setPerfTestResults(null);
+    generalSettings.setIsRunningPerformanceTest(true);
+    generalSettings.setPerformanceTestResults(null);
 
     try {
-      // const results = await app.runPerformanceTests();
+      const results = await app.runPerformanceTests();
       // Fake results for now
-      const results = {
-        summary: {
-          overallHealthy: true,
-          avgProcessingTime: 10,
-          avgFrameRate: 60,
-          maxDataRate: 1024,
-          bottlenecks: [],
-        },
-        recommendations: [],
-        testResults: []
-      };
+      // const results = {
+      //   summary: {
+      //     overallHealthy: true,
+      //     avgProcessingTime: 10,
+      //     avgFrameRate: 60,
+      //     maxDataRate: 1024,
+      //     bottlenecks: [],
+      //   },
+      //   recommendations: [],
+      //   testResults: []
+      // };
 
       // Format results for display
       const summary = `Performance Test Results:
@@ -74,14 +76,19 @@ ${results.testResults.map(r =>
   `• ${r.scenarioName}: ${r.avgProcessingTimeMs.toFixed(2)}ms avg, ${r.avgFrameRate.toFixed(1)} fps, ${r.isHealthy ? 'Healthy' : 'Degraded'}`
 ).join('\n')}`;
 
-      setPerfTestResults(summary);
-
+      console.log('Setting perf test results to:');
+      console.log(summary);
+      
+      // Set results in MobX store - this will trigger reactive update
+      generalSettings.setPerformanceTestResults(summary);
+      
       // Also print results to console for debugging
       console.log('Performance Test Results:');
       console.log(summary);
 
       // Scroll to results after a short delay to ensure they're rendered
       setTimeout(() => {
+        console.log('Attempting to scroll to results...');
         resultsRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'nearest'
@@ -89,7 +96,7 @@ ${results.testResults.map(r =>
       }, 100);
     } catch (error) {
       const errorMessage = `Error running performance tests: ${error}`;
-      setPerfTestResults(errorMessage);
+      generalSettings.setPerformanceTestResults(errorMessage);
       console.error('Performance Test Error:', error);
 
       // Scroll to error results as well
@@ -100,9 +107,11 @@ ${results.testResults.map(r =>
         });
       }, 100);
     } finally {
-      setIsRunningPerfTest(false);
+      generalSettings.setIsRunningPerformanceTest(false);
     }
   };
+
+  console.log('REDRAWING');
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
@@ -231,10 +240,10 @@ ${results.testResults.map(r =>
               size="medium"
               startIcon={<SpeedIcon />}
               onClick={handleRunPerformanceTest}
-              disabled={isRunningPerfTest}
+              disabled={generalSettings.isRunningPerformanceTest}
               style={{ width: "300px" }}
             >
-              {isRunningPerfTest ? "Running Tests..." : "Run Performance Tests"}
+              {generalSettings.isRunningPerformanceTest ? "Running Tests..." : "Run Performance Tests"}
             </Button>
 
             <Button
@@ -243,7 +252,7 @@ ${results.testResults.map(r =>
               startIcon={<AssessmentIcon />}
               onClick={() => {
                 const report = app.getPerformanceReport();
-                setPerfTestResults(report);
+                generalSettings.setPerformanceTestResults(report);
               }}
               style={{ width: "300px" }}
             >
@@ -251,7 +260,7 @@ ${results.testResults.map(r =>
             </Button>
           </div>
 
-          {isRunningPerfTest && (
+          {generalSettings.isRunningPerformanceTest && (
             <Alert severity="info" sx={{ marginBottom: "16px" }}>
               Running performance tests... This will take about 30 seconds and will automatically
               switch between Terminal and Graphing views to measure rendering performance accurately.
@@ -259,14 +268,14 @@ ${results.testResults.map(r =>
             </Alert>
           )}
 
-          {perfTestResults && (
+          {generalSettings.performanceTestResults && (
             <Alert
               ref={resultsRef}
-              severity={perfTestResults.includes('Healthy ✅') ? "success" : "warning"}
+              severity={generalSettings.performanceTestResults.includes('Healthy ✅') ? "success" : "warning"}
               sx={{ marginBottom: "16px" }}
             >
               <Typography variant="body2" component="pre" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-                {perfTestResults}
+                {generalSettings.performanceTestResults}
               </Typography>
             </Alert>
           )}
