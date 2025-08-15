@@ -1,6 +1,6 @@
 import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
 import { App } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -21,6 +21,7 @@ function GeneralSettingsView(props: Props) {
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [isRunningPerfTest, setIsRunningPerfTest] = useState(false);
   const [perfTestResults, setPerfTestResults] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleOpenConfirmDialog = () => {
     setOpenConfirmDialog(true);
@@ -36,12 +37,25 @@ function GeneralSettingsView(props: Props) {
   };
 
   const handleRunPerformanceTest = async () => {
+    console.log('handleRunPerformanceTest() called.');
     setIsRunningPerfTest(true);
     setPerfTestResults(null);
-    
+
     try {
-      const results = await app.runPerformanceTests();
-      
+      // const results = await app.runPerformanceTests();
+      // Fake results for now
+      const results = {
+        summary: {
+          overallHealthy: true,
+          avgProcessingTime: 10,
+          avgFrameRate: 60,
+          maxDataRate: 1024,
+          bottlenecks: [],
+        },
+        recommendations: [],
+        testResults: []
+      };
+
       // Format results for display
       const summary = `Performance Test Results:
 - Overall Health: ${results.summary.overallHealthy ? 'Healthy ✅' : 'Needs Attention ⚠️'}
@@ -56,13 +70,35 @@ Recommendations:
 ${results.recommendations.map(r => '• ' + r).join('\n')}
 
 Test Details:
-${results.testResults.map(r => 
+${results.testResults.map(r =>
   `• ${r.scenarioName}: ${r.avgProcessingTimeMs.toFixed(2)}ms avg, ${r.avgFrameRate.toFixed(1)} fps, ${r.isHealthy ? 'Healthy' : 'Degraded'}`
 ).join('\n')}`;
 
       setPerfTestResults(summary);
+
+      // Also print results to console for debugging
+      console.log('Performance Test Results:');
+      console.log(summary);
+
+      // Scroll to results after a short delay to ensure they're rendered
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 100);
     } catch (error) {
-      setPerfTestResults(`Error running performance tests: ${error}`);
+      const errorMessage = `Error running performance tests: ${error}`;
+      setPerfTestResults(errorMessage);
+      console.error('Performance Test Error:', error);
+
+      // Scroll to error results as well
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 100);
     } finally {
       setIsRunningPerfTest(false);
     }
@@ -184,32 +220,32 @@ ${results.testResults.map(r =>
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
-            Run comprehensive performance tests to measure data processing speed, rendering performance, 
-            and identify bottlenecks. Tests automatically switch between Terminal and Graphing views 
+            Run comprehensive performance tests to measure data processing speed, rendering performance,
+            and identify bottlenecks. Tests automatically switch between Terminal and Graphing views
             for accurate measurements of view-specific rendering performance.
           </Typography>
-          
-          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+
+          <div style={{ display: "flex", gap: "12px", marginBottom: "10px", flexDirection: "column" }}>
             <Button
               variant="outlined"
-              size="large"
+              size="medium"
               startIcon={<SpeedIcon />}
               onClick={handleRunPerformanceTest}
               disabled={isRunningPerfTest}
-              style={{ width: "200px" }}
+              style={{ width: "300px" }}
             >
               {isRunningPerfTest ? "Running Tests..." : "Run Performance Tests"}
             </Button>
-            
+
             <Button
-              variant="text"
-              size="large"
+              variant="outlined"
+              size="medium"
               startIcon={<AssessmentIcon />}
               onClick={() => {
                 const report = app.getPerformanceReport();
                 setPerfTestResults(report);
               }}
-              style={{ width: "200px" }}
+              style={{ width: "300px" }}
             >
               Show Current Metrics
             </Button>
@@ -217,15 +253,16 @@ ${results.testResults.map(r =>
 
           {isRunningPerfTest && (
             <Alert severity="info" sx={{ marginBottom: "16px" }}>
-              Running performance tests... This will take about 30 seconds and will automatically 
-              switch between Terminal and Graphing views to measure rendering performance accurately. 
+              Running performance tests... This will take about 30 seconds and will automatically
+              switch between Terminal and Graphing views to measure rendering performance accurately.
               The Settings dialog will be closed during testing to prevent MUI component render overhead.
             </Alert>
           )}
 
           {perfTestResults && (
-            <Alert 
-              severity={perfTestResults.includes('Healthy ✅') ? "success" : "warning"} 
+            <Alert
+              ref={resultsRef}
+              severity={perfTestResults.includes('Healthy ✅') ? "success" : "warning"}
               sx={{ marginBottom: "16px" }}
             >
               <Typography variant="body2" component="pre" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
@@ -235,8 +272,8 @@ ${results.testResults.map(r =>
           )}
 
           <Typography variant="caption" color="text.secondary">
-            Performance tests measure view-specific rendering costs by automatically switching between 
-            Terminal and Graphing views. Terminal tests measure text rendering and ANSI processing, 
+            Performance tests measure view-specific rendering costs by automatically switching between
+            Terminal and Graphing views. Terminal tests measure text rendering and ANSI processing,
             while Graphing tests measure chart.js performance and data parsing overhead.
           </Typography>
         </div>
@@ -254,10 +291,10 @@ ${results.testResults.map(r =>
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
-            Open Chrome Developer Tools to inspect the application, debug JavaScript, analyze performance, 
+            Open Chrome Developer Tools to inspect the application, debug JavaScript, analyze performance,
             and examine network requests. The dev tools can also be opened by pressing F12.
           </Typography>
-          
+
           <Button
             variant="outlined"
             size="large"
@@ -269,7 +306,7 @@ ${results.testResults.map(r =>
           </Button>
 
           <Typography variant="caption" color="text.secondary">
-            Note: Developer tools are available in both development and production builds. 
+            Note: Developer tools are available in both development and production builds.
             Use them to debug performance issues, inspect React components, and analyze the application.
           </Typography>
         </div>
