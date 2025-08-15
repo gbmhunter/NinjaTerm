@@ -26,8 +26,8 @@ export default class TerminalRow {
    */
   wasCreatedDueToWrapping = false;
 
-  // Cache for memoized spans to avoid recreation on every render
-  private _spanCache: { spans: ReactElement[]; terminalCharsHash: string } | null = null;
+  // Cache for memoized spans to avoid recreation on every render (internal use only)
+  _spanCache: { spans: ReactElement[]; terminalCharsHash: string } | null = null;
 
   constructor(uniqueRowId: number, wasCreatedDueToWrapping: boolean) {
     this.terminalChars = [];
@@ -38,6 +38,7 @@ export default class TerminalRow {
       terminalChars: observable.shallow, // Only observe array changes, not individual character changes
       text: computed,
       terminalCharsHash: computed,
+      _spanCache: false, // Don't observe the cache - it's just an optimization
     });
   }
 
