@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added support for command-based graphing.
+- Added ability to open Chrome dev tools in the production build of the app.
 
 ### Changed
 
