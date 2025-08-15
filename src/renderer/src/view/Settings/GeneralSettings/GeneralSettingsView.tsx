@@ -1,10 +1,12 @@
-import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
 import { App } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
+import SpeedIcon from '@mui/icons-material/Speed';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 import BorderedSection from "src/view/Components/BorderedSection";
 
@@ -16,6 +18,8 @@ interface Props {
 function GeneralSettingsView(props: Props) {
   const { generalSettings, app } = props;
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const [isRunningPerfTest, setIsRunningPerfTest] = useState(false);
+  const [perfTestResults, setPerfTestResults] = useState<string | null>(null);
 
   const handleOpenConfirmDialog = () => {
     setOpenConfirmDialog(true);
@@ -28,6 +32,39 @@ function GeneralSettingsView(props: Props) {
   const handleConfirmClearData = () => {
     generalSettings.clearAppDataAndRefresh();
     handleCloseConfirmDialog();
+  };
+
+  const handleRunPerformanceTest = async () => {
+    setIsRunningPerfTest(true);
+    setPerfTestResults(null);
+    
+    try {
+      const results = await app.runPerformanceTests();
+      
+      // Format results for display
+      const summary = `Performance Test Results:
+- Overall Health: ${results.summary.overallHealthy ? 'Healthy ✅' : 'Needs Attention ⚠️'}
+- Average Processing Time: ${results.summary.avgProcessingTime.toFixed(2)}ms
+- Average Frame Rate: ${results.summary.avgFrameRate.toFixed(1)} fps
+- Max Data Rate Tested: ${(results.summary.maxDataRate / 1024).toFixed(1)} KB/s
+
+Bottlenecks Found: ${results.summary.bottlenecks.length}
+${results.summary.bottlenecks.map(b => '• ' + b).join('\n')}
+
+Recommendations:
+${results.recommendations.map(r => '• ' + r).join('\n')}
+
+Test Details:
+${results.testResults.map(r => 
+  `• ${r.scenarioName}: ${r.avgProcessingTimeMs.toFixed(2)}ms avg, ${r.avgFrameRate.toFixed(1)} fps, ${r.isHealthy ? 'Healthy' : 'Degraded'}`
+).join('\n')}`;
+
+      setPerfTestResults(summary);
+    } catch (error) {
+      setPerfTestResults(`Error running performance tests: ${error}`);
+    } finally {
+      setIsRunningPerfTest(false);
+    }
   };
 
   return (
@@ -131,6 +168,76 @@ function GeneralSettingsView(props: Props) {
               : "Automatic updates are disabled. Click the button above to manually check for updates."
             }
           </div>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* PERFORMANCE TESTING */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Performance Testing">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "600px",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
+            Run comprehensive performance tests to measure data processing speed, rendering performance, 
+            and identify bottlenecks. Tests automatically switch between Terminal and Graphing views 
+            for accurate measurements of view-specific rendering performance.
+          </Typography>
+          
+          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+            <Button
+              variant="outlined"
+              size="large"
+              startIcon={<SpeedIcon />}
+              onClick={handleRunPerformanceTest}
+              disabled={isRunningPerfTest}
+              style={{ width: "200px" }}
+            >
+              {isRunningPerfTest ? "Running Tests..." : "Run Performance Tests"}
+            </Button>
+            
+            <Button
+              variant="text"
+              size="large"
+              startIcon={<AssessmentIcon />}
+              onClick={() => {
+                const report = app.getPerformanceReport();
+                setPerfTestResults(report);
+              }}
+              style={{ width: "200px" }}
+            >
+              Show Current Metrics
+            </Button>
+          </div>
+
+          {isRunningPerfTest && (
+            <Alert severity="info" sx={{ marginBottom: "16px" }}>
+              Running performance tests... This will take about 30 seconds and will automatically 
+              switch between Terminal and Graphing views to measure rendering performance accurately. 
+              The Settings dialog will be closed during testing to prevent MUI component render overhead.
+            </Alert>
+          )}
+
+          {perfTestResults && (
+            <Alert 
+              severity={perfTestResults.includes('Healthy ✅') ? "success" : "warning"} 
+              sx={{ marginBottom: "16px" }}
+            >
+              <Typography variant="body2" component="pre" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                {perfTestResults}
+              </Typography>
+            </Alert>
+          )}
+
+          <Typography variant="caption" color="text.secondary">
+            Performance tests measure view-specific rendering costs by automatically switching between 
+            Terminal and Graphing views. Terminal tests measure text rendering and ANSI processing, 
+            while Graphing tests measure chart.js performance and data parsing overhead.
+          </Typography>
         </div>
       </BorderedSection>
 

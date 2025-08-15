@@ -5,6 +5,7 @@ import log from 'electron-log';
 import * as path from 'path';
 import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
+import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
 const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
@@ -108,6 +109,10 @@ function createWindow(): void {
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
+
+  installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
+    .then((ext) => console.log(`Added Extension:  ${ext.name}`))
+    .catch((err) => console.log('An error occurred: ', err));
 
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds

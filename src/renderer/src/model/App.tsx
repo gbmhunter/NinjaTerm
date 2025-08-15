@@ -22,6 +22,8 @@ import { SelectionController, SelectionInfo } from './SelectionController/Select
 import { isRunningOnWindows } from './Util/Util';
 import { LastUsedSerialPort, AppDataManager } from './AppDataManager/AppDataManager';
 import { PortInfo } from '@serialport/bindings-interface';
+import PerformanceMonitor from './Performance/PerformanceMonitor';
+import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
 
 declare global {
   interface String {
@@ -138,6 +140,9 @@ export class App {
 
   showCircularProgressModal = false;
 
+  performanceMonitor: PerformanceMonitor;
+
+
   constructor(testing = false) {
     this.testing = testing;
     if (this.testing) {
@@ -151,6 +156,9 @@ export class App {
     this.settings = new Settings(this);
 
     this.snackbar = new SnackbarController();
+
+    this.performanceMonitor = new PerformanceMonitor();
+
 
     this.terminals = new Terminals(this);
 
@@ -727,17 +735,44 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
-    // console.log('parseRxData() called. rxData=', rxData);
-    // Send received data to both the single TX/RX terminal
-    // and the RX terminal
+    // Start performance monitoring for data processing
+    this.performanceMonitor.startTiming('dataProcessing');
+    
+    // Process data immediately
+    this.performanceMonitor.startTiming('terminalRender');
     this.terminals.txRxTerminal.parseData(rxData, DataDirection.RX);
     this.terminals.rxTerminal.parseData(rxData, DataDirection.RX);
+    this.performanceMonitor.endTiming('terminalRender');
+    
+    this.performanceMonitor.startTiming('graphingProcessing');
     this.graphing.parseData(rxData);
+    this.performanceMonitor.endTiming('graphingProcessing');
+    
     this.logging.handleRxData(rxData);
+    
+    // End performance monitoring and record metrics
+    const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
+    this.performanceMonitor.recordDataProcessing(rxData.length, totalProcessingTime);
+    
+    // Update stats
     this.numBytesReceived += rxData.length;
-
-    // Record data point for rate calculation
     this.recordRxDataPoint(rxData.length);
+  }
+
+
+  /**
+   * Run performance tests to measure baseline performance and identify bottlenecks
+   */
+  async runPerformanceTests(): Promise<PerformanceTestSuiteResult> {
+    const tester = new PerformanceTester(this);
+    return await tester.runFullTestSuite();
+  }
+
+  /**
+   * Get current performance report
+   */
+  getPerformanceReport(): string {
+    return this.performanceMonitor.getPerformanceReport();
   }
 
   /**
