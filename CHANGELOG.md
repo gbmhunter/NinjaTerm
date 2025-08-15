@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - Collapsed the two snackbar messages that pop up when a port is automatically reconnected into one.
+- Big performance improvements when receiving lots of RX data. This was mostly achieved by preventing the entire app from re-rendering when data is received, and by removing the use of MobX's "observer" for individual terminal chars. Preventing the entire app from re-rendering was achieved by breaking the high-level app view into smaller components, where those small components where responsible for things such as showing throughput and CPU usage.
 
 ## [5.1.1] - 2025-08-10
 

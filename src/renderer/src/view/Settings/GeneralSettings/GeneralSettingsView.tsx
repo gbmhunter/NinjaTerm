@@ -7,6 +7,7 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import SpeedIcon from '@mui/icons-material/Speed';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 
 import BorderedSection from "src/view/Components/BorderedSection";
 
@@ -237,6 +238,39 @@ ${results.testResults.map(r =>
             Performance tests measure view-specific rendering costs by automatically switching between 
             Terminal and Graphing views. Terminal tests measure text rendering and ANSI processing, 
             while Graphing tests measure chart.js performance and data parsing overhead.
+          </Typography>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* DEVELOPER TOOLS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Developer Tools">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "600px",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
+            Open Chrome Developer Tools to inspect the application, debug JavaScript, analyze performance, 
+            and examine network requests. The dev tools can also be opened by pressing F12.
+          </Typography>
+          
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<DeveloperModeIcon />}
+            onClick={() => app.toggleDevTools()}
+            style={{ marginBottom: "10px", width: "250px" }}
+          >
+            Open Developer Tools
+          </Button>
+
+          <Typography variant="caption" color="text.secondary">
+            Note: Developer tools are available in both development and production builds. 
+            Use them to debug performance issues, inspect React components, and analyze the application.
           </Typography>
         </div>
       </BorderedSection>

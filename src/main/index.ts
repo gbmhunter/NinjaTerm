@@ -480,6 +480,57 @@ ipcMain.handle('shell:open-external', async (event, url: string) => {
   }
 });
 
+// Dev tools IPC handlers
+ipcMain.handle('devtools:open', async () => {
+  try {
+    if (mainWindow && !mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.openDevTools();
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:close', async () => {
+  try {
+    if (mainWindow && mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:toggle', async () => {
+  try {
+    if (mainWindow) {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+        return { success: true, action: 'closed' };
+      } else {
+        mainWindow.webContents.openDevTools();
+        return { success: true, action: 'opened' };
+      }
+    }
+    return { success: false, error: 'Main window not available' };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:is-open', async () => {
+  try {
+    if (mainWindow) {
+      return { success: true, isOpen: mainWindow.webContents.isDevToolsOpened() };
+    }
+    return { success: false, error: 'Main window not available' };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
 // Clean up on app quit
 app.on('before-quit', () => {
   // Close all active serial ports

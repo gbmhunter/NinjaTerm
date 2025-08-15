@@ -712,6 +712,69 @@ export class App {
   }
 
   /**
+   * Open Chrome developer tools.
+   */
+  async openDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      this.snackbar.sendToSnackbar('Developer tools not available in this version.', 'warning');
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.open();
+      if (result.success) {
+        this.snackbar.sendToSnackbar('Developer tools opened', 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to open developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to open developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
+   * Close Chrome developer tools.
+   */
+  async closeDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.close();
+      if (result.success) {
+        this.snackbar.sendToSnackbar('Developer tools closed', 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to close developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to close developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
+   * Toggle Chrome developer tools.
+   */
+  async toggleDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      this.snackbar.sendToSnackbar('Developer tools not available in this version.', 'warning');
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.toggle();
+      if (result.success) {
+        const action = result.action === 'opened' ? 'opened' : 'closed';
+        this.snackbar.sendToSnackbar(`Developer tools ${action}`, 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to toggle developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to toggle developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
    * Install downloaded update and restart the application.
    */
   async installUpdate() {
@@ -837,6 +900,7 @@ export class App {
    * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
    * - Pressing "f" while on the Port Configuration settings.
    * - Pressing F5 to reload the app.
+   * - Pressing F12 to toggle Chrome Developer Tools.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
     // console.log('handleKeyDown() called. event.key=', event.key);
@@ -850,6 +914,14 @@ export class App {
     else if (event.key === 'F5') {
       // F5 is pressed, reload the app
       window.location.reload();
+    }
+    //============================================
+    // F12 DEVELOPER TOOLS SHORTCUT
+    //============================================
+    else if (event.key === 'F12') {
+      // F12 is pressed, toggle developer tools
+      event.preventDefault(); // Prevent default browser behavior
+      await this.toggleDevTools();
     }
     //============================================
     // COPY KEYBOARD SHORTCUT
