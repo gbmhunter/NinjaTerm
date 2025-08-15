@@ -72,7 +72,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
         const frameRate = `${r.avgFrameRate.toFixed(0)}fps`.padEnd(7);
         const cpu = `${r.cpuUsagePercent.toFixed(0)}%`.padEnd(4);
         const health = r.isHealthy ? '✅ OK' : '⚠️ Poor';
-        
+
         return `${testName} | ${targetRate} | ${actualRate} | ${avgProc} | ${frameRate} | ${cpu} | ${health}`;
       }).join('\n');
 
@@ -80,10 +80,10 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
 
       console.log('Setting perf test results to:');
       console.log(summary);
-      
+
       // Set results in MobX store - this will trigger reactive update
       generalSettings.setPerformanceTestResults(summary);
-      
+
       // Also print results to console for debugging
       console.log('Performance Test Results:');
       console.log(summary);
@@ -113,8 +113,6 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
     }
   };
 
-  console.log('REDRAWING');
-
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       {/* =============================================================================== */}
@@ -125,7 +123,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
+            width: "800px",
           }}
         >
           <Tooltip
@@ -178,7 +176,6 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
           }}
         >
           <Tooltip
@@ -227,7 +224,6 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
@@ -276,9 +272,9 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
               severity={generalSettings.performanceTestResults.includes('✅ OK') ? "success" : "warning"}
               sx={{ marginBottom: "16px", maxWidth: "100%", overflow: "auto" }}
             >
-              <Typography variant="body2" component="pre" style={{ 
-                whiteSpace: 'pre', 
-                fontFamily: 'Consolas, "Courier New", monospace', 
+              <Typography variant="body2" component="pre" style={{
+                whiteSpace: 'pre',
+                fontFamily: 'Consolas, "Courier New", monospace',
                 fontSize: '13px',
                 lineHeight: '1.4',
                 overflow: 'auto',
@@ -305,7 +301,6 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
           }}
         >
           <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
