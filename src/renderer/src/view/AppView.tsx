@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import React from 'react';
 
 import { Backdrop, Box, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -88,7 +89,160 @@ const app = new App();
 window.app = app;
 window.SelectionController = SelectionController;
 
-const AppView = observer((props: Props) => {
+// Separate small components to isolate reactive updates
+const ActivityIndicators = observer(({ app }: { app: App }) => (
+  <>
+    <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+      <Box key={app.numBytesTransmitted} className={styles.ledblue}>
+        TX
+      </Box>
+      <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
+        {app.formatRate(app.txRateBps)}
+      </div>
+    </Box>
+    <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+      <Box key={app.numBytesReceived} className={styles.ledyellow}>
+        RX
+      </Box>
+      <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
+        {app.formatRate(app.rxRateBps)}
+      </div>
+    </Box>
+  </>
+));
+
+const CpuIndicator = observer(({ app }: { app: App }) => (
+  <div
+    className={`${styles.onHover} ${styles.centerText}`}
+    style={{
+      backgroundColor: app.cpuUsagePercent > 80 ? '#d32f2f' : app.cpuUsagePercent > 60 ? '#f57c00' : '',
+      padding: '0 5px',
+      width: '80px',
+    }}
+  >
+    CPU {Math.round(app.cpuUsagePercent)}%
+  </div>
+));
+
+const StatusIndicators = observer(({ app }: { app: App }) => (
+  <>
+    <div
+      className={`${styles.onHover} ${styles.centerText}`}
+      onClick={() => {
+        app.setShownMainPane(MainPanes.SETTINGS);
+        app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+      }}
+      style={{
+        backgroundColor: app.settings.rxSettings.localTxEcho ? '#388e3c' : '',
+        padding: '0 5px',
+        width: '100px',
+      }}
+    >
+      {app.settings.rxSettings.localTxEcho ? 'Echo ON' : 'Echo OFF'}
+    </div>
+
+    <div
+      className={`${styles.onHover} ${styles.centerText}`}
+      onClick={() => {
+        app.setShownMainPane(MainPanes.LOGGING);
+      }}
+      style={{
+        backgroundColor: app.logging.isLogging ? '#388e3c' : '',
+        padding: '0 5px',
+        width: '110px',
+      }}
+    >
+      {app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
+    </div>
+
+    <div
+      className={`${styles.onHover} ${styles.centerText}`}
+      onClick={() => {
+        app.setShownMainPane(MainPanes.GRAPHING);
+      }}
+      style={{
+        backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '',
+        padding: '0 5px',
+        width: '120px',
+      }}
+    >
+      {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
+    </div>
+
+    <div
+      className={`${styles.onHover} ${styles.centerText}`}
+      onClick={() => {
+        app.setShownMainPane(MainPanes.SETTINGS);
+        app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+      }}
+      style={{
+        backgroundColor: app.settings.rxSettings.addTimestamps ? '#388e3c' : '',
+        padding: '0 5px',
+        width: '150px',
+      }}
+    >
+      {app.settings.rxSettings.addTimestamps ? 'Timestamps ON' : 'Timestamps OFF'}
+    </div>
+  </>
+));
+
+const DataTypeIndicator = observer(({ app }: { app: App }) => (
+  <div
+    className={`${styles.onHover} ${styles.centerText}`}
+    onClick={() => {
+      app.setShownMainPane(MainPanes.SETTINGS);
+      app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
+    }}
+    style={{ padding: '0 5px', width: '70px' }}
+  >
+    {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
+  </div>
+));
+
+const PortConfigIndicator = observer(({ app }: { app: App }) => (
+  <div
+    className={styles.onHover}
+    onClick={() => {
+      app.setShownMainPane(MainPanes.SETTINGS);
+      app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
+    }}
+    style={{ width: '100px', padding: '0 10px' }}
+  >
+    {app.settings.portConfiguration.shortSerialConfigName}
+  </div>
+));
+
+const PortStatusIndicator = observer(({ app }: { app: App }) => (
+  <div
+    style={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}
+  >
+    {portStateToToolbarStatusProperties[app.portState].text}
+  </div>
+));
+
+const ProgressBackdrop = observer(({ app }: { app: App }) => (
+  <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={app.showCircularProgressModal}>
+    <CircularProgress color="inherit" />
+  </Backdrop>
+));
+
+// Main layout component - only observes layout-related properties
+const MainPaneSelector = observer(({ app }: { app: App }) => {
+  // SELECT CORRECT MAIN PANE
+  if (app.shownMainPane === MainPanes.SETTINGS) {
+    return <SettingsDialog app={app} />;
+  } else if (app.shownMainPane === MainPanes.TERMINAL) {
+    return <TerminalView app={app} />;
+  } else if (app.shownMainPane === MainPanes.GRAPHING) {
+    return <GraphView app={app} />;
+  } else if (app.shownMainPane === MainPanes.LOGGING) {
+    return <LoggingView app={app} />;
+  } else {
+    throw Error(`Unsupported main pane. mainPane=${app.shownMainPane}`);
+  }
+});
+
+const AppView = (props: Props) => {
   useEffect(() => {
     // Initialize the app after it has rendered
     const initFn = async () => {
@@ -97,21 +251,6 @@ const AppView = observer((props: Props) => {
 
     initFn().catch(console.error);
   }, []);
-
-  // SELECT CORRECT MAIN PANE
-  // ==========================================================================
-  let mainPaneComponent;
-  if (app.shownMainPane === MainPanes.SETTINGS) {
-    mainPaneComponent = <SettingsDialog app={app} />;
-  } else if (app.shownMainPane === MainPanes.TERMINAL) {
-    mainPaneComponent = <TerminalView app={app} />;
-  } else if (app.shownMainPane === MainPanes.GRAPHING) {
-    mainPaneComponent = <GraphView app={app} />;
-  } else if (app.shownMainPane === MainPanes.LOGGING) {
-    mainPaneComponent = <LoggingView app={app} />;
-  } else {
-    throw Error(`Unsupported main pane. mainPane=${app.shownMainPane}`);
-  }
 
   // Attach listener to catch key presses over entire app
   // NOTE: keypress is not sufficient, as it does not fire when Backspace is pressed
@@ -249,7 +388,7 @@ const AppView = observer((props: Props) => {
           {/* =================================================================================== */}
           {/* MAIN PANE */}
           {/* =================================================================================== */}
-          {mainPaneComponent}
+          <MainPaneSelector app={app} />
 
           {/* =================================================================================== */}
           {/* BOTTOM APP TOOLBAR */}
@@ -266,132 +405,23 @@ const AppView = observer((props: Props) => {
               height: '25px',
             }}
           >
-            {/* DATA TYPE */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              onClick={() => {
-                // Go to Settings -> RX Settings where the user can change the data type
-                app.setShownMainPane(MainPanes.SETTINGS);
-                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
-              }}
-              style={{ padding: '0 5px', width: '70px' }}
-            >
-              {app.settings.rxSettings.getDataTypeNameForToolbarDisplay()}
-            </div>
+            {/* DATA TYPE - Non-reactive element */}
+            <DataTypeIndicator app={app} />
 
-            {/* LOCAL TX ECHO ON/OFF */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              onClick={() => {
-                app.setShownMainPane(MainPanes.SETTINGS);
-                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
-              }}
-              style={{
-                backgroundColor: app.settings.rxSettings.localTxEcho ? '#388e3c' : '',
-                padding: '0 5px',
-                width: '100px',
-              }}
-            >
-              {app.settings.rxSettings.localTxEcho ? 'Echo ON' : 'Echo OFF'}
-            </div>
+            {/* STATUS INDICATORS - Separated reactive components */}
+            <StatusIndicators app={app} />
 
-            {/* LOGGING ON/OFF */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              onClick={() => {
-                app.setShownMainPane(MainPanes.LOGGING);
-              }}
-              style={{
-                backgroundColor: app.logging.isLogging ? '#388e3c' : '',
-                padding: '0 5px',
-                width: '110px',
-              }}
-            >
-              {app.logging.isLogging ? 'Logging ON' : 'Logging OFF'}
-            </div>
+            {/* TX/RX ACTIVITY INDICATORS - Isolated reactive component */}
+            <ActivityIndicators app={app} />
 
-            {/* GRAPHING ON/OFF */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              onClick={() => {
-                app.setShownMainPane(MainPanes.GRAPHING);
-              }}
-              style={{
-                backgroundColor: app.graphing.graphingEnabled ? '#388e3c' : '',
-                padding: '0 5px',
-                width: '120px',
-              }}
-            >
-              {app.graphing.graphingEnabled ? 'Graphing ON' : 'Graphing OFF'}
-            </div>
+            {/* CPU USAGE INDICATOR - Isolated reactive component */}
+            <CpuIndicator app={app} />
 
-            {/* TIMESTAMPS ON/OFF */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              onClick={() => {
-                // Go to Settings -> RX Settings where the user can change the timestamp settings
-                app.setShownMainPane(MainPanes.SETTINGS);
-                app.settings.setActiveSettingsCategory(SettingsCategories.RX_SETTINGS);
-              }}
-              style={{
-                backgroundColor: app.settings.rxSettings.addTimestamps ? '#388e3c' : '',
-                padding: '0 5px',
-                width: '150px',
-              }}
-            >
-              {app.settings.rxSettings.addTimestamps ? 'Timestamps ON' : 'Timestamps OFF'}
-            </div>
+            {/* PORT CONFIG - Non-reactive, only changes when user modifies settings */}
+            <PortConfigIndicator app={app} />
 
-            {/* TX/RX ACTIVITY INDICATORS WITH RATES */}
-            {/* Use the key prop here to make React consider this a new element every time the number of bytes changes. This will re-trigger the flashing animation as desired. Wrap each indicator in another box, so that the keys don't collide (because they might be the same). */}
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Box key={app.numBytesTransmitted} className={styles.ledblue}>
-                TX
-              </Box>
-              <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
-                {app.formatRate(app.txRateBps)}
-              </div>
-            </Box>
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <Box key={app.numBytesReceived} className={styles.ledyellow}>
-                RX
-              </Box>
-              <div style={{ fontSize: '0.8rem', minWidth: '65px', textAlign: 'left' }}>
-                {app.formatRate(app.rxRateBps)}
-              </div>
-            </Box>
-
-            {/* CPU USAGE INDICATOR */}
-            <div
-              className={`${styles.onHover} ${styles.centerText}`}
-              style={{
-                backgroundColor: app.cpuUsagePercent > 80 ? '#d32f2f' : app.cpuUsagePercent > 60 ? '#f57c00' : '',
-                padding: '0 5px',
-                width: '80px',
-              }}
-            >
-              CPU {Math.round(app.cpuUsagePercent)}%
-            </div>
-
-            {/* PORT CONFIG */}
-            {/* Show port configuration in short hand, e.g. "115200 8n1" */}
-            <div
-              className={styles.onHover}
-              onClick={() => {
-                app.setShownMainPane(MainPanes.SETTINGS);
-                app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
-              }}
-              style={{ width: '100px', padding: '0 10px' }}
-            >
-              {app.settings.portConfiguration.shortSerialConfigName}
-            </div>
-
-            {/* PORT STATE */}
-            <div
-              style={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}
-            >
-              {portStateToToolbarStatusProperties[app.portState].text}
-            </div>
+            {/* PORT STATE - Isolated reactive component */}
+            <PortStatusIndicator app={app} />
           </div>
         </div>
 
@@ -403,12 +433,10 @@ const AppView = observer((props: Props) => {
 
         {/* The backdrop is not in the normal document flow. Shown as modal. Used when we want to indicate to the
         user that we are doing something and block them from clicking on anything (e.g. when opening port) */}
-        <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={app.showCircularProgressModal}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
+        <ProgressBackdrop app={app} />
       </div>
     </ThemeProvider>
   );
-});
+};
 
 export default AppView;

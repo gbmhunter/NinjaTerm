@@ -1,4 +1,5 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, observable, computed } from 'mobx';
+import { ReactElement } from 'react';
 
 import TerminalChar from './SingleTerminalChar';
 
@@ -25,11 +26,19 @@ export default class TerminalRow {
    */
   wasCreatedDueToWrapping = false;
 
+  // Cache for memoized spans to avoid recreation on every render
+  private _spanCache: { spans: ReactElement[]; terminalCharsHash: string } | null = null;
+
   constructor(uniqueRowId: number, wasCreatedDueToWrapping: boolean) {
     this.terminalChars = [];
     this.uniqueRowId = uniqueRowId;
     this.wasCreatedDueToWrapping = wasCreatedDueToWrapping;
-    makeAutoObservable(this);
+    
+    makeAutoObservable(this, {
+      terminalChars: observable.shallow, // Only observe array changes, not individual character changes
+      text: computed,
+      terminalCharsHash: computed,
+    });
   }
 
   /**
@@ -39,7 +48,82 @@ export default class TerminalRow {
    *
    * @returns The raw text of the row.
    */
-  getText(): string {
+  get text(): string {
     return this.terminalChars.map((terminalChar) => terminalChar.char).join('');
+  }
+
+  /**
+   * Computed hash of terminal characters for memoization
+   */
+  get terminalCharsHash(): string {
+    return this.terminalChars.map(char => `${char.char}:${char.className}`).join('|');
+  }
+
+  /**
+   * Memoized span generation to avoid recreating spans on every render
+   */
+  getSpans(terminalId: string, cursorPosition: [number, number], terminalRowCursorIsOn: TerminalRow | null, styles: any): ReactElement[] {
+    const currentHash = this.terminalCharsHash;
+    const isCursorRow = this === terminalRowCursorIsOn;
+    const cacheKey = `${currentHash}:${isCursorRow}:${cursorPosition[1]}`;
+    
+    // Return cached spans if nothing changed
+    if (this._spanCache && this._spanCache.terminalCharsHash === cacheKey) {
+      return this._spanCache.spans;
+    }
+
+    // Generate new spans
+    const spans: ReactElement[] = [];
+    let text = '';
+    let prevClassName = '';
+
+    for (let colIdx = 0; colIdx < this.terminalChars.length; colIdx += 1) {
+      const terminalChar = this.terminalChars[colIdx];
+      let thisCharsClassName = terminalChar.className;
+      
+      // Check if this is the cursor position
+      if (isCursorRow && colIdx === cursorPosition[1]) {
+        thisCharsClassName += ' ' + styles.cursorFocused;
+      }
+
+      if (colIdx === 0) {
+        prevClassName = thisCharsClassName;
+      }
+
+      if (thisCharsClassName !== prevClassName) {
+        // Class name has changed. Dump all existing text into a span
+        spans.push(
+          <span key={spans.length} className={prevClassName}>
+            {text}
+          </span>
+        );
+        text = '';
+        prevClassName = thisCharsClassName;
+      }
+
+      text += terminalChar.char;
+    }
+
+    // Add the last span
+    spans.push(
+      <span key={spans.length} className={prevClassName}>
+        {text}
+      </span>
+    );
+
+    // Cache the result
+    this._spanCache = {
+      spans,
+      terminalCharsHash: cacheKey
+    };
+
+    return spans;
+  }
+
+  /**
+   * Legacy method for backward compatibility
+   */
+  getText(): string {
+    return this.text;
   }
 }

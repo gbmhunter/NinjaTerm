@@ -1,5 +1,3 @@
-import { makeAutoObservable } from 'mobx';
-
 /**
  * Represents a single character in the terminal
  */
@@ -21,6 +19,5 @@ export default class TerminalChar {
     this.char = '';
     this.style = {};
     this.forCursor = false;
-    makeAutoObservable(this);
   }
 }

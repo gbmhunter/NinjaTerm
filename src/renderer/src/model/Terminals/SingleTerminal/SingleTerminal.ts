@@ -1,5 +1,5 @@
 /* eslint-disable no-continue */
-import { autorun, makeAutoObservable, reaction } from 'mobx';
+import { autorun, makeAutoObservable, reaction, computed, observable } from 'mobx';
 import { ListOnScrollProps } from 'react-window';
 import moment from 'moment';
 
@@ -101,8 +101,21 @@ export class SingleTerminal {
   /**
    * The array of terminal rows which should be included in the filtered view
    * due to the filter text. This is a subset of the terminalRows array.
+   * Now implemented as a computed property for better performance.
    */
-  filteredTerminalRows: TerminalRow[] = [];
+  get filteredTerminalRows(): TerminalRow[] {
+    if (this.filterText === '') {
+      return this.terminalRows;
+    }
+    return this.terminalRows.filter((row, rowIdx) => {
+      // The cursor row always passes the filter
+      if (rowIdx === this.cursorPosition[0]) {
+        return true;
+      }
+      // Otherwise, check if the row text contains the filter text
+      return row.text.includes(this.filterText);
+    });
+  }
 
   // True if this RX data parser is just processing text as plain text, i.e.
   // no partial escape code has been detected.
@@ -235,7 +248,10 @@ export class SingleTerminal {
     // Register listener for whenever the number type is changed, and clear the partial number buffer.
     reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
 
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      filteredTerminalRows: computed,
+      terminalRows: observable.shallow, // Only observe array changes, not individual row changes
+    });
   }
 
   //======================================================================
@@ -661,7 +677,7 @@ export class SingleTerminal {
             this.uniqueRowIndexCount += 1;
             // Add to filtered rows if new rows match the filter
             if (this._doesRowPassFilter(this.terminalRows.length - 1)) {
-              this.filteredTerminalRows.push(this.terminalRows[this.terminalRows.length - 1]);
+              // filteredTerminalRows is now computed automatically
             }
           }
         }
@@ -1157,10 +1173,7 @@ export class SingleTerminal {
 
       // The row we are moving off might no longer pass the filter, if it was only
       // passing because the cursor was on it
-      if (!this._doesRowPassFilter(oldRowIdx)) {
-        const idxOfRowToRemove = this.filteredTerminalRows.indexOf(this.terminalRows[oldRowIdx]);
-        this.filteredTerminalRows.splice(idxOfRowToRemove, 1);
-      }
+      // filteredTerminalRows is now computed automatically
 
       const newRow = this.terminalRows[newRowIdx];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
@@ -1202,22 +1215,14 @@ export class SingleTerminal {
       // the filter text (this function uses cursorPosition, so we make sure this
       // code is below the cursorPosition update)
       // We don't need to handle the situation in where it does pass the filter, because
-      // we now the tow already exists in filteredTerminalRows
-      if (!this._doesRowPassFilter(this.cursorPosition[0] - 1)) {
-        const idxOfRowToRemove = this.filteredTerminalRows.indexOf(this.terminalRows[this.cursorPosition[0] - 1]);
-        this.filteredTerminalRows.splice(idxOfRowToRemove, 1);
-      }
+      // filteredTerminalRows is now computed automatically
 
       // If this pushes us past the last existing row, add a new one
       if (this.cursorPosition[0] === this.terminalRows.length) {
         const newRow = new TerminalRow(this.uniqueRowIndexCount, isDueToWrapping);
         this.uniqueRowIndexCount += 1;
         this.terminalRows.push(newRow);
-        // Because we are the end of the terminal rows, we can just add the row to the
-        // end of the filtered terminal rows. This is an optimization which is faster than
-        // using the unique IDs to find the correct position in the filteredTerminalRows array
-        // and this is a very common operation
-        this.filteredTerminalRows.push(newRow);
+        // filteredTerminalRows is now computed automatically
       } else {
         // We need to add this row into the filtered rows array if it's not already
         // in it. Also, because we are not at the end of the terminal rows, we can't
@@ -1452,10 +1457,8 @@ export class SingleTerminal {
     // the time)
     this.setScrollLock(true);
 
-    // Reset the filtered rows to just show the one row
-    // we have created above (but don't clear/reset the
-    // filter)
-    this.filteredTerminalRows = [terminalRow];
+    // filteredTerminalRows is now computed automatically
+    // No need to manually set it since it's based on terminalRows and filterText
 
     // Clear all styles that ANSI escape codes might
     // have applied
@@ -1513,16 +1516,15 @@ export class SingleTerminal {
       this.cursorPosition[1] = 0;
     }
 
-    // Work out how many of the rows we just deleted are visible, and then remove them
-    // from the filtered row indexes array.
+    // filteredTerminalRows is now computed automatically
+    // Calculate how many visible rows were removed for scroll position adjustment
     let numFilteredIndexesToRemove = 0;
     for (let idx = 0; idx < numRowsToRemove; idx += 1) {
       const deletedRow = deletedRows[idx];
-      if (this.filteredTerminalRows.indexOf(deletedRow) !== -1) {
+      if (this.filterText === '' || deletedRow.text.includes(this.filterText)) {
         numFilteredIndexesToRemove += 1;
       }
     }
-    this.filteredTerminalRows.splice(0, numFilteredIndexesToRemove);
 
     // Need to update scroll position for view to use if we are not scroll locked to the bottom. Move the scroll position back the same amount of rows we deleted which were visible, so the user sees the same data on the screen
     // Drift occurs if char size is not an integer number of pixels!
@@ -1565,14 +1567,8 @@ export class SingleTerminal {
 
     // Because the filter text has changed, we need to recheck every single row of
     // data
-    // Clear the rows first, this should be more efficient than removing
-    // them 1 by 1.
-    this.filteredTerminalRows = [];
-    for (let rowIdx = 0; rowIdx < this.terminalRows.length; rowIdx += 1) {
-      if (this._doesRowPassFilter(rowIdx)) {
-        this.filteredTerminalRows.push(this.terminalRows[rowIdx]);
-      }
-    }
+    // filteredTerminalRows is now computed automatically based on filterText
+    // No need to manually rebuild the filtered array
     // We could get smart here and modify the scroll position to try
     // and keep the user in roughly the same "position" as before, i.e.
     // one way to do it would be to:
@@ -1612,47 +1608,21 @@ export class SingleTerminal {
   }
 
   /**
-   * Adds the provided row the the filtered rows array. It is inserted at the correct
-   * position in the array based on it's uniqueRowId. If row already exists in the
-   * filtered rows array, this function does nothing.
-   *
-   * @param terminalRowToInsert The row to insert into the filtered rows array.
+   * No longer needed - filteredTerminalRows is now computed automatically
    */
   _addToFilteredRows(terminalRowToInsert: TerminalRow) {
-    if (this.filteredTerminalRows.indexOf(terminalRowToInsert) === -1) {
-      // The row is not already in the filtered rows array, so we need to insert
-      // it at the correct location. We need to insert it in order given by it's
-      // uniqueRowId. Begin search from the end of the array, as this is where
-      // we'll be normally be doing these sorts of operations (e.g. it will be more
-      // efficient most of the time)
-      for (let idx = this.filteredTerminalRows.length - 1; idx >= 0; idx -= 1) {
-        if (this.filteredTerminalRows[idx].uniqueRowId < terminalRowToInsert.uniqueRowId) {
-          // Insert after this index
-          this.filteredTerminalRows.splice(idx + 1, 0, terminalRowToInsert);
-          return;
-        }
-      }
-    }
+    // This method is no longer needed since filteredTerminalRows is computed
   }
 
   /**
-   * Removes the provided row from the filtered rows array, if it is present.
-   *
-   * @param terminalRowToRemove The row to remove.
+   * No longer needed - filteredTerminalRows is now computed automatically
    */
   _removeFromFilteredRows(terminalRowToRemove: TerminalRow) {
-    const idx = this.filteredTerminalRows.indexOf(terminalRowToRemove);
-    if (idx !== -1) {
-      this.filteredTerminalRows.splice(idx, 1);
-    }
+    // This method is no longer needed since filteredTerminalRows is computed
   }
 
   _addOrRemoveRowFromFilteredRows = (rowIdx: number) => {
-    if (this._doesRowPassFilter(rowIdx)) {
-      this._addToFilteredRows(this.terminalRows[rowIdx]);
-    } else {
-      this._removeFromFilteredRows(this.terminalRows[rowIdx]);
-    }
+    // This method is no longer needed since filteredTerminalRows is computed automatically
   }
 
   getSelectionInfoIfWithinTerminal() {
