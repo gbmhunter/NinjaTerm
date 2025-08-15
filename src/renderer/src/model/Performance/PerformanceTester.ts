@@ -1,6 +1,7 @@
 import { App, MainPanes } from '../App';
 import DataGenerator from './DataGenerator';
 import PerformanceMonitor from './PerformanceMonitor';
+import { DetectionMode } from '../Graphing/Graphing';
 
 /**
  * Performance testing utility to measure NinjaTerm's baseline performance
@@ -24,48 +25,168 @@ export class PerformanceTester {
     const suiteStartTime = Date.now();
     this.results = [];
 
-    // Test different scenarios with specific UI requirements
+    // Test different scenarios with specific UI requirements and setup functions
     const scenarios = [
       {
-        name: 'ASCII Text (1KB/s) - Terminal View',
+        name: 'ASCII Text - 1KB/s',
         bytesPerSecond: 1024,
-        duration: 5000,
+        duration: 8000,
         dataGenerator: () => DataGenerator.generateAsciiData(100, 'mixed'),
         requiredView: 'terminal',
-        description: 'Tests terminal rendering performance with mixed ASCII text'
+        description: 'Tests terminal rendering performance with mixed ASCII text',
+        setup: this.setupTerminalTest.bind(this),
+        teardown: this.teardownTerminalTest.bind(this)
       },
-      // {
-      //   name: 'ANSI Colors (3KB/s) - Terminal View',
-      //   bytesPerSecond: 3072,
-      //   duration: 5000,
-      //   dataGenerator: () => DataGenerator.generateAnsiData(150),
-      //   requiredView: 'terminal',
-      //   description: 'Tests terminal performance with ANSI escape codes and colors'
-      // },
-      // {
-      //   name: 'High Rate ASCII (10KB/s) - Terminal View',
-      //   bytesPerSecond: 10240,
-      //   duration: 3000,
-      //   dataGenerator: () => DataGenerator.generateAsciiData(200, 'random'),
-      //   requiredView: 'terminal',
-      //   description: 'Stress tests terminal at high data rates'
-      // },
-      // {
-      //   name: 'Graphing Data (2KB/s) - Graphing View',
-      //   bytesPerSecond: 2048,
-      //   duration: 5000,
-      //   dataGenerator: () => DataGenerator.generateGraphingData(8), // ~8 points ≈ 80 bytes
-      //   requiredView: 'graphing',
-      //   description: 'Tests graphing performance with y= prefix data'
-      // },
-      // {
-      //   name: 'Plot Commands - Graphing View',
-      //   bytesPerSecond: 1536,
-      //   duration: 6000,
-      //   dataGenerator: () => DataGenerator.generatePlotCommands(1, 2), // Smaller commands
-      //   requiredView: 'graphing',
-      //   description: 'Tests advanced plotting commands and chart rendering'
-      // }
+      {
+        name: 'ANSI Colors - 3KB/s',
+        bytesPerSecond: 3072,
+        duration: 8000,
+        dataGenerator: () => DataGenerator.generateAnsiData(150),
+        requiredView: 'terminal',
+        description: 'Tests terminal performance with ANSI escape codes and colors',
+        setup: this.setupTerminalTest.bind(this),
+        teardown: this.teardownTerminalTest.bind(this)
+      },
+      {
+        name: 'High Rate ASCII - 10KB/s',
+        bytesPerSecond: 10240,
+        duration: 8000,
+        dataGenerator: () => DataGenerator.generateAsciiData(200, 'random'),
+        requiredView: 'terminal',
+        description: 'Stress tests terminal at high data rates',
+        setup: this.setupTerminalTest.bind(this),
+        teardown: this.teardownTerminalTest.bind(this)
+      },
+      {
+        name: 'Plot Commands - 1kB/s (Normal)',
+        bytesPerSecond: 1024,
+        duration: 8000,
+        dataGenerator: () => DataGenerator.generatePlotDataCommands(2), // Only DATA commands during test
+        requiredView: 'graphing',
+        description: 'Tests advanced plotting commands and chart rendering',
+        setup: async (): Promise<TestSetupState> => {
+          const previousView = this.app.shownMainPane;
+          const previousGraphingEnabled = this.app.graphing.graphingEnabled;
+          const previousGraphingMode = this.app.graphing.detectionMode === DetectionMode.BASIC_PREFIX ? 'basic' : 'advanced';
+          const settingsWereOpen = previousView === MainPanes.SETTINGS;
+
+          console.log(`Setting up advanced cmd mode graphing test...`);
+
+          // Enable graphing for chart rendering performance measurement
+          if (!this.app.graphing.graphingEnabled) {
+            this.app.graphing.setGraphingEnabled(true);
+          }
+
+          // Set to advanced cmd mode
+          this.app.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+          // Switch to graphing view
+          this.app.setShownMainPane(MainPanes.GRAPHING);
+
+          // Create plots and traces in setup (like a user would do)
+          const createCommands = [
+            '#PLOT:CREATE,id=plot0,title="Performance Test Plot 0",xlabel="Time",ylabel="Value";\n',
+            '#PLOT:TRACE,plot=plot0,id=trace0,name="Trace 0",color=#ff0000,xtype=timestamp;\n',
+            '#PLOT:CREATE,id=plot1,title="Performance Test Plot 1",xlabel="Time",ylabel="Value";\n',
+            '#PLOT:TRACE,plot=plot1,id=trace1,name="Trace 1",color=#00ff00,xtype=timestamp;\n'
+          ];
+
+          console.log(`Creating ${createCommands.length} plots and traces...`);
+
+          // Send each command to create plots and traces
+          for (const command of createCommands) {
+            const data = new TextEncoder().encode(command);
+            this.app.parseRxData(data);
+          }
+
+          return {
+            previousView,
+            previousGraphingEnabled,
+            previousGraphingMode,
+            settingsWereOpen
+          };
+        },
+        teardown: async (setupState: TestSetupState): Promise<void> => {
+          console.log(`Tearing down advanced cmd mode graphing test...`);
+
+          // Restore graphing mode
+          if (setupState.previousGraphingMode === 'basic') {
+            this.app.graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
+          }
+
+          // Restore graphing state
+          if (!setupState.previousGraphingEnabled && this.app.graphing.graphingEnabled) {
+            this.app.graphing.setGraphingEnabled(false);
+          }
+
+          // Restore previous view
+          this.app.setShownMainPane(setupState.previousView);
+        }
+      },
+      {
+        name: 'Plot Commands - 10kB/s (Fast)',
+        bytesPerSecond: 10240,
+        duration: 8000,
+        dataGenerator: () => DataGenerator.generatePlotDataCommands(2), // Only DATA commands during test
+        requiredView: 'graphing',
+        description: 'Tests advanced plotting commands and chart rendering',
+        setup: async (): Promise<TestSetupState> => {
+          const previousView = this.app.shownMainPane;
+          const previousGraphingEnabled = this.app.graphing.graphingEnabled;
+          const previousGraphingMode = this.app.graphing.detectionMode === DetectionMode.BASIC_PREFIX ? 'basic' : 'advanced';
+          const settingsWereOpen = previousView === MainPanes.SETTINGS;
+
+          console.log(`Setting up advanced cmd mode graphing test...`);
+
+          // Enable graphing for chart rendering performance measurement
+          if (!this.app.graphing.graphingEnabled) {
+            this.app.graphing.setGraphingEnabled(true);
+          }
+
+          // Set to advanced cmd mode
+          this.app.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
+          // Switch to graphing view
+          this.app.setShownMainPane(MainPanes.GRAPHING);
+
+          // Create plots and traces in setup (like a user would do)
+          const createCommands = [
+            '#PLOT:CREATE,id=plot0,title="High Rate Test Plot 0",xlabel="Time",ylabel="Value";\n',
+            '#PLOT:TRACE,plot=plot0,id=trace0,name="High Rate Trace 0",color=#ff0000,xtype=timestamp;\n',
+            '#PLOT:CREATE,id=plot1,title="High Rate Test Plot 1",xlabel="Time",ylabel="Value";\n',
+            '#PLOT:TRACE,plot=plot1,id=trace1,name="High Rate Trace 1",color=#00ff00,xtype=timestamp;\n'
+          ];
+
+          console.log(`Creating ${createCommands.length} plots and traces for high-rate test...`);
+
+          // Send each command to create plots and traces
+          for (const command of createCommands) {
+            const data = new TextEncoder().encode(command);
+            this.app.parseRxData(data);
+          }
+
+          return {
+            previousView,
+            previousGraphingEnabled,
+            previousGraphingMode,
+            settingsWereOpen
+          };
+        },
+        teardown: async (setupState: TestSetupState): Promise<void> => {
+          console.log(`Tearing down advanced cmd mode graphing test...`);
+
+          // Restore graphing mode
+          if (setupState.previousGraphingMode === 'basic') {
+            this.app.graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
+          }
+
+          // Restore graphing state
+          if (!setupState.previousGraphingEnabled && this.app.graphing.graphingEnabled) {
+            this.app.graphing.setGraphingEnabled(false);
+          }
+
+          // Restore previous view
+          this.app.setShownMainPane(setupState.previousView);
+        }
+      }
     ];
 
     for (const scenario of scenarios) {
@@ -104,36 +225,22 @@ export class PerformanceTester {
     dataGenerator: () => Uint8Array;
     requiredView: string;
     description: string;
+    setup: () => Promise<TestSetupState>;
+    teardown: (setupState: TestSetupState) => Promise<void>;
   }): Promise<PerformanceTestResult> {
 
     // Reset performance monitor
     this.app.performanceMonitor.reset();
 
-    // Store the current view and close settings if open
-    const previousView = this.app.shownMainPane;
-    if (previousView === MainPanes.SETTINGS) {
-      console.log(`   🚪 Closing Settings dialog to prevent MUI component render overhead`);
-    }
+    // Run test-specific setup
+    const setupState = await scenario.setup();
 
-    // Switch to the appropriate view for this test
-    if (scenario.requiredView === 'terminal') {
-      this.app.setShownMainPane(MainPanes.TERMINAL);
-      console.log(`   📺 Switched to Terminal view for accurate rendering measurements`);
-    } else if (scenario.requiredView === 'graphing') {
-      this.app.setShownMainPane(MainPanes.GRAPHING);
-      console.log(`   📈 Switched to Graphing view for accurate chart rendering measurements`);
-      // Enable graphing for these tests
-      if (!this.app.graphing.graphingEnabled) {
-        this.app.graphing.setGraphingEnabled(true);
-        console.log(`   ✅ Enabled graphing for this test`);
-      }
-    }
-
-    // Wait a moment for view to stabilize
+    // Wait a moment for view and settings to stabilize
     await this.delay(500);
 
-    // Clear terminal to start fresh
+    // Clear terminal and graphing data to start fresh
     this.app.terminals.txRxTerminal.clear();
+    this.app.graphing.resetData();
 
     const startTime = Date.now();
     let totalBytesProcessed = 0;
@@ -190,9 +297,8 @@ export class PerformanceTester {
       ? Math.min(...frameRates)
       : 60;
 
-    // Restore the previous view
-    this.app.setShownMainPane(previousView);
-    console.log(`   📺 Restored view to ${MainPanes[previousView]}`);
+    // Run test-specific teardown to restore state
+    await scenario.teardown(setupState);
 
     return {
       scenarioName: scenario.name,
@@ -332,6 +438,102 @@ export class PerformanceTester {
   }
 
   /**
+   * Setup for terminal tests - disable graphing and ensure terminal view
+   */
+  private async setupTerminalTest(): Promise<TestSetupState> {
+    const previousView = this.app.shownMainPane;
+    const previousGraphingEnabled = this.app.graphing.graphingEnabled;
+    const settingsWereOpen = previousView === MainPanes.SETTINGS;
+
+    console.log(`   🔧 Setting up terminal test...`);
+
+    // Disable graphing for pure terminal performance measurement
+    if (this.app.graphing.graphingEnabled) {
+      this.app.graphing.setGraphingEnabled(false);
+      console.log(`   📊 Disabled graphing for terminal test`);
+    }
+
+    // Switch to terminal view
+    this.app.setShownMainPane(MainPanes.TERMINAL);
+    console.log(`   📺 Switched to Terminal view`);
+
+    if (settingsWereOpen) {
+      console.log(`   🚪 Closed Settings dialog to prevent MUI component render overhead`);
+    }
+
+    return {
+      previousView,
+      previousGraphingEnabled,
+      settingsWereOpen
+    };
+  }
+
+  /**
+   * Teardown for terminal tests - restore previous state
+   */
+  private async teardownTerminalTest(setupState: TestSetupState): Promise<void> {
+    console.log(`   🔧 Tearing down terminal test...`);
+
+    // Restore graphing state
+    if (setupState.previousGraphingEnabled && !this.app.graphing.graphingEnabled) {
+      this.app.graphing.setGraphingEnabled(true);
+      console.log(`   📊 Restored graphing to enabled state`);
+    }
+
+    // Restore previous view
+    this.app.setShownMainPane(setupState.previousView);
+    console.log(`   📺 Restored view to ${MainPanes[setupState.previousView]}`);
+  }
+
+  /**
+   * Setup for graphing tests - enable graphing and ensure graphing view
+   */
+  private async setupGraphingTest(): Promise<TestSetupState> {
+    const previousView = this.app.shownMainPane;
+    const previousGraphingEnabled = this.app.graphing.graphingEnabled;
+    const settingsWereOpen = previousView === MainPanes.SETTINGS;
+
+    console.log(`   🔧 Setting up graphing test...`);
+
+    // Enable graphing for chart rendering performance measurement
+    if (!this.app.graphing.graphingEnabled) {
+      this.app.graphing.setGraphingEnabled(true);
+      console.log(`   📊 Enabled graphing for graphing test`);
+    }
+
+    // Switch to graphing view
+    this.app.setShownMainPane(MainPanes.GRAPHING);
+    console.log(`   📈 Switched to Graphing view for chart rendering measurements`);
+
+    if (settingsWereOpen) {
+      console.log(`   🚪 Closed Settings dialog to prevent MUI component render overhead`);
+    }
+
+    return {
+      previousView,
+      previousGraphingEnabled,
+      settingsWereOpen
+    };
+  }
+
+  /**
+   * Teardown for graphing tests - restore previous state
+   */
+  private async teardownGraphingTest(setupState: TestSetupState): Promise<void> {
+    console.log(`   🔧 Tearing down graphing test...`);
+
+    // Restore graphing state
+    if (!setupState.previousGraphingEnabled && this.app.graphing.graphingEnabled) {
+      this.app.graphing.setGraphingEnabled(false);
+      console.log(`   📊 Restored graphing to disabled state`);
+    }
+
+    // Restore previous view
+    this.app.setShownMainPane(setupState.previousView);
+    console.log(`   📺 Restored view to ${MainPanes[setupState.previousView]}`);
+  }
+
+  /**
    * Utility to wait/delay execution
    */
   private delay(ms: number): Promise<void> {
@@ -340,6 +542,13 @@ export class PerformanceTester {
 }
 
 // Type definitions
+export interface TestSetupState {
+  previousView: MainPanes;
+  previousGraphingEnabled: boolean;
+  previousGraphingMode?: 'basic' | 'advanced';
+  settingsWereOpen: boolean;
+}
+
 export interface PerformanceTestResult {
   scenarioName: string;
   targetBytesPerSecond: number;

@@ -313,7 +313,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
             size="large"
             startIcon={<DeveloperModeIcon />}
             onClick={() => app.toggleDevTools()}
-            style={{ marginBottom: "10px", width: "250px" }}
+            style={{ marginBottom: "10px", width: "300px" }}
           >
             Open Developer Tools
           </Button>

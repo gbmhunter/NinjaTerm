@@ -302,7 +302,6 @@ class Graphing {
    * @returns
    */
   parseData = (data: Uint8Array) => {
-    // console.log('parseData() called.');
     if (!this.graphingEnabled) {
       return;
     }
@@ -310,9 +309,7 @@ class Graphing {
     for (let i = 0; i < data.length; i++) {
       // Convert byte into a character and add to receive buffer
       let char = String.fromCharCode(data[i]);
-      // console.log('char: ' + char.charCodeAt(0));
       this.rxDataBuffer += char;
-      // console.log('rxDataBuffer: ' + this.rxDataBuffer);
 
       // Both modes use processing trigger to trigger processing
       const triggerChar = this.getTriggerChar();
