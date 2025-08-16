@@ -2,7 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { closeSnackbar } from 'notistack';
-import ReactGA from 'react-ga4';
+// import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
 
 // Import package.json to read out the version number
@@ -352,7 +352,7 @@ export class App {
       this.setShowCircularProgressModal(false);
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
-      ReactGA.event('port_open');
+      // ReactGA.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {
@@ -800,23 +800,23 @@ export class App {
   parseRxData(rxData: Uint8Array) {
     // Start performance monitoring for data processing
     this.performanceMonitor.startTiming('dataProcessing');
-    
+
     // Process data immediately
     this.performanceMonitor.startTiming('terminalRender');
     this.terminals.txRxTerminal.parseData(rxData, DataDirection.RX);
     this.terminals.rxTerminal.parseData(rxData, DataDirection.RX);
     this.performanceMonitor.endTiming('terminalRender');
-    
+
     this.performanceMonitor.startTiming('graphingProcessing');
     this.graphing.parseData(rxData);
     this.performanceMonitor.endTiming('graphingProcessing');
-    
+
     this.logging.handleRxData(rxData);
-    
+
     // End performance monitoring and record metrics
     const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
     this.performanceMonitor.recordDataProcessing(rxData.length, totalProcessingTime);
-    
+
     // Update stats
     this.numBytesReceived += rxData.length;
     this.recordRxDataPoint(rxData.length);

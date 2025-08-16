@@ -7,6 +7,16 @@ import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
+import Analytics from 'electron-google-analytics4';
+
+// Initialize Google Analytics 4
+// Secret key is created in Google Analytics web console, see https://www.npmjs.com/package/electron-google-analytics4#secretkey-issuance-guide for more information.
+const analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+
+// Note: result = await ... status always seems to be 204 even if I use an invalid secret key, so
+// we can't use that to check if the event was sent successfully.
+analytics.event('app_start');
+
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
 const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
 
