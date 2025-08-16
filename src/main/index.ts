@@ -12,8 +12,11 @@ import Analytics from 'electron-google-analytics4';
 // Initialize Google Analytics 4
 // Secret key is created in Google Analytics web console, see https://www.npmjs.com/package/electron-google-analytics4#secretkey-issuance-guide for more information.
 let analytics: Analytics | null = null;
-if (process.env.NODE_ENV === 'production') {
+if (app.isPackaged) {
+  console.log('Initializing Google Analytics 4 in production');
   analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+} else {
+  console.log('Detected dev. environment, not initializing Google Analytics.');
 }
 
 // Note: result = await ... status always seems to be 204 even if I use an invalid secret key, so
@@ -26,7 +29,7 @@ emitEventIfInProd('app_start');
  * @param event
  */
 function emitEventIfInProd(event: string) {
-  if (process.env.NODE_ENV === 'production') {
+  if (app.isPackaged) {
     analytics?.event(event);
   }
 }
