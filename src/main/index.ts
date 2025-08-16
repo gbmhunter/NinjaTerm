@@ -11,11 +11,25 @@ import Analytics from 'electron-google-analytics4';
 
 // Initialize Google Analytics 4
 // Secret key is created in Google Analytics web console, see https://www.npmjs.com/package/electron-google-analytics4#secretkey-issuance-guide for more information.
-const analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+let analytics: Analytics | null = null;
+if (process.env.NODE_ENV === 'production') {
+  analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+}
 
 // Note: result = await ... status always seems to be 204 even if I use an invalid secret key, so
 // we can't use that to check if the event was sent successfully.
-analytics.event('app_start');
+emitEventIfInProd('app_start');
+
+/**
+ * Send an event to Google Analytics 4 if in production.
+ * Does nothing in development, so prevent spamming GA with events -- for example the unit tests/Playwright e2e tests would create many false events if allowed in development.
+ * @param event
+ */
+function emitEventIfInProd(event: string) {
+  if (process.env.NODE_ENV === 'production') {
+    analytics?.event(event);
+  }
+}
 
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
 const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
@@ -536,6 +550,15 @@ ipcMain.handle('devtools:is-open', async () => {
       return { success: true, isOpen: mainWindow.webContents.isDevToolsOpened() };
     }
     return { success: false, error: 'Main window not available' };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('analytics:event', async (event, eventName: string) => {
+  try {
+    emitEventIfInProd(eventName);
+    return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
   }

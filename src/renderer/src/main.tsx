@@ -1,17 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import ReactGA from "react-ga4";
 
 import AppView from './view/AppView';
-
-// Google Analytics. Only initialize in production, otherwise things like
-// Playwright tests can spam GA and skew data
-// if (import.meta.env.PROD) {
-//   ReactGA.initialize("G-SDMMGN71FN");
-// } else {
-//   console.log('Detected dev. environment, not initializing Google Analytics.');
-// }
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

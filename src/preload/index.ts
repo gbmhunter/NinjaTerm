@@ -49,7 +49,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updater: {
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
     quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
-    
+
     // Event listeners for update events
     onUpdateAvailable: (callback: (updateInfo: any) => void) => {
       ipcRenderer.on('update-available', (event, updateInfo) => callback(updateInfo));
@@ -66,7 +66,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onUpdateDownloaded: (callback: (updateInfo: any) => void) => {
       ipcRenderer.on('update-downloaded', (event, updateInfo) => callback(updateInfo));
     },
-    
+
     // Remove listeners
     removeAllUpdateListeners: () => {
       ipcRenderer.removeAllListeners('update-available');
@@ -88,6 +88,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     close: () => ipcRenderer.invoke('devtools:close'),
     toggle: () => ipcRenderer.invoke('devtools:toggle'),
     isOpen: () => ipcRenderer.invoke('devtools:is-open')
+  },
+
+  // Analytics operations
+  analytics: {
+    event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
   }
 });
 
@@ -127,6 +132,9 @@ export interface ElectronAPI {
     close(): Promise<{ success: boolean; error?: string }>;
     toggle(): Promise<{ success: boolean; action?: 'opened' | 'closed'; error?: string }>;
     isOpen(): Promise<{ success: boolean; isOpen?: boolean; error?: string }>;
+  };
+  analytics: {
+    event(eventName: string): Promise<{ success: boolean; error?: string }>;
   };
 }
 

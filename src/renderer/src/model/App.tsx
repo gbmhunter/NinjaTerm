@@ -352,7 +352,7 @@ export class App {
       this.setShowCircularProgressModal(false);
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
-      // ReactGA.event('port_open');
+      await window.electronAPI.analytics.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {
