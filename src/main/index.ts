@@ -34,11 +34,6 @@ function emitEventIfInProd(event: string) {
   }
 }
 
-const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
-
-// The max. number of bytes to batch before sending to the renderer.
-const RX_DATA_BATCH_MAX_SIZE_BYTES = 16384;
-
 // Set maximum delay to 50ms for any received char before sending to renderer
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -276,27 +271,15 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
         const isFirstChar = batch.length === 0;
         batch.push(data);
 
-        // If this is the first character in a new batch, start the 20ms timer
+        // If this is the first character in a new batch, start the timer
         if (isFirstChar) {
-          // Start timer for 20ms after receiving the first char
           const timeout = setTimeout(() => {
             sendBatchedData(portPath);
             batchTimeouts.delete(portPath);
           }, RX_DATA_BATCH_TIMEOUT_MS);
           batchTimeouts.set(portPath, timeout);
-        } else {
-          // For subsequent chars, check if batch is getting too large
-          if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
-            // Clear the existing timeout and send large batches immediately
-            const existingTimeout = batchTimeouts.get(portPath);
-            if (existingTimeout) {
-              clearTimeout(existingTimeout);
-              batchTimeouts.delete(portPath);
-            }
-            sendBatchedData(portPath);
-          }
-          // Otherwise, just accumulate data and let the timer handle it
         }
+        // For subsequent data, just accumulate and let the timer handle it
       }
     });
 
