@@ -101,6 +101,12 @@ Both recharts and chart.js was trialed for graphing data coming in on a serial p
 
 chart.js was chosen as it offered much better performance when the data update rate was fast. rechart could handle about 100 points, any more than that at the render time per new point started to take more than 50ms. chart.js can re-render 1000 points and stay under that limit.
 
+## Performance
+
+NinjaTerm can easily handle 50kB/s of incoming serial data when maximized on a 1920x1080 screen. Reported "CPU usage" inside the app (busy time of the main javascript event loop) is around 50% when this is happening on my machine.
+
+Make sure that often updating React components are in their own MobX `observer`s. Prior to doing this, I had things like the throughput, CPU usage, and TX/RX activity bulbs (all in the bottom status bar) directly in the main AppView component. This causes the entire app to re-render when any of these values change, at caused noticeable performance problems at 10kB/s.
+
 ## Fonts
 
 FontCreator was used to create the special `NinjaTerm` font. It is based of Consolas. The FontCreator project file is at `src/fonts/NinjaTerm.fcp` and the generated font files are `NinjaTerm-Regular.woff` and `NinjaTerm-Regular.woff2`.
