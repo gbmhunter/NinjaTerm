@@ -18,9 +18,9 @@ import { PortState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
-import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
+import { SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
-import { LastUsedSerialPort, AppDataManager } from './AppDataManager/AppDataManager';
+import { AppDataManager } from './AppDataManager/AppDataManager';
 import { PortInfo } from '@serialport/bindings-interface';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
@@ -30,10 +30,7 @@ declare global {
     insert(index: number, string: string): string;
   }
 
-  // We save the created app instance to window.app (done in index.tsx) so that
-  // the test framework Playwright can access it. One use case
-  // is to insert data, as it's hard to mock the async serial
-  // read bytes function
+  // We save the created app instance to window.app (done in index.tsx) so that the Playwright e2e tests can access it. Sometimes it's just easier to verify things using the code rather than interacting with the UI.
   interface Window {
     app: App;
   }
@@ -134,9 +131,9 @@ export class App {
 
   profileManager: AppDataManager;
 
-  selectionController: SelectionController = new SelectionController();
+  // selectionController: SelectionController = new SelectionController();
 
-  SelectionController = SelectionController;
+  // SelectionController = SelectionController;
 
   showCircularProgressModal = false;
 

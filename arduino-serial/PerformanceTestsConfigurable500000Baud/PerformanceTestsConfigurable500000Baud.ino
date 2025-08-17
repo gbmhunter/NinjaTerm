@@ -15,7 +15,9 @@ int charsPerTransmission = 1; // Number of characters to send each time
 bool rateSelected = false;
 
 void setup() {
-  Serial.begin(115200);
+  // Used to be 115200, but this maxs out at about 12kBps.
+  // 500000 should be ok with the Uno, see https://arduino.stackexchange.com/questions/296/how-high-of-a-baud-rate-can-i-go-without-errors
+  Serial.begin(500000);
   Serial.println("NinjaTerm Bandwidth Test");
   Serial.println("Select transmission rate:");
   Serial.println("1. 1kBps (1 char per ms)");

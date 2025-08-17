@@ -37,6 +37,22 @@ interface Props {
 }
 
 /**
+ * Separate component for this indicator for performance reasons. It re-renders a lot, and we don't want to re-render the entire graphing view when it does.
+ */
+const NumBytesInBufferIndicator = observer(({ app }: { app: App }) => (
+  <Tooltip
+    title="The number of bytes currently in the graphing buffer. This is the number of bytes that have been received but not yet processed. They will be processed (graph information extracted) when the processing trigger is received."
+    followCursor
+    arrow
+    placement="right"
+  >
+    <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+      Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
+    </div>
+  </Tooltip>
+));
+
+/**
  * The view for the graphing pane.
  */
 export default observer((props: Props) => {
@@ -253,23 +269,7 @@ export default observer((props: Props) => {
                 sx={{ width: "200px" }}
               />
             </Tooltip>
-            {/* ============================================================== */}
-            {/* NUM. BYTES IN BUFFER */}
-            {/* ============================================================== */}
-            <Tooltip
-              title={
-                app.graphing.detectionMode === DetectionMode.ADVANCED_CMD
-                  ? "The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when a command terminator (;) is received."
-                  : "The number of bytes currently in the buffer. This is the number of bytes that have been received but not yet processed. They will be processed when the processing trigger is received."
-              }
-              followCursor
-              arrow
-              placement="right"
-            >
-              <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
-              </div>
-            </Tooltip>
+            <NumBytesInBufferIndicator app={app} />
           </div>
           {/* ============================================================== */}
           {/* MAX NUM. DATA POINTS */}
