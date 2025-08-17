@@ -1,10 +1,13 @@
-import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert } from "@mui/material";
 import { observer } from "mobx-react-lite";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
-import { App } from "src/model/App";
+import { App, MainPanes } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
+import SpeedIcon from '@mui/icons-material/Speed';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 
 import BorderedSection from "src/view/Components/BorderedSection";
 
@@ -16,6 +19,7 @@ interface Props {
 function GeneralSettingsView(props: Props) {
   const { generalSettings, app } = props;
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleOpenConfirmDialog = () => {
     setOpenConfirmDialog(true);
@@ -30,6 +34,85 @@ function GeneralSettingsView(props: Props) {
     handleCloseConfirmDialog();
   };
 
+  /**
+   * This function is responsible for running the performance tests and
+   * displaying the results.
+   */
+  const handleRunPerformanceTest = async () => {
+    console.log('handleRunPerformanceTest() called.');
+    generalSettings.setIsRunningPerformanceTest(true);
+    generalSettings.setPerformanceTestResults(null);
+
+    try {
+      const results = await app.runPerformanceTests();
+      // Fake results for now
+      // const results = {
+      //   summary: {
+      //     overallHealthy: true,
+      //     avgProcessingTime: 10,
+      //     avgFrameRate: 60,
+      //     maxDataRate: 1024,
+      //     bottlenecks: [],
+      //   },
+      //   recommendations: [],
+      //   testResults: []
+      // };
+
+      // Format results as a compact table
+      const tableHeader = `Performance Test Results:
+
+${'Test'.padEnd(30)} | ${'Target'.padEnd(8)} | ${'Actual'.padEnd(8)} | ${'Proc'.padEnd(7)} | ${'FPS'.padEnd(7)} | ${'CPU'.padEnd(4)} | Status
+${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'-'.repeat(7)} | ${'-'.repeat(4)} | ------`;
+
+      const tableRows = results.testResults.map(r => {
+        const testName = r.scenarioName.replace(' - Terminal View', '').replace(' - Graphing View', '').padEnd(30);
+        const targetRate = `${(r.targetBytesPerSecond / 1024).toFixed(1)}KB/s`.padEnd(8);
+        const actualRate = `${(r.actualBytesPerSecond / 1024).toFixed(1)}KB/s`.padEnd(8);
+        const avgProc = `${r.avgProcessingTimeMs.toFixed(1)}ms`.padEnd(7);
+        const frameRate = `${r.avgFrameRate.toFixed(0)}fps`.padEnd(7);
+        const cpu = `${r.cpuUsagePercent.toFixed(0)}%`.padEnd(4);
+        const health = r.isHealthy ? '✅ OK' : '⚠️ Poor';
+
+        return `${testName} | ${targetRate} | ${actualRate} | ${avgProc} | ${frameRate} | ${cpu} | ${health}`;
+      }).join('\n');
+
+      const summary = `${tableHeader}\n${tableRows}`;
+
+      console.log('Setting perf test results to:');
+      console.log(summary);
+
+      // Set results in MobX store - this will trigger reactive update
+      generalSettings.setPerformanceTestResults(summary);
+
+      // Also print results to console for debugging
+      console.log('Performance Test Results:');
+      console.log(summary);
+
+      // Scroll to results after a short delay to ensure they're rendered
+      setTimeout(() => {
+        console.log('Attempting to scroll to results...');
+        resultsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 100);
+    } catch (error) {
+      const errorMessage = `Error running performance tests: ${error}`;
+      generalSettings.setPerformanceTestResults(errorMessage);
+      console.error('Performance Test Error:', error);
+
+      // Scroll to error results as well
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }, 100);
+    } finally {
+      generalSettings.setIsRunningPerformanceTest(false);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "start" }}>
       {/* =============================================================================== */}
@@ -40,7 +123,7 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
+            width: "800px",
           }}
         >
           <Tooltip
@@ -93,7 +176,6 @@ function GeneralSettingsView(props: Props) {
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "600px",
           }}
         >
           <Tooltip
@@ -131,6 +213,115 @@ function GeneralSettingsView(props: Props) {
               : "Automatic updates are disabled. Click the button above to manually check for updates."
             }
           </div>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* PERFORMANCE TESTING */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Performance Testing">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
+            Run comprehensive performance tests to measure data processing speed, rendering performance,
+            and identify bottlenecks. Tests automatically switch between Terminal and Graphing views
+            for accurate measurements of view-specific rendering performance.
+          </Typography>
+
+          <div style={{ display: "flex", gap: "12px", marginBottom: "10px", flexDirection: "column" }}>
+            <Button
+              variant="outlined"
+              size="medium"
+              startIcon={<SpeedIcon />}
+              onClick={handleRunPerformanceTest}
+              disabled={generalSettings.isRunningPerformanceTest}
+              style={{ width: "300px" }}
+            >
+              {generalSettings.isRunningPerformanceTest ? "Running Tests..." : "Run Performance Tests"}
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="medium"
+              startIcon={<AssessmentIcon />}
+              onClick={() => {
+                const report = app.getPerformanceReport();
+                generalSettings.setPerformanceTestResults(report);
+              }}
+              style={{ width: "300px" }}
+            >
+              Show Current Metrics
+            </Button>
+          </div>
+
+          {generalSettings.isRunningPerformanceTest && (
+            <Alert severity="info" sx={{ marginBottom: "16px" }}>
+              Running performance tests... This will take about 30 seconds and will automatically
+              switch between Terminal and Graphing views to measure rendering performance accurately.
+              The Settings dialog will be closed during testing to prevent MUI component render overhead.
+            </Alert>
+          )}
+
+          {generalSettings.performanceTestResults && (
+            <Alert
+              ref={resultsRef}
+              severity={generalSettings.performanceTestResults.includes('✅ OK') ? "success" : "warning"}
+              sx={{ marginBottom: "16px", maxWidth: "100%", overflow: "auto" }}
+            >
+              <Typography variant="body2" component="pre" style={{
+                whiteSpace: 'pre',
+                fontFamily: 'Consolas, "Courier New", monospace',
+                fontSize: '13px',
+                lineHeight: '1.4',
+                overflow: 'auto',
+                margin: 0
+              }}>
+                {generalSettings.performanceTestResults}
+              </Typography>
+            </Alert>
+          )}
+
+          <Typography variant="caption" color="text.secondary">
+            Performance tests measure view-specific rendering costs by automatically switching between
+            Terminal and Graphing views. Terminal tests measure text rendering and ANSI processing,
+            while Graphing tests measure chart.js performance and data parsing overhead.
+          </Typography>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* DEVELOPER TOOLS */}
+      {/* =============================================================================== */}
+      <BorderedSection title="Developer Tools">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: "16px" }}>
+            Open Chrome Developer Tools to inspect the application, debug JavaScript, analyze performance,
+            and examine network requests. The dev tools can also be opened by pressing F12.
+          </Typography>
+
+          <Button
+            variant="outlined"
+            size="large"
+            startIcon={<DeveloperModeIcon />}
+            onClick={() => app.toggleDevTools()}
+            style={{ marginBottom: "10px", width: "300px" }}
+          >
+            Open Developer Tools
+          </Button>
+
+          <Typography variant="caption" color="text.secondary">
+            Note: Developer tools are available in both development and production builds.
+            Use them to debug performance issues, inspect React components, and analyze the application.
+          </Typography>
         </div>
       </BorderedSection>
 

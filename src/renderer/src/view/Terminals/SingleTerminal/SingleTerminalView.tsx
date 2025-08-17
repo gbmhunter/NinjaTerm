@@ -1,6 +1,6 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
+import React, { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -31,64 +31,30 @@ export default observer((props: Props) => {
 
   const reactWindowRef = useRef<FixedSizeList>(null);
 
-  const Row = observer((rowProps: RowProps) => {
+  const Row = React.memo(observer((rowProps: RowProps) => {
     const { data, index, style } = rowProps;
     const terminalRowToRender = data[index];
-    // const terminalRow = terminal.terminalRows[terminalRowIdx];
     const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
 
-    // Only create spans if we need to change style, because creating
-    // a span per char is very performance intensive
-    const spans: ReactElement[] = [];
-    let text = '';
-    let prevClassName = '';
-
-    for (let colIdx = 0; colIdx < terminalRowToRender.terminalChars.length; colIdx += 1) {
-      const terminalChar = terminalRowToRender.terminalChars[colIdx];
-      let thisCharsClassName = terminalChar.className;
-      // Check if this is the row and column position that the cursor
-      // is sitting on. For the row, we do an object comparison between
-      // the terminalRows and filteredTerminalRows array to make sure
-      // they are the same
-      if (terminalRowToRender === terminalRowCursorIsOn && colIdx === terminal.cursorPosition[1]) {
-        // Found the cursor position!
-        if (terminal.isFocused) {
-          thisCharsClassName += ' ' + styles.cursorFocused;
-        } else {
-          thisCharsClassName += ' ' + styles.cursorUnfocused;
-        }
-      }
-
-      if (colIdx === 0) {
-        // First char in row, so set the prev class name
-        // equal to this one so we don't create a new span
-        // below
-        prevClassName = thisCharsClassName;
-      }
-
-      if (thisCharsClassName !== prevClassName) {
-        // Class name has changed. Dump all existing text into a span
-        // and reset the text buffer
-        spans.push(
-          <span key={spans.length} className={prevClassName}>
-            {text}
-          </span>
-        );
-        text = '';
-        prevClassName = thisCharsClassName;
-      }
-
-      text += terminalChar.char;
-    }
-
-    // Add the last span. This will always at least contain
-    // the last char in the row, maybe more previous ones if the
-    // class name hasn't changed
-    spans.push(
-      <span key={spans.length} className={prevClassName}>
-        {text}
-      </span>
-    );
+    // Use memoized span generation from TerminalRow
+    const spans = useMemo(() => {
+      // Determine cursor class
+      const cursorClass = terminal.isFocused ? styles.cursorFocused : styles.cursorUnfocused;
+      const stylesWithCursor = { ...styles, cursorFocused: cursorClass };
+      
+      return terminalRowToRender.getSpans(
+        terminal.id,
+        terminal.cursorPosition,
+        terminalRowCursorIsOn,
+        stylesWithCursor
+      );
+    }, [
+      terminalRowToRender.terminalCharsHash,
+      terminal.cursorPosition[0],
+      terminal.cursorPosition[1],
+      terminal.isFocused,
+      terminalRowCursorIsOn?.uniqueRowId
+    ]);
 
     // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal
     // ID because there could be multiple terminals on the page (all with their own row-1, row-2, e.t.c)
@@ -99,7 +65,7 @@ export default observer((props: Props) => {
         {spans}
       </div>
     );
-  });
+  }));
 
   // Run this after every render, even though we only need to do it if
   // a new row has been added. It's too computationally expensive to

@@ -44,6 +44,8 @@
     "domcontentloaded",
     "gbmhunter",
     "Kofi",
+    "ledblue",
+    "ledyellow",
     "mbedded",
     "microcontroller",
     "mred",
@@ -67,7 +69,10 @@
     "vitest",
     "wicg",
     "x1B",
-    "XTAL"
+    "xlabel",
+    "XTAL",
+    "xtype",
+    "ylabel"
   ],
   "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -9,7 +9,7 @@ export class GraphingSettingsData {
    */
   graphingEnabled = false;
 
-  bufferDelimiter = 'LF (\\n)';
+  processingTrigger = 'LF (\\n)';
 
   /**
    * The maximum size of the receive buffer before it is cleared.
@@ -52,4 +52,12 @@ export class GraphingSettingsData {
   yAxisRangeMax = '100';
 
   xVarUnit = 's';
+
+  /**
+   * The detection mode determines how graphing data is parsed.
+   * 'Basic Prefix Mode': Uses processing triggers and user settable prefix (e.g. y=)
+   * 'Advanced Cmd Mode': Uses #PLOT: commands with ; termination. Data is still cleared on
+   * processing trigger.
+   */
+  detectionMode = 'Basic Prefix Mode';
 }

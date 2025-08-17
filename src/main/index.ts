@@ -1,13 +1,38 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
 import * as path from 'path';
 import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
+import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
-const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
-const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
+import Analytics from 'electron-google-analytics4';
+
+// Initialize Google Analytics 4
+// Secret key is created in Google Analytics web console, see https://www.npmjs.com/package/electron-google-analytics4#secretkey-issuance-guide for more information.
+let analytics: Analytics | null = null;
+if (app.isPackaged) {
+  console.log('Initializing Google Analytics 4 in production');
+  analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+} else {
+  console.log('Detected dev. environment, not initializing Google Analytics.');
+}
+
+// Note: result = await ... status always seems to be 204 even if I use an invalid secret key, so
+// we can't use that to check if the event was sent successfully.
+emitEventIfInProd('app_start');
+
+/**
+ * Send an event to Google Analytics 4 if in production.
+ * Does nothing in development, so prevent spamming GA with events -- for example the unit tests/Playwright e2e tests would create many false events if allowed in development.
+ * @param event
+ */
+function emitEventIfInProd(event: string) {
+  if (app.isPackaged) {
+    analytics?.event(event);
+  }
+}
 
 // Set maximum delay to 50ms for any received char before sending to renderer
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
@@ -108,6 +133,10 @@ function createWindow(): void {
 // This method will be called when Electron has finished initialization
 app.whenReady().then(() => {
   createWindow();
+
+  installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
+    .then((ext) => console.log(`Added Extension:  ${ext.name}`))
+    .catch((err) => console.log('An error occurred: ', err));
 
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds
@@ -242,27 +271,15 @@ ipcMain.handle('serial:open-port', async (event, portPath: string, options: any)
         const isFirstChar = batch.length === 0;
         batch.push(data);
 
-        // If this is the first character in a new batch, start the 20ms timer
+        // If this is the first character in a new batch, start the timer
         if (isFirstChar) {
-          // Start timer for 20ms after receiving the first char
           const timeout = setTimeout(() => {
             sendBatchedData(portPath);
             batchTimeouts.delete(portPath);
           }, RX_DATA_BATCH_TIMEOUT_MS);
           batchTimeouts.set(portPath, timeout);
-        } else {
-          // For subsequent chars, check if batch is getting too large
-          if (batch.length >= RX_DATA_BATCH_MAX_NUM_OF_CHUNKS || Buffer.concat(batch).length >= RX_DATA_BATCH_MAX_SIZE_BYTES) {
-            // Clear the existing timeout and send large batches immediately
-            const existingTimeout = batchTimeouts.get(portPath);
-            if (existingTimeout) {
-              clearTimeout(existingTimeout);
-              batchTimeouts.delete(portPath);
-            }
-            sendBatchedData(portPath);
-          }
-          // Otherwise, just accumulate data and let the timer handle it
         }
+        // For subsequent data, just accumulate and let the timer handle it
       }
     });
 
@@ -463,6 +480,75 @@ ipcMain.handle('updater:get-auto-updates-enabled', async () => {
     return { success: true, enabled: result };
   } catch (error) {
     return { success: false, error: (error as Error).message, enabled: true };
+  }
+});
+
+ipcMain.handle('shell:open-external', async (event, url: string) => {
+  try {
+    await shell.openExternal(url);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// Dev tools IPC handlers
+ipcMain.handle('devtools:open', async () => {
+  try {
+    if (mainWindow && !mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.openDevTools();
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:close', async () => {
+  try {
+    if (mainWindow && mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.webContents.closeDevTools();
+    }
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:toggle', async () => {
+  try {
+    if (mainWindow) {
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+        return { success: true, action: 'closed' };
+      } else {
+        mainWindow.webContents.openDevTools();
+        return { success: true, action: 'opened' };
+      }
+    }
+    return { success: false, error: 'Main window not available' };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('devtools:is-open', async () => {
+  try {
+    if (mainWindow) {
+      return { success: true, isOpen: mainWindow.webContents.isDevToolsOpened() };
+    }
+    return { success: false, error: 'Main window not available' };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('analytics:event', async (event, eventName: string) => {
+  try {
+    emitEventIfInProd(eventName);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
   }
 });
 

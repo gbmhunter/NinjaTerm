@@ -6,6 +6,10 @@ export default class GeneralSettings {
 
   whenPastingOnWindowsReplaceCRLFWithLF = true;
   whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
+  
+  // Performance test results (not persisted, session-only)
+  performanceTestResults: string | null = null;
+  isRunningPerformanceTest = false;
 
   get autoUpdatesEnabled() {
     return this.profileManager.appData.autoUpdatesEnabled;
@@ -33,6 +37,14 @@ export default class GeneralSettings {
   setAutoUpdatesEnabled = (value: boolean) => {
     this.profileManager.appData.autoUpdatesEnabled = value;
     this.profileManager.saveAppData();
+  };
+
+  setPerformanceTestResults = (results: string | null) => {
+    this.performanceTestResults = results;
+  };
+
+  setIsRunningPerformanceTest = (isRunning: boolean) => {
+    this.isRunningPerformanceTest = isRunning;
   };
 
   _saveConfig = () => {

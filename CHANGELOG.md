@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.2.0] - 2025-08-17
+
+### Added
+
+- Added support for command-based graphing.
+- Added ability to open Chrome dev tools in the production build of the app.
+
+### Changed
+
+- Collapsed the two snackbar messages that pop up when a port is automatically reconnected into one.
+- Made big performance improvements when receiving lots of RX data. This was mostly achieved by preventing the entire app from re-rendering when data is received, and by removing the use of MobX's "observer" for individual terminal chars. Preventing the entire app from re-rendering was achieved by breaking the high-level app view into smaller components, where those small components where responsible for things such as showing throughput and CPU usage.
+- Simplified the RX data batching logic and made it more performant at higher speeds.
+- Changed the analytics library from react-ga4 to electron-google-analytics4 (which works better with Electron apps).
+
 ## [5.1.1] - 2025-08-10
 
 ### Fixed
@@ -866,7 +880,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.1...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.2.0...HEAD
+[5.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.1...v5.2.0
 [5.1.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...v5.1.0
 [5.0.4]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.3...v5.0.4

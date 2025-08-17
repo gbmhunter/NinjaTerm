@@ -2,7 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { closeSnackbar } from 'notistack';
-import ReactGA from 'react-ga4';
+// import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
 
 // Import package.json to read out the version number
@@ -18,20 +18,19 @@ import { PortState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
-import { SelectionController, SelectionInfo } from './SelectionController/SelectionController';
+import { SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
-import { LastUsedSerialPort, AppDataManager } from './AppDataManager/AppDataManager';
+import { AppDataManager } from './AppDataManager/AppDataManager';
 import { PortInfo } from '@serialport/bindings-interface';
+import PerformanceMonitor from './Performance/PerformanceMonitor';
+import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
 
 declare global {
   interface String {
     insert(index: number, string: string): string;
   }
 
-  // We save the created app instance to window.app (done in index.tsx) so that
-  // the test framework Playwright can access it. One use case
-  // is to insert data, as it's hard to mock the async serial
-  // read bytes function
+  // We save the created app instance to window.app (done in index.tsx) so that the Playwright e2e tests can access it. Sometimes it's just easier to verify things using the code rather than interacting with the UI.
   interface Window {
     app: App;
   }
@@ -99,7 +98,7 @@ export class App {
 
   // CPU usage tracking
   cpuUsagePercent: number = 0;
-  
+
   // CPU monitoring variables - measuring overall renderer process load
   private readonly CPU_MEASUREMENT_WINDOW_MS = 1000; // 1 second window
 
@@ -132,11 +131,14 @@ export class App {
 
   profileManager: AppDataManager;
 
-  selectionController: SelectionController = new SelectionController();
+  // selectionController: SelectionController = new SelectionController();
 
-  SelectionController = SelectionController;
+  // SelectionController = SelectionController;
 
   showCircularProgressModal = false;
+
+  performanceMonitor: PerformanceMonitor;
+
 
   constructor(testing = false) {
     this.testing = testing;
@@ -151,6 +153,9 @@ export class App {
     this.settings = new Settings(this);
 
     this.snackbar = new SnackbarController();
+
+    this.performanceMonitor = new PerformanceMonitor();
+
 
     this.terminals = new Terminals(this);
 
@@ -205,12 +210,12 @@ export class App {
     this.stopPollingForReconnection();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
-    
+
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
       (window as any).electronAPI.updater.removeAllUpdateListeners();
     }
-    
+
     window.removeEventListener('beforeunload', this.cleanup);
   };
 
@@ -344,7 +349,7 @@ export class App {
       this.setShowCircularProgressModal(false);
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
-      ReactGA.event('port_open');
+      await window.electronAPI.analytics.event('port_open');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.fakePortController.openPort();
     } else {
@@ -444,7 +449,7 @@ export class App {
 
           // Set the selected port and attempt to reconnect
           this.setSelectedPort(matchingPort);
-          await this.openPort({ silenceSnackbar: false });
+          await this.openPort({ silenceSnackbar: true });
 
           this.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
         }
@@ -555,37 +560,37 @@ export class App {
     let frameStartTime = performance.now();
     let busyTime = 0;
     let measurementStartTime = performance.now();
-    
+
     const measureCpuUsage = () => {
       const now = performance.now();
-      
+
       // Track the time spent in each frame
       const frameDuration = now - frameStartTime;
       frameStartTime = now;
-      
+
       // If this frame took longer than 16.67ms (60fps), count the extra time as "busy"
       const targetFrameTime = 1000 / 60; // 16.67ms for 60fps
       if (frameDuration > targetFrameTime) {
         busyTime += (frameDuration - targetFrameTime);
       }
-      
+
       const totalElapsed = now - measurementStartTime;
-      
+
       // Calculate CPU usage every second
       if (totalElapsed >= this.CPU_MEASUREMENT_WINDOW_MS) {
         // Simple approach: measure how much time we're taking longer than ideal frame times
         // This captures both data processing and rendering overhead
         const cpuUsage = Math.min(100, (busyTime / totalElapsed) * 100);
-        
+
         runInAction(() => {
           this.cpuUsagePercent = cpuUsage;
         });
-        
+
         // Reset counters
         busyTime = 0;
         measurementStartTime = now;
       }
-      
+
       // Use requestIdleCallback to get more accurate idle time measurements
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback((deadline) => {
@@ -596,11 +601,11 @@ export class App {
           }
         });
       }
-      
+
       // Continue monitoring
       requestAnimationFrame(measureCpuUsage);
     };
-    
+
     measureCpuUsage();
   }
 
@@ -621,6 +626,14 @@ export class App {
     }
 
     const electronAPI = (window as any).electronAPI;
+
+    // Remove any existing listeners first to prevent memory leaks during hot reloads. If this is not done,
+    // you eventually get warnings like this in the console:
+    // VM4 sandbox_bundle:2 MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 update-not-available listeners added. Use emitter.setMaxListeners() to increase limit
+    // at _addListener (node:electron/js2c/sandbox_bundle:2:43268)
+    // at IpcRenderer.addListener (node:electron/js2c/sandbox_bundle:2:46156)
+    // at Object.onUpdateNotAvailable (<anonymous>:49:28)
+    electronAPI.updater.removeAllUpdateListeners();
 
     // Update available - show notification
     electronAPI.updater.onUpdateAvailable((updateInfo: any) => {
@@ -664,7 +677,7 @@ export class App {
           Restart & Install
         </Button>
       );
-      
+
       this.snackbar.sendToSnackbar(
         `Update v${updateInfo.version} has been downloaded. Restart NinjaTerm to install.`,
         'success',
@@ -696,6 +709,69 @@ export class App {
   }
 
   /**
+   * Open Chrome developer tools.
+   */
+  async openDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      this.snackbar.sendToSnackbar('Developer tools not available in this version.', 'warning');
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.open();
+      if (result.success) {
+        this.snackbar.sendToSnackbar('Developer tools opened', 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to open developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to open developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
+   * Close Chrome developer tools.
+   */
+  async closeDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.close();
+      if (result.success) {
+        this.snackbar.sendToSnackbar('Developer tools closed', 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to close developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to close developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
+   * Toggle Chrome developer tools.
+   */
+  async toggleDevTools() {
+    if (!(window as any).electronAPI?.devtools) {
+      this.snackbar.sendToSnackbar('Developer tools not available in this version.', 'warning');
+      return;
+    }
+
+    try {
+      const result = await (window as any).electronAPI.devtools.toggle();
+      if (result.success) {
+        const action = result.action === 'opened' ? 'opened' : 'closed';
+        this.snackbar.sendToSnackbar(`Developer tools ${action}`, 'info');
+      } else {
+        this.snackbar.sendToSnackbar(`Failed to toggle developer tools: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Failed to toggle developer tools: ${error}`, 'error');
+    }
+  }
+
+  /**
    * Install downloaded update and restart the application.
    */
   async installUpdate() {
@@ -719,17 +795,44 @@ export class App {
    * @param rxData
    */
   parseRxData(rxData: Uint8Array) {
-    // console.log('parseRxData() called. rxData=', rxData);
-    // Send received data to both the single TX/RX terminal
-    // and the RX terminal
+    // Start performance monitoring for data processing
+    this.performanceMonitor.startTiming('dataProcessing');
+
+    // Process data immediately
+    this.performanceMonitor.startTiming('terminalRender');
     this.terminals.txRxTerminal.parseData(rxData, DataDirection.RX);
     this.terminals.rxTerminal.parseData(rxData, DataDirection.RX);
-    this.graphing.parseData(rxData);
-    this.logging.handleRxData(rxData);
-    this.numBytesReceived += rxData.length;
+    this.performanceMonitor.endTiming('terminalRender');
 
-    // Record data point for rate calculation
+    this.performanceMonitor.startTiming('graphingProcessing');
+    this.graphing.parseData(rxData);
+    this.performanceMonitor.endTiming('graphingProcessing');
+
+    this.logging.handleRxData(rxData);
+
+    // End performance monitoring and record metrics
+    const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
+    this.performanceMonitor.recordDataProcessing(rxData.length, totalProcessingTime);
+
+    // Update stats
+    this.numBytesReceived += rxData.length;
     this.recordRxDataPoint(rxData.length);
+  }
+
+
+  /**
+   * Run performance tests to measure baseline performance and identify bottlenecks
+   */
+  async runPerformanceTests(): Promise<PerformanceTestSuiteResult> {
+    const tester = new PerformanceTester(this);
+    return await tester.runFullTestSuite();
+  }
+
+  /**
+   * Get current performance report
+   */
+  getPerformanceReport(): string {
+    return this.performanceMonitor.getPerformanceReport();
   }
 
   /**
@@ -794,6 +897,7 @@ export class App {
    * - Pressing Ctrl-Shift-C to copy selected text to clipboard.
    * - Pressing "f" while on the Port Configuration settings.
    * - Pressing F5 to reload the app.
+   * - Pressing F12 to toggle Chrome Developer Tools.
    */
   async handleKeyDown(event: React.KeyboardEvent) {
     // console.log('handleKeyDown() called. event.key=', event.key);
@@ -807,6 +911,14 @@ export class App {
     else if (event.key === 'F5') {
       // F5 is pressed, reload the app
       window.location.reload();
+    }
+    //============================================
+    // F12 DEVELOPER TOOLS SHORTCUT
+    //============================================
+    else if (event.key === 'F12') {
+      // F12 is pressed, toggle developer tools
+      event.preventDefault(); // Prevent default browser behavior
+      await this.toggleDevTools();
     }
     //============================================
     // COPY KEYBOARD SHORTCUT

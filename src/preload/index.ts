@@ -49,7 +49,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updater: {
     checkForUpdates: () => ipcRenderer.invoke('updater:check-for-updates'),
     quitAndInstall: () => ipcRenderer.invoke('updater:quit-and-install'),
-    
+
     // Event listeners for update events
     onUpdateAvailable: (callback: (updateInfo: any) => void) => {
       ipcRenderer.on('update-available', (event, updateInfo) => callback(updateInfo));
@@ -66,7 +66,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onUpdateDownloaded: (callback: (updateInfo: any) => void) => {
       ipcRenderer.on('update-downloaded', (event, updateInfo) => callback(updateInfo));
     },
-    
+
     // Remove listeners
     removeAllUpdateListeners: () => {
       ipcRenderer.removeAllListeners('update-available');
@@ -75,6 +75,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners('download-progress');
       ipcRenderer.removeAllListeners('update-downloaded');
     }
+  },
+
+  // Shell operations
+  shell: {
+    openExternal: (url: string) => ipcRenderer.invoke('shell:open-external', url)
+  },
+
+  // Developer tools operations
+  devtools: {
+    open: () => ipcRenderer.invoke('devtools:open'),
+    close: () => ipcRenderer.invoke('devtools:close'),
+    toggle: () => ipcRenderer.invoke('devtools:toggle'),
+    isOpen: () => ipcRenderer.invoke('devtools:is-open')
+  },
+
+  // Analytics operations
+  analytics: {
+    event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
   }
 });
 
@@ -105,6 +123,18 @@ export interface ElectronAPI {
     onDownloadProgress(callback: (progressObj: any) => void): void;
     onUpdateDownloaded(callback: (updateInfo: any) => void): void;
     removeAllUpdateListeners(): void;
+  };
+  shell: {
+    openExternal(url: string): Promise<{ success: boolean; error?: string }>;
+  };
+  devtools: {
+    open(): Promise<{ success: boolean; error?: string }>;
+    close(): Promise<{ success: boolean; error?: string }>;
+    toggle(): Promise<{ success: boolean; action?: 'opened' | 'closed'; error?: string }>;
+    isOpen(): Promise<{ success: boolean; isOpen?: boolean; error?: string }>;
+  };
+  analytics: {
+    event(eventName: string): Promise<{ success: boolean; error?: string }>;
   };
 }
 

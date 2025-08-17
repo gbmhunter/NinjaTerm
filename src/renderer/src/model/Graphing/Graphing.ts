@@ -11,6 +11,59 @@ class Point {
   y: number = 0;
 }
 
+type XAxisType = 'data' | 'counter' | 'timestamp';
+
+export enum DetectionMode {
+  BASIC_PREFIX = 'Basic Prefix Mode',
+  ADVANCED_CMD = 'Advanced Cmd Mode'
+}
+
+/**
+ * Represents a single trace (data series, e.g. x and y values) for a plot. One plot
+ * can contain multiple traces.
+ */
+class PlotTrace {
+  id: string;
+  name: string;
+  color: string;
+  xType: XAxisType;
+  data: Point[] = [];
+  counter: number = 0;
+
+  constructor(id: string, name: string, color: string, xType: XAxisType) {
+    this.id = id;
+    this.name = name;
+    this.color = color;
+    this.xType = xType;
+    makeAutoObservable(this);
+  }
+}
+
+/**
+ * Represents a single plot. A plot can contain multiple traces. Multiple plots can be
+ * shown in the UI, they are stacked vertically.
+ */
+class Plot {
+  id: string;
+  title: string;
+  xlabel: string;
+  ylabel: string;
+
+  /**
+   * Contains all traces for this plot. The key is the trace ID. Javascript keeps entries
+   * in insertion order, so the first trace added will be the first in the map.
+   */
+  traces: Map<string, PlotTrace> = new Map();
+
+  constructor(id: string, title: string, xlabel: string = 'X Axis', ylabel: string = 'Y Axis') {
+    this.id = id;
+    this.title = title;
+    this.xlabel = xlabel;
+    this.ylabel = ylabel;
+    makeAutoObservable(this);
+  }
+}
+
 class Graphing {
 
   snackbar: SnackbarController;
@@ -22,15 +75,52 @@ class Graphing {
    */
   graphingEnabled = false;
 
-  graphData: Point[] = [];
+  /**
+   * Array of colors to cycle through when no color is specified for traces.
+   * These are chosen to be visually distinct and work well on dark backgrounds.
+   */
+  private defaultTraceColors = [
+    '#0af20e', // Green (original default)
+    '#ff0000', // Red
+    '#0080ff', // Blue
+    '#ff8000', // Orange
+    '#ff00ff', // Magenta
+    '#00ffff', // Cyan
+    '#ffff00', // Yellow
+    '#8000ff', // Purple
+    '#00ff80', // Light Green
+    '#ff8080', // Light Red
+    '#8080ff', // Light Blue
+    '#ff4000', // Red-Orange
+  ];
 
-  bufferDelimiters = [
+  /**
+   * Counter to track which default color to assign next.
+   */
+  private nextColorIndex = 0;
+
+  graphData: Point[] = [];  // Legacy single plot data
+
+  /**
+   * Contains all the plots that are being displayed. The key is the plot ID. Javascript
+   * keeps entries in insertion order, so they will be shown in order of creation.
+   */
+  plots: Map<string, Plot> = new Map();
+
+  processingTriggers = [
     'LF (\\n)',
     'CR (\\r)',
     'Custom',
   ]
 
-  bufferDelimiter = this.bufferDelimiters[0];
+  processingTrigger = this.processingTriggers[0];
+
+  /**
+   * The detection mode determines how graphing data is parsed.
+   * Basic Prefix Mode: Uses processing triggers and y= prefix (legacy)
+   * Advanced Cmd Mode: Uses #PLOT: commands with ; termination
+   */
+  detectionMode = DetectionMode.BASIC_PREFIX;
 
   /**
      * The maximum size of the receive buffer before it is cleared.
@@ -142,8 +232,8 @@ class Graphing {
     this._saveConfig();
   }
 
-  setBufferDelimiter = (value: string) => {
-    this.bufferDelimiter = value;
+  setProcessingTrigger = (value: string) => {
+    this.processingTrigger = value;
     this._saveConfig();
   }
 
@@ -179,7 +269,32 @@ class Graphing {
   }
 
   /**
-   * Takes incoming streamed data and extracts any data points out of it.
+   * Returns the character that should be used as the processing trigger
+   * based on the current processingTrigger setting.
+   */
+  getTriggerChar = (): string => {
+    switch (this.processingTrigger) {
+      case 'LF (\\n)':
+        return '\n';
+      case 'CR (\\r)':
+        return '\r';
+      default:
+        return '\n'; // Default to LF
+    }
+  }
+
+  setDetectionMode = (mode: DetectionMode) => {
+    this.detectionMode = mode;
+    this._saveConfig();
+  }
+
+  /**
+   * Takes incoming streamed data from the serial port and handles all related graphing logic based on relevant data in the stream.
+   *
+   * This includes:
+   * - Looking for prefixes in simple mode.
+   * - Looking for #PLOT: commands in advanced mode.
+   * - Accumulating data in a buffer until the processing trigger is received.
    *
    * Does nothing if graphing is not enabled.
    *
@@ -187,7 +302,6 @@ class Graphing {
    * @returns
    */
   parseData = (data: Uint8Array) => {
-    // console.log('parseData() called.');
     if (!this.graphingEnabled) {
       return;
     }
@@ -195,29 +309,35 @@ class Graphing {
     for (let i = 0; i < data.length; i++) {
       // Convert byte into a character and add to receive buffer
       let char = String.fromCharCode(data[i]);
-      // console.log('char: ' + char.charCodeAt(0));
       this.rxDataBuffer += char;
-      // console.log('rxDataBuffer: ' + this.rxDataBuffer);
-      if (char === '\n') {
-        // console.log('Found data separator.')
-        // Found a data separator, so parse the data
-        const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
-        if (yVarPrefixIdx === -1) {
-          // This line does not contain the Y variable prefix, so skip it
-          this.rxDataBuffer = '';
-          continue;
-        }
 
-        if (this.multipleValuesPerBuffer) {
-          // Extract multiple values per buffer
-          this.parseMultipleValues();
+      // Both modes use processing trigger to trigger processing
+      const triggerChar = this.getTriggerChar();
+      if (char === triggerChar) {
+        if (this.detectionMode === DetectionMode.ADVANCED_CMD) {
+          // Advanced command mode: only process plot commands
+          if (this.rxDataBuffer.includes('#PLOT:')) {
+            this.parsePlotCommands(this.rxDataBuffer);
+          }
         } else {
-          // Single value per buffer (original behavior)
-          this.parseSingleValue();
+          // Basic prefix mode: support both plot commands and legacy parsing
+          if (this.rxDataBuffer.includes('#PLOT:')) {
+            this.parsePlotCommands(this.rxDataBuffer);
+          } else {
+            // Legacy parsing for backward compatibility
+            const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+            if (yVarPrefixIdx !== -1) {
+              if (this.multipleValuesPerBuffer) {
+                // Extract multiple values per buffer
+                this.parseMultipleValues();
+              } else {
+                // Single value per buffer (original behavior)
+                this.parseSingleValue();
+              }
+            }
+          }
         }
-
-        // Since data separator has been received and line has been parsed,
-        // now clear the buffer
+        // Clear the buffer after parsing
         this.rxDataBuffer = '';
       }
 
@@ -413,7 +533,28 @@ class Graphing {
    */
   resetData = () => {
     this.graphData = [];
+    this.resetAllPlots();
     this.timeAtReset_ms = Date.now();
+    this.nextColorIndex = 0; // Reset color cycling when data is reset
+  }
+
+  resetAllPlots = () => {
+    for (const plot of this.plots.values()) {
+      for (const trace of plot.traces.values()) {
+        trace.data = [];
+        trace.counter = 0;
+      }
+    }
+  }
+
+  /**
+   * Gets the next default color for a trace, cycling through the available colors.
+   * @returns A hex color string
+   */
+  private getNextDefaultColor = (): string => {
+    const color = this.defaultTraceColors[this.nextColorIndex];
+    this.nextColorIndex = (this.nextColorIndex + 1) % this.defaultTraceColors.length;
+    return color;
   }
 
   updateXRangeFromData = () => {
@@ -442,11 +583,321 @@ class Graphing {
     this.yAxisRangeMax.apply();
   }
 
+  parsePlotCommands = (buffer: string) => {
+    try {
+      // Extract all #PLOT: commands from the buffer
+      const commands = this.extractPlotCommands(buffer);
+
+      // Process each command in order
+      for (const command of commands) {
+        this.parsePlotCommand(command);
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error parsing plot commands: ${error}`, 'error');
+    }
+  }
+
+  extractPlotCommands = (buffer: string): string[] => {
+    const commands: string[] = [];
+    let startIndex = 0;
+
+    while (true) {
+      // Find the next #PLOT: command
+      const plotIndex = buffer.indexOf('#PLOT:', startIndex);
+      if (plotIndex === -1) {
+        break; // No more commands
+      }
+
+      // Find the end of this command (must end with ;)
+      const semicolonIndex = buffer.indexOf(';', plotIndex);
+
+      if (semicolonIndex === -1) {
+        // No ; found, skip this incomplete command
+        break;
+      }
+
+      // ; found, command ends at ;
+      const commandEnd = semicolonIndex;
+
+      // Extract the command (including #PLOT: prefix)
+      const command = buffer.substring(plotIndex, commandEnd).trim();
+      if (command.length > 0) {
+        commands.push(command);
+      }
+
+      // Continue searching after this command
+      startIndex = commandEnd + 1;
+    }
+
+    return commands;
+  }
+
+  parsePlotCommand = (command: string) => {
+    try {
+      // Remove #PLOT: prefix
+      const commandBody = command.substring(6);
+      const [action, ...paramParts] = commandBody.split(',');
+      const params = this.parseCommandParams(paramParts.join(','));
+
+      switch (action) {
+        case 'CREATE':
+          this.handleCreatePlot(params);
+          break;
+        case 'DELETE':
+          this.handleDeletePlot(params);
+          break;
+        case 'CLEAR':
+          this.handleClearPlot(params);
+          break;
+        case 'TRACE':
+          this.handleCreateTrace(params);
+          break;
+        case 'DATA':
+          this.handleAddData(params);
+          break;
+        default:
+          this.snackbar.sendToSnackbar(`Unknown plot command: ${action}`, 'warning');
+      }
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error parsing plot command: ${error}`, 'error');
+    }
+  }
+
+  parseCommandParams = (paramString: string): Map<string, string> => {
+    const params = new Map<string, string>();
+    if (!paramString.trim()) return params;
+
+    // Handle square bracket syntax for data arrays: data=[1,2,3,4,5]
+    const bracketReplacements = new Map<string, string>();
+    let processedParamString = paramString;
+    const bracketMatches = paramString.match(/(\w+)=\[([^\]]+)\]/g);
+
+    if (bracketMatches) {
+      for (const match of bracketMatches) {
+        const [, key, value] = match.match(/(\w+)=\[([^\]]+)\]/)!;
+        // Create a unique placeholder to avoid comma splitting issues
+        const placeholder = `__BRACKET_${key}_${Math.random().toString(36).substring(2)}__`;
+        bracketReplacements.set(placeholder, value);
+        processedParamString = processedParamString.replace(match, `${key}=${placeholder}`);
+      }
+    }
+
+    const parts = processedParamString.split(',');
+    for (const part of parts) {
+      const [key, ...valueParts] = part.split('=');
+      if (key && valueParts.length > 0) {
+        let value = valueParts.join('=').trim();
+        // Replace any placeholders with actual values
+        for (const [placeholder, actualValue] of bracketReplacements.entries()) {
+          value = value.replace(placeholder, actualValue);
+        }
+        params.set(key.trim(), value);
+      }
+    }
+    return params;
+  }
+
+  /**
+   * Handles the PLOT:CREATE command.
+   * @param params - The parameters of the command.
+   */
+  handleCreatePlot = (params: Map<string, string>) => {
+    const id = params.get('id');
+    if (!id) {
+      this.snackbar.sendToSnackbar('PLOT:CREATE requires id parameter', 'warning');
+      return;
+    }
+    let title = params.get('title') || id;
+    // If title exists, strip quotes from start and end if they exist
+    // (user might have provided the title in the form "title="My Data" or title=my_data)
+    // If title doesn't exist, fallback to using the id
+    if (title) {
+      title = title.replace(/^"|"$/g, '');
+    } else {
+      title = id;
+    }
+
+    // Handle xlabel parameter
+    let xlabel = params.get('xlabel') || 'X Axis';
+    if (xlabel) {
+      xlabel = xlabel.replace(/^"|"$/g, '');
+    }
+
+    // Handle ylabel parameter
+    let ylabel = params.get('ylabel') || 'Y Axis';
+    if (ylabel) {
+      ylabel = ylabel.replace(/^"|"$/g, '');
+    }
+
+    const plot = new Plot(id, title, xlabel, ylabel);
+    this.plots.set(id, plot);
+  }
+
+  /**
+   * Handles the PLOT:DELETE command.
+   * @param params - The parameters of the command.
+   */
+  handleDeletePlot = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    if (!plotId) {
+      this.snackbar.sendToSnackbar('PLOT:DELETE requires plot parameter', 'warning');
+      return;
+    }
+
+    this.plots.delete(plotId);
+  }
+
+  /**
+   * Handles the PLOT:CLEAR command.
+   * @param params - The parameters of the command.
+   */
+  handleClearPlot = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    const traceId = params.get('trace');
+
+    if (traceId && plotId) {
+      // Clear specific trace in specific plot
+      const plot = this.plots.get(plotId);
+      if (plot) {
+        const trace = plot.traces.get(traceId);
+        if (trace) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    } else if (traceId) {
+      // Clear trace in all plots
+      for (const plot of this.plots.values()) {
+        const trace = plot.traces.get(traceId);
+        if (trace) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    } else if (plotId) {
+      // Clear all traces in specific plot
+      const plot = this.plots.get(plotId);
+      if (plot) {
+        for (const trace of plot.traces.values()) {
+          trace.data = [];
+          trace.counter = 0;
+        }
+      }
+    }
+  }
+
+  /**
+   * Handles the PLOT:TRACE command.
+   * @param params - The parameters of the command.
+   */
+  handleCreateTrace = (params: Map<string, string>) => {
+    const plotId = params.get('plot');
+    const traceId = params.get('id');
+
+    if (!plotId || !traceId) {
+      this.snackbar.sendToSnackbar('PLOT:TRACE requires plot and id parameters', 'warning');
+      return;
+    }
+
+    let name = params.get('name');
+    // If name exists, strip quotes from start and end if they exist
+    // (user might have provided the name in the form "name="My Data" or name=my_data)
+    if (name) {
+      name = name.replace(/^"|"$/g, '');
+    } else {
+      name = traceId;
+    }
+
+    const color = params.get('color') || this.getNextDefaultColor();
+    const xType = (params.get('xtype') as XAxisType) || 'timestamp';
+
+    const plot = this.plots.get(plotId);
+    if (!plot) {
+      this.snackbar.sendToSnackbar(`Plot ${plotId} does not exist`, 'warning');
+      return;
+    }
+
+    if (!['data', 'counter', 'timestamp'].includes(xType)) {
+      this.snackbar.sendToSnackbar(`Invalid xtype: ${xType}. Must be data, counter, or timestamp`, 'warning');
+      return;
+    }
+
+    const trace = new PlotTrace(traceId, name, color, xType);
+    plot.traces.set(traceId, trace);
+  }
+
+  /**
+   * Handles the PLOT:DATA command.
+   * @param params - The parameters of the command.
+   */
+  handleAddData = (params: Map<string, string>) => {
+    const traceId = params.get('trace');
+    const dataStr = params.get('data');
+
+    if (!traceId || !dataStr) {
+      this.snackbar.sendToSnackbar('PLOT:DATA requires trace and data parameters', 'warning');
+      return;
+    }
+
+    // Find the trace in any plot
+    let targetTrace: PlotTrace | null = null;
+    for (const plot of this.plots.values()) {
+      const trace = plot.traces.get(traceId);
+      if (trace) {
+        targetTrace = trace;
+        break;
+      }
+    }
+
+    if (!targetTrace) {
+      this.snackbar.sendToSnackbar(`Trace ${traceId} does not exist`, 'warning');
+      return;
+    }
+
+    const currentTime = (Date.now() - this.timeAtReset_ms) / 1000.0;
+
+    if (targetTrace.xType === 'data') {
+      // For data traces, expect x,y pairs separated by pipes: "x1,y1|x2,y2|x3,y3"
+      const dataPoints = dataStr.split('|').map(s => s.trim()).filter(s => s.length > 0);
+
+      for (const dataPoint of dataPoints) {
+        const values = dataPoint.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+
+        // Expect x,y pairs
+        for (let i = 0; i < values.length; i += 2) {
+          if (i + 1 < values.length) {
+            targetTrace.data.push({ x: values[i], y: values[i + 1] });
+          }
+        }
+      }
+    } else {
+      // For counter and timestamp traces, expect comma-separated y values: "y1,y2,y3,y4,y5"
+      const values = dataStr.split(',').map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+
+      if (targetTrace.xType === 'counter') {
+        // Use counter for x, values are y
+        for (const yValue of values) {
+          targetTrace.data.push({ x: targetTrace.counter++, y: yValue });
+        }
+      } else if (targetTrace.xType === 'timestamp') {
+        // Use timestamp for x, values are y
+        for (const yValue of values) {
+          targetTrace.data.push({ x: currentTime, y: yValue });
+        }
+      }
+    }
+
+    // Apply max data points limit to trace
+    while (targetTrace.data.length > this.maxNumDataPoints.appliedValue) {
+      targetTrace.data.shift();
+    }
+  }
+
   _saveConfig = () => {
     let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     config.graphingEnabled = this.graphingEnabled;
-    config.bufferDelimiter = this.bufferDelimiter;
+    config.processingTrigger = this.processingTrigger;
     config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
     config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
     config.xVarSource = this.xVarSource;
@@ -463,6 +914,7 @@ class Graphing {
     config.yAxisRangeMin = this.yAxisRangeMin.appliedValue.toString();
     config.yAxisRangeMax = this.yAxisRangeMax.appliedValue.toString();
     config.xVarUnit = this.xVarUnit;
+    config.detectionMode = this.detectionMode;
 
     this.appDataManager.saveAppData();
   };
@@ -471,7 +923,7 @@ class Graphing {
     let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
     this.graphingEnabled = configToLoad.graphingEnabled;
-    this.bufferDelimiter = configToLoad.bufferDelimiter;
+    this.processingTrigger = configToLoad.processingTrigger;
     this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
     this.maxBufferSize.apply({notify: false});
     this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
@@ -497,13 +949,16 @@ class Graphing {
     this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
     this.yAxisRangeMax.apply({notify: false});
     this.xVarUnit = configToLoad.xVarUnit;
+
+    // Load detection mode with fallback to Basic Prefix Mode for backward compatibility
+    this.detectionMode = (configToLoad.detectionMode as DetectionMode) || DetectionMode.BASIC_PREFIX;
   };
 
   _onMinRangeChanged = () => {
     // When min values change, re-validate the max fields by re-running their validation
     this.xAxisRangeMax.setDispValue(this.xAxisRangeMax.dispValue);
     this.yAxisRangeMax.setDispValue(this.yAxisRangeMax.dispValue);
-    
+
     // Save config
     this._saveConfig();
   };

@@ -52,6 +52,14 @@ const darkTheme = createTheme({
       color: logoColor,
       fontSize: 24,
     },
+    h4: {
+      color: logoColor,
+      fontSize: 20,
+    },
+    h5: {
+      color: logoColor,
+      fontSize: 16,
+    },
   },
   components: {
     MuiTooltip: {
@@ -181,6 +189,194 @@ export default observer((props: Props) => {
           <p>
             A "Clear app data and reload app" button in <code>Settings &gt; General Settings</code> allows you to easily reset all application data stored in your browser (like profiles and settings) and start fresh.
           </p>
+
+          <Typography variant="h2">Graphing</Typography>
+          <p>
+            NinjaTerm provides powerful real-time graphing capabilities for visualizing serial data. The graphing system supports two different approaches:
+          </p>
+          <ol>
+            <li><b>Simple prefix-based parsing</b>: Character sequences to trigger data extraction for the input data can be specified in the graphing settings.</li>
+            <li><b>An advanced ASCII text command-based protocol</b> for complex multi-plot scenarios: Special commands like <code>#PLOT:CREATE ...</code> and <code>#PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
+          </ol>
+
+          <p>Both approaches are text based (ASCII encoded data), and require a character sequence to denote the end of a frame, which triggers the graphing system to look for data in the buffer since the last end of frame character. This defaults to the <code>LF</code> character (0x0A), which is normally suitable when intermixing the data with other text such as log messages. The processing trigger sequence is also needed to make sure the buffer is cleared at the right point -- we don't want to clear the buffer half way through receiving graph data.</p>
+
+          <Typography variant="h3">Prefix Based Graphing</Typography>
+          <p>
+            This is the simplest approach. Enable graphing in the Graphing tab and configure prefixes to extract data from your serial stream. For example, with <code>y=</code> as the Y variable prefix, data like <code>y=25.6</code> will be plotted.
+          </p>
+
+          <p>For example, your MCU might be outputting temperature data every second, intermixed with other log messages like this (line endings are LF):</p>
+
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`2025-08-12 12:00:00 - MCU has booted. Firmware version 1.0.0.
+2025-08-12 12:00:01 - Starting temperature measurements...
+2025-08-12 12:00:02 - Temperature: 26.1 degC
+2025-08-12 12:00:03 - Temperature: 25.9 degC
+2025-08-12 12:00:04 - Some other message...
+2025-08-12 12:00:05 - Temperature: 26.0 degC
+2025-08-12 12:00:06 - Temperature: 26.3 degC
+2025-08-12 12:00:07 - Temperature: 26.1 degC`}
+          </pre>
+
+          <p>You can configure NinjaTerm to extract the temperature data from the serial stream with the following settings on the Graphing view:</p>
+
+          <ul>
+            <li>"Processing Trigger" to "LF (\n)" (this is the default)</li>
+            <li>"X Variable Source" to "Received Time"</li>
+            <li>"Y Variable Prefix" to "Temperature:"</li>
+            <li>"Y Variable Suffix" to "degC"</li>
+          </ul>
+
+          <p>The result will be a graph of the temperature data over time.</p>
+
+          <p>You can also configure the graphing settings to use a different delimiter, or to use a different variable source (e.g. a counter or a timestamp).</p>
+
+          <Typography variant="h3">Command Based Graphing</Typography>
+          <p>
+            For advanced applications, NinjaTerm supports a command-based graphing protocol that enables multiple plots, multiple traces per plot, and flexible data handling. This is useful when you want to give the MCU (or other device) control over the graphing UI.
+
+            The commands are explained below.
+          </p>
+
+          <Typography variant="h4">Graph Management Commands</Typography>
+
+          <p>All graphing related commands start with <code>#PLOT:</code>. The command does not need be at the start of a graphing frame (i.e. random data can occur before the <code>#PLOT:</code> command). This allows commands to work with logging frameworks that automatically prefix all lines with timestamps and other metadata (e.g. module name, file name, function name, etc).</p>
+
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`// Create a new plot (a plot is a single x/y graph with a titles, axes and traces)
+#PLOT:CREATE,id=plot1,title="Sensor Data";
+
+// Create a plot with custom axis labels
+#PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";`}
+          </pre>
+
+          <p>All <code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
+
+          <Typography variant="h5">PLOT:CREATE Parameters</Typography>
+          <p>The <code>PLOT:CREATE</code> command supports the following parameters:</p>
+          <ul>
+            <li><code>id</code> (required): Unique identifier for the plot</li>
+            <li><code>title</code> (optional): Plot title displayed above the graph. Defaults to the plot ID if not specified</li>
+            <li><code>xlabel</code> (optional): Custom label for the X-axis. Defaults to "X Axis" if not specified. Example: <code>xlabel="Time [s]"</code></li>
+            <li><code>ylabel</code> (optional): Custom label for the Y-axis. Defaults to "Y Axis" if not specified. Example: <code>ylabel="Voltage [V]"</code></li>
+          </ul>
+          <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
+
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=[1,2,3,4,5];`}
+          </pre>
+
+          <p>Do not use non-ASCII characters in the commands as NinjaTerm does not support Unicode encodings such as UTF-8! For example, don't use the Omega symbol for the units of resistance in the axis labels!</p>
+
+          <Typography variant="h4">Trace Management Commands</Typography>
+
+          <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>#PLOT:TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
+          </pre>
+
+          <p>A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down)</p>
+
+          <p><code>xtype</code> is the type of data to use for the x-axis. There are three options:</p>
+          <ul>
+            <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm. In the <code>PLOT:DATA</code> command you supply y-values only. Works well when you a slowly sending single values back per <code>PLOT:DATA</code> command (e.g. reading a temperature sensor once per second).</li>
+            <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace. In the <code>PLOT:DATA</code> command you supply the y-values only. Works well for arrays of data where each point has been sampled at a regular interval (e.g. an ADC taking 1024 samples and returning all the data in a single <code>PLOT:DATA</code> command).</li>
+            <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
+          </ul>
+
+          <p><code>color</code> set the trace color, both for dots that indicate the data points and the line that joins them. It is a hex code, e.g. <code>#FF0000</code> for red. Transparency is also supported by adding the alpha value as another 2-digit hex value at the end. 00 is fully transparent, FF is fully opaque. e.g. <code>#FF000080</code> for a 50% transparent red. Transparency can be useful when you have multiple overlapping traces on a single plot.</p>
+
+          <Typography variant="h4">Data Commands</Typography>
+
+          <p>Once you have created a plot and a trace on the plot, use the <code>PLOT:DATA</code> command to add data points to the trace. This will draw the points on the graph.</p>
+
+          <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
+          <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:DATA,trace=temp,data=1.23;`}
+          </pre>
+
+          <p>You are allowed to send an extra comma after the last data value (IMO all data formats should allow this, I'm looking at you, JSON!), so you don't have to add conditional logic in your firmware to not generate the comma on the last data value.</p>
+
+          <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:DATA,trace=temp,data=[1.25,1.28,1.31];`}
+          </pre>
+
+          <p>Remember that the timestamp is the time the data is received by NinjaTerm. Due to buffering, processing time and other work your computer might be doing, this timestamp might be quite different to the time the data was measured. If you need more accurate time stamping (e.g. better than 10-100ms resolution), timestamp the data on the microcontroller and use <code>xtype=data</code> instead, bundling the timestamp as the x value.</p>
+
+          <Typography variant="h5">2. X-Axis Type: counter (auto-incrementing)</Typography>
+          <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`// Single y value (x auto-increments)
+#PLOT:DATA,trace=accel,data=9.81;
+
+// Multiple y values (comma separated, x auto-increments for each)
+#PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
+          </pre>
+
+          <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
+          <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`#PLOT:DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
+          </pre>
+
+          <Typography variant="h4">Complete Example</Typography>
+          <p>Here's a complete example showing how to create a multi-trace plot with custom axis labels:</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`// Create a plot for sensor data with custom axis labels
+#PLOT:CREATE,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
+
+// Create traces for different sensor types
+#PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
+#PLOT:TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
+#PLOT:TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
+
+// Send data (your firmware would send these)
+#PLOT:DATA,trace=temp,data=25.6;
+#PLOT:DATA,trace=humidity,data=67.2;
+#PLOT:DATA,trace=pressure,data=1013.25;
+
+// Send more data points
+#PLOT:DATA,trace=temp,data=[25.8,26.1,25.9];
+#PLOT:DATA,trace=humidity,data=[68.1,67.8,69.2];
+#PLOT:DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
+          </pre>
+
+          <Typography variant="h4">Data Array Syntax</Typography>
+          <p>When providing multiple data points in a single <code>PLOT:DATA</code> command, you must enclose the comma-separated values in square brackets. This prevents confusion between parameter separators and data separators.</p>
+
+          <p><strong>Examples:</strong></p>
+          <ul>
+            <li>Single value: <code>data=25.6</code></li>
+            <li>Multiple values: <code>data=[25.6,26.1,25.9]</code></li>
+            <li>Invalid (old syntax): <code>data=25.6,26.1,25.9</code> - this won't work because the commas are interpreted as parameter separators</li>
+          </ul>
+
+          <Typography variant="h4">Command Protocol Notes</Typography>
+          <ul>
+            <li>Commands must start with <code>#PLOT:</code> and end with <code>;</code></li>
+            <li>Commands without proper <code>;</code> termination will be ignored</li>
+            <li>Parameters are comma-separated key=value pairs</li>
+            <li>Color values can be hex codes (e.g., <code>#FF0000</code>) or standard color names</li>
+            <li>Trace IDs must be unique within their plot context</li>
+            <li>The command protocol is fully backward compatible with existing prefix-based graphing</li>
+            <li>Multiple data points in a single DATA command can be separated by pipes (for x,y pairs) or commas (for y-only values)</li>
+          </ul>
+
+          <Typography variant="h4">Enhanced Data Examples</Typography>
+          <p>Example showing the new syntax with multiple x,y data pairs separated by pipes:</p>
+          <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`// Example with multiple x,y data pairs using pipe separator
+#PLOT:DATA,trace=temp,data=1,25|2,16|3,18;
+
+// Complete workflow example
+#PLOT:CREATE,id=sensors,title="Temperature Log";
+#PLOT:TRACE,plot=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
+#PLOT:DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;`}
+          </pre>
 
         </Grid>
       </Box>
