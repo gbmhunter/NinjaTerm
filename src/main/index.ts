@@ -35,7 +35,9 @@ function emitEventIfInProd(event: string) {
 }
 
 const RX_DATA_BATCH_MAX_NUM_OF_CHUNKS = 50;
-const RX_DATA_BATCH_MAX_SIZE_BYTES = 1024;
+
+// The max. number of bytes to batch before sending to the renderer.
+const RX_DATA_BATCH_MAX_SIZE_BYTES = 16384;
 
 // Set maximum delay to 50ms for any received char before sending to renderer
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
