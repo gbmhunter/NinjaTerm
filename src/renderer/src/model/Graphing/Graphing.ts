@@ -373,20 +373,15 @@ class Graphing {
 			// Trigger processing in basic mode
 			const triggerChar = this.getTriggerChar();
 			if (char === triggerChar) {
-				// Only support $NT:PLOT: commands in basic mode
-				if (this.rxDataBuffer.includes('$NT:PLOT:')) {
-					this.parsePlotCommands(this.rxDataBuffer);
-				} else {
-					// Legacy parsing for backward compatibility
-					const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
-					if (yVarPrefixIdx !== -1) {
-						if (this.multipleValuesPerBuffer) {
-							// Extract multiple values per buffer
-							this.parseMultipleValues();
-						} else {
-							// Single value per buffer (original behavior)
-							this.parseSingleValue();
-						}
+				// Legacy parsing for backward compatibility - only look for user-defined prefixes
+				const yVarPrefixIdx = this.rxDataBuffer.indexOf(this.yVarPrefix.appliedValue);
+				if (yVarPrefixIdx !== -1) {
+					if (this.multipleValuesPerBuffer) {
+						// Extract multiple values per buffer
+						this.parseMultipleValues();
+					} else {
+						// Single value per buffer (original behavior)
+						this.parseSingleValue();
 					}
 				}
 				// Clear the buffer after parsing

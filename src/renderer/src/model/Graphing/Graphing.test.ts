@@ -614,6 +614,7 @@ describe('graphing tests', () => {
 
   describe('parseData() works', () => {
     it('should detect and parse plot commands in data stream', () => {
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
       const data = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test";\n');
 
       graphing.parseData(data);
@@ -624,11 +625,13 @@ describe('graphing tests', () => {
     });
 
     it('should handle mixed legacy and command-based data', () => {
-      // First add some legacy data
+      // First add some legacy data in Basic Prefix Mode
+      graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
       const legacyData = new TextEncoder().encode('y=25.6\n');
       graphing.parseData(legacyData);
 
-      // Then add command-based data
+      // Then switch to Advanced Cmd Mode for command-based data
+      graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
       const commandData = new TextEncoder().encode('$NT:PLOT:CREATE,id=test;$NT:PLOT:TRACE,plot=test,id=trace1;$NT:PLOT:DATA,trace=trace1,data=30.0;\n');
       graphing.parseData(commandData);
 
@@ -711,16 +714,26 @@ describe('graphing tests', () => {
       expect(graphing.graphData[0].y).toBe(25.6);
     });
 
-    it('should parse plot commands in Basic Prefix Mode when processing trigger is received', () => {
+    it('should NOT process $NT:PLOT commands in Basic Prefix Mode', () => {
       graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
 
-      const data = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test";\n');
-      graphing.parseData(data);
+      // Send various $NT:PLOT commands that should be ignored
+      const createCommand = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test Plot";\n');
+      const traceCommand = new TextEncoder().encode('$NT:PLOT:TRACE,plot=test,id=trace1;\n');
+      const dataCommand = new TextEncoder().encode('$NT:PLOT:DATA,trace=trace1,data=25.6;\n');
 
-      const plot = graphing.plots.get('test');
-      expect(plot).toBeDefined();
-      expect(plot?.title).toBe('Test');
+      graphing.parseData(createCommand);
+      graphing.parseData(traceCommand);
+      graphing.parseData(dataCommand);
+
+      // No plots should be created
+      expect(graphing.plots.size).toBe(0);
+      expect(graphing.plots.has('test')).toBe(false);
+
+      // No legacy graphing data should be created either
+      expect(graphing.graphData.length).toBe(0);
     });
+
 
     it('should parse $NT plot commands in Advanced Cmd Mode with unescaped semicolon terminator', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
