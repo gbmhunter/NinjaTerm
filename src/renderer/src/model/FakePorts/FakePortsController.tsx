@@ -4,6 +4,7 @@ import { App, MainPanes, PortType } from 'src/model/App';
 import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
+import { DetectionMode } from '../Graphing/Graphing';
 
 class FakePort {
   name: string;
@@ -1107,46 +1108,77 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Command Based Graphing Demo: Batch Data (Multiple Points)',
-        'Demonstrates command based graphing with sending multiple data points in a single command.',
+        'Three Phase and Temperature Sensor Plots',
+        'Demonstrates two plots: three-phase sine waves and temperature sensors.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
           app.graphing.setGraphingEnabled(true);
+          app.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
-          // Setup sequence - create plot and traces
+          // Setup sequence - create plots and traces
           const setupCommands = [
-            '$NT:PLOT:CREATE,id=batch,title="Batch Data Processing";$NT:PLOT:TRACE,plot=batch,id=signal,name="Signal Samples",color=#00FFFF,xtype=counter;$NT:PLOT:TRACE,plot=batch,id=filtered,name="Filtered Signal",color=#FFFF00,xtype=counter;\n'
+            // First plot: Three-phase sine waves
+            '$NT:PLOT:CREATE,id=sine_waves,title="Three-Phase Sine Waves",xlabel="Sample",ylabel="Amplitude";',
+            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_a,name="Phase A",color=#FF0000,xtype=counter;',
+            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_b,name="Phase B",color=#00FF00,xtype=counter;',
+            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_c,name="Phase C",color=#0000FF,xtype=counter;',
+            // Second plot: Temperature sensors
+            '$NT:PLOT:CREATE,id=temperature,title="Temperature Sensors",xlabel="Time (s)",ylabel="Temperature (°C)";',
+            '$NT:PLOT:TRACE,plot=temperature,id=sensor1,name="Sensor 1",color=#FF8000,xtype=timestamp;',
+            '$NT:PLOT:TRACE,plot=temperature,id=sensor2,name="Sensor 2",color=#8000FF,xtype=timestamp;\n'
           ];
 
           for (const command of setupCommands) {
             app.parseRxData(new TextEncoder().encode(command));
           }
 
+          let secondCounter = 0;
           let sampleBatch = 0;
+
+          // Single timer that fires every second
           const intervalId = setInterval(() => {
-            // Generate a batch of 8 samples at once
-            const samples = [];
-            const filteredSamples = [];
+            secondCounter++;
 
-            for (let i = 0; i < 8; i++) {
-              // Raw noisy signal
-              const rawSample = Math.sin((sampleBatch * 8 + i) * 0.1) * 10 + (Math.random() - 0.5) * 5;
-              samples.push(rawSample.toFixed(2));
+            // Temperature sensor updates - every second
+            const baseTempSensor1 = 22 + Math.sin(secondCounter * 0.01) * 3; // Slow sine variation around 22°C
+            const baseTempSensor2 = 25 + Math.cos(secondCounter * 0.012) * 2.5; // Different pattern around 25°C
 
-              // Simple moving average filter (simulated)
-              const filteredSample = Math.sin((sampleBatch * 8 + i) * 0.1) * 10;
-              filteredSamples.push(filteredSample.toFixed(2));
+            const sensor1Temp = (baseTempSensor1 + (Math.random() - 0.5) * 0.5).toFixed(1);
+            const sensor2Temp = (baseTempSensor2 + (Math.random() - 0.5) * 0.4).toFixed(1);
+
+            app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=sensor1,data=${sensor1Temp};\n`));
+            app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=sensor2,data=${sensor2Temp};\n`));
+
+            // Sine wave updates - every 3rd second (every 3rd callback)
+            if (secondCounter % 3 === 0) {
+              const phaseAData = [];
+              const phaseBData = [];
+              const phaseCData = [];
+
+              // Generate 3 complete cycles (72 samples each, 216 total)
+              for (let i = 0; i < 100; i++) {
+                const angle = (i * Math.PI * 2) / 72; // 72 samples per cycle
+                const noise = (Math.random() - 0.5) * 1.0; // Small noise
+
+                // Phase A (0°)
+                phaseAData.push((Math.sin(angle) * 10 + noise).toFixed(2));
+
+                // Phase B (120° = 2π/3 radians behind)
+                phaseBData.push((Math.sin(angle - (2 * Math.PI / 3)) * 10 + noise).toFixed(2));
+
+                // Phase C (240° = 4π/3 radians behind)
+                phaseCData.push((Math.sin(angle - (4 * Math.PI / 3)) * 10 + noise).toFixed(2));
+              }
+
+              // Clear previous data and send new full cycles
+              app.parseRxData(new TextEncoder().encode('$NT:PLOT:CLEAR,plot=sine_waves;\n'));
+              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
+
+              sampleBatch++;
             }
-
-            // Send all samples in single commands (comma-separated for counter x-axis)
-            const rawCommand = `$NT:PLOT:DATA,trace=signal,data=${samples.join(',')};\n`;
-            const filteredCommand = `$NT:PLOT:DATA,trace=filtered,data=${filteredSamples.join(',')};\n`;
-
-            app.parseRxData(new TextEncoder().encode(rawCommand));
-            app.parseRxData(new TextEncoder().encode(filteredCommand));
-
-            sampleBatch++;
-          }, 500); // Send 8 samples every 500ms (16 Hz effective rate)
+          }, 1000); // Fire every second
 
           return intervalId;
         },
