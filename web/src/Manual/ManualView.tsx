@@ -254,13 +254,40 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
           <p>All <code>PLOT</code> commands must always be terminated with an unescaped <code>;</code> character. Commands start with <code>$NT:PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. If a semicolon appears inside double quotes (e.g., in a title), it is treated as part of the string and not a terminator.</p>
 
           <Typography variant="h5">PLOT:CREATE Parameters</Typography>
-          <p>The <code>PLOT:CREATE</code> command supports the following parameters:</p>
-          <ul>
-            <li><code>id</code> (required): Unique identifier for the plot</li>
-            <li><code>title</code> (optional): Plot title displayed above the graph. Defaults to the plot ID if not specified</li>
-            <li><code>xlabel</code> (optional): Custom label for the X-axis. Defaults to "X Axis" if not specified. Example: <code>xlabel="Time [s]"</code></li>
-            <li><code>ylabel</code> (optional): Custom label for the Y-axis. Defaults to "Y Axis" if not specified. Example: <code>ylabel="Voltage [V]"</code></li>
-          </ul>
+          <p>The <code>$NT:PLOT:CREATE</code> command supports the following parameters:</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Required?</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>id</code></td>
+                <td>Required</td>
+                <td>Unique identifier for the plot</td>
+              </tr>
+              <tr>
+                <td><code>title</code></td>
+                <td>Optional</td>
+                <td>Plot title displayed above the graph. Defaults to the plot ID if not specified</td>
+              </tr>
+              <tr>
+                <td><code>xlabel</code></td>
+                <td>Optional</td>
+                <td>Custom label for the X-axis. Defaults to "X Axis" if not specified. Example: <code>xlabel="Time [s]"</code></td>
+              </tr>
+              <tr>
+                <td><code>ylabel</code></td>
+                <td>Optional</td>
+                <td>Custom label for the Y-axis. Defaults to "Y Axis" if not specified. Example: <code>ylabel="Voltage [V]"</code></td>
+              </tr>
+            </tbody>
+          </table>
+
           <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
@@ -276,16 +303,47 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
 {`$NT:PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
           </pre>
 
-          <p>A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down)</p>
+          <p>The <code>$NT:PLOT:TRACE</code> command supports the following parameters:</p>
 
-          <p><code>xtype</code> is the type of data to use for the x-axis. There are three options:</p>
-          <ul>
-            <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm. In the <code>PLOT:DATA</code> command you supply y-values only. Works well when you a slowly sending single values back per <code>PLOT:DATA</code> command (e.g. reading a temperature sensor once per second).</li>
-            <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace. In the <code>PLOT:DATA</code> command you supply the y-values only. Works well for arrays of data where each point has been sampled at a regular interval (e.g. an ADC taking 1024 samples and returning all the data in a single <code>PLOT:DATA</code> command).</li>
-            <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
-          </ul>
+          <table>
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Required?</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>id</code></td>
+                <td>Required</td>
+                <td>Unique identifier for the trace. A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down).</td>
+              </tr>
+              <tr>
+                <td><code>name</code></td>
+                <td>Optional</td>
+                <td>The name to use in the legend for this trace. Defaults to the trace ID if not specified.</td>
+              </tr>
+              <tr>
+                <td><code>color</code></td>
+                <td>Optional</td>
+                <td>Set the trace color, both for dots that indicate the data points and the line that joins them. It is a hex code, e.g. <code>#FF0000</code> for red. Transparency is also supported by adding the alpha value as another 2-digit hex value at the end. 00 is fully transparent, FF is fully opaque. e.g. <code>#FF000080</code> for a 50% transparent red. Transparency can be useful when you have multiple overlapping traces on a single plot.</td>
+              </tr>
+              <tr>
+                <td><code>xtype</code></td>
+                <td>Optional</td>
+                <td>The type of data to use for the x-axis. There are three options:
+                  <ul>
+                    <li><code>timestamp</code>: The x-axis will be the time data arrived at NinjaTerm. In the <code>PLOT:DATA</code> command you supply y-values only. Works well when you a slowly sending single values back per <code>PLOT:DATA</code> command (e.g. reading a temperature sensor once per second).</li>
+                    <li><code>counter</code>: The x-axis will be a counter that automatically increments (0, 1, 2, ...) for each received data point for that trace. In the <code>PLOT:DATA</code> command you supply the y-values only. Works well for arrays of data where each point has been sampled at a regular interval (e.g. an ADC taking 1024 samples and returning all the data in a single <code>PLOT:DATA</code> command).</li>
+                    <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
+                  </ul>
+                </td>
 
-          <p><code>color</code> set the trace color, both for dots that indicate the data points and the line that joins them. It is a hex code, e.g. <code>#FF0000</code> for red. Transparency is also supported by adding the alpha value as another 2-digit hex value at the end. 00 is fully transparent, FF is fully opaque. e.g. <code>#FF000080</code> for a 50% transparent red. Transparency can be useful when you have multiple overlapping traces on a single plot.</p>
+              </tr>
+
+            </tbody>
+          </table>
 
           <Typography variant="h4">Data Commands</Typography>
 
