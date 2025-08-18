@@ -196,7 +196,7 @@ export default observer((props: Props) => {
           </p>
           <ol>
             <li><b>Simple prefix-based parsing</b>: Character sequences to trigger data extraction for the input data can be specified in the graphing settings.</li>
-            <li><b>An advanced ASCII text command-based protocol</b> for complex multi-plot scenarios: Special commands like <code>#PLOT:CREATE ...</code> and <code>#PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
+            <li><b>An advanced ASCII text command-based protocol</b> for complex multi-plot scenarios: Special commands like <code>$NT:PLOT:CREATE ...</code> and <code>$NT:PLOT:DATA ...</code> can be sent from the other end of the serial connection to create and update plots in NinjaTerm.</li>
           </ol>
 
           <p>Both approaches are text based (ASCII encoded data), and require a character sequence to denote the end of a frame, which triggers the graphing system to look for data in the buffer since the last end of frame character. This defaults to the <code>LF</code> character (0x0A), which is normally suitable when intermixing the data with other text such as log messages. The processing trigger sequence is also needed to make sure the buffer is cleared at the right point -- we don't want to clear the buffer half way through receiving graph data.</p>
@@ -241,17 +241,17 @@ export default observer((props: Props) => {
 
           <Typography variant="h4">Graph Management Commands</Typography>
 
-          <p>All graphing related commands start with <code>#PLOT:</code>. The command does not need be at the start of a graphing frame (i.e. random data can occur before the <code>#PLOT:</code> command). This allows commands to work with logging frameworks that automatically prefix all lines with timestamps and other metadata (e.g. module name, file name, function name, etc).</p>
+          <p>All graphing related commands start with <code>$NT:PLOT:</code>. The command does not need be at the start of a graphing frame (i.e. random data can occur before the <code>$NT:PLOT:</code> command). In Advanced Cmd Mode, NinjaTerm starts buffering when <code>$NT</code> is seen and processes the command when an unescaped <code>;</code> is received.</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a new plot (a plot is a single x/y graph with a titles, axes and traces)
-#PLOT:CREATE,id=plot1,title="Sensor Data";
+$NT:PLOT:CREATE,id=plot1,title="Sensor Data";
 
 // Create a plot with custom axis labels
-#PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";`}
+$NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";`}
           </pre>
 
-          <p>All <code>PLOT</code> commands must always be terminated with a <code>;</code> character. Commands start with <code>#PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. The following example shows how to send multiple commands:</p>
+          <p>All <code>PLOT</code> commands must always be terminated with an unescaped <code>;</code> character. Commands start with <code>$NT:PLOT:</code> and end with <code>;</code>. You can send multiple commands in sequence, each properly terminated. If a semicolon appears inside double quotes (e.g., in a title), it is treated as part of the string and not a terminator.</p>
 
           <Typography variant="h5">PLOT:CREATE Parameters</Typography>
           <p>The <code>PLOT:CREATE</code> command supports the following parameters:</p>
@@ -264,16 +264,16 @@ export default observer((props: Props) => {
           <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:CREATE,id=plot1;#PLOT:TRACE,plot=plot1,id=trace1;#PLOT:DATA,trace=trace1,data=[1,2,3,4,5];`}
+{`$NT:PLOT:CREATE,id=plot1;$NT:PLOT:TRACE,plot=plot1,id=trace1;$NT:PLOT:DATA,trace=trace1,data=[1,2,3,4,5];`}
           </pre>
 
           <p>Do not use non-ASCII characters in the commands as NinjaTerm does not support Unicode encodings such as UTF-8! For example, don't use the Omega symbol for the units of resistance in the axis labels!</p>
 
           <Typography variant="h4">Trace Management Commands</Typography>
 
-          <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>#PLOT:TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
+          <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>$NT:PLOT:TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
+{`$NT:PLOT:TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
           </pre>
 
           <p>A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down)</p>
@@ -294,7 +294,7 @@ export default observer((props: Props) => {
           <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
           <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=temp,data=1.23;`}
+{`$NT:PLOT:DATA,trace=temp,data=1.23;`}
           </pre>
 
           <p>You are allowed to send an extra comma after the last data value (IMO all data formats should allow this, I'm looking at you, JSON!), so you don't have to add conditional logic in your firmware to not generate the comma on the last data value.</p>
@@ -302,7 +302,7 @@ export default observer((props: Props) => {
           <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
 
 <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=temp,data=[1.25,1.28,1.31];`}
+{`$NT:PLOT:DATA,trace=temp,data=[1.25,1.28,1.31];`}
           </pre>
 
           <p>Remember that the timestamp is the time the data is received by NinjaTerm. Due to buffering, processing time and other work your computer might be doing, this timestamp might be quite different to the time the data was measured. If you need more accurate time stamping (e.g. better than 10-100ms resolution), timestamp the data on the microcontroller and use <code>xtype=data</code> instead, bundling the timestamp as the x value.</p>
@@ -311,38 +311,38 @@ export default observer((props: Props) => {
           <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Single y value (x auto-increments)
-#PLOT:DATA,trace=accel,data=9.81;
+$NT:PLOT:DATA,trace=accel,data=9.81;
 
 // Multiple y values (comma separated, x auto-increments for each)
-#PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
+$NT:PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
           </pre>
 
           <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
           <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`#PLOT:DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
+{`$NT:PLOT:DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
           </pre>
 
           <Typography variant="h4">Complete Example</Typography>
           <p>Here's a complete example showing how to create a multi-trace plot with custom axis labels:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Create a plot for sensor data with custom axis labels
-#PLOT:CREATE,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
+$NT:PLOT:CREATE,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
 
 // Create traces for different sensor types
-#PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
-#PLOT:TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
-#PLOT:TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
+$NT:PLOT:TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
+$NT:PLOT:TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
+$NT:PLOT:TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
 
 // Send data (your firmware would send these)
-#PLOT:DATA,trace=temp,data=25.6;
-#PLOT:DATA,trace=humidity,data=67.2;
-#PLOT:DATA,trace=pressure,data=1013.25;
+$NT:PLOT:DATA,trace=temp,data=25.6;
+$NT:PLOT:DATA,trace=humidity,data=67.2;
+$NT:PLOT:DATA,trace=pressure,data=1013.25;
 
 // Send more data points
-#PLOT:DATA,trace=temp,data=[25.8,26.1,25.9];
-#PLOT:DATA,trace=humidity,data=[68.1,67.8,69.2];
-#PLOT:DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
+$NT:PLOT:DATA,trace=temp,data=[25.8,26.1,25.9];
+$NT:PLOT:DATA,trace=humidity,data=[68.1,67.8,69.2];
+$NT:PLOT:DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
           </pre>
 
           <Typography variant="h4">Data Array Syntax</Typography>
@@ -357,12 +357,12 @@ export default observer((props: Props) => {
 
           <Typography variant="h4">Command Protocol Notes</Typography>
           <ul>
-            <li>Commands must start with <code>#PLOT:</code> and end with <code>;</code></li>
-            <li>Commands without proper <code>;</code> termination will be ignored</li>
+            <li>Commands must start with <code>$NT:PLOT:</code> and end with an unquoted <code>;</code></li>
+            <li>In Advanced Cmd Mode, NinjaTerm buffers from <code>$NT</code> until a <code>;</code> that is not inside quotes and processes that as a command</li>
+            <li>In Basic Prefix Mode, <code>$NT:PLOT:</code> commands are processed when the configured processing trigger (e.g., LF) is received</li>
             <li>Parameters are comma-separated key=value pairs</li>
             <li>Color values can be hex codes (e.g., <code>#FF0000</code>) or standard color names</li>
             <li>Trace IDs must be unique within their plot context</li>
-            <li>The command protocol is fully backward compatible with existing prefix-based graphing</li>
             <li>Multiple data points in a single DATA command can be separated by pipes (for x,y pairs) or commas (for y-only values)</li>
           </ul>
 
@@ -370,12 +370,12 @@ export default observer((props: Props) => {
           <p>Example showing the new syntax with multiple x,y data pairs separated by pipes:</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
 {`// Example with multiple x,y data pairs using pipe separator
-#PLOT:DATA,trace=temp,data=1,25|2,16|3,18;
+$NT:PLOT:DATA,trace=temp,data=1,25|2,16|3,18;
 
 // Complete workflow example
-#PLOT:CREATE,id=sensors,title="Temperature Log";
-#PLOT:TRACE,plot=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
-#PLOT:DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;`}
+$NT:PLOT:CREATE,id=sensors,title="Temperature Log";
+$NT:PLOT:TRACE,plot=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
+$NT:PLOT:DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;`}
           </pre>
 
         </Grid>
