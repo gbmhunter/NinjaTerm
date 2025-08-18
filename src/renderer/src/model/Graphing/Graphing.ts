@@ -350,8 +350,6 @@ class Graphing {
       }
 
     }
-
-    // console.log('graphData: ' + JSON.stringify(this.graphData));
   }
 
   /**
@@ -558,6 +556,9 @@ class Graphing {
   }
 
   updateXRangeFromData = () => {
+    /**
+     * Update the X min and max. values based on the limits in the received data.
+     */
     if (this.graphData.length === 0) {
       return;
     }
@@ -571,6 +572,9 @@ class Graphing {
   }
 
   updateYRangeFromData = () => {
+    /**
+     * Update the Y min and max. values based on the limits in the received data.
+     */
     if (this.graphData.length === 0) {
       return;
     }
@@ -598,6 +602,11 @@ class Graphing {
   }
 
   extractPlotCommands = (buffer: string): string[] => {
+    /**
+     * Extract all #PLOT: commands from the buffer.
+     *
+     * Returns an array of extracted commands.
+     */
     const commands: string[] = [];
     let startIndex = 0;
 
