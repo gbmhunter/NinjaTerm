@@ -256,7 +256,7 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
           <Typography variant="h5">PLOT:CREATE Parameters</Typography>
           <p>The <code>$NT:PLOT:CREATE</code> command supports the following parameters:</p>
 
-          <table>
+          <table className="documentation-table">
             <thead>
               <tr>
                 <th>Property</th>
@@ -305,7 +305,7 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
 
           <p>The <code>$NT:PLOT:TRACE</code> command supports the following parameters:</p>
 
-          <table>
+          <table className="documentation-table">
             <thead>
               <tr>
                 <th>Property</th>
@@ -339,9 +339,7 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
                     <li><code>data</code>: The x-axis will be the data itself. In this case you have to provide both the x and y values in the <code>PLOT:DATA</code> command. Works well for scatter plot style data.</li>
                   </ul>
                 </td>
-
               </tr>
-
             </tbody>
           </table>
 
@@ -349,10 +347,42 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
 
           <p>Once you have created a plot and a trace on the plot, use the <code>PLOT:DATA</code> command to add data points to the trace. This will draw the points on the graph.</p>
 
+          <p>The <code>$NT:PLOT:DATA</code> command supports the following parameters:</p>
+
+          <table className="documentation-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Required?</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>trace</code></td>
+                <td>Required</td>
+                <td>The trace to add the data to. The trace must have been created prior with the <code>PLOT:TRACE</code> command.</td>
+              </tr>
+              <tr>
+                <td><code>data</code></td>
+                <td>Required</td>
+                <td>
+                  The data to add to the trace. This is an array of values. There are two different syntaxes for the data array:
+                  <ul>
+                    <li>For y-only data (X values are either counters or timestamps calculated by NinjaTerm): <code>data=[1.23,4.56,7.89]</code></li>
+                    <li>For x,y data pairs: <code>data=[1,2|3,4|5,6]</code></li>
+                  </ul>
+                  More on this below.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+
           <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
-          <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per</p>
+          <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>PLOT:DATA</code> command, such as temperature sensor samples once per second.</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`$NT:PLOT:DATA,trace=temp,data=1.23;`}
+{`$NT:PLOT:DATA,trace=temp,data=[1.23];`}
           </pre>
 
           <p>You are allowed to send an extra comma after the last data value (IMO all data formats should allow this, I'm looking at you, JSON!), so you don't have to add conditional logic in your firmware to not generate the comma on the last data value.</p>
@@ -368,11 +398,7 @@ $NT:PLOT:CREATE,id=plot2,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Vo
           <Typography variant="h5">2. X-Axis Type: counter (auto-incrementing)</Typography>
           <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`// Single y value (x auto-increments)
-$NT:PLOT:DATA,trace=accel,data=9.81;
-
-// Multiple y values (comma separated, x auto-increments for each)
-$NT:PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
+{`$NT:PLOT:DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
           </pre>
 
           <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
