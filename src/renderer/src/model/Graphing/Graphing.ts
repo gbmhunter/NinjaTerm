@@ -118,7 +118,7 @@ class Graphing {
 	/**
 	 * The detection mode determines how graphing data is parsed.
 	 * Basic Prefix Mode: Uses processing triggers and y= prefix (legacy)
-	 * Advanced Cmd Mode: Uses $NT:PLOT: commands with ; termination
+	 * Advanced Cmd Mode: Uses $NT:GPH: commands with ; termination
 	 */
 	detectionMode = DetectionMode.BASIC_PREFIX;
 
@@ -299,7 +299,7 @@ class Graphing {
 	 *
 	 * This includes:
 	 * - Looking for prefixes in simple mode.
-	 * - Looking for $NT:PLOT: commands in advanced mode.
+	 * - Looking for $NT:GPH: commands in advanced mode.
 	 * - Accumulating data in a buffer until the processing trigger is received.
 	 *
 	 * Does nothing if graphing is not enabled.
@@ -352,8 +352,8 @@ class Graphing {
 
 					// Check for ';' outside of quotes
 					if (char === ';' && !this.advancedInQuotes) {
-						// Process only if it contains the new plot command prefix
-						if (this.rxDataBuffer.includes('$NT:PLOT:')) {
+						// Process only if it contains the new graph command prefix
+						if (this.rxDataBuffer.includes('$NT:GPH:')) {
 							this.parsePlotCommands(this.rxDataBuffer);
 						}
 						// Reset state after processing
@@ -650,14 +650,14 @@ class Graphing {
 
 	extractPlotCommands = (buffer: string): string[] => {
 		/**
-		 * Extract all $NT:PLOT: commands from the buffer, splitting on ';' that are outside quotes.
+		 * Extract all $NT:GPH: commands from the buffer, splitting on ';' that are outside quotes.
 		 *
 		 * Returns an array of extracted commands.
 		 */
 		const commands: string[] = [];
 		let startIndex = 0;
 
-		const prefix = '$NT:PLOT:';
+		const prefix = '$NT:GPH:';
 
 		while (true) {
 			// Find the next command starting at startIndex
@@ -702,17 +702,17 @@ class Graphing {
 		try {
 			// Remove prefix
 			let commandBody = '';
-			if (command.startsWith('$NT:PLOT:')) {
-				commandBody = command.substring('$NT:PLOT:'.length);
+			if (command.startsWith('$NT:GPH:')) {
+				commandBody = command.substring('$NT:GPH:'.length);
 			} else {
-				this.snackbar.sendToSnackbar('Unknown plot command prefix', 'warning');
+				this.snackbar.sendToSnackbar('Unknown graph command prefix', 'warning');
 				return;
 			}
 			const [action, ...paramParts] = commandBody.split(',');
 			const params = this.parseCommandParams(paramParts.join(','));
 
 			switch (action) {
-				case 'CREATE':
+				case 'ADD_FIG':
 					this.handleCreatePlot(params);
 					break;
 				case 'DELETE':
@@ -721,14 +721,14 @@ class Graphing {
 				case 'CLEAR':
 					this.handleClearPlot(params);
 					break;
-				case 'TRACE':
+				case 'ADD_TRACE':
 					this.handleCreateTrace(params);
 					break;
-				case 'DATA':
+				case 'ADD_DATA':
 					this.handleAddData(params);
 					break;
 				default:
-					this.snackbar.sendToSnackbar(`Unknown plot command: ${action}`, 'warning');
+					this.snackbar.sendToSnackbar(`Unknown graph command: ${action}`, 'warning');
 			}
 		} catch (error) {
 			this.snackbar.sendToSnackbar(`Error parsing plot command: ${error}`, 'error');
@@ -770,13 +770,13 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the PLOT:CREATE command.
+	 * Handles the GPH:ADD_FIG command.
 	 * @param params - The parameters of the command.
 	 */
 	handleCreatePlot = (params: Map<string, string>) => {
 		const id = params.get('id');
 		if (!id) {
-			this.snackbar.sendToSnackbar('PLOT:CREATE requires id parameter', 'warning');
+			this.snackbar.sendToSnackbar('GPH:ADD_FIG requires id parameter', 'warning');
 			return;
 		}
 		let title = params.get('title') || id;
@@ -806,13 +806,13 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the PLOT:DELETE command.
+	 * Handles the GPH:DELETE command.
 	 * @param params - The parameters of the command.
 	 */
 	handleDeletePlot = (params: Map<string, string>) => {
 		const plotId = params.get('plot');
 		if (!plotId) {
-			this.snackbar.sendToSnackbar('PLOT:DELETE requires plot parameter', 'warning');
+			this.snackbar.sendToSnackbar('GPH:DELETE requires plot parameter', 'warning');
 			return;
 		}
 
@@ -820,7 +820,7 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the PLOT:CLEAR command.
+	 * Handles the GPH:CLEAR command.
 	 * @param params - The parameters of the command.
 	 */
 	handleClearPlot = (params: Map<string, string>) => {
@@ -859,7 +859,7 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the PLOT:TRACE command.
+	 * Handles the GPH:ADD_TRACE command.
 	 * @param params - The parameters of the command.
 	 */
 	handleCreateTrace = (params: Map<string, string>) => {
@@ -867,7 +867,7 @@ class Graphing {
 		const traceId = params.get('id');
 
 		if (!plotId || !traceId) {
-			this.snackbar.sendToSnackbar('PLOT:TRACE requires plot and id parameters', 'warning');
+			this.snackbar.sendToSnackbar('GPH:ADD_TRACE requires plot and id parameters', 'warning');
 			return;
 		}
 
@@ -899,7 +899,7 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the PLOT:DATA command.
+	 * Handles the GPH:ADD_DATA command.
 	 * @param params - The parameters of the command.
 	 */
 	handleAddData = (params: Map<string, string>) => {
@@ -907,7 +907,7 @@ class Graphing {
 		const dataStr = params.get('data');
 
 		if (!traceId || !dataStr) {
-			this.snackbar.sendToSnackbar('PLOT:DATA requires trace and data parameters', 'warning');
+			this.snackbar.sendToSnackbar('GPH:ADD_DATA requires trace and data parameters', 'warning');
 			return;
 		}
 

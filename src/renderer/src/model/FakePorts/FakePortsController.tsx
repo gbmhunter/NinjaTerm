@@ -979,8 +979,8 @@ export default class FakePortsController {
 
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '$NT:PLOT:CREATE,id=env,title="Temperature";\n',
-            '$NT:PLOT:TRACE,plot=env,id=temp,name="Temperature (deg C)",color=#FF4444,xtype=timestamp;\n',
+            '$NT:GPH:ADD_FIG,id=env,title="Temperature";\n',
+            '$NT:GPH:ADD_TRACE,plot=env,id=temp,name="Temperature (deg C)",color=#FF4444,xtype=timestamp;\n',
           ];
 
           // Send setup commands immediately
@@ -992,7 +992,7 @@ export default class FakePortsController {
           const intervalId = setInterval(() => {
             // Simulate temperature: 20-30°C with daily variation
             const temp = 25 + 5 * Math.sin(Date.now() / 100000) + (Math.random() - 0.5) * 2;
-            const tempCommand = `$NT:PLOT:DATA,trace=temp,data=${temp.toFixed(1)};\n`;
+            const tempCommand = `$NT:GPH:ADD_DATA,trace=temp,data=${temp.toFixed(1)};\n`;
             app.parseRxData(new TextEncoder().encode(tempCommand));
           }, 1000); // 1 Hz
 
@@ -1019,10 +1019,10 @@ export default class FakePortsController {
 
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '$NT:PLOT:CREATE,id=accel,title="Accelerometer Data";\n',
-            '$NT:PLOT:TRACE,plot=accel,id=x,name="X-axis (g)",color=#FF0000,xtype=counter;\n',
-            '$NT:PLOT:TRACE,plot=accel,id=y,name="Y-axis (g)",color=#00FF00,xtype=counter;\n',
-            '$NT:PLOT:TRACE,plot=accel,id=z,name="Z-axis (g)",color=#0000FF,xtype=counter;\n'
+            '$NT:GPH:ADD_FIG,id=accel,title="Accelerometer Data";\n',
+            '$NT:GPH:ADD_TRACE,plot=accel,id=x,name="X-axis (g)",color=#FF0000,xtype=counter;\n',
+            '$NT:GPH:ADD_TRACE,plot=accel,id=y,name="Y-axis (g)",color=#00FF00,xtype=counter;\n',
+            '$NT:GPH:ADD_TRACE,plot=accel,id=z,name="Z-axis (g)",color=#0000FF,xtype=counter;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1036,9 +1036,9 @@ export default class FakePortsController {
             const yAccel = Math.cos(counter * 0.15) * 1.5 + (Math.random() - 0.5) * 0.5;
             const zAccel = 9.8 + Math.sin(counter * 0.05) * 0.3 + (Math.random() - 0.5) * 0.2; // Gravity + small variation
 
-            const xCommand = `$NT:PLOT:DATA,trace=x,data=${xAccel.toFixed(2)};\n`;
-            const yCommand = `$NT:PLOT:DATA,trace=y,data=${yAccel.toFixed(2)};\n`;
-            const zCommand = `$NT:PLOT:DATA,trace=z,data=${zAccel.toFixed(2)};\n`;
+            const xCommand = `$NT:GPH:ADD_DATA,trace=x,data=${xAccel.toFixed(2)};\n`;
+            const yCommand = `$NT:GPH:ADD_DATA,trace=y,data=${yAccel.toFixed(2)};\n`;
+            const zCommand = `$NT:GPH:ADD_DATA,trace=z,data=${zAccel.toFixed(2)};\n`;
 
             app.parseRxData(new TextEncoder().encode(xCommand));
             app.parseRxData(new TextEncoder().encode(yCommand));
@@ -1070,7 +1070,7 @@ export default class FakePortsController {
 
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '$NT:PLOT:CREATE,id=pos,title="Position Tracking";$NT:PLOT:TRACE,plot=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data;\n'
+            '$NT:GPH:ADD_FIG,id=pos,title="Position Tracking";$NT:GPH:ADD_TRACE,plot=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1084,7 +1084,7 @@ export default class FakePortsController {
             const x = radius * Math.cos(angle);
             const y = radius * Math.sin(angle);
 
-            const command = `$NT:PLOT:DATA,trace=path,data=${x.toFixed(2)},${y.toFixed(2)};\n`;
+            const command = `$NT:GPH:ADD_DATA,trace=path,data=${x.toFixed(2)},${y.toFixed(2)};\n`;
             app.parseRxData(new TextEncoder().encode(command));
 
             angle += 0.2;
@@ -1118,14 +1118,14 @@ export default class FakePortsController {
           // Setup sequence - create plots and traces
           const setupCommands = [
             // First plot: Three-phase sine waves
-            '$NT:PLOT:CREATE,id=sine_waves,title="Three-Phase Sine Waves",xlabel="Sample",ylabel="Amplitude";',
-            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_a,name="Phase A",color=#FF0000,xtype=counter;',
-            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_b,name="Phase B",color=#00FF00,xtype=counter;',
-            '$NT:PLOT:TRACE,plot=sine_waves,id=phase_c,name="Phase C",color=#0000FF,xtype=counter;',
+            '$NT:GPH:ADD_FIG,id=sine_waves,title="Three-Phase Sine Waves",xlabel="Sample",ylabel="Amplitude";',
+            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_a,name="Phase A",color=#FF0000,xtype=counter;',
+            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_b,name="Phase B",color=#00FF00,xtype=counter;',
+            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_c,name="Phase C",color=#0000FF,xtype=counter;',
             // Second plot: Temperature sensors
-            '$NT:PLOT:CREATE,id=temperature,title="Temperature Sensors",xlabel="Time (s)",ylabel="Temperature (°C)";',
-            '$NT:PLOT:TRACE,plot=temperature,id=sensor1,name="Sensor 1",color=#FF8000,xtype=timestamp;',
-            '$NT:PLOT:TRACE,plot=temperature,id=sensor2,name="Sensor 2",color=#8000FF,xtype=timestamp;\n'
+            '$NT:GPH:ADD_FIG,id=temperature,title="Temperature Sensors",xlabel="Time (s)",ylabel="Temperature (°C)";',
+            '$NT:GPH:ADD_TRACE,plot=temperature,id=sensor1,name="Sensor 1",color=#FF8000,xtype=timestamp;',
+            '$NT:GPH:ADD_TRACE,plot=temperature,id=sensor2,name="Sensor 2",color=#8000FF,xtype=timestamp;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1146,8 +1146,8 @@ export default class FakePortsController {
             const sensor1Temp = (baseTempSensor1 + (Math.random() - 0.5) * 0.5).toFixed(1);
             const sensor2Temp = (baseTempSensor2 + (Math.random() - 0.5) * 0.4).toFixed(1);
 
-            app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=sensor1,data=${sensor1Temp};\n`));
-            app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=sensor2,data=${sensor2Temp};\n`));
+            app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor1,data=${sensor1Temp};\n`));
+            app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=sensor2,data=${sensor2Temp};\n`));
 
             // Sine wave updates - every 3rd second (every 3rd callback)
             if (secondCounter % 3 === 0) {
@@ -1171,10 +1171,10 @@ export default class FakePortsController {
               }
 
               // Clear previous data and send new full cycles
-              app.parseRxData(new TextEncoder().encode('$NT:PLOT:CLEAR,plot=sine_waves;\n'));
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,plot=sine_waves;\n'));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
 
               sampleBatch++;
             }
@@ -1207,9 +1207,9 @@ export default class FakePortsController {
             if (phase === 0) {
               // Initial setup - create first plot
               const setupCommands = [
-                '$NT:PLOT:CREATE,id=dynamic1,title="Dynamic Plot 1";\n',
-                '$NT:PLOT:TRACE,plot=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter;\n',
-                '$NT:PLOT:TRACE,plot=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter;\n',
+                '$NT:GPH:ADD_FIG,id=dynamic1,title="Dynamic Plot 1";\n',
+                '$NT:GPH:ADD_TRACE,plot=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter;\n',
+                '$NT:GPH:ADD_TRACE,plot=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1223,8 +1223,8 @@ export default class FakePortsController {
               const wave1 = Math.sin(dataCounter * 0.2) * 10;
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
 
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=wave1,data=${wave1.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave1,data=${wave1.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
@@ -1234,15 +1234,15 @@ export default class FakePortsController {
 
             } else if (phase === 2) {
               // Clear one trace
-              app.parseRxData(new TextEncoder().encode('$NT:PLOT:CLEAR,trace=wave1;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,trace=wave1;\n'));
               app.parseRxData(new TextEncoder().encode('Cleared wave1 trace\n'));
               phase = 3;
 
             } else if (phase === 3) {
               // Create second plot
               const setupCommands = [
-                '$NT:PLOT:CREATE,id=dynamic2,title="Dynamic Plot 2";\n',
-                '$NT:PLOT:TRACE,plot=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
+                '$NT:GPH:ADD_FIG,id=dynamic2,title="Dynamic Plot 2";\n',
+                '$NT:GPH:ADD_TRACE,plot=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1256,8 +1256,8 @@ export default class FakePortsController {
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
               const ramp = (dataCounter % 20) * 0.5; // Sawtooth wave
 
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:PLOT:DATA,trace=ramp,data=${ramp.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=ramp,data=${ramp.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
@@ -1266,13 +1266,13 @@ export default class FakePortsController {
 
             } else if (phase === 5) {
               // Delete first plot and restart cycle
-              app.parseRxData(new TextEncoder().encode('$NT:PLOT:DELETE,plot=dynamic1;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,plot=dynamic1;\n'));
               app.parseRxData(new TextEncoder().encode('Deleted dynamic1 plot. Restarting cycle...\n'));
               phase = 0;
 
               // Wait a bit longer before restarting
               setTimeout(() => {
-                app.parseRxData(new TextEncoder().encode('$NT:PLOT:DELETE,plot=dynamic2;'));
+                app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,plot=dynamic2;'));
               }, 1000);
             }
           }, 500);

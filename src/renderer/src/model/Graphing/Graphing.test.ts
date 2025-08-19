@@ -50,40 +50,40 @@ describe('graphing tests', () => {
 
   describe('extractPlotCommands() works', () => {
     it('should not extract incomplete command without ; terminator', () => {
-      const buffer = '$NT:PLOT:CREATE,id=test,title="Test Plot"';
+      const buffer = '$NT:GPH:ADD_FIG,id=test,title="Test Plot"';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([]);
     });
 
     it('should extract single command with ; terminator', () => {
-      const buffer = '$NT:PLOT:CREATE,id=test,title="Test Plot";';
+      const buffer = '$NT:GPH:ADD_FIG,id=test,title="Test Plot";';
       const commands = graphing.extractPlotCommands(buffer);
-      expect(commands).toEqual(['$NT:PLOT:CREATE,id=test,title="Test Plot"']);
+      expect(commands).toEqual(['$NT:GPH:ADD_FIG,id=test,title="Test Plot"']);
     });
 
     it('should extract multiple commands with ; terminators', () => {
-      const buffer = '$NT:PLOT:CREATE,id=plot1;$NT:PLOT:TRACE,plot=plot1,id=trace1;$NT:PLOT:DATA,trace=trace1,data=[1,2,3];';
+      const buffer = '$NT:GPH:ADD_FIG,id=plot1;$NT:GPH:ADD_TRACE,plot=plot1,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3];';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
-        '$NT:PLOT:CREATE,id=plot1',
-        '$NT:PLOT:TRACE,plot=plot1,id=trace1',
-        '$NT:PLOT:DATA,trace=trace1,data=[1,2,3]'
+        '$NT:GPH:ADD_FIG,id=plot1',
+        '$NT:GPH:ADD_TRACE,plot=plot1,id=trace1',
+        '$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3]'
       ]);
     });
 
     it('should handle commands with text before and after', () => {
-      const buffer = 'Some log message $NT:PLOT:CREATE,id=test; more text $NT:PLOT:DELETE,plot=test; end';
+      const buffer = 'Some log message $NT:GPH:ADD_FIG,id=test; more text $NT:GPH:DELETE,plot=test; end';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
-        '$NT:PLOT:CREATE,id=test',
-        '$NT:PLOT:DELETE,plot=test'
+        '$NT:GPH:ADD_FIG,id=test',
+        '$NT:GPH:DELETE,plot=test'
       ]);
     });
 
     it('should only extract properly terminated commands', () => {
-      const buffer = '$NT:PLOT:CREATE,id=test1;$NT:PLOT:CREATE,id=test2';
+      const buffer = '$NT:GPH:ADD_FIG,id=test1;$NT:GPH:ADD_FIG,id=test2';
       const commands = graphing.extractPlotCommands(buffer);
-      expect(commands).toEqual(['$NT:PLOT:CREATE,id=test1']);
+      expect(commands).toEqual(['$NT:GPH:ADD_FIG,id=test1']);
     });
 
     it('should return empty array when no commands found', () => {
@@ -195,7 +195,7 @@ describe('graphing tests', () => {
       graphing.handleCreatePlot(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'PLOT:CREATE requires id parameter',
+        'GPH:ADD_FIG requires id parameter',
         'warning'
       );
       expect(graphing.plots.size).toBe(0);
@@ -221,7 +221,7 @@ describe('graphing tests', () => {
       graphing.handleDeletePlot(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'PLOT:DELETE requires plot parameter',
+        'GPH:DELETE requires plot parameter',
         'warning'
       );
     });
@@ -298,7 +298,7 @@ describe('graphing tests', () => {
       graphing.handleCreateTrace(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'PLOT:TRACE requires plot and id parameters',
+        'GPH:ADD_TRACE requires plot and id parameters',
         'warning'
       );
     });
@@ -496,7 +496,7 @@ describe('graphing tests', () => {
       graphing.handleAddData(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'PLOT:DATA requires trace and data parameters',
+        'GPH:ADD_DATA requires trace and data parameters',
         'warning'
       );
     });
@@ -532,11 +532,11 @@ describe('graphing tests', () => {
     it('should handle complete workflow with multiple commands', () => {
       const buffer = `
         Log message 1
-        $NT:PLOT:CREATE,id=sensors,title="Environmental Sensors";
-        $NT:PLOT:TRACE,plot=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
-        $NT:PLOT:TRACE,plot=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter;
-        $NT:PLOT:DATA,trace=temp,data=25.6;
-        $NT:PLOT:DATA,trace=humidity,data=67.2;
+        $NT:GPH:ADD_FIG,id=sensors,title="Environmental Sensors";
+        $NT:GPH:ADD_TRACE,plot=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
+        $NT:GPH:ADD_TRACE,plot=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter;
+        $NT:GPH:ADD_DATA,trace=temp,data=25.6;
+        $NT:GPH:ADD_DATA,trace=humidity,data=67.2;
         Log message 2
       `;
 
@@ -567,11 +567,11 @@ describe('graphing tests', () => {
 
     it('should handle complete workflow with axis labels', () => {
       const buffer = `
-        $NT:PLOT:CREATE,id=voltage_plot,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";
-        $NT:PLOT:TRACE,plot=voltage_plot,id=input_voltage,name="Input Voltage",color=#FF0000;
-        $NT:PLOT:TRACE,plot=voltage_plot,id=output_voltage,name="Output Voltage",color=#00FF00;
-        $NT:PLOT:DATA,trace=input_voltage,data=12.5;
-        $NT:PLOT:DATA,trace=output_voltage,data=5.0;
+        $NT:GPH:ADD_FIG,id=voltage_plot,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";
+        $NT:GPH:ADD_TRACE,plot=voltage_plot,id=input_voltage,name="Input Voltage",color=#FF0000;
+        $NT:GPH:ADD_TRACE,plot=voltage_plot,id=output_voltage,name="Output Voltage",color=#00FF00;
+        $NT:GPH:ADD_DATA,trace=input_voltage,data=12.5;
+        $NT:GPH:ADD_DATA,trace=output_voltage,data=5.0;
       `;
 
       graphing.parsePlotCommands(buffer);
@@ -601,12 +601,12 @@ describe('graphing tests', () => {
     });
 
     it('should handle parsing errors gracefully', () => {
-      const buffer = '$NT:PLOT:INVALID_COMMAND,param=value;';
+      const buffer = '$NT:GPH:INVALID_COMMAND,param=value;';
 
       graphing.parsePlotCommands(buffer);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'Unknown plot command: INVALID_COMMAND',
+        'Unknown graph command: INVALID_COMMAND',
         'warning'
       );
     });
@@ -615,7 +615,7 @@ describe('graphing tests', () => {
   describe('parseData() works', () => {
     it('should detect and parse plot commands in data stream', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      const data = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test";\n');
+      const data = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test,title="Test";\n');
 
       graphing.parseData(data);
 
@@ -632,7 +632,7 @@ describe('graphing tests', () => {
 
       // Then switch to Advanced Cmd Mode for command-based data
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      const commandData = new TextEncoder().encode('$NT:PLOT:CREATE,id=test;$NT:PLOT:TRACE,plot=test,id=trace1;$NT:PLOT:DATA,trace=trace1,data=30.0;\n');
+      const commandData = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test;$NT:GPH:ADD_TRACE,plot=test,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=30.0;\n');
       graphing.parseData(commandData);
 
       // Check both legacy and new data exist
@@ -653,9 +653,9 @@ describe('graphing tests', () => {
         const data = new TextEncoder().encode(dataAsString);
         graphing.parseData(data);
       }
-      encodeAndCallParseData('$NT:PLOT:CREATE,id=plot1,title="Plot 1";\n');
-      encodeAndCallParseData('$NT:PLOT:TRACE,plot=plot1,id=trace1,xtype=counter;\n');
-      encodeAndCallParseData('$NT:PLOT:DATA,trace=trace1,data=[1,2,3,4,5];\n');
+      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=plot1,title="Plot 1";\n');
+      encodeAndCallParseData('$NT:GPH:ADD_TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5];\n');
 
       const plots = graphing.plots;
       // Should be 1 plot
@@ -677,9 +677,9 @@ describe('graphing tests', () => {
         const data = new TextEncoder().encode(dataAsString);
         graphing.parseData(data);
       }
-      encodeAndCallParseData('$NT:PLOT:CREATE,id=plot1,title="Plot 1";\n');
-      encodeAndCallParseData('$NT:PLOT:TRACE,plot=plot1,id=trace1,xtype=counter;\n');
-      encodeAndCallParseData('$NT:PLOT:DATA,trace=trace1,data=[1,2,3,4,5,];\n');
+      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=plot1,title="Plot 1";\n');
+      encodeAndCallParseData('$NT:GPH:ADD_TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5,];\n');
 
       const plots = graphing.plots;
       // Should be 1 plot
@@ -714,13 +714,13 @@ describe('graphing tests', () => {
       expect(graphing.graphData[0].y).toBe(25.6);
     });
 
-    it('should NOT process $NT:PLOT commands in Basic Prefix Mode', () => {
+    it('should NOT process $NT:GPH commands in Basic Prefix Mode', () => {
       graphing.setDetectionMode(DetectionMode.BASIC_PREFIX);
 
-      // Send various $NT:PLOT commands that should be ignored
-      const createCommand = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test Plot";\n');
-      const traceCommand = new TextEncoder().encode('$NT:PLOT:TRACE,plot=test,id=trace1;\n');
-      const dataCommand = new TextEncoder().encode('$NT:PLOT:DATA,trace=trace1,data=25.6;\n');
+      // Send various $NT:GPH commands that should be ignored
+      const createCommand = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test,title="Test Plot";\n');
+      const traceCommand = new TextEncoder().encode('$NT:GPH:ADD_TRACE,plot=test,id=trace1;\n');
+      const dataCommand = new TextEncoder().encode('$NT:GPH:ADD_DATA,trace=trace1,data=25.6;\n');
 
       graphing.parseData(createCommand);
       graphing.parseData(traceCommand);
@@ -738,7 +738,7 @@ describe('graphing tests', () => {
     it('should parse $NT plot commands in Advanced Cmd Mode with unescaped semicolon terminator', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
-      const data = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test";\n');
+      const data = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test,title="Test";\n');
       graphing.parseData(data);
 
       const plot = graphing.plots.get('test');
@@ -749,7 +749,7 @@ describe('graphing tests', () => {
     it('should parse commands without processing trigger in Advanced Cmd Mode when terminated by ;', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
-      const data = new TextEncoder().encode('$NT:PLOT:CREATE,id=test,title="Test";');
+      const data = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test,title="Test";');
       graphing.parseData(data);
 
       const plot = graphing.plots.get('test');
@@ -779,8 +779,8 @@ describe('graphing tests', () => {
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
       // Send multiple commands in sequence with processing triggers
-      const data1 = new TextEncoder().encode('$NT:PLOT:CREATE,id=test1;\n');
-      const data2 = new TextEncoder().encode('$NT:PLOT:CREATE,id=test2;\n');
+      const data1 = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test1;\n');
+      const data2 = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test2;\n');
 
       graphing.parseData(data1);
       graphing.parseData(data2);
