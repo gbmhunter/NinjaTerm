@@ -980,7 +980,7 @@ export default class FakePortsController {
           // Setup sequence - create plot and traces
           const setupCommands = [
             '$NT:GPH:ADD_FIG,id=env,title="Temperature";\n',
-            '$NT:GPH:ADD_TRACE,plot=env,id=temp,name="Temperature (deg C)",color=#FF4444,xtype=timestamp;\n',
+            '$NT:GPH:ADD_TRACE,fig=env,id=temp,name="Temperature (deg C)",color=#FF4444,xtype=timestamp;\n',
           ];
 
           // Send setup commands immediately
@@ -1020,9 +1020,9 @@ export default class FakePortsController {
           // Setup sequence - create plot and traces
           const setupCommands = [
             '$NT:GPH:ADD_FIG,id=accel,title="Accelerometer Data";\n',
-            '$NT:GPH:ADD_TRACE,plot=accel,id=x,name="X-axis (g)",color=#FF0000,xtype=counter;\n',
-            '$NT:GPH:ADD_TRACE,plot=accel,id=y,name="Y-axis (g)",color=#00FF00,xtype=counter;\n',
-            '$NT:GPH:ADD_TRACE,plot=accel,id=z,name="Z-axis (g)",color=#0000FF,xtype=counter;\n'
+            '$NT:GPH:ADD_TRACE,fig=accel,id=x,name="X-axis (g)",color=#FF0000,xtype=counter;\n',
+            '$NT:GPH:ADD_TRACE,fig=accel,id=y,name="Y-axis (g)",color=#00FF00,xtype=counter;\n',
+            '$NT:GPH:ADD_TRACE,fig=accel,id=z,name="Z-axis (g)",color=#0000FF,xtype=counter;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1070,7 +1070,7 @@ export default class FakePortsController {
 
           // Setup sequence - create plot and traces
           const setupCommands = [
-            '$NT:GPH:ADD_FIG,id=pos,title="Position Tracking";$NT:GPH:ADD_TRACE,plot=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data;\n'
+            '$NT:GPH:ADD_FIG,id=pos,title="Position Tracking";$NT:GPH:ADD_TRACE,fig=pos,id=path,name="Robot Path",color=#FF00FF,xtype=data;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1119,13 +1119,13 @@ export default class FakePortsController {
           const setupCommands = [
             // First plot: Three-phase sine waves
             '$NT:GPH:ADD_FIG,id=sine_waves,title="Three-Phase Sine Waves",xlabel="Sample",ylabel="Amplitude";',
-            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_a,name="Phase A",color=#FF0000,xtype=counter;',
-            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_b,name="Phase B",color=#00FF00,xtype=counter;',
-            '$NT:GPH:ADD_TRACE,plot=sine_waves,id=phase_c,name="Phase C",color=#0000FF,xtype=counter;',
+            '$NT:GPH:ADD_TRACE,fig=sine_waves,id=phase_a,name="Phase A",color=#FF0000,xtype=counter;',
+            '$NT:GPH:ADD_TRACE,fig=sine_waves,id=phase_b,name="Phase B",color=#00FF00,xtype=counter;',
+            '$NT:GPH:ADD_TRACE,fig=sine_waves,id=phase_c,name="Phase C",color=#0000FF,xtype=counter;',
             // Second plot: Temperature sensors
             '$NT:GPH:ADD_FIG,id=temperature,title="Temperature Sensors",xlabel="Time (s)",ylabel="Temperature (°C)";',
-            '$NT:GPH:ADD_TRACE,plot=temperature,id=sensor1,name="Sensor 1",color=#FF8000,xtype=timestamp;',
-            '$NT:GPH:ADD_TRACE,plot=temperature,id=sensor2,name="Sensor 2",color=#8000FF,xtype=timestamp;\n'
+            '$NT:GPH:ADD_TRACE,fig=temperature,id=sensor1,name="Sensor 1",color=#FF8000,xtype=timestamp;',
+            '$NT:GPH:ADD_TRACE,fig=temperature,id=sensor2,name="Sensor 2",color=#8000FF,xtype=timestamp;\n'
           ];
 
           for (const command of setupCommands) {
@@ -1171,7 +1171,7 @@ export default class FakePortsController {
               }
 
               // Clear previous data and send new full cycles
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,plot=sine_waves;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,fig=sine_waves;\n'));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
@@ -1208,8 +1208,8 @@ export default class FakePortsController {
               // Initial setup - create first plot
               const setupCommands = [
                 '$NT:GPH:ADD_FIG,id=dynamic1,title="Dynamic Plot 1";\n',
-                '$NT:GPH:ADD_TRACE,plot=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter;\n',
-                '$NT:GPH:ADD_TRACE,plot=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter;\n',
+                '$NT:GPH:ADD_TRACE,fig=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter;\n',
+                '$NT:GPH:ADD_TRACE,fig=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1242,7 +1242,7 @@ export default class FakePortsController {
               // Create second plot
               const setupCommands = [
                 '$NT:GPH:ADD_FIG,id=dynamic2,title="Dynamic Plot 2";\n',
-                '$NT:GPH:ADD_TRACE,plot=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
+                '$NT:GPH:ADD_TRACE,fig=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1266,13 +1266,13 @@ export default class FakePortsController {
 
             } else if (phase === 5) {
               // Delete first plot and restart cycle
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,plot=dynamic1;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,fig=dynamic1;\n'));
               app.parseRxData(new TextEncoder().encode('Deleted dynamic1 plot. Restarting cycle...\n'));
               phase = 0;
 
               // Wait a bit longer before restarting
               setTimeout(() => {
-                app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,plot=dynamic2;'));
+                app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,fig=dynamic2;'));
               }, 1000);
             }
           }, 500);

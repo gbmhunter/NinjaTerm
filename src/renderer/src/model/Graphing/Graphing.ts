@@ -810,9 +810,9 @@ class Graphing {
 	 * @param params - The parameters of the command.
 	 */
 	handleDeletePlot = (params: Map<string, string>) => {
-		const plotId = params.get('plot');
+		const plotId = params.get('fig');
 		if (!plotId) {
-			this.snackbar.sendToSnackbar('GPH:DELETE requires plot parameter', 'warning');
+			this.snackbar.sendToSnackbar('GPH:DELETE requires fig parameter', 'warning');
 			return;
 		}
 
@@ -824,7 +824,7 @@ class Graphing {
 	 * @param params - The parameters of the command.
 	 */
 	handleClearPlot = (params: Map<string, string>) => {
-		const plotId = params.get('plot');
+		const plotId = params.get('fig');
 		const traceId = params.get('trace');
 
 		if (traceId && plotId) {
@@ -863,11 +863,11 @@ class Graphing {
 	 * @param params - The parameters of the command.
 	 */
 	handleCreateTrace = (params: Map<string, string>) => {
-		const plotId = params.get('plot');
+		const plotId = params.get('fig');
 		const traceId = params.get('id');
 
 		if (!plotId || !traceId) {
-			this.snackbar.sendToSnackbar('GPH:ADD_TRACE requires plot and id parameters', 'warning');
+			this.snackbar.sendToSnackbar('GPH:ADD_TRACE requires fig and id parameters', 'warning');
 			return;
 		}
 

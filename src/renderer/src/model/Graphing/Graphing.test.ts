@@ -62,21 +62,21 @@ describe('graphing tests', () => {
     });
 
     it('should extract multiple commands with ; terminators', () => {
-      const buffer = '$NT:GPH:ADD_FIG,id=plot1;$NT:GPH:ADD_TRACE,plot=plot1,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3];';
+      const buffer = '$NT:GPH:ADD_FIG,id=fig1;$NT:GPH:ADD_TRACE,fig=fig1,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3];';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
-        '$NT:GPH:ADD_FIG,id=plot1',
-        '$NT:GPH:ADD_TRACE,plot=plot1,id=trace1',
+        '$NT:GPH:ADD_FIG,id=fig1',
+        '$NT:GPH:ADD_TRACE,fig=fig1,id=trace1',
         '$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3]'
       ]);
     });
 
     it('should handle commands with text before and after', () => {
-      const buffer = 'Some log message $NT:GPH:ADD_FIG,id=test; more text $NT:GPH:DELETE,plot=test; end';
+      const buffer = 'Some log message $NT:GPH:ADD_FIG,id=test; more text $NT:GPH:DELETE,fig=test; end';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
         '$NT:GPH:ADD_FIG,id=test',
-        '$NT:GPH:DELETE,plot=test'
+        '$NT:GPH:DELETE,fig=test'
       ]);
     });
 
@@ -210,7 +210,7 @@ describe('graphing tests', () => {
     });
 
     it('should delete existing plot', () => {
-      const params = new Map([['plot', 'test']]);
+      const params = new Map([['fig', 'test']]);
       graphing.handleDeletePlot(params);
 
       expect(graphing.plots.has('test')).toBe(false);
@@ -221,7 +221,7 @@ describe('graphing tests', () => {
       graphing.handleDeletePlot(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'GPH:DELETE requires plot parameter',
+        'GPH:DELETE requires fig parameter',
         'warning'
       );
     });
@@ -230,13 +230,13 @@ describe('graphing tests', () => {
   describe('handleCreateTrace() works', () => {
     beforeEach(() => {
       // Create a test plot
-      const params = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
+      const params = new Map([['id', 'fig1'], ['title', 'Test Plot']]);
       graphing.handleCreatePlot(params);
     });
 
     it('should create trace with all parameters', () => {
       const params = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'trace1'],
         ['name', '"Temperature"'],
         ['color', '#00FF00'],
@@ -244,7 +244,7 @@ describe('graphing tests', () => {
       ]);
       graphing.handleCreateTrace(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('trace1');
       expect(trace).toBeDefined();
       expect(trace?.id).toBe('trace1');
@@ -255,12 +255,12 @@ describe('graphing tests', () => {
 
     it('should create trace with default values', () => {
       const params = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'trace2']
       ]);
       graphing.handleCreateTrace(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('trace2');
       expect(trace).toBeDefined();
       expect(trace?.name).toBe('trace2'); // Defaults to id
@@ -270,15 +270,15 @@ describe('graphing tests', () => {
 
     it('should assign different default colors to multiple traces', () => {
       // Create multiple traces without specifying colors
-      const trace1Params = new Map([['plot', 'plot1'], ['id', 'trace1']]);
-      const trace2Params = new Map([['plot', 'plot1'], ['id', 'trace2']]);
-      const trace3Params = new Map([['plot', 'plot1'], ['id', 'trace3']]);
+      const trace1Params = new Map([['fig', 'fig1'], ['id', 'trace1']]);
+      const trace2Params = new Map([['fig', 'fig1'], ['id', 'trace2']]);
+      const trace3Params = new Map([['fig', 'fig1'], ['id', 'trace3']]);
 
       graphing.handleCreateTrace(trace1Params);
       graphing.handleCreateTrace(trace2Params);
       graphing.handleCreateTrace(trace3Params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace1 = plot?.traces.get('trace1');
       const trace2 = plot?.traces.get('trace2');
       const trace3 = plot?.traces.get('trace3');
@@ -298,14 +298,14 @@ describe('graphing tests', () => {
       graphing.handleCreateTrace(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'GPH:ADD_TRACE requires plot and id parameters',
+        'GPH:ADD_TRACE requires fig and id parameters',
         'warning'
       );
     });
 
     it('should send warning when plot does not exist', () => {
       const params = new Map([
-        ['plot', 'nonexistent'],
+        ['fig', 'nonexistent'],
         ['id', 'trace1']
       ]);
       graphing.handleCreateTrace(params);
@@ -318,7 +318,7 @@ describe('graphing tests', () => {
 
     it('should send warning for invalid xtype', () => {
       const params = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'trace1'],
         ['xtype', 'invalid']
       ]);
@@ -334,16 +334,16 @@ describe('graphing tests', () => {
   describe('handleClearPlot() works', () => {
     beforeEach(() => {
       // Create test plot with traces
-      const plotParams = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
+      const plotParams = new Map([['id', 'fig1'], ['title', 'Test Plot']]);
       graphing.handleCreatePlot(plotParams);
 
-      const traceParams1 = new Map([['plot', 'plot1'], ['id', 'trace1']]);
-      const traceParams2 = new Map([['plot', 'plot1'], ['id', 'trace2']]);
+      const traceParams1 = new Map([['fig', 'fig1'], ['id', 'trace1']]);
+      const traceParams2 = new Map([['fig', 'fig1'], ['id', 'trace2']]);
       graphing.handleCreateTrace(traceParams1);
       graphing.handleCreateTrace(traceParams2);
 
       // Add some test data
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       plot?.traces.get('trace1')?.data.push({ x: 1, y: 2 });
       plot?.traces.get('trace2')?.data.push({ x: 3, y: 4 });
       if (plot?.traces.get('trace1')) plot.traces.get('trace1')!.counter = 5;
@@ -351,10 +351,10 @@ describe('graphing tests', () => {
     });
 
     it('should clear specific trace in specific plot', () => {
-      const params = new Map([['plot', 'plot1'], ['trace', 'trace1']]);
+      const params = new Map([['fig', 'fig1'], ['trace', 'trace1']]);
       graphing.handleClearPlot(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace1 = plot?.traces.get('trace1');
       const trace2 = plot?.traces.get('trace2');
 
@@ -365,10 +365,10 @@ describe('graphing tests', () => {
     });
 
     it('should clear all traces in specific plot', () => {
-      const params = new Map([['plot', 'plot1']]);
+      const params = new Map([['fig', 'fig1']]);
       graphing.handleClearPlot(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace1 = plot?.traces.get('trace1');
       const trace2 = plot?.traces.get('trace2');
 
@@ -382,12 +382,12 @@ describe('graphing tests', () => {
   describe('handleAddData() works', () => {
     beforeEach(() => {
       // Create test plot with different trace types
-      const plotParams = new Map([['id', 'plot1'], ['title', 'Test Plot']]);
+      const plotParams = new Map([['id', 'fig1'], ['title', 'Test Plot']]);
       graphing.handleCreatePlot(plotParams);
 
       // Timestamp trace
       const timestampTrace = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'temp'],
         ['xtype', 'timestamp']
       ]);
@@ -395,7 +395,7 @@ describe('graphing tests', () => {
 
       // Counter trace
       const counterTrace = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'counter'],
         ['xtype', 'counter']
       ]);
@@ -403,7 +403,7 @@ describe('graphing tests', () => {
 
       // Data trace
       const dataTrace = new Map([
-        ['plot', 'plot1'],
+        ['fig', 'fig1'],
         ['id', 'position'],
         ['xtype', 'data']
       ]);
@@ -416,7 +416,7 @@ describe('graphing tests', () => {
       graphing.handleAddData(params);
       const endTime = Date.now();
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(1);
       expect(trace?.data[0].y).toBe(25.6);
@@ -429,7 +429,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'temp'], ['data', '25.6,26.1,25.9']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(3);
       expect(trace?.data[0].y).toBe(25.6);
@@ -444,7 +444,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'counter'], ['data', '9.81']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('counter');
       expect(trace?.data.length).toBe(1);
       expect(trace?.data[0].x).toBe(0); // First counter value
@@ -456,7 +456,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'counter'], ['data', '9.81,9.82,9.79']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('counter');
       expect(trace?.data.length).toBe(3);
       expect(trace?.data[0].x).toBe(0);
@@ -472,7 +472,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'position'], ['data', '1.0,25.6']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('position');
       expect(trace?.data.length).toBe(1);
       expect(trace?.data[0].x).toBe(1.0);
@@ -483,7 +483,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'position'], ['data', '1.0,25.6|2.0,26.1|3.0,25.9']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('position');
       expect(trace?.data.length).toBe(3);
       expect(trace?.data[0]).toEqual({ x: 1.0, y: 25.6 });
@@ -520,7 +520,7 @@ describe('graphing tests', () => {
       const params = new Map([['trace', 'temp'], ['data', '1,2,3,4,5']]);
       graphing.handleAddData(params);
 
-      const plot = graphing.plots.get('plot1');
+      const plot = graphing.plots.get('fig1');
       const trace = plot?.traces.get('temp');
       expect(trace?.data.length).toBe(2); // Should be limited
       expect(trace?.data[0].y).toBe(4); // Oldest points removed
@@ -533,8 +533,8 @@ describe('graphing tests', () => {
       const buffer = `
         Log message 1
         $NT:GPH:ADD_FIG,id=sensors,title="Environmental Sensors";
-        $NT:GPH:ADD_TRACE,plot=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
-        $NT:GPH:ADD_TRACE,plot=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter;
+        $NT:GPH:ADD_TRACE,fig=sensors,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;
+        $NT:GPH:ADD_TRACE,fig=sensors,id=humidity,name="Humidity",color=#0000FF,xtype=counter;
         $NT:GPH:ADD_DATA,trace=temp,data=25.6;
         $NT:GPH:ADD_DATA,trace=humidity,data=67.2;
         Log message 2
@@ -568,8 +568,8 @@ describe('graphing tests', () => {
     it('should handle complete workflow with axis labels', () => {
       const buffer = `
         $NT:GPH:ADD_FIG,id=voltage_plot,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";
-        $NT:GPH:ADD_TRACE,plot=voltage_plot,id=input_voltage,name="Input Voltage",color=#FF0000;
-        $NT:GPH:ADD_TRACE,plot=voltage_plot,id=output_voltage,name="Output Voltage",color=#00FF00;
+        $NT:GPH:ADD_TRACE,fig=voltage_plot,id=input_voltage,name="Input Voltage",color=#FF0000;
+        $NT:GPH:ADD_TRACE,fig=voltage_plot,id=output_voltage,name="Output Voltage",color=#00FF00;
         $NT:GPH:ADD_DATA,trace=input_voltage,data=12.5;
         $NT:GPH:ADD_DATA,trace=output_voltage,data=5.0;
       `;
@@ -632,7 +632,7 @@ describe('graphing tests', () => {
 
       // Then switch to Advanced Cmd Mode for command-based data
       graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
-      const commandData = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test;$NT:GPH:ADD_TRACE,plot=test,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=30.0;\n');
+      const commandData = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test;$NT:GPH:ADD_TRACE,fig=test,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=30.0;\n');
       graphing.parseData(commandData);
 
       // Check both legacy and new data exist
@@ -653,14 +653,14 @@ describe('graphing tests', () => {
         const data = new TextEncoder().encode(dataAsString);
         graphing.parseData(data);
       }
-      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=plot1,title="Plot 1";\n');
-      encodeAndCallParseData('$NT:GPH:ADD_TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=fig1,title="Plot 1";\n');
+      encodeAndCallParseData('$NT:GPH:ADD_TRACE,fig=fig1,id=trace1,xtype=counter;\n');
       encodeAndCallParseData('$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5];\n');
 
       const plots = graphing.plots;
       // Should be 1 plot
       expect(plots.size).toBe(1);
-      const plot = plots.get('plot1');
+      const plot = plots.get('fig1');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Plot 1');
       expect(plot?.traces.size).toBe(1);
@@ -677,14 +677,14 @@ describe('graphing tests', () => {
         const data = new TextEncoder().encode(dataAsString);
         graphing.parseData(data);
       }
-      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=plot1,title="Plot 1";\n');
-      encodeAndCallParseData('$NT:GPH:ADD_TRACE,plot=plot1,id=trace1,xtype=counter;\n');
+      encodeAndCallParseData('$NT:GPH:ADD_FIG,id=fig1,title="Plot 1";\n');
+      encodeAndCallParseData('$NT:GPH:ADD_TRACE,fig=fig1,id=trace1,xtype=counter;\n');
       encodeAndCallParseData('$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5,];\n');
 
       const plots = graphing.plots;
       // Should be 1 plot
       expect(plots.size).toBe(1);
-      const plot = plots.get('plot1');
+      const plot = plots.get('fig1');
       expect(plot).toBeDefined();
       expect(plot?.title).toBe('Plot 1');
       expect(plot?.traces.size).toBe(1);
@@ -719,7 +719,7 @@ describe('graphing tests', () => {
 
       // Send various $NT:GPH commands that should be ignored
       const createCommand = new TextEncoder().encode('$NT:GPH:ADD_FIG,id=test,title="Test Plot";\n');
-      const traceCommand = new TextEncoder().encode('$NT:GPH:ADD_TRACE,plot=test,id=trace1;\n');
+      const traceCommand = new TextEncoder().encode('$NT:GPH:ADD_TRACE,fig=test,id=trace1;\n');
       const dataCommand = new TextEncoder().encode('$NT:GPH:ADD_DATA,trace=trace1,data=25.6;\n');
 
       graphing.parseData(createCommand);

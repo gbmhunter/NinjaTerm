@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Added $NT as a prefix for all commands.
+- Added GPH as a prefix for all graphing commands.
+- In advanced command mode, NinjaTerm now starts buffering when $NT is seen and processes the command when a ; is received that is not inside double quotes.
+- Changed the naming from "plot" to "fig" in the graphing commands.
+- Added a fake port for demoing the graphing feature.
+
 ## [5.2.0] - 2025-08-17
 
 ### Added

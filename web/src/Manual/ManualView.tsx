@@ -296,7 +296,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
           <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
 
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`$NT:GPH:ADD_FIG,id=plot1;$NT:GPH:ADD_TRACE,plot=plot1,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5];`}
+{`$NT:GPH:ADD_FIG,id=fig1;$NT:GPH:ADD_TRACE,fig=fig1,id=trace1;$NT:GPH:ADD_DATA,trace=trace1,data=[1,2,3,4,5];`}
           </pre>
 
           <p>Do not use non-ASCII characters in the commands as NinjaTerm does not support Unicode encodings such as UTF-8! For example, don't use the Omega symbol for the units of resistance in the axis labels!</p>
@@ -305,7 +305,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
           <p>A trace is a individual data series on a plot. Traces need to be created before data can be added to them. Create a new trace on a plot with the <code>$NT:GPH:ADD_TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
           <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
-{`$NT:GPH:ADD_TRACE,plot=plot1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
+{`$NT:GPH:ADD_TRACE,fig=fig1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
           </pre>
 
           <p>The <code>$NT:GPH:ADD_TRACE</code> command supports the following parameters:</p>
@@ -320,9 +320,14 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
             </thead>
             <tbody>
               <tr>
+                <td><code>fig</code></td>
+                <td>Required</td>
+                <td>The ID of the figure that this trace will be added to. The figure must have been created prior with the <code>GPH:ADD_FIG</code> command.</td>
+              </tr>
+              <tr>
                 <td><code>id</code></td>
                 <td>Required</td>
-                <td>Unique identifier for the trace. A trace must have a unique ID not just within its plot, but also across all plots. This is that you don't have to specify both the plot ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down).</td>
+                <td>Unique identifier for the trace. A trace must have a unique ID not just within its figure, but also across all figures. This is so that you don't have to specify both the figure ID and trace ID when adding data to a trace (keeps the serial bandwidth requirements down).</td>
               </tr>
               <tr>
                 <td><code>name</code></td>
@@ -375,7 +380,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
                   The data to add to the trace. This is an array of values. There are two different syntaxes for the data array:
                   <ul>
                     <li>For y-only data (X values are either counters or timestamps calculated by NinjaTerm): <code>data=[1.23,4.56,7.89]</code></li>
-                    <li>For x,y data pairs: <code>data=[1,2|3,4|5,6]</code></li>
+                    <li>For x,y data pairs: Use the comma to separate the x and y values, and the pipe to separate the data points. For example: <code>data=[1,2|3,4|5,6]</code></li>
                   </ul>
                   More on this below.
                 </td>
@@ -419,9 +424,9 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 $NT:GPH:ADD_FIG,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
 
 // Create traces for different sensor types
-$NT:GPH:ADD_TRACE,plot=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
-$NT:GPH:ADD_TRACE,plot=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
-$NT:GPH:ADD_TRACE,plot=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
+$NT:GPH:ADD_TRACE,fig=sensors,id=temp,name="Temperature (°C)",color=#FF4444,xtype=timestamp;
+$NT:GPH:ADD_TRACE,fig=sensors,id=humidity,name="Humidity (%)",color=#4444FF,xtype=timestamp;
+$NT:GPH:ADD_TRACE,fig=sensors,id=pressure,name="Pressure (hPa)",color=#44FF44,xtype=timestamp;
 
 // Send data (your firmware would send these)
 $NT:GPH:ADD_DATA,trace=temp,data=25.6;
@@ -463,7 +468,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=1,25|2,16|3,18;
 
 // Complete workflow example
 $NT:GPH:ADD_FIG,id=sensors,title="Temperature Log";
-$NT:GPH:ADD_TRACE,plot=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
+$NT:GPH:ADD_TRACE,fig=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
 $NT:GPH:ADD_DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;`}
           </pre>
 
