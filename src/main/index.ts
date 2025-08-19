@@ -7,14 +7,34 @@ import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 
+// Looks to be a module issue with Electron here, import as single package and destructure manually
+import nodeMachineIdPkg from 'node-machine-id';
+
 import Analytics from 'electron-google-analytics4';
 
 // Initialize Google Analytics 4
 // Secret key is created in Google Analytics web console, see https://www.npmjs.com/package/electron-google-analytics4#secretkey-issuance-guide for more information.
 let analytics: Analytics | null = null;
+
+// The electron-google-analytics4 package uses the machineId automatically if we don't provide it as the clientID. However, let's do it manually as it's useful for debugging and for future uses.
+// Using the machineId as the clientID is appropriate to distinguish "users" in analytics.
+const usersMachineId = nodeMachineIdPkg.machineIdSync();
+console.log('Machine ID: ', usersMachineId);
+
+// Only initialize Google Analytics 4 in production
 if (app.isPackaged) {
   console.log('Initializing Google Analytics 4 in production');
-  analytics = new Analytics('G-SDMMGN71FN', '8fOMUz9KRsaqiRtJdA0tYQ');
+  analytics = new Analytics(
+    'G-SDMMGN71FN',
+    '8fOMUz9KRsaqiRtJdA0tYQ',
+    usersMachineId
+    );
+    // Setting the engagement time means that users will shows up in the Google Analytics console
+    // in the real time section
+    analytics.set('engagement_time_msec', 1000);
+    // This sets the page title in the Google Analytics console.
+    // TODO: Change this as users move around the app
+    analytics.set('page_title', 'app://home');
 } else {
   console.log('Detected dev. environment, not initializing Google Analytics.');
 }
