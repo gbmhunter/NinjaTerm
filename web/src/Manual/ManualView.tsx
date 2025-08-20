@@ -371,37 +371,41 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 {/* ==================================================================== */}
 <Typography variant="h4">GPH:ADD_DATA</Typography>
 
-<p>Once you have created a plot and a trace on the plot, use the <code>$NT:GPH:ADD_DATA</code> command to add data points to the trace. This will draw the points on the graph.</p>
+<p>Once you have created a plot and a trace on the plot, use the <code>$NT:GPH:ADD_DATA</code> command to add data points to the trace. This will draw the points on the graph. For example:</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`$NT:GPH:ADD_DATA,trace=temp,data=[1.23,4.56,7.89];`}
+</pre>
 
 <p>The <code>$NT:GPH:ADD_DATA</code> command supports the following parameters:</p>
 
 <table className="documentation-table">
-<thead>
-  <tr>
-    <th>Property</th>
-    <th>Required?</th>
-    <th>Description</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td><code>trace</code></td>
-    <td>Required</td>
-    <td>The trace to add the data to. The trace must have been created prior with the <code>$NT:GPH:ADD_TRACE</code> command.</td>
-  </tr>
-  <tr>
-    <td><code>data</code></td>
-    <td>Required</td>
-    <td>
-      The data to add to the trace. This is an array of values. There are two different syntaxes for the data array:
-      <ul>
-        <li>For y-only data (X values are either counters or timestamps calculated by NinjaTerm): <code>data=[1.23,4.56,7.89]</code></li>
-        <li>For x,y data pairs: Use the comma to separate the x and y values, and the pipe to separate the data points. For example: <code>data=[1,2|3,4|5,6]</code></li>
-      </ul>
-      More on this below.
-    </td>
-  </tr>
-</tbody>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Required?</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>trace</code></td>
+      <td>Required</td>
+      <td>The ID of the trace to add the data to. The trace must have been created prior with the <code>$NT:GPH:ADD_TRACE</code> command.</td>
+    </tr>
+    <tr>
+      <td><code>data</code></td>
+      <td>Required</td>
+      <td>
+        The data to add to the trace. This is an array of values. There are two different syntaxes for the data array:
+        <ul>
+          <li>For y-only data (X values are either counters or timestamps calculated by NinjaTerm): <code>data=[1.23,4.56,7.89]</code></li>
+          <li>For x,y data pairs: Use the comma to separate the x and y values, and the pipe to separate the data points. For example: <code>data=[1,2|3,4|5,6]</code></li>
+        </ul>
+        The array can contain single values. More on this below.
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
@@ -433,6 +437,9 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 {`$NT:GPH:ADD_DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
 </pre>
 
+{/* ==================================================================== */}
+{/* Complete Example */}
+{/* ==================================================================== */}
 <Typography variant="h4">Complete Example</Typography>
 <p>Here's a complete example showing how to create a multi-trace plot with custom axis labels:</p>
 <pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
@@ -455,7 +462,102 @@ $NT:GPH:ADD_DATA,trace=humidity,data=[68.1,67.8,69.2];
 $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
 </pre>
 
+{/* ==================================================================== */}
+{/* Clearing and Deleting */}
+{/* ==================================================================== */}
+
+<Typography variant="h4">Clearing and Deleting</Typography>
+
+<p>NinjaTerm provides a number of way of clearing and deleting figures and traces. This is useful for a number of reasons, such as:</p>
+
+<ul>
+<li>Clearing everything when the MCU starts up to start fresh on reset.</li>
+<li>Updating a figure without appending, i.e. if you take many samples of something at once, and want to refresh the old samples with the new samples.</li>
+</ul>
+
+<Typography variant="h5">Clearing a Figure</Typography>
+
+<p>Use the command <code>$NT:GPH:CLR_FIG</code> to clear all data from a plot. This will leave the figure on the screen (i.e. it won't delete the figure), but will delete all traces from it. Here is an example:</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`$NT:GPH:CLR_FIG,fig=fig1;`}
+</pre>
+
+<p>The <code>$NT:GPH:CLR_FIG</code> command supports the following parameters:</p>
+
+<table className="documentation-table">
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Required?</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fig</code></td>
+      <td>Required</td>
+      <td>The figure ID to clear all data from.</td>
+    </tr>
+  </tbody>
+</table>
+
+<Typography variant="h5">Deleting a Figure</Typography>
+
+<p>Use the command <code>$NT:GPH:DEL_FIG</code> to delete a figure. This will delete the figure (remove it from the screen) and all traces from it. Here is an example:</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`$NT:GPH:DEL_FIG,fig=fig1;`}
+</pre>
+
+<p>The <code>$NT:GPH:DEL_FIG</code> command supports the following parameters:</p>
+
+<table className="documentation-table">
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Required?</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fig</code></td>
+      <td>Required</td>
+      <td>The figure ID to delete.</td>
+    </tr>
+  </tbody>
+</table>
+
+<Typography variant="h5">Deleting a Trace</Typography>
+
+<p>Use the command <code>$NT:GPH:DEL_TRACE</code> to delete a trace. This will delete the trace from the figure it is added to. Here is an example:</p>
+
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+{`$NT:GPH:DEL_TRACE,trace=temp;`}
+</pre>
+
+<p>The <code>$NT:GPH:DEL_TRACE</code> command supports the following parameters:</p>
+
+<table className="documentation-table">
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Required?</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>trace</code></td>
+      <td>Required</td>
+      <td>The trace ID to delete.</td>
+    </tr>
+  </tbody>
+</table>
+
 <Typography variant="h4">Data Array Syntax</Typography>
+
 <p>When providing multiple data points in a single <code>GPH:ADD_DATA</code> command, you must enclose the comma-separated values in square brackets. This prevents confusion between parameter separators and data separators.</p>
 
 <p><strong>Examples:</strong></p>
