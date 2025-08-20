@@ -22,3 +22,59 @@
 h2 {
   margin-bottom: 10px;
 }
+
+/* Table styling for better readability */
+.documentation-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.documentation-table th {
+  background-color: #404040;
+  color: #ffffff;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 2px solid #555;
+}
+
+.documentation-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #555;
+}
+
+.documentation-table tbody tr:nth-child(even) {
+  background-color: #2a2a2a;
+}
+
+.documentation-table tbody tr:nth-child(odd) {
+  background-color: #333333;
+}
+
+.documentation-table tbody tr:hover {
+  background-color: #3a3a3a;
+  transition: background-color 0.2s ease;
+}
+
+/* General code styling for all inline code elements */
+code {
+  background-color: #1a1a1a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #e47f37;
+  border: 1px solid #333;
+}
+
+.documentation-table code {
+  background-color: #1a1a1a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: #e47f37;
+}
