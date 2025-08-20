@@ -1,7 +1,7 @@
 {
   "name": "ninjaterm",
   "productName": "NinjaTerm",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "A modern, powerful serial terminal for developers and engineers.",
   "author": {
     "name": "Geoffrey Hunter",

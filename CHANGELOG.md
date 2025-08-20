@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.3.0] - 2025-08-20
+
 ### Added
 
 - Added a "Download NinjaTerm Desktop" modal to the web version of NinjaTerm.
@@ -896,7 +898,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.2.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.1...v5.2.0
 [5.1.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.0...v5.1.1
 [5.1.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.0.4...v5.1.0
