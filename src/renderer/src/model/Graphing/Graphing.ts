@@ -715,14 +715,17 @@ class Graphing {
 				case 'ADD_FIG':
 					this.handleCreatePlot(params);
 					break;
-				case 'DELETE':
+				case 'DEL_FIG':
 					this.handleDeletePlot(params);
 					break;
-				case 'CLEAR':
+				case 'CLR_FIG':
 					this.handleClearPlot(params);
 					break;
 				case 'ADD_TRACE':
 					this.handleCreateTrace(params);
+					break;
+				case 'DEL_TRACE':
+					this.handleDeleteTrace(params);
 					break;
 				case 'ADD_DATA':
 					this.handleAddData(params);
@@ -806,13 +809,13 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the GPH:DELETE command.
+	 * Handles the GPH:DEL_FIG command.
 	 * @param params - The parameters of the command.
 	 */
 	handleDeletePlot = (params: Map<string, string>) => {
 		const plotId = params.get('fig');
 		if (!plotId) {
-			this.snackbar.sendToSnackbar('GPH:DELETE requires fig parameter', 'warning');
+			this.snackbar.sendToSnackbar('GPH:DEL_FIG requires fig parameter', 'warning');
 			return;
 		}
 
@@ -820,40 +823,42 @@ class Graphing {
 	}
 
 	/**
-	 * Handles the GPH:CLEAR command.
+	 * Handles the GPH:CLR_FIG command.
 	 * @param params - The parameters of the command.
 	 */
 	handleClearPlot = (params: Map<string, string>) => {
 		const plotId = params.get('fig');
-		const traceId = params.get('trace');
+		if (!plotId) {
+			this.snackbar.sendToSnackbar('GPH:CLR_FIG requires fig parameter', 'warning');
+			return;
+		}
 
-		if (traceId && plotId) {
-			// Clear specific trace in specific plot
-			const plot = this.plots.get(plotId);
-			if (plot) {
-				const trace = plot.traces.get(traceId);
-				if (trace) {
-					trace.data = [];
-					trace.counter = 0;
-				}
+		// Clear all traces in the specified plot
+		const plot = this.plots.get(plotId);
+		if (plot) {
+			for (const trace of plot.traces.values()) {
+				trace.data = [];
+				trace.counter = 0;
 			}
-		} else if (traceId) {
-			// Clear trace in all plots
-			for (const plot of this.plots.values()) {
-				const trace = plot.traces.get(traceId);
-				if (trace) {
-					trace.data = [];
-					trace.counter = 0;
-				}
-			}
-		} else if (plotId) {
-			// Clear all traces in specific plot
-			const plot = this.plots.get(plotId);
-			if (plot) {
-				for (const trace of plot.traces.values()) {
-					trace.data = [];
-					trace.counter = 0;
-				}
+		}
+	}
+
+	/**
+	 * Handles the GPH:DEL_TRACE command.
+	 * @param params - The parameters of the command.
+	 */
+	handleDeleteTrace = (params: Map<string, string>) => {
+		const traceId = params.get('trace');
+		if (!traceId) {
+			this.snackbar.sendToSnackbar('GPH:DEL_TRACE requires trace parameter', 'warning');
+			return;
+		}
+
+		// Find and delete the trace from any plot that contains it
+		for (const plot of this.plots.values()) {
+			if (plot.traces.has(traceId)) {
+				plot.traces.delete(traceId);
+				break; // Trace IDs are unique, so we can stop after finding it
 			}
 		}
 	}

@@ -1171,7 +1171,7 @@ export default class FakePortsController {
               }
 
               // Clear previous data and send new full cycles
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,fig=sine_waves;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=sine_waves;\n'));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
@@ -1191,12 +1191,12 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // Command Based Graphing Demo - Dynamic Plot Management
+    // Creating and Deleting Figures
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'Command Based Graphing Demo: Dynamic Plot Management',
-        'Demonstrates command based graphing with creating, clearing, and deleting plots dynamically.',
+        'Creating and Deleting Figures',
+        'Demonstrates command based graphing with creating, clearing, and deleting figures and traces.',
         () => {
           app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
 
@@ -1207,9 +1207,9 @@ export default class FakePortsController {
             if (phase === 0) {
               // Initial setup - create first plot
               const setupCommands = [
-                '$NT:GPH:ADD_FIG,id=dynamic1,title="Dynamic Plot 1";\n',
-                '$NT:GPH:ADD_TRACE,fig=dynamic1,id=wave1,name="Wave 1",color=#FF6600,xtype=counter;\n',
-                '$NT:GPH:ADD_TRACE,fig=dynamic1,id=wave2,name="Wave 2",color=#6600FF,xtype=counter;\n',
+                '$NT:GPH:ADD_FIG,id=fig1,title="Figure 1";\n',
+                '$NT:GPH:ADD_TRACE,fig=fig1,id=trace1,name="Wave 1",color=#FF6600,xtype=counter;\n',
+                '$NT:GPH:ADD_TRACE,fig=fig1,id=trace2,name="Wave 2",color=#6600FF,xtype=counter;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1223,8 +1223,8 @@ export default class FakePortsController {
               const wave1 = Math.sin(dataCounter * 0.2) * 10;
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
 
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave1,data=${wave1.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace1,data=${wave1.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
@@ -1233,16 +1233,16 @@ export default class FakePortsController {
               }
 
             } else if (phase === 2) {
-              // Clear one trace
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLEAR,trace=wave1;\n'));
-              app.parseRxData(new TextEncoder().encode('Cleared wave1 trace\n'));
+              // Delete one trace
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_TRACE,trace=trace1;\n'));
+              app.parseRxData(new TextEncoder().encode('Deleted trace1 trace.\n'));
               phase = 3;
 
             } else if (phase === 3) {
               // Create second plot
               const setupCommands = [
-                '$NT:GPH:ADD_FIG,id=dynamic2,title="Dynamic Plot 2";\n',
-                '$NT:GPH:ADD_TRACE,fig=dynamic2,id=ramp,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
+                '$NT:GPH:ADD_FIG,id=fig2,title="Figure 2";\n',
+                '$NT:GPH:ADD_TRACE,id=trace3,fig=fig2,name="Ramp Signal",color=#00FF88,xtype=timestamp;\n',
               ];
 
               for (const command of setupCommands) {
@@ -1256,24 +1256,28 @@ export default class FakePortsController {
               const wave2 = Math.cos(dataCounter * 0.3) * 8;
               const ramp = (dataCounter % 20) * 0.5; // Sawtooth wave
 
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=wave2,data=${wave2.toFixed(2)};\n`));
-              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=ramp,data=${ramp.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace2,data=${wave2.toFixed(2)};\n`));
+              app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=trace3,data=${ramp.toFixed(2)};\n`));
 
               dataCounter++;
               if (dataCounter >= 10) {
                 phase = 5;
               }
-
             } else if (phase === 5) {
               // Delete first plot and restart cycle
-              app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,fig=dynamic1;\n'));
-              app.parseRxData(new TextEncoder().encode('Deleted dynamic1 plot. Restarting cycle...\n'));
-              phase = 0;
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:CLR_FIG,fig=fig1;\n'));
+              app.parseRxData(new TextEncoder().encode('$NT:GPH:DEL_FIG,fig=fig2;\n'));
+              app.parseRxData(new TextEncoder().encode('Cleared fig1 and deleted fig2. Restarting cycle...\n'));
 
-              // Wait a bit longer before restarting
-              setTimeout(() => {
-                app.parseRxData(new TextEncoder().encode('$NT:GPH:DELETE,fig=dynamic2;'));
-              }, 1000);
+              phase = 6;
+              dataCounter = 0;
+            }
+            else if (phase === 6) {
+              // This is just a delay phase
+              dataCounter++;
+              if (dataCounter >= 10) {
+                phase = 0;
+              }
             }
           }, 500);
 

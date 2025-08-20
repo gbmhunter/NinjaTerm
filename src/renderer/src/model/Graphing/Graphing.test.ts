@@ -72,11 +72,11 @@ describe('graphing tests', () => {
     });
 
     it('should handle commands with text before and after', () => {
-      const buffer = 'Some log message $NT:GPH:ADD_FIG,id=test; more text $NT:GPH:DELETE,fig=test; end';
+      const buffer = 'Some log message $NT:GPH:ADD_FIG,id=test; more text $NT:GPH:DEL_FIG,fig=test; end';
       const commands = graphing.extractPlotCommands(buffer);
       expect(commands).toEqual([
         '$NT:GPH:ADD_FIG,id=test',
-        '$NT:GPH:DELETE,fig=test'
+        '$NT:GPH:DEL_FIG,fig=test'
       ]);
     });
 
@@ -221,7 +221,7 @@ describe('graphing tests', () => {
       graphing.handleDeletePlot(params);
 
       expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
-        'GPH:DELETE requires fig parameter',
+        'GPH:DEL_FIG requires fig parameter',
         'warning'
       );
     });
@@ -350,20 +350,6 @@ describe('graphing tests', () => {
       if (plot?.traces.get('trace2')) plot.traces.get('trace2')!.counter = 6;
     });
 
-    it('should clear specific trace in specific plot', () => {
-      const params = new Map([['fig', 'fig1'], ['trace', 'trace1']]);
-      graphing.handleClearPlot(params);
-
-      const plot = graphing.plots.get('fig1');
-      const trace1 = plot?.traces.get('trace1');
-      const trace2 = plot?.traces.get('trace2');
-
-      expect(trace1?.data.length).toBe(0);
-      expect(trace1?.counter).toBe(0);
-      expect(trace2?.data.length).toBe(1); // Should not be cleared
-      expect(trace2?.counter).toBe(6); // Should not be cleared
-    });
-
     it('should clear all traces in specific plot', () => {
       const params = new Map([['fig', 'fig1']]);
       graphing.handleClearPlot(params);
@@ -377,7 +363,64 @@ describe('graphing tests', () => {
       expect(trace2?.data.length).toBe(0);
       expect(trace2?.counter).toBe(0);
     });
+
+    it('should send warning when fig parameter is missing', () => {
+      const params = new Map();
+      graphing.handleClearPlot(params);
+
+      expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
+        'GPH:CLR_FIG requires fig parameter',
+        'warning'
+      );
+    });
   }); // describe('handleClearPlot() works', () => {
+
+  describe('handleDeleteTrace() works', () => {
+    beforeEach(() => {
+      // Create test plot with traces
+      const plotParams = new Map([['id', 'fig1'], ['title', 'Test Plot']]);
+      graphing.handleCreatePlot(plotParams);
+
+      const traceParams1 = new Map([['fig', 'fig1'], ['id', 'trace1']]);
+      const traceParams2 = new Map([['fig', 'fig1'], ['id', 'trace2']]);
+      graphing.handleCreateTrace(traceParams1);
+      graphing.handleCreateTrace(traceParams2);
+
+      // Add some test data
+      const plot = graphing.plots.get('fig1');
+      plot?.traces.get('trace1')?.data.push({ x: 1, y: 2 });
+      plot?.traces.get('trace2')?.data.push({ x: 3, y: 4 });
+    });
+
+    it('should delete existing trace', () => {
+      const params = new Map([['trace', 'trace1']]);
+      graphing.handleDeleteTrace(params);
+
+      const plot = graphing.plots.get('fig1');
+      expect(plot?.traces.has('trace1')).toBe(false);
+      expect(plot?.traces.has('trace2')).toBe(true); // Should not be deleted
+    });
+
+    it('should send warning when trace parameter is missing', () => {
+      const params = new Map();
+      graphing.handleDeleteTrace(params);
+
+      expect(mockSnackbar.sendToSnackbar).toHaveBeenCalledWith(
+        'GPH:DEL_TRACE requires trace parameter',
+        'warning'
+      );
+    });
+
+    it('should handle deletion of non-existent trace gracefully', () => {
+      const params = new Map([['trace', 'nonexistent']]);
+      graphing.handleDeleteTrace(params);
+
+      // Should not throw an error, and existing traces should remain
+      const plot = graphing.plots.get('fig1');
+      expect(plot?.traces.has('trace1')).toBe(true);
+      expect(plot?.traces.has('trace2')).toBe(true);
+    });
+  }); // describe('handleDeleteTrace() works', () => {
 
   describe('handleAddData() works', () => {
     beforeEach(() => {
