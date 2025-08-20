@@ -115,9 +115,6 @@ sx={{
   gap: '20px',
 }}
 >
-<Button href="/app" variant="contained" size="large" startIcon={<TerminalIcon />}>
-  Go to app
-</Button>
 <Button href="/" variant="outlined" size="large" startIcon={<HomeIcon />}>
   Homepage
 </Button>

@@ -25,7 +25,8 @@ import GraphView from './Graphing/GraphingView';
 import LogoImage from './logo192.png';
 import styles from './AppView.module.css';
 import FakePortDialogView from './FakePorts/FakePortDialogView';
-import { useEffect } from 'react';
+import InstallableVersionPromoModal from './InstallableVersionPromoModal';
+import { useEffect, useState } from 'react';
 import LoggingView from './Logging/LoggingView';
 import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
@@ -94,6 +95,8 @@ window.app = app;
 window.SelectionController = SelectionController;
 
 const AppView = observer((props: Props) => {
+  const [showPromoModal, setShowPromoModal] = useState(false);
+
   useEffect(() => {
     // We need to register the service worker AFTER the app
     // has rendered, because it we do it before we won't
@@ -114,6 +117,11 @@ const AppView = observer((props: Props) => {
 
     const initFn = async () => {
       await app.onAppUiLoaded();
+
+      // Show promotional modal if user hasn't dismissed it
+      if (!app.profileManager.appData.hideInstallableVersionPromo) {
+        setShowPromoModal(true);
+      }
     };
 
     initFn().catch(console.error);
@@ -405,6 +413,13 @@ const AppView = observer((props: Props) => {
         </div>
 
         <FakePortDialogView app={app} />
+
+        {/* The position here does not matter, it is not positioned in the doc flow. */}
+        <InstallableVersionPromoModal
+          app={app}
+          open={showPromoModal}
+          onClose={() => setShowPromoModal(false)}
+        />
 
         {/* The SnackBar's position in the DOM does not matter, it is not positioned in the doc flow.
         Anchor to the bottom right as a terminals cursor will typically be in the bottom left */}

@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx";
 import { Profile } from "./Profile";
 import { RootConfig } from "./RootConfig";
 
-export const LATEST_VERSION = 3;
+export const LATEST_VERSION = 4;
 
 export class AppData {
   // Version of the AppData class.
@@ -17,6 +17,12 @@ export class AppData {
    * it can restore the last known configuration.
    */
   currentAppConfig = new RootConfig();
+
+  /**
+   * Flag to track whether the user has dismissed the promotional modal for the installable version.
+   * If true, the modal will not be shown again.
+   */
+  hideInstallableVersionPromo: boolean = false;
 
   constructor() {
     this.profiles = [];

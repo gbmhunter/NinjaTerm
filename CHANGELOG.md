@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added a "Download NinjaTerm Desktop" modal to the web version of NinjaTerm.
+
+### Fixed
+
+- Fixed issues with the analytics logic.
+
 ### Changed
 
 - Added $NT as a prefix for all commands.
