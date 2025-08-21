@@ -245,15 +245,15 @@ export default observer((props: Props) => {
           alignItems: 'center',
         }}
       >
-        <Grid container sx={{ maxWidth: '1000px', display: 'flex', flexDirection: 'column' }}>
+        <Grid container sx={{ maxWidth: '1000px', display: 'flex', flexDirection: 'column', px: { xs: 2, sm: 3, md: 0 } }}>
           <Grid xs={12} sx={{ height: '20px' }} />
 
           <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." width="600px" />
+            <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." style={{ maxWidth: '100%', width: '600px', height: 'auto' }} />
           </Grid>
           <Grid xs={12} sx={{ height: '20px' }} />
           <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <span style={{ fontFamily: 'monospace', fontSize: '30px' }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 'clamp(18px, 5vw, 30px)', textAlign: 'center' }}>
               A serial port terminal that's got your back.
               <span className="cursor">&nbsp;</span>
             </span>
@@ -266,7 +266,7 @@ export default observer((props: Props) => {
             sx={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '20px',
+              gap: { xs: '10px', sm: '20px' },
               flexWrap: 'wrap',
               marginBottom: '20px',
             }}
@@ -285,7 +285,7 @@ export default observer((props: Props) => {
                     size="large"
                     startIcon={getPlatformIcon(userPlatform.os)}
                     sx={{
-                      minWidth: '250px',
+                      minWidth: { xs: '200px', sm: '250px' },
                       backgroundColor: primaryColor,
                       '&:hover': { backgroundColor: '#D16A2A' },
                     }}
@@ -299,7 +299,7 @@ export default observer((props: Props) => {
                   size="large"
                   startIcon={<DownloadIcon />}
                   sx={{
-                    minWidth: '150px',
+                    minWidth: { xs: '120px', sm: '150px' },
                   }}
                 >
                   All Downloads
@@ -323,7 +323,7 @@ export default observer((props: Props) => {
             sx={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '15px',
+              gap: { xs: '10px', sm: '15px' },
               flexWrap: 'wrap',
             }}
           >
@@ -340,27 +340,27 @@ export default observer((props: Props) => {
           <Grid xs={12} sx={{ height: '20px' }} />
 
           <Grid xs={12}>
-            <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
+            <Typography sx={{ fontSize: { xs: '16px', sm: '18px', md: '20px' }, marginBottom: '20px' }}>
               NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for an embedded
               device (e.g. microcontroller).
             </Typography>
 
-            <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
+            <Typography sx={{ fontSize: { xs: '16px', sm: '18px', md: '20px' }, marginBottom: '20px' }}>
               If you are looking for a serious terminal for continual use, the installable desktop versions are recommended. If you are looking for a quick way to view some serial data without having to install anything, the web-based version is for you!
             </Typography>
 
-            <Typography sx={{ fontSize: '20px', marginBottom: '20px' }}>
+            <Typography sx={{ fontSize: { xs: '16px', sm: '18px', md: '20px' }, marginBottom: '20px' }}>
             <p>
               For the web-based version, natively supported browsers include Chromium-based desktop browsers (e.t.c. Chrome,
               Edge, Brave) and Opera. Firefox is supported but you have to install the{' '}
-              <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank">
+              <a href="https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/" target="_blank" style={{ wordBreak: 'break-word' }}>
                 WebSerial for Firefox extension
               </a>{' '}
               first. Unfortunately Safari is not supported (as of June 2024).
             </p>
             <p>
               See{' '}
-              <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility" target="_blank">
+              <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility" target="_blank" style={{ wordBreak: 'break-all', overflowWrap: 'break-word' }}>
                 https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility
               </a>{' '}
               for a compatibility table.
@@ -377,7 +377,7 @@ export default observer((props: Props) => {
           {/* Downloads Section */}
           <Grid container xs={12} spacing={2} sx={{ marginBottom: '40px' }}>
             <Grid xs={12}>
-              <Typography style={{ marginBottom: '20px', fontSize: '18px' }}>
+              <Typography style={{ marginBottom: '20px', fontSize: 'clamp(14px, 4vw, 18px)' }}>
                 Download NinjaTerm for your operating system. If you're not sure which version to download, use the platform-specific button above or check the explanations below:
               </Typography>
             </Grid>
@@ -405,7 +405,7 @@ export default observer((props: Props) => {
                         variant="outlined"
                         size="small"
                         startIcon={<DownloadIcon />}
-                        sx={{ marginBottom: '8px', minWidth: '200px' }}
+                        sx={{ marginBottom: '8px', minWidth: { xs: '150px', sm: '200px' }, fontSize: { xs: '12px', sm: '14px' } }}
                       >
                         {asset.name}
                       </Button>
@@ -447,7 +447,7 @@ export default observer((props: Props) => {
                         variant="outlined"
                         size="small"
                         startIcon={<DownloadIcon />}
-                        sx={{ marginBottom: '8px', minWidth: '200px' }}
+                        sx={{ marginBottom: '8px', minWidth: { xs: '150px', sm: '200px' }, fontSize: { xs: '12px', sm: '14px' } }}
                       >
                         {asset.name}
                       </Button>
@@ -497,7 +497,7 @@ export default observer((props: Props) => {
                             variant="outlined"
                             size="small"
                             startIcon={<DownloadIcon />}
-                            sx={{ marginBottom: '8px', minWidth: '250px' }}
+                            sx={{ marginBottom: '8px', minWidth: { xs: '180px', sm: '250px' }, fontSize: { xs: '11px', sm: '14px' } }}
                           >
                             {asset.name}
                           </Button>
@@ -527,7 +527,7 @@ export default observer((props: Props) => {
                             variant="outlined"
                             size="small"
                             startIcon={<DownloadIcon />}
-                            sx={{ marginBottom: '8px', minWidth: '250px' }}
+                            sx={{ marginBottom: '8px', minWidth: { xs: '180px', sm: '250px' }, fontSize: { xs: '11px', sm: '14px' } }}
                           >
                             {asset.name}
                           </Button>
@@ -599,7 +599,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={AnsiEscapeCodeColoursWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={AnsiEscapeCodeColoursWebM}>
                     <source src={AnsiEscapeCodeColoursWebM} type="video/webm" />
                     Demonstration of ANSI escape codes in NinjaTerm.
                   </video>
@@ -628,7 +628,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={GraphingWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={GraphingWebM}>
                     <source src={GraphingWebM} type="video/webm" />
                     Demonstration of graphing in NinjaTerm.
                   </video>
@@ -658,7 +658,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={SmartScrollWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={SmartScrollWebM}>
                     <source src={SmartScrollWebM} type="video/webm" />
                     Demonstration of smart scrolling in NinjaTerm.
                   </video>
@@ -688,7 +688,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={ControlCharAndHexCodeGlyphsWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={ControlCharAndHexCodeGlyphsWebM}>
                     <source src={ControlCharAndHexCodeGlyphsWebM} type="video/webm" />
                     Demonstration of ASCII control character and hex code glyphs in NinjaTerm.
                   </video>
@@ -717,7 +717,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={LoggingWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={LoggingWebM}>
                     <source src={LoggingWebM} type="video/webm" />
                     Demonstration of logging functionality in NinjaTerm.
                   </video>
@@ -746,7 +746,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={FilteringWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={FilteringWebM}>
                     <source src={FilteringWebM} type="video/webm" />
                     Demonstration of filtering functionality in NinjaTerm.
                   </video>
@@ -775,7 +775,7 @@ export default observer((props: Props) => {
                 </Typography>
 
                 <div style={{ display: 'flex' }}>
-                  <video autoPlay loop muted playsInline width="900px" style={{ margin: 'auto' }} poster={NumberTypesWebM}>
+                  <video autoPlay loop muted playsInline style={{ maxWidth: '100%', width: '900px', height: 'auto', margin: 'auto' }} poster={NumberTypesWebM}>
                     <source src={NumberTypesWebM} type="video/webm" />
                     Demonstration of number parsing in NinjaTerm.
                   </video>

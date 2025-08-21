@@ -69,6 +69,8 @@ code {
   font-family: 'Courier New', monospace;
   color: #e47f37;
   border: 1px solid #333;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .documentation-table code {
@@ -77,4 +79,133 @@ code {
   border-radius: 4px;
   font-family: 'Courier New', monospace;
   color: #e47f37;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  /* Force container to use full width on mobile */
+  .MuiGrid-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+  }
+  
+  /* Make headers more readable on small screens */
+  .MuiTypography-h1 {
+    font-size: clamp(24px, 6vw, 32px) !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+  }
+  
+  .MuiTypography-h2 {
+    font-size: clamp(20px, 5vw, 24px) !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+  }
+  
+  .MuiTypography-h3 {
+    font-size: clamp(18px, 4.5vw, 20px) !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+  }
+  
+  .MuiTypography-h4 {
+    font-size: clamp(16px, 4vw, 18px) !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+  }
+  
+  .MuiTypography-h5 {
+    font-size: clamp(14px, 3.5vw, 16px) !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+  }
+  
+  /* Improve paragraph readability and prevent overflow */
+  p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+    line-height: 1.5 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: clamp(14px, 3.5vw, 16px) !important;
+  }
+  
+  /* Better code block handling */
+  pre {
+    overflow-x: auto !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+    font-size: clamp(10px, 2.5vw, 12px) !important;
+    padding: 8px !important;
+    margin: 10px 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Improve table responsiveness */
+  .documentation-table {
+    font-size: clamp(10px, 2.5vw, 12px) !important;
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    margin: 10px 0 !important;
+  }
+  
+  .documentation-table th,
+  .documentation-table td {
+    padding: 6px 8px !important;
+    min-width: 60px !important;
+    font-size: clamp(10px, 2.5vw, 12px) !important;
+  }
+  
+  /* Better list spacing */
+  ul, ol {
+    padding-left: 16px !important;
+    max-width: 100% !important;
+  }
+  
+  li {
+    margin-bottom: 6px !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    font-size: clamp(14px, 3.5vw, 16px) !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Improve button spacing */
+  .MuiButton-root {
+    margin: 4px 2px !important;
+    min-width: auto !important;
+    font-size: clamp(12px, 3vw, 14px) !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Better spacing for mobile */
+  .MuiGrid-item {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+  
+  /* Ensure all content respects viewport width */
+  * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix code elements inside paragraphs */
+  code {
+    font-size: clamp(11px, 2.8vw, 13px) !important;
+    word-break: break-all !important;
+    white-space: pre-wrap !important;
+  }
+  
+  /* Fix any divs that might be causing overflow */
+  div {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
 }

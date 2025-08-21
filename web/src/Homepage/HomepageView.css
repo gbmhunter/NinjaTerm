@@ -22,3 +22,51 @@
 h2 {
   margin-bottom: 10px;
 }
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  /* Ensure proper word breaking for long URLs and text */
+  a {
+    word-wrap: break-word;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+  
+  /* Make sure paragraphs don't overflow */
+  p {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  
+  /* Improve code blocks on mobile */
+  pre {
+    overflow-x: auto !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+  }
+  
+  /* Improve video responsiveness */
+  video {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Better button sizing on mobile */
+  .MuiButton-root {
+    min-width: auto !important;
+    flex-shrink: 1;
+  }
+  
+  /* Improve table responsiveness */
+  table {
+    font-size: 12px !important;
+  }
+  
+  /* Better spacing for mobile */
+  .MuiGrid-item {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}

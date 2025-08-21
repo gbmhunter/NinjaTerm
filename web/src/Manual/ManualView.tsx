@@ -92,16 +92,16 @@ flexDirection: 'column',
 alignItems: 'center',
 }}
 >
-<Grid container sx={{ maxWidth: '1000px', display: 'flex', flexDirection: 'column' }}>
+<Grid container sx={{ maxWidth: { xs: '100%', sm: '100%', md: '1000px' }, display: 'flex', flexDirection: 'column', px: { xs: 1, sm: 2, md: 0 }, width: '100%', boxSizing: 'border-box' }}>
 <Grid xs={12} sx={{ height: '20px' }} />
 
 <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-<img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." width="600px" />
+<img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." style={{ maxWidth: '100%', width: 'clamp(300px, 80vw, 600px)', height: 'auto' }} />
 </Grid>
 
 <Grid xs={12} sx={{ height: '20px' }} />
 <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-<span style={{ fontFamily: 'monospace', fontSize: '30px' }}>
+<span style={{ fontFamily: 'monospace', fontSize: 'clamp(18px, 5vw, 30px)', textAlign: 'center' }}>
   A serial port terminal that's got your back.
   <span className="cursor">&nbsp;</span>
 </span>
@@ -112,7 +112,8 @@ xs={12}
 sx={{
   display: 'flex',
   justifyContent: 'center',
-  gap: '20px',
+  gap: { xs: '8px', sm: '15px' },
+  flexWrap: 'wrap',
 }}
 >
 <Button href="/" variant="outlined" size="large" startIcon={<HomeIcon />}>
@@ -206,7 +207,7 @@ This is the simplest approach. Enable graphing in the Graphing tab and configure
 
 <p>For example, your MCU might be outputting temperature data every second, intermixed with other log messages like this (line endings are LF):</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`2025-08-12 12:00:00 - MCU has booted. Firmware version 1.0.0.
 2025-08-12 12:00:01 - Starting temperature measurements...
 2025-08-12 12:00:02 - Temperature: 26.1 degC
@@ -243,7 +244,7 @@ The commands are explained below.
 
 <p>This is what the commands look like:</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`// Create a figure
 $NT:GPH:ADD_FIG,id=fig1,title="Voltage Monitoring",xlabel="Time [s]",ylabel="Voltage [V]";
 
@@ -263,12 +264,13 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
 <p>Add a new figure to the graphing area in NinjaTerm with the <code>$NT:GPH:ADD_FIG</code> command. Graphs are stacked vertically in the graphing area.</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_FIG,id=fig1,title="My Title",xlabel="Time [s]",ylabel="Voltage [V]";`}
 </pre>
 
 <p>The <code>$NT:GPH:ADD_FIG</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
 <thead>
   <tr>
@@ -300,6 +302,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
   </tr>
 </tbody>
 </table>
+</div>
 
 <p>Parameter values containing spaces or special characters should be enclosed in double quotes.</p>
 
@@ -314,12 +317,13 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
 <p>Create a new trace on a plot with the <code>$NT:GPH:ADD_TRACE</code> command. A trace needs to be assigned to an existing plot.</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_TRACE,fig=fig1,id=temp,name="Temperature",color=#FF0000,xtype=timestamp;`}
 </pre>
 
 <p>The <code>$NT:GPH:ADD_TRACE</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
 <thead>
   <tr>
@@ -362,6 +366,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
   </tr>
 </tbody>
 </table>
+</div>
 
 {/* ==================================================================== */}
 {/* GPH:ADD_DATA */}
@@ -370,12 +375,13 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
 <p>Once you have created a plot and a trace on the plot, use the <code>$NT:GPH:ADD_DATA</code> command to add data points to the trace. This will draw the points on the graph. For example:</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_DATA,trace=temp,data=[1.23,4.56,7.89];`}
 </pre>
 
 <p>The <code>$NT:GPH:ADD_DATA</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
   <thead>
     <tr>
@@ -404,11 +410,12 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
     </tr>
   </tbody>
 </table>
+</div>
 
 <Typography variant="h5">1. X-Axis Type: timestamp (arrival time)</Typography>
 <p>Use when you want x values to be the time data arrives at NinjaTerm. This works best when you are sending single values over per <code>$NT:GPH:ADD_DATA</code> command, such as temperature sensor samples once per second.</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_DATA,trace=temp,data=[1.23];`}
 </pre>
 
@@ -416,7 +423,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
 <p>You can send multiple values over at once with <code>timestamp</code>, but I don't see this as being very useful as they will all get the same timestamp (e.g. all have the same x-axis value):</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_DATA,trace=temp,data=[1.25,1.28,1.31];`}
 </pre>
 
@@ -424,13 +431,13 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 
 <Typography variant="h5">2. X-Axis Type: counter (auto-incrementing)</Typography>
 <p>Use when you want x values to automatically increment (0, 1, 2, ...):</p>
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_DATA,trace=accel,data=[9.82,9.85,9.79,9.83];`}
 </pre>
 
 <Typography variant="h5">3. X-Axis Type: data (x,y pairs)</Typography>
 <p>As mentioned above, if you have set the xtype to data then you have to provide (x, y) data pairs in this command. Separate the x and y values with a comma (<code>,</code>), and separate (x,y) pairs from one another with a pipe (<code>|</code>). For example:</p>
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:ADD_DATA,trace=position,data=[124.45,26.1|125.45,26.8|126.45,27.2];`}
 </pre>
 
@@ -439,7 +446,7 @@ $NT:GPH:ADD_DATA,trace=temp,data=[25.6,26.1,25.9];`}
 {/* ==================================================================== */}
 <Typography variant="h4">Complete Example</Typography>
 <p>Here's a complete example showing how to create a multi-trace plot with custom axis labels:</p>
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`// Create a plot for sensor data with custom axis labels
 $NT:GPH:ADD_FIG,id=sensors,title="Environmental Sensors",xlabel="Time [s]",ylabel="Sensor Value";
 
@@ -476,12 +483,13 @@ $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
 
 <p>Use the command <code>$NT:GPH:CLR_FIG</code> to clear all data from a plot. This will leave the figure on the screen (i.e. it won't delete the figure), but will delete all traces from it. Here is an example:</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:CLR_FIG,fig=fig1;`}
 </pre>
 
 <p>The <code>$NT:GPH:CLR_FIG</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
   <thead>
     <tr>
@@ -498,17 +506,19 @@ $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
     </tr>
   </tbody>
 </table>
+</div>
 
 <Typography variant="h5">Deleting a Figure</Typography>
 
 <p>Use the command <code>$NT:GPH:DEL_FIG</code> to delete a figure. This will delete the figure (remove it from the screen) and all traces from it. Here is an example:</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:DEL_FIG,fig=fig1;`}
 </pre>
 
 <p>The <code>$NT:GPH:DEL_FIG</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
   <thead>
     <tr>
@@ -525,17 +535,19 @@ $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
     </tr>
   </tbody>
 </table>
+</div>
 
 <Typography variant="h5">Deleting a Trace</Typography>
 
 <p>Use the command <code>$NT:GPH:DEL_TRACE</code> to delete a trace. This will delete the trace from the figure it is added to. Here is an example:</p>
 
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`$NT:GPH:DEL_TRACE,trace=temp;`}
 </pre>
 
 <p>The <code>$NT:GPH:DEL_TRACE</code> command supports the following parameters:</p>
 
+<div style={{ overflowX: 'auto' }}>
 <table className="documentation-table">
   <thead>
     <tr>
@@ -552,6 +564,7 @@ $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
     </tr>
   </tbody>
 </table>
+</div>
 
 <Typography variant="h4">Data Array Syntax</Typography>
 
@@ -577,7 +590,7 @@ $NT:GPH:ADD_DATA,trace=pressure,data=[1013.1,1012.9,1013.3];`}
 
 <Typography variant="h4">Enhanced Data Examples</Typography>
 <p>Example showing the new syntax with multiple x,y data pairs separated by pipes:</p>
-<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto'}}>
+<pre style={{'backgroundColor': '#333', 'padding': '15px', 'borderRadius': '5px', 'overflowX': 'auto', 'wordWrap': 'break-word', 'whiteSpace': 'pre-wrap', 'maxWidth': '100%', 'fontSize': 'clamp(11px, 2.5vw, 14px)'}}>
 {`// Example with multiple x,y data pairs using pipe separator
 $NT:GPH:ADD_DATA,trace=temp,data=1,25|2,16|3,18;
 
