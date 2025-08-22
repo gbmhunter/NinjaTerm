@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { PortInfo } from '@serialport/bindings-interface';
+import { PortInfo, PortStatus } from '@serialport/bindings-interface';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -33,6 +33,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners('serial:error');
       ipcRenderer.removeAllListeners('serial:port-closed');
       ipcRenderer.invoke('serial:close-all-ports');
+    },
+
+    // Flow control operations
+    setFlowControlSignals: (signals: any) => ipcRenderer.send('serial:set-flow-control-signals', signals),
+    getFlowControlSignals: (portPath: string) => {
+      return ipcRenderer.invoke('serial:get-flow-control-signals', portPath);
     },
   },
 
@@ -107,6 +113,8 @@ export interface ElectronAPI {
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
+    setFlowControlSignals(signals: any): void;
+    getFlowControlSignals(): Promise<PortStatus>;
   };
   fs: {
     selectDirectory(): Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;

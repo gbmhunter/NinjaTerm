@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
-import { SetOptions } from '@serialport/bindings-interface';
+// import { PortStatus, SetOptions } from '@serialport/bindings-interface';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -190,7 +190,12 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
     }
   });
 
-  ipcMain.handle('serial:set-flow-control-signals', async (event, portPath: string, setOptions: SetOptions) => {
+  ipcMain.handle('serial:set-flow-control-signals', async (event, portPath: string, setOptions: {
+    dtr: boolean;
+    dsr: boolean;
+    rts: boolean;
+    cts: boolean;
+  }) => {
     try {
       const port = activeSerialPorts.get(portPath);
       if (!port) {
@@ -214,6 +219,34 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
       console.error('Error setting flow control signals: ', error);
       return { success: false, error: (error as Error).message };
     }
+  });
+
+  ipcMain.handle('serial:get-flow-control-signals', async (event, portPath: string) => {
+    try {
+      const port = activeSerialPorts.get(portPath);
+      if (!port) {
+        return { success: false, error: 'Port not found' };
+      }
+
+      const readableFlowControlSignals = await new Promise<{
+        dtr: boolean;
+        dsr: boolean;
+        rts: boolean;
+        cts: boolean;
+      }>((resolve, reject) => {
+        port.get((err, options) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(options!);
+          }
+        });
+      });
+        return { success: true, signals: readableFlowControlSignals };
+      } catch (error) {
+        console.error('Error getting flow control signals: ', error);
+        return { success: false, error: (error as Error).message };
+      }
   });
 }
 

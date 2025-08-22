@@ -24,6 +24,7 @@ import { AppDataManager } from './AppDataManager/AppDataManager';
 import { PortInfo } from '@serialport/bindings-interface';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
+import { SerialController } from './SerialController/SerialController';
 
 declare global {
   interface String {
@@ -139,6 +140,8 @@ export class App {
 
   performanceMonitor: PerformanceMonitor;
 
+  serialController: SerialController;
+
 
   constructor(testing = false) {
     this.testing = testing;
@@ -156,6 +159,7 @@ export class App {
 
     this.performanceMonitor = new PerformanceMonitor();
 
+    this.serialController = new SerialController();
 
     this.terminals = new Terminals(this);
 
