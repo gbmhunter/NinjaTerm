@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
+import { SetOptions } from '@serialport/bindings-interface';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -22,6 +23,11 @@ function sendBatchedData(portPath: string, mainWindow: BrowserWindow | null) {
   }
 }
 
+/**
+ * Registers all serial-related IPC handlers such as list-ports, open-port, close-port, etc.
+ *
+ * @param mainWindow The main window of the application.
+ */
 export function initializeSerialHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle('serial:list-ports', async () => {
     try {
@@ -180,6 +186,32 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
 
       return { success: true };
     } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  });
+
+  ipcMain.handle('serial:set-flow-control-signals', async (event, portPath: string, setOptions: SetOptions) => {
+    try {
+      const port = activeSerialPorts.get(portPath);
+      if (!port) {
+        return { success: false, error: 'Port not found' };
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        // Pass the setOptions to the port.set method.
+        // set() is not well documented by node-serialport
+        port.set(setOptions, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting flow control signals: ', error);
       return { success: false, error: (error as Error).message };
     }
   });
