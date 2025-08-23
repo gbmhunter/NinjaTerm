@@ -1,22 +1,27 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { PortState } from '../Settings/PortSettings/PortSettings';
-import { App } from '../App';
 import { PortInfo } from '@serialport/bindings-interface';
-import { MainPanes } from '../App';
 
+import { App, MainPanes } from '../App';
+import { PortState } from '../Settings/PortSettings/PortSettings';
 
 export enum PortType {
   REAL,
   FAKE,
 }
 
+/**
+ * Class responsible for all high-level serial port related functionality.
+ *
+ * This used to be in App but moved here when the amount of logic was getting large.
+ */
 export class SerialController {
 
   private currentFlowControlState: {
-    dtr: boolean;
-    dsr: boolean;
-    rts: boolean;
-    cts: boolean;
+    dtr: boolean; // DTE -> DCE. Data Terminal Ready. Write only (from node serialport).
+    dsr: boolean; // DCE -> DTE. Data Set Ready. Read/write.
+    rts: boolean; // DTE -> DCE. Request To Send. Write only.
+    cts: boolean; // DCE -> DTE. Clear To Send. Read/write.
+    dcd: boolean; // DCE -> DTE. Data Carrier Detect. Read only.
   };
 
   // Current port path for IPC communication
@@ -37,8 +42,12 @@ export class SerialController {
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
   private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 2 seconds
 
+  private flowControlPollingTimer: NodeJS.Timeout | null = null;
+
   /**
-   * Responsible for all serial port related functionality.
+   * Creates a new SerialController instance.
+   *
+   * @param app The main app instance.
    */
   constructor(app: App) {
     this.app = app;
@@ -47,14 +56,21 @@ export class SerialController {
       dsr: false,
       rts: false,
       cts: false,
+      dcd: false,
     };
 
-    // Create timer to poll the readable signals across IPC'
-    setInterval(async () => {
+    // Create timer to poll the readable signals across IPC
+    // Save timer to we can clear it when the app is closed
+    this.flowControlPollingTimer = setInterval(async () => {
       const response = await window.electronAPI.serial.getFlowControlSignals();
       console.log(response);
+      // Update the flow control state
+      this.currentFlowControlState.dsr = response.dsr;
+      this.currentFlowControlState.cts = response.cts;
+      this.currentFlowControlState.dcd = response.dcd;
     }, 1000);
 
+    // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
   }
 
@@ -223,6 +239,12 @@ export class SerialController {
       this.app.fakePortController.closePort();
     } else {
       throw Error('Unsupported port type!');
+    }
+
+    // No matter what type, clear the flow control polling timer
+    if (this.flowControlPollingTimer) {
+      clearInterval(this.flowControlPollingTimer);
+      this.flowControlPollingTimer = null;
     }
   }
 
