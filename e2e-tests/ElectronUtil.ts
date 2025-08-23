@@ -4,6 +4,7 @@ import { ElectronApplication } from 'playwright';
 import * as os from 'os';
 import * as path from 'path';
 import { createRequire } from 'module';
+import './types';
 
 const require = createRequire(import.meta.url);
 
@@ -242,8 +243,8 @@ export class ElectronAppTestHarness {
     // Now use the app's normal flow but with mocked IPC calls
     // First, trigger port scanning to populate the list (this will use our mock listPorts)
     await this.page.evaluate(async () => {
-      const app = (window as any).app;
-      if (app && app.settings && app.settings.portConfiguration) {
+      const app = window.app;
+      if (app?.settings?.portConfiguration) {
         // Trigger the normal port scanning process
         await app.settings.portConfiguration.scanForSerialPorts();
 
@@ -260,9 +261,9 @@ export class ElectronAppTestHarness {
 
     // Open the port using the app's normal flow (this will use our mocked openPort)
     await this.page.evaluate(async () => {
-      const app = (window as any).app;
-      if (app && app.openPort) {
-        await app.openPort({ silenceSnackbar: true });
+      const app = window.app;
+      if (app?.serialController?.openPort) {
+        await app.serialController.openPort({ silenceSnackbar: true });
       }
     });
 
@@ -310,7 +311,7 @@ export class ElectronAppTestHarness {
       for (let i = 0; i < textToSend.length; i += 1) {
         dataToSend.push(textToSend.charCodeAt(i));
       }
-      (window as any).app.parseRxData(Uint8Array.from(dataToSend));
+      window.app.parseRxData(Uint8Array.from(dataToSend));
     }, textToSend);
   };
 
@@ -319,7 +320,7 @@ export class ElectronAppTestHarness {
    */
   sendBytesToTerminal = async (bytesToSend: number[]) => {
     await this.page.evaluate((bytesToSend) => {
-      (window as any).app.parseRxData(Uint8Array.from(bytesToSend));
+      window.app.parseRxData(Uint8Array.from(bytesToSend));
     }, bytesToSend);
   };
 

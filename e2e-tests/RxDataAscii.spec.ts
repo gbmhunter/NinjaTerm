@@ -2,6 +2,7 @@
 import { test } from '@playwright/test';
 
 import { ElectronAppTestHarness, ExpectedTerminalChar } from './ElectronUtil';
+import './types';
 
 let appTestHarness: ElectronAppTestHarness;
 
@@ -80,7 +81,7 @@ test.describe('RX data (Electron)', () => {
 
     await appTestHarness.openPortAndGoToTerminalView();
     await appTestHarness.page.evaluate(({TX_COLOR, RX_COLOR}) => {
-      const app = (window as any).app;
+      const app = window.app;
       app.settings.displaySettings.defaultTxTextColor.setDispValue(TX_COLOR);
       app.settings.displaySettings.defaultTxTextColor.apply();
       app.settings.displaySettings.defaultRxTextColor.setDispValue(RX_COLOR);

@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 
 import { ElectronAppTestHarness } from './ElectronUtil';
 import { PortState } from '../src/renderer/src/model/Settings/PortSettings/PortSettings';
+import './types';
 
 let appTestHarness: ElectronAppTestHarness;
 
@@ -23,7 +24,7 @@ test.describe('IPC Mocking (Electron)', () => {
 
     // Trigger port scanning
     const ports = await appTestHarness.page.evaluate(async () => {
-      const app = (window as any).app;
+      const app = window.app;
       await app.settings.portConfiguration.scanForSerialPorts();
       return app.settings.portConfiguration.availableSerialPorts;
     });
@@ -38,10 +39,10 @@ test.describe('IPC Mocking (Electron)', () => {
 
     // Check that the port appears to be opened
     const portState = await appTestHarness.page.evaluate(() => {
-      const app = (window as any).app;
+      const app = window.app;
       return {
-        portState: app.portState,
-        currentPortPath: app.currentPortPath
+        portState: app.serialController.portState,
+        currentPortPath: app.serialController.currentPortPath
       };
     });
 

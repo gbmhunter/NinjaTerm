@@ -2,6 +2,7 @@
 import { test } from '@playwright/test';
 
 import { ExpectedTerminalChar, ElectronAppTestHarness } from './ElectronUtil';
+import './types';
 
 let appTestHarness: ElectronAppTestHarness;
 
