@@ -234,9 +234,9 @@ export default class PortSettings {
    * Will close the port and reopen, if port is in the open state.
    */
   _reconnectIfNeeded = async () => {
-    if (this.app.portState === PortState.OPENED) {
-      await this.app.closePort({ silenceSnackbar: true});
-      await this.app.openPort({ silenceSnackbar: true});
+    if (this.app.serialController.portState === PortState.OPENED) {
+      await this.app.serialController.closePort({ silenceSnackbar: true});
+      await this.app.serialController.openPort({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }
   }

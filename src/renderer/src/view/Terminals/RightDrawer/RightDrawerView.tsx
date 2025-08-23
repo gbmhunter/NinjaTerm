@@ -24,7 +24,8 @@ import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/Accord
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
-import { App, MainPanes, PortType } from 'src/model/App';
+import { App, MainPanes } from 'src/model/App';
+import { PortType } from 'src/model/SerialController/SerialController';
 import MacroView from './MacroRowView';
 import MacroSettingsModalView from './MacroSettingsModalView';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
@@ -172,7 +173,7 @@ export default observer((props: Props) => {
                       }}
                     />
                   )}
-                  disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                  disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                   sx={{ m: 1, width: 160 }}
                   size="small"
                   inputValue={app.settings.portConfiguration.baudRateInputValue}
@@ -190,7 +191,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.numDataBits}
                     label="Num. Data Bits"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setNumDataBits(e.target.value as number);
                     }}
@@ -217,7 +218,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.parity}
                     label="Parity"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setParity(e.target.value as Parity);
                     }}
@@ -241,7 +242,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.stopBits}
                     label="Stop Bits"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
                     }}
@@ -268,7 +269,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.flowControl}
                     label="Parity"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
                     }}
@@ -317,7 +318,7 @@ export default observer((props: Props) => {
                   app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
                 }}
                 // Only let user select a new port if current one is closed
-                disabled={app.portState !== PortState.CLOSED}
+                disabled={app.serialController.portState !== PortState.CLOSED}
                 data-testid="request-port-access"
                 sx={{ width: '150px' }}
               >
@@ -329,30 +330,30 @@ export default observer((props: Props) => {
               <Button
                 variant="contained"
                 color={
-                  portStateToButtonProps[app.portState].color as OverridableStringUnion<
+                  portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
                     'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                     ButtonPropsColorOverrides
                   >
                 }
                 onClick={() => {
-                  if (app.portState === PortState.CLOSED) {
-                    app.openPort();
-                  } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                    app.stopWaitingToReopenPort();
-                  } else if (app.portState === PortState.OPENED) {
-                    app.closePort();
+                  if (app.serialController.portState === PortState.CLOSED) {
+                    app.serialController.openPort();
+                  } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+                    app.serialController.stopWaitingToReopenPort();
+                  } else if (app.serialController.portState === PortState.OPENED) {
+                    app.serialController.closePort();
                   } else {
                     throw Error('Invalid port state.');
                   }
                 }}
                 // Disabled when port is closed and no port is selected, or if the baud rate is invalid
                 disabled={
-                  (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+                  (app.serialController.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.serialController.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
                 }
                 sx={{ width: '150px' }}
                 data-testid="open-close-button"
               >
-                {portStateToButtonProps[app.portState].text}
+                {portStateToButtonProps[app.serialController.portState].text}
               </Button>
             </div>
           </AccordionDetails>
@@ -463,7 +464,7 @@ export default observer((props: Props) => {
                   onClick={async () => {
                     await app.sendBreakSignal();
                   }}
-                  disabled={app.portState !== PortState.OPENED}
+                  disabled={app.serialController.portState !== PortState.OPENED}
                   data-testid="send-break-button"
                 >
                   Send BREAK

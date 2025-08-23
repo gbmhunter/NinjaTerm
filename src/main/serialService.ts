@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
-// import { PortStatus, SetOptions } from '@serialport/bindings-interface';
+import { PortStatus, SetOptions } from '@serialport/bindings-interface';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -228,12 +228,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
         return { success: false, error: 'Port not found' };
       }
 
-      const readableFlowControlSignals = await new Promise<{
-        dtr: boolean;
-        dsr: boolean;
-        rts: boolean;
-        cts: boolean;
-      }>((resolve, reject) => {
+      const readableFlowControlSignals = await new Promise<PortStatus>((resolve, reject) => {
         port.get((err, options) => {
           if (err) {
             reject(err);

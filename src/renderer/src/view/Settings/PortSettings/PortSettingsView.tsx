@@ -24,7 +24,8 @@ import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 
-import { App, PortType } from 'src/model/App';
+import { App } from 'src/model/App';
+import { PortType } from 'src/model/SerialController/SerialController';
 import {
   PortState,
   DEFAULT_BAUD_RATES,
@@ -50,10 +51,10 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
-  const isPortSettingsDisabled = app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
+  const isPortSettingsDisabled = app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
   // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.
-  const isTableDisabled = app.portState !== PortState.CLOSED;
+  const isTableDisabled = app.serialController.portState !== PortState.CLOSED;
 
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -387,30 +388,33 @@ function PortSettingsView(props: Props) {
         <Button
           variant="contained"
           color={
-            portStateToButtonProps[app.portState].color as OverridableStringUnion<
+            portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
           onClick={() => {
-            if (app.portState === PortState.CLOSED) {
-              app.openPort();
-            } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-              app.stopWaitingToReopenPort();
-            } else if (app.portState === PortState.OPENED) {
-              app.closePort();
+            if (app.serialController.portState === PortState.CLOSED) {
+              app.serialController.openPort();
+            } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+              app.serialController.stopWaitingToReopenPort();
+            } else if (app.serialController.portState === PortState.OPENED) {
+              app.serialController.closePort();
             } else {
               throw Error('Invalid port state.');
             }
           }}
           // Disabled when port is closed and no port is selected, or if the baud rate is invalid
           disabled={
-            (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+            (app.serialController.portState === PortState.CLOSED
+              && app.settings.portConfiguration.selectedSerialPort === null
+              && app.serialController.lastSelectedPortType !== PortType.FAKE)
+              || app.settings.portConfiguration.baudRateErrorMsg !== ''
           }
           sx={{ width: '150px' }}
           data-testid="open-close-button"
         >
-          {portStateToButtonProps[app.portState].text}
+          {portStateToButtonProps[app.serialController.portState].text}
         </Button>
       </div>
 
@@ -418,7 +422,7 @@ function PortSettingsView(props: Props) {
       {/* =============================================================== */}
       {/* PORT CONNECTED/DISCONNECTED STATUS */}
       {/* =============================================================== */}
-      <Typography>Status: {PortState[app.portState]}</Typography>
+      <Typography>Status: {PortState[app.serialController.portState]}</Typography>
     </div>
   );
 }

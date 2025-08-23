@@ -361,10 +361,10 @@ export class AppDataManager {
 
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
-      if (this.app.portState === PortState.OPENED) {
-        await this.app.closePort({ silenceSnackbar: true });
-      } else if (this.app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.stopWaitingToReopenPort();
+      if (this.app.serialController.portState === PortState.OPENED) {
+        await this.app.serialController.closePort({ silenceSnackbar: true });
+      } else if (this.app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.serialController.stopWaitingToReopenPort();
       }
     }
     // Update the current app config from the provided profile,
@@ -381,8 +381,8 @@ export class AppDataManager {
 
     // Now connect to the port if we need to
     if (weNeedToConnect) {
-      this.app.setSelectedPort(matchedAvailablePorts[0]);
-      await this.app.openPort({ silenceSnackbar: true });
+      this.app.serialController.setSelectedPort(matchedAvailablePorts[0]);
+      await this.app.serialController.openPort({ silenceSnackbar: true });
       snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
     }
 

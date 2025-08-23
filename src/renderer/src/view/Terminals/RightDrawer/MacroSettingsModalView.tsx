@@ -249,7 +249,7 @@ export default observer((props: Props) => {
             variant="contained"
             aria-label="send-macro-data"
             startIcon={<ArrowForwardIcon />}
-            disabled={app.portState !== PortState.OPENED || !macro.canSend}
+            disabled={app.serialController.portState !== PortState.OPENED || !macro.canSend}
             onClick={async () => {
               await macroController.send(macro);
             }}
