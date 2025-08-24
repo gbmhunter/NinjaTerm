@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, Button, Box, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, Button, Box, Typography, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { App } from 'src/model/App';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -69,36 +69,40 @@ export default observer((props: Props) => {
           </Typography>
 
           {/* Row 1: RTS */}
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ minWidth: 50, fontSize: '10px' }}
-              disabled={!isPortOpen}
-              onClick={() => serialController.setRts(!serialController.currentFlowControlState.rts)}
-            >
-              RTS
-            </Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FlowControlIndicator
-              label="RTS"
-              active={serialController.currentFlowControlState.rts}
-            />
-          </Box>
+          <Tooltip title="Request To Send. Write only. Commonly used for hardware flow control.">
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 50, fontSize: '10px' }}
+                disabled={!isPortOpen}
+                onClick={() => serialController.setRts(!serialController.currentFlowControlState.rts)}
+              >
+                RTS
+              </Button>
+            </Box>
+            </Tooltip>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FlowControlIndicator
+                label="RTS"
+                active={serialController.currentFlowControlState.rts}
+              />
+            </Box>
 
           {/* Row 2: CTS */}
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ minWidth: 50, fontSize: '10px' }}
-              disabled={!isPortOpen}
-              onClick={() => serialController.setCts(!serialController.currentFlowControlState.cts)}
-            >
-              CTS
-            </Button>
-          </Box>
+          <Tooltip title="Clear To Send. Read/write. Commonly used for hardware flow control. If you set this and it quickly changes, it means the other end is driving the signal.">
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 50, fontSize: '10px' }}
+                disabled={!isPortOpen}
+                onClick={() => serialController.setCts(!serialController.currentFlowControlState.cts)}
+              >
+                CTS
+              </Button>
+            </Box>
+          </Tooltip>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="CTS"
@@ -107,17 +111,19 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 3: DTR */}
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ minWidth: 50, fontSize: '10px' }}
-              disabled={!isPortOpen}
-              onClick={() => serialController.setDtr(!serialController.currentFlowControlState.dtr)}
-            >
-              DTR
-            </Button>
-          </Box>
+          <Tooltip title="Data Terminal Ready. Write only.">
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 50, fontSize: '10px' }}
+                disabled={!isPortOpen}
+                onClick={() => serialController.setDtr(!serialController.currentFlowControlState.dtr)}
+              >
+                DTR
+              </Button>
+            </Box>
+          </Tooltip>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DTR"
@@ -126,17 +132,19 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 4: DSR */}
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ minWidth: 50, fontSize: '10px' }}
-              disabled={!isPortOpen}
-              onClick={() => serialController.setDsr(!serialController.currentFlowControlState.dsr)}
-            >
-              DSR
-            </Button>
-          </Box>
+          <Tooltip title="Data Set Ready. Read/write. If you set this and it quickly changes, it means the other end is driving the signal.">
+            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ minWidth: 50, fontSize: '10px' }}
+                disabled={!isPortOpen}
+                onClick={() => serialController.setDsr(!serialController.currentFlowControlState.dsr)}
+              >
+                DSR
+              </Button>
+            </Box>
+          </Tooltip>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DSR"
@@ -145,11 +153,13 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 5: DCD (read-only) */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: '#666' }}>
-              DCD
-            </Typography>
-          </Box>
+          <Tooltip title="Data Carrier Detect. Read only.">
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ fontSize: '10px', color: '#666' }}>
+                DCD
+              </Typography>
+            </Box>
+          </Tooltip>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DCD"
