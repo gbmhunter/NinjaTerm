@@ -216,6 +216,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 4 -> VERSION 5
+    //=============================================================================
     if (updatedAppData.version === 4) {
       console.log('Updating app data from version 4 to version 5...');
       // Add detection mode to graphing settings for all profiles
@@ -229,6 +232,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 5 -> VERSION 6
+    //=============================================================================
     if (updatedAppData.version === 5) {
       console.log('Updating app data from version 5 to version 6...');
       // Rename bufferDelimiter to processingTrigger in graphing settings for all profiles
@@ -249,6 +255,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 6 -> VERSION 7
+    //=============================================================================
     if (updatedAppData.version === 6) {
       console.log('Updating app data from version 6 to version 7...');
       // Add flow control settings to app data
