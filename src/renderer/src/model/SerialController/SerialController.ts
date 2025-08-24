@@ -251,6 +251,15 @@ export class SerialController {
       clearInterval(this.flowControlPollingTimer);
       this.flowControlPollingTimer = null;
     }
+
+    // Reset the flow control state
+    runInAction(() => {
+      this.currentFlowControlState.dtr = false;
+      this.currentFlowControlState.dsr = false;
+      this.currentFlowControlState.rts = false;
+      this.currentFlowControlState.cts = false;
+      this.currentFlowControlState.dcd = false;
+    });
   }
 
   stopWaitingToReopenPort() {
@@ -289,6 +298,21 @@ export class SerialController {
     window.electronAPI.serial.removeAllListeners('serial:data-received');
     window.electronAPI.serial.removeAllListeners('serial:error');
     window.electronAPI.serial.removeAllListeners('serial:port-closed');
+
+    // No matter what type, clear the flow control polling timer
+    if (this.flowControlPollingTimer) {
+      clearInterval(this.flowControlPollingTimer);
+      this.flowControlPollingTimer = null;
+    }
+
+    // Reset the flow control state
+    runInAction(() => {
+      this.currentFlowControlState.dtr = false;
+      this.currentFlowControlState.dsr = false;
+      this.currentFlowControlState.rts = false;
+      this.currentFlowControlState.cts = false;
+      this.currentFlowControlState.dcd = false;
+    });
   }
 
   setPortState(newPortState: PortState) {
