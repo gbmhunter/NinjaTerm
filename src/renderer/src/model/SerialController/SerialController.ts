@@ -62,7 +62,10 @@ export class SerialController {
     // Create timer to poll the readable signals across IPC
     // Save timer to we can clear it when the app is closed
     this.flowControlPollingTimer = setInterval(async () => {
-      const response = await window.electronAPI.serial.getFlowControlSignals();
+      if (!this.currentPortPath) {
+        return;
+      }
+      const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
       console.log(response);
       // Update the flow control state
       this.currentFlowControlState.dsr = response.dsr;

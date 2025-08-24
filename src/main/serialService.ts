@@ -224,6 +224,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
   ipcMain.handle('serial:get-flow-control-signals', async (event, portPath: string) => {
     try {
       const port = activeSerialPorts.get(portPath);
+      console.log('serial:get-flow-control-signals called. portPath: ', portPath);
       if (!port) {
         return { success: false, error: 'Port not found' };
       }

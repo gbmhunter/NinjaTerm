@@ -113,8 +113,8 @@ export interface ElectronAPI {
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
-    setFlowControlSignals(signals: any): void;
-    getFlowControlSignals(): Promise<PortStatus>;
+    setFlowControlSignals(portPath: string, signals: any): void;
+    getFlowControlSignals(portPath: string): Promise<PortStatus>;
   };
   fs: {
     selectDirectory(): Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;
