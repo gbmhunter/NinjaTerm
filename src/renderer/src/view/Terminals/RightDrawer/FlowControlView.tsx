@@ -2,6 +2,7 @@ import { Accordion, AccordionDetails, Button, Box, Typography } from '@mui/mater
 import { observer } from 'mobx-react-lite';
 import { App } from 'src/model/App';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 
 import { CustomAccordionSummary } from './CustomAccordionSummary';
 
@@ -43,6 +44,7 @@ export default observer((props: Props) => {
   const { app } = props;
   const rightDrawer = app.terminals.rightDrawer;
   const serialController = app.serialController;
+  const isPortOpen = serialController.portState === PortState.OPENED;
 
   return (
     <Accordion disableGutters expanded={rightDrawer.flowControlIsExpanded} onChange={rightDrawer.handleFlowControlAccordionChange} sx={{ width: '100%' }}>
@@ -52,10 +54,10 @@ export default observer((props: Props) => {
       <AccordionDetails>
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: '70px 70px 70px',
-          gridTemplateRows: 'auto auto auto auto',
+          gridTemplateColumns: '80px 80px',
+          gridTemplateRows: 'auto auto auto auto auto auto',
           gap: 1,
-          maxWidth: '240px',
+          maxWidth: '180px',
           alignItems: 'center'
         }}>
           {/* Column headers */}
@@ -63,73 +65,96 @@ export default observer((props: Props) => {
             Controls
           </Typography>
           <Typography variant="caption" sx={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>
-            Outputs
-          </Typography>
-          <Typography variant="caption" sx={{ fontSize: '10px', color: '#888', textAlign: 'center' }}>
-            Inputs
+            Status
           </Typography>
 
-          {/* Row 1: RTS, RTS indicator, CTS indicator */}
+          {/* Row 1: RTS */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
               variant="outlined"
               size="small"
               sx={{ minWidth: 50, fontSize: '10px' }}
-              onClick={() => serialController.setRts(!serialController.currentFlowControlState?.rts)}
+              disabled={!isPortOpen}
+              onClick={() => serialController.setRts(!serialController.currentFlowControlState.rts)}
             >
               RTS
             </Button>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="RTS"
-              active={serialController.currentFlowControlState?.rts || false}
+              active={serialController.currentFlowControlState.rts}
             />
-            <Typography variant="caption" sx={{ fontSize: '11px' }}>RTS</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-            <FlowControlIndicator
-              label="CTS"
-              active={serialController.currentFlowControlState?.cts || false}
-            />
-            <Typography variant="caption" sx={{ fontSize: '11px' }}>CTS</Typography>
           </Box>
 
-          {/* Row 2: DTR, DTR indicator, DSR indicator */}
+          {/* Row 2: CTS */}
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
               variant="outlined"
               size="small"
               sx={{ minWidth: 50, fontSize: '10px' }}
-              onClick={() => serialController.setDtr(!serialController.currentFlowControlState?.dtr)}
+              disabled={!isPortOpen}
+              onClick={() => serialController.setCts(!serialController.currentFlowControlState.cts)}
+            >
+              CTS
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FlowControlIndicator
+              label="CTS"
+              active={serialController.currentFlowControlState.cts}
+            />
+          </Box>
+
+          {/* Row 3: DTR */}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 50, fontSize: '10px' }}
+              disabled={!isPortOpen}
+              onClick={() => serialController.setDtr(!serialController.currentFlowControlState.dtr)}
             >
               DTR
             </Button>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DTR"
-              active={serialController.currentFlowControlState?.dtr || false}
+              active={serialController.currentFlowControlState.dtr}
             />
-            <Typography variant="caption" sx={{ fontSize: '11px' }}>DTR</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-            <FlowControlIndicator
-              label="DSR"
-              active={serialController.currentFlowControlState?.dsr || false}
-            />
-            <Typography variant="caption" sx={{ fontSize: '11px' }}>DSR</Typography>
           </Box>
 
-          {/* Row 3: Empty, Empty, DCD indicator */}
-          <Box></Box>
-          <Box></Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+          {/* Row 4: DSR */}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ minWidth: 50, fontSize: '10px' }}
+              disabled={!isPortOpen}
+              onClick={() => serialController.setDsr(!serialController.currentFlowControlState.dsr)}
+            >
+              DSR
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <FlowControlIndicator
+              label="DSR"
+              active={serialController.currentFlowControlState.dsr}
+            />
+          </Box>
+
+          {/* Row 5: DCD (read-only) */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography variant="caption" sx={{ fontSize: '10px', color: '#666' }}>
+              DCD
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DCD"
-              active={serialController.currentFlowControlState?.dcd || false}
+              active={serialController.currentFlowControlState.dcd}
             />
-            <Typography variant="caption" sx={{ fontSize: '11px' }}>DCD</Typography>
           </Box>
         </Box>
       </AccordionDetails>

@@ -68,9 +68,11 @@ export class SerialController {
       const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
       console.log(response);
       // Update the flow control state
-      this.currentFlowControlState.dsr = response.dsr;
-      this.currentFlowControlState.cts = response.cts;
-      this.currentFlowControlState.dcd = response.dcd;
+      runInAction(() => {
+        this.currentFlowControlState.dsr = response.dsr;
+        this.currentFlowControlState.cts = response.cts;
+        this.currentFlowControlState.dcd = response.dcd;
+      });
     }, 1000);
 
     // Make sure to do this at the end of the constructor
