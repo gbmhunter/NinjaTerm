@@ -10,7 +10,15 @@ const PORT_OPEN_TIMEOUT_MS = 5*1000;
  * Stores a mapping of port path to the serial port object for all currently open serial ports. NinjaTerm only supports one serial port at a time at the moment, but we may want to support multiple in the future.
  */
 const activeSerialPorts = new Map<string, SerialPort>();
+
+/**
+ * Key is the port path, value is an array of buffers that have been received from the port but yet to be sent to the renderer.
+ */
 const dataBatches = new Map<string, Buffer[]>();
+
+/**
+ * Key is the port path, value is a timeout that will be cleared when the data is sent to the renderer.
+ */
 const batchTimeouts = new Map<string, NodeJS.Timeout>();
 
 function sendBatchedData(portPath: string, mainWindow: BrowserWindow | null) {
@@ -45,6 +53,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
         return { success: false, error: 'Port already open' };
       }
 
+      // See node_modules/@serialport/bindings-interface/dist/index.d.ts for the options.
       const port = new SerialPort({
         path: portPath,
         baudRate: options.baudRate || 115200,
