@@ -250,11 +250,20 @@ export class AppDataManager {
     }
 
     if (updatedAppData.version === 6) {
-      // Nothing to do, already latest version
-      console.log(`App data is at latest version (v${updatedAppData.version}).`);
+      console.log('Updating app data from version 6 to version 7...');
+      // Add flow control settings to app data
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.terminal.rightDrawer.flowControlIsExpanded = true;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 7;
+      wasChanged = true;
     }
 
-    if (updatedAppData.version !== 6) {
+    if (updatedAppData.version !== 7) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

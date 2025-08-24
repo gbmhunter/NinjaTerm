@@ -42,20 +42,24 @@ import {
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 
 import { SettingsCategories } from 'src/model/Settings/Settings';
+import FlowControlView from './FlowControlView';
+import { CustomAccordionSummary } from './CustomAccordionSummary';
 
-// This code was modified from https://mui.com/material-ui/react-accordion/#customization
-const AccordionSummary = styled((props: AccordionSummaryProps) => <MuiAccordionSummary expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />} {...props} />)(
-  ({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
-    flexDirection: 'row-reverse',
-    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-      transform: 'rotate(90deg)',
-    },
-    '& .MuiAccordionSummary-content': {
-      marginLeft: theme.spacing(1),
-    },
-  })
-);
+// // This code was modified from https://mui.com/material-ui/react-accordion/#customization
+// const AccordionSummary = styled((props: AccordionSummaryProps) => <MuiAccordionSummary expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />} {...props} />)(
+//   ({ theme }) => ({
+//     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+//     flexDirection: 'row-reverse',
+//     '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+//       transform: 'rotate(90deg)',
+//     },
+//     '& .MuiAccordionSummary-content': {
+//       marginLeft: theme.spacing(1),
+//     },
+//   })
+// );
+
+
 
 interface Props {
   app: App;
@@ -122,10 +126,13 @@ export default observer((props: Props) => {
         }}
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
+        {/* =============================================================================================== */}
+        {/* QUICK PORT SETTINGS */}
+        {/* =============================================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.quickPortSettingsIsExpanded} onChange={rightDrawer.handleQuickPortSettingsAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
             Quick Port Settings
-          </AccordionSummary>
+          </CustomAccordionSummary>
           <AccordionDetails>
             <div style={{ fontSize: '12px' }}>
               For more port settings, go to the{' '}
@@ -358,11 +365,15 @@ export default observer((props: Props) => {
             </div>
           </AccordionDetails>
         </Accordion>
-        {/* ======================================================= */}
+        {/* =============================================================================================== */}
+        {/* FLOW CONTROL */}
+        {/* =============================================================================================== */}
+        <FlowControlView app={app} />
+        {/* =============================================================================================== */}
         {/* OTHER QUICK SETTINGS */}
-        {/* ======================================================= */}
+        {/* =============================================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.otherQuickSettingsIsExpanded} onChange={rightDrawer.handleOtherQuickSettingsAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</AccordionSummary>
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</CustomAccordionSummary>
           <AccordionDetails>
             <div style={{ fontSize: '12px' }}>
               For more options, go to the{' '}
@@ -477,9 +488,9 @@ export default observer((props: Props) => {
         {/* MACROS */}
         {/* =============================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.macrosIsExpanded} onChange={rightDrawer.handleMacrosAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
             Macros
-          </AccordionSummary>
+          </CustomAccordionSummary>
           <AccordionDetails>
             <div className="macro-rows-container" style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
               {macroRows}

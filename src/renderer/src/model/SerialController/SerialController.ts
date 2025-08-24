@@ -16,7 +16,7 @@ export enum PortType {
  */
 export class SerialController {
 
-  private currentFlowControlState: {
+  currentFlowControlState: {
     dtr: boolean; // DTE -> DCE. Data Terminal Ready. Write only (from node serialport).
     dsr: boolean; // DCE -> DTE. Data Set Ready. Read/write.
     rts: boolean; // DTE -> DCE. Request To Send. Write only.
@@ -368,22 +368,34 @@ export class SerialController {
 
   setDtr(dtr: boolean) {
     this.currentFlowControlState.dtr = dtr;
+    if (!this.currentPortPath) {
+      return;
+    }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
   }
   setDsr(dsr: boolean) {
     this.currentFlowControlState.dsr = dsr;
+    if (!this.currentPortPath) {
+      return;
+    }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
   }
   setRts(rts: boolean) {
     this.currentFlowControlState.rts = rts;
+    if (!this.currentPortPath) {
+      return;
+    }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
   }
   setCts(cts: boolean) {
     this.currentFlowControlState.cts = cts;
+    if (!this.currentPortPath) {
+      return;
+    }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
   }
 }
