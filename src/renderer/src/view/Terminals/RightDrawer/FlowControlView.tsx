@@ -1,9 +1,10 @@
 import { Accordion, AccordionDetails, Button, Box, Typography, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { App } from 'src/model/App';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 
+import { App } from '@/model/App';
+import { BASIC_TOOLTIP_SETTINGS } from '@/view/SharedConfig';
+import { PortState } from '@/model/Settings/PortSettings/PortSettings';
 import { CustomAccordionSummary } from './CustomAccordionSummary';
 
 interface Props {
@@ -69,7 +70,11 @@ export default observer((props: Props) => {
           </Typography>
 
           {/* Row 1: RTS */}
-          <Tooltip title="Request To Send. Write only. Commonly used for hardware flow control.">
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title="Request To Send. Write only. Traditionally asserted by the DTE (e.g. computer) to the DCE (e.g. modem) to indicate that it is ready to send data. Commonly used for hardware flow control."
+            placement="left"
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="outlined"
@@ -90,7 +95,11 @@ export default observer((props: Props) => {
             </Box>
 
           {/* Row 2: CTS */}
-          <Tooltip title="Clear To Send. Read/write. Commonly used for hardware flow control. If you set this and it quickly changes, it means the other end is driving the signal.">
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title="Clear To Send. Read/write. Commonly used for hardware flow control. If you set this and it quickly changes, it means the other end is driving the signal."
+            placement="left"
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="outlined"
@@ -111,7 +120,11 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 3: DTR */}
-          <Tooltip title="Data Terminal Ready. Write only.">
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title="Data Terminal Ready. Write only. Traditionally asserted by the DTE when it was ready to receive data. Not as commonly used for flow control as RTS/CTS. Some older devices used DTR and RTS as a source of power."
+            placement="left"
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="outlined"
@@ -132,7 +145,11 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 4: DSR */}
-          <Tooltip title="Data Set Ready. Read/write. If you set this and it quickly changes, it means the other end is driving the signal.">
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title="Data Set Ready. Read/write. Traditionally sent by the DCE (e.g. modem) to the DTE (e.g. computer) to indicate that the DCE is ready to receive data. If you set this and it quickly changes, it means the other end is driving the signal."
+            placement="left"
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
               <Button
                 variant="outlined"
@@ -153,9 +170,13 @@ export default observer((props: Props) => {
           </Box>
 
           {/* Row 5: DCD (read-only) */}
-          <Tooltip title="Data Carrier Detect. Read only.">
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title="Data Carrier Detect. Read only. Was traditionally driven high (asserted, 1) by the modem (DCE) when it detected a carrier signal, which meant it was connected to another modem on the other end."
+            placement="left"
+          >
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: '#666' }}>
+              <Typography variant="caption" sx={{ fontSize: '10px' }}>
                 DCD
               </Typography>
             </Box>

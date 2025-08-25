@@ -138,7 +138,7 @@ function PortSettingsView(props: Props) {
         </TableContainer>
       </div>
 
-      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
         {/* =============================================================== */}
         {/* RESCAN BUTTON */}
         {/* =============================================================== */}
@@ -158,7 +158,7 @@ function PortSettingsView(props: Props) {
         <Button
           variant="contained"
           size="medium"
-          sx={{ m: 1 }}
+          sx={{ m: 1, width: 160 }}
           color={
             portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
@@ -189,8 +189,7 @@ function PortSettingsView(props: Props) {
         </Button>
       </div>
 
-
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
         {/* ============================================================== */}
         {/* BAUD RATE */}
         {/* ============================================================== */}
@@ -308,7 +307,6 @@ function PortSettingsView(props: Props) {
         </Tooltip>
       </div>
 
-
       {/* =============================================================== */}
       {/* FLOW CONTROL PARAMETERS */}
       {/* =============================================================== */}
@@ -393,7 +391,13 @@ function PortSettingsView(props: Props) {
         </Tooltip>
       </div>
 
-      <div style={{ height: '20px' }}></div>
+      {/* =========================================================================== */}
+      {/* GENERAL SETTINGS */}
+      {/* =========================================================================== */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          General Settings
+        </Typography>
 
       {/* =============================================================== */}
       {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
@@ -476,6 +480,7 @@ function PortSettingsView(props: Props) {
           label="Reopen serial port when available if it unexpectedly closes"
         />
       </Tooltip>
+      </div>
 
       <div style={{ height: '20px' }}></div>
 

@@ -273,7 +273,7 @@ export class AppDataManager {
     }
 
     //=============================================================================
-    // VERSION 7 -> VERSION 8  
+    // VERSION 7 -> VERSION 8
     //=============================================================================
     if (updatedAppData.version === 7) {
       console.log('Updating app data from version 7 to version 8...');
@@ -283,7 +283,7 @@ export class AppDataManager {
         if (rootConfig.settings.portSettings.flowControl !== undefined) {
           delete rootConfig.settings.portSettings.flowControl;
         }
-        
+
         // Add new flow control parameters with defaults if not present
         if (rootConfig.settings.portSettings.rtscts === undefined) {
           rootConfig.settings.portSettings.rtscts = false;
@@ -322,7 +322,6 @@ export class AppDataManager {
    * Save the current app configuration to local storage.
    */
   saveAppData = () => {
-    console.log('Saving app data. appData: ', this.appData);
     window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(this.appData));
   };
 

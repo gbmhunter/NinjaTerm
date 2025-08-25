@@ -83,8 +83,6 @@ export class SerialController {
         return false;
       }
 
-      console.log('openPort() called. selectedPort=', selectedPort);
-
       // Show the circular progress modal when trying to open the port
       this.app.setShowCircularProgressModal(true);
 
@@ -156,7 +154,6 @@ export class SerialController {
             return;
           }
           const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
-          console.log(response);
           // Update the flow control state
           runInAction(() => {
             this.currentFlowControlState.dsr = response.dsr;
@@ -454,7 +451,6 @@ export class SerialController {
     });
   }
   getRts() {
-    console.log('getRts() called. rts=', this.currentFlowControlState.rts);
     return this.currentFlowControlState.rts;
   }
   setCts(cts: boolean) {
