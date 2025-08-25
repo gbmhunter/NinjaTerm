@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed broken GitHub Actions badge in README.md.
+
 ## [5.4.0] - 2025-08-25
 
 ### Added
