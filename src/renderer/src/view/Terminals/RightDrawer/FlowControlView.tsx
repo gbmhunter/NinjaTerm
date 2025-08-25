@@ -76,7 +76,7 @@ export default observer((props: Props) => {
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
                 disabled={!isPortOpen}
-                onClick={() => serialController.setRts(!serialController.currentFlowControlState.rts)}
+                onClick={() => serialController.setRts(!serialController.getRts())}
               >
                 RTS
               </Button>
@@ -85,7 +85,7 @@ export default observer((props: Props) => {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <FlowControlIndicator
                 label="RTS"
-                active={serialController.currentFlowControlState.rts}
+                active={serialController.getRts()}
               />
             </Box>
 
@@ -97,7 +97,7 @@ export default observer((props: Props) => {
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
                 disabled={!isPortOpen}
-                onClick={() => serialController.setCts(!serialController.currentFlowControlState.cts)}
+                onClick={() => serialController.setCts(!serialController.getCts())}
               >
                 CTS
               </Button>
@@ -106,7 +106,7 @@ export default observer((props: Props) => {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="CTS"
-              active={serialController.currentFlowControlState.cts}
+              active={serialController.getCts()}
             />
           </Box>
 
@@ -118,7 +118,7 @@ export default observer((props: Props) => {
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
                 disabled={!isPortOpen}
-                onClick={() => serialController.setDtr(!serialController.currentFlowControlState.dtr)}
+                onClick={() => serialController.setDtr(!serialController.getDtr())}
               >
                 DTR
               </Button>
@@ -127,7 +127,7 @@ export default observer((props: Props) => {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DTR"
-              active={serialController.currentFlowControlState.dtr}
+              active={serialController.getDtr()}
             />
           </Box>
 
@@ -139,7 +139,7 @@ export default observer((props: Props) => {
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
                 disabled={!isPortOpen}
-                onClick={() => serialController.setDsr(!serialController.currentFlowControlState.dsr)}
+                onClick={() => serialController.setDsr(!serialController.getDsr())}
               >
                 DSR
               </Button>
@@ -148,7 +148,7 @@ export default observer((props: Props) => {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DSR"
-              active={serialController.currentFlowControlState.dsr}
+              active={serialController.getDsr()}
             />
           </Box>
 
@@ -163,7 +163,7 @@ export default observer((props: Props) => {
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlowControlIndicator
               label="DCD"
-              active={serialController.currentFlowControlState.dcd}
+              active={serialController.getDcd()}
             />
           </Box>
         </Box>

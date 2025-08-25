@@ -272,7 +272,44 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 7) {
+    //=============================================================================
+    // VERSION 7 -> VERSION 8  
+    //=============================================================================
+    if (updatedAppData.version === 7) {
+      console.log('Updating app data from version 7 to version 8...');
+      // Add new flow control parameters and remove old flowControl property
+      let updateProfileConfig = (rootConfig: any) => {
+        // Remove the old flowControl property
+        if (rootConfig.settings.portSettings.flowControl !== undefined) {
+          delete rootConfig.settings.portSettings.flowControl;
+        }
+        
+        // Add new flow control parameters with defaults if not present
+        if (rootConfig.settings.portSettings.rtscts === undefined) {
+          rootConfig.settings.portSettings.rtscts = false;
+        }
+        if (rootConfig.settings.portSettings.xon === undefined) {
+          rootConfig.settings.portSettings.xon = false;
+        }
+        if (rootConfig.settings.portSettings.xoff === undefined) {
+          rootConfig.settings.portSettings.xoff = false;
+        }
+        if (rootConfig.settings.portSettings.xany === undefined) {
+          rootConfig.settings.portSettings.xany = false;
+        }
+        if (rootConfig.settings.portSettings.hupcl === undefined) {
+          rootConfig.settings.portSettings.hupcl = true; // defaults to true
+        }
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 8;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 8) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

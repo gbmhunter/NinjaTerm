@@ -19,8 +19,6 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
@@ -34,6 +32,7 @@ import {
   DEFAULT_BAUD_RATES,
   FlowControl,
   NUM_DATA_BITS_OPTIONS,
+  NumDataBits,
   Parity,
   PortState,
   STOP_BIT_OPTIONS,
@@ -44,22 +43,6 @@ import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonPro
 import { SettingsCategories } from 'src/model/Settings/Settings';
 import FlowControlView from './FlowControlView';
 import { CustomAccordionSummary } from './CustomAccordionSummary';
-
-// // This code was modified from https://mui.com/material-ui/react-accordion/#customization
-// const AccordionSummary = styled((props: AccordionSummaryProps) => <MuiAccordionSummary expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />} {...props} />)(
-//   ({ theme }) => ({
-//     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
-//     flexDirection: 'row-reverse',
-//     '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-//       transform: 'rotate(90deg)',
-//     },
-//     '& .MuiAccordionSummary-content': {
-//       marginLeft: theme.spacing(1),
-//     },
-//   })
-// );
-
-
 
 interface Props {
   app: App;
@@ -200,7 +183,7 @@ export default observer((props: Props) => {
                     label="Num. Data Bits"
                     disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
-                      await app.settings.portConfiguration.setNumDataBits(e.target.value as number);
+                      await app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
                     }}
                   >
                     {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
@@ -258,33 +241,6 @@ export default observer((props: Props) => {
                       return (
                         <MenuItem key={stopBits} value={stopBits}>
                           {stopBits.toString()}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Tooltip>
-              {/* ============================================================== */}
-              {/* FLOW CONTROL */}
-              {/* ============================================================== */}
-              <Tooltip
-                title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
-                {...tooltipSettings}
-              >
-                <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-                  <InputLabel>Flow control</InputLabel>
-                  <Select
-                    value={app.settings.portConfiguration.flowControl}
-                    label="Parity"
-                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
-                    onChange={async (e) => {
-                      await app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
-                    }}
-                  >
-                    {Object.values(FlowControl).map((flowControl) => {
-                      return (
-                        <MenuItem key={flowControl} value={flowControl}>
-                          {flowControl}
                         </MenuItem>
                       );
                     })}

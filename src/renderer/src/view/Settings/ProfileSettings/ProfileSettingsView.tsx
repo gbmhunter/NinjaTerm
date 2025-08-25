@@ -25,7 +25,6 @@ function ProfileSettingsView(props: Props) {
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', width: 150 },
     { field: 'corePortSettings', headerName: 'Core port settings', width: 130 },
-    { field: 'flowControl', headerName: 'Flow control', width: 80 },
     { field: 'portInfo', headerName: 'Port info', width: 300 },
     { field: 'dataType', headerName: 'RX data type', width: 100 },
     { field: 'terminalWidth', headerName: 'Terminal width', width: 100 },
@@ -47,7 +46,6 @@ function ProfileSettingsView(props: Props) {
       id: idx,
       name: profile.name,
       corePortSettings: shorthandPortConfig,
-      flowControl: portSettings.flowControl,
       portInfo: lastUsedSerialPortInfoJson,
       dataType: dataType,
       terminalWidth: `${profile.rootConfig.settings.displaySettings.terminalWidthChars}chars`,

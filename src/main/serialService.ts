@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
-import { PortStatus, SetOptions } from '@serialport/bindings-interface';
+import { OpenOptions, PortStatus, SetOptions } from '@serialport/bindings-interface';
+import { Parity } from '@/model/Settings/PortSettings/PortSettings';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -46,10 +47,11 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
     }
   });
 
-  ipcMain.handle('serial:open-port', async (event, portPath: string, options: any) => {
-    console.log('serial:open-port called. portPath: ', portPath, ' options: ', options);
+  ipcMain.handle('serial:open-port', async (event, options: OpenOptions) => {
+    console.log('serial:open-port called. options: ', options);
+    const portPath = options.path;
     try {
-      if (activeSerialPorts.has(portPath)) {
+      if (activeSerialPorts.has(options.path)) {
         return { success: false, error: 'Port already open' };
       }
 
@@ -58,8 +60,13 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
         path: portPath,
         baudRate: options.baudRate || 115200,
         dataBits: options.dataBits || 8,
-        parity: options.parity || 'none',
+        parity: options.parity as Parity || undefined,
         stopBits: options.stopBits || 1,
+        rtscts: options.rtscts || false,
+        xon: options.xon || false,
+        xoff: options.xoff || false,
+        xany: options.xany || false,
+        hupcl: options.hupcl || true,
         autoOpen: false,
         highWaterMark: 1024,
       });

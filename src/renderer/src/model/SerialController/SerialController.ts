@@ -59,22 +59,6 @@ export class SerialController {
       dcd: false,
     };
 
-    // Create timer to poll the readable signals across IPC
-    // Save timer to we can clear it when the app is closed
-    this.flowControlPollingTimer = setInterval(async () => {
-      if (!this.currentPortPath) {
-        return;
-      }
-      const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
-      console.log(response);
-      // Update the flow control state
-      runInAction(() => {
-        this.currentFlowControlState.dsr = response.dsr;
-        this.currentFlowControlState.cts = response.cts;
-        this.currentFlowControlState.dcd = response.dcd;
-      });
-    }, 1000);
-
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
   }
@@ -99,17 +83,26 @@ export class SerialController {
         return false;
       }
 
+      console.log('openPort() called. selectedPort=', selectedPort);
+
       // Show the circular progress modal when trying to open the port
       this.app.setShowCircularProgressModal(true);
 
       try {
         // Make direct IPC call to open the port
-        const result = await window.electronAPI.serial.openPort(selectedPort.path, {
+        const result = await window.electronAPI.serial.openPort({
+          path: selectedPort.path,
           baudRate: this.app.settings.portConfiguration.baudRate,
           dataBits: this.app.settings.portConfiguration.numDataBits,
           parity: this.app.settings.portConfiguration.parity,
           stopBits: this.app.settings.portConfiguration.stopBits,
-          flowControl: this.app.settings.portConfiguration.flowControl,
+
+          // Flow control settings
+          rtscts: this.app.settings.portConfiguration.rtscts,
+          xon: this.app.settings.portConfiguration.xon,
+          xoff: this.app.settings.portConfiguration.xoff,
+          xany: this.app.settings.portConfiguration.xany,
+          hupcl: this.app.settings.portConfiguration.hupcl,
         });
 
         if (!result.success) {
@@ -155,6 +148,22 @@ export class SerialController {
           this.serialPortInfo = selectedPort;
           this.portState = PortState.OPENED;
         });
+
+        // Create timer to poll the readable signals across IPC
+        // Save timer to we can clear it when the app is closed
+        this.flowControlPollingTimer = setInterval(async () => {
+          if (!this.currentPortPath) {
+            return;
+          }
+          const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
+          console.log(response);
+          // Update the flow control state
+          runInAction(() => {
+            this.currentFlowControlState.dsr = response.dsr;
+            this.currentFlowControlState.cts = response.cts;
+            this.currentFlowControlState.dcd = response.dcd;
+          });
+        }, 1000);
 
         // Remember this port so it can be reopened if the app is restarted
         const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
@@ -397,8 +406,18 @@ export class SerialController {
     if (!this.currentPortPath) {
       return;
     }
-    // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
+    // NOTE: Can't just provide this.currentFlowControlState as the second argument because this gives the React error: "Uncaught Error: An object could not be cloned.". Likely due to MobX.
+    window.electronAPI.serial.setFlowControlSignals(
+      this.currentPortPath, {
+        dtr: this.currentFlowControlState.dtr,
+        dsr: this.currentFlowControlState.dsr,
+        rts: this.currentFlowControlState.rts,
+        cts: this.currentFlowControlState.cts,
+        dcd: this.currentFlowControlState.dcd,
+    });
+  }
+  getDtr() {
+    return this.currentFlowControlState.dtr;
   }
   setDsr(dsr: boolean) {
     this.currentFlowControlState.dsr = dsr;
@@ -406,15 +425,37 @@ export class SerialController {
       return;
     }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(
+      this.currentPortPath, {
+        dtr: this.currentFlowControlState.dtr,
+        dsr: this.currentFlowControlState.dsr,
+        rts: this.currentFlowControlState.rts,
+        cts: this.currentFlowControlState.cts,
+        dcd: this.currentFlowControlState.dcd,
+    });
+  }
+  getDsr() {
+    return this.currentFlowControlState.dsr;
   }
   setRts(rts: boolean) {
+    console.log('setRts() called. rts=', rts);
     this.currentFlowControlState.rts = rts;
     if (!this.currentPortPath) {
       return;
     }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(
+      this.currentPortPath, {
+        dtr: this.currentFlowControlState.dtr,
+        dsr: this.currentFlowControlState.dsr,
+        rts: this.currentFlowControlState.rts,
+        cts: this.currentFlowControlState.cts,
+        dcd: this.currentFlowControlState.dcd,
+    });
+  }
+  getRts() {
+    console.log('getRts() called. rts=', this.currentFlowControlState.rts);
+    return this.currentFlowControlState.rts;
   }
   setCts(cts: boolean) {
     this.currentFlowControlState.cts = cts;
@@ -422,6 +463,19 @@ export class SerialController {
       return;
     }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(this.currentPortPath, this.currentFlowControlState);
+    window.electronAPI.serial.setFlowControlSignals(
+      this.currentPortPath, {
+        dtr: this.currentFlowControlState.dtr,
+        dsr: this.currentFlowControlState.dsr,
+        rts: this.currentFlowControlState.rts,
+        cts: this.currentFlowControlState.cts,
+        dcd: this.currentFlowControlState.dcd,
+    });
+  }
+  getCts() {
+    return this.currentFlowControlState.cts;
+  }
+  getDcd() {
+    return this.currentFlowControlState.dcd;
   }
 }

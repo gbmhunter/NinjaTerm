@@ -28,6 +28,8 @@ export enum Parity {
 
 export type StopBits = 1 | 1.5 | 2;
 
+export type NumDataBits = 5 | 6 | 7 | 8;
+
 export const STOP_BIT_OPTIONS: StopBits[] = [1, 2];
 
 export enum FlowControl {
@@ -52,13 +54,18 @@ export default class PortSettings {
 
   baudRate = 115200;
 
-  numDataBits = 8;
+  numDataBits: NumDataBits = 8;
 
   parity = Parity.NONE;
 
   stopBits: StopBits = 1;
 
-  flowControl = FlowControl.NONE;
+  // Flow control parameters from SerialPort OpenOptions
+  rtscts = false;
+  xon = false;
+  xoff = false;
+  xany = false;
+  hupcl = true; // drop DTR on close - defaults to true
 
   connectToSerialPortAsSoonAsItIsSelected = true;
 
@@ -107,10 +114,7 @@ export default class PortSettings {
     await this._reconnectIfNeeded();
   }
 
-  setNumDataBits = async (numDataBits: number) => {
-    if (typeof numDataBits !== 'number') {
-      throw new Error("numDataBits must be a number");
-    }
+  setNumDataBits = async (numDataBits: NumDataBits) => {
     this.numDataBits = numDataBits;
     this._saveConfig();
     await this._reconnectIfNeeded();
@@ -128,8 +132,32 @@ export default class PortSettings {
     await this._reconnectIfNeeded();
   }
 
-  setFlowControl = async (flowControl: FlowControl) => {
-    this.flowControl = flowControl;
+  setRtscts = async (value: boolean) => {
+    this.rtscts = value;
+    this._saveConfig();
+    await this._reconnectIfNeeded();
+  }
+
+  setXon = async (value: boolean) => {
+    this.xon = value;
+    this._saveConfig();
+    await this._reconnectIfNeeded();
+  }
+
+  setXoff = async (value: boolean) => {
+    this.xoff = value;
+    this._saveConfig();
+    await this._reconnectIfNeeded();
+  }
+
+  setXany = async (value: boolean) => {
+    this.xany = value;
+    this._saveConfig();
+    await this._reconnectIfNeeded();
+  }
+
+  setHupcl = async (value: boolean) => {
+    this.hupcl = value;
     this._saveConfig();
     await this._reconnectIfNeeded();
   }
@@ -183,7 +211,11 @@ export default class PortSettings {
     this.numDataBits = configToLoad.numDataBits;
     this.parity = configToLoad.parity;
     this.stopBits = configToLoad.stopBits;
-    this.flowControl = configToLoad.flowControl;
+    this.rtscts = configToLoad.rtscts;
+    this.xon = configToLoad.xon;
+    this.xoff = configToLoad.xoff;
+    this.xany = configToLoad.xany;
+    this.hupcl = configToLoad.hupcl;
     this.connectToSerialPortAsSoonAsItIsSelected = configToLoad.connectToSerialPortAsSoonAsItIsSelected;
     this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
     this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
@@ -199,7 +231,11 @@ export default class PortSettings {
     config.numDataBits = this.numDataBits;
     config.parity = this.parity;
     config.stopBits = this.stopBits;
-    config.flowControl = this.flowControl;
+    config.rtscts = this.rtscts;
+    config.xon = this.xon;
+    config.xoff = this.xoff;
+    config.xany = this.xany;
+    config.hupcl = this.hupcl;
     config.connectToSerialPortAsSoonAsItIsSelected = this.connectToSerialPortAsSoonAsItIsSelected;
     config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
     config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
@@ -218,7 +254,7 @@ export default class PortSettings {
     return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
   }
 
-  static computeShortSerialConfigName(baudRate: number, numDataBits: number, parity: Parity, stopBits: StopBits) {
+  static computeShortSerialConfigName(baudRate: number, numDataBits: NumDataBits, parity: Parity, stopBits: StopBits) {
     let output = '';
     output += baudRate.toString();
     output += ' ';
