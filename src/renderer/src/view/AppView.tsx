@@ -214,9 +214,11 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
 
 const PortStatusIndicator = observer(({ app }: { app: App }) => (
   <div
-    style={{ backgroundColor: portStateToToolbarStatusProperties[app.portState].color, padding: '0 10px' }}
+    style={{
+      backgroundColor: portStateToToolbarStatusProperties[app.serialController.portState].color,
+      padding: '0 10px' }}
   >
-    {portStateToToolbarStatusProperties[app.portState].text}
+    {portStateToToolbarStatusProperties[app.serialController.portState].text}
   </div>
 ));
 

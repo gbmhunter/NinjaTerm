@@ -24,7 +24,8 @@ import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 
-import { App, PortType } from 'src/model/App';
+import { App } from 'src/model/App';
+import { PortType } from 'src/model/SerialController/SerialController';
 import {
   PortState,
   DEFAULT_BAUD_RATES,
@@ -32,7 +33,7 @@ import {
   Parity,
   STOP_BIT_OPTIONS,
   StopBits,
-  FlowControl,
+  NumDataBits,
 } from 'src/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
@@ -50,10 +51,10 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
-  const isPortSettingsDisabled = app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
+  const isPortSettingsDisabled = app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
   // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.
-  const isTableDisabled = app.portState !== PortState.CLOSED;
+  const isTableDisabled = app.serialController.portState !== PortState.CLOSED;
 
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -136,18 +137,59 @@ function PortSettingsView(props: Props) {
           </Table>
         </TableContainer>
       </div>
-      <Button
-        variant="outlined"
-        size="medium"
-        sx={{ m: 1 }}
-        onClick={async () => {
-          await app.settings.portConfiguration.scanForSerialPorts();
-        }}
-      >
-        Rescan
-      </Button>
 
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+        {/* =============================================================== */}
+        {/* RESCAN BUTTON */}
+        {/* =============================================================== */}
+        <Button
+          variant="outlined"
+          size="medium"
+          sx={{ m: 1 }}
+          onClick={async () => {
+            await app.settings.portConfiguration.scanForSerialPorts();
+          }}
+        >
+          Rescan
+        </Button>
+        {/* =============================================================== */}
+        {/* OPEN/CLOSE BUTTON */}
+        {/* =============================================================== */}
+        <Button
+          variant="contained"
+          size="medium"
+          sx={{ m: 1, width: 160 }}
+          color={
+            portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+              'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+              ButtonPropsColorOverrides
+            >
+          }
+          onClick={() => {
+            if (app.serialController.portState === PortState.CLOSED) {
+              app.serialController.openPort();
+            } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+              app.serialController.stopWaitingToReopenPort();
+            } else if (app.serialController.portState === PortState.OPENED) {
+              app.serialController.closePort();
+            } else {
+              throw Error('Invalid port state.');
+            }
+          }}
+          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
+          disabled={
+            (app.serialController.portState === PortState.CLOSED
+              && app.settings.portConfiguration.selectedSerialPort === null
+              && app.serialController.lastSelectedPortType !== PortType.FAKE)
+              || app.settings.portConfiguration.baudRateErrorMsg !== ''
+          }
+          data-testid="open-close-button"
+        >
+          {portStateToButtonProps[app.serialController.portState].text}
+        </Button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
         {/* ============================================================== */}
         {/* BAUD RATE */}
         {/* ============================================================== */}
@@ -198,7 +240,7 @@ function PortSettingsView(props: Props) {
               label="Num. Data Bits"
               disabled={isPortSettingsDisabled}
               onChange={(e) => {
-                app.settings.portConfiguration.setNumDataBits(e.target.value as number);
+                app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
               }}
             >
               {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
@@ -265,36 +307,97 @@ function PortSettingsView(props: Props) {
         </Tooltip>
       </div>
 
-      {/* ============================================================== */}
-      {/* FLOW CONTROL */}
-      {/* ============================================================== */}
-      <Tooltip
-        title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
-        placement="right"
-        enterDelay={500}
-      >
-        <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-          <InputLabel>Flow control</InputLabel>
-          <Select
-            value={app.settings.portConfiguration.flowControl}
-            label="Parity"
-            disabled={isPortSettingsDisabled}
-            onChange={(e) => {
-              app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
-            }}
-          >
-            {Object.values(FlowControl).map((flowControl) => {
-              return (
-                <MenuItem key={flowControl} value={flowControl}>
-                  {flowControl}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
-      </Tooltip>
+      {/* =============================================================== */}
+      {/* FLOW CONTROL PARAMETERS */}
+      {/* =============================================================== */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          Flow Control Settings
+        </Typography>
 
-      <div style={{ height: '20px' }}></div>
+        <Tooltip title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control." enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.rtscts}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setRtscts(e.target.checked);
+                }}
+                disabled={isPortSettingsDisabled}
+              />
+            }
+            label="RTS/CTS hardware flow control"
+          />
+        </Tooltip>
+
+        <Tooltip title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission." enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.xon}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setXon(e.target.checked);
+                }}
+                disabled={isPortSettingsDisabled}
+              />
+            }
+            label="XON software flow control"
+          />
+        </Tooltip>
+
+        <Tooltip title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission." enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.xoff}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setXoff(e.target.checked);
+                }}
+                disabled={isPortSettingsDisabled}
+              />
+            }
+            label="XOFF software flow control"
+          />
+        </Tooltip>
+
+        <Tooltip title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html." enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.xany}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setXany(e.target.checked);
+                }}
+                disabled={isPortSettingsDisabled}
+              />
+            }
+            label="XANY (any character restarts output)"
+          />
+        </Tooltip>
+
+        <Tooltip title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards." enterDelay={500}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.hupcl}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setHupcl(e.target.checked);
+                }}
+                disabled={isPortSettingsDisabled}
+              />
+            }
+            label="Drop DTR on close (HUPCL)"
+          />
+        </Tooltip>
+      </div>
+
+      {/* =========================================================================== */}
+      {/* GENERAL SETTINGS */}
+      {/* =========================================================================== */}
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
+        <Typography variant="subtitle2" color="text.secondary">
+          General Settings
+        </Typography>
 
       {/* =============================================================== */}
       {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
@@ -377,48 +480,15 @@ function PortSettingsView(props: Props) {
           label="Reopen serial port when available if it unexpectedly closes"
         />
       </Tooltip>
+      </div>
 
       <div style={{ height: '20px' }}></div>
-
-      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {/* =============================================================== */}
-        {/* OPEN/CLOSE BUTTON */}
-        {/* =============================================================== */}
-        <Button
-          variant="contained"
-          color={
-            portStateToButtonProps[app.portState].color as OverridableStringUnion<
-              'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-              ButtonPropsColorOverrides
-            >
-          }
-          onClick={() => {
-            if (app.portState === PortState.CLOSED) {
-              app.openPort();
-            } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-              app.stopWaitingToReopenPort();
-            } else if (app.portState === PortState.OPENED) {
-              app.closePort();
-            } else {
-              throw Error('Invalid port state.');
-            }
-          }}
-          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
-          disabled={
-            (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
-          }
-          sx={{ width: '150px' }}
-          data-testid="open-close-button"
-        >
-          {portStateToButtonProps[app.portState].text}
-        </Button>
-      </div>
 
       <div style={{ height: '20px' }}></div>
       {/* =============================================================== */}
       {/* PORT CONNECTED/DISCONNECTED STATUS */}
       {/* =============================================================== */}
-      <Typography>Status: {PortState[app.portState]}</Typography>
+      <Typography>Status: {PortState[app.serialController.portState]}</Typography>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { PortInfo } from '@serialport/bindings-interface';
+import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Serial port operations
   serial: {
     listPorts: () => ipcRenderer.invoke('serial:list-ports'),
-    openPort: (portPath: string, options: any) => ipcRenderer.invoke('serial:open-port', portPath, options),
+    openPort: (options: OpenOptions) => ipcRenderer.invoke('serial:open-port', options),
     closePort: (portPath: string) => ipcRenderer.invoke('serial:close-port', portPath),
     writeData: (portPath: string, data: number[]) => ipcRenderer.invoke('serial:write-data', portPath, data),
 
@@ -33,6 +33,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.removeAllListeners('serial:error');
       ipcRenderer.removeAllListeners('serial:port-closed');
       ipcRenderer.invoke('serial:close-all-ports');
+    },
+
+    // Flow control operations
+    setFlowControlSignals: (signals: any) => ipcRenderer.send('serial:set-flow-control-signals', signals),
+    getFlowControlSignals: (portPath: string) => {
+      return ipcRenderer.invoke('serial:get-flow-control-signals', portPath);
     },
   },
 
@@ -100,13 +106,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 export interface ElectronAPI {
   serial: {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
-    openPort(portPath: string, options: any): Promise<{ success: boolean; error?: string }>;
+    openPort(options: OpenOptions): Promise<{ success: boolean; error?: string }>;
     closePort(portPath: string): Promise<{ success: boolean; error?: string }>;
     writeData(portPath: string, data: number[]): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (portPath: string, data: Buffer) => void): void;
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
+    setFlowControlSignals(portPath: string, signals: any): void;
+    getFlowControlSignals(portPath: string): Promise<PortStatus>;
   };
   fs: {
     selectDirectory(): Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;

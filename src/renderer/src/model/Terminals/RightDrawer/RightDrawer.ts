@@ -21,6 +21,7 @@ export class RightDrawerConfig {
   quickPortSettingsIsExpanded = true;
   otherQuickSettingsIsExpanded = false;
   macrosIsExpanded = true;
+  flowControlIsExpanded = true;
 }
 
 export default class RightDrawer {
@@ -33,7 +34,7 @@ export default class RightDrawer {
   quickPortSettingsIsExpanded = false;
   otherQuickSettingsIsExpanded = false;
   macrosIsExpanded = false;
-
+  flowControlIsExpanded = false;
   constructor(app: App) {
 
     this.profileManager = app.profileManager;
@@ -61,6 +62,11 @@ export default class RightDrawer {
     this._saveConfig();
   };
 
+  handleFlowControlAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
+    this.flowControlIsExpanded = isExpanded;
+    this._saveConfig();
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
 
@@ -69,7 +75,7 @@ export default class RightDrawer {
     config.quickPortSettingsIsExpanded = this.quickPortSettingsIsExpanded;
     config.otherQuickSettingsIsExpanded = this.otherQuickSettingsIsExpanded;
     config.macrosIsExpanded = this.macrosIsExpanded;
-
+    config.flowControlIsExpanded = this.flowControlIsExpanded;
     this.profileManager.saveAppData();
   };
 
@@ -90,7 +96,8 @@ export default class RightDrawer {
     this.drawerWidth_px = configToLoad.rightDrawerWidth_px;
     this.quickPortSettingsIsExpanded = configToLoad.quickPortSettingsIsExpanded;
     this.otherQuickSettingsIsExpanded = configToLoad.otherQuickSettingsIsExpanded;
-    this.macrosIsExpanded = configToLoad.macrosIsExpanded
+    this.macrosIsExpanded = configToLoad.macrosIsExpanded;
+    this.flowControlIsExpanded = configToLoad.flowControlIsExpanded;
   };
 
   setDrawerWidth(width: number) {

@@ -1,15 +1,20 @@
-import { FlowControl, Parity, StopBits } from "src/model/Settings/PortSettings/PortSettings";
+import { FlowControl, NumDataBits, Parity, StopBits } from "src/model/Settings/PortSettings/PortSettings";
 
 export class PortSettingsData {
   baudRate = 115200;
 
-  numDataBits = 8;
+  numDataBits: NumDataBits = 8;
 
   parity = Parity.NONE;
 
   stopBits: StopBits = 1;
 
-  flowControl = FlowControl.NONE;
+  // Flow control parameters from SerialPort OpenOptions
+  rtscts = false;
+  xon = false;
+  xoff = false;
+  xany = false;
+  hupcl = true; // drop DTR on close - defaults to true
 
   connectToSerialPortAsSoonAsItIsSelected = true;
 

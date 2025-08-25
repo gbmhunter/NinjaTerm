@@ -216,6 +216,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 4 -> VERSION 5
+    //=============================================================================
     if (updatedAppData.version === 4) {
       console.log('Updating app data from version 4 to version 5...');
       // Add detection mode to graphing settings for all profiles
@@ -229,6 +232,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 5 -> VERSION 6
+    //=============================================================================
     if (updatedAppData.version === 5) {
       console.log('Updating app data from version 5 to version 6...');
       // Rename bufferDelimiter to processingTrigger in graphing settings for all profiles
@@ -249,12 +255,61 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 6 -> VERSION 7
+    //=============================================================================
     if (updatedAppData.version === 6) {
-      // Nothing to do, already latest version
-      console.log(`App data is at latest version (v${updatedAppData.version}).`);
+      console.log('Updating app data from version 6 to version 7...');
+      // Add flow control settings to app data
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.terminal.rightDrawer.flowControlIsExpanded = true;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 7;
+      wasChanged = true;
     }
 
-    if (updatedAppData.version !== 6) {
+    //=============================================================================
+    // VERSION 7 -> VERSION 8
+    //=============================================================================
+    if (updatedAppData.version === 7) {
+      console.log('Updating app data from version 7 to version 8...');
+      // Add new flow control parameters and remove old flowControl property
+      let updateProfileConfig = (rootConfig: any) => {
+        // Remove the old flowControl property
+        if (rootConfig.settings.portSettings.flowControl !== undefined) {
+          delete rootConfig.settings.portSettings.flowControl;
+        }
+
+        // Add new flow control parameters with defaults if not present
+        if (rootConfig.settings.portSettings.rtscts === undefined) {
+          rootConfig.settings.portSettings.rtscts = false;
+        }
+        if (rootConfig.settings.portSettings.xon === undefined) {
+          rootConfig.settings.portSettings.xon = false;
+        }
+        if (rootConfig.settings.portSettings.xoff === undefined) {
+          rootConfig.settings.portSettings.xoff = false;
+        }
+        if (rootConfig.settings.portSettings.xany === undefined) {
+          rootConfig.settings.portSettings.xany = false;
+        }
+        if (rootConfig.settings.portSettings.hupcl === undefined) {
+          rootConfig.settings.portSettings.hupcl = true; // defaults to true
+        }
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 8;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 8) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;
@@ -267,7 +322,6 @@ export class AppDataManager {
    * Save the current app configuration to local storage.
    */
   saveAppData = () => {
-    console.log('Saving app data. appData: ', this.appData);
     window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(this.appData));
   };
 
@@ -361,10 +415,10 @@ export class AppDataManager {
 
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
-      if (this.app.portState === PortState.OPENED) {
-        await this.app.closePort({ silenceSnackbar: true });
-      } else if (this.app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.stopWaitingToReopenPort();
+      if (this.app.serialController.portState === PortState.OPENED) {
+        await this.app.serialController.closePort({ silenceSnackbar: true });
+      } else if (this.app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.serialController.stopWaitingToReopenPort();
       }
     }
     // Update the current app config from the provided profile,
@@ -381,8 +435,8 @@ export class AppDataManager {
 
     // Now connect to the port if we need to
     if (weNeedToConnect) {
-      this.app.setSelectedPort(matchedAvailablePorts[0]);
-      await this.app.openPort({ silenceSnackbar: true });
+      this.app.serialController.setSelectedPort(matchedAvailablePorts[0]);
+      await this.app.serialController.openPort({ silenceSnackbar: true });
       snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
     }
 

@@ -2,6 +2,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ExpectedTerminalChar, ElectronAppTestHarness } from './ElectronUtil';
+import './types';
 
 let appTestHarness: ElectronAppTestHarness;
 
@@ -22,7 +23,7 @@ test.describe('Graphing (Electron)', () => {
 
     await appTestHarness.sendTextToTerminal('y=1\n');
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(1);
     expect(graphData[0].y).toBe(1);
@@ -34,7 +35,7 @@ test.describe('Graphing (Electron)', () => {
 
     await appTestHarness.sendTextToTerminal('TEXT BEFORE VALUE y=5\n');
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(1);
     expect(graphData[0].y).toBe(5);
@@ -46,7 +47,7 @@ test.describe('Graphing (Electron)', () => {
 
     await appTestHarness.sendTextToTerminal('y=5 TEXT AFTER VALUE\n');
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(1);
     expect(graphData[0].y).toBe(5);
@@ -58,7 +59,7 @@ test.describe('Graphing (Electron)', () => {
 
     await appTestHarness.sendTextToTerminal('TEXT BEFORE VALUE y=5 TEXT AFTER VALUE\n');
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(1);
     expect(graphData[0].y).toBe(5);
@@ -76,7 +77,7 @@ test.describe('Graphing (Electron)', () => {
     await appTestHarness.sendTextToTerminal('y=5\ny=6\ny=7\n');
 
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(2);
     expect(graphData[0].y).toBe(6);
@@ -93,7 +94,7 @@ test.describe('Graphing (Electron)', () => {
     await appTestHarness.sendTextToTerminal('x=2,y=3\n');
 
     const graphData = await appTestHarness.page.evaluate(() => {
-      return (window as any).app.graphing.graphData;
+      return window.app.graphing.graphData;
     });
     expect(graphData.length).toBe(1);
     expect(graphData[0].x).toBe(2);

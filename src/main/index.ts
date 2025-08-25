@@ -3,9 +3,9 @@ import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import log from 'electron-log';
 import * as path from 'path';
-import { SerialPort } from 'serialport';
 import * as fs from 'fs/promises';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -54,8 +54,6 @@ function emitEventIfInProd(event: string) {
   }
 }
 
-// Set maximum delay to 50ms for any received char before sending to renderer
-const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
 // Configure auto-updater logging
 autoUpdater.logger = log;
@@ -154,6 +152,9 @@ function createWindow(): void {
 app.whenReady().then(() => {
   createWindow();
 
+  // Initialize serial handlers
+  initializeSerialHandlers(mainWindow);
+
   installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
     .then((ext) => console.log(`Added Extension:  ${ext.name}`))
     .catch((err) => console.log('An error occurred: ', err));
@@ -208,198 +209,6 @@ app.on('activate', () => {
   }
 });
 
-// Hold all active serial ports. The key is the port path which should be unique.
-const activeSerialPorts = new Map<string, SerialPort>();
-
-// Data batching for high-performance serial communication
-const dataBatches = new Map<string, Buffer[]>();
-const batchTimeouts = new Map<string, NodeJS.Timeout>();
-
-function sendBatchedData(portPath: string) {
-  const batch = dataBatches.get(portPath);
-  if (batch && batch.length > 0) {
-    // Concatenate all buffers in the batch
-    const combinedBuffer = Buffer.concat(batch);
-    mainWindow?.webContents.send('serial:data-received', portPath, combinedBuffer);
-
-    // Clear the batch
-    dataBatches.set(portPath, []);
-  }
-}
-
-// IPC handlers for serial port operations
-ipcMain.handle('serial:list-ports', async () => {
-  try {
-    const ports = await SerialPort.list();
-    return { success: true, ports };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-});
-
-ipcMain.handle('serial:open-port', async (event, portPath: string, options: any) => {
-  console.log('serial:open-port called. portPath: ', portPath, ' options: ', options);
-  try {
-    if (activeSerialPorts.has(portPath)) {
-      return { success: false, error: 'Port already open' };
-    }
-
-    const port = new SerialPort({
-      path: portPath,
-      baudRate: options.baudRate || 115200,
-      dataBits: options.dataBits || 8,
-      parity: options.parity || 'none',
-      stopBits: options.stopBits || 1,
-      autoOpen: false,
-      // Sets the size of the read and write buffers. Defaults to 64k, which causes lag problems if NinjaTerm UI cannot keep up (buffer starts filling up
-      // and NinjaTerms starts "receiving" data from a long time in the past, this is confusing to the user).
-      highWaterMark: 1024,
-    });
-
-    // I have seen the port.open() callback not get called in some cases, so add a timeout here so
-    // the app does not hang indefinitely.
-    await new Promise<void>((resolve, reject) => {
-      let settled = false;
-      const timeout = setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          reject(new Error('Timeout while opening serial port'));
-        }
-      }, 5*1000); // 5 seconds timeout
-
-      port.open((err) => {
-        if (!settled) {
-          settled = true;
-          clearTimeout(timeout);
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        }
-      });
-    });
-
-    // Initialize batching for this port
-    dataBatches.set(portPath, []);
-
-    // Set up data handlers with batching for high performance
-    port.on('data', (data: Buffer) => {
-      // Add data to batch
-      const batch = dataBatches.get(portPath);
-      if (batch) {
-        const isFirstChar = batch.length === 0;
-        batch.push(data);
-
-        // If this is the first character in a new batch, start the timer
-        if (isFirstChar) {
-          const timeout = setTimeout(() => {
-            sendBatchedData(portPath);
-            batchTimeouts.delete(portPath);
-          }, RX_DATA_BATCH_TIMEOUT_MS);
-          batchTimeouts.set(portPath, timeout);
-        }
-        // For subsequent data, just accumulate and let the timer handle it
-      }
-    });
-
-    port.on('error', (error: Error) => {
-      mainWindow?.webContents.send('serial:error', portPath, error.message);
-    });
-
-    port.on('close', () => {
-      // Send any remaining batched data before closing
-      sendBatchedData(portPath);
-
-      // Clean up batching data
-      const timeout = batchTimeouts.get(portPath);
-      if (timeout) {
-        clearTimeout(timeout);
-        batchTimeouts.delete(portPath);
-      }
-      dataBatches.delete(portPath);
-
-      activeSerialPorts.delete(portPath);
-      mainWindow?.webContents.send('serial:port-closed', portPath);
-    });
-
-    activeSerialPorts.set(portPath, port);
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-});
-
-ipcMain.handle('serial:close-port', async (event, portPath: string) => {
-  try {
-    const port = activeSerialPorts.get(portPath);
-    if (!port) {
-      return { success: false, error: 'Port not found' };
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      port.close((err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    // Clean up batching data (this will also happen in port.on('close') but being safe)
-    const timeout = batchTimeouts.get(portPath);
-    if (timeout) {
-      clearTimeout(timeout);
-      batchTimeouts.delete(portPath);
-    }
-    dataBatches.delete(portPath);
-
-    activeSerialPorts.delete(portPath);
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-});
-
-ipcMain.handle('serial:close-all-ports', async () => {
-  for (const [portPath, port] of activeSerialPorts) {
-    await port.close();
-  }
-
-  // Clean up all batching data
-  for (const timeout of batchTimeouts.values()) {
-    clearTimeout(timeout);
-  }
-  batchTimeouts.clear();
-  dataBatches.clear();
-
-  activeSerialPorts.clear();
-});
-
-ipcMain.handle('serial:write-data', async (event, portPath: string, data: number[]) => {
-  try {
-    const port = activeSerialPorts.get(portPath);
-    if (!port) {
-      return { success: false, error: 'Port not found' };
-    }
-
-    const buffer = Buffer.from(data);
-    await new Promise<void>((resolve, reject) => {
-      port.write(buffer, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-});
 
 // File system operations for logging
 ipcMain.handle('fs:select-directory', async () => {
@@ -574,21 +383,5 @@ ipcMain.handle('analytics:event', async (event, eventName: string) => {
 
 // Clean up on app quit
 app.on('before-quit', () => {
-  // Close all active serial ports
-  for (const [portPath, port] of activeSerialPorts) {
-    try {
-      port.close();
-    } catch (error) {
-      console.error(`Error closing port ${portPath}:`, error);
-    }
-  }
-
-  // Clean up all batching data
-  for (const timeout of batchTimeouts.values()) {
-    clearTimeout(timeout);
-  }
-  batchTimeouts.clear();
-  dataBatches.clear();
-
-  activeSerialPorts.clear();
+  cleanupSerialPorts();
 });

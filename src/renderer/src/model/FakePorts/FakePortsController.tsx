@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
-import { App, MainPanes, PortType } from 'src/model/App';
+import { App, MainPanes } from 'src/model/App';
+import { PortType } from 'src/model/SerialController/SerialController';
 import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
@@ -1304,9 +1305,9 @@ export default class FakePortsController {
 
   openPort() {
     this.fakePorts[this.selFakePortIdx].connect();
-    this.app.portState = PortState.OPENED;
+    this.app.serialController.portState = PortState.OPENED;
     this.fakePortOpen = true;
-    this.app.lastSelectedPortType = PortType.FAKE;
+    this.app.serialController.lastSelectedPortType = PortType.FAKE;
     this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
 
     // Go to terminal view
@@ -1317,7 +1318,7 @@ export default class FakePortsController {
 
   closePort() {
     this.fakePorts[this.selFakePortIdx].disconnect();
-    this.app.portState = PortState.CLOSED;
+    this.app.serialController.portState = PortState.CLOSED;
     this.fakePortOpen = false;
     this.app.snackbar.sendToSnackbar('Fake serial port closed.', 'success');
   }

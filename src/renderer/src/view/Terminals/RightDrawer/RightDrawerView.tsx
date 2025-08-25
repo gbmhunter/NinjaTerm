@@ -19,42 +19,30 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
-import { App, MainPanes, PortType } from 'src/model/App';
+import { App, MainPanes } from '@/model/App';
+import { PortType } from '@/model/SerialController/SerialController';
 import MacroView from './MacroRowView';
 import MacroSettingsModalView from './MacroSettingsModalView';
-import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import ApplyableTextFieldView from '@/view/Components/ApplyableTextFieldView';
+import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from '@/model/Settings/DisplaySettings/DisplaySettings';
 import {
   DEFAULT_BAUD_RATES,
-  FlowControl,
   NUM_DATA_BITS_OPTIONS,
+  NumDataBits,
   Parity,
   PortState,
   STOP_BIT_OPTIONS,
   StopBits,
-} from 'src/model/Settings/PortSettings/PortSettings';
-import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
+} from '@/model/Settings/PortSettings/PortSettings';
+import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 
-import { SettingsCategories } from 'src/model/Settings/Settings';
-
-// This code was modified from https://mui.com/material-ui/react-accordion/#customization
-const AccordionSummary = styled((props: AccordionSummaryProps) => <MuiAccordionSummary expandIcon={<ArrowDownwardIcon sx={{ fontSize: '0.9rem' }} />} {...props} />)(
-  ({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
-    flexDirection: 'row-reverse',
-    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-      transform: 'rotate(90deg)',
-    },
-    '& .MuiAccordionSummary-content': {
-      marginLeft: theme.spacing(1),
-    },
-  })
-);
+import { SettingsCategories } from '@/model/Settings/Settings';
+import FlowControlView from './FlowControlView';
+import { CustomAccordionSummary } from './CustomAccordionSummary';
+import { BASIC_TOOLTIP_SETTINGS } from '@/view/SharedConfig';
 
 interface Props {
   app: App;
@@ -69,16 +57,6 @@ export default observer((props: Props) => {
   const macroRows = app.terminals.rightDrawer.macroController.macrosArray.map((macro, index) => {
     return <MacroView key={index} app={app} macroController={app.terminals.rightDrawer.macroController} macro={macro} macroIdx={index} />;
   });
-
-  const tooltipSettings = {
-    followCursor: true,
-    arrow: true,
-    placement: 'left' as const, // Needed to keep typescript happy
-    // Do not use enterDelay, this does not work for successive tooltips (they
-    // enter immediately if used shortly after the first)
-    enterNextDelay: 1000,
-    leaveDelay: 50,
-  };
 
   return (
     <Resizable // This what provides the resizing functionality for the right drawer
@@ -121,10 +99,13 @@ export default observer((props: Props) => {
         }}
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
+        {/* =============================================================================================== */}
+        {/* QUICK PORT SETTINGS */}
+        {/* =============================================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.quickPortSettingsIsExpanded} onChange={rightDrawer.handleQuickPortSettingsAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
             Quick Port Settings
-          </AccordionSummary>
+          </CustomAccordionSummary>
           <AccordionDetails>
             <div style={{ fontSize: '12px' }}>
               For more port settings, go to the{' '}
@@ -146,8 +127,9 @@ export default observer((props: Props) => {
               {/* BAUD RATE */}
               {/* ============================================================== */}
               <Tooltip
+                {...BASIC_TOOLTIP_SETTINGS}
                 title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
-                {...tooltipSettings}
+                placement="left"
               >
                 <Autocomplete
                   freeSolo
@@ -172,7 +154,7 @@ export default observer((props: Props) => {
                       }}
                     />
                   )}
-                  disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                  disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                   sx={{ m: 1, width: 160 }}
                   size="small"
                   inputValue={app.settings.portConfiguration.baudRateInputValue}
@@ -184,15 +166,18 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* NUM. DATA BITS */}
               {/* ============================================================== */}
-              <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." {...tooltipSettings}>
+              <Tooltip
+                {...BASIC_TOOLTIP_SETTINGS}
+                title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
+              >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Num. data bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.numDataBits}
                     label="Num. Data Bits"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
-                      await app.settings.portConfiguration.setNumDataBits(e.target.value as number);
+                      await app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
                     }}
                   >
                     {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
@@ -209,15 +194,16 @@ export default observer((props: Props) => {
               {/* PARITY */}
               {/* ============================================================== */}
               <Tooltip
+                {...BASIC_TOOLTIP_SETTINGS}
                 title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
-                {...tooltipSettings}
+                placement="left"
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Parity</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.parity}
                     label="Parity"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setParity(e.target.value as Parity);
                     }}
@@ -235,13 +221,17 @@ export default observer((props: Props) => {
               {/* ============================================================== */}
               {/* STOP BITS */}
               {/* ============================================================== */}
-              <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' {...tooltipSettings}>
+              <Tooltip
+                {...BASIC_TOOLTIP_SETTINGS}
+                title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
+                placement="left"
+              >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
                   <InputLabel>Stop bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.stopBits}
                     label="Stop Bits"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
                     }}
@@ -256,33 +246,6 @@ export default observer((props: Props) => {
                   </Select>
                 </FormControl>
               </Tooltip>
-              {/* ============================================================== */}
-              {/* FLOW CONTROL */}
-              {/* ============================================================== */}
-              <Tooltip
-                title='Controls whether flow control is used. "none" results in no flow control being used. "hardware" results in the CTS (clear-to-send) and RTS (ready-to-send) lines being used. "none" is the most common option. CTS/RTS must be connected in hardware for this to work. If you are not seeing any data travel across your serial port, you might want to try changing this setting.'
-                {...tooltipSettings}
-              >
-                <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-                  <InputLabel>Flow control</InputLabel>
-                  <Select
-                    value={app.settings.portConfiguration.flowControl}
-                    label="Parity"
-                    disabled={app.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
-                    onChange={async (e) => {
-                      await app.settings.portConfiguration.setFlowControl(e.target.value as FlowControl);
-                    }}
-                  >
-                    {Object.values(FlowControl).map((flowControl) => {
-                      return (
-                        <MenuItem key={flowControl} value={flowControl}>
-                          {flowControl}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Tooltip>
             </div>
 
             {/* =============================================================== */}
@@ -290,7 +253,8 @@ export default observer((props: Props) => {
             {/* =============================================================== */}
             <Tooltip
               title="Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again."
-              {...tooltipSettings}
+              {...BASIC_TOOLTIP_SETTINGS}
+              placement="left"
             >
               <FormControlLabel
                 control={
@@ -317,7 +281,7 @@ export default observer((props: Props) => {
                   app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
                 }}
                 // Only let user select a new port if current one is closed
-                disabled={app.portState !== PortState.CLOSED}
+                disabled={app.serialController.portState !== PortState.CLOSED}
                 data-testid="request-port-access"
                 sx={{ width: '150px' }}
               >
@@ -329,39 +293,43 @@ export default observer((props: Props) => {
               <Button
                 variant="contained"
                 color={
-                  portStateToButtonProps[app.portState].color as OverridableStringUnion<
+                  portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
                     'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                     ButtonPropsColorOverrides
                   >
                 }
                 onClick={() => {
-                  if (app.portState === PortState.CLOSED) {
-                    app.openPort();
-                  } else if (app.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                    app.stopWaitingToReopenPort();
-                  } else if (app.portState === PortState.OPENED) {
-                    app.closePort();
+                  if (app.serialController.portState === PortState.CLOSED) {
+                    app.serialController.openPort();
+                  } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+                    app.serialController.stopWaitingToReopenPort();
+                  } else if (app.serialController.portState === PortState.OPENED) {
+                    app.serialController.closePort();
                   } else {
                     throw Error('Invalid port state.');
                   }
                 }}
                 // Disabled when port is closed and no port is selected, or if the baud rate is invalid
                 disabled={
-                  (app.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
+                  (app.serialController.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.serialController.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
                 }
                 sx={{ width: '150px' }}
                 data-testid="open-close-button"
               >
-                {portStateToButtonProps[app.portState].text}
+                {portStateToButtonProps[app.serialController.portState].text}
               </Button>
             </div>
           </AccordionDetails>
         </Accordion>
-        {/* ======================================================= */}
+        {/* =============================================================================================== */}
+        {/* FLOW CONTROL */}
+        {/* =============================================================================================== */}
+        <FlowControlView app={app} />
+        {/* =============================================================================================== */}
         {/* OTHER QUICK SETTINGS */}
-        {/* ======================================================= */}
+        {/* =============================================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.otherQuickSettingsIsExpanded} onChange={rightDrawer.handleOtherQuickSettingsAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</AccordionSummary>
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />}>Other Quick Settings</CustomAccordionSummary>
           <AccordionDetails>
             <div style={{ fontSize: '12px' }}>
               For more options, go to the{' '}
@@ -382,6 +350,7 @@ export default observer((props: Props) => {
             {/* DATA VIEW CONFIGURATION */}
             {/* ======================================================= */}
             <Tooltip
+              {...BASIC_TOOLTIP_SETTINGS}
               title={
                 <div>
                   Controls how to display the TX and RX data. Different use cases require different view configurations.
@@ -394,7 +363,7 @@ export default observer((props: Props) => {
                   </ul>
                 </div>
               }
-              {...tooltipSettings}
+              placement="left"
             >
               <FormControl size="small" style={{ minWidth: '210px', marginBottom: '10px' }}>
                 <InputLabel>Data View Configuration</InputLabel>
@@ -422,7 +391,11 @@ export default observer((props: Props) => {
               {/* =============================================================================== */}
               {/* CHAR SIZE */}
               {/* =============================================================================== */}
-              <Tooltip title="The font size (in pixels) of characters displayed in the terminal." {...tooltipSettings}>
+              <Tooltip
+                {...BASIC_TOOLTIP_SETTINGS}
+                title="The font size (in pixels) of characters displayed in the terminal."
+                placement="left"
+              >
                 <ApplyableTextFieldView
                   id="outlined-basic"
                   name="charSizePx"
@@ -455,7 +428,11 @@ export default observer((props: Props) => {
             {/* ==================================================================== */}
             {/* SEND BREAK BUTTON */}
             {/* ==================================================================== */}
-            <Tooltip title="Click this to send the break signal for 200ms to the serial port." {...tooltipSettings}>
+            <Tooltip
+              {...BASIC_TOOLTIP_SETTINGS}
+              title="Click this to send the break signal for 200ms to the serial port."
+              placement="left"
+            >
               <span>
                 <Button
                   variant="outlined"
@@ -463,7 +440,7 @@ export default observer((props: Props) => {
                   onClick={async () => {
                     await app.sendBreakSignal();
                   }}
-                  disabled={app.portState !== PortState.OPENED}
+                  disabled={app.serialController.portState !== PortState.OPENED}
                   data-testid="send-break-button"
                 >
                   Send BREAK
@@ -476,9 +453,9 @@ export default observer((props: Props) => {
         {/* MACROS */}
         {/* =============================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.macrosIsExpanded} onChange={rightDrawer.handleMacrosAccordionChange} sx={{ width: '100%' }}>
-          <AccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
+          <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="macros-accordion-summary">
             Macros
-          </AccordionSummary>
+          </CustomAccordionSummary>
           <AccordionDetails>
             <div className="macro-rows-container" style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
               {macroRows}

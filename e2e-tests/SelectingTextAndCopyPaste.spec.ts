@@ -1,6 +1,7 @@
 import { expect, test, Page } from '@playwright/test';
 
 import { ElectronAppTestHarness } from './ElectronUtil';
+import './types';
 
 /**
  * Helper function to set the in-browser selection based on start and end row IDs and column indexes.
