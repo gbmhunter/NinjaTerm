@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
+import { SerialController } from '@/model/SerialController/SerialController';
 
 export enum PortState {
   CLOSED,
@@ -184,10 +185,9 @@ export default class PortSettings {
 
   scanForSerialPorts = async () => {
     const result = await window.electronAPI.serial.listPorts();
-
     runInAction(() => {
       if (result.success) {
-        this.availableSerialPorts = result.ports;
+        this.availableSerialPorts = SerialController.sortSerialPortsNaturally(result.ports!);
       } else {
         this.availableSerialPorts = [];
         this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');

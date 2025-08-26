@@ -474,4 +474,45 @@ export class SerialController {
   getDcd() {
     return this.currentFlowControlState.dcd;
   }
+
+  /**
+   * Function that sorts serial ports naturally by path (handles numeric parts correctly, e.g., "COM6" before "COM16", "/dev/ttyUSB0" before "/dev/ttyUSB10").
+   *
+   * Works on Windows, Linux, and macOS.
+   *
+   * @param ports The ports to sort.
+   * @returns The sorted ports.
+   */
+  static sortSerialPortsNaturally(ports: PortInfo[]) {
+    const sortedPorts = ports.sort((a, b) => {
+      const pathA = a.path;
+      const pathB = b.path;
+
+      // Extract numeric parts from the paths for natural sorting
+      const matchA = pathA.match(/^(\D*)(\d+)(.*)$/);
+      const matchB = pathB.match(/^(\D*)(\d+)(.*)$/);
+
+      if (matchA && matchB) {
+        // Both have numeric parts
+        const [, prefixA, numA, suffixA] = matchA;
+        const [, prefixB, numB, suffixB] = matchB;
+
+        // First compare the prefix (e.g., "COM")
+        const prefixCompare = prefixA.localeCompare(prefixB);
+        if (prefixCompare !== 0) return prefixCompare;
+
+        // Then compare numerically (e.g., 6 vs 16)
+        const numCompare = parseInt(numA, 10) - parseInt(numB, 10);
+        if (numCompare !== 0) return numCompare;
+
+        // Finally compare the suffix
+        return suffixA.localeCompare(suffixB);
+      }
+
+      // Fall back to alphabetical comparison for non-matching patterns
+      return pathA.localeCompare(pathB);
+    });
+
+    return sortedPorts;
+  }
 }

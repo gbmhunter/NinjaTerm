@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed broken GitHub Actions badge in README.md.
+- Fixed bug where serial ports were not sorted naturally by path (we want "COM6" before "COM16", "/dev/ttyUSB0" before "/dev/ttyUSB10").
 
 ## [5.4.0] - 2025-08-25
 
