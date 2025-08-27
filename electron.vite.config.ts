@@ -43,9 +43,6 @@ export default defineConfig({
         'src': resolve(__dirname, 'src/renderer/src')
       }
     },
-    define: {
-      __PACKAGE_JSON__: JSON.stringify(require('./package.json'))
-    },
     build: {
       rollupOptions: {
         input: resolve(__dirname, 'src/renderer/index.html')

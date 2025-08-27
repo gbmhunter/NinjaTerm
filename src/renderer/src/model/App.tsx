@@ -6,8 +6,7 @@ import { closeSnackbar } from 'notistack';
 import { Button } from '@mui/material';
 
 // Import package.json to read out the version number
-declare const __PACKAGE_JSON__: { version: string };
-const packageDotJson = __PACKAGE_JSON__;
+import packageDotJson from '../../../../package.json' with { type: 'json' };
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
 import SnackbarController from './SnackbarController/SnackbarController';
