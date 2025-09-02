@@ -23,6 +23,7 @@ beforeEach(() => {
         writeFile: vi.fn().mockResolvedValue({ success: true }),
         getFileSize: vi.fn().mockResolvedValue({ success: true, size: 0 }),
         fileExists: vi.fn().mockResolvedValue({ success: true, exists: true }),
+        getDefaultLogDirectory: vi.fn().mockResolvedValue({ success: true, path: '/mock/home/NinjaTerm/logs' }),
       }
     },
     writable: true,

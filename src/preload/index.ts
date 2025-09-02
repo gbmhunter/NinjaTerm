@@ -48,7 +48,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     writeFile: (filePath: string, data: number[], append?: boolean) =>
       ipcRenderer.invoke('fs:write-file', filePath, data, append),
     getFileSize: (filePath: string) => ipcRenderer.invoke('fs:get-file-size', filePath),
-    fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath)
+    fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath),
+    getDefaultLogDirectory: () => ipcRenderer.invoke('fs:get-default-log-directory')
   },
 
   // Auto-updater operations
@@ -121,6 +122,7 @@ export interface ElectronAPI {
     writeFile(filePath: string, data: number[], append?: boolean): Promise<{ success: boolean; error?: string }>;
     getFileSize(filePath: string): Promise<{ success: boolean; size?: number; error?: string }>;
     fileExists(filePath: string): Promise<{ success: boolean; exists?: boolean; error?: string }>;
+    getDefaultLogDirectory(): Promise<{ success: boolean; path?: string; error?: string }>;
   };
   updater: {
     checkForUpdates(): Promise<{ success: boolean; updateInfo?: any; error?: string }>;

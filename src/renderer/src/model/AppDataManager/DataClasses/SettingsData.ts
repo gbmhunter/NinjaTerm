@@ -4,6 +4,7 @@ import { RxSettingsData } from './RxSettingsData';
 import { TxSettingsData } from './TxSettingsData';
 import { GeneralSettingsConfig } from './GeneralSettingsData';
 import { GraphingSettingsData } from './GraphingSettingsData';
+import { LogSettingsData } from './LogSettingsData';
 
 /**
  * Encapsulates all application settings data.
@@ -16,4 +17,5 @@ export class SettingsData {
   displaySettings = new DisplaySettingsData();
   generalSettings = new GeneralSettingsConfig();
   graphingSettings = new GraphingSettingsData();
+  logSettings = new LogSettingsData();
 }

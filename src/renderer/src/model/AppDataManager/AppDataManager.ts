@@ -309,7 +309,35 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 8) {
+    //=============================================================================
+    // VERSION 8 -> VERSION 9
+    //=============================================================================
+    if (updatedAppData.version === 8) {
+      console.log('Updating app data from version 8 to version 9...');
+      // Create new logSettings structure and move any existing log directory
+      let updateProfileConfig = (rootConfig: any) => {
+        // Create the new logSettings object with defaults
+        const logSettings = {
+          logDirectory: null, // No existing logDirectory to migrate from version 8
+          whatToNameTheFile: 0, // WhatToNameTheFile.CURRENT_DATETIME
+          customFileName: 'custom-file-name.log',
+          existingFileBehavior: 0, // ExistingFileBehaviors.APPEND
+          logRawTxData: false,
+          logRawRxData: true
+        };
+        
+        // Add the new logSettings to settings
+        rootConfig.settings.logSettings = logSettings;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 9;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 9) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

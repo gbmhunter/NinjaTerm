@@ -4,6 +4,7 @@ const { autoUpdater } = pkg;
 import log from 'electron-log';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 
@@ -258,6 +259,20 @@ ipcMain.handle('fs:file-exists', async (event, filePath: string) => {
     return { success: true, exists: true };
   } catch (error) {
     return { success: true, exists: false };
+  }
+});
+
+ipcMain.handle('fs:get-default-log-directory', async () => {
+  try {
+    const homeDir = os.homedir();
+    const defaultLogDir = path.join(homeDir, 'NinjaTerm', 'logs');
+    
+    // Ensure the directory exists
+    await fs.mkdir(defaultLogDir, { recursive: true });
+    
+    return { success: true, path: defaultLogDir };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
   }
 });
 
