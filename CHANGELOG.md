@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added socket support to the app. You can now choose between connecting to a serial port or a socket server (NinjaTerm acts as a TCP socket client).
 - Added default logging directory to the app (`<user home>/NinjaTerm/logs`)
 - Logging settings are now saved to the profile app data.
 

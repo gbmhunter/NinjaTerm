@@ -38,6 +38,11 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
+export enum ConnectionType {
+  SERIAL_PORT = 'serial_port',
+  SOCKET = 'socket',
+}
+
 export default class PortSettings {
 
   app: App
@@ -83,6 +88,13 @@ export default class PortSettings {
 
   availableSerialPorts: any = [];
   selectedSerialPort: any = null;
+
+  // Connection type (serial port or socket)
+  connectionType: ConnectionType = ConnectionType.SERIAL_PORT;
+
+  // Socket connection settings
+  socketHost = '127.0.0.1';
+  socketPort = 5000;
 
   constructor(app: App) {
     this.app = app;
@@ -199,6 +211,21 @@ export default class PortSettings {
     this.selectedSerialPort = port;
   }
 
+  setConnectionType = (connectionType: ConnectionType) => {
+    this.connectionType = connectionType;
+    this._saveConfig();
+  }
+
+  setSocketHost = (host: string) => {
+    this.socketHost = host;
+    this._saveConfig();
+  }
+
+  setSocketPort = (port: number) => {
+    this.socketPort = port;
+    this._saveConfig();
+  }
+
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
@@ -217,6 +244,17 @@ export default class PortSettings {
     this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
     this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
     this.allowSettingsChangesWhenOpen = configToLoad.allowSettingsChangesWhenOpen;
+    
+    // Load socket settings if they exist (for migration compatibility)
+    if (configToLoad.connectionType !== undefined) {
+      this.connectionType = configToLoad.connectionType;
+    }
+    if (configToLoad.socketHost !== undefined) {
+      this.socketHost = configToLoad.socketHost;
+    }
+    if (configToLoad.socketPort !== undefined) {
+      this.socketPort = configToLoad.socketPort;
+    }
 
     this.setBaudRateInputValue(this.baudRate.toString());
   };
@@ -237,18 +275,25 @@ export default class PortSettings {
     config.resumeConnectionToLastSerialPortOnStartup = this.resumeConnectionToLastSerialPortOnStartup;
     config.reopenSerialPortIfUnexpectedlyClosed = this.reopenSerialPortIfUnexpectedlyClosed;
     config.allowSettingsChangesWhenOpen = this.allowSettingsChangesWhenOpen;
+    config.connectionType = this.connectionType;
+    config.socketHost = this.socketHost;
+    config.socketPort = this.socketPort;
 
     this.profileManager.saveAppData();
   };
 
   /**
-   * Computed value which represents the serial port config in short hand,
-   * e.g. "115200 8n1"
+   * Computed value which represents the connection config in short hand,
+   * e.g. "115200 8n1" for serial ports or "192.168.1.54:80" for sockets
    *
-   * @returns The short hand serial port config for displaying to the user.
+   * @returns The short hand connection config for displaying to the user.
    */
   get shortSerialConfigName() {
-    return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+    if (this.connectionType === ConnectionType.SOCKET) {
+      return `${this.socketHost}:${this.socketPort}`;
+    } else {
+      return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
+    }
   }
 
   static computeShortSerialConfigName(baudRate: number, numDataBits: NumDataBits, parity: Parity, stopBits: StopBits) {

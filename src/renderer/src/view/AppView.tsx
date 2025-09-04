@@ -13,7 +13,7 @@ import { SnackbarProvider } from 'notistack';
 // PWA functionality removed - not needed in Electron app
 
 import { App, MainPanes } from '../model/App';
-import { PortState } from '../model/Settings/PortSettings/PortSettings';
+import { PortState, ConnectionType } from '../model/Settings/PortSettings/PortSettings';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminals/TerminalsView';
@@ -204,23 +204,40 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
     className={styles.onHover}
     onClick={() => {
       app.setShownMainPane(MainPanes.SETTINGS);
-      app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
+      app.settings.setActiveSettingsCategory(SettingsCategories.CONNECTION_CONFIGURATION);
     }}
-    style={{ width: '100px', padding: '0 10px' }}
+    style={{ padding: '0 10px', whiteSpace: 'nowrap' }}
   >
     {app.settings.portConfiguration.shortSerialConfigName}
   </div>
 ));
 
-const PortStatusIndicator = observer(({ app }: { app: App }) => (
-  <div
-    style={{
-      backgroundColor: portStateToToolbarStatusProperties[app.serialController.portState].color,
-      padding: '0 10px' }}
-  >
-    {portStateToToolbarStatusProperties[app.serialController.portState].text}
-  </div>
-));
+const PortStatusIndicator = observer(({ app }: { app: App }) => {
+  const getStatusText = (portState: PortState, connectionType: ConnectionType) => {
+    const connectionTypeName = connectionType === ConnectionType.SOCKET ? 'Socket' : 'Port';
+    
+    switch (portState) {
+      case PortState.CLOSED:
+        return `${connectionTypeName} CLOSED`;
+      case PortState.CLOSED_BUT_WILL_REOPEN:
+        return `${connectionTypeName} CLOSED (will reopen)`;
+      case PortState.OPENED:
+        return `${connectionTypeName} OPENED`;
+      default:
+        return `${connectionTypeName} UNKNOWN`;
+    }
+  };
+
+  return (
+    <div
+      style={{
+        backgroundColor: portStateToToolbarStatusProperties[app.serialController.portState].color,
+        padding: '0 10px' }}
+    >
+      {getStatusText(app.serialController.portState, app.settings.portConfiguration.connectionType)}
+    </div>
+  );
+});
 
 const ProgressBackdrop = observer(({ app }: { app: App }) => (
   <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={app.showCircularProgressModal}>

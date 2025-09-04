@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as os from 'os';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
+import { initializeSocketHandlers, cleanupSockets } from './socketService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -155,6 +156,9 @@ app.whenReady().then(() => {
 
   // Initialize serial handlers
   initializeSerialHandlers(mainWindow);
+  
+  // Initialize socket handlers
+  initializeSocketHandlers(mainWindow);
 
   installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
     .then((ext) => console.log(`Added Extension:  ${ext.name}`))
@@ -399,4 +403,5 @@ ipcMain.handle('analytics:event', async (event, eventName: string) => {
 // Clean up on app quit
 app.on('before-quit', () => {
   cleanupSerialPorts();
+  cleanupSockets();
 });

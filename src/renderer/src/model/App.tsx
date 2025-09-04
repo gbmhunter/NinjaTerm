@@ -170,7 +170,11 @@ export class App {
 
     // Close any existing ports which might be open in the main process, and remove
     // all IPC event listeners.
-    (window as any).electronAPI.serial.closeAllPortsAndRemoveListeners();
+    window.electronAPI.serial.closeAllPortsAndRemoveListeners();
+
+    // Close any existing socket connections which might be open in the main process, and remove
+    // all IPC event listeners.
+    window.electronAPI.socket.disconnectAllSocketsAndRemoveListeners();
 
     // Set up auto-updater event listeners
     this.setupAutoUpdater();
@@ -609,7 +613,7 @@ export class App {
   async handleKeyDown(event: React.KeyboardEvent) {
     // console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
-    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.PORT_CONFIGURATION && event.key === 'f') {
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.CONNECTION_CONFIGURATION && event.key === 'f') {
       this.fakePortController.setIsDialogOpen(true);
     }
     //============================================
@@ -953,15 +957,27 @@ export class App {
    * @param bytesToWrite
    */
   async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
-    if (this.serialController.currentPortPath && (window as any).electronAPI) {
+    if ((window as any).electronAPI) {
       try {
-        // Make direct IPC call to write data
-        const result = await (window as any).electronAPI.serial.writeData(this.serialController.currentPortPath, Array.from(bytesToWrite));
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to write data');
+        // Check if we're using serial port or socket connection
+        if (this.serialController.currentPortPath) {
+          // Serial port connection
+          const result = await (window as any).electronAPI.serial.writeData(this.serialController.currentPortPath, Array.from(bytesToWrite));
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to write data');
+          }
+        } else if (this.serialController.currentSocketConnectionId) {
+          // Socket connection
+          const result = await (window as any).electronAPI.socket.writeData(this.serialController.currentSocketConnectionId, Array.from(bytesToWrite));
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to write data');
+          }
+        } else {
+          // No active connection
+          return;
         }
       } catch (error) {
-        this.snackbar.sendToSnackbar(`Error writing to serial port: ${error}`, 'error');
+        this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
         return;
       }
     }

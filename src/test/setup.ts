@@ -24,6 +24,16 @@ beforeEach(() => {
         getFileSize: vi.fn().mockResolvedValue({ success: true, size: 0 }),
         fileExists: vi.fn().mockResolvedValue({ success: true, exists: true }),
         getDefaultLogDirectory: vi.fn().mockResolvedValue({ success: true, path: '/mock/home/NinjaTerm/logs' }),
+      },
+      socket: {
+        connect: vi.fn().mockResolvedValue({ success: true, connectionId: 'mock-connection-id' }),
+        disconnect: vi.fn().mockResolvedValue({ success: true }),
+        writeData: vi.fn().mockResolvedValue({ success: true }),
+        onDataReceived: vi.fn(),
+        onError: vi.fn(),
+        onClosed: vi.fn(),
+        removeAllListeners: vi.fn(),
+        disconnectAllSocketsAndRemoveListeners: vi.fn(),
       }
     },
     writable: true,

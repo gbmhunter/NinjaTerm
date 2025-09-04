@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { PortState } from '../Settings/PortSettings/PortSettings';
+import { PortState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
@@ -325,7 +325,7 @@ export class AppDataManager {
           logRawTxData: false,
           logRawRxData: true
         };
-        
+
         // Add the new logSettings to settings
         rootConfig.settings.logSettings = logSettings;
       }
@@ -337,7 +337,23 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 9) {
+    if (updatedAppData.version === 9) {
+      console.log('Updating app data from version 9 to version 10...');
+      // Add socket connection settings to port configuration
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.portSettings.connectionType = ConnectionType.SERIAL_PORT;
+        rootConfig.settings.portSettings.socketHost = '127.0.0.1';
+        rootConfig.settings.portSettings.socketPort = 5000;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 10;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 10) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

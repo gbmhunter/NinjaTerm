@@ -1,4 +1,4 @@
-import { FlowControl, NumDataBits, Parity, StopBits } from "src/model/Settings/PortSettings/PortSettings";
+import { FlowControl, NumDataBits, Parity, StopBits, ConnectionType } from "src/model/Settings/PortSettings/PortSettings";
 
 export class PortSettingsData {
   baudRate = 115200;
@@ -23,4 +23,9 @@ export class PortSettingsData {
   reopenSerialPortIfUnexpectedlyClosed = true;
 
   allowSettingsChangesWhenOpen = false;
+
+  // Socket connection settings
+  connectionType: ConnectionType = ConnectionType.SERIAL_PORT;
+  socketHost = '127.0.0.1';
+  socketPort = 5000;
 }

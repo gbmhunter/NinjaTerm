@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { App } from 'src/model/App';
 import { PortType } from 'src/model/SerialController/SerialController';
@@ -34,6 +34,7 @@ import {
   STOP_BIT_OPTIONS,
   StopBits,
   NumDataBits,
+  ConnectionType,
 } from 'src/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
@@ -44,6 +45,16 @@ interface Props {
 
 function PortSettingsView(props: Props) {
   const { app } = props;
+
+  // Local state for socket port input to allow empty/partial values during editing
+  const [socketPortInput, setSocketPortInput] = useState<string>(
+    app.settings.portConfiguration.socketPort.toString()
+  );
+
+  // Sync local state when model value changes externally
+  useEffect(() => {
+    setSocketPortInput(app.settings.portConfiguration.socketPort.toString());
+  }, [app.settings.portConfiguration.socketPort]);
 
   // Scan for serial ports when the component mounts. This will happen every time the user
   // navigates to the Port Configuration tab.
@@ -60,10 +71,36 @@ function PortSettingsView(props: Props) {
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
       <div style={{ height: '20px' }}></div>
 
-      <div style={{ width: '100%', marginBottom: 16 }}>
+      {/* =============================================================== */}
+      {/* CONNECTION TYPE SELECTION */}
+      {/* =============================================================== */}
+      <div style={{ marginBottom: 16 }}>
         <Typography variant="h6" gutterBottom>
-          Available Serial Ports
+          Connection Type
         </Typography>
+        <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
+          <InputLabel>Connection Type</InputLabel>
+          <Select
+            value={app.settings.portConfiguration.connectionType}
+            label="Connection Type"
+            disabled={app.serialController.portState !== PortState.CLOSED}
+            onChange={(e) => {
+              app.settings.portConfiguration.setConnectionType(e.target.value as ConnectionType);
+            }}
+          >
+            <MenuItem value={ConnectionType.SERIAL_PORT}>Serial Port</MenuItem>
+            <MenuItem value={ConnectionType.SOCKET}>Socket</MenuItem>
+          </Select>
+        </FormControl>
+      </div>
+
+      {/* Show serial port configuration if serial port is selected */}
+      {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
+        <>
+          <div style={{ width: '100%', marginBottom: 16 }}>
+            <Typography variant="h6" gutterBottom>
+              Available Serial Ports
+            </Typography>
         <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
           <Table size="small">
             <TableHead>
@@ -176,17 +213,18 @@ function PortSettingsView(props: Props) {
               throw Error('Invalid port state.');
             }
           }}
-          // Disabled when port is closed and no port is selected, or if the baud rate is invalid
-          disabled={
-            (app.serialController.portState === PortState.CLOSED
-              && app.settings.portConfiguration.selectedSerialPort === null
-              && app.serialController.lastSelectedPortType !== PortType.FAKE)
-              || app.settings.portConfiguration.baudRateErrorMsg !== ''
-          }
+          // Disabled when connection is not ready to open
+          disabled={!app.serialController.isReadyToOpen()}
           data-testid="open-close-button"
         >
           {portStateToButtonProps[app.serialController.portState].text}
         </Button>
+        {/* =============================================================== */}
+        {/* PORT STATUS */}
+        {/* =============================================================== */}
+        <Typography sx={{ m: 1, alignSelf: 'center' }}>
+          Status: {PortState[app.serialController.portState]}
+        </Typography>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
@@ -390,105 +428,255 @@ function PortSettingsView(props: Props) {
           />
         </Tooltip>
       </div>
+        </>
+      )}
+
+      {/* Show socket configuration if socket is selected */}
+      {app.settings.portConfiguration.connectionType === ConnectionType.SOCKET && (
+        <div style={{ width: '100%', marginBottom: 16 }}>
+          <Typography variant="h6" gutterBottom>
+            Socket Connection Settings
+          </Typography>
+
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
+            {/* ============================================================== */}
+            {/* HOST */}
+            {/* ============================================================== */}
+            <TextField
+              label="Host"
+              value={app.settings.portConfiguration.socketHost}
+              disabled={app.serialController.portState !== PortState.CLOSED}
+              onChange={(e) => {
+                app.settings.portConfiguration.setSocketHost(e.target.value);
+              }}
+              sx={{ m: 1, width: 200 }}
+              size="small"
+              helperText="IP address or hostname to connect to"
+            />
+
+            {/* ============================================================== */}
+            {/* PORT */}
+            {/* ============================================================== */}
+            <TextField
+              label="Port"
+              value={socketPortInput}
+              disabled={app.serialController.portState !== PortState.CLOSED}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow empty field and digits only
+                if (value === '' || /^\d+$/.test(value)) {
+                  setSocketPortInput(value);
+
+                  // Update the model only if it's a valid number within range
+                  if (value !== '' && /^\d+$/.test(value)) {
+                    const port = parseInt(value, 10);
+                    if (port > 0 && port <= 65535) {
+                      app.settings.portConfiguration.setSocketPort(port);
+                    }
+                  }
+                }
+              }}
+              onBlur={(e) => {
+                const value = e.target.value;
+                let finalValue: number;
+
+                if (value === '' || isNaN(parseInt(value, 10))) {
+                  // Reset to current model value if empty or invalid
+                  finalValue = app.settings.portConfiguration.socketPort;
+                } else {
+                  const port = parseInt(value, 10);
+                  if (port < 1) {
+                    finalValue = 1;
+                  } else if (port > 65535) {
+                    finalValue = 65535;
+                  } else {
+                    finalValue = port;
+                  }
+                }
+
+                // Update both local state and model
+                setSocketPortInput(finalValue.toString());
+                app.settings.portConfiguration.setSocketPort(finalValue);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const value = (e.target as HTMLInputElement).value;
+                  let finalValue: number;
+
+                  if (value === '' || isNaN(parseInt(value, 10))) {
+                    finalValue = app.settings.portConfiguration.socketPort;
+                  } else {
+                    const port = parseInt(value, 10);
+                    if (port < 1) {
+                      finalValue = 1;
+                    } else if (port > 65535) {
+                      finalValue = 65535;
+                    } else {
+                      finalValue = port;
+                    }
+                  }
+
+                  // Update both local state and model
+                  setSocketPortInput(finalValue.toString());
+                  app.settings.portConfiguration.setSocketPort(finalValue);
+                }
+              }}
+              sx={{ m: 1, width: 120 }}
+              size="small"
+              helperText="Port number (1-65535)"
+              inputProps={{
+                min: 1,
+                max: 65535
+              }}
+            />
+          </div>
+
+          <div id="socket-open-close-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
+            {/* =============================================================== */}
+            {/* OPEN/CLOSE BUTTON FOR SOCKET */}
+            {/* =============================================================== */}
+            <Button
+              variant="contained"
+              size="medium"
+              sx={{ m: 1, width: 160 }}
+              color={
+                portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                  ButtonPropsColorOverrides
+                >
+              }
+              onClick={() => {
+                if (app.serialController.portState === PortState.CLOSED) {
+                  app.serialController.openPort();
+                } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+                  app.serialController.stopWaitingToReopenPort();
+                } else if (app.serialController.portState === PortState.OPENED) {
+                  app.serialController.closePort();
+                } else {
+                  throw Error('Invalid port state.');
+                }
+              }}
+              disabled={!app.serialController.isReadyToOpen()}
+              data-testid="socket-open-close-button"
+            >
+              {portStateToButtonProps[app.serialController.portState].text}
+            </Button>
+            {/* =============================================================== */}
+            {/* SOCKET STATUS */}
+            {/* =============================================================== */}
+            <Typography sx={{ m: 1, alignSelf: 'center' }}>
+              Status: {PortState[app.serialController.portState]}
+            </Typography>
+          </div>
+        </div>
+      )}
 
       {/* =========================================================================== */}
       {/* GENERAL SETTINGS */}
       {/* =========================================================================== */}
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
-        <Typography variant="subtitle2" color="text.secondary">
+        <Typography variant="h6">
           General Settings
         </Typography>
 
-      {/* =============================================================== */}
-      {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
-      {/* =============================================================== */}
-      <Tooltip
-        title={
-          <div>
-            Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
-            <br />
-            This setting is more relevant for the quick port settings in the right-hand drawer on the terminal view.
-          </div>
-        }
-        enterDelay={500}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
-              onChange={(e) => {
-                app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
-              }}
+        {/* =============================================================== */}
+        {/* ALLOW SETTINGS CHANGES WHEN OPEN - Only for serial ports */}
+        {/* =============================================================== */}
+        {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
+          <Tooltip
+            title={
+              <div>
+                Check this if you want to be able to quickly change settings when the serial port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
+                <br />
+                This setting is more relevant for the quick connection settings in the right-hand drawer on the terminal view.
+              </div>
+            }
+            enterDelay={500}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                  onChange={(e) => {
+                    app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
+                  }}
+                />
+              }
+              label="Allow settings changes when open (will reconnect)"
             />
-          }
-          label="Allow settings changes when open (will reconnect)"
-        />
-      </Tooltip>
+          </Tooltip>
+        )}
 
-      {/* =============================================================== */}
-      {/* OPEN AND GO TO TERMINAL CHECKBOX */}
-      {/* =============================================================== */}
-      <Tooltip title="Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!" enterDelay={500}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
-              onChange={(e) => {
-                app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
-              }}
-              data-testid="connect-and-go-to-terminal-checkbox"
-            />
+        {/* =============================================================== */}
+        {/* OPEN AND GO TO TERMINAL CHECKBOX */}
+        {/* =============================================================== */}
+        <Tooltip
+          title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+            ? "Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!"
+            : "Connect to socket and go to the terminal view as soon as the connection is established, saving you a button press!"
           }
-          label="Open serial port and go to the terminal as soon as it is selected"
-        />
-      </Tooltip>
-      {/* =============================================================== */}
-      {/* RECONNECT ON STARTUP CHECKBOX */}
-      {/* =============================================================== */}
-      <Tooltip
-        title="On startup, if NinjaTerm can find last used serial port it will reselect it. If it was previously in the CONNECTED state, the port will also be re-opened."
-        enterDelay={500}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
-              onChange={(e) => {
-                app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
-              }}
-            />
+          enterDelay={500}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setConnectToSerialPortAsSoonAsItIsSelected(e.target.checked);
+                }}
+                data-testid="connect-and-go-to-terminal-checkbox"
+              />
+            }
+            label={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+              ? "Open connection and go to the terminal as soon as port is selected"
+              : "Connect and go to the terminal automatically"
+            }
+          />
+        </Tooltip>
+
+        {/* =============================================================== */}
+        {/* RECONNECT ON STARTUP CHECKBOX */}
+        {/* =============================================================== */}
+        <Tooltip
+          title="On startup, if NinjaTerm can find the last used connection it will reselect it. If it was previously in the CONNECTED state, the connection will also be re-opened."
+          enterDelay={500}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.resumeConnectionToLastSerialPortOnStartup}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setResumeConnectionToLastSerialPortOnStartup(e.target.checked);
+                }}
+              />
+            }
+            label="Resume connection on app startup"
+          />
+        </Tooltip>
+
+        {/* =============================================================== */}
+        {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
+        {/* =============================================================== */}
+        <Tooltip
+          title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+            ? "If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
+            : "If the socket connection unexpectedly closes (e.g. network interruption), NinjaTerm will try to automatically reconnect when the server becomes available again."
           }
-          label="Resume connection to last serial port on app startup"
-        />
-      </Tooltip>
-      {/* =============================================================== */}
-      {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
-      {/* =============================================================== */}
-      <Tooltip
-        title="If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
-        enterDelay={500}
-      >
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed}
-              onChange={(e) => {
-                app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(e.target.checked);
-              }}
-            />
-          }
-          label="Reopen serial port when available if it unexpectedly closes"
-        />
-      </Tooltip>
+          enterDelay={500}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setReopenSerialPortIfUnexpectedlyClosed(e.target.checked);
+                }}
+              />
+            }
+            label="Reopen connection when available if it unexpectedly closes"
+          />
+        </Tooltip>
       </div>
-
-      <div style={{ height: '20px' }}></div>
-
-      <div style={{ height: '20px' }}></div>
-      {/* =============================================================== */}
-      {/* PORT CONNECTED/DISCONNECTED STATUS */}
-      {/* =============================================================== */}
-      <Typography>Status: {PortState[app.serialController.portState]}</Typography>
     </div>
   );
 }

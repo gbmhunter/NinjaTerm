@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Resizable } from 'react-resizable';
 import 'react-resizable/css/styles.css';
+import { useState, useEffect } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -36,6 +37,7 @@ import {
   PortState,
   STOP_BIT_OPTIONS,
   StopBits,
+  ConnectionType,
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 
@@ -52,6 +54,16 @@ export default observer((props: Props) => {
   const { app } = props;
 
   const rightDrawer = app.terminals.rightDrawer;
+  
+  // Local state for socket port input to allow empty/partial values during editing
+  const [socketPortInput, setSocketPortInput] = useState<string>(
+    app.settings.portConfiguration.socketPort.toString()
+  );
+  
+  // Sync local state when model value changes externally
+  useEffect(() => {
+    setSocketPortInput(app.settings.portConfiguration.socketPort.toString());
+  }, [app.settings.portConfiguration.socketPort]);
 
   // Create macro rows
   const macroRows = app.terminals.rightDrawer.macroController.macrosArray.map((macro, index) => {
@@ -100,29 +112,40 @@ export default observer((props: Props) => {
       >
         <div style={{ height: '6px' }} /> {/* Spacer to prevent select input title from being clipped */}
         {/* =============================================================================================== */}
-        {/* QUICK PORT SETTINGS */}
+        {/* QUICK CONNECTION SETTINGS */}
         {/* =============================================================================================== */}
         <Accordion disableGutters expanded={rightDrawer.quickPortSettingsIsExpanded} onChange={rightDrawer.handleQuickPortSettingsAccordionChange} sx={{ width: '100%' }}>
           <CustomAccordionSummary expandIcon={<ArrowDownwardIcon />} data-testid="quick-port-settings-accordion-summary">
-            Quick Port Settings
+            Quick Connection Settings
           </CustomAccordionSummary>
           <AccordionDetails>
-            <div style={{ fontSize: '12px' }}>
-              For more port settings, go to the{' '}
-              <Link
-                component="button"
-                onClick={() => {
-                  // Show Settings->Port Configuration view
-                  app.setShownMainPane(MainPanes.SETTINGS);
-                  app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
-                }}
-              >
-                Port Settings view
-              </Link>
-              .
+            {/* ============================================================== */}
+            {/* CONNECTION TYPE */}
+            {/* ============================================================== */}
+            <div style={{ marginBottom: 16, width: '100%' }}>
+              <FormControl sx={{ mt: 1, minWidth: 200 }} size="small">
+                <InputLabel>Connection Type</InputLabel>
+                <Select
+                  value={app.settings.portConfiguration.connectionType}
+                  label="Connection Type"
+                  disabled={app.serialController.portState !== PortState.CLOSED}
+                  onChange={(e) => {
+                    app.settings.portConfiguration.setConnectionType(e.target.value as ConnectionType);
+                  }}
+                >
+                  <MenuItem value={ConnectionType.SERIAL_PORT}>Serial Port</MenuItem>
+                  <MenuItem value={ConnectionType.SOCKET}>Socket</MenuItem>
+                </Select>
+              </FormControl>
             </div>
-            <div style={{ height: '10px' }} />
-            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+
+            {/* ========================================================================================================================== */}
+            {/* SERIAL PORT SETTINGS */}
+            {/* ========================================================================================================================== */}
+            {/* Show serial port settings if serial port is selected */}
+            {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
+            <>
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '5px' }}>
               {/* ============================================================== */}
               {/* BAUD RATE */}
               {/* ============================================================== */}
@@ -155,7 +178,7 @@ export default observer((props: Props) => {
                     />
                   )}
                   disabled={app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
-                  sx={{ m: 1, width: 160 }}
+                  sx={{ mt: 1, width: 160 }}
                   size="small"
                   inputValue={app.settings.portConfiguration.baudRateInputValue}
                   onInputChange={(event, newInputValue) => {
@@ -170,7 +193,7 @@ export default observer((props: Props) => {
                 {...BASIC_TOOLTIP_SETTINGS}
                 title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
               >
-                <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <FormControl sx={{ mt: 1, minWidth: 160 }} size="small">
                   <InputLabel>Num. data bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.numDataBits}
@@ -198,7 +221,7 @@ export default observer((props: Props) => {
                 title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
                 placement="left"
               >
-                <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <FormControl sx={{ mt: 1, minWidth: 160 }} size="small">
                   <InputLabel>Parity</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.parity}
@@ -226,7 +249,7 @@ export default observer((props: Props) => {
                 title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
                 placement="left"
               >
-                <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <FormControl sx={{ mt: 1, minWidth: 160 }} size="small">
                   <InputLabel>Stop bits</InputLabel>
                   <Select
                     value={app.settings.portConfiguration.stopBits}
@@ -248,44 +271,146 @@ export default observer((props: Props) => {
               </Tooltip>
             </div>
 
-            {/* =============================================================== */}
-            {/* ALLOW SETTINGS CHANGES WHEN OPEN */}
-            {/* =============================================================== */}
-            <Tooltip
-              title="Check this if you want to be able to quickly change settings when the port is open. Because of limitations in the Web Serial API, if a port setting is changed when the port is open, the port will be quickly closed and opened again."
-              {...BASIC_TOOLTIP_SETTINGS}
-              placement="left"
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
-                    onChange={(e) => {
-                      app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
-                    }}
-                  />
-                }
-                label="Allow settings changes when open (reconnect)"
+            </>
+            )}
+
+            {/* ========================================================================================================================== */}
+            {/* SOCKET SETTINGS */}
+            {/* ========================================================================================================================== */}
+            {/* Show socket settings if socket is selected */}
+            {app.settings.portConfiguration.connectionType === ConnectionType.SOCKET && (
+            <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '5px' }}>
+              {/* ============================================================== */}
+              {/* HOST */}
+              {/* ============================================================== */}
+              <TextField
+                label="Host"
+                value={app.settings.portConfiguration.socketHost}
+                disabled={app.serialController.portState !== PortState.CLOSED}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setSocketHost(e.target.value);
+                }}
+                sx={{ mt: 1, width: 200 }}
+                size="small"
+                helperText="IP address or hostname"
               />
-            </Tooltip>
+
+              {/* ============================================================== */}
+              {/* PORT */}
+              {/* ============================================================== */}
+              <TextField
+                label="Port"
+                value={socketPortInput}
+                disabled={app.serialController.portState !== PortState.CLOSED}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty field and digits only
+                  if (value === '' || /^\d+$/.test(value)) {
+                    setSocketPortInput(value);
+                    
+                    // Update the model only if it's a valid number within range
+                    if (value !== '' && /^\d+$/.test(value)) {
+                      const port = parseInt(value, 10);
+                      if (port > 0 && port <= 65535) {
+                        app.settings.portConfiguration.setSocketPort(port);
+                      }
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
+                  let finalValue: number;
+                  
+                  if (value === '' || isNaN(parseInt(value, 10))) {
+                    // Reset to current model value if empty or invalid
+                    finalValue = app.settings.portConfiguration.socketPort;
+                  } else {
+                    const port = parseInt(value, 10);
+                    if (port < 1) {
+                      finalValue = 1;
+                    } else if (port > 65535) {
+                      finalValue = 65535;
+                    } else {
+                      finalValue = port;
+                    }
+                  }
+                  
+                  // Update both local state and model
+                  setSocketPortInput(finalValue.toString());
+                  app.settings.portConfiguration.setSocketPort(finalValue);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const value = (e.target as HTMLInputElement).value;
+                    let finalValue: number;
+                    
+                    if (value === '' || isNaN(parseInt(value, 10))) {
+                      finalValue = app.settings.portConfiguration.socketPort;
+                    } else {
+                      const port = parseInt(value, 10);
+                      if (port < 1) {
+                        finalValue = 1;
+                      } else if (port > 65535) {
+                        finalValue = 65535;
+                      } else {
+                        finalValue = port;
+                      }
+                    }
+                    
+                    // Update both local state and model
+                    setSocketPortInput(finalValue.toString());
+                    app.settings.portConfiguration.setSocketPort(finalValue);
+                  }
+                }}
+                sx={{ mt: 1, width: 120 }}
+                size="small"
+                helperText="Port number (1-65535)"
+              />
+            </div>
+            )}
+
+            {/* =============================================================== */}
+            {/* GENERAL SETTINGS - Only show "Allow settings changes when open" for serial ports */}
+            {/* =============================================================== */}
+            {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
+              <div style={{ marginTop: 16, marginBottom: 16 }}>
+                <Tooltip
+                  title="Check this if you want to be able to quickly change serial port settings when the port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again."
+                  {...BASIC_TOOLTIP_SETTINGS}
+                  placement="left"
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                        onChange={(e) => {
+                          app.settings.portConfiguration.setAllowSettingsChangesWhenOpen(e.target.checked);
+                        }}
+                      />
+                    }
+                    label="Allow settings changes when open (reconnect)"
+                  />
+                </Tooltip>
+              </div>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '20px' }}>
               {/* =============================================================== */}
-              {/* SELECT PORT BUTTON */}
+              {/* MORE SETTINGS BUTTON */}
               {/* =============================================================== */}
               <Button
                 variant="outlined"
                 onClick={() => {
                   // Navigate to Port Settings where users can select a port
                   app.setShownMainPane(MainPanes.SETTINGS);
-                  app.settings.setActiveSettingsCategory(SettingsCategories.PORT_CONFIGURATION);
+                  app.settings.setActiveSettingsCategory(SettingsCategories.CONNECTION_CONFIGURATION);
                 }}
                 // Only let user select a new port if current one is closed
                 disabled={app.serialController.portState !== PortState.CLOSED}
                 data-testid="request-port-access"
                 sx={{ width: '150px' }}
               >
-                Port Settings
+                More Settings
               </Button>
               {/* =============================================================== */}
               {/* OPEN/CLOSE BUTTON */}
@@ -309,10 +434,8 @@ export default observer((props: Props) => {
                     throw Error('Invalid port state.');
                   }
                 }}
-                // Disabled when port is closed and no port is selected, or if the baud rate is invalid
-                disabled={
-                  (app.serialController.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.serialController.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
-                }
+                // Disabled when connection is not ready to open
+                disabled={!app.serialController.isReadyToOpen()}
                 sx={{ width: '150px' }}
                 data-testid="open-close-button"
               >
