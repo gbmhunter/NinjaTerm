@@ -2,7 +2,7 @@ import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, InputLabel,
 import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close.js';
 
 import { MacroController } from 'src/model/Terminals/RightDrawer/Macros/MacroController';
 import { App } from 'src/model/App';

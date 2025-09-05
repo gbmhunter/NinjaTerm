@@ -24,7 +24,7 @@ function SettingsDialog(props: Props) {
   const { app } = props;
 
   const displayedSettingsCategory = {
-    [SettingsCategories.PORT_CONFIGURATION]: (
+    [SettingsCategories.CONNECTION_CONFIGURATION]: (
       <PortConfigurationSettingsView app={app} />
     ),
     [SettingsCategories.TX_SETTINGS]: (
@@ -65,15 +65,15 @@ function SettingsDialog(props: Props) {
                 <ListItemButton
                   onClick={() => {
                     app.settings.setActiveSettingsCategory(
-                      SettingsCategories.PORT_CONFIGURATION
+                      SettingsCategories.CONNECTION_CONFIGURATION
                     );
                   }}
                   selected={
                     app.settings.activeSettingsCategory ===
-                    SettingsCategories.PORT_CONFIGURATION
+                    SettingsCategories.CONNECTION_CONFIGURATION
                   }
                 >
-                  <ListItemText>Port Configuration</ListItemText>
+                  <ListItemText>Connection Configuration</ListItemText>
                 </ListItemButton>
                 {/* ================================================ */}
                 {/* TX SETTINGS */}

@@ -2,11 +2,12 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { PortInfo } from '@serialport/bindings-interface';
 
 import { App, MainPanes } from '../App';
-import { PortState } from '../Settings/PortSettings/PortSettings';
+import { PortState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 
 export enum PortType {
   REAL,
   FAKE,
+  SOCKET,
 }
 
 /**
@@ -27,6 +28,9 @@ export class SerialController {
   // Current port path for IPC communication
   currentPortPath: string | null = null;
 
+  // Current socket connection ID for IPC communication
+  currentSocketConnectionId: string | null = null;
+
   portState = PortState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
@@ -38,9 +42,13 @@ export class SerialController {
   // Port information for reconnection purposes
   serialPortInfo: Partial<PortInfo> | null = null;
 
+  // Socket information for reconnection purposes
+  socketConnectionInfo: { host: string; port: number } | null = null;
+
   // Auto-reconnection polling
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
-  private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 2 seconds
+  private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 500ms for serial ports
+  private readonly SOCKET_RECONNECTION_INTERVAL_MS = 5000; // Poll every 5 seconds for sockets
 
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
@@ -75,13 +83,34 @@ export class SerialController {
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
   async openPort({ silenceSnackbar = false } = {}) {
-    if (this.lastSelectedPortType === PortType.REAL) {
-      // Get the selected port from PortSettings
+    // Determine the port type based on connection type
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      // Handle fake ports
+      if (this.lastSelectedPortType === PortType.FAKE) {
+        this.app.fakePortController.openPort();
+        // Clear the partial number buffers in all terminals
+        this.app.terminals.txTerminal.clearPartialNumberBuffer();
+        this.app.terminals.rxTerminal.clearPartialNumberBuffer();
+        this.app.terminals.txRxTerminal.clearPartialNumberBuffer();
+        
+        // Navigate to the terminal pane if option is selected in Port Configuration settings
+        if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
+          this.app.setShownMainPane(MainPanes.TERMINAL);
+        }
+        return true;
+      }
+
+      // Handle real serial ports
       const selectedPort = this.app.settings.portConfiguration.selectedSerialPort;
       if (!selectedPort) {
         this.app.snackbar.sendToSnackbar('No serial port selected. Please select a port from the Port Settings.', 'error');
         return false;
       }
+
+      // Set the port type to REAL since we're opening a real serial port
+      this.lastSelectedPortType = PortType.REAL;
 
       // Show the circular progress modal when trying to open the port
       this.app.setShowCircularProgressModal(true);
@@ -184,10 +213,85 @@ export class SerialController {
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
       await window.electronAPI.analytics.event('port_open');
-    } else if (this.lastSelectedPortType === PortType.FAKE) {
-      this.app.fakePortController.openPort();
+    } else if (connectionType === ConnectionType.SOCKET) {
+      // Socket connection logic
+      const host = this.app.settings.portConfiguration.socketHost;
+      const port = this.app.settings.portConfiguration.socketPort;
+
+      if (!host || port <= 0 || port > 65535) {
+        this.app.snackbar.sendToSnackbar('Invalid socket host or port. Please check the Connection Configuration.', 'error');
+        return false;
+      }
+
+      // Show the circular progress modal when trying to connect to socket
+      this.app.setShowCircularProgressModal(true);
+
+      try {
+        // Make direct IPC call to connect to socket
+        const result = await window.electronAPI.socket.connect({
+          host: host,
+          port: port
+        });
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        // Store the current connection ID for IPC communication
+        this.currentSocketConnectionId = result.connectionId!;
+        
+        // Save socket connection info for reconnection purposes
+        this.socketConnectionInfo = { host, port };
+
+        // Set up IPC event listeners for data reception
+        window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
+          if (connectionId === this.currentSocketConnectionId) {
+            // Buffer can be used directly as Uint8Array - much faster than conversion
+            const uint8Array = new Uint8Array(data);
+            this.app.parseRxData(uint8Array);
+          }
+        });
+
+        // Listen for errors
+        window.electronAPI.socket.onError((connectionId: string, error: string) => {
+          if (connectionId === this.currentSocketConnectionId) {
+            this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
+            this.handlePortError();
+          }
+        });
+
+        // Listen for socket close events
+        window.electronAPI.socket.onClosed((connectionId: string) => {
+          console.log('onSocketClosed() called. connectionId=', connectionId);
+          if (connectionId === this.currentSocketConnectionId) {
+            this.handlePortClosed();
+          }
+        });
+
+        runInAction(() => {
+          // Stop any existing polling since we're now connected
+          this.stopPollingForReconnection();
+          this.portState = PortState.OPENED;
+          this.lastSelectedPortType = PortType.SOCKET;
+        });
+
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar(`Socket connected to ${host}:${port}.`, 'success');
+        }
+
+        this.app.setShowCircularProgressModal(false);
+
+        // Create custom GA4 event to see how many socket connections have been opened in NinjaTerm
+        await window.electronAPI.analytics.event('socket_connect');
+      } catch (error) {
+        const msg = `Error connecting to socket: ${error}`;
+        this.app.snackbar.sendToSnackbar(msg, 'error');
+        console.error(msg);
+        this.app.setShowCircularProgressModal(false);
+        return false;
+      }
     } else {
-      throw Error('Unsupported port type!');
+      throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
     }
 
     // Clear the partial number buffers in all terminals
@@ -246,6 +350,38 @@ export class SerialController {
       window.electronAPI.serial.removeAllListeners('serial:port-closed');
 
       this.app.profileManager.saveAppData();
+    } else if (this.lastSelectedPortType === PortType.SOCKET) {
+      if (this.currentSocketConnectionId) {
+        // Make direct IPC call to disconnect the socket
+        const result = await window.electronAPI.socket.disconnect(this.currentSocketConnectionId);
+        if (!result.success) {
+          console.error('Error disconnecting socket:', result.error);
+        }
+      }
+
+      // Wrap in action
+      runInAction(() => {
+        if (goToReopenState) {
+          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
+          // Start polling for socket reconnection
+          this.startPollingForReconnection();
+        } else {
+          // Stop polling if we're explicitly closing the socket
+          this.stopPollingForReconnection();
+          this.portState = PortState.CLOSED;
+        }
+      });
+
+      if (!silenceSnackbar) {
+        this.app.snackbar.sendToSnackbar('Socket disconnected.', 'success');
+      }
+
+      this.currentSocketConnectionId = null;
+
+      // Disconnect all listeners
+      window.electronAPI.socket.removeAllListeners('socket:data-received');
+      window.electronAPI.socket.removeAllListeners('socket:error');
+      window.electronAPI.socket.removeAllListeners('socket:closed');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.app.fakePortController.closePort();
     } else {
@@ -299,11 +435,20 @@ export class SerialController {
     } else {
       this.setPortState(PortState.CLOSED);
     }
-    this.currentPortPath = null;
-    // Remove all event listeners
-    window.electronAPI.serial.removeAllListeners('serial:data-received');
-    window.electronAPI.serial.removeAllListeners('serial:error');
-    window.electronAPI.serial.removeAllListeners('serial:port-closed');
+    // Clear connection identifiers and remove appropriate event listeners
+    if (this.lastSelectedPortType === PortType.SOCKET) {
+      this.currentSocketConnectionId = null;
+      // Remove socket event listeners
+      window.electronAPI.socket.removeAllListeners('socket:data-received');
+      window.electronAPI.socket.removeAllListeners('socket:error');
+      window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else {
+      this.currentPortPath = null;
+      // Remove serial port event listeners
+      window.electronAPI.serial.removeAllListeners('serial:data-received');
+      window.electronAPI.serial.removeAllListeners('serial:error');
+      window.electronAPI.serial.removeAllListeners('serial:port-closed');
+    }
 
     // No matter what type, clear the flow control polling timer
     if (this.flowControlPollingTimer) {
@@ -334,8 +479,13 @@ export class SerialController {
       clearInterval(this.reconnectionPollingInterval);
     }
 
-    console.log('Starting polling for port reconnection...');
-
+    // Determine connection type and set appropriate polling interval
+    const isSocket = this.lastSelectedPortType === PortType.SOCKET;
+    const pollingInterval = isSocket ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
+    const connectionType = isSocket ? 'socket' : 'port';
+    
+    console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
+    
     this.reconnectionPollingInterval = setInterval(async () => {
       try {
         // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
@@ -344,38 +494,97 @@ export class SerialController {
           return;
         }
 
-        // Get the last used port path
-        const lastUsedPortPath = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort.path;
-        if (!lastUsedPortPath) {
-          console.log('No last used port path found, stopping polling');
-          this.stopPollingForReconnection();
-          return;
-        }
+        if (isSocket) {
+          // Socket reconnection logic
+          if (!this.socketConnectionInfo) {
+            console.log('No socket connection info found, stopping polling');
+            this.stopPollingForReconnection();
+            return;
+          }
 
-        // Check if the port is available
-        const result = await window.electronAPI.serial.listPorts();
-        if (!result.success) {
-          console.error('Failed to list ports during reconnection polling:', result.error);
-          return;
-        }
+          console.log(`Attempting to reconnect to socket ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}...`);
+          
+          try {
+            // Attempt to reconnect to the socket (this will not show the modal)
+            const result = await window.electronAPI.socket.connect({
+              host: this.socketConnectionInfo.host,
+              port: this.socketConnectionInfo.port
+            });
+            
+            if (result.success) {
+              console.log('Socket reconnection successful');
+              this.stopPollingForReconnection();
+              
+              // Store the new connection ID
+              this.currentSocketConnectionId = result.connectionId!;
+              
+              // Set up IPC event listeners for the reconnected socket
+              window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
+                if (connectionId === this.currentSocketConnectionId) {
+                  // Buffer can be used directly as Uint8Array - much faster than conversion
+                  const uint8Array = new Uint8Array(data);
+                  this.app.parseRxData(uint8Array);
+                }
+              });
 
-        const availablePorts = result.ports || [];
-        const matchingPort = availablePorts.find(port => port.path === lastUsedPortPath);
+              window.electronAPI.socket.onError((connectionId: string, error: string) => {
+                if (connectionId === this.currentSocketConnectionId) {
+                  this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
+                  this.handlePortError();
+                }
+              });
 
-        if (matchingPort) {
-          console.log('Found matching port for reconnection:', matchingPort.path);
-          this.stopPollingForReconnection();
+              window.electronAPI.socket.onClosed((connectionId: string) => {
+                console.log('onSocketClosed() called during reconnection. connectionId=', connectionId);
+                if (connectionId === this.currentSocketConnectionId) {
+                  this.handlePortClosed();
+                }
+              });
 
-          // Set the selected port and attempt to reconnect
-          this.setSelectedPort(matchingPort);
-          await this.openPort({ silenceSnackbar: true });
-
-          this.app.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
+              runInAction(() => {
+                this.portState = PortState.OPENED;
+              });
+              
+              this.app.snackbar.sendToSnackbar(
+                `Automatically reconnected to socket: ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}`, 
+                'success'
+              );
+            }
+          } catch (socketError) {
+            // Silently continue polling - connection failed but we'll try again
+            console.log('Socket reconnection attempt failed:', socketError);
+          }
+        } else {
+          // Serial port reconnection logic (existing)
+          const lastUsedPortPath = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort.path;
+          if (!lastUsedPortPath) {
+            console.log('No last used port path found, stopping polling');
+            this.stopPollingForReconnection();
+            return;
+          }
+          
+          // Check if the port is available
+          const result = await window.electronAPI.serial.listPorts();
+          if (!result.success) {
+            console.error('Failed to list ports during reconnection polling:', result.error);
+            return;
+          }
+          
+          const availablePorts = result.ports || [];
+          const matchingPort = availablePorts.find(port => port.path === lastUsedPortPath);
+          if (matchingPort) {
+            console.log('Found matching port for reconnection:', matchingPort.path);
+            this.stopPollingForReconnection();
+            // Set the selected port and attempt to reconnect
+            this.setSelectedPort(matchingPort);
+            await this.openPort({ silenceSnackbar: true });
+            this.app.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
+          }
         }
       } catch (error) {
-        console.error('Error during reconnection polling:', error);
+        console.error(`Error during ${connectionType} reconnection polling:`, error);
       }
-    }, this.RECONNECTION_POLLING_INTERVAL_MS);
+    }, pollingInterval);
   }
 
   /**
@@ -473,5 +682,84 @@ export class SerialController {
   }
   getDcd() {
     return this.currentFlowControlState.dcd;
+  }
+
+  /**
+   * Function that sorts serial ports naturally by path (handles numeric parts correctly, e.g., "COM6" before "COM16", "/dev/ttyUSB0" before "/dev/ttyUSB10").
+   *
+   * Works on Windows, Linux, and macOS.
+   *
+   * @param ports The ports to sort.
+   * @returns The sorted ports.
+   */
+  static sortSerialPortsNaturally(ports: PortInfo[]) {
+    const sortedPorts = ports.sort((a, b) => {
+      const pathA = a.path;
+      const pathB = b.path;
+
+      // Extract numeric parts from the paths for natural sorting
+      const matchA = pathA.match(/^(\D*)(\d+)(.*)$/);
+      const matchB = pathB.match(/^(\D*)(\d+)(.*)$/);
+
+      if (matchA && matchB) {
+        // Both have numeric parts
+        const [, prefixA, numA, suffixA] = matchA;
+        const [, prefixB, numB, suffixB] = matchB;
+
+        // First compare the prefix (e.g., "COM")
+        const prefixCompare = prefixA.localeCompare(prefixB);
+        if (prefixCompare !== 0) return prefixCompare;
+
+        // Then compare numerically (e.g., 6 vs 16)
+        const numCompare = parseInt(numA, 10) - parseInt(numB, 10);
+        if (numCompare !== 0) return numCompare;
+
+        // Finally compare the suffix
+        return suffixA.localeCompare(suffixB);
+      }
+
+      // Fall back to alphabetical comparison for non-matching patterns
+      return pathA.localeCompare(pathB);
+    });
+
+    return sortedPorts;
+  }
+
+  /**
+   * Determines if the connection is ready to be opened based on the current configuration.
+   *
+   * @returns true if the connection can be opened, false otherwise
+   */
+  isReadyToOpen(): boolean {
+    // If port is not closed, it's either already open or will reopen, so connection control is available
+    if (this.portState !== PortState.CLOSED) {
+      return true;
+    }
+
+    // If there are baud rate validation errors, can't open
+    if (this.app.settings.portConfiguration.baudRateErrorMsg !== '') {
+      return false;
+    }
+
+    // Check if it's a fake port (always ready if fake)
+    if (this.lastSelectedPortType === PortType.FAKE) {
+      return true;
+    }
+
+    // Check based on connection type
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      // For serial ports, need a selected port
+      return this.app.settings.portConfiguration.selectedSerialPort !== null;
+    } else if (connectionType === ConnectionType.SOCKET) {
+      // For sockets, need valid host and port
+      const host = this.app.settings.portConfiguration.socketHost;
+      const port = this.app.settings.portConfiguration.socketPort;
+      return !!(host && port > 0 && port <= 65535);
+    }
+
+    // Unknown connection type
+    return false;
   }
 }

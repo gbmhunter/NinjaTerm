@@ -16,7 +16,7 @@ import { App } from '../App';
 
 
 export enum SettingsCategories {
-  PORT_CONFIGURATION,
+  CONNECTION_CONFIGURATION,
   TX_SETTINGS,
   RX_SETTINGS,
   DISPLAY,
@@ -29,7 +29,7 @@ export class Settings {
   app: App;
 
   activeSettingsCategory: SettingsCategories =
-    SettingsCategories.PORT_CONFIGURATION;
+    SettingsCategories.CONNECTION_CONFIGURATION;
 
   portConfiguration: PortSettings;
 

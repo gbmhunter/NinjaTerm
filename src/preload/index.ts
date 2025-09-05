@@ -48,7 +48,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     writeFile: (filePath: string, data: number[], append?: boolean) =>
       ipcRenderer.invoke('fs:write-file', filePath, data, append),
     getFileSize: (filePath: string) => ipcRenderer.invoke('fs:get-file-size', filePath),
-    fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath)
+    fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath),
+    getDefaultLogDirectory: () => ipcRenderer.invoke('fs:get-default-log-directory')
   },
 
   // Auto-updater operations
@@ -96,6 +97,37 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isOpen: () => ipcRenderer.invoke('devtools:is-open')
   },
 
+  // Socket operations
+  socket: {
+    connect: (options: { host: string; port: number }) => ipcRenderer.invoke('socket:connect', options),
+    disconnect: (connectionId: string) => ipcRenderer.invoke('socket:disconnect', connectionId),
+    writeData: (connectionId: string, data: number[]) => ipcRenderer.invoke('socket:write-data', connectionId, data),
+
+    // Event listeners
+    onDataReceived: (callback: (connectionId: string, data: Buffer) => void) => {
+      ipcRenderer.on('socket:data-received', (event, connectionId, data) => callback(connectionId, data));
+    },
+    onError: (callback: (connectionId: string, error: string) => void) => {
+      ipcRenderer.on('socket:error', (event, connectionId, error) => callback(connectionId, error));
+    },
+    onClosed: (callback: (connectionId: string) => void) => {
+      ipcRenderer.on('socket:closed', (event, connectionId) => callback(connectionId));
+    },
+
+    // Remove listeners
+    removeAllListeners: (channel: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    },
+
+    // Close all sockets
+    disconnectAllSocketsAndRemoveListeners: () => {
+      ipcRenderer.removeAllListeners('socket:data-received');
+      ipcRenderer.removeAllListeners('socket:error');
+      ipcRenderer.removeAllListeners('socket:closed');
+      ipcRenderer.invoke('socket:disconnect-all');
+    },
+  },
+
   // Analytics operations
   analytics: {
     event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
@@ -113,6 +145,7 @@ export interface ElectronAPI {
     onError(callback: (portPath: string, error: string) => void): void;
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
+    closeAllPortsAndRemoveListeners(): void;
     setFlowControlSignals(portPath: string, signals: any): void;
     getFlowControlSignals(portPath: string): Promise<PortStatus>;
   };
@@ -121,6 +154,7 @@ export interface ElectronAPI {
     writeFile(filePath: string, data: number[], append?: boolean): Promise<{ success: boolean; error?: string }>;
     getFileSize(filePath: string): Promise<{ success: boolean; size?: number; error?: string }>;
     fileExists(filePath: string): Promise<{ success: boolean; exists?: boolean; error?: string }>;
+    getDefaultLogDirectory(): Promise<{ success: boolean; path?: string; error?: string }>;
   };
   updater: {
     checkForUpdates(): Promise<{ success: boolean; updateInfo?: any; error?: string }>;
@@ -140,6 +174,16 @@ export interface ElectronAPI {
     close(): Promise<{ success: boolean; error?: string }>;
     toggle(): Promise<{ success: boolean; action?: 'opened' | 'closed'; error?: string }>;
     isOpen(): Promise<{ success: boolean; isOpen?: boolean; error?: string }>;
+  };
+  socket: {
+    connect(options: { host: string; port: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
+    disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
+    writeData(connectionId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    onDataReceived(callback: (connectionId: string, data: Buffer) => void): void;
+    onError(callback: (connectionId: string, error: string) => void): void;
+    onClosed(callback: (connectionId: string) => void): void;
+    removeAllListeners(channel: string): void;
+    disconnectAllSocketsAndRemoveListeners(): void;
   };
   analytics: {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;

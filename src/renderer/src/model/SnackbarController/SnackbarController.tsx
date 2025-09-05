@@ -1,7 +1,7 @@
 import { IconButton } from '@mui/material';
 import { makeAutoObservable } from 'mobx';
 import { SnackbarAction, VariantType, enqueueSnackbar, closeSnackbar, SnackbarMessage } from 'notistack';
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close.js';
 
 export default class SnackbarController {
 

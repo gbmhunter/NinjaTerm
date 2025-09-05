@@ -72,10 +72,12 @@
   "scripts": {
     "dev": "electron-vite dev",
     "dev:web": "cd web-homepage && npm run dev",
+    "dev:docs": "cd docs && npm start",
     "build": "electron-vite build",
     "build:electron": "electron-vite build",
     "build:web": "cd web-homepage && npm run build",
-    "build:all": "npm run build:electron && npm run build:web",
+    "build:docs": "cd docs && npm ci && npm run build",
+    "build:all": "npm run build:electron && npm run build:web && npm run build:docs",
     "preview": "electron-vite preview",
     "test": "tsc && vitest run && playwright test",
     "test:unit": "vitest run",

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added socket support to the app. You can now choose between connecting to a serial port or a socket server (NinjaTerm acts as a TCP socket client).
+- Added default logging directory to the app (`<user home>/NinjaTerm/logs`)
+- Logging settings are now saved to the profile app data.
+
+### Fixed
+
+- Fixed broken GitHub Actions badge in README.md.
+- Fixed bug where serial ports were not sorted naturally by path (we want "COM6" before "COM16", "/dev/ttyUSB0" before "/dev/ttyUSB10").
+- Fixed bug where logging directory was not able to be selected correctly.
+
 ## [5.4.0] - 2025-08-25
 
 ### Added

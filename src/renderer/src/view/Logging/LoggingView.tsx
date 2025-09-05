@@ -64,10 +64,8 @@ export default observer((props: Props) => {
             alignItems: "flex-start",
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <Button
             variant="contained"
-            // size="small"
             disabled={app.logging.isLogging}
             onClick={() => {
               app.logging.openDirPicker();
@@ -76,20 +74,23 @@ export default observer((props: Props) => {
           >
             Select log directory
           </Button>
-          <div>NOTE: Directories that browsers consider "System Directories" cannot be selected. This includes your User root directory, C:\ or root mount point, Downloads and Documents directories. Sub-directories of these can be chosen.</div>
-          </div>
 
           <div>
-            Folder permissions:&nbsp;
+            Directory status:&nbsp;
             <span
               style={{
-                color: app.logging.dirHandle == null ? "#f44336" : "#66bb6a",
+                color: app.logging.dirPath == null ? "#f44336" : "#66bb6a",
                 fontWeight: "bold",
               }}
             >
-              {app.logging.dirHandle == null ? "NOT GRANTED" : "GRANTED"}
+              {app.logging.dirPath == null ? "NOT SELECTED" : "SELECTED"}
             </span>
           </div>
+          {app.logging.dirPath && (
+            <div style={{ fontSize: '0.9em', color: '#666' }}>
+              Selected directory: {app.logging.dirPath}
+            </div>
+          )}
         </BorderedSection>
 
         {/* WHAT TO NAME THE FILE */}

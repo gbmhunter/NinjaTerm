@@ -1,0 +1,35 @@
+[build]
+  publish = "build"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# Serve web app at /app/* path
+[[redirects]]
+  from = "/app/*"
+  to = "https://app.ninjaterm.mbedded.ninja/:splat"
+  status = 200
+  force = true
+
+# Alternative: serve web app from a different service
+# [[redirects]]
+#   from = "/app/*"
+#   to = "https://ninjaterm-web.netlify.app/:splat"
+#   status = 200
+#   force = true
+
+# Handle client-side routing for Docusaurus
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build"
