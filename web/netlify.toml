@@ -5,6 +5,11 @@
 # Redirect docs to separate Netlify project
 # ("ninjaterm-docs")
 [[redirects]]
+  from = "/docs"
+  to = "https://ninjaterm-docs.netlify.app/"
+  status = 200
+
+[[redirects]]
   from = "/docs/*"
   to = "https://ninjaterm-docs.netlify.app/:splat"
   status = 200
