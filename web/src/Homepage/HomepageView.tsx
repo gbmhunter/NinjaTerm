@@ -330,7 +330,7 @@ export default observer((props: Props) => {
             <Button href="/app" variant="outlined" size="medium" startIcon={<TerminalIcon />}>
               Goto Web App
             </Button>
-            <Button href="/manual" variant="outlined" size="medium" startIcon={<InfoIcon />}>
+            <Button href="/docs/manual" variant="outlined" size="medium" startIcon={<InfoIcon />}>
               Manual
             </Button>
             <Button href="https://github.com/gbmhunter/NinjaTerm" target="_blank" variant="outlined" size="medium" startIcon={<GitHubIcon />}>

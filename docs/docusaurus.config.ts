@@ -68,7 +68,12 @@ const config: Config = {
       },
       items: [
         {
-          href: '/app',
+          href: 'https://ninjaterm.mbedded.ninja/',
+          label: 'Download Desktop App',
+          position: 'left',
+        },
+        {
+          href: 'https://ninjaterm.mbedded.ninja/app',
           label: 'Web App',
           position: 'left',
         },
