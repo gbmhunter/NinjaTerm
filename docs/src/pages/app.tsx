@@ -1,7 +1,24 @@
-import React from 'react';
-import { Redirect } from '@docusaurus/router';
+import React, { useEffect } from 'react';
+import Layout from '@theme/Layout';
 
 export default function App(): JSX.Element {
-  // This will immediately redirect to the web app
-  return <Redirect to="https://ninjaterm-app.netlify.app/app" />;
+  useEffect(() => {
+    // Redirect to the web app immediately
+    window.location.href = 'https://ninjaterm-app.netlify.app/app';
+  }, []);
+
+  return (
+    <Layout title="Redirecting to NinjaTerm Web App...">
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '50vh',
+        flexDirection: 'column' 
+      }}>
+        <h2>Redirecting to NinjaTerm Web App...</h2>
+        <p>If you are not redirected automatically, <a href="https://ninjaterm-app.netlify.app/app">click here</a>.</p>
+      </div>
+    </Layout>
+  );
 }
