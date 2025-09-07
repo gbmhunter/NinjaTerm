@@ -5,19 +5,11 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Serve web app at /app/* path
+# Redirect /app/* to the main site where the web app is hosted
 [[redirects]]
   from = "/app/*"
-  to = "https://app.ninjaterm.mbedded.ninja/:splat"
+  to = "https://ninjaterm-app.netlify.app/:splat"
   status = 200
-  force = true
-
-# Alternative: serve web app from a different service
-# [[redirects]]
-#   from = "/app/*"
-#   to = "https://ninjaterm-web.netlify.app/:splat"
-#   status = 200
-#   force = true
 
 # Handle client-side routing for Docusaurus
 [[redirects]]

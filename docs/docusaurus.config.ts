@@ -18,7 +18,7 @@ const config: Config = {
   url: 'https://ninjaterm.mbedded.ninja',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/docs/',
+  baseUrl: '/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -42,7 +42,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          routeBasePath: '/', // Serve docs at the root instead of /docs/
+          routeBasePath: '/docs/', // Serve docs at /docs/ path
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
@@ -52,7 +52,7 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
-        pages: false, // Disable pages functionality
+        pages: {}, // Enable pages functionality
       } satisfies Preset.Options,
     ],
   ],
@@ -68,12 +68,12 @@ const config: Config = {
       },
       items: [
         {
-          href: 'https://ninjaterm.mbedded.ninja/',
-          label: 'Download Desktop App',
+          to: '/docs/',
+          label: 'Documentation',
           position: 'left',
         },
         {
-          href: 'https://ninjaterm.mbedded.ninja/app',
+          href: '/app',
           label: 'Web App',
           position: 'left',
         },
@@ -92,15 +92,11 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/',
+              to: '/docs/',
             },
             {
               label: 'User Manual',
-              to: '/manual',
-            },
-            {
-              label: 'Features',
-              to: '/features',
+              to: '/docs/manual',
             },
           ],
         },

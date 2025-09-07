@@ -1,0 +1,150 @@
+/* Hero section styling */
+.heroBanner {
+  padding: 4rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--ifm-color-primary-darker);
+  color: var(--ifm-color-primary-contrast-foreground);
+}
+
+.logoContainer {
+  margin-bottom: 2rem;
+}
+
+.heroLogo {
+  max-width: 100%;
+  width: 600px;
+  height: auto;
+}
+
+.tagline {
+  font-family: monospace;
+  font-size: clamp(18px, 5vw, 30px);
+  margin-bottom: 2rem;
+  font-weight: normal;
+}
+
+/* Blinking cursor animation */
+.cursor {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.platformIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.versionInfo {
+  color: #888;
+  font-size: 14px;
+  margin: 1rem 0;
+}
+
+.loading {
+  color: var(--ifm-color-primary-contrast-foreground);
+  opacity: 0.8;
+}
+
+/* Main content sections */
+.section {
+  margin: 3rem 0;
+}
+
+.sectionTitle {
+  color: var(--ifm-color-primary);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Feature sections */
+.feature {
+  margin: 3rem 0;
+  padding: 2rem;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 10px;
+  background: var(--ifm-color-content-secondary);
+}
+
+.feature h3 {
+  color: var(--ifm-color-primary);
+  margin-bottom: 1rem;
+}
+
+.feature p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.videoContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.featureVideo {
+  max-width: 100%;
+  width: 900px;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .heroBanner {
+    padding: 2rem 0;
+  }
+  
+  .heroLogo {
+    width: 90%;
+  }
+  
+  .tagline {
+    font-size: 20px;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .feature {
+    padding: 1rem;
+  }
+  
+  .featureVideo {
+    width: 100%;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .feature {
+  background: var(--ifm-background-color);
+  border-color: var(--ifm-color-primary-dark);
+}
