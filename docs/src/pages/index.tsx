@@ -6,7 +6,7 @@ import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import { Typography, Button, Box, CircularProgress } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import TerminalIcon from '@mui/icons-material/Terminal';
@@ -343,23 +343,23 @@ export default function Home(): JSX.Element {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </Head>
       {/* <HomepageHeader /> */}
-      <Grid xs={12} sx={{ height: '20px' }} />
+      <Grid size={12} sx={{ height: '20px' }} />
 
-      <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
         <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo." style={{ maxWidth: '100%', width: '600px', height: 'auto' }} />
       </Grid>
-      <Grid xs={12} sx={{ height: '20px' }} />
-      <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Grid size={12} sx={{ height: '20px' }} />
+      <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
         <span style={{ fontFamily: 'monospace', fontSize: 'clamp(18px, 5vw, 30px)', textAlign: 'center' }}>
           A serial port terminal that's got your back.
           <span className={styles.cursor}>&nbsp;</span>
         </span>
       </Grid>
-      <Grid xs={12} sx={{ height: '20px' }} />
+      <Grid size={12} sx={{ height: '20px' }} />
 
       {/* Primary Download Buttons */}
       <Grid
-        xs={12}
+        size={12}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -407,7 +407,7 @@ export default function Home(): JSX.Element {
 
       {/* Version Info */}
       {release && (
-        <Grid xs={12} sx={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+        <Grid size={12} sx={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
           <Typography variant="body2" sx={{ color: '#888', fontSize: '14px' }}>
             Latest version: {release.tag_name}
           </Typography>
@@ -416,7 +416,7 @@ export default function Home(): JSX.Element {
 
       {/* Secondary Options */}
       <Grid
-        xs={12}
+        size={12}
         sx={{
           display: 'flex',
           justifyContent: 'center',
@@ -464,15 +464,15 @@ export default function Home(): JSX.Element {
           </div>
 
           {/* Downloads Section */}
-          <Grid container xs={12} spacing={2} sx={{ marginBottom: '40px' }}>
-            <Grid xs={12}>
+          <Grid container size={12} spacing={2} sx={{ marginBottom: '40px' }}>
+            <Grid size={12}>
               <Typography style={{ marginBottom: '20px', fontSize: 'clamp(14px, 4vw, 18px)' }}>
                 Download NinjaTerm for your operating system. If you're not sure which version to download, use the platform-specific button above or check the explanations below:
               </Typography>
             </Grid>
 
             {/* Windows Downloads */}
-            <Grid xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <div
                 style={{
                   backgroundColor: '#2a2a2a',
@@ -526,7 +526,7 @@ export default function Home(): JSX.Element {
             </Grid>
 
             {/* macOS Downloads */}
-            <Grid xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <div
                 style={{
                   backgroundColor: '#2a2a2a',
@@ -584,7 +584,7 @@ export default function Home(): JSX.Element {
             </Grid>
 
             {/* Linux Downloads */}
-            <Grid xs={12}>
+            <Grid size={12}>
               <div
                 style={{
                   backgroundColor: '#2a2a2a',
@@ -611,7 +611,7 @@ export default function Home(): JSX.Element {
 
                 <Grid container spacing={2}>
                   {/* AppImage Downloads */}
-                  <Grid xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>
                       AppImage (Recommended)
                     </Typography>
@@ -643,7 +643,7 @@ export default function Home(): JSX.Element {
                   </Grid>
 
                   {/* DEB Downloads */}
-                  <Grid xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>
                       DEB Packages
                     </Typography>
@@ -683,7 +683,7 @@ export default function Home(): JSX.Element {
             </Grid>
 
             {/* Architecture Help */}
-            <Grid xs={12}>
+            <Grid size={12}>
               <div
                 style={{
                   backgroundColor: '#1a1a1a',
