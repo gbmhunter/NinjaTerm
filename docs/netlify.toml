@@ -5,17 +5,17 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect /app/* to the web app hosted on Netlify
+# Redirect /app to the web app subdomain
 [[redirects]]
-  from = "/app/*"
-  to = "https://ninjaterm-app.netlify.app/app/:splat"
+  from = "/app"
+  to = "https://ninjaterm-app.mbedded.ninja/app"
   status = 301
   force = true
 
-# Redirect /app to the web app
+# Redirect /app/* to the web app subdomain
 [[redirects]]
-  from = "/app"
-  to = "https://ninjaterm-app.netlify.app/app"
+  from = "/app/*"
+  to = "https://ninjaterm-app.mbedded.ninja/app/:splat"
   status = 301
   force = true
 
