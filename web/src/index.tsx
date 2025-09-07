@@ -8,8 +8,6 @@ import {
 import ReactGA from "react-ga4";
 
 import AppView from './view/AppView';
-import HomepageView from './Homepage/HomepageView';
-import ManualView from './Manual/ManualView';
 
 // Google Analytics. Only initialize in production, otherwise things like
 // Playwright tests can spam GA and skew data
@@ -23,21 +21,11 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
-// Create routes. Only 2 routes. The root is the
-// landing page which is static, and then
-// at /app is the main NinjaTerm application
+// Create routes. Only one route - the NinjaTerm application at root
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <HomepageView />,
-  },
-  {
-    path: "/app",
     element: <AppView />,
-  },
-  {
-    path: "/manual",
-    element: <ManualView />,
   },
 ]);
 

@@ -4,7 +4,7 @@ import Layout from '@theme/Layout';
 export default function App(): JSX.Element {
   useEffect(() => {
     // Redirect to the web app immediately
-    window.location.href = 'https://ninjaterm-app.netlify.app/app';
+    window.location.href = 'https://ninjaterm-app.netlify.app/';
   }, []);
 
   return (
@@ -17,7 +17,7 @@ export default function App(): JSX.Element {
         flexDirection: 'column' 
       }}>
         <h2>Redirecting to NinjaTerm Web App...</h2>
-        <p>If you are not redirected automatically, <a href="https://ninjaterm-app.netlify.app/app">click here</a>.</p>
+        <p>If you are not redirected automatically, <a href="https://ninjaterm-app.netlify.app/">click here</a>.</p>
       </div>
     </Layout>
   );
