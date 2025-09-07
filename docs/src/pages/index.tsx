@@ -156,7 +156,7 @@ function HomepageHeader() {
         <div className={styles.logoContainer}>
           <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo" className={styles.heroLogo} />
         </div>
-        
+
         <h1 className={clsx(styles.tagline)}>
           A serial port terminal that's got your back.
           <span className={styles.cursor}>&nbsp;</span>
@@ -259,7 +259,7 @@ export default function Home(): JSX.Element {
         <div className="container">
           <div className={styles.section}>
             <p className={styles.description}>
-              NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller).
+              NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for an embedded device (e.g. microcontroller). TEST
             </p>
             <p className={styles.description}>
               If you are looking for a serious terminal for continual use, the installable desktop versions are recommended. If you are looking for a quick way to view some serial data without having to install anything, the web-based version is for you!
@@ -285,7 +285,7 @@ export default function Home(): JSX.Element {
 
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>Features</h2>
-            
+
             <div className={styles.feature}>
               <h3>ANSI Escape Code Support</h3>
               <p>Rich support for ANSI CSI colour codes, giving you ability to express information however you see fit! (e.g. colour errors red, warnings yellow).</p>
