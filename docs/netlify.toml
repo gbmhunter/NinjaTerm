@@ -5,18 +5,18 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Proxy /app/* to the web app hosted on Netlify (keeps ninjaterm.mbedded.ninja URL)
+# Redirect /app/* to the web app hosted on Netlify
 [[redirects]]
   from = "/app/*"
   to = "https://ninjaterm-app.netlify.app/app/:splat"
-  status = 200
+  status = 301
   force = true
 
-# Proxy /app to the web app (keeps ninjaterm.mbedded.ninja URL)
+# Redirect /app to the web app
 [[redirects]]
   from = "/app"
   to = "https://ninjaterm-app.netlify.app/app"
-  status = 200
+  status = 301
   force = true
 
 # Handle client-side routing for Docusaurus
