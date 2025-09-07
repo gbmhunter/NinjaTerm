@@ -5,7 +5,14 @@
 [build.environment]
   NODE_VERSION = "18"
 
-# Redirect /app and /app/* to the web app (direct Netlify URL)
+# FIRST, handle the exact path /app
+[[redirects]]
+  from = "/app"
+  to = "https://ninjaterm-app.netlify.app"
+  status = 301
+  force = true
+
+# SECOND, handle any path that starts with /app/
 [[redirects]]
   from = "/app/*"
   to = "https://ninjaterm-app.netlify.app/:splat"
