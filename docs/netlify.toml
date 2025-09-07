@@ -9,14 +9,14 @@
 [[redirects]]
   from = "/app"
   to = "https://ninjaterm-app.netlify.app"
-  status = 301
+  status = 200
   force = true
 
 # SECOND, handle any path that starts with /app/
 [[redirects]]
   from = "/app/*"
   to = "https://ninjaterm-app.netlify.app/:splat"
-  status = 301
+  status = 200
   force = true
 
 # Handle client-side routing for Docusaurus
