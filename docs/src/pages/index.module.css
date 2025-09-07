@@ -4,8 +4,8 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  background: var(--ifm-color-primary-darker);
-  color: var(--ifm-color-primary-contrast-foreground);
+  background: #313131;
+  color: var(--ifm-font-color-base);
 }
 
 .logoContainer {
@@ -28,6 +28,7 @@
 /* Blinking cursor animation */
 .cursor {
   animation: blink 1s infinite;
+  background-color: var(--ifm-font-color-base);
 }
 
 @keyframes blink {
@@ -120,24 +121,24 @@
   .heroBanner {
     padding: 2rem 0;
   }
-  
+
   .heroLogo {
     width: 90%;
   }
-  
+
   .tagline {
     font-size: 20px;
   }
-  
+
   .buttons {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .feature {
     padding: 1rem;
   }
-  
+
   .featureVideo {
     width: 100%;
   }
