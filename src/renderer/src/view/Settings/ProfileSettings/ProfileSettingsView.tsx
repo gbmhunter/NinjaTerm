@@ -6,10 +6,10 @@ import PublishIcon from '@mui/icons-material/Publish';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import ProfilesSettings from 'src/model/Settings/ProfileSettings/ProfileSettings';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import PortConfigurationSettings from 'src/model/Settings/PortSettings/PortSettings';
-import RxSettings from 'src/model/Settings/RxSettings/RxSettings';
+import ProfilesSettings from '@/model/Settings/ProfileSettings/ProfileSettings';
+import { AppDataManager } from '@/model/AppDataManager/AppDataManager';
+import { PortSettings } from '@/model/Settings/PortSettings/PortSettings';
+import RxSettings from '@/model/Settings/RxSettings/RxSettings';
 
 interface Props {
   profileManager: AppDataManager;
@@ -35,7 +35,7 @@ function ProfileSettingsView(props: Props) {
   for (let idx = 0; idx < profiles.length; idx++) {
     const profile = profiles[idx];
     const portSettings = profile.rootConfig.settings.portSettings;
-    const shorthandPortConfig = PortConfigurationSettings.computeShortSerialConfigName(portSettings.baudRate, portSettings.numDataBits, portSettings.parity, portSettings.stopBits);
+    const shorthandPortConfig = PortSettings.computeShortSerialConfigName(portSettings.baudRate, portSettings.numDataBits, portSettings.parity, portSettings.stopBits);
 
     const rxSettings = profile.rootConfig.settings.rxSettings;
     const dataType = RxSettings.computeDataTypeNameForToolbarDisplay(rxSettings.dataType, rxSettings.numberType);

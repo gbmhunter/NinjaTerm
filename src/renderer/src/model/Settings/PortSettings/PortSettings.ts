@@ -43,7 +43,7 @@ export enum ConnectionType {
   SOCKET = 'socket',
 }
 
-export default class PortSettings {
+export class PortSettings {
 
   app: App
   profileManager: AppDataManager;
@@ -57,6 +57,14 @@ export default class PortSettings {
    */
   baudRateValidation = z.coerce.number().int().min(1).max(2000000);
   baudRateErrorMsg = '';
+
+  static SOCKET_CONN_TIMEOUT_MIN_MS = 100;
+  static SOCKET_CONN_TIMEOUT_DEFAULT_MS = 2000;
+  static SOCKET_CONN_TIMEOUT_MAX_MS = 5*60*1000;
+  socketConnTimeoutValidation = z.coerce.number().int().min(PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS).max(PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS);
+
+  /** Validation error message for the socket connection timeout input. Is an empty string if the input is valid. */
+  socketConnTimeoutErrorMsg = '';
 
   baudRate = 115200;
 
@@ -95,6 +103,7 @@ export default class PortSettings {
   // Socket connection settings
   socketHost = '127.0.0.1';
   socketPort = 5000;
+  socketConnTimeoutDispMs = '5000';
 
   constructor(app: App) {
     this.app = app;
@@ -226,6 +235,29 @@ export default class PortSettings {
     this._saveConfig();
   }
 
+  /**
+   * Set the displayed socket connection timeout value (socketConnTimeoutDispMs).
+   *
+   * Is not applied until applySocketConnTimeout is called.
+   * @param value The displayed socket connection timeout value (socketConnTimeoutDispMs).
+   */
+  setSocketConnTimeoutDispMs = (value: string) => {
+    this.socketConnTimeoutDispMs = value;
+  }
+
+  /**
+   * Try and parse the displayed socket connection timeout value (socketConnTimeoutDispMs) into a number (socketConnTimeoutMs).
+   */
+  applySocketConnTimeout = () => {
+    const parsed = this.socketConnTimeoutValidation.safeParse(this.socketConnTimeoutDispMs);
+    if (!parsed.success) {
+      this.socketConnTimeoutErrorMsg = parsed.error.errors[0].message;
+      return;
+    }
+    this.socketConnTimeoutErrorMsg = '';
+    this._saveConfig();
+  }
+
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
@@ -244,17 +276,13 @@ export default class PortSettings {
     this.resumeConnectionToLastSerialPortOnStartup = configToLoad.resumeConnectionToLastSerialPortOnStartup;
     this.reopenSerialPortIfUnexpectedlyClosed = configToLoad.reopenSerialPortIfUnexpectedlyClosed;
     this.allowSettingsChangesWhenOpen = configToLoad.allowSettingsChangesWhenOpen;
-    
-    // Load socket settings if they exist (for migration compatibility)
-    if (configToLoad.connectionType !== undefined) {
-      this.connectionType = configToLoad.connectionType;
-    }
-    if (configToLoad.socketHost !== undefined) {
-      this.socketHost = configToLoad.socketHost;
-    }
-    if (configToLoad.socketPort !== undefined) {
-      this.socketPort = configToLoad.socketPort;
-    }
+
+    // Load socket settings
+    this.connectionType = configToLoad.connectionType;
+    this.socketHost = configToLoad.socketHost;
+    this.socketPort = configToLoad.socketPort;
+    this.socketConnTimeoutDispMs = configToLoad.socketConnTimeoutMs.toString();
+    this.applySocketConnTimeout();
 
     this.setBaudRateInputValue(this.baudRate.toString());
   };
@@ -278,6 +306,7 @@ export default class PortSettings {
     config.connectionType = this.connectionType;
     config.socketHost = this.socketHost;
     config.socketPort = this.socketPort;
+    config.socketConnTimeoutMs = this.socketConnTimeoutMs;
 
     this.profileManager.saveAppData();
   };
@@ -288,6 +317,14 @@ export default class PortSettings {
    *
    * @returns The short hand connection config for displaying to the user.
    */
+  get socketConnTimeoutMs() {
+    const parsed = this.socketConnTimeoutValidation.safeParse(this.socketConnTimeoutDispMs);
+    if (!parsed.success) {
+      return 2000; // Default fallback value
+    }
+    return parsed.data;
+  }
+
   get shortSerialConfigName() {
     if (this.connectionType === ConnectionType.SOCKET) {
       return `${this.socketHost}:${this.socketPort}`;

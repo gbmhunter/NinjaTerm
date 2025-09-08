@@ -24,9 +24,9 @@ import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-import { App } from 'src/model/App';
-import { PortType } from 'src/model/SerialController/SerialController';
+import { App } from '@/model/App';
 import {
+  PortSettings,
   PortState,
   DEFAULT_BAUD_RATES,
   NUM_DATA_BITS_OPTIONS,
@@ -35,9 +35,10 @@ import {
   StopBits,
   NumDataBits,
   ConnectionType,
-} from 'src/model/Settings/PortSettings/PortSettings';
-import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
+} from '@/model/Settings/PortSettings/PortSettings';
+import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
+import { BASIC_TOOLTIP_SETTINGS } from '@/view/SharedConfig';
 
 interface Props {
   app: App;
@@ -78,7 +79,7 @@ function PortSettingsView(props: Props) {
         <Typography variant="h6" gutterBottom>
           Connection Type
         </Typography>
-        <FormControl sx={{ m: 1, minWidth: 200 }} size="small">
+        <FormControl sx={{ minWidth: 200, marginTop: '10px' }} size="small">
           <InputLabel>Connection Type</InputLabel>
           <Select
             value={app.settings.portConfiguration.connectionType}
@@ -232,8 +233,8 @@ function PortSettingsView(props: Props) {
         {/* BAUD RATE */}
         {/* ============================================================== */}
         <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
           title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
-          enterDelay={500}
         >
           <Autocomplete
             freeSolo
@@ -270,7 +271,12 @@ function PortSettingsView(props: Props) {
         {/* ============================================================== */}
         {/* NUM. DATA BITS */}
         {/* ============================================================== */}
-        <Tooltip title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)." placement="right" enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
+          placement="right"
+          enterDelay={500}
+        >
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Num. data bits</InputLabel>
             <Select
@@ -295,9 +301,9 @@ function PortSettingsView(props: Props) {
         {/* PARITY */}
         {/* ============================================================== */}
         <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
           title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
           placement="right"
-          enterDelay={500}
         >
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Parity</InputLabel>
@@ -322,7 +328,11 @@ function PortSettingsView(props: Props) {
         {/* ============================================================== */}
         {/* STOP BITS */}
         {/* ============================================================== */}
-        <Tooltip title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.' placement="right" enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
+          placement="right"
+        >
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Stop bits</InputLabel>
             <Select
@@ -353,7 +363,10 @@ function PortSettingsView(props: Props) {
           Flow Control Settings
         </Typography>
 
-        <Tooltip title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control." enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control."
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -368,7 +381,10 @@ function PortSettingsView(props: Props) {
           />
         </Tooltip>
 
-        <Tooltip title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission." enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission."
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -383,7 +399,10 @@ function PortSettingsView(props: Props) {
           />
         </Tooltip>
 
-        <Tooltip title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission." enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission."
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -398,7 +417,10 @@ function PortSettingsView(props: Props) {
           />
         </Tooltip>
 
-        <Tooltip title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html." enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html."
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -413,7 +435,10 @@ function PortSettingsView(props: Props) {
           />
         </Tooltip>
 
-        <Tooltip title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards." enterDelay={500}>
+        <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
+          title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards."
+        >
           <FormControlLabel
             control={
               <Checkbox
@@ -438,72 +463,59 @@ function PortSettingsView(props: Props) {
             Socket Connection Settings
           </Typography>
 
-          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: '16px', gap: '10px' }}>
             {/* ============================================================== */}
             {/* HOST */}
             {/* ============================================================== */}
-            <TextField
-              label="Host"
-              value={app.settings.portConfiguration.socketHost}
-              disabled={app.serialController.portState !== PortState.CLOSED}
-              onChange={(e) => {
-                app.settings.portConfiguration.setSocketHost(e.target.value);
-              }}
-              sx={{ m: 1, width: 200 }}
-              size="small"
-              helperText="IP address or hostname to connect to"
-            />
+            <Tooltip
+              {...BASIC_TOOLTIP_SETTINGS}
+              title="IP address (e.g. 192.168.1.100) or hostname (e.g. www.example.com) of the TCP socket server to connect to."
+            >
+              <TextField
+                label="Host"
+                value={app.settings.portConfiguration.socketHost}
+                disabled={app.serialController.portState !== PortState.CLOSED}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setSocketHost(e.target.value);
+                }}
+                sx={{ width: 200 }}
+                size="small"
+                helperText="IP address or hostname"
+              />
+            </Tooltip>
 
             {/* ============================================================== */}
             {/* PORT */}
             {/* ============================================================== */}
-            <TextField
-              label="Port"
-              value={socketPortInput}
-              disabled={app.serialController.portState !== PortState.CLOSED}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Allow empty field and digits only
-                if (value === '' || /^\d+$/.test(value)) {
-                  setSocketPortInput(value);
+            <Tooltip
+              {...BASIC_TOOLTIP_SETTINGS}
+              title="Port number of the TCP socket server to connect to. Must be between 1 and 65535 (inclusive)."
+            >
+              <TextField
+                label="Port"
+                value={socketPortInput}
+                disabled={app.serialController.portState !== PortState.CLOSED}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow empty field and digits only
+                  if (value === '' || /^\d+$/.test(value)) {
+                    setSocketPortInput(value);
 
-                  // Update the model only if it's a valid number within range
-                  if (value !== '' && /^\d+$/.test(value)) {
-                    const port = parseInt(value, 10);
-                    if (port > 0 && port <= 65535) {
-                      app.settings.portConfiguration.setSocketPort(port);
+                    // Update the model only if it's a valid number within range
+                    if (value !== '' && /^\d+$/.test(value)) {
+                      const port = parseInt(value, 10);
+                      if (port > 0 && port <= 65535) {
+                        app.settings.portConfiguration.setSocketPort(port);
+                      }
                     }
                   }
-                }
-              }}
-              onBlur={(e) => {
-                const value = e.target.value;
-                let finalValue: number;
-
-                if (value === '' || isNaN(parseInt(value, 10))) {
-                  // Reset to current model value if empty or invalid
-                  finalValue = app.settings.portConfiguration.socketPort;
-                } else {
-                  const port = parseInt(value, 10);
-                  if (port < 1) {
-                    finalValue = 1;
-                  } else if (port > 65535) {
-                    finalValue = 65535;
-                  } else {
-                    finalValue = port;
-                  }
-                }
-
-                // Update both local state and model
-                setSocketPortInput(finalValue.toString());
-                app.settings.portConfiguration.setSocketPort(finalValue);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const value = (e.target as HTMLInputElement).value;
+                }}
+                onBlur={(e) => {
+                  const value = e.target.value;
                   let finalValue: number;
 
                   if (value === '' || isNaN(parseInt(value, 10))) {
+                    // Reset to current model value if empty or invalid
                     finalValue = app.settings.portConfiguration.socketPort;
                   } else {
                     const port = parseInt(value, 10);
@@ -519,52 +531,117 @@ function PortSettingsView(props: Props) {
                   // Update both local state and model
                   setSocketPortInput(finalValue.toString());
                   app.settings.portConfiguration.setSocketPort(finalValue);
-                }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const value = (e.target as HTMLInputElement).value;
+                    let finalValue: number;
+
+                    if (value === '' || isNaN(parseInt(value, 10))) {
+                      finalValue = app.settings.portConfiguration.socketPort;
+                    } else {
+                      const port = parseInt(value, 10);
+                      if (port < 1) {
+                        finalValue = 1;
+                      } else if (port > 65535) {
+                        finalValue = 65535;
+                      } else {
+                        finalValue = port;
+                      }
+                    }
+
+                    // Update both local state and model
+                    setSocketPortInput(finalValue.toString());
+                    app.settings.portConfiguration.setSocketPort(finalValue);
+                  }
+                }}
+                sx={{ width: '120px' }}
+                size="small"
+                helperText="Port number"
+                inputProps={{
+                  min: 1,
+                  max: 65535
+                }}
+              />
+            </Tooltip>
+          </div>
+
+          {/* ============================================================== */}
+          {/* SOCKET CONNECTION TIMEOUT */}
+          {/* ============================================================== */}
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title={`The timeout for the socket connection in milliseconds. If the connection is not established within this time, the attempt will be aborted. Must be between ${PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS} and ${PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS} (inclusive).`}
+          >
+            <TextField
+              label="Connection timeout (ms)"
+              value={app.settings.portConfiguration.socketConnTimeoutDispMs}
+              disabled={app.serialController.portState !== PortState.CLOSED}
+              error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
+              helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
+              onChange={(e) => {
+                app.settings.portConfiguration.setSocketConnTimeoutDispMs(e.target.value);
               }}
-              sx={{ m: 1, width: 120 }}
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter') {
+                  // Apply timeout
+                  await app.settings.portConfiguration.applySocketConnTimeout();
+                }
+                // Prevent the global keydown event from being triggered
+                e.stopPropagation();
+              }}
+              onBlur={async () => {
+                // Apply timeout
+                await app.settings.portConfiguration.applySocketConnTimeout();
+              }}
+              sx={{ width: 180, marginTop: '30px' }}
               size="small"
-              helperText="Port number (1-65535)"
               inputProps={{
-                min: 1,
-                max: 65535
+                min: PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS,
+                max: PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS
               }}
             />
-          </div>
+          </Tooltip>
 
           <div id="socket-open-close-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
             {/* =============================================================== */}
             {/* OPEN/CLOSE BUTTON FOR SOCKET */}
             {/* =============================================================== */}
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{ m: 1, width: 160 }}
-              color={
-                portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
-                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                  ButtonPropsColorOverrides
-                >
-              }
-              onClick={() => {
-                if (app.serialController.portState === PortState.CLOSED) {
-                  app.serialController.openPort();
-                } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                  app.serialController.stopWaitingToReopenPort();
-                } else if (app.serialController.portState === PortState.OPENED) {
-                  app.serialController.closePort();
-                } else {
-                  throw Error('Invalid port state.');
-                }
-              }}
-              disabled={!app.serialController.isReadyToOpen()}
-              data-testid="socket-open-close-button"
+            <Tooltip
+              {...BASIC_TOOLTIP_SETTINGS}
+              title="Open or close the socket connection."
             >
-              {portStateToButtonProps[app.serialController.portState].text}
-            </Button>
+              <Button
+                variant="contained"
+                size="medium"
+                sx={{ width: 160 }}
+                color={
+                  portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+                    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                    ButtonPropsColorOverrides
+                  >
+                }
+                onClick={() => {
+                  if (app.serialController.portState === PortState.CLOSED) {
+                    app.serialController.openPort();
+                  } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+                    app.serialController.stopWaitingToReopenPort();
+                  } else if (app.serialController.portState === PortState.OPENED) {
+                    app.serialController.closePort();
+                  } else {
+                    throw Error('Invalid port state.');
+                  }
+                }}
+                disabled={!app.serialController.isReadyToOpen()}
+                data-testid="socket-open-close-button"
+              >
+                {portStateToButtonProps[app.serialController.portState].text}
+              </Button>
+            </Tooltip>
             {/* =============================================================== */}
             {/* SOCKET STATUS */}
             {/* =============================================================== */}
-            <Typography sx={{ m: 1, alignSelf: 'center' }}>
+            <Typography sx={{ alignSelf: 'center' }}>
               Status: {PortState[app.serialController.portState]}
             </Typography>
           </div>
@@ -574,7 +651,7 @@ function PortSettingsView(props: Props) {
       {/* =========================================================================== */}
       {/* GENERAL SETTINGS */}
       {/* =========================================================================== */}
-      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '8px', marginTop: '16px', gap: '8px' }}>
         <Typography variant="h6">
           General Settings
         </Typography>
@@ -584,6 +661,7 @@ function PortSettingsView(props: Props) {
         {/* =============================================================== */}
         {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
           <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
             title={
               <div>
                 Check this if you want to be able to quickly change settings when the serial port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
@@ -591,7 +669,6 @@ function PortSettingsView(props: Props) {
                 This setting is more relevant for the quick connection settings in the right-hand drawer on the terminal view.
               </div>
             }
-            enterDelay={500}
           >
             <FormControlLabel
               control={
@@ -611,11 +688,11 @@ function PortSettingsView(props: Props) {
         {/* OPEN AND GO TO TERMINAL CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
           title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
             ? "Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!"
             : "Connect to socket and go to the terminal view as soon as the connection is established, saving you a button press!"
           }
-          enterDelay={500}
         >
           <FormControlLabel
             control={
@@ -638,8 +715,8 @@ function PortSettingsView(props: Props) {
         {/* RECONNECT ON STARTUP CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
           title="On startup, if NinjaTerm can find the last used connection it will reselect it. If it was previously in the CONNECTED state, the connection will also be re-opened."
-          enterDelay={500}
         >
           <FormControlLabel
             control={
@@ -658,11 +735,11 @@ function PortSettingsView(props: Props) {
         {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
+          {...BASIC_TOOLTIP_SETTINGS}
           title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
             ? "If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
             : "If the socket connection unexpectedly closes (e.g. network interruption), NinjaTerm will try to automatically reconnect when the server becomes available again."
           }
-          enterDelay={500}
         >
           <FormControlLabel
             control={

@@ -69,6 +69,20 @@ describe('app data manager tests', () => {
     const latestCorrectAppData = new AppData();
     expect(wasChanged).toEqual(true);
     expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
+
+
+    expect(JSON.stringify(appDataUpdated, replacer))
+      .toEqual(JSON.stringify(latestCorrectAppData, replacer));
+  });
+
+  test('app data can be upgraded from v8', () => {
+    const app = new App();
+    const appDataManager = new AppDataManager(app);
+    const appDataV3 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v8-app-v5.4.0-default.json', 'utf8'));
+    const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV3);
+    const latestCorrectAppData = new AppData();
+    expect(wasChanged).toEqual(true);
+    expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
     // Save the updated app data to a file
     // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
     // Save latest correct app data to a file

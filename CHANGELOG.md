@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.5.0] - 2025-09-08
+
 ### Added
 
 - Added socket support to the app. You can now choose between connecting to a serial port or a socket server (NinjaTerm acts as a TCP socket client).
@@ -918,7 +920,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.4.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.5.0...HEAD
+[5.5.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.3.0...v5.4.0
 [5.3.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.2.0...v5.3.0
 [5.2.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.1.1...v5.2.0

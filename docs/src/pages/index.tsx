@@ -7,11 +7,12 @@ import Head from '@docusaurus/Head';
 import { useEffect, useState } from 'react';
 import styles from './index.module.css';
 import Grid from '@mui/material/Grid';
-import { Typography, Button, Box, CircularProgress } from '@mui/material';
+import { Typography, Button, Box, CircularProgress, IconButton } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import InfoIcon from '@mui/icons-material/Info';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import TwitterIcon from '@mui/icons-material/Twitter';
 
 // Static imports for assets
 const WindowsLogoPng = '/img/windows-logo.png';
@@ -36,166 +37,166 @@ interface GitHubRelease {
   assets: GitHubAsset[];
 }
 
-function HomepageHeader() {
-  const { siteConfig } = useDocusaurusContext();
-  const [release, setRelease] = useState<GitHubRelease | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [userPlatform, setUserPlatform] = useState<{ os: string; arch: string } | null>(null);
+// function HomepageHeader() {
+//   const { siteConfig } = useDocusaurusContext();
+//   const [release, setRelease] = useState<GitHubRelease | null>(null);
+//   const [loading, setLoading] = useState(false);
+//   const [userPlatform, setUserPlatform] = useState<{ os: string; arch: string } | null>(null);
 
-  useEffect(() => {
-    // Detect user's platform and architecture
-    const detectPlatform = () => {
-      const userAgent = navigator.userAgent;
-      let os = '';
-      let arch = '';
+//   useEffect(() => {
+//     // Detect user's platform and architecture
+//     const detectPlatform = () => {
+//       const userAgent = navigator.userAgent;
+//       let os = '';
+//       let arch = '';
 
-      // Detect OS
-      if (userAgent.includes('Win')) {
-        os = 'win';
-      } else if (userAgent.includes('Mac')) {
-        os = 'mac';
-      } else if (userAgent.includes('Linux')) {
-        os = 'linux';
-      }
+//       // Detect OS
+//       if (userAgent.includes('Win')) {
+//         os = 'win';
+//       } else if (userAgent.includes('Mac')) {
+//         os = 'mac';
+//       } else if (userAgent.includes('Linux')) {
+//         os = 'linux';
+//       }
 
-      // Detect architecture
-      if (userAgent.includes('x86_64') || userAgent.includes('Win64') || userAgent.includes('WOW64')) {
-        arch = 'x64';
-      } else if (userAgent.includes('arm64') || userAgent.includes('aarch64')) {
-        arch = 'arm64';
-      } else if (userAgent.includes('Intel Mac')) {
-        arch = 'x64';
-      } else if (os === 'mac' && !userAgent.includes('Intel')) {
-        // Modern Macs without Intel in user agent are likely Apple Silicon
-        arch = 'arm64';
-      } else if (os === 'win' || os === 'linux') {
-        // Default to x64 for Windows/Linux if unclear
-        arch = 'x64';
-      }
+//       // Detect architecture
+//       if (userAgent.includes('x86_64') || userAgent.includes('Win64') || userAgent.includes('WOW64')) {
+//         arch = 'x64';
+//       } else if (userAgent.includes('arm64') || userAgent.includes('aarch64')) {
+//         arch = 'arm64';
+//       } else if (userAgent.includes('Intel Mac')) {
+//         arch = 'x64';
+//       } else if (os === 'mac' && !userAgent.includes('Intel')) {
+//         // Modern Macs without Intel in user agent are likely Apple Silicon
+//         arch = 'arm64';
+//       } else if (os === 'win' || os === 'linux') {
+//         // Default to x64 for Windows/Linux if unclear
+//         arch = 'x64';
+//       }
 
-      // Only set platform if we have both OS and arch
-      if (os && arch) {
-        setUserPlatform({ os, arch });
-      }
-    };
+//       // Only set platform if we have both OS and arch
+//       if (os && arch) {
+//         setUserPlatform({ os, arch });
+//       }
+//     };
 
-    // Fetch latest release data
-    const fetchLatestRelease = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('https://api.github.com/repos/gbmhunter/NinjaTerm/releases/latest');
-        if (response.ok) {
-          const releaseData = await response.json();
-          setRelease(releaseData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch release data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+//     // Fetch latest release data
+//     const fetchLatestRelease = async () => {
+//       setLoading(true);
+//       try {
+//         const response = await fetch('https://api.github.com/repos/gbmhunter/NinjaTerm/releases/latest');
+//         if (response.ok) {
+//           const releaseData = await response.json();
+//           setRelease(releaseData);
+//         }
+//       } catch (error) {
+//         console.error('Failed to fetch release data:', error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-    detectPlatform();
-    fetchLatestRelease();
-  }, []);
+//     detectPlatform();
+//     fetchLatestRelease();
+//   }, []);
 
-  // Helper functions to get download URLs
-  const getPlatformDownloadUrl = (os: string, arch: string) => {
-    if (!release) return null;
+//   // Helper functions to get download URLs
+//   const getPlatformDownloadUrl = (os: string, arch: string) => {
+//     if (!release) return null;
 
-    if (os === 'win' && arch === 'x64') {
-      const windowsAsset = release.assets.find((asset) => asset.name.includes('Setup') && asset.name.includes('x64') && asset.name.endsWith('.exe'));
-      return windowsAsset?.browser_download_url || null;
-    }
+//     if (os === 'win' && arch === 'x64') {
+//       const windowsAsset = release.assets.find((asset) => asset.name.includes('Setup') && asset.name.includes('x64') && asset.name.endsWith('.exe'));
+//       return windowsAsset?.browser_download_url || null;
+//     }
 
-    if (os === 'mac') {
-      const macAsset = release.assets.find((asset) => asset.name.endsWith('.dmg') && (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64')));
-      return macAsset?.browser_download_url || null;
-    }
+//     if (os === 'mac') {
+//       const macAsset = release.assets.find((asset) => asset.name.endsWith('.dmg') && (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64')));
+//       return macAsset?.browser_download_url || null;
+//     }
 
-    if (os === 'linux') {
-      const linuxAsset = release.assets.find(
-        (asset) => asset.name.endsWith('.AppImage') && (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64') || asset.name.includes('x86_64'))
-      );
-      return linuxAsset?.browser_download_url || null;
-    }
+//     if (os === 'linux') {
+//       const linuxAsset = release.assets.find(
+//         (asset) => asset.name.endsWith('.AppImage') && (arch === 'arm64' ? asset.name.includes('arm64') : asset.name.includes('x64') || asset.name.includes('x86_64'))
+//       );
+//       return linuxAsset?.browser_download_url || null;
+//     }
 
-    return null;
-  };
+//     return null;
+//   };
 
-  const getPlatformLabel = (os: string, arch: string) => {
-    const osLabels: { [key: string]: string } = {
-      win: 'Windows',
-      mac: 'macOS',
-      linux: 'Linux',
-    };
-    const archLabels: { [key: string]: string } = {
-      x64: 'x64',
-      arm64: 'ARM64',
-    };
-    return `${osLabels[os]} (${archLabels[arch]})`;
-  };
+//   const getPlatformLabel = (os: string, arch: string) => {
+//     const osLabels: { [key: string]: string } = {
+//       win: 'Windows',
+//       mac: 'macOS',
+//       linux: 'Linux',
+//     };
+//     const archLabels: { [key: string]: string } = {
+//       x64: 'x64',
+//       arm64: 'ARM64',
+//     };
+//     return `${osLabels[os]} (${archLabels[arch]})`;
+//   };
 
-  const getPlatformIcon = (os: string) => {
-    if (os === 'win') {
-      return <img src={WindowsLogoPng} alt="Windows" className={styles.platformIcon} />;
-    }
-    if (os === 'linux') {
-      return <img src={LinuxLogoPng} alt="Linux" className={styles.platformIcon} />;
-    }
-    if (os === 'mac') {
-      return <img src={MacLogoPng} alt="macOS" className={styles.platformIcon} />;
-    }
-    return '📥';
-  };
+//   const getPlatformIcon = (os: string) => {
+//     if (os === 'win') {
+//       return <img src={WindowsLogoPng} alt="Windows" className={styles.platformIcon} />;
+//     }
+//     if (os === 'linux') {
+//       return <img src={LinuxLogoPng} alt="Linux" className={styles.platformIcon} />;
+//     }
+//     if (os === 'mac') {
+//       return <img src={MacLogoPng} alt="macOS" className={styles.platformIcon} />;
+//     }
+//     return '📥';
+//   };
 
-  return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <div className={styles.logoContainer}>
-          <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo" className={styles.heroLogo} />
-        </div>
+//   return (
+//     <header className={clsx('hero hero--primary', styles.heroBanner)}>
+//       <div className="container">
+//         <div className={styles.logoContainer}>
+//           <img src={GitHubReadmeLogoPng} alt="NinjaTerm logo" className={styles.heroLogo} />
+//         </div>
 
-        <h1 className={clsx(styles.tagline)}>
-          A serial port terminal that's got your back.
-          <span className={styles.cursor}>&nbsp;</span>
-        </h1>
+//         <h1 className={clsx(styles.tagline)}>
+//           A serial port terminal that's got your back.
+//           <span className={styles.cursor}>&nbsp;</span>
+//         </h1>
 
-        <div className={styles.buttons}>
-          {loading ? (
-            <div className={styles.loading}>Loading latest release...</div>
-          ) : (
-            <>
-              {userPlatform && getPlatformDownloadUrl(userPlatform.os, userPlatform.arch) && (
-                <Link className="button button--secondary button--lg" to={getPlatformDownloadUrl(userPlatform.os, userPlatform.arch)} style={{ marginRight: '10px' }}>
-                  {getPlatformIcon(userPlatform.os)}
-                  Download for {getPlatformLabel(userPlatform.os, userPlatform.arch)}
-                </Link>
-              )}
-              <Link className="button button--outline button--lg" to="#downloads" style={{ marginRight: '10px' }}>
-                📥 All Downloads
-              </Link>
-            </>
-          )}
-        </div>
+//         <div className={styles.buttons}>
+//           {loading ? (
+//             <div className={styles.loading}>Loading latest release...</div>
+//           ) : (
+//             <>
+//               {userPlatform && getPlatformDownloadUrl(userPlatform.os, userPlatform.arch) && (
+//                 <Link className="button button--secondary button--lg" to={getPlatformDownloadUrl(userPlatform.os, userPlatform.arch)} style={{ marginRight: '10px' }}>
+//                   {getPlatformIcon(userPlatform.os)}
+//                   Download for {getPlatformLabel(userPlatform.os, userPlatform.arch)}
+//                 </Link>
+//               )}
+//               <Link className="button button--outline button--lg" to="#downloads" style={{ marginRight: '10px' }}>
+//                 📥 All Downloads
+//               </Link>
+//             </>
+//           )}
+//         </div>
 
-        {release && <p className={styles.versionInfo}>Latest version: {release.tag_name}</p>}
+//         {release && <p className={styles.versionInfo}>Latest version: {release.tag_name}</p>}
 
-        <div className={styles.buttons} style={{ marginTop: '20px' }}>
-          <Link className="button button--outline button--md" to="/app" style={{ marginRight: '10px' }}>
-            🖥️ Goto Web App
-          </Link>
-          <Link className="button button--outline button--md" to="/docs/manual" style={{ marginRight: '10px' }}>
-            📖 Manual
-          </Link>
-          <Link className="button button--outline button--md" to="https://github.com/gbmhunter/NinjaTerm">
-            ⭐ GitHub
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
+//         <div className={styles.buttons} style={{ marginTop: '20px' }}>
+//           <Link className="button button--outline button--md" to="/app" style={{ marginRight: '10px' }}>
+//             🖥️ Goto Web App
+//           </Link>
+//           <Link className="button button--outline button--md" to="/docs/manual" style={{ marginRight: '10px' }}>
+//             📖 Manual
+//           </Link>
+//           <Link className="button button--outline button--md" to="https://github.com/gbmhunter/NinjaTerm">
+//             ⭐ GitHub
+//           </Link>
+//         </div>
+//       </div>
+//     </header>
+//   );
+// }
 
 export default function Home(): JSX.Element {
   const { siteConfig } = useDocusaurusContext();
@@ -463,7 +464,9 @@ export default function Home(): JSX.Element {
             </p>
           </div>
 
-          {/* Downloads Section */}
+          {/* ============================================================================================================================================================ */}
+          {/* ALL DOWNLOADS */}
+          {/* ============================================================================================================================================================ */}
           <Grid container size={12} spacing={2} sx={{ marginBottom: '40px' }}>
             <Grid size={12}>
               <Typography style={{ marginBottom: '20px', fontSize: 'clamp(14px, 4vw, 18px)' }}>
@@ -474,13 +477,7 @@ export default function Home(): JSX.Element {
             {/* Windows Downloads */}
             <Grid size={{ xs: 12, md: 6 }}>
               <div
-                style={{
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  height: '100%',
-                }}
+                className={styles.downloadBox}
               >
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                   <img
@@ -512,13 +509,13 @@ export default function Home(): JSX.Element {
                         >
                           {asset.name}
                         </Button>
-                        <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                        <Typography variant="body2" style={{ fontSize: '14px' }}>
                           {asset.name.includes('x64') ? 'For modern Windows computers (64-bit). This works on most Windows PCs made after 2010.' : 'Standard Windows installer'}
                         </Typography>
                       </div>
                     ))}
                 {(!release || release.assets.filter((asset) => asset.name.includes('Setup') && asset.name.endsWith('.exe')).length === 0) && (
-                  <Typography variant="body2" style={{ color: '#888' }}>
+                  <Typography variant="body2">
                     Loading Windows downloads...
                   </Typography>
                 )}
@@ -528,13 +525,7 @@ export default function Home(): JSX.Element {
             {/* macOS Downloads */}
             <Grid size={{ xs: 12, md: 6 }}>
               <div
-                style={{
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  height: '100%',
-                }}
+                className={styles.downloadBox}
               >
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                   <img
@@ -566,7 +557,7 @@ export default function Home(): JSX.Element {
                         >
                           {asset.name}
                         </Button>
-                        <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                        <Typography variant="body2" style={{ fontSize: '14px' }}>
                           {asset.name.includes('arm64')
                             ? 'For Apple Silicon Macs (M1, M2, M3 chips). Choose this if you have a Mac made after late 2020.'
                             : asset.name.includes('x64')
@@ -576,7 +567,7 @@ export default function Home(): JSX.Element {
                       </div>
                     ))}
                 {(!release || release.assets.filter((asset) => asset.name.endsWith('.dmg')).length === 0) && (
-                  <Typography variant="body2" style={{ color: '#888' }}>
+                  <Typography variant="body2">
                     Loading macOS downloads...
                   </Typography>
                 )}
@@ -586,12 +577,7 @@ export default function Home(): JSX.Element {
             {/* Linux Downloads */}
             <Grid size={12}>
               <div
-                style={{
-                  backgroundColor: '#2a2a2a',
-                  border: '1px solid #444',
-                  borderRadius: '8px',
-                  padding: '20px',
-                }}
+                className={styles.downloadBox}
               >
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                   <img
@@ -612,10 +598,10 @@ export default function Home(): JSX.Element {
                 <Grid container spacing={2}>
                   {/* AppImage Downloads */}
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>
+                    <Typography variant="subtitle1" style={{ marginBottom: '10px', color: '#E47F37' }}>
                       AppImage (Recommended)
                     </Typography>
-                    <Typography variant="body2" style={{ color: '#ccc', marginBottom: '15px', fontSize: '14px' }}>
+                    <Typography variant="body2" style={{ marginBottom: '15px', fontSize: '14px' }}>
                       Portable applications that work on most Linux distributions. No installation required - just download, make executable, and run. <code>.AppImage</code> does
                       require FUSE to be installed (<code>sudo apt install fuse</code> on Debian-based distros).
                     </Typography>
@@ -633,7 +619,7 @@ export default function Home(): JSX.Element {
                             >
                               {asset.name}
                             </Button>
-                            <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                            <Typography variant="body2" style={{ fontSize: '14px' }}>
                               {asset.name.includes('arm64')
                                 ? 'For ARM64 computers (Raspberry Pi 4+, some newer laptops with ARM processors)'
                                 : 'For standard Linux computers (x86_64). This works on most Linux PCs and laptops.'}
@@ -644,10 +630,10 @@ export default function Home(): JSX.Element {
 
                   {/* DEB Downloads */}
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography variant="subtitle1" style={{ color: '#fff', marginBottom: '10px' }}>
+                    <Typography variant="subtitle1" style={{ marginBottom: '10px', color: '#E47F37' }}>
                       DEB Packages
                     </Typography>
-                    <Typography variant="body2" style={{ color: '#ccc', marginBottom: '15px', fontSize: '14px' }}>
+                    <Typography variant="body2" style={{ marginBottom: '15px', fontSize: '14px' }}>
                       For Debian-based distributions (Ubuntu, Linux Mint, Elementary OS, etc.). Install with: <code>sudo dpkg -i filename.deb</code>.
                     </Typography>
                     {release &&
@@ -664,7 +650,7 @@ export default function Home(): JSX.Element {
                             >
                               {asset.name}
                             </Button>
-                            <Typography variant="body2" style={{ color: '#ccc', fontSize: '14px' }}>
+                            <Typography variant="body2" style={{ fontSize: '14px' }}>
                               {asset.name.includes('arm64')
                                 ? 'For ARM64 computers (Raspberry Pi 4+, some newer laptops with ARM processors)'
                                 : 'For standard Linux computers (x86_64). This works on most Linux PCs and laptops.'}
@@ -675,7 +661,7 @@ export default function Home(): JSX.Element {
                 </Grid>
 
                 {(!release || release.assets.filter((asset) => asset.name.endsWith('.AppImage') || asset.name.endsWith('.deb')).length === 0) && (
-                  <Typography variant="body2" style={{ color: '#888' }}>
+                  <Typography variant="body2">
                     Loading Linux downloads...
                   </Typography>
                 )}
@@ -685,23 +671,18 @@ export default function Home(): JSX.Element {
             {/* Architecture Help */}
             <Grid size={12}>
               <div
-                style={{
-                  backgroundColor: '#1a1a1a',
-                  border: '1px solid #333',
-                  borderRadius: '8px',
-                  padding: '15px',
-                }}
+                className={styles.helpBox}
               >
                 <Typography variant="h6" style={{ color: '#E47F37', marginBottom: '10px' }}>
                   Not sure which architecture to choose?
                 </Typography>
-                <Typography variant="body2" style={{ color: '#ccc', marginBottom: '8px' }}>
+                <Typography variant="body2" style={{ marginBottom: '8px' }}>
                   <strong>x64/x86_64:</strong> Standard 64-bit processors. This is what most computers use (Intel Core i3/i5/i7, AMD Ryzen, older Macs).
                 </Typography>
-                <Typography variant="body2" style={{ color: '#ccc', marginBottom: '8px' }}>
+                <Typography variant="body2" style={{ marginBottom: '8px' }}>
                   <strong>ARM64:</strong> Newer ARM-based processors. This includes Apple Silicon Macs (M1/M2/M3), Raspberry Pi 4+, and some newer Windows laptops.
                 </Typography>
-                <Typography variant="body2" style={{ color: '#ccc' }}>
+                <Typography variant="body2">
                   <strong>When in doubt:</strong> Try x64 first - it works on most computers. If it doesn't work, then try ARM64.
                 </Typography>
               </div>
@@ -820,6 +801,7 @@ export default function Home(): JSX.Element {
               </li>
               <li>Macros to send repetitive ASCII or HEX data easily.</li>
               <li>Send 200ms "break signals" with Ctrl-Shift-B.</li>
+              <li>Support for standard serial port and TCP socket connections.</li>
             </ul>
           </div>
 
@@ -843,9 +825,9 @@ export default function Home(): JSX.Element {
 
             <p style={{ fontWeight: 'bold', marginBottom: '50px' }}>
               NinjaTerm is developed and maintained by Geoffrey Hunter{' '}
-              <a href="https://twitter.com/gbmhunter" target="_blank">
-                🐦
-              </a>{' '}
+              <IconButton href="https://twitter.com/gbmhunter" target="_blank">
+              <TwitterIcon />
+            </IconButton>{' '}{' '}
               (<a href="https://blog.mbedded.ninja/">blog.mbedded.ninja</a>).
             </p>
           </div>

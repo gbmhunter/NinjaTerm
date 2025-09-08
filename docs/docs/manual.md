@@ -1,20 +1,56 @@
 # NinjaTerm Manual
 
+## Connection Types
+
+NinjaTerm supports two different connection types:
+
+- **Serial port**: This is your standard serial port style connection, which uses your OS drivers to connect to COM ports on Windows and devices such as `/dev/ttyUSB0`, `/dev/ttyACM0`, etc. on Linux and macOS.
+- **Socket**: This is a TCP socket connection, which allows you to connect NinjaTerm to a socket server. This is useful for when you want to connect to a remote device over a network. The remote device could be sending out data directly across the socket, or it could be another development computer running `socat` that is forwarding data from a local serial port.
+
+### Serial Port
+
+The traditional way of using NinjaTerm would be to connect to a local serial port. Most modern computers will not have actual physical serial ports, but will use USB to serial adapters to connect to serial devices. NinjaTerm does not know or care, as they show up as normal serial ports in the operating system. These are `COM` ports on Windows, and `/dev/ttyUSB0`, `/dev/ttyACM0`, etc. on Linux and macOS.
+
+### Socket
+
+NinjaTerm allows you to connect to a TCP socket server, which can be useful for when you want to connect to a remote device over a network. The remote device could be sending out data directly across the socket, or it could be another development computer running `socat` that is forwarding data from a local serial port.
+
+To connect to a socket server, you need to specify the host and port of the socket server. You can do this in the `Connection Configuration` page. For example, if you we connecting to another computer on your local network, you could use something like this:
+
+```
+Host: 192.168.1.100
+Port: 5000
+```
+
+It is more difficult that you would expect to detect when a socket connection is "dropped" (when it's not closed cleanly, e.g. when the ethernet cable is pulled out, or the other side resets without closing the connection first). NinjaTerm makes a best effort to detect this using the node API `socket.setKeepAlive();` function. However, this is not a perfect solution and there are many reports of this keep alive functionality working on some systems but not on others.
+
+```js
+socket.setKeepAlive(true, 1000);
+```
+
+In my limited testing I have found that it detects a dropped connection in about 10-20 seconds.
+
+Also `socket.setTimeout()` is used to set the timeout to 2 seconds during the connection process. It is not used once connection has been made.
+
+```
+socket.setTimeout(2000);
+```
+
 ## ANSI Escape Codes
 
-NinjaTerm supports a number of the most popular ASCII escape codes for manipulating the terminal. They are commonly used for colouring/styling text (e.g. making errors red), moving the cursor around and deleting data (e.g. clearing the screen, or re-writing an existing row). These features are very useful when making interactive prompts.
+NinjaTerm supports a number of the most popular ASCII escape codes for manipulating the terminal. They are commonly used for coloring/styling text (e.g. making errors red), moving the cursor around and deleting data (e.g. clearing the screen, or re-writing an existing row). These features are very useful when making interactive prompts.
 
 ### Erase in Display (ESC[nJ)
 
 The current rows in view are ignored when performing Erase in Display commands, as the user could be viewing old data in the scrollback buffer while the cursor is still at the bottom row of data.
 
-ESC[0J will clear all data from the cursor position to the end of all data.
+`ESC[0J` will clear all data from the cursor position to the end of all data.
 
-ESC[1J will clear all data from the last N rows of data, where N is enough rows to completely fill the view port (e.g. the number of rows in the terminal, ignoring scrollback) up to where the cursor is. This command has no effect if the cursor is not in these last N rows.
+`ESC[1J` will clear all data from the last N rows of data, where N is enough rows to completely fill the view port (e.g. the number of rows in the terminal, ignoring scrollback) up to where the cursor is. This command has no effect if the cursor is not in these last N rows.
 
-ESC[2J (clear entire screen) will insert enough empty, blank rows into the terminal such that the cursor would be at the top right of the view port with a "blank screen" if the user was not looking in the scrollback.
+`ESC[2J` (clear entire screen) will insert enough empty, blank rows into the terminal such that the cursor would be at the top right of the view port with a "blank screen" if the user was not looking in the scrollback.
 
-ESC[3J (clear all data from terminal and scrollback buffer) will delete all data in the terminal and the scrollback buffer. This is the same as pressing the clear button in the terminal view.
+`ESC[3J` (clear all data from terminal and scrollback buffer) will delete all data in the terminal and the scrollback buffer. This is the same as pressing the clear button in the terminal view.
 
 ## Timestamps
 
