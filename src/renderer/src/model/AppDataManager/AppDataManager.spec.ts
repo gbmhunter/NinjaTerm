@@ -69,6 +69,8 @@ describe('app data manager tests', () => {
     const latestCorrectAppData = new AppData();
     expect(wasChanged).toEqual(true);
     expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
+
+
     expect(JSON.stringify(appDataUpdated, replacer))
       .toEqual(JSON.stringify(latestCorrectAppData, replacer));
   });
@@ -81,6 +83,10 @@ describe('app data manager tests', () => {
     const latestCorrectAppData = new AppData();
     expect(wasChanged).toEqual(true);
     expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
+    // Save the updated app data to a file
+    // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
+    // Save latest correct app data to a file
+    // fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
     expect(JSON.stringify(appDataUpdated, replacer))
       .toEqual(JSON.stringify(latestCorrectAppData, replacer));
   });

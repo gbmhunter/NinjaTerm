@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { PortState, ConnectionType } from '../Settings/PortSettings/PortSettings';
+import { PortState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
@@ -344,7 +344,7 @@ export class AppDataManager {
         rootConfig.settings.portSettings.connectionType = ConnectionType.SERIAL_PORT;
         rootConfig.settings.portSettings.socketHost = '127.0.0.1';
         rootConfig.settings.portSettings.socketPort = 5000;
-        rootConfig.settings.portSettings.socketConnTimeoutMs = 5000;
+        rootConfig.settings.portSettings.socketConnTimeoutMs = PortSettings.SOCKET_CONN_TIMEOUT_DEFAULT_MS;
       }
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
         updateProfileConfig(updatedAppData.profiles[i].rootConfig);
