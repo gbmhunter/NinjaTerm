@@ -344,6 +344,7 @@ export class AppDataManager {
         rootConfig.settings.portSettings.connectionType = ConnectionType.SERIAL_PORT;
         rootConfig.settings.portSettings.socketHost = '127.0.0.1';
         rootConfig.settings.portSettings.socketPort = 5000;
+        rootConfig.settings.portSettings.socketConnTimeoutMs = 5000;
       }
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
         updateProfileConfig(updatedAppData.profiles[i].rootConfig);

@@ -6,14 +6,10 @@ import { makeAutoObservable } from 'mobx';
 import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
-import PortSettings from './PortSettings/PortSettings';
+import { PortSettings } from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
-import FakePortsController from 'src/model/FakePorts/FakePortsController';
 import ProfilesSettings from './ProfileSettings/ProfileSettings';
-import { AppDataManager } from '../AppDataManager/AppDataManager';
 import { App } from '../App';
-
-
 
 export enum SettingsCategories {
   CONNECTION_CONFIGURATION,

@@ -94,7 +94,7 @@ export class SerialController {
         this.app.terminals.txTerminal.clearPartialNumberBuffer();
         this.app.terminals.rxTerminal.clearPartialNumberBuffer();
         this.app.terminals.txRxTerminal.clearPartialNumberBuffer();
-        
+
         // Navigate to the terminal pane if option is selected in Port Configuration settings
         if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
           this.app.setShownMainPane(MainPanes.TERMINAL);
@@ -239,7 +239,7 @@ export class SerialController {
 
         // Store the current connection ID for IPC communication
         this.currentSocketConnectionId = result.connectionId!;
-        
+
         // Save socket connection info for reconnection purposes
         this.socketConnectionInfo = { host, port };
 
@@ -483,9 +483,9 @@ export class SerialController {
     const isSocket = this.lastSelectedPortType === PortType.SOCKET;
     const pollingInterval = isSocket ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
     const connectionType = isSocket ? 'socket' : 'port';
-    
+
     console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
-    
+
     this.reconnectionPollingInterval = setInterval(async () => {
       try {
         // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
@@ -503,21 +503,21 @@ export class SerialController {
           }
 
           console.log(`Attempting to reconnect to socket ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}...`);
-          
+
           try {
             // Attempt to reconnect to the socket (this will not show the modal)
             const result = await window.electronAPI.socket.connect({
               host: this.socketConnectionInfo.host,
               port: this.socketConnectionInfo.port
             });
-            
+
             if (result.success) {
               console.log('Socket reconnection successful');
               this.stopPollingForReconnection();
-              
+
               // Store the new connection ID
               this.currentSocketConnectionId = result.connectionId!;
-              
+
               // Set up IPC event listeners for the reconnected socket
               window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
                 if (connectionId === this.currentSocketConnectionId) {
@@ -544,9 +544,9 @@ export class SerialController {
               runInAction(() => {
                 this.portState = PortState.OPENED;
               });
-              
+
               this.app.snackbar.sendToSnackbar(
-                `Automatically reconnected to socket: ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}`, 
+                `Automatically reconnected to socket: ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}`,
                 'success'
               );
             }
@@ -562,14 +562,14 @@ export class SerialController {
             this.stopPollingForReconnection();
             return;
           }
-          
+
           // Check if the port is available
           const result = await window.electronAPI.serial.listPorts();
           if (!result.success) {
             console.error('Failed to list ports during reconnection polling:', result.error);
             return;
           }
-          
+
           const availablePorts = result.ports || [];
           const matchingPort = availablePorts.find(port => port.path === lastUsedPortPath);
           if (matchingPort) {
@@ -753,10 +753,22 @@ export class SerialController {
       // For serial ports, need a selected port
       return this.app.settings.portConfiguration.selectedSerialPort !== null;
     } else if (connectionType === ConnectionType.SOCKET) {
-      // For sockets, need valid host and port
       const host = this.app.settings.portConfiguration.socketHost;
+      if (host === '') {
+        return false;
+      }
+
       const port = this.app.settings.portConfiguration.socketPort;
-      return !!(host && port > 0 && port <= 65535);
+      if (port <= 0 || port > 65535) {
+        return false;
+      }
+
+      // Check if the socket connection timeout is valid
+      if (this.app.settings.portConfiguration.socketConnTimeoutErrorMsg !== '') {
+        return false;
+      }
+
+      return true;
     }
 
     // Unknown connection type
