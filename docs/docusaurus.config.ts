@@ -42,7 +42,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          routeBasePath: '/docs/', // Serve docs at /docs/ path
+          routeBasePath: '/', // Serve docs at root path
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
@@ -68,12 +68,12 @@ const config: Config = {
       },
       items: [
         {
-          to: '/docs/',
-          label: 'Documentation',
+          to: '/manual',
+          label: 'Manual',
           position: 'left',
         },
         {
-          href: '/app',
+          href: 'https://ninjaterm-app.mbedded.ninja/',
           label: 'Web App',
           position: 'left',
         },
@@ -92,11 +92,11 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs/',
+              to: '/',
             },
             {
               label: 'User Manual',
-              to: '/docs/manual',
+              to: '/manual',
             },
           ],
         },
