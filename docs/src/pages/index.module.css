@@ -1,3 +1,13 @@
+/* NinjaTerm brand colors: #DC3545 (red/logo), #E47F37 (orange/buttons) */
+
+:root {
+  --color-background-secondary: #f5f5f5;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --color-background-secondary: #2a2a2a;
+}
 /* Hero section styling */
 .heroBanner {
   padding: 4rem 0;
@@ -91,7 +101,7 @@
   padding: 2rem;
   border: 1px solid var(--ifm-color-primary);
   border-radius: 10px;
-  background: var(--ifm-color-content-secondary);
+  background: #f5f5f5;
 }
 
 .feature h3 {
@@ -102,6 +112,12 @@
 .feature p {
   margin-bottom: 1.5rem;
   line-height: 1.6;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .feature {
+  background: var(--color-background-secondary);
+  border-color: var(--ifm-color-primary-dark);
 }
 
 .videoContainer {
@@ -144,8 +160,30 @@
   }
 }
 
-/* Dark mode adjustments */
-[data-theme='dark'] .feature {
-  background: var(--ifm-background-color);
-  border-color: var(--ifm-color-primary-dark);
+/* Download section boxes */
+.downloadBox {
+  background: var(--color-background-secondary);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 8px;
+  padding: 20px;
+  height: 100%;
+  color: #494949;
+}
+
+
+[data-theme='dark'] .downloadBox {
+  border-color: #444;
+  color: #ccc;
+}
+
+.helpBox {
+  background: var(--ifm-color-emphasis-100);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+[data-theme='dark'] .helpBox {
+  background: #1a1a1a;
+  border-color: #333;
 }

@@ -1,4 +1,4 @@
-<p align="center"><img src="img/logo/v3/github-readme-logo.png" alt="QList" height="200px"></p>
+<p align="center"><img src="img/logo/v3/github-readme-logo.png" alt="The NinjaTerm logo." height="200px"></p>
 
 #### A serial port terminal that's got your back.
 
@@ -15,9 +15,26 @@
 
 ## Install
 
-NinjaTerm is now a PWA (Progressive Web App). Just visit [https://ninjaterm.mbedded.ninja](https://ninjaterm.mbedded.ninja) to open the app. Click the install button if you want to install in locally and be able to use it offline.
+If you want to use NinjaTerm, visit the [NinjaTerm homepage](https://ninjaterm.mbedded.ninja) to download the desktop application or use the older web-based version (the web-based version is no longer being updated).
+
+From the homepage there are also links to the [NinjaTerm manual](https://ninjaterm.mbedded.ninja/docs/manual/).
 
 You can also access older versions of NinjaTerm at [GitHub Releases](https://github.com/gbmhunter/NinjaTerm/releases).
+
+The rest of this README is for developers who want to contribute to NinjaTerm.
+
+## Directory Structure
+
+Below is the directory structure of this repository:
+
+```
+ninjaterm/
+├── arduino-serial/ # Contains Arduino sketches for testing the serial port
+├── docs/ # Contains Docusaurus website which contains the homepage, installation guide and manual. Self-contained node project.
+├── src/ # Contains the Electron application code.
+├── tests/ # Contains the end-to-end tests using Playwright.
+├── web/ # Contains the web-based version of NinjaTerm. Self-contained node project.
+```
 
 ## Development
 
@@ -27,10 +44,10 @@ Clone this repo. Then run `npm install` to install dependencies:
 npm install
 ```
 
-Start the app in the `dev` environment:
+Start electron for development:
 
 ```bash
-npm run start
+npm run dev
 ```
 
 ## To Build The App
@@ -93,7 +110,28 @@ Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automat
 
 ## Web App
 
-NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. This also contains the homepage for NinjaTerm, which includes links to the downloaded electron apps and a link to open up the web version of NinjaTerm. The `web` directory is a project in it's own right, see it's `README.md` for more details.
+NinjaTerm used to be a progressive web app (PWA). This older web app is now located in the `web` directory. The `web` directory is a project in it's own right, see it's `README.md` for more details.
+
+This is no longer being updated and is in maintenance mode only.
+
+The web app is deployed by Netlify to `ninjaterm-app.mbedded.ninja`.
+
+### styled_default is not a function
+
+If you get the following error in the web app:
+
+```
+Grid2.js:7 Uncaught TypeError: styled_default is not a function
+    at Grid2.js:7:26
+```
+
+Comment out the line:
+
+```
+include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
+```
+
+in `vite.config.ts`. This should fix it. You can then uncomment the line again. Toggling this seems to fix this bug, which after reading online might be due to Vite.
 
 ## Graphing
 
@@ -122,23 +160,6 @@ In FontCreator, make sure the setting _Tools->Options->Fonts->Exclude unused gly
 
 * `#DC3545` (red): Primary colour, used for logo.
 * `#E47F37` (orange): Secondary colour, used for buttons on homepage.
-
-## styled_default is not a function
-
-If you get the error:
-
-```
-Grid2.js:7 Uncaught TypeError: styled_default is not a function
-    at Grid2.js:7:26
-```
-
-Comment out the line:
-
-```
-include: ['@mui/material/Tooltip', '@emotion/styled', '@mui/material/Unstable_Grid2'],
-```
-
-in `vite.config.ts`. This should fix it. You can then uncomment the line again. Toggling this seems to fix this bug, which after reading online might be due to Vite.
 
 ## Saving App Data
 
