@@ -566,6 +566,43 @@ function PortSettingsView(props: Props) {
             </Tooltip>
           </div>
 
+          {/* ============================================================== */}
+          {/* SOCKET CONNECTION TIMEOUT */}
+          {/* ============================================================== */}
+          <Tooltip
+            {...BASIC_TOOLTIP_SETTINGS}
+            title={`The timeout for the socket connection in milliseconds. If the connection is not established within this time, the attempt will be aborted. Must be between ${PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS} and ${PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS} (inclusive).`}
+          >
+            <TextField
+              label="Connection timeout (ms)"
+              value={app.settings.portConfiguration.socketConnTimeoutDispMs}
+              disabled={app.serialController.portState !== PortState.CLOSED}
+              error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
+              helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
+              onChange={(e) => {
+                app.settings.portConfiguration.setSocketConnTimeoutDispMs(e.target.value);
+              }}
+              onKeyDown={async (e) => {
+                if (e.key === 'Enter') {
+                  // Apply timeout
+                  await app.settings.portConfiguration.applySocketConnTimeout();
+                }
+                // Prevent the global keydown event from being triggered
+                e.stopPropagation();
+              }}
+              onBlur={async () => {
+                // Apply timeout
+                await app.settings.portConfiguration.applySocketConnTimeout();
+              }}
+              sx={{ width: 180, marginTop: '30px' }}
+              size="small"
+              inputProps={{
+                min: PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS,
+                max: PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS
+              }}
+            />
+          </Tooltip>
+
           <div id="socket-open-close-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
             {/* =============================================================== */}
             {/* OPEN/CLOSE BUTTON FOR SOCKET */}
@@ -608,42 +645,6 @@ function PortSettingsView(props: Props) {
               Status: {PortState[app.serialController.portState]}
             </Typography>
           </div>
-          {/* ============================================================== */}
-          {/* SOCKET CONNECTION TIMEOUT */}
-          {/* ============================================================== */}
-          <Tooltip
-            {...BASIC_TOOLTIP_SETTINGS}
-            title={`The timeout for the socket connection in milliseconds. If the connection is not established within this time, the attempt will be aborted. Must be between ${PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS} and ${PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS} (inclusive).`}
-          >
-            <TextField
-              label="Connection timeout (ms)"
-              value={app.settings.portConfiguration.socketConnTimeoutDispMs}
-              disabled={app.serialController.portState !== PortState.CLOSED}
-              error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
-              helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
-              onChange={(e) => {
-                app.settings.portConfiguration.setSocketConnTimeoutDispMs(e.target.value);
-              }}
-              onKeyDown={async (e) => {
-                if (e.key === 'Enter') {
-                  // Apply timeout
-                  await app.settings.portConfiguration.applySocketConnTimeout();
-                }
-                // Prevent the global keydown event from being triggered
-                e.stopPropagation();
-              }}
-              onBlur={async () => {
-                // Apply timeout
-                await app.settings.portConfiguration.applySocketConnTimeout();
-              }}
-              sx={{ width: 180, marginTop: '30px' }}
-              size="small"
-              inputProps={{
-                min: PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS,
-                max: PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS
-              }}
-            />
-          </Tooltip>
         </div>
       )}
 
