@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Improved the unit tests which check the app data upgrade logic.
+
 ## [5.5.0] - 2025-09-08
 
 ### Added

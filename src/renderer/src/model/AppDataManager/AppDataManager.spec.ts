@@ -29,6 +29,40 @@ const replacer = (key: string, value: any) =>
       }, {}) :
       value;
 
+/**
+ * Helper function for the app data upgrade tests. This upgrades the provided app data that should have been read from disk to the latest version and compares it with a freshly created app data object to make sure they are the same.
+ * @param savedAppData App data which has been read from disk. It must be the default app data, i.e. not modified by the user in any way.
+ */
+function updateAndCompare(savedAppData: any) {
+  const app = new App();
+  const appDataManager = new AppDataManager(app);
+
+  const savedAppVersion = savedAppData.version;
+  let {appData: savedAndUpdatedAppData, wasChanged} = appDataManager._updateAppData(savedAppData);
+  let latestCorrectAppData = new AppData();
+  const latestAppDataVersion = latestCorrectAppData.version;
+  // v10 adds a ["settings"]["logSettings"]["logDirectory"] path in each profile which is specific to the user's machine because it the default directory
+  // includes the users home directory (e.g. "logDirectory": "C:\\Users\\geoff\\NinjaTerm\\logs")
+  // We need to overwrite these paths before comparing
+  function userSpecificReplacer(appData: AppData) {
+    for (let i = 0; i < appData.profiles.length; i++) {
+      appData.profiles[i].rootConfig.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
+    }
+    appData.currentAppConfig.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
+    return appData;
+  }
+  savedAndUpdatedAppData = userSpecificReplacer(savedAndUpdatedAppData);
+  latestCorrectAppData = userSpecificReplacer(latestCorrectAppData);
+
+  // If the app data saved to disk is older than the latest version, we expect the app data to be updated
+  if (savedAppVersion !== latestAppDataVersion) {
+    expect(wasChanged).toEqual(true);
+  }
+  expect(savedAndUpdatedAppData.version).toEqual(latestCorrectAppData.version);
+  expect(JSON.stringify(savedAndUpdatedAppData, replacer))
+    .toEqual(JSON.stringify(latestCorrectAppData, replacer));
+}
+
 describe('app data manager tests', () => {
   test('default profile should be created', () => {
     const app = new App();
@@ -45,49 +79,18 @@ describe('app data manager tests', () => {
     expect(profileManager.appData.profiles[1].name).toEqual('New profile 1');
   });
 
-  // v1 to v2 upgrade test doesn't work, not sure why?
-  // test('app data can be upgraded from v1', () => {
-  //   const app = new App();
-  //   const appDataManager = new AppDataManager(app);
-  //   const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v1-app-v4.18.0.json', 'utf8'));
-  //   const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV2);
-  //   const latestCorrectAppData = new AppData();
-  //   expect(wasChanged).toEqual(true);
-  //   expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
-  //   // Save the updated app data to a file
-  //   fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
-  //   // Save latest correct app data to a file
-  //   fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
-  //   expect(JSON.stringify(appDataUpdated, replacer)).toEqual(JSON.stringify(latestCorrectAppData, replacer));
-  // });
-
   test('app data can be upgraded from v2', () => {
-    const app = new App();
-    const appDataManager = new AppDataManager(app);
-    const appDataV2 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0-default.json', 'utf8'));
-    const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV2);
-    const latestCorrectAppData = new AppData();
-    expect(wasChanged).toEqual(true);
-    expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
-
-
-    expect(JSON.stringify(appDataUpdated, replacer))
-      .toEqual(JSON.stringify(latestCorrectAppData, replacer));
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v2-app-v4.19.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
   });
 
   test('app data can be upgraded from v8', () => {
-    const app = new App();
-    const appDataManager = new AppDataManager(app);
-    const appDataV3 = JSON.parse(fs.readFileSync('./local-storage-data/appData-v8-app-v5.4.0-default.json', 'utf8'));
-    const {appData: appDataUpdated, wasChanged} = appDataManager._updateAppData(appDataV3);
-    const latestCorrectAppData = new AppData();
-    expect(wasChanged).toEqual(true);
-    expect(appDataUpdated.version).toEqual(latestCorrectAppData.version);
-    // Save the updated app data to a file
-    // fs.writeFileSync('./local-storage-data/updated.json', JSON.stringify(appDataUpdated, replacer, 2));
-    // Save latest correct app data to a file
-    // fs.writeFileSync('./local-storage-data/latest-correct.json', JSON.stringify(latestCorrectAppData, replacer, 2));
-    expect(JSON.stringify(appDataUpdated, replacer))
-      .toEqual(JSON.stringify(latestCorrectAppData, replacer));
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v8-app-v5.4.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
+  });
+
+  test('app data can be upgraded from v10', () => {
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v10-app-v5.5.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
   });
 });
