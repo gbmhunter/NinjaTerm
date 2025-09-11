@@ -60,6 +60,14 @@ export default class DisplaySettings {
 
   autoScrollLockOnTx: boolean = true;
 
+  // Tooltip settings
+  static DEFAULT_TOOLTIP_DELAY_MS = 1000;
+  static DEFAULT_TOOLTIPS_ENABLED = true;
+  tooltipsEnabled: boolean = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
+  tooltipDelayMs = new ApplyableNumberField(
+    DisplaySettings.DEFAULT_TOOLTIP_DELAY_MS.toString(),
+    z.coerce.number().int().min(0).max(5000));
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this.charSizePx.setOnApplyChanged(() => this._saveConfig());
@@ -71,6 +79,7 @@ export default class DisplaySettings {
     this.defaultTxTextColor.setOnApplyChanged(() => this._saveConfig());
     this.defaultRxTextColor.setOnApplyChanged(() => this._saveConfig());
     this.tabStopWidth.setOnApplyChanged(() => this._saveConfig());
+    this.tooltipDelayMs.setOnApplyChanged(() => this._saveConfig());
 
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {
@@ -99,6 +108,34 @@ export default class DisplaySettings {
     this._saveConfig();
   };
 
+  setTooltipsEnabled = (value: boolean) => {
+    this.tooltipsEnabled = value;
+    this._saveConfig();
+  };
+
+  /**
+   * Get the basic dynamic tooltip configuration. This takes into account the user's tooltip preferences, which includes whether tooltips are enabled and the delay time.
+   * @returns The tooltip configuration.
+   */
+  getBasicTooltipConfig = () => {
+    if (!this.tooltipsEnabled) {
+      // Technically only disableHoverListener should be needed to be true, but set all of these just in case
+      return {
+        title: '',
+        disableHoverListener: true,
+        disableFocusListener: true,
+        disableTouchListener: true,
+      };
+    }
+
+    return {
+      arrow: true,
+      enterDelay: this.tooltipDelayMs.appliedValue,
+      enterNextDelay: 100,
+      leaveDelay: 50,
+    };
+  };
+
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -114,6 +151,8 @@ export default class DisplaySettings {
     config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
     config.tabStopWidth = this.tabStopWidth.appliedValue;
     config.autoScrollLockOnTx = this.autoScrollLockOnTx;
+    config.tooltipsEnabled = this.tooltipsEnabled;
+    config.tooltipDelayMs = this.tooltipDelayMs.appliedValue;
 
     this.profileManager.saveAppData();
   };
@@ -142,5 +181,8 @@ export default class DisplaySettings {
     this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
     this.tabStopWidth.apply({notify: false});
     this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx === undefined ? true : configToLoad.autoScrollLockOnTx;
+    this.tooltipsEnabled = configToLoad.tooltipsEnabled === undefined ? true : configToLoad.tooltipsEnabled;
+    this.tooltipDelayMs.setDispValue(configToLoad.tooltipDelayMs?.toString() || '500');
+    this.tooltipDelayMs.apply({notify: false});
   };
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added the ability to globally disable tooltips and change the entry delay time. Both of these settings can be found in the Settings->Display view.
+
 ### Changed
 
 - Improved the unit tests which check the app data upgrade logic.

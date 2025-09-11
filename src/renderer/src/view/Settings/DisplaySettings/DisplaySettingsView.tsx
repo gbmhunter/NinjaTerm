@@ -70,6 +70,7 @@ export default observer((props: Props) => {
       {/* CHAR SIZE */}
       {/* =============================================================================== */}
       <Tooltip
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
         title="The font size (in pixels) of characters displayed in the terminal."
         followCursor
         arrow
@@ -94,7 +95,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data."
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <ApplyableTextFieldView
           id="outlined-basic"
@@ -115,7 +116,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="The max. number of characters to display per line in the terminal before wrapping to the next line. Must be a positive integer. New line characters also cause text to jump to the next line."
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <ApplyableTextFieldView
           id="outlined-basic"
@@ -139,7 +140,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="Determines how the terminal height is set (excluding scrollback). When set to auto, the terminal height will be automatically set to the max. number of whole rows that can fit in the terminal height (and it will change as the window height changes). When set to fixed, the terminal height will be set to the number of rows specified in the terminal height field below. Sometimes fixed is needed for compatibility with certain terminal applications. This setting has implications for ASCII escape codes just as Erase in Display."
         placement="right"
-        enterDelay={500}
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <FormControl
           sx={{ minWidth: 160, marginBottom: '20px' }}
@@ -169,7 +170,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="Sets the terminal height (in terms of number of chars a.k.a. rows) when the terminal height mode is set to fixed. Must be a positive integer between 1 and 100."
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <ApplyableTextFieldView
           id="outlined-basic"
@@ -193,7 +194,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="The number of spaces for each tab stop. When a tab character is received, the cursor will move to the next tab stop. Must be an integer between 1 and 16. A line will not wrap due to receiving tab characters, the cursor will stay at the end of the line."
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <ApplyableTextFieldView
           id="outlined-basic"
@@ -218,7 +219,7 @@ export default observer((props: Props) => {
         title="The max. number of rows to store in any terminal scrollback buffer (TX, RX, TX/RX).
         Increasing this will give you more history but decrease performance and increase memory usage. Must be a positive non-zero integer."
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <ApplyableTextFieldView
           name="scrollbackBufferSizeRows"
@@ -241,7 +242,7 @@ export default observer((props: Props) => {
       <Tooltip
         title="Automatically jump to the bottom of the terminal and scroll lock when you type TX data into a terminal."
         placement="right"
-        enterDelay={500}
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <FormControlLabel
           control={
@@ -253,18 +254,74 @@ export default observer((props: Props) => {
             />
           }
           label="Auto Scroll Lock on TX"
-          sx={{ marginBottom: '20px' }}
+          sx={{
+            marginBottom: '20px',
+            width: 'fit-content', // Fit content is needed so that the checkbox does not take up the entire width of the parent
+          }}
+        />
+      </Tooltip>
+
+      <FormLabel sx={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '10px', marginTop: '20px', display: 'block' }}>
+        Tooltips
+      </FormLabel>
+
+      {/* =============================================================================== */}
+      {/* ENABLE TOOLTIPS */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="Enable or disable tooltips globally throughout the application. Disabling them might be useful if you know what you are doing and you find they are just getting in the way."
+        placement="right"
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+      >
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={app.settings.displaySettings.tooltipsEnabled}
+              onChange={(e) => {
+                app.settings.displaySettings.setTooltipsEnabled(e.target.checked);
+              }}
+            />
+          }
+          label="Enable Tooltips"
+          sx={{
+            marginBottom: '20px',
+            width: 'fit-content', // Fit content is needed so that the checkbox does not take up the entire width of the parent
+          }}
+        />
+      </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* TOOLTIP DELAY */}
+      {/* =============================================================================== */}
+      <Tooltip
+        title="The delay time (in milliseconds) before tooltips are shown when hovering over elements. Must be between 0 and 5000ms. You can increase this if you find the tooltips are appearing too soon and getting in the way. Another option is to disable tooltips entirely."
+        placement="right"
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+      >
+        <ApplyableTextFieldView
+          id="outlined-basic"
+          name="tooltipDelayMs"
+          label="Tooltip Delay"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            endAdornment: <InputAdornment position="start">ms</InputAdornment>,
+            disabled: !app.settings.displaySettings.tooltipsEnabled,
+          }}
+          applyableTextField={app.settings.displaySettings.tooltipDelayMs}
+          sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
 
       {/* =============================================================================== */}
       {/* DATA VIEW CONFIGURATION */}
       {/* =============================================================================== */}
+      <FormLabel sx={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '10px', marginTop: '20px', display: 'block' }}>Data View Configuration</FormLabel>
       <Tooltip
         title="Control whether a combined TX/RX terminal or two separate terminals are displayed."
         placement="top"
         followCursor
-        arrow
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
       >
         <FormControl size="small" sx={{ minWidth: "210px" }}>
           <InputLabel>Data View Configuration</InputLabel>
@@ -292,7 +349,9 @@ export default observer((props: Props) => {
       {/* =============================================================================== */}
       {/* COLOR SETTINGS */}
       {/* =============================================================================== */}
-      <BorderedSection title="Color Settings" childStyle={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <FormLabel sx={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '10px', marginTop: '20px', display: 'block' }}>Color Settings</FormLabel>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <FormLabel style={{ marginTop: '10px' }}>The default colours for the terminal background, TX text, and RX text. If ANSI escape code parsing is enabled, these default colours may be overridden by data.
           <br />
           Click on the coloured square to change the colour.
@@ -428,7 +487,7 @@ export default observer((props: Props) => {
         >
           Set RX color equal to TX
         </Button>
-      </BorderedSection>
+      </div>
 
       {/* <Popover
         open={bgColorPickerOpen}

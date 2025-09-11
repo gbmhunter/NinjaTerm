@@ -215,7 +215,7 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
 const PortStatusIndicator = observer(({ app }: { app: App }) => {
   const getStatusText = (portState: PortState, connectionType: ConnectionType) => {
     const connectionTypeName = connectionType === ConnectionType.SOCKET ? 'Socket' : 'Port';
-    
+
     switch (portState) {
       case PortState.CLOSED:
         return `${connectionTypeName} CLOSED`;
@@ -261,7 +261,7 @@ const MainPaneSelector = observer(({ app }: { app: App }) => {
   }
 });
 
-const AppView = (props: Props) => {
+const AppView = observer((props: Props) => {
   useEffect(() => {
     // Initialize the app after it has rendered
     const initFn = async () => {
@@ -334,7 +334,7 @@ const AppView = (props: Props) => {
           {/* ==================================================== */}
           {/* TERMINAL BUTTON */}
           {/* ==================================================== */}
-          <Tooltip title="Show the terminal" placement="right" enterDelay={500} arrow>
+          <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Show the terminal" placement="right">
             <IconButton
               onClick={() => {
                 app.setShownMainPane(MainPanes.TERMINAL);
@@ -349,7 +349,7 @@ const AppView = (props: Props) => {
           {/* ==================================================== */}
           {/* SETTINGS BUTTON */}
           {/* ==================================================== */}
-          <Tooltip title="Show settings." placement="right" enterDelay={500} arrow>
+          <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Show settings." placement="right">
             <IconButton
               onClick={() => {
                 app.setShownMainPane(MainPanes.SETTINGS);
@@ -364,7 +364,7 @@ const AppView = (props: Props) => {
           {/* ==================================================== */}
           {/* GRAPHING BUTTON */}
           {/* ==================================================== */}
-          <Tooltip title="Show the graphing pane." placement="right" enterDelay={500} arrow>
+          <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Show the graphing pane." placement="right">
             <IconButton
               onClick={() => {
                 app.setShownMainPane(MainPanes.GRAPHING);
@@ -378,7 +378,7 @@ const AppView = (props: Props) => {
           {/* ==================================================== */}
           {/* LOGGING BUTTON */}
           {/* ==================================================== */}
-          <Tooltip title="Show the logging pane." placement="right" enterDelay={500} arrow>
+          <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Show the logging pane." placement="right">
             <IconButton
               onClick={() => {
                 app.setShownMainPane(MainPanes.LOGGING);
@@ -456,6 +456,6 @@ const AppView = (props: Props) => {
       </div>
     </ThemeProvider>
   );
-};
+});
 
 export default AppView;

@@ -5,7 +5,7 @@ import { App } from '../App';
 import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
 import { Profile } from './DataClasses/Profile';
-import { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
+import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { PortInfo } from '@serialport/bindings-interface';
@@ -337,6 +337,9 @@ export class AppDataManager {
       wasChanged = true;
     }
 
+    //=============================================================================
+    // VERSION 9 -> VERSION 10
+    //=============================================================================
     if (updatedAppData.version === 9) {
       console.log('Updating app data from version 9 to version 10...');
       // Add socket connection settings to port configuration
@@ -354,12 +357,31 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 10) {
+    //=============================================================================
+    // VERSION 10 -> VERSION 11
+    //=============================================================================
+    if (updatedAppData.version === 10) {
+      console.log('Updating app data from version 10 to version 11...');
+      // Add tooltip settings to display settings for all profiles
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.displaySettings.tooltipsEnabled = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
+        rootConfig.settings.displaySettings.tooltipDelayMs = DisplaySettings.DEFAULT_TOOLTIP_DELAY_MS;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 11;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 11) {
       console.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;
     }
 
+    console.log('Updated app data to latest version.');
     return { appData: updatedAppData, wasChanged };
   }
 

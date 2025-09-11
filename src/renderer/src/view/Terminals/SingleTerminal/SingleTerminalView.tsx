@@ -235,8 +235,8 @@ export default observer((props: Props) => {
         {/* CLIPBOARD COPY BUTTON */}
         {/* ======================================================= */}
         <Tooltip
-          title="Copy all the text in this terminal (including the scrollback buffer) to the clipboard."
-          enterNextDelay={1000}>
+          {...displaySettings.getBasicTooltipConfig()}
+          title="Copy all the text in this terminal (including the scrollback buffer) to the clipboard.">
         <IconButton
           onClick={() => {
             terminal.copyAllTextToClipboard();
