@@ -89,8 +89,7 @@ function ProfileSettingsView(props: Props) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         <Tooltip
           title="Loads the configuration saved in the selected profile above and applies it to the app. If there is a saved serial port and it is still available, it will be connected to."
-          enterDelay={500}
-          arrow
+          {...profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
         >
           <div>
             <Button
@@ -107,7 +106,7 @@ function ProfileSettingsView(props: Props) {
           </div>
         </Tooltip>
 
-        <Tooltip title="Saves the current app state to the selected profile above." enterDelay={500} arrow>
+        <Tooltip title="Saves the current app state to the selected profile above." {...profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
           <div>
             <Button
               variant="contained"
@@ -126,7 +125,7 @@ function ProfileSettingsView(props: Props) {
         {/* =============================================================================== */}
         {/* PROFILE NAME */}
         {/* =============================================================================== */}
-        <Tooltip title="Use this to rename the selected profile's name." enterDelay={500} arrow>
+        <Tooltip title="Use this to rename the selected profile's name." {...profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
           <div>
             <TextField
               label="Profile name"
@@ -147,7 +146,7 @@ function ProfileSettingsView(props: Props) {
       <div style={{ height: 20 }} />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        <Tooltip title="Creates a new profile with the current app configuration saved to it." enterDelay={500} arrow>
+        <Tooltip title="Creates a new profile with the current app configuration saved to it." {...profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
           <Button
             variant="contained"
             color="primary"
@@ -160,7 +159,7 @@ function ProfileSettingsView(props: Props) {
           </Button>
         </Tooltip>
 
-        <Tooltip title="Deletes the selected profile above." enterDelay={500} arrow>
+        <Tooltip title="Deletes the selected profile above." {...profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
           <div>
             <Button
               variant="contained"

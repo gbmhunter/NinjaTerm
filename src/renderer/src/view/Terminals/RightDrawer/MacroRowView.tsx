@@ -36,13 +36,17 @@ export default observer((props: Props) => {
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <span style={{ paddingRight: '5px' }}>{macro.name}</span>
-      <Tooltip title="The selected data type for this macro. A = ASCII, H = HEX.">
+      <Tooltip
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+        title="The selected data type for this macro. A = ASCII, H = HEX.">
         <span style={{ paddingRight: '5px', color: dataTypeColor }}>{dataTypeShort}</span>
       </Tooltip>
       {/* ================================================ */}
       {/* MACRO DATA */}
       {/* ================================================ */}
-      <Tooltip title="The data to send for this macro." enterDelay={500} arrow>
+      <Tooltip
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+        title="The data to send for this macro.">
         <TextField
           size="small"
           variant="outlined"
@@ -64,7 +68,9 @@ export default observer((props: Props) => {
       {/* ================================================ */}
       {/* MACRO SEND BUTTON */}
       {/* ================================================ */}
-      <Tooltip title="Send the data to the serial port." enterDelay={500} arrow>
+      <Tooltip
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+        title="Send the data to the serial port.">
         <span>
           {/* The span is a hack to get the tooltip to work when the button is disabled */}
           <IconButton
@@ -84,7 +90,9 @@ export default observer((props: Props) => {
       {/* ================================================ */}
       {/* MACRO MORE SETTINGS BUTTON */}
       {/* ================================================ */}
-      <Tooltip title="More settings for this macro." enterDelay={0} arrow>
+      <Tooltip
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+        title="More settings for this macro.">
         <IconButton
           aria-label="more-settings-for-macro"
           size="small"

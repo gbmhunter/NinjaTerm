@@ -130,7 +130,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
             title="The two common ways of new terminal rows being created is either by receiving a LF char, or by running out of columns in the terminal, and the text wrapping onto a new row. When enabled, LF will not be added to the clipboard if the row was created due to wrapping. You generally want this enabled so that you can paste large chunks of received data into an external program without getting new lines inserted where they weren't in the original data."
             placement="top"
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControlLabel
               control={
@@ -150,7 +150,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
             title="You usually want this enabled, as when copying text TO the clipboard on Windows, LF is automatically replaced with CRLF. So this will undo that operation when pasting, meaning you can copy terminal text and then paste it and get the same data."
             placement="top"
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControlLabel
               control={
@@ -182,7 +182,7 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
             title="When enabled, NinjaTerm will automatically check for updates on startup. When disabled, you can still manually check for updates using the button below."
             placement="top"
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControlLabel
               control={

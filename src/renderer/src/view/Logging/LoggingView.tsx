@@ -116,7 +116,7 @@ export default observer((props: Props) => {
               <Tooltip
                 title="Names the file with the current datetime at the moment logging is started."
                 placement="right"
-                arrow
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   value={WhatToNameTheFile.CURRENT_DATETIME}
@@ -130,7 +130,7 @@ export default observer((props: Props) => {
               <Tooltip
                 title="Use a custom filename as defined below."
                 placement="right"
-                arrow
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   value={WhatToNameTheFile.CUSTOM}
@@ -188,7 +188,7 @@ export default observer((props: Props) => {
               <Tooltip
                 title="Appends data to the end of the existing file."
                 placement="right"
-                arrow
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   value={ExistingFileBehaviors.APPEND}
@@ -200,7 +200,7 @@ export default observer((props: Props) => {
               <Tooltip
                 title="Overwrites an existing file with the same name."
                 placement="right"
-                arrow
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   value={ExistingFileBehaviors.OVERWRITE}
@@ -216,7 +216,7 @@ export default observer((props: Props) => {
           title="What To Log?"
           childStyle={{ display: "flex", flexDirection: "column" }}
         >
-          <Tooltip title="Log the raw bytes being received from the serial port to the log file.">
+          <Tooltip title="Log the raw bytes being received from the serial port to the log file." {...app.settings.displaySettings.getBasicTooltipConfig()}>
             <FormControlLabel
               control={
                 <Checkbox
@@ -230,7 +230,7 @@ export default observer((props: Props) => {
               label="Raw TX data"
             />
           </Tooltip>
-          <Tooltip title="Log the raw bytes being sent out the serial port to the log file.">
+          <Tooltip title="Log the raw bytes being sent out the serial port to the log file." {...app.settings.displaySettings.getBasicTooltipConfig()}>
             <FormControlLabel
               control={
                 <Checkbox

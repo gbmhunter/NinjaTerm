@@ -44,7 +44,6 @@ import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps
 import { SettingsCategories } from '@/model/Settings/Settings';
 import FlowControlView from './FlowControlView';
 import { CustomAccordionSummary } from './CustomAccordionSummary';
-import { BASIC_TOOLTIP_SETTINGS } from '@/view/SharedConfig';
 
 interface Props {
   app: App;
@@ -150,7 +149,7 @@ export default observer((props: Props) => {
               {/* BAUD RATE */}
               {/* ============================================================== */}
               <Tooltip
-                {...BASIC_TOOLTIP_SETTINGS}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
                 title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
                 placement="left"
               >
@@ -190,7 +189,7 @@ export default observer((props: Props) => {
               {/* NUM. DATA BITS */}
               {/* ============================================================== */}
               <Tooltip
-                {...BASIC_TOOLTIP_SETTINGS}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
                 title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
               >
                 <FormControl sx={{ mt: 1, minWidth: 160 }} size="small">
@@ -217,7 +216,7 @@ export default observer((props: Props) => {
               {/* PARITY */}
               {/* ============================================================== */}
               <Tooltip
-                {...BASIC_TOOLTIP_SETTINGS}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
                 title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
                 placement="left"
               >
@@ -245,7 +244,7 @@ export default observer((props: Props) => {
               {/* STOP BITS */}
               {/* ============================================================== */}
               <Tooltip
-                {...BASIC_TOOLTIP_SETTINGS}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
                 title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
                 placement="left"
               >
@@ -376,7 +375,7 @@ export default observer((props: Props) => {
               <div style={{ marginTop: 16, marginBottom: 16 }}>
                 <Tooltip
                   title="Check this if you want to be able to quickly change serial port settings when the port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again."
-                  {...BASIC_TOOLTIP_SETTINGS}
+                  {...app.settings.displaySettings.getBasicTooltipConfig()}
                   placement="left"
                 >
                   <FormControlLabel
@@ -473,7 +472,7 @@ export default observer((props: Props) => {
             {/* DATA VIEW CONFIGURATION */}
             {/* ======================================================= */}
             <Tooltip
-              {...BASIC_TOOLTIP_SETTINGS}
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
               title={
                 <div>
                   Controls how to display the TX and RX data. Different use cases require different view configurations.
@@ -515,7 +514,7 @@ export default observer((props: Props) => {
               {/* CHAR SIZE */}
               {/* =============================================================================== */}
               <Tooltip
-                {...BASIC_TOOLTIP_SETTINGS}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
                 title="The font size (in pixels) of characters displayed in the terminal."
                 placement="left"
               >
@@ -552,7 +551,7 @@ export default observer((props: Props) => {
             {/* SEND BREAK BUTTON */}
             {/* ==================================================================== */}
             <Tooltip
-              {...BASIC_TOOLTIP_SETTINGS}
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
               title="Click this to send the break signal for 200ms to the serial port."
               placement="left"
             >

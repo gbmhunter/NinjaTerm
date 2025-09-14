@@ -61,11 +61,11 @@ export default observer((props: Props) => {
               }}
             >
               {/* ASCII */}
-              <Tooltip title="Treat the data as ASCII." placement="right" arrow enterDelay={500}>
+              <Tooltip title="Treat the data as ASCII." placement="right" {...app.settings.displaySettings.getBasicTooltipConfig()}>
                 <FormControlLabel value={MacroDataType.ASCII} control={<Radio data-testid={'macro-data-type-ascii-rb'} />} label="ASCII" />
               </Tooltip>
               {/* HEX */}
-              <Tooltip title="Treat the data as HEX." placement="right" arrow enterDelay={500}>
+              <Tooltip title="Treat the data as HEX." placement="right" {...app.settings.displaySettings.getBasicTooltipConfig()}>
                 <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
@@ -95,8 +95,7 @@ export default observer((props: Props) => {
               {/* ================================================================= */}
               <Tooltip
                 title='If enabled, and the data type is ASCII, the text will be processed for escape characters (by calling JSON.parse()). This means you can use things like "\n" to insert a LF character (0x0A) and "\r" to insert a CR character (0x0D).'
-                arrow
-                enterDelay={500}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   disabled={macro.dataType !== MacroDataType.ASCII}
@@ -125,8 +124,7 @@ export default observer((props: Props) => {
                     You can also change the "On Enter" sequence below.
                   </div>
                 }
-                arrow
-                enterDelay={500}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   control={
@@ -153,9 +151,8 @@ export default observer((props: Props) => {
                     This is the same setting as in the TX Settings view.
                   </div>
                 }
-                arrow
                 placement="right"
-                enterDelay={500}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControl sx={{ m: 1, minWidth: 160 }} size="small" disabled={macro.dataType !== MacroDataType.ASCII || !macro.sendOnEnterValueForEveryNewLineInTextBox}>
                   <InputLabel>On Enter Value</InputLabel>
@@ -190,8 +187,7 @@ export default observer((props: Props) => {
               {/* ================================================================= */}
               <Tooltip
                 title="If ticked, a break signal will be sent at the end of every line of hex in the macro data. This can be useful if the device you are talking to uses the break signal to frame raw data."
-                arrow
-                enterDelay={500}
+                {...app.settings.displaySettings.getBasicTooltipConfig()}
               >
                 <FormControlLabel
                   control={
@@ -222,8 +218,7 @@ export default observer((props: Props) => {
               If HEX, only the characters 0-9 and A-F, spaces and new lines are allowed. There must be an even number of characters as to make up a complete number of bytes (e.g. 08 A2 FF). If the "Send break at end of every line of hex" checkbox is ticked, each line has to contain an even number of characters rather than just the whole textbox.
             </div>
           }
-          enterDelay={500}
-          arrow
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
         >
           <TextField
             variant="outlined"

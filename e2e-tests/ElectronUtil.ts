@@ -84,7 +84,7 @@ export class ElectronAppTestHarness {
       launchOptions.args.push('--no-first-run');
       launchOptions.args.push('--disable-features=TranslateUI');
       launchOptions.args.push('--disable-ipc-flooding-protection');
-      
+
       // Platform-specific headless flags
       if (process.platform === 'win32') {
         launchOptions.args.push('--disable-features=VizDisplayCompositor,VizServiceDisplay');
@@ -128,6 +128,12 @@ export class ElectronAppTestHarness {
 
     // Wait for the app to be ready
     await this.page.waitForLoadState('domcontentloaded');
+
+    // Disable tooltips globally for e2e tests to prevent interference with Playwright element interactions
+    await this.page.evaluate(() => {
+      window.app.settings.displaySettings.setTooltipsEnabled(false);
+      console.log('[E2E] Tooltips disabled globally for test stability');
+    });
 
     // Set up data capture for serial port writes
     await this.setupDataCapture();

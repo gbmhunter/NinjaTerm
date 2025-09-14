@@ -43,8 +43,8 @@ const NumBytesInBufferIndicator = observer(({ app }: { app: App }) => (
   <Tooltip
     title="The number of bytes currently in the graphing buffer. This is the number of bytes that have been received but not yet processed. They will be processed (graph information extracted) when the processing trigger is received."
     followCursor
-    arrow
     placement="right"
+    {...app.settings.displaySettings.getBasicTooltipConfig()}
   >
     <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
       Num. bytes in buffer: {app.graphing.rxDataBuffer.length}
@@ -172,8 +172,8 @@ export default observer((props: Props) => {
           <Tooltip
             title="Choose how graphing data is detected and parsed. Basic Prefix Mode uses processing triggers and y= prefix (legacy). Advanced Cmd Mode uses #PLOT: commands. See the online NinjaTerm manual for more details."
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControl sx={{ width: 200 }} size="small">
               <InputLabel>Detection Mode</InputLabel>
@@ -195,8 +195,8 @@ export default observer((props: Props) => {
           <Tooltip
             title="Open the NinjaTerm manual in your browser. This contains information on the graphing system and how to use it."
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <Button
               variant="outlined"
@@ -224,8 +224,8 @@ export default observer((props: Props) => {
                 : "The character sequence which triggers processing for data points from data that has accumulated in the buffer since the last sequence."
             }
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControl sx={{ width: 200 }} size="small">
               <InputLabel>Processing Trigger</InputLabel>
@@ -257,8 +257,8 @@ export default observer((props: Props) => {
                   : "The max. size the graphing receiving buffer can grow to waiting for a processing trigger. The receive buffer is cleared if this size is exceeded. Must be an integer in the range [1-10000]."
               }
               followCursor
-              arrow
               placement="right"
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 label="Max. Buffer Size"
@@ -277,8 +277,8 @@ export default observer((props: Props) => {
           <Tooltip
             title="The max. number of previous data points to display per trace. Must be an integer in the range [1-2000]. Increasing this will increase the CPU usage."
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="Max. Num. Data Points"
@@ -322,8 +322,8 @@ export default observer((props: Props) => {
               </div>
             }
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControl sx={{ width: 160 }} size="small" disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}>
               <InputLabel>X Variable Source</InputLabel>
@@ -353,8 +353,8 @@ export default observer((props: Props) => {
           <Tooltip
             title="The string that precedes each x value in the input data stream."
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="X Variable Prefix"
@@ -373,7 +373,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="The string that precedes each y value in the input data stream."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="Y Variable Prefix"
@@ -392,7 +392,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="Enable parsing multiple comma/space-separated values from each buffer instead of just one value per buffer."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControlLabel
               control={
@@ -415,7 +415,7 @@ export default observer((props: Props) => {
             <Tooltip
               title="The character that separates multiple values within a single line."
               followCursor
-              arrow
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
             >
               <FormControl sx={{ width: 160 }} size="small" disabled={app.graphing.detectionMode === DetectionMode.ADVANCED_CMD}>
                 <InputLabel>Value Separator</InputLabel>
@@ -444,7 +444,7 @@ export default observer((props: Props) => {
             <Tooltip
               title="Custom character(s) to use as value separator."
               followCursor
-              arrow
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
             >
               <ApplyableTextFieldView
                 label="Custom Separator"
@@ -465,7 +465,7 @@ export default observer((props: Props) => {
             <Tooltip
               title="When enabled, the plot is cleared each time new data arrives in a buffer. Useful for displaying snapshots of data rather than accumulating over time."
               followCursor
-              arrow
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
             >
               <FormControlLabel
                 control={
@@ -504,8 +504,8 @@ export default observer((props: Props) => {
               </div>
             }
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>X Axis Range Mode</InputLabel>
@@ -534,7 +534,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="Minimum X axis value."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="X-Axis Range Min."
@@ -551,7 +551,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="Maximum X axis value."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="X-Axis Range Max."
@@ -597,8 +597,8 @@ export default observer((props: Props) => {
               </div>
             }
             followCursor
-            arrow
             placement="right"
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <FormControl sx={{ width: 160 }} size="small">
               <InputLabel>Y Axis Range Mode</InputLabel>
@@ -626,7 +626,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="Minimum Y axis value."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="Y-Axis Range Min."
@@ -642,7 +642,7 @@ export default observer((props: Props) => {
           <Tooltip
             title="Maximum Y axis value."
             followCursor
-            arrow
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
           >
             <ApplyableTextFieldView
               label="Y-Axis Range Max."

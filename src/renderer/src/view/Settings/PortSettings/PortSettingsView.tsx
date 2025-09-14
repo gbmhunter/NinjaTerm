@@ -38,7 +38,6 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { BASIC_TOOLTIP_SETTINGS } from '@/view/SharedConfig';
 
 interface Props {
   app: App;
@@ -233,7 +232,7 @@ function PortSettingsView(props: Props) {
         {/* BAUD RATE */}
         {/* ============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
         >
           <Autocomplete
@@ -272,10 +271,9 @@ function PortSettingsView(props: Props) {
         {/* NUM. DATA BITS */}
         {/* ============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
           placement="right"
-          enterDelay={500}
         >
           <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
             <InputLabel>Num. data bits</InputLabel>
@@ -301,7 +299,7 @@ function PortSettingsView(props: Props) {
         {/* PARITY */}
         {/* ============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
           placement="right"
         >
@@ -329,7 +327,7 @@ function PortSettingsView(props: Props) {
         {/* STOP BITS */}
         {/* ============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
           placement="right"
         >
@@ -364,7 +362,7 @@ function PortSettingsView(props: Props) {
         </Typography>
 
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control."
         >
           <FormControlLabel
@@ -382,7 +380,7 @@ function PortSettingsView(props: Props) {
         </Tooltip>
 
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission."
         >
           <FormControlLabel
@@ -400,7 +398,7 @@ function PortSettingsView(props: Props) {
         </Tooltip>
 
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission."
         >
           <FormControlLabel
@@ -418,7 +416,7 @@ function PortSettingsView(props: Props) {
         </Tooltip>
 
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html."
         >
           <FormControlLabel
@@ -436,7 +434,7 @@ function PortSettingsView(props: Props) {
         </Tooltip>
 
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards."
         >
           <FormControlLabel
@@ -468,7 +466,7 @@ function PortSettingsView(props: Props) {
             {/* HOST */}
             {/* ============================================================== */}
             <Tooltip
-              {...BASIC_TOOLTIP_SETTINGS}
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
               title="IP address (e.g. 192.168.1.100) or hostname (e.g. www.example.com) of the TCP socket server to connect to."
             >
               <TextField
@@ -488,7 +486,7 @@ function PortSettingsView(props: Props) {
             {/* PORT */}
             {/* ============================================================== */}
             <Tooltip
-              {...BASIC_TOOLTIP_SETTINGS}
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
               title="Port number of the TCP socket server to connect to. Must be between 1 and 65535 (inclusive)."
             >
               <TextField
@@ -570,7 +568,7 @@ function PortSettingsView(props: Props) {
           {/* SOCKET CONNECTION TIMEOUT */}
           {/* ============================================================== */}
           <Tooltip
-            {...BASIC_TOOLTIP_SETTINGS}
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
             title={`The timeout for the socket connection in milliseconds. If the connection is not established within this time, the attempt will be aborted. Must be between ${PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS} and ${PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS} (inclusive).`}
           >
             <TextField
@@ -608,7 +606,7 @@ function PortSettingsView(props: Props) {
             {/* OPEN/CLOSE BUTTON FOR SOCKET */}
             {/* =============================================================== */}
             <Tooltip
-              {...BASIC_TOOLTIP_SETTINGS}
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
               title="Open or close the socket connection."
             >
               <Button
@@ -661,7 +659,7 @@ function PortSettingsView(props: Props) {
         {/* =============================================================== */}
         {app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT && (
           <Tooltip
-            {...BASIC_TOOLTIP_SETTINGS}
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
             title={
               <div>
                 Check this if you want to be able to quickly change settings when the serial port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
@@ -688,7 +686,7 @@ function PortSettingsView(props: Props) {
         {/* OPEN AND GO TO TERMINAL CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
             ? "Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!"
             : "Connect to socket and go to the terminal view as soon as the connection is established, saving you a button press!"
@@ -715,7 +713,7 @@ function PortSettingsView(props: Props) {
         {/* RECONNECT ON STARTUP CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title="On startup, if NinjaTerm can find the last used connection it will reselect it. If it was previously in the CONNECTED state, the connection will also be re-opened."
         >
           <FormControlLabel
@@ -735,7 +733,7 @@ function PortSettingsView(props: Props) {
         {/* REOPEN ON UNEXPECTED CLOSE CHECKBOX */}
         {/* =============================================================== */}
         <Tooltip
-          {...BASIC_TOOLTIP_SETTINGS}
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
           title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
             ? "If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
             : "If the socket connection unexpectedly closes (e.g. network interruption), NinjaTerm will try to automatically reconnect when the server becomes available again."

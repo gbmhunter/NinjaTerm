@@ -1,4 +1,4 @@
-import { DataViewConfiguration, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import DisplaySettings, { DataViewConfiguration, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 export const DEFAULT_BACKGROUND_COLOR = '#000000';
 export const DEFAULT_TX_COLOR = '#ffffff';
@@ -21,4 +21,8 @@ export class DisplaySettingsData {
   defaultRxTextColor = DEFAULT_RX_COLOR;
   tabStopWidth = DEFAULT_TAB_STOP_WIDTH;
   autoScrollLockOnTx = true;
+
+  // Tooltip settings
+  tooltipsEnabled = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
+  tooltipDelayMs = DisplaySettings.DEFAULT_TOOLTIP_DELAY_MS;
 }
