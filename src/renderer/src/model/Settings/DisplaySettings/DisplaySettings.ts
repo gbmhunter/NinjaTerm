@@ -136,6 +136,9 @@ export default class DisplaySettings {
     };
   };
 
+  /**
+   * Save the relevant settings from this class into the current app config in the profile manager.
+   */
   _saveConfig = () => {
     let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -157,6 +160,9 @@ export default class DisplaySettings {
     this.profileManager.saveAppData();
   };
 
+  /**
+   * Load the relevant settings from the current app config in the profile manager into this class.
+   */
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
@@ -180,9 +186,9 @@ export default class DisplaySettings {
     this.defaultRxTextColor.apply({notify: false});
     this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
     this.tabStopWidth.apply({notify: false});
-    this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx === undefined ? true : configToLoad.autoScrollLockOnTx;
-    this.tooltipsEnabled = configToLoad.tooltipsEnabled === undefined ? true : configToLoad.tooltipsEnabled;
-    this.tooltipDelayMs.setDispValue(configToLoad.tooltipDelayMs?.toString() || '500');
+    this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx;
+    this.tooltipsEnabled = configToLoad.tooltipsEnabled;
+    this.tooltipDelayMs.setDispValue(configToLoad.tooltipDelayMs.toString());
     this.tooltipDelayMs.apply({notify: false});
   };
 }
