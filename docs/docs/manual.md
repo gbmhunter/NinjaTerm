@@ -377,3 +377,13 @@ $NT:GPH:ADD_FIG,id=sensors,title="Temperature Log";
 $NT:GPH:ADD_TRACE,fig=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
 $NT:GPH:ADD_DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;
 ```
+
+## Tooltips
+
+Most elements in NinjaTerm have tooltips that appear when you hover over them. This should help you understand what things do without having to read the manual. If tooltips start to get in the way, you can disable them in the Settings->Display view (or increase the entry delay time if you find they are appearing too soon).
+
+<img
+  src={require('./_assets/tooltip-settings.webp').default}
+  alt="Screenshot of the tooltip settings."
+  width={500}
+/>
