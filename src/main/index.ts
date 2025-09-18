@@ -8,6 +8,7 @@ import * as os from 'os';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
+import { BluetoothService } from './bluetoothService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -115,6 +116,9 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.webContents.send('update-downloaded', info);
 });
 
+// Initialize Bluetooth service
+const bluetoothService = new BluetoothService();
+
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
 
@@ -156,7 +160,7 @@ app.whenReady().then(() => {
 
   // Initialize serial handlers
   initializeSerialHandlers(mainWindow);
-  
+
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
 
@@ -270,10 +274,10 @@ ipcMain.handle('fs:get-default-log-directory', async () => {
   try {
     const homeDir = os.homedir();
     const defaultLogDir = path.join(homeDir, 'NinjaTerm', 'logs');
-    
+
     // Ensure the directory exists
     await fs.mkdir(defaultLogDir, { recursive: true });
-    
+
     return { success: true, path: defaultLogDir };
   } catch (error) {
     return { success: false, error: (error as Error).message };

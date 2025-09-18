@@ -1,7 +1,7 @@
 {
   "name": "ninjaterm",
   "productName": "NinjaTerm",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "description": "A modern, powerful serial terminal for developers and engineers.",
   "author": {
     "name": "Geoffrey Hunter",
@@ -13,6 +13,7 @@
     "url": "https://github.com/gbmhunter/NinjaTerm.git"
   },
   "dependencies": {
+    "@abandonware/noble": "^1.9.2-26",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.20",
@@ -38,7 +39,6 @@
     "mobx": "^6.12.4",
     "mobx-react-lite": "^4.0.7",
     "moment": "^2.30.1",
-    "noble": "^1.9.1",
     "node-machine-id": "^1.1.12",
     "notistack": "^3.0.1",
     "react": "^18.3.1",
@@ -114,6 +114,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@playwright/test": "^1.54.1",
+    "@types/noble": "^0.0.44",
     "@types/react-resizable": "^3.0.7",
     "@types/react-window": "^1.8.8",
     "@types/wicg-file-system-access": "^2023.10.5",

@@ -58,6 +58,48 @@ jobs:
         # Skip notarization and signing in PR builds
         CSC_IDENTITY_AUTO_DISCOVERY: false
 
+    #===============================================================
+    # NOTE: More build config is in package.json under the "build" key.
+    #===============================================================
+    - name: Build/release Electron app (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        npx electron-builder --win --publish onTagOrDraft 2>&1 | Tee-Object build-output.log
+        if (Select-String "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log) {
+          Write-Output "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        }
+      env:
+        # Windows code signing
+        CSC_LINK: ${{ secrets.CSC_LINK }}
+        CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build/release Electron app (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        npx electron-builder --linux --publish onTagOrDraft 2>&1 | tee build-output.log
+        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
+          echo "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        fi
+      env:
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build/release Electron app (Mac)
+      if: matrix.os == 'macos-15'
+      run: |
+        npx electron-builder --mac --publish onTagOrDraft 2>&1 | tee build-output.log
+        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
+          echo "::error::Publishing was skipped due to incompatible release type"
+          exit 1
+        fi
+      env:
+        # Publish to GitHub Releases
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     # - name: Upload test results (Ubuntu only)
     #   if: matrix.os == 'ubuntu-latest'
     #   uses: actions/upload-artifact@v4
