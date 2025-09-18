@@ -8,7 +8,7 @@ import * as os from 'os';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
-import { BluetoothService } from './bluetoothService';
+// import { BluetoothService } from './bluetoothService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -117,7 +117,7 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 // Initialize Bluetooth service
-const bluetoothService = new BluetoothService();
+// const bluetoothService = new BluetoothService();
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
