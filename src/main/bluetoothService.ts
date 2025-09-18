@@ -12,11 +12,19 @@ export class BluetoothService {
   scanningTimer: NodeJS.Timeout | null = null;
 
   constructor() {
+    // Detect if running in CI environment
+    const isCI = !!process.env.CI || process.env.NODE_ENV === 'test';
 
-    noble.on('discover', this.onDiscover);
-    // noble automatically fires a poweredOn state change event on startup (it seems)
-    noble.on('stateChange', this.onStateChange);
-    noble.on('scanStop', this.onScanStop);
+    // Only initialize noble if not in CI. Initializing noble in CI environment causes
+    // Playwright e2e tests to fail.
+    if (!isCI) {
+      noble.on('discover', this.onDiscover);
+      // noble automatically fires a poweredOn state change event on startup (it seems)
+      noble.on('stateChange', this.onStateChange);
+      noble.on('scanStop', this.onScanStop);
+    } else {
+      console.log('Detected CI environment. Bluetooth operations skipped.');
+    }
   }
 
   onStateChange = (state: string) => {
