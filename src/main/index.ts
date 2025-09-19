@@ -8,7 +8,6 @@ import * as os from 'os';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
-import { BluetoothService } from './bluetoothService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -117,7 +116,7 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 // Initialize Bluetooth service (will be updated with mainWindow after createWindow)
-let bluetoothService: BluetoothService;
+let bluetoothService: any;
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
@@ -155,7 +154,7 @@ function createWindow(): void {
 }
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   createWindow();
 
   // Initialize serial handlers
@@ -164,8 +163,19 @@ app.whenReady().then(() => {
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
 
-  // Initialize Bluetooth service with mainWindow
-  bluetoothService = new BluetoothService(mainWindow);
+  // Initialize Bluetooth service with mainWindow (only if not in CI environment)
+  const isCI = process.env.CI || process.env.NODE_ENV === 'test';
+  if (!isCI) {
+    try {
+      // require didn't work here, so using import instead
+      const { BluetoothService } = await import('./bluetoothService');
+      bluetoothService = new BluetoothService(mainWindow);
+    } catch (error) {
+      console.log('Failed to load Bluetooth service:', error);
+    }
+  } else {
+    console.log('Detected CI environment. Bluetooth service not loaded.');
+  }
 
   installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
     .then((ext) => console.log(`Added Extension:  ${ext.name}`))

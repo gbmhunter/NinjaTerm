@@ -1,20 +1,12 @@
 import { ipcMain } from 'electron';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
-
-// Use noble from @abandonware/noble. The @noble/noble package is not maintained.
-// Only import noble if not in CI environment to avoid build failures
-// Even just importing noble causes build failures in the CI environment (even without using the import)
-let noble: typeof import('@abandonware/noble') | null = null;
-const isCI = process.env.CI || process.env.NODE_ENV === 'test';
-if (!isCI) {
-  noble = require('@abandonware/noble');
-}
+import noble from '@abandonware/noble';
 
 const SCAN_DURATION_MS = 2000;
 
 export class BluetoothService {
 
-  discoveredPeripherals: import('@abandonware/noble').Peripheral[] = [];
+  discoveredPeripherals: noble.Peripheral[] = [];
 
   isScanningForPeripherals: boolean = false;
 
@@ -24,25 +16,25 @@ export class BluetoothService {
 
   // Connected devices and their characteristics
   connectedPeripherals = new Map<string, {
-    peripheral: import('@abandonware/noble').Peripheral;
-    writeCharacteristic: import('@abandonware/noble').Characteristic | null;
-    readCharacteristic: import('@abandonware/noble').Characteristic | null;
+    peripheral: noble.Peripheral;
+    writeCharacteristic: noble.Characteristic | null;
+    readCharacteristic: noble.Characteristic | null;
   }>();
 
   // For storing received data batches similar to serial/socket services
   private dataBatches = new Map<string, Buffer[]>();
   private batchTimeouts = new Map<string, NodeJS.Timeout>();
   private readonly RX_DATA_BATCH_TIMEOUT_MS = 50;
-  private mainWindow: import('electron').BrowserWindow | null = null;
+  private mainWindow: Electron.BrowserWindow | null = null;
 
-  constructor(mainWindow?: import('electron').BrowserWindow) {
+  /**
+   *
+   * @param mainWindow The main window is needed to send Bluetooth events to the renderer (such as received data).
+   */
+  constructor(mainWindow?: Electron.BrowserWindow) {
     this.mainWindow = mainWindow || null;
-    if (isCI || !noble) {
-      console.log('Detected CI environment. Bluetooth functionality disabled.');
-      return;
-    }
 
-    // Only initialize noble if not in CI and noble is available
+    // Initialize noble event handlers
     noble.on('discover', this.onDiscover);
     // noble automatically fires a poweredOn state change event on startup (it seems)
     noble.on('stateChange', this.onStateChange);
@@ -82,9 +74,7 @@ export class BluetoothService {
     this.nobleState = state;
   }
 
-  onDiscover = (peripheral: import('@abandonware/noble').Peripheral) => {
-    if (isCI || !noble) return;
-
+  onDiscover = (peripheral: noble.Peripheral) => {
     console.log('onDiscover called. peripheral.id=', peripheral.id);
 
     // Check if we already have this device (avoid duplicates)
@@ -95,8 +85,6 @@ export class BluetoothService {
   }
 
   onScanningError = (error?: Error) => {
-    if (isCI || !noble) return;
-
     console.error('onScanningError called. error=', error);
     // For some reason, I saw noble fire this event as scanning was started, and error was undefined, and
     // devices were still being discovered. So I'm assuming it's not an error in this case and we can just ignore it.
@@ -111,8 +99,6 @@ export class BluetoothService {
   }
 
   onScanStop = () => {
-    if (isCI || !noble) return;
-
     console.log('onScanStop called.');
     this.isScanningForPeripherals = false;
   }
@@ -121,11 +107,6 @@ export class BluetoothService {
    * Start scanning for peripherals. noble must be in the poweredOn state to do this.
    */
   startPeripheralScan = () => {
-    if (isCI || !noble) {
-      console.log('Bluetooth scanning skipped (CI environment or noble not available).');
-      return;
-    }
-
     console.log('startPeripheralScan called.');
     if (this.nobleState !== 'poweredOn') {
       throw new Error('noble must be in the poweredOn state to start scanning for peripherals.');
@@ -185,10 +166,6 @@ export class BluetoothService {
   }
 
   async connectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
-    if (isCI || !noble) {
-      return { success: false, error: 'Bluetooth not available in CI environment' };
-    }
-
     try {
       // Find the device in discovered peripherals
       const peripheral = this.discoveredPeripherals.find(p => p.id === deviceId);
@@ -311,10 +288,6 @@ export class BluetoothService {
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
-    if (isCI || !noble) {
-      return { success: false, error: 'Bluetooth not available in CI environment' };
-    }
-
     try {
       const connection = this.connectedPeripherals.get(deviceId);
       if (!connection) {
@@ -339,10 +312,6 @@ export class BluetoothService {
   }
 
   async writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }> {
-    if (isCI || !noble) {
-      return { success: false, error: 'Bluetooth not available in CI environment' };
-    }
-
     try {
       const connection = this.connectedPeripherals.get(deviceId);
       if (!connection) {
