@@ -171,7 +171,7 @@ app.whenReady().then(async () => {
       const { BluetoothService } = await import('./bluetoothService');
       bluetoothService = new BluetoothService(mainWindow);
     } catch (error) {
-      console.log('Failed to load Bluetooth service:', error);
+      console.error('Failed to load Bluetooth service:', error);
     }
   } else {
     console.log('Detected CI environment. Bluetooth service not loaded.');

@@ -38,6 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
+import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
 
 interface Props {
   app: App;
@@ -660,7 +661,7 @@ function PortSettingsView(props: Props) {
                 <TableRow>
                   <TableCell padding="checkbox">Select</TableCell>
                   <TableCell>Device ID</TableCell>
-                  <TableCell>Name</TableCell>
+                  <TableCell>Advertisement Name</TableCell>
                   <TableCell>Address</TableCell>
                   <TableCell>RSSI</TableCell>
                 </TableRow>
@@ -668,12 +669,12 @@ function PortSettingsView(props: Props) {
               <TableBody>
                 {(app.settings.portConfiguration.availableBluetoothDevices || []).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                    <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       No Bluetooth devices found. Click "Scan" to search for devices.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.settings.portConfiguration.availableBluetoothDevices.map((device: any, idx: number) => (
+                  app.settings.portConfiguration.availableBluetoothDevices.map((device: SerializableBluetoothDevice, idx: number) => (
                     <TableRow
                       key={device.id || idx}
                       hover={!isTableDisabled}
@@ -694,7 +695,7 @@ function PortSettingsView(props: Props) {
                         />
                       </TableCell>
                       <TableCell>{device.id || 'Unknown'}</TableCell>
-                      <TableCell>{device.advertisement?.localName || device.localName || 'Unknown Device'}</TableCell>
+                      <TableCell>{device.advertisement.localName || '-'}</TableCell>
                       <TableCell>{device.address || 'n/a'}</TableCell>
                       <TableCell>{device.rssi || 'n/a'}</TableCell>
                     </TableRow>

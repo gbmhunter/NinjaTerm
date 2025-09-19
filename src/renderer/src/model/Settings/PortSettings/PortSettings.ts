@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import { SerialController } from '@/model/SerialController/SerialController';
+import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
 
 export enum PortState {
   CLOSED,
@@ -107,8 +108,8 @@ export class PortSettings {
   socketConnTimeoutDispMs = '5000';
 
   // Bluetooth connection settings
-  availableBluetoothDevices: any[] = [];
-  selectedBluetoothDevice: any = null;
+  availableBluetoothDevices: SerializableBluetoothDevice[] = [];
+  selectedBluetoothDevice: SerializableBluetoothDevice | null = null;
   isBluetoothScanning = false;
 
   constructor(app: App) {
@@ -265,7 +266,12 @@ export class PortSettings {
     }
   }
 
-  setSelectedBluetoothDevice = (device: any) => {
+  /**
+   * Set the selected Bluetooth device.
+   *
+   * @param device The Bluetooth device to set as selected.
+   */
+  setSelectedBluetoothDevice = (device: SerializableBluetoothDevice) => {
     this.selectedBluetoothDevice = device;
   }
 

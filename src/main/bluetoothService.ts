@@ -6,7 +6,7 @@ const SCAN_DURATION_MS = 2000;
 
 export class BluetoothService {
 
-  discoveredPeripherals: noble.Peripheral[] = [];
+  discoveredDevices: noble.Peripheral[] = [];
 
   isScanningForPeripherals: boolean = false;
 
@@ -35,7 +35,7 @@ export class BluetoothService {
     this.mainWindow = mainWindow || null;
 
     // Initialize noble event handlers
-    noble.on('discover', this.onDiscover);
+    noble.on('discover', this.onNobleDiscover);
     // noble automatically fires a poweredOn state change event on startup (it seems)
     noble.on('stateChange', this.onStateChange);
     noble.on('scanStop', this.onScanStop);
@@ -74,14 +74,21 @@ export class BluetoothService {
     this.nobleState = state;
   }
 
-  onDiscover = (peripheral: noble.Peripheral) => {
-    console.log('onDiscover called. peripheral.id=', peripheral.id);
+  onNobleDiscover = (peripheral: noble.Peripheral) => {
+    console.log('onNobleDiscover called. peripheral=', peripheral);
 
     // Check if we already have this device (avoid duplicates)
-    const existingDevice = this.discoveredPeripherals.find(p => p.id === peripheral.id);
-    if (!existingDevice) {
-      this.discoveredPeripherals.push(peripheral);
+    const existingDevice = this.discoveredDevices.find(p => p.id === peripheral.id);
+    if (existingDevice) {
+      return;
     }
+
+    if (!peripheral.connectable) {
+      return;
+    }
+
+    // If we get here, we have a valid device we want to present to the user
+    this.discoveredDevices.push(peripheral);
   }
 
   onScanningError = (error?: Error) => {
@@ -113,7 +120,7 @@ export class BluetoothService {
     }
 
     // Clear previously discovered devices
-    this.discoveredPeripherals = [];
+    this.discoveredDevices = [];
 
     this.isScanningForPeripherals = true;
     noble.startScanning([], false, this.onScanningError);
@@ -133,7 +140,7 @@ export class BluetoothService {
     console.log('bluetooth:get-discovered-devices called.');
     try {
       // Convert peripheral objects to serializable format
-      const serializableDevices: SerializableBluetoothDevice[] = this.discoveredPeripherals.map(peripheral => ({
+      const serializableDevices: SerializableBluetoothDevice[] = this.discoveredDevices.map(peripheral => ({
         id: peripheral.id,
         uuid: peripheral.uuid,
         address: peripheral.address,
@@ -168,7 +175,7 @@ export class BluetoothService {
   async connectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
     try {
       // Find the device in discovered peripherals
-      const peripheral = this.discoveredPeripherals.find(p => p.id === deviceId);
+      const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
       if (!peripheral) {
         return { success: false, error: 'Device not found in discovered peripherals' };
       }
