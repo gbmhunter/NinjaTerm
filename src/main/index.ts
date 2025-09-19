@@ -117,7 +117,7 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 // Initialize Bluetooth service
-// const bluetoothService = new BluetoothService();
+const bluetoothService = new BluetoothService();
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
