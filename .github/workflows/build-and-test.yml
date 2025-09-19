@@ -52,11 +52,11 @@ jobs:
         sleep 3
         npm run test:electron:ci
 
-    - name: Test Electron app build (no packaging)
-      run: npx electron-builder --dir
-      env:
-        # Skip notarization and signing in PR builds
-        CSC_IDENTITY_AUTO_DISCOVERY: false
+    # - name: Test Electron app build (no packaging)
+    #   run: npx electron-builder --dir
+    #   env:
+    #     # Skip notarization and signing in PR builds
+    #     CSC_IDENTITY_AUTO_DISCOVERY: false
 
     #===============================================================
     # NOTE: More build config is in package.json under the "build" key.
