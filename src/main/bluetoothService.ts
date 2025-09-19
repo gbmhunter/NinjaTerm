@@ -1,13 +1,19 @@
 import { ipcMain } from 'electron';
 
 // Use noble from @abandonware/noble. The @noble/noble package is not maintained.
-import noble from '@abandonware/noble';
+// Only import noble if not in CI environment to avoid build failures
+// Even just importing noble causes build failures in the CI environment (even without using the import)
+let noble: typeof import('@abandonware/noble') | null = null;
+const isCI = process.env.CI || process.env.NODE_ENV === 'test';
+if (!isCI) {
+  noble = require('@abandonware/noble');
+}
 
 const SCAN_DURATION_MS = 2000;
 
 export class BluetoothService {
 
-  discoveredPeripherals: noble.Peripheral[] = [];
+  discoveredPeripherals: import('@abandonware/noble').Peripheral[] = [];
 
   isScanningForPeripherals: boolean = false;
 
@@ -16,18 +22,12 @@ export class BluetoothService {
   nobleState: string | null = null;
 
   constructor() {
-    // Detect if running in CI environment
-    const isCI = !!process.env.CI || process.env.NODE_ENV === 'test';
-
-    // Only initialize noble if not in CI. Initializing noble in CI environment causes
-    // Playwright e2e tests to fail.
-    if (isCI) {
-      console.log('Detected CI environment. Bluetooth operations skipped.');
+    if (isCI || !noble) {
+      console.log('Detected CI environment. Bluetooth functionality disabled.');
       return;
     }
 
-    return;
-
+    // Only initialize noble if not in CI and noble is available
     noble.on('discover', this.onDiscover);
     // noble automatically fires a poweredOn state change event on startup (it seems)
     noble.on('stateChange', this.onStateChange);
@@ -42,6 +42,7 @@ export class BluetoothService {
       }
       return { success: true };
     });
+
   }
 
   onStateChange = (state: string) => {
@@ -49,12 +50,16 @@ export class BluetoothService {
     this.nobleState = state;
   }
 
-  onDiscover = (peripheral: noble.Peripheral) => {
+  onDiscover = (peripheral: import('@abandonware/noble').Peripheral) => {
+    if (isCI || !noble) return;
+
     console.log('onDiscover called. peripheral.id=', peripheral.id);
     this.discoveredPeripherals.push(peripheral);
   }
 
   onScanningError = (error?: Error) => {
+    if (isCI || !noble) return;
+
     console.error('onScanningError called. error=', error);
     // For some reason, I saw noble fire this event as scanning was started, and error was undefined, and
     // devices were still being discovered. So I'm assuming it's not an error in this case and we can just ignore it.
@@ -69,6 +74,8 @@ export class BluetoothService {
   }
 
   onScanStop = () => {
+    if (isCI || !noble) return;
+
     console.log('onScanStop called.');
     this.isScanningForPeripherals = false;
   }
@@ -77,6 +84,11 @@ export class BluetoothService {
    * Start scanning for peripherals. noble must be in the poweredOn state to do this.
    */
   startPeripheralScan = () => {
+    if (isCI || !noble) {
+      console.log('Bluetooth scanning skipped (CI environment or noble not available).');
+      return;
+    }
+
     console.log('startPeripheralScan called.');
     if (this.nobleState !== 'poweredOn') {
       throw new Error('noble must be in the poweredOn state to start scanning for peripherals.');
