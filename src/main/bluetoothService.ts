@@ -26,6 +26,8 @@ export class BluetoothService {
       return;
     }
 
+    return;
+
     noble.on('discover', this.onDiscover);
     // noble automatically fires a poweredOn state change event on startup (it seems)
     noble.on('stateChange', this.onStateChange);
