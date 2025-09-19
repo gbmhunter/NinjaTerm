@@ -47,6 +47,23 @@ interface Props {
 function PortSettingsView(props: Props) {
   const { app } = props;
 
+  // Helper function to format manufacturer data as hex
+  const formatManufacturerData = (manufacturerData?: Buffer): string => {
+    if (!manufacturerData || manufacturerData.length === 0) {
+      return 'n/a';
+    }
+
+    const hexBytes = Array.from(manufacturerData)
+      .map(byte => byte.toString(16).padStart(2, '0'));
+
+    // Truncate if too long and add ellipsis
+    if (hexBytes.length > 6) {
+      return `[${hexBytes.slice(0, 6).join(', ')}, ...]`;
+    }
+
+    return `[${hexBytes.join(', ')}]`;
+  };
+
   // Local state for socket port input to allow empty/partial values during editing
   const [socketPortInput, setSocketPortInput] = useState<string>(
     app.settings.portConfiguration.socketPort.toString()
@@ -655,21 +672,22 @@ function PortSettingsView(props: Props) {
             Available Bluetooth Devices
           </Typography>
 
-          <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
-            <Table size="small">
+          <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
+            <Table size="small" sx={{ tableLayout: 'fixed', minWidth: 900 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox">Select</TableCell>
-                  <TableCell>Device ID</TableCell>
-                  <TableCell>Advertisement Name</TableCell>
-                  <TableCell>Address</TableCell>
-                  <TableCell>RSSI</TableCell>
+                  <TableCell padding="checkbox" sx={{ width: '50px' }}>Select</TableCell>
+                  <TableCell sx={{ width: '120px' }}>Address</TableCell>
+                  <TableCell sx={{ width: '160px' }}>Advertisement Name</TableCell>
+                  <TableCell sx={{ width: '150px' }}>Mfg Data</TableCell>
+                  <TableCell sx={{ width: '90px' }}>Connectable</TableCell>
+                  <TableCell sx={{ width: '70px' }}>RSSI</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {(app.settings.portConfiguration.availableBluetoothDevices || []).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                    <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       No Bluetooth devices found. Click "Scan" to search for devices.
                     </TableCell>
                   </TableRow>
@@ -694,10 +712,42 @@ function PortSettingsView(props: Props) {
                           disabled={isTableDisabled}
                         />
                       </TableCell>
-                      <TableCell>{device.id || 'Unknown'}</TableCell>
-                      <TableCell>{device.advertisement.localName || '-'}</TableCell>
-                      <TableCell>{device.address || 'n/a'}</TableCell>
-                      <TableCell>{device.rssi || 'n/a'}</TableCell>
+                      <TableCell sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.8rem',
+                        fontFamily: 'monospace'
+                      }}>
+                        {device.address || 'n/a'}
+                      </TableCell>
+                      <TableCell sx={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.8rem'
+                      }}>
+                        {device.advertisement.localName || '-'}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.75rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          color: 'text.secondary'
+                        }}
+                        title={formatManufacturerData(device.advertisement.manufacturerData)}
+                      >
+                        {formatManufacturerData(device.advertisement.manufacturerData)}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
+                        {device.connectable ? '✓' : '✗'}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
+                        {device.rssi || 'n/a'}
+                      </TableCell>
                     </TableRow>
                   ))
                 )}

@@ -323,7 +323,7 @@ export class SerialController {
         // Save device info for reconnection purposes
         this.bluetoothDeviceInfo = {
           deviceId: selectedDevice.id,
-          deviceName: selectedDevice.advertisement?.localName || selectedDevice.localName || 'Unknown Device'
+          deviceName: selectedDevice.advertisement?.localName || 'Unknown Device'
         };
 
         // Set up IPC event listeners for data reception
@@ -351,7 +351,7 @@ export class SerialController {
         });
 
         if (!silenceSnackbar) {
-          const deviceName = selectedDevice.advertisement?.localName || selectedDevice.localName || selectedDevice.id;
+          const deviceName = selectedDevice.advertisement?.localName || selectedDevice.id;
           this.app.snackbar.sendToSnackbar(`Bluetooth device connected: ${deviceName}`, 'success');
         }
 

@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
-const SCAN_DURATION_MS = 2000;
+const SCAN_DURATION_MS = 5000;
 
 export class BluetoothService {
 
@@ -75,17 +75,20 @@ export class BluetoothService {
   }
 
   onNobleDiscover = (peripheral: noble.Peripheral) => {
-    console.log('onNobleDiscover called. peripheral=', peripheral);
+    console.log('onNobleDiscover called. peripheral.id=', peripheral.id);
 
     // Check if we already have this device (avoid duplicates)
-    const existingDevice = this.discoveredDevices.find(p => p.id === peripheral.id);
-    if (existingDevice) {
-      return;
-    }
+    // const existingDevice = this.discoveredDevices.find(p => p.id === peripheral.id);
+    // if (existingDevice) {
+    //   return;
+    // }
 
-    if (!peripheral.connectable) {
-      return;
-    }
+    // if (!peripheral.connectable) {
+    //   return;
+    // }
+
+    // Devices don't normally report services and characteristics during
+    // peripheral.discoverAllServicesAndCharacteristics(this.onDiscoveredServicesAndCharacteristics);
 
     // If we get here, we have a valid device we want to present to the user
     this.discoveredDevices.push(peripheral);
@@ -132,6 +135,11 @@ export class BluetoothService {
       noble.stopScanning();
     }, SCAN_DURATION_MS);
   }
+
+  onDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
+    console.log('onDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
+  }
+
 
   /**
    * Handler for when the renderer requests the list of discovered devices.
