@@ -8,6 +8,7 @@ export enum PortType {
   REAL,
   FAKE,
   SOCKET,
+  BLUETOOTH,
 }
 
 /**
@@ -31,6 +32,9 @@ export class SerialController {
   // Current socket connection ID for IPC communication
   currentSocketConnectionId: string | null = null;
 
+  // Current Bluetooth device ID for IPC communication
+  currentBluetoothDeviceId: string | null = null;
+
   portState = PortState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
@@ -44,6 +48,9 @@ export class SerialController {
 
   // Socket information for reconnection purposes
   socketConnectionInfo: { host: string; port: number } | null = null;
+
+  // Bluetooth device information for reconnection purposes
+  bluetoothDeviceInfo: { deviceId: string; deviceName?: string } | null = null;
 
   // Auto-reconnection polling
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
@@ -290,6 +297,75 @@ export class SerialController {
         this.app.setShowCircularProgressModal(false);
         return false;
       }
+    } else if (connectionType === ConnectionType.BLUETOOTH) {
+      // Bluetooth connection logic
+      const selectedDevice = this.app.settings.portConfiguration.selectedBluetoothDevice;
+
+      if (!selectedDevice) {
+        this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Port Settings.', 'error');
+        return false;
+      }
+
+      // Show the circular progress modal when trying to connect to Bluetooth device
+      this.app.setShowCircularProgressModal(true);
+
+      try {
+        // Make direct IPC call to connect to Bluetooth device
+        const result = await window.electronAPI.bluetooth.connectDevice(selectedDevice.id);
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        // Store the current device ID for IPC communication
+        this.currentBluetoothDeviceId = selectedDevice.id;
+
+        // Save device info for reconnection purposes
+        this.bluetoothDeviceInfo = {
+          deviceId: selectedDevice.id,
+          deviceName: selectedDevice.advertisement?.localName || selectedDevice.localName || 'Unknown Device'
+        };
+
+        // Set up IPC event listeners for data reception
+        window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
+          if (deviceId === this.currentBluetoothDeviceId) {
+            // Buffer can be used directly as Uint8Array - much faster than conversion
+            const uint8Array = new Uint8Array(data);
+            this.app.parseRxData(uint8Array);
+          }
+        });
+
+        // Listen for disconnection events
+        window.electronAPI.bluetooth.onDeviceDisconnected((deviceId: string) => {
+          console.log('onBluetoothDeviceDisconnected() called. deviceId=', deviceId);
+          if (deviceId === this.currentBluetoothDeviceId) {
+            this.handlePortClosed();
+          }
+        });
+
+        runInAction(() => {
+          // Stop any existing polling since we're now connected
+          this.stopPollingForReconnection();
+          this.portState = PortState.OPENED;
+          this.lastSelectedPortType = PortType.BLUETOOTH;
+        });
+
+        if (!silenceSnackbar) {
+          const deviceName = selectedDevice.advertisement?.localName || selectedDevice.localName || selectedDevice.id;
+          this.app.snackbar.sendToSnackbar(`Bluetooth device connected: ${deviceName}`, 'success');
+        }
+
+        this.app.setShowCircularProgressModal(false);
+
+        // Create custom GA4 event to see how many Bluetooth connections have been opened in NinjaTerm
+        await window.electronAPI.analytics.event('bluetooth_connect');
+      } catch (error) {
+        const msg = `Error connecting to Bluetooth device: ${error}`;
+        this.app.snackbar.sendToSnackbar(msg, 'error');
+        console.error(msg);
+        this.app.setShowCircularProgressModal(false);
+        return false;
+      }
     } else {
       throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
     }
@@ -382,6 +458,38 @@ export class SerialController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else if (this.lastSelectedPortType === PortType.BLUETOOTH) {
+      if (this.currentBluetoothDeviceId) {
+        // Make direct IPC call to disconnect the Bluetooth device
+        const result = await window.electronAPI.bluetooth.disconnectDevice(this.currentBluetoothDeviceId);
+        if (!result.success) {
+          console.error('Error disconnecting Bluetooth device:', result.error);
+        }
+      }
+
+      // Wrap in action
+      runInAction(() => {
+        if (goToReopenState) {
+          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
+          // Start polling for Bluetooth device reconnection
+          this.startPollingForReconnection();
+        } else {
+          // Stop polling if we're explicitly closing the device
+          this.stopPollingForReconnection();
+          this.portState = PortState.CLOSED;
+        }
+      });
+
+      if (!silenceSnackbar) {
+        const deviceName = this.bluetoothDeviceInfo?.deviceName || 'Bluetooth device';
+        this.app.snackbar.sendToSnackbar(`${deviceName} disconnected.`, 'success');
+      }
+
+      this.currentBluetoothDeviceId = null;
+
+      // Disconnect all listeners
+      window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
+      window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
     } else if (this.lastSelectedPortType === PortType.FAKE) {
       this.app.fakePortController.closePort();
     } else {
@@ -769,6 +877,9 @@ export class SerialController {
       }
 
       return true;
+    } else if (connectionType === ConnectionType.BLUETOOTH) {
+      // For Bluetooth, need a selected device
+      return this.app.settings.portConfiguration.selectedBluetoothDevice !== null;
     }
 
     // Unknown connection type

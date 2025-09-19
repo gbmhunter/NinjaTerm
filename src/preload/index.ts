@@ -131,6 +131,28 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Analytics operations
   analytics: {
     event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
+  },
+
+  // Bluetooth operations
+  bluetooth: {
+    startPeripheralScan: () => ipcRenderer.invoke('bluetooth:start-peripheral-scan'),
+    getDiscoveredDevices: () => ipcRenderer.invoke('bluetooth:get-discovered-devices'),
+    connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
+    disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
+    writeData: (deviceId: string, data: number[]) => ipcRenderer.invoke('bluetooth:write-data', deviceId, data),
+
+    // Event listeners
+    onDataReceived: (callback: (deviceId: string, data: Buffer) => void) => {
+      ipcRenderer.on('bluetooth:data-received', (event, deviceId, data) => callback(deviceId, data));
+    },
+    onDeviceDisconnected: (callback: (deviceId: string) => void) => {
+      ipcRenderer.on('bluetooth:device-disconnected', (event, deviceId) => callback(deviceId));
+    },
+
+    // Remove listeners
+    removeAllListeners: (channel: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    }
   }
 });
 
@@ -187,6 +209,16 @@ export interface ElectronAPI {
   };
   analytics: {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;
+  };
+  bluetooth: {
+    startPeripheralScan(): Promise<{ success: boolean; error?: string }>;
+    getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
+    connectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
+    disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
+    writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
+    onDeviceDisconnected(callback: (deviceId: string) => void): void;
+    removeAllListeners(channel: string): void;
   };
 }
 

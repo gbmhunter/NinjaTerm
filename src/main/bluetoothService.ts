@@ -21,7 +21,21 @@ export class BluetoothService {
 
   nobleState: string | null = null;
 
-  constructor() {
+  // Connected devices and their characteristics
+  connectedPeripherals = new Map<string, {
+    peripheral: import('@abandonware/noble').Peripheral;
+    writeCharacteristic: import('@abandonware/noble').Characteristic | null;
+    readCharacteristic: import('@abandonware/noble').Characteristic | null;
+  }>();
+
+  // For storing received data batches similar to serial/socket services
+  private dataBatches = new Map<string, Buffer[]>();
+  private batchTimeouts = new Map<string, NodeJS.Timeout>();
+  private readonly RX_DATA_BATCH_TIMEOUT_MS = 50;
+  private mainWindow: import('electron').BrowserWindow | null = null;
+
+  constructor(mainWindow?: import('electron').BrowserWindow) {
+    this.mainWindow = mainWindow || null;
     if (isCI || !noble) {
       console.log('Detected CI environment. Bluetooth functionality disabled.');
       return;
@@ -43,6 +57,30 @@ export class BluetoothService {
       return { success: true };
     });
 
+    ipcMain.handle('bluetooth:get-discovered-devices', () => {
+      console.log('bluetooth:get-discovered-devices called.');
+      try {
+        return { success: true, devices: this.discoveredPeripherals };
+      } catch (error) {
+        return { success: false, error: (error as Error).message };
+      }
+    });
+
+    ipcMain.handle('bluetooth:connect-device', async (_event, deviceId: string) => {
+      console.log('bluetooth:connect-device called. deviceId=', deviceId);
+      return await this.connectToDevice(deviceId);
+    });
+
+    ipcMain.handle('bluetooth:disconnect-device', async (_event, deviceId: string) => {
+      console.log('bluetooth:disconnect-device called. deviceId=', deviceId);
+      return await this.disconnectFromDevice(deviceId);
+    });
+
+    ipcMain.handle('bluetooth:write-data', async (_event, deviceId: string, data: number[]) => {
+      console.log('bluetooth:write-data called. deviceId=', deviceId, 'data.length=', data.length);
+      return await this.writeData(deviceId, data);
+    });
+
   }
 
   onStateChange = (state: string) => {
@@ -54,7 +92,12 @@ export class BluetoothService {
     if (isCI || !noble) return;
 
     console.log('onDiscover called. peripheral.id=', peripheral.id);
-    this.discoveredPeripherals.push(peripheral);
+
+    // Check if we already have this device (avoid duplicates)
+    const existingDevice = this.discoveredPeripherals.find(p => p.id === peripheral.id);
+    if (!existingDevice) {
+      this.discoveredPeripherals.push(peripheral);
+    }
   }
 
   onScanningError = (error?: Error) => {
@@ -93,6 +136,10 @@ export class BluetoothService {
     if (this.nobleState !== 'poweredOn') {
       throw new Error('noble must be in the poweredOn state to start scanning for peripherals.');
     }
+
+    // Clear previously discovered devices
+    this.discoveredPeripherals = [];
+
     this.isScanningForPeripherals = true;
     noble.startScanning([], false, this.onScanningError);
 
@@ -102,6 +149,203 @@ export class BluetoothService {
       console.log('Stopping scan after 5 seconds.');
       noble.stopScanning();
     }, SCAN_DURATION_MS);
+  }
+
+  private sendBatchedData(deviceId: string) {
+    const batch = this.dataBatches.get(deviceId);
+    if (batch && batch.length > 0) {
+      const combinedBuffer = Buffer.concat(batch);
+      this.mainWindow?.webContents.send('bluetooth:data-received', deviceId, combinedBuffer);
+      this.dataBatches.set(deviceId, []);
+    }
+  }
+
+  async connectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
+    if (isCI || !noble) {
+      return { success: false, error: 'Bluetooth not available in CI environment' };
+    }
+
+    try {
+      // Find the device in discovered peripherals
+      const peripheral = this.discoveredPeripherals.find(p => p.id === deviceId);
+      if (!peripheral) {
+        return { success: false, error: 'Device not found in discovered peripherals' };
+      }
+
+      // Connect to the peripheral
+      await new Promise<void>((resolve, reject) => {
+        peripheral.connect((error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      console.log(`Connected to Bluetooth device: ${deviceId}`);
+
+      // Discover services and characteristics
+      const { services, characteristics } = await new Promise<{
+        services: import('@abandonware/noble').Service[];
+        characteristics: import('@abandonware/noble').Characteristic[];
+      }>((resolve, reject) => {
+        peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve({ services: services || [], characteristics: characteristics || [] });
+          }
+        });
+      });
+
+      console.log(`Discovered ${services.length} services and ${characteristics.length} characteristics`);
+
+      // Find suitable characteristics for reading and writing
+      // Look for characteristics with notify/read properties for RX
+      // Look for characteristics with write properties for TX
+      let readCharacteristic: import('@abandonware/noble').Characteristic | null = null;
+      let writeCharacteristic: import('@abandonware/noble').Characteristic | null = null;
+
+      for (const char of characteristics) {
+        if (char.properties.includes('notify') || char.properties.includes('read')) {
+          readCharacteristic = char;
+        }
+        if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
+          writeCharacteristic = char;
+        }
+      }
+
+      if (!readCharacteristic && !writeCharacteristic) {
+        peripheral.disconnect();
+        return { success: false, error: 'No suitable characteristics found for communication' };
+      }
+
+      // Set up data batching for this device
+      this.dataBatches.set(deviceId, []);
+
+      // Subscribe to notifications if available
+      if (readCharacteristic && readCharacteristic.properties.includes('notify')) {
+        await new Promise<void>((resolve, reject) => {
+          readCharacteristic!.subscribe((error) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
+
+        readCharacteristic.on('data', (data: Buffer) => {
+          console.log(`Received data from ${deviceId}:`, data);
+
+          const batch = this.dataBatches.get(deviceId);
+          if (batch) {
+            const isFirstChar = batch.length === 0;
+            batch.push(data);
+
+            if (isFirstChar) {
+              const timeout = setTimeout(() => {
+                this.sendBatchedData(deviceId);
+                this.batchTimeouts.delete(deviceId);
+              }, this.RX_DATA_BATCH_TIMEOUT_MS);
+              this.batchTimeouts.set(deviceId, timeout);
+            }
+          }
+        });
+      }
+
+      // Handle disconnection
+      peripheral.on('disconnect', () => {
+        console.log(`Bluetooth device disconnected: ${deviceId}`);
+        this.connectedPeripherals.delete(deviceId);
+
+        // Clean up batching
+        const timeout = this.batchTimeouts.get(deviceId);
+        if (timeout) {
+          clearTimeout(timeout);
+          this.batchTimeouts.delete(deviceId);
+        }
+        this.sendBatchedData(deviceId); // Send any remaining data
+        this.dataBatches.delete(deviceId);
+
+        this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
+      });
+
+      // Store the connection
+      this.connectedPeripherals.set(deviceId, {
+        peripheral,
+        readCharacteristic,
+        writeCharacteristic
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(`Failed to connect to Bluetooth device ${deviceId}:`, error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
+    if (isCI || !noble) {
+      return { success: false, error: 'Bluetooth not available in CI environment' };
+    }
+
+    try {
+      const connection = this.connectedPeripherals.get(deviceId);
+      if (!connection) {
+        return { success: false, error: 'Device not connected' };
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        connection.peripheral.disconnect((error?: Error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  async writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }> {
+    if (isCI || !noble) {
+      return { success: false, error: 'Bluetooth not available in CI environment' };
+    }
+
+    try {
+      const connection = this.connectedPeripherals.get(deviceId);
+      if (!connection) {
+        return { success: false, error: 'Device not connected' };
+      }
+
+      if (!connection.writeCharacteristic) {
+        return { success: false, error: 'No write characteristic available' };
+      }
+
+      const buffer = Buffer.from(data);
+
+      await new Promise<void>((resolve, reject) => {
+        connection.writeCharacteristic!.write(buffer, false, (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
+      return { success: false, error: (error as Error).message };
+    }
   }
 
 }

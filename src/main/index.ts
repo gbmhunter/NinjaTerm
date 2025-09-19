@@ -116,8 +116,8 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.webContents.send('update-downloaded', info);
 });
 
-// Initialize Bluetooth service
-const bluetoothService = new BluetoothService();
+// Initialize Bluetooth service (will be updated with mainWindow after createWindow)
+let bluetoothService: BluetoothService;
 
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
@@ -163,6 +163,9 @@ app.whenReady().then(() => {
 
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
+
+  // Initialize Bluetooth service with mainWindow
+  bluetoothService = new BluetoothService(mainWindow);
 
   installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
     .then((ext) => console.log(`Added Extension:  ${ext.name}`))

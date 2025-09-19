@@ -972,6 +972,12 @@ export class App {
           if (!result.success) {
             throw new Error(result.error || 'Failed to write data');
           }
+        } else if (this.serialController.currentBluetoothDeviceId) {
+          // Bluetooth connection
+          const result = await (window as any).electronAPI.bluetooth.writeData(this.serialController.currentBluetoothDeviceId, Array.from(bytesToWrite));
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to write data');
+          }
         } else {
           // No active connection
           return;
