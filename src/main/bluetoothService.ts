@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
 
 // Use noble from @abandonware/noble. The @noble/noble package is not maintained.
 // Only import noble if not in CI environment to avoid build failures
@@ -57,14 +58,7 @@ export class BluetoothService {
       return { success: true };
     });
 
-    ipcMain.handle('bluetooth:get-discovered-devices', () => {
-      console.log('bluetooth:get-discovered-devices called.');
-      try {
-        return { success: true, devices: this.discoveredPeripherals };
-      } catch (error) {
-        return { success: false, error: (error as Error).message };
-      }
-    });
+    ipcMain.handle('bluetooth:get-discovered-devices', this.onIpcGetDiscoveredDevices);
 
     ipcMain.handle('bluetooth:connect-device', async (_event, deviceId: string) => {
       console.log('bluetooth:connect-device called. deviceId=', deviceId);
@@ -149,6 +143,36 @@ export class BluetoothService {
       console.log('Stopping scan after 5 seconds.');
       noble.stopScanning();
     }, SCAN_DURATION_MS);
+  }
+
+  /**
+   * Handler for when the renderer requests the list of discovered devices.
+   */
+  onIpcGetDiscoveredDevices = (): BluetoothDeviceResponse => {
+    console.log('bluetooth:get-discovered-devices called.');
+    try {
+      // Convert peripheral objects to serializable format
+      const serializableDevices: SerializableBluetoothDevice[] = this.discoveredPeripherals.map(peripheral => ({
+        id: peripheral.id,
+        uuid: peripheral.uuid,
+        address: peripheral.address,
+        addressType: peripheral.addressType,
+        connectable: peripheral.connectable,
+        advertisement: {
+          localName: peripheral.advertisement?.localName,
+          serviceUuids: peripheral.advertisement?.serviceUuids,
+          manufacturerData: peripheral.advertisement?.manufacturerData,
+          serviceData: peripheral.advertisement?.serviceData,
+          txPowerLevel: peripheral.advertisement?.txPowerLevel
+        },
+        rssi: peripheral.rssi,
+        state: peripheral.state
+      }));
+
+      return { success: true, devices: serializableDevices };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
   }
 
   private sendBatchedData(deviceId: string) {

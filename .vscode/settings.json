@@ -62,6 +62,7 @@
     "overscan",
     "precaching",
     "Rescan",
+    "RSSI",
     "rtscts",
     "samuelmeuli",
     "scrollback",
