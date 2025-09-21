@@ -53,12 +53,12 @@ export default observer((props: Props) => {
   const { app } = props;
 
   const rightDrawer = app.terminals.rightDrawer;
-  
+
   // Local state for socket port input to allow empty/partial values during editing
   const [socketPortInput, setSocketPortInput] = useState<string>(
     app.settings.portConfiguration.socketPort.toString()
   );
-  
+
   // Sync local state when model value changes externally
   useEffect(() => {
     setSocketPortInput(app.settings.portConfiguration.socketPort.toString());
@@ -134,6 +134,7 @@ export default observer((props: Props) => {
                 >
                   <MenuItem value={ConnectionType.SERIAL_PORT}>Serial Port</MenuItem>
                   <MenuItem value={ConnectionType.SOCKET}>Socket</MenuItem>
+                  <MenuItem value={ConnectionType.BLUETOOTH}>Bluetooth</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -306,7 +307,7 @@ export default observer((props: Props) => {
                   // Allow empty field and digits only
                   if (value === '' || /^\d+$/.test(value)) {
                     setSocketPortInput(value);
-                    
+
                     // Update the model only if it's a valid number within range
                     if (value !== '' && /^\d+$/.test(value)) {
                       const port = parseInt(value, 10);
@@ -319,7 +320,7 @@ export default observer((props: Props) => {
                 onBlur={(e) => {
                   const value = e.target.value;
                   let finalValue: number;
-                  
+
                   if (value === '' || isNaN(parseInt(value, 10))) {
                     // Reset to current model value if empty or invalid
                     finalValue = app.settings.portConfiguration.socketPort;
@@ -333,7 +334,7 @@ export default observer((props: Props) => {
                       finalValue = port;
                     }
                   }
-                  
+
                   // Update both local state and model
                   setSocketPortInput(finalValue.toString());
                   app.settings.portConfiguration.setSocketPort(finalValue);
@@ -342,7 +343,7 @@ export default observer((props: Props) => {
                   if (e.key === 'Enter') {
                     const value = (e.target as HTMLInputElement).value;
                     let finalValue: number;
-                    
+
                     if (value === '' || isNaN(parseInt(value, 10))) {
                       finalValue = app.settings.portConfiguration.socketPort;
                     } else {
@@ -355,7 +356,7 @@ export default observer((props: Props) => {
                         finalValue = port;
                       }
                     }
-                    
+
                     // Update both local state and model
                     setSocketPortInput(finalValue.toString());
                     app.settings.portConfiguration.setSocketPort(finalValue);

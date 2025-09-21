@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
-const SCAN_DURATION_MS = 5000;
+const SCAN_DURATION_MS = 10000;
 
 export class BluetoothService {
 
@@ -77,6 +77,8 @@ export class BluetoothService {
   onNobleDiscover = (peripheral: noble.Peripheral) => {
     console.log('onNobleDiscover called. peripheral.id=', peripheral.id);
 
+    this.mainWindow?.webContents.send('bluetooth:device-discovered', this.noblePeripheralToSerializable(peripheral));
+
     // Check if we already have this device (avoid duplicates)
     // const existingDevice = this.discoveredDevices.find(p => p.id === peripheral.id);
     // if (existingDevice) {
@@ -92,6 +94,19 @@ export class BluetoothService {
 
     // If we get here, we have a valid device we want to present to the user
     this.discoveredDevices.push(peripheral);
+  }
+
+  noblePeripheralToSerializable = (peripheral: noble.Peripheral): SerializableBluetoothDevice => {
+    return {
+      id: peripheral.id,
+      uuid: peripheral.uuid,
+      address: peripheral.address,
+      addressType: peripheral.addressType,
+      connectable: peripheral.connectable,
+      advertisement: peripheral.advertisement,
+      rssi: peripheral.rssi,
+      state: peripheral.state
+    };
   }
 
   onScanningError = (error?: Error) => {

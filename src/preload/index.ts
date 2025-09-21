@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
+import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -137,6 +138,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   bluetooth: {
     startPeripheralScan: () => ipcRenderer.invoke('bluetooth:start-peripheral-scan'),
     getDiscoveredDevices: () => ipcRenderer.invoke('bluetooth:get-discovered-devices'),
+    onDeviceDiscovered: (callback: (device: SerializableBluetoothDevice) => void) => {
+      ipcRenderer.on('bluetooth:device-discovered', (event, device) => callback(device));
+    },
     connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
     disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
     writeData: (deviceId: string, data: number[]) => ipcRenderer.invoke('bluetooth:write-data', deviceId, data),
@@ -213,6 +217,7 @@ export interface ElectronAPI {
   bluetooth: {
     startPeripheralScan(): Promise<{ success: boolean; error?: string }>;
     getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
+    onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
     connectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
     writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }>;

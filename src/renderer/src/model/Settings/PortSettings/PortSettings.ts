@@ -108,9 +108,9 @@ export class PortSettings {
   socketConnTimeoutDispMs = '5000';
 
   // Bluetooth connection settings
-  availableBluetoothDevices: SerializableBluetoothDevice[] = [];
-  selectedBluetoothDevice: SerializableBluetoothDevice | null = null;
-  isBluetoothScanning = false;
+  // availableBluetoothDevices: SerializableBluetoothDevice[] = [];
+  // selectedBluetoothDevice: SerializableBluetoothDevice | null = null;
+  // isBluetoothScanning = false;
 
   constructor(app: App) {
     this.app = app;
@@ -227,53 +227,53 @@ export class PortSettings {
     this.selectedSerialPort = port;
   }
 
-  scanForBluetoothDevices = async () => {
-    this.isBluetoothScanning = true;
-    this.availableBluetoothDevices = []; // Clear previous results
+  // scanForBluetoothDevices = async () => {
+  //   this.isBluetoothScanning = true;
+  //   this.availableBluetoothDevices = []; // Clear previous results
 
-    try {
-      const result = await window.electronAPI.bluetooth.startPeripheralScan();
-      if (result.success) {
-        this.app.snackbar.sendToSnackbar('Bluetooth scan started...', 'info');
+  //   try {
+  //     const result = await window.electronAPI.bluetooth.startPeripheralScan();
+  //     if (result.success) {
+  //       this.app.snackbar.sendToSnackbar('Bluetooth scan started...', 'info');
 
-        // Poll for discovered devices during scan
-        const pollInterval = setInterval(async () => {
-          try {
-            const devicesResult = await window.electronAPI.bluetooth.getDiscoveredDevices();
-            if (devicesResult.success && devicesResult.devices) {
-              runInAction(() => {
-                this.availableBluetoothDevices = devicesResult.devices || [];
-              });
-            }
-          } catch (error) {
-            console.warn('Failed to poll for Bluetooth devices:', error);
-          }
-        }, 500); // Poll every 500ms
+  //       // Poll for discovered devices during scan
+  //       const pollInterval = setInterval(async () => {
+  //         try {
+  //           const devicesResult = await window.electronAPI.bluetooth.getDiscoveredDevices();
+  //           if (devicesResult.success && devicesResult.devices) {
+  //             runInAction(() => {
+  //               this.availableBluetoothDevices = devicesResult.devices || [];
+  //             });
+  //           }
+  //         } catch (error) {
+  //           console.warn('Failed to poll for Bluetooth devices:', error);
+  //         }
+  //       }, 500); // Poll every 500ms
 
-        // Stop scanning indicator and polling after scan duration
-        setTimeout(() => {
-          clearInterval(pollInterval);
-          this.isBluetoothScanning = false;
-          this.app.snackbar.sendToSnackbar(`Bluetooth scan completed. Found ${this.availableBluetoothDevices.length} device(s).`, 'success');
-        }, 5000); // Stop scanning indicator after 5 seconds (matches bluetoothService timeout)
-      } else {
-        this.app.snackbar.sendToSnackbar(`Failed to scan for Bluetooth devices: ${result.error}`, 'error');
-        this.isBluetoothScanning = false;
-      }
-    } catch (error) {
-      this.app.snackbar.sendToSnackbar('Failed to scan for Bluetooth devices.', 'error');
-      this.isBluetoothScanning = false;
-    }
-  }
+  //       // Stop scanning indicator and polling after scan duration
+  //       setTimeout(() => {
+  //         clearInterval(pollInterval);
+  //         this.isBluetoothScanning = false;
+  //         this.app.snackbar.sendToSnackbar(`Bluetooth scan completed. Found ${this.availableBluetoothDevices.length} device(s).`, 'success');
+  //       }, 5000); // Stop scanning indicator after 5 seconds (matches bluetoothService timeout)
+  //     } else {
+  //       this.app.snackbar.sendToSnackbar(`Failed to scan for Bluetooth devices: ${result.error}`, 'error');
+  //       this.isBluetoothScanning = false;
+  //     }
+  //   } catch (error) {
+  //     this.app.snackbar.sendToSnackbar('Failed to scan for Bluetooth devices.', 'error');
+  //     this.isBluetoothScanning = false;
+  //   }
+  // }
 
   /**
    * Set the selected Bluetooth device.
    *
    * @param device The Bluetooth device to set as selected.
    */
-  setSelectedBluetoothDevice = (device: SerializableBluetoothDevice) => {
-    this.selectedBluetoothDevice = device;
-  }
+  // setSelectedBluetoothDevice = (device: SerializableBluetoothDevice) => {
+  //   this.selectedBluetoothDevice = device;
+  // }
 
   setConnectionType = (connectionType: ConnectionType) => {
     this.connectionType = connectionType;

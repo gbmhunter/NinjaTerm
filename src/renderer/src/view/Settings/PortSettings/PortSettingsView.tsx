@@ -673,10 +673,22 @@ function PortSettingsView(props: Props) {
           </Typography>
 
           <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
-            <Table size="small" sx={{ tableLayout: 'fixed', minWidth: 900 }}>
+            <Table
+              size="small"
+              sx={{
+                tableLayout: 'fixed',
+                minWidth: 900,
+                '& .MuiTableCell-root': {
+                  paddingTop: '5px',
+                  paddingBottom: '5px',
+                  paddingLeft: '8px',
+                  paddingRight: '8px'
+                }
+              }}
+            >
               <TableHead>
                 <TableRow>
-                  <TableCell padding="checkbox" sx={{ width: '50px' }}>Select</TableCell>
+                  <TableCell sx={{ width: '60px' }}>Select</TableCell>
                   <TableCell sx={{ width: '120px' }}>Address</TableCell>
                   <TableCell sx={{ width: '160px' }}>Advertisement Name</TableCell>
                   <TableCell sx={{ width: '150px' }}>Mfg Data</TableCell>
@@ -685,31 +697,37 @@ function PortSettingsView(props: Props) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {(app.settings.portConfiguration.availableBluetoothDevices || []).length === 0 ? (
+                {(app.serialController.bluetoothLEController.discoveredBluetoothDevices || []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                      <div style={{ padding: '16px' }}>
                       No Bluetooth devices found. Click "Scan" to search for devices.
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.settings.portConfiguration.availableBluetoothDevices.map((device: SerializableBluetoothDevice, idx: number) => (
+                  app.serialController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDevice, idx: number) => (
                     <TableRow
                       key={device.id || idx}
                       hover={!isTableDisabled}
-                      selected={app.settings.portConfiguration.selectedBluetoothDevice?.id === device.id}
+                      selected={app.serialController.bluetoothLEController.selectedBluetoothDevice?.id === device.id}
                       sx={{
                         cursor: isTableDisabled ? 'not-allowed' : 'pointer',
                         opacity: isTableDisabled ? 0.5 : 1
                       }}
-                      onClick={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedBluetoothDevice(device)}
+                      onClick={isTableDisabled ? undefined : () => app.serialController.bluetoothLEController.setSelectedBluetoothDevice(device)}
                     >
-                      <TableCell padding="checkbox">
+                      <TableCell>
                         <Radio
-                          checked={app.settings.portConfiguration.selectedBluetoothDevice?.id === device.id}
-                          onChange={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedBluetoothDevice(device)}
+                          checked={app.serialController.bluetoothLEController.selectedBluetoothDevice?.id === device.id}
+                          onChange={isTableDisabled ? undefined : () => app.serialController.bluetoothLEController.setSelectedBluetoothDevice(device)}
                           value={device.id}
                           name="bluetooth-device-selection"
                           disabled={isTableDisabled}
+                          size='small'
+                          sx={{
+                            padding: '0px'
+                          }}
                         />
                       </TableCell>
                       <TableCell sx={{
@@ -763,12 +781,12 @@ function PortSettingsView(props: Props) {
               variant="outlined"
               size="medium"
               sx={{ m: 1 }}
-              disabled={app.settings.portConfiguration.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
+              disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
               onClick={async () => {
-                await app.settings.portConfiguration.scanForBluetoothDevices();
+                await app.serialController.bluetoothLEController.scanForBluetoothDevices();
               }}
             >
-              {app.settings.portConfiguration.isBluetoothScanning ? 'Scanning...' : 'Scan'}
+              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Scanning...' : 'Scan'}
             </Button>
 
             {/* =============================================================== */}
