@@ -2,8 +2,6 @@ import { ipcMain } from 'electron';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
-const SCAN_DURATION_MS = 10000;
-
 export class BluetoothService {
 
   discoveredDevices: noble.Peripheral[] = [];
@@ -49,6 +47,8 @@ export class BluetoothService {
       }
       return { success: true };
     });
+
+    ipcMain.handle('bluetooth:stop-peripheral-scan', this.onIpcStopPeripheralScan);
 
     ipcMain.handle('bluetooth:get-discovered-devices', this.onIpcGetDiscoveredDevices);
 
@@ -144,11 +144,17 @@ export class BluetoothService {
     noble.startScanning([], false, this.onScanningError);
 
     // Setup timer to stop scanning after 5 seconds
-    console.log('Setting up scanning timer...');
-    this.scanningTimer = setTimeout(() => {
-      console.log('Stopping scan after 5 seconds.');
-      noble.stopScanning();
-    }, SCAN_DURATION_MS);
+    // console.log('Setting up scanning timer...');
+    // this.scanningTimer = setTimeout(() => {
+    //   console.log('Stopping scan after 5 seconds.');
+    //   noble.stopScanning();
+    // }, SCAN_DURATION_MS);
+  }
+
+  onIpcStopPeripheralScan = (): { success: boolean; error?: string } => {
+    console.log('onIpcStopPeripheralScan called.');
+    noble.stopScanning();
+    return { success: true };
   }
 
   onDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {

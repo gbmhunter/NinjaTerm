@@ -34,6 +34,17 @@ beforeEach(() => {
         onClosed: vi.fn(),
         removeAllListeners: vi.fn(),
         disconnectAllSocketsAndRemoveListeners: vi.fn(),
+      },
+      bluetooth: {
+        startPeripheralScan: vi.fn().mockResolvedValue({ success: true }),
+        stopPeripheralScan: vi.fn().mockResolvedValue({ success: true }),
+        connectDevice: vi.fn().mockResolvedValue({ success: true }),
+        disconnectDevice: vi.fn().mockResolvedValue({ success: true }),
+        writeData: vi.fn().mockResolvedValue({ success: true }),
+        onDeviceDiscovered: vi.fn(),
+        onDataReceived: vi.fn(),
+        onDeviceDisconnected: vi.fn(),
+        removeAllListeners: vi.fn(),
       }
     },
     writable: true,
