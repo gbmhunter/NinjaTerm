@@ -141,14 +141,8 @@ export class BluetoothService {
     this.discoveredDevices = [];
 
     this.isScanningForPeripherals = true;
-    noble.startScanning([], false, this.onScanningError);
-
-    // Setup timer to stop scanning after 5 seconds
-    // console.log('Setting up scanning timer...');
-    // this.scanningTimer = setTimeout(() => {
-    //   console.log('Stopping scan after 5 seconds.');
-    //   noble.stopScanning();
-    // }, SCAN_DURATION_MS);
+    noble.startScanning([], true, this.onScanningError);
+    // The renderer process will tell us when to stop scanning
   }
 
   onIpcStopPeripheralScan = (): { success: boolean; error?: string } => {
