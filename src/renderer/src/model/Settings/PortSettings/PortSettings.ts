@@ -40,6 +40,7 @@ export enum FlowControl {
 };
 
 export enum ConnectionType {
+  FAKE = 'fake',
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
   BLUETOOTH = 'bluetooth',
@@ -405,7 +406,7 @@ export class PortSettings {
    */
   _reconnectIfNeeded = async () => {
     if (this.app.serialController.portState === PortState.OPENED) {
-      await this.app.serialController.closePort({ silenceSnackbar: true});
+      await this.app.serialController.closeConnection({ silenceSnackbar: true});
       await this.app.serialController.openPort({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }

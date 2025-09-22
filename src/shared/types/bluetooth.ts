@@ -2,12 +2,17 @@
  * Shared types for Bluetooth functionality between main and renderer processes
  */
 
+import noble from '@abandonware/noble';
+
 export interface BluetoothDeviceAdvertisement {
-  localName?: string;
-  serviceUuids?: string[];
-  manufacturerData?: Buffer;
-  serviceData?: Array<{ uuid: string; data: Buffer }>;
-  txPowerLevel?: number;
+  /**
+   * This can be '' if not known.
+   */
+  localName: string;
+  manufacturerData: Buffer;
+  serviceData: Array<{ uuid: string; data: Buffer }>;
+  serviceUuids: string[];
+  txPowerLevel: number;
 }
 
 export interface SerializableBluetoothDevice {
@@ -16,7 +21,10 @@ export interface SerializableBluetoothDevice {
   address: string;
   addressType: string;
   connectable: boolean;
-  advertisement: BluetoothDeviceAdvertisement;
+  /**
+   * The noble advertisement object is directly serializable, no need to copy its internal fields individually.
+   */
+  advertisement: noble.Advertisement;
   rssi: number;
   state: string;
 }
@@ -25,4 +33,32 @@ export interface BluetoothDeviceResponse {
   success: boolean;
   devices?: SerializableBluetoothDevice[];
   error?: string;
+}
+
+export interface PeripheralServicesAndCharacteristics {
+  services: noble.Service[];
+}
+
+export interface SerializableService {
+  uuid: string;
+  name?: string;
+  type?: string;
+  characteristics: SerializableCharacteristic[];
+}
+
+export interface SerializableCharacteristic {
+  uuid: string;
+  name?: string;
+  properties: string[];
+  descriptors?: SerializableDescriptor[];
+}
+
+export interface SerializableDescriptor {
+  uuid: string;
+  name?: string;
+}
+
+export interface BluetoothDeviceServicesMessage {
+  deviceId: string;
+  services: SerializableService[];
 }

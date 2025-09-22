@@ -483,7 +483,7 @@ export class AppDataManager {
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
       if (this.app.serialController.portState === PortState.OPENED) {
-        await this.app.serialController.closePort({ silenceSnackbar: true });
+        await this.app.serialController.closeConnection({ silenceSnackbar: true });
       } else if (this.app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
         this.app.serialController.stopWaitingToReopenPort();
       }

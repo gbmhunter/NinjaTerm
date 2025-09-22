@@ -38,7 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
+import { SerializableBluetoothDeviceWithMetadata } from '@/model/SerialController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -227,7 +227,7 @@ function PortSettingsView(props: Props) {
             } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
               app.serialController.stopWaitingToReopenPort();
             } else if (app.serialController.portState === PortState.OPENED) {
-              app.serialController.closePort();
+              app.serialController.closeConnection();
             } else {
               throw Error('Invalid port state.');
             }
@@ -644,7 +644,7 @@ function PortSettingsView(props: Props) {
                   } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                     app.serialController.stopWaitingToReopenPort();
                   } else if (app.serialController.portState === PortState.OPENED) {
-                    app.serialController.closePort();
+                    app.serialController.closeConnection();
                   } else {
                     throw Error('Invalid port state.');
                   }
@@ -694,6 +694,7 @@ function PortSettingsView(props: Props) {
                   <TableCell sx={{ width: '150px' }}>Mfg Data</TableCell>
                   <TableCell sx={{ width: '90px' }}>Connectable</TableCell>
                   <TableCell sx={{ width: '70px' }}>RSSI</TableCell>
+                  <TableCell sx={{ width: '70px' }}>Supported Protocols</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -706,11 +707,11 @@ function PortSettingsView(props: Props) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.serialController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDevice, idx: number) => (
+                  app.serialController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
                     <TableRow
-                      key={device.id || idx}
+                      key={device.nobleData.id || idx}
                       hover={!isTableDisabled}
-                      selected={app.serialController.bluetoothLEController.selectedBluetoothDevice?.id === device.id}
+                      selected={app.serialController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
                       sx={{
                         cursor: isTableDisabled ? 'not-allowed' : 'pointer',
                         opacity: isTableDisabled ? 0.5 : 1
@@ -719,9 +720,9 @@ function PortSettingsView(props: Props) {
                     >
                       <TableCell>
                         <Radio
-                          checked={app.serialController.bluetoothLEController.selectedBluetoothDevice?.id === device.id}
+                          checked={app.serialController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
                           onChange={isTableDisabled ? undefined : () => app.serialController.bluetoothLEController.setSelectedBluetoothDevice(device)}
-                          value={device.id}
+                          value={device.nobleData.id}
                           name="bluetooth-device-selection"
                           disabled={isTableDisabled}
                           size='small'
@@ -737,7 +738,7 @@ function PortSettingsView(props: Props) {
                         fontSize: '0.8rem',
                         fontFamily: 'monospace'
                       }}>
-                        {device.address || 'n/a'}
+                        {device.nobleData.address || 'n/a'}
                       </TableCell>
                       <TableCell sx={{
                         overflow: 'hidden',
@@ -745,7 +746,7 @@ function PortSettingsView(props: Props) {
                         whiteSpace: 'nowrap',
                         fontSize: '0.8rem'
                       }}>
-                        {device.advertisement.localName || '-'}
+                        {device.nobleData.advertisement.localName || '-'}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -756,15 +757,18 @@ function PortSettingsView(props: Props) {
                           whiteSpace: 'nowrap',
                           color: 'text.secondary'
                         }}
-                        title={formatManufacturerData(device.advertisement.manufacturerData)}
+                        title={formatManufacturerData(device.nobleData.advertisement.manufacturerData)}
                       >
-                        {formatManufacturerData(device.advertisement.manufacturerData)}
+                        {formatManufacturerData(device.nobleData.advertisement.manufacturerData)}
                       </TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
-                        {device.connectable ? '✓' : '✗'}
+                        {device.nobleData.connectable ? '✓' : '✗'}
                       </TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
-                        {device.rssi || 'n/a'}
+                        {device.nobleData.rssi || 'n/a'}
+                      </TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
+                        {device.serialCapabilities.nordicNus ? 'Nordic NUS' : '-'}
                       </TableCell>
                     </TableRow>
                   ))
@@ -808,7 +812,7 @@ function PortSettingsView(props: Props) {
                 } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                   app.serialController.stopWaitingToReopenPort();
                 } else if (app.serialController.portState === PortState.OPENED) {
-                  app.serialController.closePort();
+                  app.serialController.closeConnection();
                 } else {
                   throw Error('Invalid port state.');
                 }

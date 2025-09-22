@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
-import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothDeviceServicesMessage } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -153,6 +153,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onDeviceDisconnected: (callback: (deviceId: string) => void) => {
       ipcRenderer.on('bluetooth:device-disconnected', (event, deviceId) => callback(deviceId));
     },
+    onDeviceServicesDiscovered: (callback: (servicesMessage: BluetoothDeviceServicesMessage) => void) => {
+      ipcRenderer.on('bluetooth:device-services-discovered', (event, servicesMessage) => callback(servicesMessage));
+    },
 
     // Remove listeners
     removeAllListeners: (channel: string) => {
@@ -225,6 +228,7 @@ export interface ElectronAPI {
     writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
     onDeviceDisconnected(callback: (deviceId: string) => void): void;
+    onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothDeviceServicesMessage) => void): void;
     removeAllListeners(channel: string): void;
   };
 }

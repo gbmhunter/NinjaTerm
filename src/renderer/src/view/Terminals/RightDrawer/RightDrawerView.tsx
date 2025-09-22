@@ -429,7 +429,7 @@ export default observer((props: Props) => {
                   } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                     app.serialController.stopWaitingToReopenPort();
                   } else if (app.serialController.portState === PortState.OPENED) {
-                    app.serialController.closePort();
+                    app.serialController.closeConnection();
                   } else {
                     throw Error('Invalid port state.');
                   }

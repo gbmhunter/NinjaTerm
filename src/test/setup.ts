@@ -44,6 +44,7 @@ beforeEach(() => {
         onDeviceDiscovered: vi.fn(),
         onDataReceived: vi.fn(),
         onDeviceDisconnected: vi.fn(),
+        onDeviceServicesDiscovered: vi.fn(),
         removeAllListeners: vi.fn(),
       }
     },

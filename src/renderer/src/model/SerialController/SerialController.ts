@@ -16,6 +16,8 @@ export enum PortType {
  * Class responsible for all high-level serial port related functionality.
  *
  * This used to be in App but moved here when the amount of logic was getting large.
+ *
+ * TODO: Rename to ConnectionController as this now supports different types of connections (serial port, socket, Bluetooth).
  */
 export class SerialController {
 
@@ -36,6 +38,11 @@ export class SerialController {
   // Current Bluetooth device ID for IPC communication
   currentBluetoothDeviceId: string | null = null;
 
+  /**
+   * The state of the connection.
+   *
+   * This is used no matter what the connection type is, e.g. it applies to serial ports, sockets, and Bluetooth.
+   */
   portState = PortState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
@@ -303,74 +310,7 @@ export class SerialController {
         return false;
       }
     } else if (connectionType === ConnectionType.BLUETOOTH) {
-      // Bluetooth connection logic
-      // const selectedDevice = this.app.settings.portConfiguration.selectedBluetoothDevice;
-
-      // if (!selectedDevice) {
-      //   this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Port Settings.', 'error');
-      //   return false;
-      // }
-
-      // // Show the circular progress modal when trying to connect to Bluetooth device
-      // this.app.setShowCircularProgressModal(true);
-
-      // try {
-      //   // Make direct IPC call to connect to Bluetooth device
-      //   const result = await window.electronAPI.bluetooth.connectDevice(selectedDevice.id);
-
-      //   if (!result.success) {
-      //     throw new Error(result.error);
-      //   }
-
-      //   // Store the current device ID for IPC communication
-      //   this.currentBluetoothDeviceId = selectedDevice.id;
-
-      //   // Save device info for reconnection purposes
-      //   this.bluetoothDeviceInfo = {
-      //     deviceId: selectedDevice.id,
-      //     deviceName: selectedDevice.advertisement?.localName || 'Unknown Device'
-      //   };
-
-      //   // Set up IPC event listeners for data reception
-      //   window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
-      //     if (deviceId === this.currentBluetoothDeviceId) {
-      //       // Buffer can be used directly as Uint8Array - much faster than conversion
-      //       const uint8Array = new Uint8Array(data);
-      //       this.app.parseRxData(uint8Array);
-      //     }
-      //   });
-
-      //   // Listen for disconnection events
-      //   window.electronAPI.bluetooth.onDeviceDisconnected((deviceId: string) => {
-      //     console.log('onBluetoothDeviceDisconnected() called. deviceId=', deviceId);
-      //     if (deviceId === this.currentBluetoothDeviceId) {
-      //       this.handlePortClosed();
-      //     }
-      //   });
-
-      //   runInAction(() => {
-      //     // Stop any existing polling since we're now connected
-      //     this.stopPollingForReconnection();
-      //     this.portState = PortState.OPENED;
-      //     this.lastSelectedPortType = PortType.BLUETOOTH;
-      //   });
-
-      //   if (!silenceSnackbar) {
-      //     const deviceName = selectedDevice.advertisement?.localName || selectedDevice.id;
-      //     this.app.snackbar.sendToSnackbar(`Bluetooth device connected: ${deviceName}`, 'success');
-      //   }
-
-      //   this.app.setShowCircularProgressModal(false);
-
-      //   // Create custom GA4 event to see how many Bluetooth connections have been opened in NinjaTerm
-      //   await window.electronAPI.analytics.event('bluetooth_connect');
-      // } catch (error) {
-      //   const msg = `Error connecting to Bluetooth device: ${error}`;
-      //   this.app.snackbar.sendToSnackbar(msg, 'error');
-      //   console.error(msg);
-      //   this.app.setShowCircularProgressModal(false);
-      //   return false;
-      // }
+      this.bluetoothLEController.open();
     } else {
       throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
     }
@@ -389,49 +329,39 @@ export class SerialController {
   }
 
   /**
-   * Closes the open serial port.
+   * Closes the open connection.
    *
    * @param goToReopenState If true, the port will be set to the CLOSED_BUT_WILL_REOPEN state.
    * @param silenceSnackbar If true, the snackbar will not be shown when the port is closed successfully.
    */
-  async closePort({ goToReopenState = false, silenceSnackbar = false } = {}) {
-    if (this.lastSelectedPortType === PortType.REAL) {
-      if (this.currentPortPath) {
-        // Make direct IPC call to close the port
-        const result = await window.electronAPI.serial.closePort(this.currentPortPath);
-        if (!result.success) {
-          console.error('Error closing port:', result.error);
+  async closeConnection({ goToReopenState = false, silenceSnackbar = false } = {}) {
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      if (this.lastSelectedPortType === PortType.REAL) {
+        if (this.currentPortPath) {
+          // Make direct IPC call to close the port
+          const result = await window.electronAPI.serial.closePort(this.currentPortPath);
+          if (!result.success) {
+            console.error('Error closing port:', result.error);
+          }
         }
-      }
 
-      // Wrap in action
-      runInAction(() => {
-        if (goToReopenState) {
-          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
-          // Start polling for the port to become available again
-          this.startPollingForReconnection();
-        } else {
-          // Stop polling if we're explicitly closing the port
-          this.stopPollingForReconnection();
-          this.portState = PortState.CLOSED;
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar('Serial port closed.', 'success');
         }
-      });
 
-      if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar('Serial port closed.', 'success');
+        this.currentPortPath = null;
+        const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
+        lastUsedSerialPort.portState = PortState.CLOSED;
+
+        // Disconnect all listeners
+        window.electronAPI.serial.removeAllListeners('serial:data-received');
+        window.electronAPI.serial.removeAllListeners('serial:error');
+        window.electronAPI.serial.removeAllListeners('serial:port-closed');
+
+        this.app.profileManager.saveAppData();
       }
-
-      this.currentPortPath = null;
-      const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-      lastUsedSerialPort.portState = PortState.CLOSED;
-
-      // Disconnect all listeners
-      window.electronAPI.serial.removeAllListeners('serial:data-received');
-      window.electronAPI.serial.removeAllListeners('serial:error');
-      window.electronAPI.serial.removeAllListeners('serial:port-closed');
-
-      this.app.profileManager.saveAppData();
-    } else if (this.lastSelectedPortType === PortType.SOCKET) {
+    } else if (connectionType === ConnectionType.SOCKET) {
       if (this.currentSocketConnectionId) {
         // Make direct IPC call to disconnect the socket
         const result = await window.electronAPI.socket.disconnect(this.currentSocketConnectionId);
@@ -439,19 +369,6 @@ export class SerialController {
           console.error('Error disconnecting socket:', result.error);
         }
       }
-
-      // Wrap in action
-      runInAction(() => {
-        if (goToReopenState) {
-          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
-          // Start polling for socket reconnection
-          this.startPollingForReconnection();
-        } else {
-          // Stop polling if we're explicitly closing the socket
-          this.stopPollingForReconnection();
-          this.portState = PortState.CLOSED;
-        }
-      });
 
       if (!silenceSnackbar) {
         this.app.snackbar.sendToSnackbar('Socket disconnected.', 'success');
@@ -463,43 +380,31 @@ export class SerialController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
-    } else if (this.lastSelectedPortType === PortType.BLUETOOTH) {
-      if (this.currentBluetoothDeviceId) {
-        // Make direct IPC call to disconnect the Bluetooth device
-        const result = await window.electronAPI.bluetooth.disconnectDevice(this.currentBluetoothDeviceId);
-        if (!result.success) {
-          console.error('Error disconnecting Bluetooth device:', result.error);
-        }
-      }
-
-      // Wrap in action
-      runInAction(() => {
-        if (goToReopenState) {
-          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
-          // Start polling for Bluetooth device reconnection
-          this.startPollingForReconnection();
-        } else {
-          // Stop polling if we're explicitly closing the device
-          this.stopPollingForReconnection();
-          this.portState = PortState.CLOSED;
-        }
-      });
-
-      if (!silenceSnackbar) {
-        const deviceName = this.bluetoothDeviceInfo?.deviceName || 'Bluetooth device';
-        this.app.snackbar.sendToSnackbar(`${deviceName} disconnected.`, 'success');
-      }
-
-      this.currentBluetoothDeviceId = null;
-
-      // Disconnect all listeners
-      window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
-      window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
-    } else if (this.lastSelectedPortType === PortType.FAKE) {
+    } else if (connectionType === ConnectionType.BLUETOOTH) {
+      // The Bluetooth LE controller handles closing the Bluetooth connection
+      this.bluetoothLEController.close();
+    } else if (connectionType === ConnectionType.FAKE) {
       this.app.fakePortController.closePort();
     } else {
       throw Error('Unsupported port type!');
     }
+
+    //==============================================
+    // CODE BELOW IS THE SAME FOR ALL CONNECTION TYPES
+    //==============================================
+
+    // Wrap in action
+    runInAction(() => {
+      if (goToReopenState) {
+        this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
+        // Start polling for Bluetooth device reconnection
+        this.startPollingForReconnection();
+      } else {
+        // Stop polling if we're explicitly closing the device
+        this.stopPollingForReconnection();
+        this.portState = PortState.CLOSED;
+      }
+    });
 
     // No matter what type, clear the flow control polling timer
     if (this.flowControlPollingTimer) {

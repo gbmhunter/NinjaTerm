@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { SerializableBluetoothDevice, BluetoothDeviceResponse } from '../shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothDeviceServicesMessage, SerializableService, SerializableCharacteristic } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
 export class BluetoothService {
@@ -54,7 +54,7 @@ export class BluetoothService {
 
     ipcMain.handle('bluetooth:connect-device', async (_event, deviceId: string) => {
       console.log('bluetooth:connect-device called. deviceId=', deviceId);
-      return await this.connectToDevice(deviceId);
+      return await this.onIpcConnectToDevice(deviceId);
     });
 
     ipcMain.handle('bluetooth:disconnect-device', async (_event, deviceId: string) => {
@@ -76,6 +76,10 @@ export class BluetoothService {
 
   onNobleDiscover = (peripheral: noble.Peripheral) => {
     console.log('onNobleDiscover called. peripheral.id=', peripheral.id);
+
+    if (peripheral.id.startsWith('f7a2')) {
+      console.log('Peripheral:', peripheral);
+    }
 
     this.mainWindow?.webContents.send('bluetooth:device-discovered', this.noblePeripheralToSerializable(peripheral));
 
@@ -107,6 +111,23 @@ export class BluetoothService {
       rssi: peripheral.rssi,
       state: peripheral.state
     };
+  }
+
+  convertServicesToSerializable = (services: noble.Service[]): SerializableService[] => {
+    return services.map(service => ({
+      uuid: service.uuid,
+      name: service.name,
+      type: service.type,
+      characteristics: service.characteristics?.map(char => ({
+        uuid: char.uuid,
+        name: char.name,
+        properties: char.properties || [],
+        descriptors: char.descriptors?.map(desc => ({
+          uuid: desc.uuid,
+          name: desc.name
+        }))
+      })) || []
+    }));
   }
 
   onScanningError = (error?: Error) => {
@@ -141,6 +162,9 @@ export class BluetoothService {
     this.discoveredDevices = [];
 
     this.isScanningForPeripherals = true;
+
+    // Setting allowDuplicates to true allowed me to capture more information from a Bluetooth device on Windows which would sometimes
+    // return some fields in a discover event, but not in subsequent events.
     noble.startScanning([], true, this.onScanningError);
     // The renderer process will tell us when to stop scanning
   }
@@ -195,7 +219,7 @@ export class BluetoothService {
     }
   }
 
-  async connectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
+  async onIpcConnectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
     try {
       // Find the device in discovered peripherals
       const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
@@ -218,8 +242,8 @@ export class BluetoothService {
 
       // Discover services and characteristics
       const { services, characteristics } = await new Promise<{
-        services: import('@abandonware/noble').Service[];
-        characteristics: import('@abandonware/noble').Characteristic[];
+        services: noble.Service[];
+        characteristics: noble.Characteristic[];
       }>((resolve, reject) => {
         peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
           if (error) {
@@ -231,12 +255,14 @@ export class BluetoothService {
       });
 
       console.log(`Discovered ${services.length} services and ${characteristics.length} characteristics`);
+      console.log('services=', services);
+      console.log('characteristics=', characteristics);
 
       // Find suitable characteristics for reading and writing
       // Look for characteristics with notify/read properties for RX
       // Look for characteristics with write properties for TX
-      let readCharacteristic: import('@abandonware/noble').Characteristic | null = null;
-      let writeCharacteristic: import('@abandonware/noble').Characteristic | null = null;
+      let readCharacteristic: noble.Characteristic | null = null;
+      let writeCharacteristic: noble.Characteristic | null = null;
 
       for (const char of characteristics) {
         if (char.properties.includes('notify') || char.properties.includes('read')) {
@@ -288,19 +314,7 @@ export class BluetoothService {
 
       // Handle disconnection
       peripheral.on('disconnect', () => {
-        console.log(`Bluetooth device disconnected: ${deviceId}`);
-        this.connectedPeripherals.delete(deviceId);
-
-        // Clean up batching
-        const timeout = this.batchTimeouts.get(deviceId);
-        if (timeout) {
-          clearTimeout(timeout);
-          this.batchTimeouts.delete(deviceId);
-        }
-        this.sendBatchedData(deviceId); // Send any remaining data
-        this.dataBatches.delete(deviceId);
-
-        this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
+        this.onNoblePeripheralDisconnect(peripheral);
       });
 
       // Store the connection
@@ -310,6 +324,15 @@ export class BluetoothService {
         writeCharacteristic
       });
 
+      // Send device services information to renderer
+      const serializableServices = this.convertServicesToSerializable(services);
+      const servicesMessage: BluetoothDeviceServicesMessage = {
+        deviceId,
+        services: serializableServices
+      };
+
+      this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
+
       return { success: true };
     } catch (error) {
       console.error(`Failed to connect to Bluetooth device ${deviceId}:`, error);
@@ -318,6 +341,7 @@ export class BluetoothService {
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
+
     try {
       const connection = this.connectedPeripherals.get(deviceId);
       if (!connection) {
@@ -339,6 +363,23 @@ export class BluetoothService {
       console.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
       return { success: false, error: (error as Error).message };
     }
+  }
+
+  onNoblePeripheralDisconnect = (peripheral: noble.Peripheral) => {
+    const deviceId = peripheral.id;
+    console.log(`Bluetooth device disconnected: ${deviceId}`);
+    this.connectedPeripherals.delete(deviceId);
+
+    // Clean up batching
+    const timeout = this.batchTimeouts.get(deviceId);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.batchTimeouts.delete(deviceId);
+    }
+    this.sendBatchedData(deviceId); // Send any remaining data
+    this.dataBatches.delete(deviceId);
+
+    this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
   }
 
   async writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }> {
