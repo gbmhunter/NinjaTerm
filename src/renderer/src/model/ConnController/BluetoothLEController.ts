@@ -166,21 +166,6 @@ export class BluetoothLEController {
     this.selectedBluetoothDevice = device;
   }
 
-  /** Callback that is called when the main process sends device services information after connection. */
-  // private onIpcBluetoothDeviceServicesDiscovered = (servicesMessage: BluetoothOnConnectMessage) => {
-  //   console.log('Received device services for device:', servicesMessage.deviceId, 'services:', servicesMessage.services);
-
-  //   runInAction(() => {
-  //     this.connectedDeviceServices = servicesMessage.services;
-  //   });
-
-  //   // Optionally show a snackbar with service count
-  //   this.app.snackbar.sendToSnackbar(
-  //     `Discovered ${servicesMessage.services.length} services on connected Bluetooth device.`,
-  //     'info'
-  //   );
-  // }
-
   /**
    * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
    */
@@ -196,6 +181,13 @@ export class BluetoothLEController {
 
   }
 
+  /**
+   * Called by the main process when the connection attempt is complete. This could be either because the connection attempt was successful or failed.
+   *
+   * @param error The error message if the connection attempt failed.
+   * @param bluetoothConnectionAttemptSuccess The success message if the connection attempt was successful.
+   * @returns
+   */
   async onIpcBluetoothConnectionAttemptComplete (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) {
     console.log('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
     this.app.setShowCircularProgressModal(false);
@@ -272,7 +264,10 @@ export class BluetoothLEController {
       return;
     }
 
-    const setupReadAndWriteResult = await window.electronAPI.bluetooth.setupReadAndWrite(foundProtocol.serviceUuid, foundProtocol.rxUuid, foundProtocol.txUuid);
+    const setupReadAndWriteResult = await window.electronAPI.bluetooth.setupReadAndWrite(
+      foundProtocol.serviceUuid,
+      foundProtocol.rxUuid,
+      foundProtocol.txUuid);
     if (!setupReadAndWriteResult.success) {
       this.app.snackbar.sendToSnackbar(`Failed to setup read and write on connected Bluetooth device. Error: ${setupReadAndWriteResult.error}.`, 'error');
       return;
@@ -306,6 +301,7 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = null;
       this.connectedDeviceServices = [];
+      this.app.serialController.portState = PortState.CLOSED;
     });
 
     // Disconnect all listeners
@@ -330,6 +326,7 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = null;
       this.connectedDeviceServices = [];
+      this.app.serialController.portState = PortState.CLOSED;
     });
 
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');

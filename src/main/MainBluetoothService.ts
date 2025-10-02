@@ -182,8 +182,14 @@ export class MainBluetoothService {
     return { success: true };
   }
 
-  onDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
-    console.log('onDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
+  /**
+   * Called when the noble library discovers services and characteristics on a peripheral.
+   * @param error
+   * @param services
+   * @param characteristics
+   */
+  onNobleDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
+    console.log('onNobleDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
 
     // Save the discovered services and characteristics
     this.discoveredServices = services;
@@ -264,46 +270,23 @@ export class MainBluetoothService {
   }
 
   onConnect = (peripheral: noble.Peripheral, error: string) => {
+    if (error) {
+      console.error(`Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+      // Emit a IPC connection attempt complete message, indicating failure
+      this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', error, null);
+      return;
+    }
+
+    // If we get here, connection was successful
     console.log(`Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
     this.connectedPeripheral = peripheral;
 
-    // // Discover services and characteristics
-    // const { services, characteristics } = await new Promise<{
-    //   services: noble.Service[];
-    //   characteristics: noble.Characteristic[];
-    // }>((resolve, reject) => {
-    //   peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
-    //     if (error) {
-    //       reject(error);
-    //     } else {
-    //       resolve({ services: services || [], characteristics: characteristics || [] });
-    //     }
-    //   });
-    // });
+    peripheral.discoverAllServicesAndCharacteristics(this.onNobleDiscoveredServicesAndCharacteristics);
 
-    peripheral.discoverAllServicesAndCharacteristics(this.onDiscoveredServicesAndCharacteristics);
-
-    // console.log(`Discovered ${services.length} services and ${characteristics.length} characteristics`);
-    // console.log('services=', services);
-    // console.log('characteristics=', characteristics);
-
-    // // Save discovered services, we need to keep these around to use when the renderer process wants to
-    // // read and write data.
-    // this.discoveredServices = services;
-
-    // // Handle disconnection
-    // peripheral.on('disconnect', () => {
-    //   this.onNoblePeripheralDisconnect(peripheral);
-    // });
-
-    // Send device services information to renderer
-    // const serializableServices = this.convertServicesToSerializable(services);
-    // const servicesMessage: BluetoothServicesMessage = {
-    //   deviceId,
-    //   services: serializableServices
-    // };
-
-    // this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
+    // Handle disconnection
+    peripheral.on('disconnect', () => {
+      this.onNoblePeripheralDisconnect(peripheral);
+    });
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
@@ -332,7 +315,7 @@ export class MainBluetoothService {
   }
 
   /** Called by the noble library when a peripheral disconnects, e.g. after disconnectFromDevice() is called or the device itself initiates the disconnect. */
-  onNoblePeripheralDisconnect = (peripheral: noble.Peripheral) => {
+  onNoblePeripheralDisconnect(peripheral: noble.Peripheral) {
     if (this.connectedPeripheral === null) {
       console.log('Got disconnect event for peripheral, but no device is connected. Ignoring.');
       return;
