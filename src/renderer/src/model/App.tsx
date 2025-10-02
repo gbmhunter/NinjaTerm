@@ -957,35 +957,11 @@ export class App {
    * @param bytesToWrite
    */
   async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
-    if ((window as any).electronAPI) {
-      try {
-        // Check if we're using serial port or socket connection
-        if (this.serialController.currentPortPath) {
-          // Serial port connection
-          const result = await (window as any).electronAPI.serial.writeData(this.serialController.currentPortPath, Array.from(bytesToWrite));
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to write data');
-          }
-        } else if (this.serialController.currentSocketConnectionId) {
-          // Socket connection
-          const result = await (window as any).electronAPI.socket.writeData(this.serialController.currentSocketConnectionId, Array.from(bytesToWrite));
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to write data');
-          }
-        } else if (this.serialController.currentBluetoothDeviceId) {
-          // Bluetooth connection
-          const result = await (window as any).electronAPI.bluetooth.writeData(this.serialController.currentBluetoothDeviceId, Array.from(bytesToWrite));
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to write data');
-          }
-        } else {
-          // No active connection
-          return;
-        }
-      } catch (error) {
-        this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
-        return;
-      }
+    try {
+      await this.serialController.writeData(bytesToWrite);
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
+      return;
     }
 
     this.terminals.txTerminal.parseData(bytesToWrite, DataDirection.TX);

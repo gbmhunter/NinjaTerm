@@ -795,4 +795,37 @@ export class SerialController {
     // Unknown connection type
     return false;
   }
+
+  /**
+   * Write data to the current connection.
+   *
+   * @param bytesToWrite The data to write.
+   */
+  writeData = async (bytesToWrite: Uint8Array) => {
+
+    // Check based on connection type
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    // Check if we're using serial port or socket connection
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      // Serial port connection
+      const result = await window.electronAPI.serial.writeData(this.currentPortPath!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.SOCKET) {
+      // Socket connection
+      const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.BLUETOOTH) {
+      // Bluetooth connection
+      this.bluetoothLEController.sendData(bytesToWrite);
+    } else {
+      // No active connection
+      return;
+    }
+
+  }
 }

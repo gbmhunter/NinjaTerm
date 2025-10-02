@@ -60,13 +60,13 @@ export class BluetoothService {
       return await this.disconnectFromDevice(deviceId);
     });
 
-    ipcMain.handle('bluetooth:write-data', async (_event, deviceId: string, data: number[]) => {
-      console.log('bluetooth:write-data called. deviceId=', deviceId, 'data.length=', data.length);
-      return await this.writeData(deviceId, data);
+    ipcMain.handle('bluetooth:write-data', async (_event, data: Buffer) => {
+      console.log('bluetooth:write-data called. data.length=', data.length);
+      return await this.writeData(data);
     });
 
-    ipcMain.handle('bluetooth:setup-read-and-write', async (_event, rxServiceUuid: string, rxCharacteristicUuid: string, txServiceUuid: string, txCharacteristicUuid: string) => {
-      return await this.setupReadAndWrite(rxServiceUuid, rxCharacteristicUuid, txServiceUuid, txCharacteristicUuid);
+    ipcMain.handle('bluetooth:setup-read-and-write', async (_event, serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string) => {
+      return await this.setupReadAndWrite(serviceUuid, rxCharacteristicUuid, txCharacteristicUuid);
     });
 
   }
@@ -393,7 +393,7 @@ export class BluetoothService {
     this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
   }
 
-  async writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }> {
+  async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {
     // try {
     //   const connection = this.connectedPeripherals.get(deviceId);
     //   if (!connection) {
@@ -421,10 +421,27 @@ export class BluetoothService {
     //   console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
     //   return { success: false, error: (error as Error).message };
     // }
+    if (!this.connectedPeripheral) {
+      return { success: false, error: 'No device is connected. Cannot write data.' };
+    }
+
+    if (!this.txCharacteristic) {
+      return { success: false, error: 'No write characteristic available. Cannot write data.' };
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      this.txCharacteristic!.write(data, true, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
     return { success: true };
   }
 
-  async setupReadAndWrite(rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
+  async setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
     const peripheral = this.connectedPeripheral;
     if (!peripheral) {
       return { success: false, error: 'No device is connected. Cannot setup read and write.' };
@@ -434,9 +451,9 @@ export class BluetoothService {
       return { success: false, error: 'No services have been discovered (this.discoveredServices is null). Cannot setup read and write.' };
     }
 
-    const service = this.discoveredServices.find(service => service.uuid === rxServiceUuid);
+    const service = this.discoveredServices.find(service => service.uuid === serviceUuid);
     if (!service) {
-      return { success: false, error: `Service with UUID "${rxServiceUuid}" not found. Cannot setup read and write.` };
+      return { success: false, error: `Service with UUID "${serviceUuid}" not found. Cannot setup read and write.` };
     }
 
     const rxCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === rxCharacteristicUuid);

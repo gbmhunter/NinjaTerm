@@ -283,4 +283,17 @@ export class BluetoothLEController {
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
   }
+
+  /**
+   * Send data to the connected Bluetooth device. Shows a snackbar error if there is no connected Bluetooth device.
+   *
+   * @param data The data to send.
+   */
+  sendData = (data: Uint8Array) => {
+    if (!this.connectedBluetoothDevice) {
+      this.app.snackbar.sendToSnackbar('No Bluetooth device connected. Cannot send data.', 'error');
+      return;
+    }
+    window.electronAPI.bluetooth.writeData(Buffer.from(data));
+  }
 }

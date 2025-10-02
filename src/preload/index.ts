@@ -144,7 +144,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
     disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
-    writeData: (deviceId: string, data: number[]) => ipcRenderer.invoke('bluetooth:write-data', deviceId, data),
+    writeData: (data: Buffer) => ipcRenderer.invoke('bluetooth:write-data', data),
 
     // Event listeners
     onDataReceived: (callback: (deviceId: string, data: Buffer) => void) => {
@@ -161,7 +161,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     removeAllListeners: (channel: string) => {
       ipcRenderer.removeAllListeners(channel);
     },
-    setupReadAndWrite: (rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string) => ipcRenderer.invoke('bluetooth:setup-read-and-write', rxServiceUuid, rxCharacteristicUuid, txCharacteristicUuid),
+    setupReadAndWrite: (serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string) => ipcRenderer.invoke('bluetooth:setup-read-and-write', serviceUuid, rxCharacteristicUuid, txCharacteristicUuid),
   }
 });
 
@@ -226,12 +226,12 @@ export interface ElectronAPI {
     onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
     connectDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMsg | null; error?: string }>;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
-    writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    writeData(data: Buffer): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
     onDeviceDisconnected(callback: (deviceId: string) => void): void;
     // onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothOnConnectMessage) => void): void;
     removeAllListeners(channel: string): void;
-    setupReadAndWrite(rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }>;
+    setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
   };
 }
