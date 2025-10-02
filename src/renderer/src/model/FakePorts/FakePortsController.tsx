@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
 import { App, MainPanes } from 'src/model/App';
-import { PortType } from 'src/model/SerialController/SerialController';
+import { PortType } from '@/model/ConnController/ConnController';
 import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';

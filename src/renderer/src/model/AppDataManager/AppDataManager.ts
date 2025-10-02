@@ -503,7 +503,7 @@ export class AppDataManager {
     // Now connect to the port if we need to
     if (weNeedToConnect) {
       this.app.serialController.setSelectedPort(matchedAvailablePorts[0]);
-      await this.app.serialController.openPort({ silenceSnackbar: true });
+      await this.app.serialController.openConnection({ silenceSnackbar: true });
       snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
     }
 

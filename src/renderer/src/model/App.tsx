@@ -22,7 +22,7 @@ import { isRunningOnWindows } from './Util/Util';
 import { AppDataManager } from './AppDataManager/AppDataManager';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
-import { SerialController } from './SerialController/SerialController';
+import { ConnController } from './ConnController/ConnController';
 
 declare global {
   interface String {
@@ -127,7 +127,7 @@ export class App {
   /**
    * Responsible for all serial port related functionality.
    */
-  serialController: SerialController;
+  serialController: ConnController;
 
 
   constructor(testing = false) {
@@ -146,7 +146,7 @@ export class App {
 
     this.performanceMonitor = new PerformanceMonitor();
 
-    this.serialController = new SerialController(this);
+    this.serialController = new ConnController(this);
 
     this.terminals = new Terminals(this);
 

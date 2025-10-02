@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
-import { SerialController } from '@/model/SerialController/SerialController';
+import { ConnController } from '@/model/ConnController/ConnController';
 import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
 
 export enum PortState {
@@ -216,7 +216,7 @@ export class PortSettings {
     const result = await window.electronAPI.serial.listPorts();
     runInAction(() => {
       if (result.success) {
-        this.availableSerialPorts = SerialController.sortSerialPortsNaturally(result.ports!);
+        this.availableSerialPorts = ConnController.sortSerialPortsNaturally(result.ports!);
       } else {
         this.availableSerialPorts = [];
         this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
@@ -407,7 +407,7 @@ export class PortSettings {
   _reconnectIfNeeded = async () => {
     if (this.app.serialController.portState === PortState.OPENED) {
       await this.app.serialController.closeConnection({ silenceSnackbar: true});
-      await this.app.serialController.openPort({ silenceSnackbar: true});
+      await this.app.serialController.openConnection({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }
   }

@@ -24,7 +24,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
 import { App, MainPanes } from '@/model/App';
-import { PortType } from '@/model/SerialController/SerialController';
+import { PortType } from '@/model/ConnController/ConnController';
 import MacroView from './MacroRowView';
 import MacroSettingsModalView from './MacroSettingsModalView';
 import ApplyableTextFieldView from '@/view/Components/ApplyableTextFieldView';
@@ -425,7 +425,7 @@ export default observer((props: Props) => {
                 }
                 onClick={() => {
                   if (app.serialController.portState === PortState.CLOSED) {
-                    app.serialController.openPort();
+                    app.serialController.openConnection();
                   } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                     app.serialController.stopWaitingToReopenPort();
                   } else if (app.serialController.portState === PortState.OPENED) {

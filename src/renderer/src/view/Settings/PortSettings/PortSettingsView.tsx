@@ -38,7 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDeviceWithMetadata } from '@/model/SerialController/BluetoothLEController';
+import { SerializableBluetoothDeviceWithMetadata } from '@/model/ConnController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -223,7 +223,7 @@ function PortSettingsView(props: Props) {
           }
           onClick={() => {
             if (app.serialController.portState === PortState.CLOSED) {
-              app.serialController.openPort();
+              app.serialController.openConnection();
             } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
               app.serialController.stopWaitingToReopenPort();
             } else if (app.serialController.portState === PortState.OPENED) {
@@ -640,7 +640,7 @@ function PortSettingsView(props: Props) {
                 }
                 onClick={() => {
                   if (app.serialController.portState === PortState.CLOSED) {
-                    app.serialController.openPort();
+                    app.serialController.openConnection();
                   } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                     app.serialController.stopWaitingToReopenPort();
                   } else if (app.serialController.portState === PortState.OPENED) {
@@ -703,7 +703,7 @@ function PortSettingsView(props: Props) {
               }
               onClick={() => {
                 if (app.serialController.portState === PortState.CLOSED) {
-                  app.serialController.openPort();
+                  app.serialController.openConnection();
                 } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
                   app.serialController.stopWaitingToReopenPort();
                 } else if (app.serialController.portState === PortState.OPENED) {

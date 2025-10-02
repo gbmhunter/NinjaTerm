@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
-import { SerialController } from './SerialController';
+import { ConnController } from './ConnController';
 
 describe('SerialController', () => {
   describe('sortSerialPortsNaturally', () => {
@@ -14,7 +14,7 @@ describe('SerialController', () => {
         { path: 'COM7', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['COM1', 'COM2', 'COM6', 'COM7', 'COM10', 'COM16']);
@@ -28,7 +28,7 @@ describe('SerialController', () => {
         { path: '/dev/ttyUSB1', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/ttyUSB0', '/dev/ttyUSB1', '/dev/ttyUSB2', '/dev/ttyUSB10']);
@@ -41,7 +41,7 @@ describe('SerialController', () => {
         { path: '/dev/tty2', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/tty1', '/dev/tty2', '/dev/tty12']);
@@ -54,7 +54,7 @@ describe('SerialController', () => {
         { path: '/dev/cu.usbserial-2', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/cu.usbserial-1', '/dev/cu.usbserial-2', '/dev/cu.usbserial-10']);
@@ -68,7 +68,7 @@ describe('SerialController', () => {
         { path: '/dev/tty12', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/tty2', '/dev/tty12', '/dev/ttyUSB1', '/dev/ttyUSB10']);
@@ -81,7 +81,7 @@ describe('SerialController', () => {
         { path: '/dev/ttyM', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/ttyA', '/dev/ttyM', '/dev/ttyZ']);
@@ -95,7 +95,7 @@ describe('SerialController', () => {
         { path: '/dev/ttyA', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
 
-      const sortedPorts = SerialController.sortSerialPortsNaturally(unsortedPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(unsortedPorts);
       const sortedPaths = sortedPorts.map(port => port.path);
 
       expect(sortedPaths).toEqual(['/dev/tty2', '/dev/tty10', '/dev/ttyA', '/dev/ttyZ']);
@@ -103,7 +103,7 @@ describe('SerialController', () => {
 
     it('should handle empty array', () => {
       const emptyPorts: PortInfo[] = [];
-      const sortedPorts = SerialController.sortSerialPortsNaturally(emptyPorts);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(emptyPorts);
       expect(sortedPorts).toEqual([]);
     });
 
@@ -111,7 +111,7 @@ describe('SerialController', () => {
       const singlePort: PortInfo[] = [
         { path: 'COM1', manufacturer: 'test', serialNumber: 'test', pnpId: 'test', locationId: 'test', vendorId: 'test', productId: 'test' },
       ];
-      const sortedPorts = SerialController.sortSerialPortsNaturally(singlePort);
+      const sortedPorts = ConnController.sortSerialPortsNaturally(singlePort);
       expect(sortedPorts).toHaveLength(1);
       expect(sortedPorts[0].path).toBe('COM1');
     });

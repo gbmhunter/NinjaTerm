@@ -13,13 +13,13 @@ export enum PortType {
 }
 
 /**
- * Class responsible for all high-level serial port related functionality.
+ * Class responsible for all high-level connection related functionality.
  *
  * This used to be in App but moved here when the amount of logic was getting large.
  *
- * TODO: Rename to ConnectionController as this now supports different types of connections (serial port, socket, Bluetooth).
+ * This supports different types of connections (serial port, socket, Bluetooth).
  */
-export class SerialController {
+export class ConnController {
 
   currentFlowControlState: {
     dtr: boolean; // DTE -> DCE. Data Terminal Ready. Write only (from node serialport).
@@ -70,7 +70,7 @@ export class SerialController {
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
   /**
-   * Creates a new SerialController instance.
+   * Creates a new ConnController instance.
    *
    * @param app The main app instance.
    */
@@ -95,13 +95,13 @@ export class SerialController {
   }
 
   /**
-   * Opens the selected serial port using settings from the Port Configuration view.
+   * Opens the selected connection. This depends on the selected connection type, and the relevant connection settings per type.
    *
    * @param obj Optional object with the following properties:
    * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openPort({ silenceSnackbar = false } = {}) {
+  async openConnection({ silenceSnackbar = false } = {}) {
     // Determine the port type based on connection type
     const connectionType = this.app.settings.portConfiguration.connectionType;
 
@@ -595,7 +595,7 @@ export class SerialController {
             this.stopPollingForReconnection();
             // Set the selected port and attempt to reconnect
             this.setSelectedPort(matchingPort);
-            await this.openPort({ silenceSnackbar: true });
+            await this.openConnection({ silenceSnackbar: true });
             this.app.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
           }
         }

@@ -23,7 +23,7 @@ import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 
 import { App } from 'src/model/App';
-import { PortType } from 'src/model/SerialController/SerialController';
+import { PortType } from '@/model/ConnController/ConnController';
 import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
@@ -123,7 +123,7 @@ export default observer((props: Props) => {
           }
           onClick={() => {
             if (app.serialController.portState === PortState.CLOSED) {
-              app.serialController.openPort();
+              app.serialController.openConnection();
             } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
               app.serialController.stopWaitingToReopenPort();
             } else if (app.serialController.portState === PortState.OPENED) {
