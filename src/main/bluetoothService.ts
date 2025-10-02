@@ -439,22 +439,29 @@ export class BluetoothService {
       return { success: false, error: `Service with UUID "${rxServiceUuid}" not found. Cannot setup read and write.` };
     }
 
-    const readCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === rxCharacteristicUuid);
-    if (!readCharacteristic) {
+    const rxCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === rxCharacteristicUuid);
+    if (!rxCharacteristic) {
       return { success: false, error: `Read characteristic with UUID "${rxCharacteristicUuid}" not found. Cannot setup read and write.` };
     }
 
-    const writeCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === txCharacteristicUuid);
-    if (!writeCharacteristic) {
+    const txCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === txCharacteristicUuid);
+    if (!txCharacteristic) {
       return { success: false, error: `Write characteristic with UUID "${txCharacteristicUuid}" not found. Cannot setup read and write.` };
     }
 
-    this.txCharacteristic = writeCharacteristic;
-    this.rxCharacteristic = readCharacteristic;
+    this.txCharacteristic = txCharacteristic;
+    this.rxCharacteristic = rxCharacteristic;
 
-    // Setup listener on tx characteristic
-    writeCharacteristic.on('data', (data: Buffer) => {
+    // Setup listener for TX data. Before we can do this, we need to start notifications.
+    txCharacteristic.notify(true, (error) => {
+      if (error) {
+        console.log(`Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
+      }
+    });
+    txCharacteristic.on('data', (data: Buffer) => {
       console.log(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
+      // Send data to renderer
+      this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
     });
 
     return { success: true };

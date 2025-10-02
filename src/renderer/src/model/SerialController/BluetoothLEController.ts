@@ -251,65 +251,13 @@ export class BluetoothLEController {
       return;
     }
 
-      // try {
-      //   // Make direct IPC call to connect to Bluetooth device
-      //   const result = await window.electronAPI.bluetooth.connectDevice(selectedDevice.id);
-
-      //   if (!result.success) {
-      //     throw new Error(result.error);
-      //   }
-
-      //   // Store the current device ID for IPC communication
-      //   this.currentBluetoothDeviceId = selectedDevice.id;
-
-      //   // Save device info for reconnection purposes
-      //   this.bluetoothDeviceInfo = {
-      //     deviceId: selectedDevice.id,
-      //     deviceName: selectedDevice.advertisement?.localName || 'Unknown Device'
-      //   };
-
-      //   // Set up IPC event listeners for data reception
-      //   window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
-      //     if (deviceId === this.currentBluetoothDeviceId) {
-      //       // Buffer can be used directly as Uint8Array - much faster than conversion
-      //       const uint8Array = new Uint8Array(data);
-      //       this.app.parseRxData(uint8Array);
-      //     }
-      //   });
-
-      //   // Listen for disconnection events
-      //   window.electronAPI.bluetooth.onDeviceDisconnected((deviceId: string) => {
-      //     console.log('onBluetoothDeviceDisconnected() called. deviceId=', deviceId);
-      //     if (deviceId === this.currentBluetoothDeviceId) {
-      //       this.handlePortClosed();
-      //     }
-      //   });
-
-      //   runInAction(() => {
-      //     // Stop any existing polling since we're now connected
-      //     this.stopPollingForReconnection();
-      //     this.portState = PortState.OPENED;
-      //     this.lastSelectedPortType = PortType.BLUETOOTH;
-      //   });
-
-      //   if (!silenceSnackbar) {
-      //     const deviceName = selectedDevice.advertisement?.localName || selectedDevice.id;
-      //     this.app.snackbar.sendToSnackbar(`Bluetooth device connected: ${deviceName}`, 'success');
-      //   }
-
-      //   this.app.setShowCircularProgressModal(false);
-
-      //   // Create custom GA4 event to see how many Bluetooth connections have been opened in NinjaTerm
-      //   await window.electronAPI.analytics.event('bluetooth_connect');
-      // } catch (error) {
-      //   const msg = `Error connecting to Bluetooth device: ${error}`;
-      //   this.app.snackbar.sendToSnackbar(msg, 'error');
-      //   console.error(msg);
-      //   this.app.setShowCircularProgressModal(false);
-      //   return false;
-      // }
+    // Setup listener for RX data
+    window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
+      this.app.parseRxData(data);
+    });
   }
 
+  /** Close the Bluetooth connection to currently connected Bluetooth device. */
   close = async () => {
     console.log('BluetoothLEController.close() called');
     if (!this.connectedBluetoothDevice) {
@@ -332,7 +280,7 @@ export class BluetoothLEController {
     });
 
     // Disconnect all listeners
-    // window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
-    // window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
+    window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
+    window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
   }
 }

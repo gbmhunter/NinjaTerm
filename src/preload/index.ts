@@ -232,6 +232,7 @@ export interface ElectronAPI {
     // onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothOnConnectMessage) => void): void;
     removeAllListeners(channel: string): void;
     setupReadAndWrite(rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }>;
+    onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
   };
 }
 
