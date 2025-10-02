@@ -59,6 +59,8 @@ export class BluetoothLEController {
 
   isBluetoothScanning = false;
 
+  scanningTimer: NodeJS.Timeout | null = null;
+
   constructor(app: App) {
     this.app = app;
     // Register for Bluetooth device discovered events
@@ -95,11 +97,14 @@ export class BluetoothLEController {
       this.isBluetoothScanning = true;
     });
 
-    setTimeout(() => {
+    this.scanningTimer = setTimeout(() => {
       this.stopBluetoothScan();
     }, SCAN_DURATION_MS);
   }
 
+  /**
+   * Call to stop the Bluetooth scanning process. This might be called by the user if they click the "Stop scanning" button mid-way through a scan. It also gets called automatically after the scan duration.
+   */
   stopBluetoothScan = async () => {
     const result = await window.electronAPI.bluetooth.stopPeripheralScan();
     if (!result.success) {
@@ -111,6 +116,10 @@ export class BluetoothLEController {
 
     runInAction(() => {
       this.isBluetoothScanning = false;
+      if (this.scanningTimer) {
+        clearTimeout(this.scanningTimer);
+        this.scanningTimer = null;
+      }
     });
   }
 

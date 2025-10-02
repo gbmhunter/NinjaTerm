@@ -672,20 +672,24 @@ function PortSettingsView(props: Props) {
             Available Bluetooth Devices
           </Typography>
 
-          <div id="bluetooth-scan-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
+          <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
             {/* =============================================================== */}
-            {/* SCAN BUTTON */}
+            {/* SCAN/STOP SCANNING BUTTON */}
             {/* =============================================================== */}
             <Button
               variant="outlined"
               size="medium"
-              sx={{ m: 1 }}
-              disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
+              sx={{ m: 1, width: 160 }}
+              // disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
               onClick={async () => {
-                await app.serialController.bluetoothLEController.scanForBluetoothDevices();
+                if (app.serialController.bluetoothLEController.isBluetoothScanning) {
+                  app.serialController.bluetoothLEController.stopBluetoothScan();
+                } else {
+                  await app.serialController.bluetoothLEController.scanForBluetoothDevices();
+                }
               }}
             >
-              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Scanning...' : 'Scan'}
+              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
             </Button>
 
             {/* =============================================================== */}

@@ -137,7 +137,6 @@ function createWindow(): void {
     icon: path.join(__dirname, '../../img/logo/v3/icon-256x256.png')
   });
 
-
   // Load the app
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
