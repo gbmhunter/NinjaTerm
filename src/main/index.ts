@@ -168,8 +168,8 @@ app.whenReady().then(async () => {
   if (!isCI) {
     try {
       // require didn't work here, so using import instead
-      const { BluetoothService } = await import('./bluetoothService');
-      bluetoothService = new BluetoothService(mainWindow);
+      const { MainBluetoothService } = await import('./MainBluetoothService');
+      bluetoothService = new MainBluetoothService(mainWindow);
     } catch (error) {
       console.error('Failed to load Bluetooth service:', error);
     }

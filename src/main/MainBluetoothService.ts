@@ -2,7 +2,12 @@ import { ipcMain } from 'electron';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServicesMessage, SerializableService } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
-export class BluetoothService {
+/**
+ * Provide a Bluetooth service running in the Electron main process for the renderer process to use.
+ *
+ * Uses the noble library under the hood to communicate with Bluetooth devices.
+ */
+export class MainBluetoothService {
 
   discoveredDevices: noble.Peripheral[] = [];
 

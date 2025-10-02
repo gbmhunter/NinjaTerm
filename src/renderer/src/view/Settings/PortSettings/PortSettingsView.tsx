@@ -672,6 +672,62 @@ function PortSettingsView(props: Props) {
             Available Bluetooth Devices
           </Typography>
 
+          <div id="bluetooth-scan-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
+            {/* =============================================================== */}
+            {/* SCAN BUTTON */}
+            {/* =============================================================== */}
+            <Button
+              variant="outlined"
+              size="medium"
+              sx={{ m: 1 }}
+              disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
+              onClick={async () => {
+                await app.serialController.bluetoothLEController.scanForBluetoothDevices();
+              }}
+            >
+              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Scanning...' : 'Scan'}
+            </Button>
+
+            {/* =============================================================== */}
+            {/* OPEN/CLOSE BUTTON FOR BLUETOOTH */}
+            {/* =============================================================== */}
+            <Button
+              variant="contained"
+              size="medium"
+              sx={{ m: 1, width: 160 }}
+              color={
+                portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                  ButtonPropsColorOverrides
+                >
+              }
+              onClick={() => {
+                if (app.serialController.portState === PortState.CLOSED) {
+                  app.serialController.openPort();
+                } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+                  app.serialController.stopWaitingToReopenPort();
+                } else if (app.serialController.portState === PortState.OPENED) {
+                  app.serialController.closeConnection();
+                } else {
+                  throw Error('Invalid port state.');
+                }
+              }}
+              disabled={!app.serialController.isReadyToOpen()}
+              data-testid="bluetooth-open-close-button"
+            >
+              {portStateToButtonProps[app.serialController.portState].text}
+            </Button>
+            {/* =============================================================== */}
+            {/* BLUETOOTH STATUS */}
+            {/* =============================================================== */}
+            <Typography sx={{ m: 1, alignSelf: 'center' }}>
+              Status: {PortState[app.serialController.portState]}
+            </Typography>
+          </div>
+
+          {/* =============================================================== */}
+          {/* TABLE OF SCANNED BLUETOOTH DEVICES */}
+          {/* =============================================================== */}
           <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
             <Table
               size="small"
@@ -776,60 +832,6 @@ function PortSettingsView(props: Props) {
               </TableBody>
             </Table>
           </TableContainer>
-
-          <div id="bluetooth-scan-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
-            {/* =============================================================== */}
-            {/* SCAN BUTTON */}
-            {/* =============================================================== */}
-            <Button
-              variant="outlined"
-              size="medium"
-              sx={{ m: 1 }}
-              disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
-              onClick={async () => {
-                await app.serialController.bluetoothLEController.scanForBluetoothDevices();
-              }}
-            >
-              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Scanning...' : 'Scan'}
-            </Button>
-
-            {/* =============================================================== */}
-            {/* OPEN/CLOSE BUTTON FOR BLUETOOTH */}
-            {/* =============================================================== */}
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{ m: 1, width: 160 }}
-              color={
-                portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
-                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                  ButtonPropsColorOverrides
-                >
-              }
-              onClick={() => {
-                if (app.serialController.portState === PortState.CLOSED) {
-                  app.serialController.openPort();
-                } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                  app.serialController.stopWaitingToReopenPort();
-                } else if (app.serialController.portState === PortState.OPENED) {
-                  app.serialController.closeConnection();
-                } else {
-                  throw Error('Invalid port state.');
-                }
-              }}
-              disabled={!app.serialController.isReadyToOpen()}
-              data-testid="bluetooth-open-close-button"
-            >
-              {portStateToButtonProps[app.serialController.portState].text}
-            </Button>
-
-            {/* =============================================================== */}
-            {/* BLUETOOTH STATUS */}
-            {/* =============================================================== */}
-            <Typography sx={{ m: 1, alignSelf: 'center' }}>
-              Status: {PortState[app.serialController.portState]}
-            </Typography>
-          </div>
         </div>
       )}
 

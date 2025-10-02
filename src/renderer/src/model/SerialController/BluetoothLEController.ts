@@ -188,7 +188,9 @@ export class BluetoothLEController {
       return;
     }
 
-    this.app.snackbar.sendToSnackbar(`Bluetooth device connected: ${this.selectedBluetoothDevice.nobleData.advertisement.localName}.`, 'success');
+    this.app.snackbar.sendToSnackbar(
+      `Bluetooth device connected: ${this.selectedBluetoothDevice.nobleData.advertisement.localName} (${this.selectedBluetoothDevice.nobleData.id}).`,
+      'success');
     runInAction(() => {
       this.connectedBluetoothDevice = this.selectedBluetoothDevice;
       this.app.serialController.portState = PortState.OPENED;
@@ -271,7 +273,9 @@ export class BluetoothLEController {
       return;
     }
 
-    this.app.snackbar.sendToSnackbar(`Bluetooth device disconnected: ${this.connectedBluetoothDevice.nobleData.advertisement.localName}.`, 'success');
+    this.app.snackbar.sendToSnackbar(
+      `Bluetooth device disconnected: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
+      'success');
 
     // Clear connected device services
     runInAction(() => {
