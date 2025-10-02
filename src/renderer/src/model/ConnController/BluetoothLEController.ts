@@ -1,4 +1,4 @@
-import { SerializableBluetoothDevice, BluetoothServicesMessage, SerializableService } from '@shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothServicesMessage, SerializableService, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 import { App } from '@/model/App';
 import { action, makeAutoObservable, runInAction } from 'mobx';
 import { PortState } from '@/model/Settings/PortSettings/PortSettings';
@@ -68,7 +68,12 @@ export class BluetoothLEController {
 
     // Listen for disconnection events
     window.electronAPI.bluetooth.onDeviceDisconnected((deviceId: string) => {
-      console.log('onDeviceDisconnected() called. deviceId=', deviceId);
+      this.onIpcBluetoothDeviceDisconnected(deviceId);
+    });
+
+    // Listen for connection attempt complete events
+    window.electronAPI.bluetooth.onConnectionAttemptComplete(async (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => {
+      await this.onIpcBluetoothConnectionAttemptComplete(error, bluetoothConnectionAttemptSuccess);
     });
 
     // Register for Bluetooth device services discovered events
@@ -177,23 +182,35 @@ export class BluetoothLEController {
   // }
 
   /**
-   * Opens the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
+   * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
    */
   open = async () => {
     if (!this.selectedBluetoothDevice) {
       this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
       return;
     }
-
-
     // Show the circular progress modal when trying to connect to Bluetooth device
     this.app.setShowCircularProgressModal(true);
 
     const result = await window.electronAPI.bluetooth.connectDevice(this.selectedBluetoothDevice.nobleData.id);
+
+  }
+
+  async onIpcBluetoothConnectionAttemptComplete (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) {
+    console.log('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
     this.app.setShowCircularProgressModal(false);
-    console.log('result=', result);
-    if (result.error) {
-      this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${result.error}.`, 'error');
+    if (error) {
+      this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
+      return;
+    }
+
+    if (this.selectedBluetoothDevice === null) {
+      this.app.snackbar.sendToSnackbar('No Bluetooth device selected (this.selectedBluetoothDevice is null) even though the connection attempt was successful.', 'error');
+      return;
+    }
+
+    if (bluetoothConnectionAttemptSuccess === null) {
+      this.app.snackbar.sendToSnackbar('Bluetooth connection success message was not returned from the main process.', 'error');
       return;
     }
 
@@ -206,8 +223,7 @@ export class BluetoothLEController {
     });
 
     // Look for valid services/characteristics in the returned information
-    console.log('result.services=', result.bluetoothServicesMsg);
-    if(!result.bluetoothServicesMsg) {
+    if(!bluetoothConnectionAttemptSuccess.services) {
       this.app.snackbar.sendToSnackbar('Services information was not returned from the main process.', 'error');
       return;
     }
@@ -215,13 +231,13 @@ export class BluetoothLEController {
     let foundProtocol: BluetoothLESerialProtocol | null = null;
     for (const protocol of bluetoothLESerialProtocols) {
       // Get index of service in result.bluetoothServicesMsg.services
-      const serviceIndex = result.bluetoothServicesMsg.services.findIndex(service => service.uuid === protocol.serviceUuid);
+      const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
       if (serviceIndex === -1) {
         continue;
       }
       console.log('Found service.');
       // Now make sure the read and write UUIDs are present
-      const service = result.bluetoothServicesMsg.services[serviceIndex];
+      const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
 
       // Check read UUID is present as has "writeWithoutResponse" property
       const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.rxUuid);
@@ -294,7 +310,29 @@ export class BluetoothLEController {
 
     // Disconnect all listeners
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
-    window.electronAPI.bluetooth.removeAllListeners('bluetooth:device-disconnected');
+  }
+
+  /** Called from the main process when a Bluetooth device is disconnected. This might be because we called close() and initiated the disconnection, or the device itself initiated the disconnection. */
+  onIpcBluetoothDeviceDisconnected(deviceId: string) {
+    console.log('onIpcBluetoothDeviceDisconnected() called. deviceId=', deviceId);
+
+    // If we have already disconnected the device, don't do anything
+    if (this.connectedBluetoothDevice === null) {
+      return;
+    }
+
+    // If we get here, it means we did not initiate the disconnection
+    this.app.snackbar.sendToSnackbar(
+      `Bluetooth device disconnected unexpectedly: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
+      'error');
+
+
+    runInAction(() => {
+      this.connectedBluetoothDevice = null;
+      this.connectedDeviceServices = [];
+    });
+
+    window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
   }
 
   /**

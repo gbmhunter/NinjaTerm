@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
-import { SerializableBluetoothDevice, BluetoothServicesMessage as BluetoothServicesMsg } from '@shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothServicesMessage as BluetoothServicesMsg, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -143,6 +143,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.on('bluetooth:device-discovered', (event, device) => callback(device));
     },
     connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
+    onConnectionAttemptComplete: (callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void) => {
+      ipcRenderer.on('bluetooth:connection-attempt-complete', (event, error, bluetoothConnectionAttemptSuccess) => callback(error, bluetoothConnectionAttemptSuccess));
+    },
     disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
     writeData: (data: Uint8Array) => ipcRenderer.invoke('bluetooth:write-data', data),
 
@@ -225,6 +228,7 @@ export interface ElectronAPI {
     getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
     onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
     connectDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMsg | null; error?: string }>;
+    onConnectionAttemptComplete(callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void): void;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
     writeData(data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;

@@ -62,3 +62,8 @@ export interface BluetoothServicesMessage {
   deviceId: string;
   services: SerializableService[];
 }
+
+export interface BluetoothConnectionAttemptSuccess {
+  deviceId: string;
+  services: SerializableService[];
+}

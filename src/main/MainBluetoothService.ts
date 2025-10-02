@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServicesMessage, SerializableService } from '../shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServicesMessage, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
 /**
@@ -184,6 +184,16 @@ export class MainBluetoothService {
 
   onDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
     console.log('onDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
+
+    // Save the discovered services and characteristics
+    this.discoveredServices = services;
+
+    // Emit a IPC connection attempt complete message, indicating success
+    const bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess = {
+      deviceId: this.connectedPeripheral!.id,
+      services: this.convertServicesToSerializable(services)
+    };
+    this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', error, bluetoothConnectionAttemptSuccess);
   }
 
 
@@ -234,122 +244,66 @@ export class MainBluetoothService {
    * @returns
    */
   async onIpcConnectToDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMessage | null; error?: string }> {
-    try {
-      // Find the device in discovered peripherals
-      const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
-      if (!peripheral) {
-        return { bluetoothServicesMsg: null, error: 'Device not found in discovered peripherals.' };
-      }
-
-      // Connect to the peripheral
-      await new Promise<void>((resolve, reject) => {
-        peripheral.connect((error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-      });
-
-      console.log(`Connected to Bluetooth device: ${deviceId}.`);
-      this.connectedPeripheral = peripheral;
-
-      // Discover services and characteristics
-      const { services, characteristics } = await new Promise<{
-        services: noble.Service[];
-        characteristics: noble.Characteristic[];
-      }>((resolve, reject) => {
-        peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve({ services: services || [], characteristics: characteristics || [] });
-          }
-        });
-      });
-
-      console.log(`Discovered ${services.length} services and ${characteristics.length} characteristics`);
-      console.log('services=', services);
-      console.log('characteristics=', characteristics);
-
-      // Save discovered services, we need to keep these around to use when the renderer process wants to
-      // read and write data.
-      this.discoveredServices = services;
-
-      // Find suitable characteristics for reading and writing
-      // Look for characteristics with notify/read properties for RX
-      // Look for characteristics with write properties for TX
-      // let readCharacteristic: noble.Characteristic | null = null;
-      // let writeCharacteristic: noble.Characteristic | null = null;
-
-      // for (const char of characteristics) {
-      //   if (char.properties.includes('notify') || char.properties.includes('read')) {
-      //     readCharacteristic = char;
-      //   }
-      //   if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
-      //     writeCharacteristic = char;
-      //   }
-      // }
-
-      // if (!readCharacteristic && !writeCharacteristic) {
-      //   peripheral.disconnect();
-      //   return { success: false, error: 'No suitable characteristics found for communication' };
-      // }
-
-      // // Set up data batching for this device
-      // this.dataBatches.set(deviceId, []);
-
-      // // Subscribe to notifications if available
-      // if (readCharacteristic && readCharacteristic.properties.includes('notify')) {
-      //   await new Promise<void>((resolve, reject) => {
-      //     readCharacteristic!.subscribe((error) => {
-      //       if (error) {
-      //         reject(error);
-      //       } else {
-      //         resolve();
-      //       }
-      //     });
-      //   });
-
-      //   readCharacteristic.on('data', (data: Buffer) => {
-      //     console.log(`Received data from ${deviceId}:`, data);
-
-      //     const batch = this.dataBatches.get(deviceId);
-      //     if (batch) {
-      //       const isFirstChar = batch.length === 0;
-      //       batch.push(data);
-
-      //       if (isFirstChar) {
-      //         const timeout = setTimeout(() => {
-      //           this.sendBatchedData(deviceId);
-      //           this.batchTimeouts.delete(deviceId);
-      //         }, this.RX_DATA_BATCH_TIMEOUT_MS);
-      //         this.batchTimeouts.set(deviceId, timeout);
-      //       }
-      //     }
-      //   });
-      // }
-
-      // Handle disconnection
-      peripheral.on('disconnect', () => {
-        this.onNoblePeripheralDisconnect(peripheral);
-      });
-
-      // Send device services information to renderer
-      const serializableServices = this.convertServicesToSerializable(services);
-      const servicesMessage: BluetoothServicesMessage = {
-        deviceId,
-        services: serializableServices
-      };
-
-      // this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
-
-      return { bluetoothServicesMsg: servicesMessage, error: undefined };
-    } catch (error) {
-      console.error(`Failed to connect to Bluetooth device ${deviceId}:`, error);
-      return { bluetoothServicesMsg: null, error: (error as Error).message };
+    // Find the device in discovered peripherals
+    const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
+    if (!peripheral) {
+      return { bluetoothServicesMsg: null, error: 'Device not found in discovered peripherals.' };
     }
+
+    // Connect to the peripheral
+    peripheral.once('connect', (error ) => {
+      this.onConnect(peripheral, error);
+    });
+
+    peripheral.connect((error: string) => {
+      console.log(`Callback passed to connect() called. error=${error}.`);
+      this.connectedPeripheral = peripheral;
+    });
+
+    return { bluetoothServicesMsg: null, error: 'Test' };
+  }
+
+  onConnect = (peripheral: noble.Peripheral, error: string) => {
+    console.log(`Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+    this.connectedPeripheral = peripheral;
+
+    // // Discover services and characteristics
+    // const { services, characteristics } = await new Promise<{
+    //   services: noble.Service[];
+    //   characteristics: noble.Characteristic[];
+    // }>((resolve, reject) => {
+    //   peripheral.discoverAllServicesAndCharacteristics((error, services, characteristics) => {
+    //     if (error) {
+    //       reject(error);
+    //     } else {
+    //       resolve({ services: services || [], characteristics: characteristics || [] });
+    //     }
+    //   });
+    // });
+
+    peripheral.discoverAllServicesAndCharacteristics(this.onDiscoveredServicesAndCharacteristics);
+
+    // console.log(`Discovered ${services.length} services and ${characteristics.length} characteristics`);
+    // console.log('services=', services);
+    // console.log('characteristics=', characteristics);
+
+    // // Save discovered services, we need to keep these around to use when the renderer process wants to
+    // // read and write data.
+    // this.discoveredServices = services;
+
+    // // Handle disconnection
+    // peripheral.on('disconnect', () => {
+    //   this.onNoblePeripheralDisconnect(peripheral);
+    // });
+
+    // Send device services information to renderer
+    // const serializableServices = this.convertServicesToSerializable(services);
+    // const servicesMessage: BluetoothServicesMessage = {
+    //   deviceId,
+    //   services: serializableServices
+    // };
+
+    // this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
@@ -379,6 +333,16 @@ export class MainBluetoothService {
 
   /** Called by the noble library when a peripheral disconnects, e.g. after disconnectFromDevice() is called or the device itself initiates the disconnect. */
   onNoblePeripheralDisconnect = (peripheral: noble.Peripheral) => {
+    if (this.connectedPeripheral === null) {
+      console.log('Got disconnect event for peripheral, but no device is connected. Ignoring.');
+      return;
+    }
+
+    if (peripheral.id !== this.connectedPeripheral.id) {
+      console.log('Got disconnect event for peripheral, but it is not the connected peripheral. Ignoring.');
+      return;
+    }
+
     const deviceId = peripheral.id;
     console.log(`Bluetooth device disconnected: ${deviceId}`);
     this.connectedPeripheral = null;
@@ -395,10 +359,11 @@ export class MainBluetoothService {
     this.sendBatchedData(deviceId); // Send any remaining data
     this.dataBatches.delete(deviceId);
 
-    this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
+    this.mainWindow!.webContents.send('bluetooth:device-disconnected', deviceId);
   }
 
   async setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
+    console.log('setupReadAndWrite called. serviceUuid=', serviceUuid, 'rxCharacteristicUuid=', rxCharacteristicUuid, 'txCharacteristicUuid=', txCharacteristicUuid);
     const peripheral = this.connectedPeripheral;
     if (!peripheral) {
       return { success: false, error: 'No device is connected. Cannot setup read and write.' };

@@ -48,6 +48,13 @@ export default class SnackbarController {
         persist: persist,
         style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
       });
+
+      // Also send message to console for debugging purposes
+      if (variant === 'error') {
+        console.error(msg);
+      } else {
+        console.log(msg);
+      }
   }
 
 }
