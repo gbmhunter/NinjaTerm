@@ -39,10 +39,10 @@ export class ElectronAppTestHarness {
    */
   writtenData: number[] = [];
 
-  electronApp: ElectronApplication;
+  electronApp!: ElectronApplication;
 
   /** The main page of the Electron app. Saved in setupElectronApp(). */
-  page: Page;
+  page!: Page;
 
   constructor() {
     // These will be initialized in setupElectronApp
@@ -109,7 +109,7 @@ export class ElectronAppTestHarness {
       this.electronApp = await electron.launch(launchOptions);
     } catch (error) {
       console.error('[ERROR] Failed to launch Electron app:', error);
-      throw new Error(`Failed to launch Electron app: ${error.message}`);
+      throw new Error(`Failed to launch Electron app: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     // Mock IPC handlers at the main process level before the app starts
@@ -120,7 +120,7 @@ export class ElectronAppTestHarness {
       this.page = await this.electronApp.firstWindow();
     } catch (error) {
       console.error('[ERROR] Failed to get first window:', error);
-      throw new Error(`Failed to get first window: ${error.message}`);
+      throw new Error(`Failed to get first window: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     // Capture internal Electron console logs and route to Playwright console with [ELECTRON] prefix
@@ -250,15 +250,13 @@ export class ElectronAppTestHarness {
     // First, trigger port scanning to populate the list (this will use our mock listPorts)
     await this.page.evaluate(async () => {
       const app = window.app;
-      if (app?.settings?.portConfiguration) {
-        // Trigger the normal port scanning process
-        await app.settings.portConfiguration.scanForSerialPorts();
+      // Trigger the normal port scanning process
+      await app.settings.portConfiguration.scanForSerialPorts();
 
-        // The mocked listPorts will return our fake port, so select it
-        const availablePorts = app.settings.portConfiguration.availableSerialPorts;
-        if (availablePorts && availablePorts.length > 0) {
-          app.settings.portConfiguration.setSelectedSerialPort(availablePorts[0]);
-        }
+      // The mocked listPorts will return our fake port, so select it
+      const availablePorts = app.settings.portConfiguration.availableSerialPorts;
+      if (availablePorts && availablePorts.length > 0) {
+        app.settings.portConfiguration.setSelectedSerialPort(availablePorts[0]);
       }
     });
 
@@ -268,9 +266,7 @@ export class ElectronAppTestHarness {
     // Open the port using the app's normal flow (this will use our mocked openPort)
     await this.page.evaluate(async () => {
       const app = window.app;
-      if (app?.serialController?.openPort) {
-        await app.serialController.openPort({ silenceSnackbar: true });
-      }
+      await app.serialController.openConnection({ silenceSnackbar: true });
     });
 
     // Wait for the port to be "opened"
@@ -398,7 +394,7 @@ export class ElectronAppTestHarness {
         // computed style
         if (expectedTerminalChar.style !== null) {
           Object.keys(expectedTerminalChar.style).forEach(function(key, index) {
-            expect(computedStyle[key]).toEqual(expectedTerminalChar.style![key]);
+            expect((computedStyle as any)[key]).toEqual(expectedTerminalChar.style![key]);
           });
         }
 

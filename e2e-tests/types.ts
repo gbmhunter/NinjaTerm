@@ -4,4 +4,6 @@ declare global {
   interface Window {
     app: App;
   }
+
+  var _testWrittenData: number[];
 }

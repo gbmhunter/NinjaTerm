@@ -37,6 +37,7 @@
   },
   "include": [
     "src",
+    "e2e-tests",
     // "node_modules/vite-plugin-pwa/client.d.ts",
   ],
 }
