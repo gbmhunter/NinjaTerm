@@ -393,54 +393,6 @@ export class BluetoothService {
     this.mainWindow?.webContents.send('bluetooth:device-disconnected', deviceId);
   }
 
-  async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {
-    // try {
-    //   const connection = this.connectedPeripherals.get(deviceId);
-    //   if (!connection) {
-    //     return { success: false, error: 'Device not connected' };
-    //   }
-
-    //   if (!connection.writeCharacteristic) {
-    //     return { success: false, error: 'No write characteristic available' };
-    //   }
-
-    //   const buffer = Buffer.from(data);
-
-    //   await new Promise<void>((resolve, reject) => {
-    //     connection.writeCharacteristic!.write(buffer, false, (error) => {
-    //       if (error) {
-    //         reject(error);
-    //       } else {
-    //         resolve();
-    //       }
-    //     });
-    //   });
-
-    //   return { success: true };
-    // } catch (error) {
-    //   console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
-    //   return { success: false, error: (error as Error).message };
-    // }
-    if (!this.connectedPeripheral) {
-      return { success: false, error: 'No device is connected. Cannot write data.' };
-    }
-
-    if (!this.txCharacteristic) {
-      return { success: false, error: 'No write characteristic available. Cannot write data.' };
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      this.txCharacteristic!.write(data, true, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
-    return { success: true };
-  }
-
   async setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
     const peripheral = this.connectedPeripheral;
     if (!peripheral) {
@@ -481,6 +433,58 @@ export class BluetoothService {
       this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
     });
 
+    return { success: true };
+  }
+
+  async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {
+    console.log('writeData called. data.length=', data.length);
+    console.log('data=', data.toString('hex'));
+    // try {
+    //   const connection = this.connectedPeripherals.get(deviceId);
+    //   if (!connection) {
+    //     return { success: false, error: 'Device not connected' };
+    //   }
+
+    //   if (!connection.writeCharacteristic) {
+    //     return { success: false, error: 'No write characteristic available' };
+    //   }
+
+    //   const buffer = Buffer.from(data);
+
+    //   await new Promise<void>((resolve, reject) => {
+    //     connection.writeCharacteristic!.write(buffer, false, (error) => {
+    //       if (error) {
+    //         reject(error);
+    //       } else {
+    //         resolve();
+    //       }
+    //     });
+    //   });
+
+    //   return { success: true };
+    // } catch (error) {
+    //   console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
+    //   return { success: false, error: (error as Error).message };
+    // }
+    if (!this.connectedPeripheral) {
+      return { success: false, error: 'No device is connected. Cannot write data.' };
+    }
+
+    if (!this.rxCharacteristic) {
+      return { success: false, error: 'No write characteristic available. Cannot write data.' };
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      this.rxCharacteristic!.write(data, false, (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    console.log('writeData done. data.length=', data.length);
     return { success: true };
   }
 

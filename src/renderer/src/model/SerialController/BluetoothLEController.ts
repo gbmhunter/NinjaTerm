@@ -294,6 +294,6 @@ export class BluetoothLEController {
       this.app.snackbar.sendToSnackbar('No Bluetooth device connected. Cannot send data.', 'error');
       return;
     }
-    window.electronAPI.bluetooth.writeData(Buffer.from(data));
+    window.electronAPI.bluetooth.writeData(data);
   }
 }

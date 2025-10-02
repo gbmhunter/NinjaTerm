@@ -144,7 +144,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
     disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
-    writeData: (data: Buffer) => ipcRenderer.invoke('bluetooth:write-data', data),
+    writeData: (data: Uint8Array) => ipcRenderer.invoke('bluetooth:write-data', data),
 
     // Event listeners
     onDataReceived: (callback: (deviceId: string, data: Buffer) => void) => {
@@ -226,7 +226,7 @@ export interface ElectronAPI {
     onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
     connectDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMsg | null; error?: string }>;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
-    writeData(data: Buffer): Promise<{ success: boolean; error?: string }>;
+    writeData(data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
     onDeviceDisconnected(callback: (deviceId: string) => void): void;
     // onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothOnConnectMessage) => void): void;
