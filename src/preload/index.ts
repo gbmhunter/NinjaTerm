@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
-import { SerializableBluetoothDevice, BluetoothDeviceServicesMessage } from '@shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothServicesMessage as BluetoothServicesMsg } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -153,14 +153,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onDeviceDisconnected: (callback: (deviceId: string) => void) => {
       ipcRenderer.on('bluetooth:device-disconnected', (event, deviceId) => callback(deviceId));
     },
-    onDeviceServicesDiscovered: (callback: (servicesMessage: BluetoothDeviceServicesMessage) => void) => {
-      ipcRenderer.on('bluetooth:device-services-discovered', (event, servicesMessage) => callback(servicesMessage));
-    },
+    // onDeviceServicesDiscovered: (callback: (servicesMessage: BluetoothServicesMessage) => void) => {
+    //   ipcRenderer.on('bluetooth:device-services-discovered', (event, servicesMessage) => callback(servicesMessage));
+    // },
 
     // Remove listeners
     removeAllListeners: (channel: string) => {
       ipcRenderer.removeAllListeners(channel);
-    }
+    },
+    setupReadAndWrite: (rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string) => ipcRenderer.invoke('bluetooth:setup-read-and-write', rxServiceUuid, rxCharacteristicUuid, txCharacteristicUuid),
   }
 });
 
@@ -223,13 +224,14 @@ export interface ElectronAPI {
     stopPeripheralScan(): Promise<{ success: boolean; error?: string }>;
     getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
     onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
-    connectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
+    connectDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMsg | null; error?: string }>;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
     writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
     onDeviceDisconnected(callback: (deviceId: string) => void): void;
-    onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothDeviceServicesMessage) => void): void;
+    // onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothOnConnectMessage) => void): void;
     removeAllListeners(channel: string): void;
+    setupReadAndWrite(rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }>;
   };
 }
 

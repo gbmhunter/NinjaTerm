@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothDeviceServicesMessage, SerializableService, SerializableCharacteristic } from '../shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServicesMessage, SerializableService } from '../shared/types/bluetooth';
 import noble from '@abandonware/noble';
 
 export class BluetoothService {
@@ -12,12 +12,10 @@ export class BluetoothService {
 
   nobleState: string | null = null;
 
-  // Connected devices and their characteristics
-  connectedPeripherals = new Map<string, {
-    peripheral: noble.Peripheral;
-    writeCharacteristic: noble.Characteristic | null;
-    readCharacteristic: noble.Characteristic | null;
-  }>();
+  connectedPeripheral: noble.Peripheral | null = null;
+  discoveredServices: noble.Service[] = [];
+  txCharacteristic: noble.Characteristic | null = null;
+  rxCharacteristic: noble.Characteristic | null = null;
 
   // For storing received data batches similar to serial/socket services
   private dataBatches = new Map<string, Buffer[]>();
@@ -65,6 +63,10 @@ export class BluetoothService {
     ipcMain.handle('bluetooth:write-data', async (_event, deviceId: string, data: number[]) => {
       console.log('bluetooth:write-data called. deviceId=', deviceId, 'data.length=', data.length);
       return await this.writeData(deviceId, data);
+    });
+
+    ipcMain.handle('bluetooth:setup-read-and-write', async (_event, rxServiceUuid: string, rxCharacteristicUuid: string, txServiceUuid: string, txCharacteristicUuid: string) => {
+      return await this.setupReadAndWrite(rxServiceUuid, rxCharacteristicUuid, txServiceUuid, txCharacteristicUuid);
     });
 
   }
@@ -219,12 +221,19 @@ export class BluetoothService {
     }
   }
 
-  async onIpcConnectToDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
+  /**
+   * Called when the renderer requests to connect to a Bluetooth device. Connects to the specified device (by ID), discovers services and characteristics
+   * and returns the services and characteristics to the renderer.
+   *
+   * @param deviceId
+   * @returns
+   */
+  async onIpcConnectToDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMessage | null; error?: string }> {
     try {
       // Find the device in discovered peripherals
       const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
       if (!peripheral) {
-        return { success: false, error: 'Device not found in discovered peripherals' };
+        return { bluetoothServicesMsg: null, error: 'Device not found in discovered peripherals.' };
       }
 
       // Connect to the peripheral
@@ -238,7 +247,8 @@ export class BluetoothService {
         });
       });
 
-      console.log(`Connected to Bluetooth device: ${deviceId}`);
+      console.log(`Connected to Bluetooth device: ${deviceId}.`);
+      this.connectedPeripheral = peripheral;
 
       // Discover services and characteristics
       const { services, characteristics } = await new Promise<{
@@ -258,98 +268,95 @@ export class BluetoothService {
       console.log('services=', services);
       console.log('characteristics=', characteristics);
 
+      // Save discovered services, we need to keep these around to use when the renderer process wants to
+      // read and write data.
+      this.discoveredServices = services;
+
       // Find suitable characteristics for reading and writing
       // Look for characteristics with notify/read properties for RX
       // Look for characteristics with write properties for TX
-      let readCharacteristic: noble.Characteristic | null = null;
-      let writeCharacteristic: noble.Characteristic | null = null;
+      // let readCharacteristic: noble.Characteristic | null = null;
+      // let writeCharacteristic: noble.Characteristic | null = null;
 
-      for (const char of characteristics) {
-        if (char.properties.includes('notify') || char.properties.includes('read')) {
-          readCharacteristic = char;
-        }
-        if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
-          writeCharacteristic = char;
-        }
-      }
+      // for (const char of characteristics) {
+      //   if (char.properties.includes('notify') || char.properties.includes('read')) {
+      //     readCharacteristic = char;
+      //   }
+      //   if (char.properties.includes('write') || char.properties.includes('writeWithoutResponse')) {
+      //     writeCharacteristic = char;
+      //   }
+      // }
 
-      if (!readCharacteristic && !writeCharacteristic) {
-        peripheral.disconnect();
-        return { success: false, error: 'No suitable characteristics found for communication' };
-      }
+      // if (!readCharacteristic && !writeCharacteristic) {
+      //   peripheral.disconnect();
+      //   return { success: false, error: 'No suitable characteristics found for communication' };
+      // }
 
-      // Set up data batching for this device
-      this.dataBatches.set(deviceId, []);
+      // // Set up data batching for this device
+      // this.dataBatches.set(deviceId, []);
 
-      // Subscribe to notifications if available
-      if (readCharacteristic && readCharacteristic.properties.includes('notify')) {
-        await new Promise<void>((resolve, reject) => {
-          readCharacteristic!.subscribe((error) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve();
-            }
-          });
-        });
+      // // Subscribe to notifications if available
+      // if (readCharacteristic && readCharacteristic.properties.includes('notify')) {
+      //   await new Promise<void>((resolve, reject) => {
+      //     readCharacteristic!.subscribe((error) => {
+      //       if (error) {
+      //         reject(error);
+      //       } else {
+      //         resolve();
+      //       }
+      //     });
+      //   });
 
-        readCharacteristic.on('data', (data: Buffer) => {
-          console.log(`Received data from ${deviceId}:`, data);
+      //   readCharacteristic.on('data', (data: Buffer) => {
+      //     console.log(`Received data from ${deviceId}:`, data);
 
-          const batch = this.dataBatches.get(deviceId);
-          if (batch) {
-            const isFirstChar = batch.length === 0;
-            batch.push(data);
+      //     const batch = this.dataBatches.get(deviceId);
+      //     if (batch) {
+      //       const isFirstChar = batch.length === 0;
+      //       batch.push(data);
 
-            if (isFirstChar) {
-              const timeout = setTimeout(() => {
-                this.sendBatchedData(deviceId);
-                this.batchTimeouts.delete(deviceId);
-              }, this.RX_DATA_BATCH_TIMEOUT_MS);
-              this.batchTimeouts.set(deviceId, timeout);
-            }
-          }
-        });
-      }
+      //       if (isFirstChar) {
+      //         const timeout = setTimeout(() => {
+      //           this.sendBatchedData(deviceId);
+      //           this.batchTimeouts.delete(deviceId);
+      //         }, this.RX_DATA_BATCH_TIMEOUT_MS);
+      //         this.batchTimeouts.set(deviceId, timeout);
+      //       }
+      //     }
+      //   });
+      // }
 
       // Handle disconnection
       peripheral.on('disconnect', () => {
         this.onNoblePeripheralDisconnect(peripheral);
       });
 
-      // Store the connection
-      this.connectedPeripherals.set(deviceId, {
-        peripheral,
-        readCharacteristic,
-        writeCharacteristic
-      });
-
       // Send device services information to renderer
       const serializableServices = this.convertServicesToSerializable(services);
-      const servicesMessage: BluetoothDeviceServicesMessage = {
+      const servicesMessage: BluetoothServicesMessage = {
         deviceId,
         services: serializableServices
       };
 
-      this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
+      // this.mainWindow?.webContents.send('bluetooth:device-services-discovered', servicesMessage);
 
-      return { success: true };
+      return { bluetoothServicesMsg: servicesMessage, error: undefined };
     } catch (error) {
       console.error(`Failed to connect to Bluetooth device ${deviceId}:`, error);
-      return { success: false, error: (error as Error).message };
+      return { bluetoothServicesMsg: null, error: (error as Error).message };
     }
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
 
     try {
-      const connection = this.connectedPeripherals.get(deviceId);
-      if (!connection) {
+      const peripheral = this.connectedPeripheral;
+      if (!peripheral) {
         return { success: false, error: 'Device not connected' };
       }
 
       await new Promise<void>((resolve, reject) => {
-        connection.peripheral.disconnect((error?: Error) => {
+        peripheral.disconnect((error?: Error) => {
           if (error) {
             reject(error);
           } else {
@@ -365,10 +372,14 @@ export class BluetoothService {
     }
   }
 
+  /** Called by the noble library when a peripheral disconnects, e.g. after disconnectFromDevice() is called or the device itself initiates the disconnect. */
   onNoblePeripheralDisconnect = (peripheral: noble.Peripheral) => {
     const deviceId = peripheral.id;
     console.log(`Bluetooth device disconnected: ${deviceId}`);
-    this.connectedPeripherals.delete(deviceId);
+    this.connectedPeripheral = null;
+    this.discoveredServices = [];
+    this.txCharacteristic = null;
+    this.rxCharacteristic = null;
 
     // Clean up batching
     const timeout = this.batchTimeouts.get(deviceId);
@@ -383,33 +394,70 @@ export class BluetoothService {
   }
 
   async writeData(deviceId: string, data: number[]): Promise<{ success: boolean; error?: string }> {
-    try {
-      const connection = this.connectedPeripherals.get(deviceId);
-      if (!connection) {
-        return { success: false, error: 'Device not connected' };
-      }
+    // try {
+    //   const connection = this.connectedPeripherals.get(deviceId);
+    //   if (!connection) {
+    //     return { success: false, error: 'Device not connected' };
+    //   }
 
-      if (!connection.writeCharacteristic) {
-        return { success: false, error: 'No write characteristic available' };
-      }
+    //   if (!connection.writeCharacteristic) {
+    //     return { success: false, error: 'No write characteristic available' };
+    //   }
 
-      const buffer = Buffer.from(data);
+    //   const buffer = Buffer.from(data);
 
-      await new Promise<void>((resolve, reject) => {
-        connection.writeCharacteristic!.write(buffer, false, (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-      });
+    //   await new Promise<void>((resolve, reject) => {
+    //     connection.writeCharacteristic!.write(buffer, false, (error) => {
+    //       if (error) {
+    //         reject(error);
+    //       } else {
+    //         resolve();
+    //       }
+    //     });
+    //   });
 
-      return { success: true };
-    } catch (error) {
-      console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
-      return { success: false, error: (error as Error).message };
+    //   return { success: true };
+    // } catch (error) {
+    //   console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
+    //   return { success: false, error: (error as Error).message };
+    // }
+    return { success: true };
+  }
+
+  async setupReadAndWrite(rxServiceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
+    const peripheral = this.connectedPeripheral;
+    if (!peripheral) {
+      return { success: false, error: 'No device is connected. Cannot setup read and write.' };
     }
+
+    if (!this.discoveredServices) {
+      return { success: false, error: 'No services have been discovered (this.discoveredServices is null). Cannot setup read and write.' };
+    }
+
+    const service = this.discoveredServices.find(service => service.uuid === rxServiceUuid);
+    if (!service) {
+      return { success: false, error: `Service with UUID "${rxServiceUuid}" not found. Cannot setup read and write.` };
+    }
+
+    const readCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === rxCharacteristicUuid);
+    if (!readCharacteristic) {
+      return { success: false, error: `Read characteristic with UUID "${rxCharacteristicUuid}" not found. Cannot setup read and write.` };
+    }
+
+    const writeCharacteristic = service.characteristics.find(characteristic => characteristic.uuid === txCharacteristicUuid);
+    if (!writeCharacteristic) {
+      return { success: false, error: `Write characteristic with UUID "${txCharacteristicUuid}" not found. Cannot setup read and write.` };
+    }
+
+    this.txCharacteristic = writeCharacteristic;
+    this.rxCharacteristic = readCharacteristic;
+
+    // Setup listener on tx characteristic
+    writeCharacteristic.on('data', (data: Buffer) => {
+      console.log(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
+    });
+
+    return { success: true };
   }
 
 }
