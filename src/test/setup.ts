@@ -46,6 +46,7 @@ beforeEach(() => {
         onDeviceDisconnected: vi.fn(),
         onDeviceServicesDiscovered: vi.fn(),
         removeAllListeners: vi.fn(),
+        onConnectionAttemptComplete: vi.fn(),
       }
     },
     writable: true,

@@ -76,9 +76,6 @@ export class BluetoothLEController {
       await this.onIpcBluetoothConnectionAttemptComplete(error, bluetoothConnectionAttemptSuccess);
     });
 
-    // Register for Bluetooth device services discovered events
-    // window.electronAPI.bluetooth.onDeviceServicesDiscovered((servicesMessage) => this.onIpcBluetoothDeviceServicesDiscovered(servicesMessage));
-
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
   }
