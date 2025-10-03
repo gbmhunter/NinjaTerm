@@ -5,8 +5,7 @@ import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServices
 // FATAL ERROR:  this._bindings.reset is not a function
 import noble from '@abandonware/noble';
 
-const CONNECTION_ATTEMPT_TIMEOUT_MS = 5 * 1000;
-
+const CONNECTION_ATTEMPT_TIMEOUT_MS = 3 * 1000;
 
 enum ConnectionState {
   DISCONNECTED,
@@ -255,9 +254,8 @@ export class MainBluetoothService {
       this.connectionState = ConnectionState.DISCONNECTED;
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Connection attempt timed out.', null);
       this.connectionAttemptTimeout = null;
-      // Stop noble from trying to connect
+      // On Windows, I observed a problem where is the peripheral was reset (i.e. a drop the connection), then if we tried to connect again, noble would allow the connection to succeed, even though the peripheral was not definitely not connected to the computer. To combat this, we consider a connection attempt only complete if noble both reports it connects AND we can successfully scan for services and characteristics (the scan would not work for a "ghost" device). If this timeout occurs, it can be because it's connected to a "ghost" device. So force a disconnect.
       this.peripheral!.disconnect();
-      // this.peripheral!.cancelConnect();
     }, CONNECTION_ATTEMPT_TIMEOUT_MS);
 
     // Find the device in discovered peripherals

@@ -1,7 +1,7 @@
 import { SerializableBluetoothDevice, BluetoothServicesMessage, SerializableService, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 import { App } from '@/model/App';
-import { action, makeAutoObservable, runInAction } from 'mobx';
-import { PortState } from '@/model/Settings/PortSettings/PortSettings';
+import { action, makeAutoObservable, runInAction, autorun } from 'mobx';
+import { ConnectionType, PortState } from '@/model/Settings/PortSettings/PortSettings';
 
 const SCAN_DURATION_MS = 5000;
 
@@ -179,13 +179,16 @@ export class BluetoothLEController {
       return;
     }
     // Show the circular progress modal when trying to connect to Bluetooth device
-    this.app.setShowCircularProgressModal(true);
+    // this.app.setShowCircularProgressModal(true);
 
     const result = await window.electronAPI.bluetooth.connectDevice(this.selectedBluetoothDevice.nobleData.id);
     // Starting the connection can fail if we are already connecting to a device.
     if (result.error) {
-      this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${result.error}.`, 'error');
-      this.app.setShowCircularProgressModal(false);
+      // Don't show error if we are already trying to reconnect as errors are to be expected here.
+      if (this.app.serialController.portState !== PortState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.snackbar.sendToSnackbar(`Failed to start connection attempt to Bluetooth device. Error: ${result.error}.`, 'error');
+      }
+      // this.app.setShowCircularProgressModal(false);
       return;
     }
   }
@@ -199,9 +202,12 @@ export class BluetoothLEController {
    */
   async onIpcBluetoothConnectionAttemptComplete (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) {
     console.log('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
-    this.app.setShowCircularProgressModal(false);
+    // this.app.setShowCircularProgressModal(false);
     if (error) {
-      this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
+      // Don't show error if we are already trying to reconnect as errors are to be expected here.
+      if (this.app.serialController.portState !== PortState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
+      }
       return;
     }
 
@@ -221,10 +227,7 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = this.selectedBluetoothDevice;
       this.app.serialController.portState = PortState.OPENED;
-      if (this.reconnectionPollingInterval) {
-        clearInterval(this.reconnectionPollingInterval);
-        this.reconnectionPollingInterval = null;
-      }
+      this.stopPollingForReconnection();
     });
 
     // Look for valid services/characteristics in the returned information
@@ -292,6 +295,16 @@ export class BluetoothLEController {
     });
   }
 
+  /**
+   * Call to stop the polling for reconnection to the Bluetooth device. Does nothing if no reconnection polling is in progress.
+   */
+  stopPollingForReconnection = () => {
+    if (this.reconnectionPollingInterval) {
+      clearInterval(this.reconnectionPollingInterval);
+      this.reconnectionPollingInterval = null;
+    }
+  }
+
   /** Close the Bluetooth connection to currently connected Bluetooth device. */
   close = async () => {
     console.log('BluetoothLEController.close() called');
@@ -300,10 +313,7 @@ export class BluetoothLEController {
       return;
     }
 
-    if (this.reconnectionPollingInterval) {
-      clearInterval(this.reconnectionPollingInterval);
-      this.reconnectionPollingInterval = null;
-    }
+    this.stopPollingForReconnection();
 
     this.weInitiatedDisconnection = true;
     const result = await window.electronAPI.bluetooth.disconnectDevice(this.connectedBluetoothDevice.nobleData.id);
