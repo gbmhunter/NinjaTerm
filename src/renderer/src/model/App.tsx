@@ -13,7 +13,7 @@ import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { PortState } from './Settings/PortSettings/PortSettings';
+import { ConnState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
@@ -125,9 +125,9 @@ export class App {
   performanceMonitor: PerformanceMonitor;
 
   /**
-   * Responsible for all serial port related functionality.
+   * Responsible for all connection related functionality. This supports different types of connections (serial port, socket, Bluetooth).
    */
-  serialController: ConnController;
+  connController: ConnController;
 
 
   constructor(testing = false) {
@@ -146,13 +146,12 @@ export class App {
 
     this.performanceMonitor = new PerformanceMonitor();
 
-    this.serialController = new ConnController(this);
+    this.connController = new ConnController(this);
 
     this.terminals = new Terminals(this);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
-
 
     // Show the terminal by default
     this.shownMainPane = MainPanes.TERMINAL;
@@ -161,8 +160,6 @@ export class App {
     this.graphing = new Graphing(this.snackbar, this.profileManager);
 
     this.logging = new Logging(this);
-
-    // Serial port connection handling is now managed through the ElectronSerialAdapter
 
     // Listen for changes to the last applied profile name, and update the app title
     reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
@@ -201,7 +198,7 @@ export class App {
    * Stops any active polling and cleans up resources.
    */
   cleanup = () => {
-    this.serialController.cleanup();
+    this.connController.cleanup();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
 
@@ -653,7 +650,7 @@ export class App {
       }
 
       // Make sure serial port is open
-      if (this.serialController.portState !== PortState.OPENED) {
+      if (this.connController.portState !== ConnState.OPENED) {
         return;
       }
 
@@ -796,7 +793,7 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.serialController.portState !== PortState.OPENED) {
+    if (this.connController.portState !== ConnState.OPENED) {
       // Serial port is not open, so don't send anything
       return;
     }
@@ -958,7 +955,7 @@ export class App {
    */
   async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
     try {
-      await this.serialController.writeData(bytesToWrite);
+      await this.connController.writeData(bytesToWrite);
     } catch (error) {
       this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
       return;

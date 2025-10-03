@@ -266,7 +266,7 @@ export class ElectronAppTestHarness {
     // Open the port using the app's normal flow (this will use our mocked openPort)
     await this.page.evaluate(async () => {
       const app = window.app;
-      await app.serialController.openConnection({ silenceSnackbar: true });
+      await app.connController.openConnection({ silenceSnackbar: true });
     });
 
     // Wait for the port to be "opened"

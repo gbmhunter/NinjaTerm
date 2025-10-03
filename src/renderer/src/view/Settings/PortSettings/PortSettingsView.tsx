@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { App } from '@/model/App';
 import {
   PortSettings,
-  PortState,
+  ConnState,
   DEFAULT_BAUD_RATES,
   NUM_DATA_BITS_OPTIONS,
   Parity,
@@ -80,10 +80,10 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
-  const isPortSettingsDisabled = app.serialController.portState !== PortState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
+  const isPortSettingsDisabled = app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
   // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.
-  const isTableDisabled = app.serialController.portState !== PortState.CLOSED;
+  const isTableDisabled = app.connController.portState !== ConnState.CLOSED;
 
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -101,7 +101,7 @@ function PortSettingsView(props: Props) {
           <Select
             value={app.settings.portConfiguration.connectionType}
             label="Connection Type"
-            disabled={app.serialController.portState !== PortState.CLOSED}
+            disabled={app.connController.portState !== ConnState.CLOSED}
             onChange={(e) => {
               app.settings.portConfiguration.setConnectionType(e.target.value as ConnectionType);
             }}
@@ -216,33 +216,33 @@ function PortSettingsView(props: Props) {
           size="medium"
           sx={{ m: 1, width: 160 }}
           color={
-            portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+            portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
           onClick={() => {
-            if (app.serialController.portState === PortState.CLOSED) {
-              app.serialController.openConnection();
-            } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-              app.serialController.stopWaitingToReopenPort();
-            } else if (app.serialController.portState === PortState.OPENED) {
-              app.serialController.closeConnection();
+            if (app.connController.portState === ConnState.CLOSED) {
+              app.connController.openConnection();
+            } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+              app.connController.stopWaitingToReopenPort();
+            } else if (app.connController.portState === ConnState.OPENED) {
+              app.connController.closeConnection();
             } else {
               throw Error('Invalid port state.');
             }
           }}
           // Disabled when connection is not ready to open
-          disabled={!app.serialController.isReadyToOpen()}
+          disabled={!app.connController.isReadyToOpen()}
           data-testid="open-close-button"
         >
-          {portStateToButtonProps[app.serialController.portState].text}
+          {portStateToButtonProps[app.connController.portState].text}
         </Button>
         {/* =============================================================== */}
         {/* PORT STATUS */}
         {/* =============================================================== */}
         <Typography sx={{ m: 1, alignSelf: 'center' }}>
-          Status: {PortState[app.serialController.portState]}
+          Status: {ConnState[app.connController.portState]}
         </Typography>
       </div>
 
@@ -491,7 +491,7 @@ function PortSettingsView(props: Props) {
               <TextField
                 label="Host"
                 value={app.settings.portConfiguration.socketHost}
-                disabled={app.serialController.portState !== PortState.CLOSED}
+                disabled={app.connController.portState !== ConnState.CLOSED}
                 onChange={(e) => {
                   app.settings.portConfiguration.setSocketHost(e.target.value);
                 }}
@@ -511,7 +511,7 @@ function PortSettingsView(props: Props) {
               <TextField
                 label="Port"
                 value={socketPortInput}
-                disabled={app.serialController.portState !== PortState.CLOSED}
+                disabled={app.connController.portState !== ConnState.CLOSED}
                 onChange={(e) => {
                   const value = e.target.value;
                   // Allow empty field and digits only
@@ -593,7 +593,7 @@ function PortSettingsView(props: Props) {
             <TextField
               label="Connection timeout (ms)"
               value={app.settings.portConfiguration.socketConnTimeoutDispMs}
-              disabled={app.serialController.portState !== PortState.CLOSED}
+              disabled={app.connController.portState !== ConnState.CLOSED}
               error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
               helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
               onChange={(e) => {
@@ -633,33 +633,33 @@ function PortSettingsView(props: Props) {
                 size="medium"
                 sx={{ width: 160 }}
                 color={
-                  portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+                  portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
                     'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                     ButtonPropsColorOverrides
                   >
                 }
                 onClick={() => {
-                  if (app.serialController.portState === PortState.CLOSED) {
-                    app.serialController.openConnection();
-                  } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                    app.serialController.stopWaitingToReopenPort();
-                  } else if (app.serialController.portState === PortState.OPENED) {
-                    app.serialController.closeConnection();
+                  if (app.connController.portState === ConnState.CLOSED) {
+                    app.connController.openConnection();
+                  } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                    app.connController.stopWaitingToReopenPort();
+                  } else if (app.connController.portState === ConnState.OPENED) {
+                    app.connController.closeConnection();
                   } else {
                     throw Error('Invalid port state.');
                   }
                 }}
-                disabled={!app.serialController.isReadyToOpen()}
+                disabled={!app.connController.isReadyToOpen()}
                 data-testid="socket-open-close-button"
               >
-                {portStateToButtonProps[app.serialController.portState].text}
+                {portStateToButtonProps[app.connController.portState].text}
               </Button>
             </Tooltip>
             {/* =============================================================== */}
             {/* SOCKET STATUS */}
             {/* =============================================================== */}
             <Typography sx={{ alignSelf: 'center' }}>
-              Status: {PortState[app.serialController.portState]}
+              Status: {ConnState[app.connController.portState]}
             </Typography>
           </div>
         </div>
@@ -682,14 +682,14 @@ function PortSettingsView(props: Props) {
               sx={{ m: 1, width: 160 }}
               // disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
               onClick={async () => {
-                if (app.serialController.bluetoothLEController.isBluetoothScanning) {
-                  app.serialController.bluetoothLEController.stopBluetoothScan();
+                if (app.connController.bluetoothLEController.isBluetoothScanning) {
+                  app.connController.bluetoothLEController.stopBluetoothScan();
                 } else {
-                  await app.serialController.bluetoothLEController.scanForBluetoothDevices();
+                  await app.connController.bluetoothLEController.scanForBluetoothDevices();
                 }
               }}
             >
-              {app.serialController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
+              {app.connController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
             </Button>
 
             {/* =============================================================== */}
@@ -700,32 +700,32 @@ function PortSettingsView(props: Props) {
               size="medium"
               sx={{ m: 1, width: 160 }}
               color={
-                portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+                portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
                   'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                   ButtonPropsColorOverrides
                 >
               }
               onClick={() => {
-                if (app.serialController.portState === PortState.CLOSED) {
-                  app.serialController.openConnection();
-                } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-                  app.serialController.stopWaitingToReopenPort();
-                } else if (app.serialController.portState === PortState.OPENED) {
-                  app.serialController.closeConnection();
+                if (app.connController.portState === ConnState.CLOSED) {
+                  app.connController.openConnection();
+                } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                  app.connController.stopWaitingToReopenPort();
+                } else if (app.connController.portState === ConnState.OPENED) {
+                  app.connController.closeConnection();
                 } else {
                   throw Error('Invalid port state.');
                 }
               }}
-              disabled={!app.serialController.isReadyToOpen()}
+              disabled={!app.connController.isReadyToOpen()}
               data-testid="bluetooth-open-close-button"
             >
-              {portStateToButtonProps[app.serialController.portState].text}
+              {portStateToButtonProps[app.connController.portState].text}
             </Button>
             {/* =============================================================== */}
             {/* BLUETOOTH STATUS */}
             {/* =============================================================== */}
             <Typography sx={{ m: 1, alignSelf: 'center' }}>
-              Status: {PortState[app.serialController.portState]}
+              Status: {ConnState[app.connController.portState]}
             </Typography>
           </div>
 
@@ -758,7 +758,7 @@ function PortSettingsView(props: Props) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {(app.serialController.bluetoothLEController.discoveredBluetoothDevices || []).length === 0 ? (
+                {(app.connController.bluetoothLEController.discoveredBluetoothDevices || []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       <div style={{ padding: '16px' }}>
@@ -767,21 +767,21 @@ function PortSettingsView(props: Props) {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.serialController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
+                  app.connController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
                     <TableRow
                       key={device.nobleData.id || idx}
                       hover={!isTableDisabled}
-                      selected={app.serialController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
+                      selected={app.connController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
                       sx={{
                         cursor: isTableDisabled ? 'not-allowed' : 'pointer',
                         opacity: isTableDisabled ? 0.5 : 1
                       }}
-                      onClick={isTableDisabled ? undefined : () => app.serialController.bluetoothLEController.setSelectedBluetoothDevice(device)}
+                      onClick={isTableDisabled ? undefined : () => app.connController.bluetoothLEController.setSelectedBluetoothDevice(device)}
                     >
                       <TableCell>
                         <Radio
-                          checked={app.serialController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
-                          onChange={isTableDisabled ? undefined : () => app.serialController.bluetoothLEController.setSelectedBluetoothDevice(device)}
+                          checked={app.connController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
+                          onChange={isTableDisabled ? undefined : () => app.connController.bluetoothLEController.setSelectedBluetoothDevice(device)}
                           value={device.nobleData.id}
                           name="bluetooth-device-selection"
                           disabled={isTableDisabled}

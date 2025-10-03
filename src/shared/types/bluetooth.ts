@@ -58,10 +58,10 @@ export interface SerializableDescriptor {
   name?: string;
 }
 
-export interface BluetoothServicesMessage {
-  deviceId: string;
-  services: SerializableService[];
-}
+// export interface BluetoothServicesMessage {
+//   deviceId: string;
+//   services: SerializableService[];
+// }
 
 export interface BluetoothConnectionAttemptSuccess {
   deviceId: string;

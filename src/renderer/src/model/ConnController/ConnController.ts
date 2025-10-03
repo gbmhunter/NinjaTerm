@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { PortInfo } from '@serialport/bindings-interface';
 
 import { App, MainPanes } from '../App';
-import { PortState, ConnectionType } from '../Settings/PortSettings/PortSettings';
+import { ConnState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 import { BluetoothLEController } from './BluetoothLEController';
 
 export enum PortType {
@@ -43,7 +43,7 @@ export class ConnController {
    *
    * This is used no matter what the connection type is, e.g. it applies to serial ports, sockets, and Bluetooth.
    */
-  portState = PortState.CLOSED;
+  portState = ConnState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
   // know what type of port to operate on
@@ -192,7 +192,7 @@ export class ConnController {
           this.stopPollingForReconnection();
           // Save port info for reconnection - selectedPort is already a PortInfo object
           this.serialPortInfo = selectedPort;
-          this.portState = PortState.OPENED;
+          this.portState = ConnState.OPENED;
         });
 
         // Create timer to poll the readable signals across IPC
@@ -213,7 +213,7 @@ export class ConnController {
         // Remember this port so it can be reopened if the app is restarted
         const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
         lastUsedSerialPort.path = selectedPort.path;
-        lastUsedSerialPort.portState = PortState.OPENED;
+        lastUsedSerialPort.portState = ConnState.OPENED;
         this.app.profileManager.saveAppData();
 
       } catch (error) {
@@ -290,7 +290,7 @@ export class ConnController {
         runInAction(() => {
           // Stop any existing polling since we're now connected
           this.stopPollingForReconnection();
-          this.portState = PortState.OPENED;
+          this.portState = ConnState.OPENED;
           this.lastSelectedPortType = PortType.SOCKET;
         });
 
@@ -310,7 +310,7 @@ export class ConnController {
         return false;
       }
     } else if (connectionType === ConnectionType.BLUETOOTH) {
-      this.bluetoothLEController.open();
+      this.bluetoothLEController.connect();
     } else {
       throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
     }
@@ -352,7 +352,7 @@ export class ConnController {
 
         this.currentPortPath = null;
         const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-        lastUsedSerialPort.portState = PortState.CLOSED;
+        lastUsedSerialPort.portState = ConnState.CLOSED;
 
         // Disconnect all listeners
         window.electronAPI.serial.removeAllListeners('serial:data-received');
@@ -396,13 +396,13 @@ export class ConnController {
     // Wrap in action
     runInAction(() => {
       if (goToReopenState) {
-        this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
+        this.portState = ConnState.CLOSED_BUT_WILL_REOPEN;
         // Start polling for Bluetooth device reconnection
         this.startPollingForReconnection();
       } else {
         // Stop polling if we're explicitly closing the device
         this.stopPollingForReconnection();
-        this.portState = PortState.CLOSED;
+        this.portState = ConnState.CLOSED;
       }
     });
 
@@ -430,7 +430,7 @@ export class ConnController {
     } else {
       this.stopPollingForReconnection();
     }
-    this.portState = PortState.CLOSED;
+    this.portState = ConnState.CLOSED;
   }
 
   /**
@@ -447,17 +447,17 @@ export class ConnController {
   private handlePortClosed() {
     console.log('handleUnexpectedPortClose() called');
     // We might have already closed the port, so don't do anything if it's already closed
-    if (this.portState === PortState.CLOSED || this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+    if (this.portState === ConnState.CLOSED || this.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
       return;
     }
 
     // If the port was closed unexpectedly, we might want to reopen it
     if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
-      this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+      this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       // Start polling for the port to become available again
       this.startPollingForReconnection();
     } else {
-      this.setPortState(PortState.CLOSED);
+      this.setPortState(ConnState.CLOSED);
     }
     // Clear connection identifiers and remove appropriate event listeners
     if (this.lastSelectedPortType === PortType.SOCKET) {
@@ -490,7 +490,7 @@ export class ConnController {
     });
   }
 
-  setPortState(newPortState: PortState) {
+  setPortState(newPortState: ConnState) {
     this.portState = newPortState;
   }
 
@@ -513,7 +513,7 @@ export class ConnController {
     this.reconnectionPollingInterval = setInterval(async () => {
       try {
         // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
-        if (this.portState !== PortState.CLOSED_BUT_WILL_REOPEN) {
+        if (this.portState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
           this.stopPollingForReconnection();
           return;
         }
@@ -566,7 +566,7 @@ export class ConnController {
               });
 
               runInAction(() => {
-                this.portState = PortState.OPENED;
+                this.portState = ConnState.OPENED;
               });
 
               this.app.snackbar.sendToSnackbar(
@@ -756,7 +756,7 @@ export class ConnController {
    */
   isReadyToOpen(): boolean {
     // If port is not closed, it's either already open or will reopen, so connection control is available
-    if (this.portState !== PortState.CLOSED) {
+    if (this.portState !== ConnState.CLOSED) {
       return true;
     }
 

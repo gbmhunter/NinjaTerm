@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 
 import { ElectronAppTestHarness } from './ElectronUtil';
-import { PortState } from '../src/renderer/src/model/Settings/PortSettings/PortSettings';
+import { ConnState } from '../src/renderer/src/model/Settings/PortSettings/PortSettings';
 import './types';
 
 let appTestHarness: ElectronAppTestHarness;
@@ -41,12 +41,12 @@ test.describe('IPC Mocking (Electron)', () => {
     const portState = await appTestHarness.page.evaluate(() => {
       const app = window.app;
       return {
-        portState: app.serialController.portState,
-        currentPortPath: app.serialController.currentPortPath
+        portState: app.connController.portState,
+        currentPortPath: app.connController.currentPortPath
       };
     });
 
-    expect(portState.portState).toBe(PortState.OPENED);
+    expect(portState.portState).toBe(ConnState.OPENED);
     expect(portState.currentPortPath).toBe('/dev/ttyTEST');
   });
 

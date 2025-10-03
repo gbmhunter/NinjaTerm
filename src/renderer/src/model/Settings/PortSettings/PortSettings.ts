@@ -4,9 +4,11 @@ import { z } from 'zod';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import { ConnController } from '@/model/ConnController/ConnController';
-import { SerializableBluetoothDevice } from '@shared/types/bluetooth';
 
-export enum PortState {
+/**
+ * Enumerated the high-level connection states. This is used in a number of places in the app.
+ */
+export enum ConnState {
   CLOSED,
   CLOSED_BUT_WILL_REOPEN,
   OPENED
@@ -405,9 +407,9 @@ export class PortSettings {
    * Will close the port and reopen, if port is in the open state.
    */
   _reconnectIfNeeded = async () => {
-    if (this.app.serialController.portState === PortState.OPENED) {
-      await this.app.serialController.closeConnection({ silenceSnackbar: true});
-      await this.app.serialController.openConnection({ silenceSnackbar: true});
+    if (this.app.connController.portState === ConnState.OPENED) {
+      await this.app.connController.closeConnection({ silenceSnackbar: true});
+      await this.app.connController.openConnection({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }
   }

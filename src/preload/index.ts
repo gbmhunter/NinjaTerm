@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
-import { SerializableBluetoothDevice, BluetoothServicesMessage as BluetoothServicesMsg, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -142,7 +142,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onDeviceDiscovered: (callback: (device: SerializableBluetoothDevice) => void) => {
       ipcRenderer.on('bluetooth:device-discovered', (event, device) => callback(device));
     },
-    connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:start-connection-attempt', deviceId),
+    startConnectionAttempt: (deviceId: string) => ipcRenderer.invoke('bluetooth:start-connection-attempt', deviceId),
     onConnectionAttemptComplete: (callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void) => {
       ipcRenderer.on('bluetooth:connection-attempt-complete', (event, error, bluetoothConnectionAttemptSuccess) => callback(error, bluetoothConnectionAttemptSuccess));
     },
@@ -156,9 +156,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onDeviceDisconnected: (callback: (deviceId: string) => void) => {
       ipcRenderer.on('bluetooth:device-disconnected', (event, deviceId) => callback(deviceId));
     },
-    // onDeviceServicesDiscovered: (callback: (servicesMessage: BluetoothServicesMessage) => void) => {
-    //   ipcRenderer.on('bluetooth:device-services-discovered', (event, servicesMessage) => callback(servicesMessage));
-    // },
 
     // Remove listeners
     removeAllListeners: (channel: string) => {
@@ -227,7 +224,7 @@ export interface ElectronAPI {
     stopPeripheralScan(): Promise<{ success: boolean; error?: string }>;
     getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
     onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
-    connectDevice(deviceId: string): Promise<{ bluetoothServicesMsg: BluetoothServicesMsg | null; error?: string }>;
+    startConnectionAttempt(deviceId: string): Promise<{ error?: string }>;
     onConnectionAttemptComplete(callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void): void;
     disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
     writeData(data: Uint8Array): Promise<{ success: boolean; error?: string }>;

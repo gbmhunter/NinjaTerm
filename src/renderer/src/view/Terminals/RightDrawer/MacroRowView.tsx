@@ -5,7 +5,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 
 import { MacroController } from "src/model/Terminals/RightDrawer/Macros/MacroController";
 import { App } from "src/model/App";
-import { PortState } from "src/model/Settings/PortSettings/PortSettings";
+import { ConnState } from "src/model/Settings/PortSettings/PortSettings";
 import { Macro } from "src/model/Terminals/RightDrawer/Macros/Macro";
 
 interface Props {
@@ -77,7 +77,7 @@ export default observer((props: Props) => {
             aria-label="send-macro-data"
             size="small"
             style={{ padding: "1px" }}
-            disabled={app.serialController.portState !== PortState.OPENED || !macro.canSend}
+            disabled={app.connController.portState !== ConnState.OPENED || !macro.canSend}
             onClick={async () => {
               await macroController.send(macro);
             }}

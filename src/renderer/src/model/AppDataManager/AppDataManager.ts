@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-import { PortState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
+import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
@@ -12,7 +12,7 @@ import { PortInfo } from '@serialport/bindings-interface';
 
 export class LastUsedSerialPort {
   path: string = '';
-  portState: PortState = PortState.CLOSED;
+  portState: ConnState = ConnState.CLOSED;
 }
 
 /**
@@ -184,7 +184,7 @@ export class AppDataManager {
       // (this is ok)
       // Need to set lastUsedSerialPort":{"path":"","portState":0}
       let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.lastUsedSerialPort = { path: '', portState: PortState.CLOSED };
+        rootConfig.lastUsedSerialPort = { path: '', portState: ConnState.CLOSED };
         // Add graphing settings to each profile
         rootConfig.settings.graphingSettings = {
           graphingEnabled: false,
@@ -482,10 +482,10 @@ export class AppDataManager {
 
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
-      if (this.app.serialController.portState === PortState.OPENED) {
-        await this.app.serialController.closeConnection({ silenceSnackbar: true });
-      } else if (this.app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.serialController.stopWaitingToReopenPort();
+      if (this.app.connController.portState === ConnState.OPENED) {
+        await this.app.connController.closeConnection({ silenceSnackbar: true });
+      } else if (this.app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+        this.app.connController.stopWaitingToReopenPort();
       }
     }
     // Update the current app config from the provided profile,
@@ -502,8 +502,8 @@ export class AppDataManager {
 
     // Now connect to the port if we need to
     if (weNeedToConnect) {
-      this.app.serialController.setSelectedPort(matchedAvailablePorts[0]);
-      await this.app.serialController.openConnection({ silenceSnackbar: true });
+      this.app.connController.setSelectedPort(matchedAvailablePorts[0]);
+      await this.app.connController.openConnection({ silenceSnackbar: true });
       snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
     }
 

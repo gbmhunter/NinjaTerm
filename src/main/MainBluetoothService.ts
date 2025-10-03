@@ -1,10 +1,13 @@
 import { ipcMain } from 'electron';
-import { SerializableBluetoothDevice, BluetoothDeviceResponse, BluetoothServicesMessage, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
+import { SerializableBluetoothDevice, BluetoothDeviceResponse, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
 
 // Don't call noble.reset(). On Windows this gave me the error:
 // FATAL ERROR:  this._bindings.reset is not a function
 import noble from '@abandonware/noble';
 
+/**
+ * The timeout for Bluetooth connection attempts. This determines how quickly NinjaTerm will reconnect if the Bluetooth connection is unexpectedly dropped. Set it low for fast reconnection times, but no too low that it error out before a connection to a device can be established under normal conditions.
+ */
 const CONNECTION_ATTEMPT_TIMEOUT_MS = 3 * 1000;
 
 enum ConnectionState {

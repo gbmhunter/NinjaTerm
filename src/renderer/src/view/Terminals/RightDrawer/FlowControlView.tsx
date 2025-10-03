@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import { App } from '@/model/App';
-import { PortState } from '@/model/Settings/PortSettings/PortSettings';
+import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
 import { CustomAccordionSummary } from './CustomAccordionSummary';
 
 interface Props {
@@ -43,8 +43,8 @@ const FlowControlIndicator = ({ label, active }: FlowControlIndicatorProps) => {
 export default observer((props: Props) => {
   const { app } = props;
   const rightDrawer = app.terminals.rightDrawer;
-  const serialController = app.serialController;
-  const isPortOpen = serialController.portState === PortState.OPENED;
+  const serialController = app.connController;
+  const isPortOpen = serialController.portState === ConnState.OPENED;
 
   return (
     <Accordion disableGutters expanded={rightDrawer.flowControlIsExpanded} onChange={rightDrawer.handleFlowControlAccordionChange} sx={{ width: '100%' }}>
