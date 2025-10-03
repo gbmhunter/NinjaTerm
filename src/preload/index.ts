@@ -142,7 +142,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onDeviceDiscovered: (callback: (device: SerializableBluetoothDevice) => void) => {
       ipcRenderer.on('bluetooth:device-discovered', (event, device) => callback(device));
     },
-    connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:connect-device', deviceId),
+    connectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:start-connection-attempt', deviceId),
     onConnectionAttemptComplete: (callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void) => {
       ipcRenderer.on('bluetooth:connection-attempt-complete', (event, error, bluetoothConnectionAttemptSuccess) => callback(error, bluetoothConnectionAttemptSuccess));
     },

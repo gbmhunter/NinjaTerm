@@ -5,6 +5,8 @@ import { PortState } from '@/model/Settings/PortSettings/PortSettings';
 
 const SCAN_DURATION_MS = 5000;
 
+const RECONNECTION_POLLING_INTERVAL_MS = 1000;
+
 // Combine serial capabilities with SerializableBluetoothDevice
 export class SerializableBluetoothDeviceWithMetadata {
   nobleData: SerializableBluetoothDevice;
@@ -60,6 +62,10 @@ export class BluetoothLEController {
   isBluetoothScanning = false;
 
   scanningTimer: NodeJS.Timeout | null = null;
+
+  weInitiatedDisconnection = false;
+
+  reconnectionPollingInterval: NodeJS.Timeout | null = null;
 
   constructor(app: App) {
     this.app = app;
@@ -167,6 +173,7 @@ export class BluetoothLEController {
    * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
    */
   open = async () => {
+    console.log('open() called.');
     if (!this.selectedBluetoothDevice) {
       this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
       return;
@@ -175,7 +182,12 @@ export class BluetoothLEController {
     this.app.setShowCircularProgressModal(true);
 
     const result = await window.electronAPI.bluetooth.connectDevice(this.selectedBluetoothDevice.nobleData.id);
-
+    // Starting the connection can fail if we are already connecting to a device.
+    if (result.error) {
+      this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${result.error}.`, 'error');
+      this.app.setShowCircularProgressModal(false);
+      return;
+    }
   }
 
   /**
@@ -209,6 +221,10 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = this.selectedBluetoothDevice;
       this.app.serialController.portState = PortState.OPENED;
+      if (this.reconnectionPollingInterval) {
+        clearInterval(this.reconnectionPollingInterval);
+        this.reconnectionPollingInterval = null;
+      }
     });
 
     // Look for valid services/characteristics in the returned information
@@ -284,25 +300,17 @@ export class BluetoothLEController {
       return;
     }
 
+    if (this.reconnectionPollingInterval) {
+      clearInterval(this.reconnectionPollingInterval);
+      this.reconnectionPollingInterval = null;
+    }
+
+    this.weInitiatedDisconnection = true;
     const result = await window.electronAPI.bluetooth.disconnectDevice(this.connectedBluetoothDevice.nobleData.id);
     if (!result.success) {
       this.app.snackbar.sendToSnackbar(`Failed to disconnect from Bluetooth device. Error: ${result.error}.`, 'error');
       return;
     }
-
-    this.app.snackbar.sendToSnackbar(
-      `Bluetooth device disconnected: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
-      'success');
-
-    // Clear connected device services
-    runInAction(() => {
-      this.connectedBluetoothDevice = null;
-      this.connectedDeviceServices = [];
-      this.app.serialController.portState = PortState.CLOSED;
-    });
-
-    // Disconnect all listeners
-    window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
   }
 
   /** Called from the main process when a Bluetooth device is disconnected. This might be because we called close() and initiated the disconnection, or the device itself initiated the disconnection. */
@@ -311,19 +319,34 @@ export class BluetoothLEController {
 
     // If we have already disconnected the device, don't do anything
     if (this.connectedBluetoothDevice === null) {
+      console.log('onIpcBluetoothDeviceDisconnected() called but no Bluetooth device connected. Ignoring.');
       return;
     }
 
     // If we get here, it means we did not initiate the disconnection
-    this.app.snackbar.sendToSnackbar(
-      `Bluetooth device disconnected unexpectedly: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
-      'error');
-
+    let portState = PortState.CLOSED;
+    if (this.weInitiatedDisconnection) {
+      this.app.snackbar.sendToSnackbar(
+        `Bluetooth device disconnected: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
+        'success');
+      portState = PortState.CLOSED;
+    } else {
+      // Bluetooth device disconnected unexpectedly!
+      this.app.snackbar.sendToSnackbar(
+        `Bluetooth device disconnected unexpectedly: ${this.connectedBluetoothDevice.nobleData.advertisement.localName} (${this.connectedBluetoothDevice.nobleData.id}).`,
+        'error');
+      portState = PortState.CLOSED_BUT_WILL_REOPEN
+      this.reconnectionPollingInterval = setInterval(() => {
+        // Attempt to reconnect to the Bluetooth device
+        this.open();
+      }, RECONNECTION_POLLING_INTERVAL_MS);
+    }
+    this.weInitiatedDisconnection = false;
 
     runInAction(() => {
       this.connectedBluetoothDevice = null;
       this.connectedDeviceServices = [];
-      this.app.serialController.portState = PortState.CLOSED;
+      this.app.serialController.portState = portState;
     });
 
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
