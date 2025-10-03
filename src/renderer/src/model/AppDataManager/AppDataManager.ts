@@ -482,9 +482,9 @@ export class AppDataManager {
 
     // Only disconnect if we have found a valid port to connect to
     if (weNeedToConnect) {
-      if (this.app.connController.portState === ConnState.OPENED) {
+      if (this.app.connController.connState === ConnState.OPENED) {
         await this.app.connController.closeConnection({ silenceSnackbar: true });
-      } else if (this.app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+      } else if (this.app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
         this.app.connController.stopWaitingToReopenPort();
       }
     }

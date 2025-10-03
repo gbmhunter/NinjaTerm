@@ -650,7 +650,7 @@ export class App {
       }
 
       // Make sure serial port is open
-      if (this.connController.portState !== ConnState.OPENED) {
+      if (this.connController.connState !== ConnState.OPENED) {
         return;
       }
 
@@ -793,7 +793,7 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.connController.portState !== ConnState.OPENED) {
+    if (this.connController.connState !== ConnState.OPENED) {
       // Serial port is not open, so don't send anything
       return;
     }

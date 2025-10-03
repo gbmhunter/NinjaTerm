@@ -80,10 +80,10 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
-  const isPortSettingsDisabled = app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
+  const isPortSettingsDisabled = app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
   // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.
-  const isTableDisabled = app.connController.portState !== ConnState.CLOSED;
+  const isTableDisabled = app.connController.connState !== ConnState.CLOSED;
 
   return (
     <div className={styles.noOutline} style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
@@ -101,7 +101,7 @@ function PortSettingsView(props: Props) {
           <Select
             value={app.settings.portConfiguration.connectionType}
             label="Connection Type"
-            disabled={app.connController.portState !== ConnState.CLOSED}
+            disabled={app.connController.connState !== ConnState.CLOSED}
             onChange={(e) => {
               app.settings.portConfiguration.setConnectionType(e.target.value as ConnectionType);
             }}
@@ -216,17 +216,17 @@ function PortSettingsView(props: Props) {
           size="medium"
           sx={{ m: 1, width: 160 }}
           color={
-            portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
+            portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
           onClick={() => {
-            if (app.connController.portState === ConnState.CLOSED) {
+            if (app.connController.connState === ConnState.CLOSED) {
               app.connController.openConnection();
-            } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+            } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
               app.connController.stopWaitingToReopenPort();
-            } else if (app.connController.portState === ConnState.OPENED) {
+            } else if (app.connController.connState === ConnState.OPENED) {
               app.connController.closeConnection();
             } else {
               throw Error('Invalid port state.');
@@ -236,13 +236,13 @@ function PortSettingsView(props: Props) {
           disabled={!app.connController.isReadyToOpen()}
           data-testid="open-close-button"
         >
-          {portStateToButtonProps[app.connController.portState].text}
+          {portStateToButtonProps[app.connController.connState].text}
         </Button>
         {/* =============================================================== */}
         {/* PORT STATUS */}
         {/* =============================================================== */}
         <Typography sx={{ m: 1, alignSelf: 'center' }}>
-          Status: {ConnState[app.connController.portState]}
+          Status: {ConnState[app.connController.connState]}
         </Typography>
       </div>
 
@@ -491,7 +491,7 @@ function PortSettingsView(props: Props) {
               <TextField
                 label="Host"
                 value={app.settings.portConfiguration.socketHost}
-                disabled={app.connController.portState !== ConnState.CLOSED}
+                disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {
                   app.settings.portConfiguration.setSocketHost(e.target.value);
                 }}
@@ -511,7 +511,7 @@ function PortSettingsView(props: Props) {
               <TextField
                 label="Port"
                 value={socketPortInput}
-                disabled={app.connController.portState !== ConnState.CLOSED}
+                disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {
                   const value = e.target.value;
                   // Allow empty field and digits only
@@ -593,7 +593,7 @@ function PortSettingsView(props: Props) {
             <TextField
               label="Connection timeout (ms)"
               value={app.settings.portConfiguration.socketConnTimeoutDispMs}
-              disabled={app.connController.portState !== ConnState.CLOSED}
+              disabled={app.connController.connState !== ConnState.CLOSED}
               error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
               helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
               onChange={(e) => {
@@ -633,17 +633,17 @@ function PortSettingsView(props: Props) {
                 size="medium"
                 sx={{ width: 160 }}
                 color={
-                  portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
+                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
                     'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                     ButtonPropsColorOverrides
                   >
                 }
                 onClick={() => {
-                  if (app.connController.portState === ConnState.CLOSED) {
+                  if (app.connController.connState === ConnState.CLOSED) {
                     app.connController.openConnection();
-                  } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
                     app.connController.stopWaitingToReopenPort();
-                  } else if (app.connController.portState === ConnState.OPENED) {
+                  } else if (app.connController.connState === ConnState.OPENED) {
                     app.connController.closeConnection();
                   } else {
                     throw Error('Invalid port state.');
@@ -652,14 +652,14 @@ function PortSettingsView(props: Props) {
                 disabled={!app.connController.isReadyToOpen()}
                 data-testid="socket-open-close-button"
               >
-                {portStateToButtonProps[app.connController.portState].text}
+                {portStateToButtonProps[app.connController.connState].text}
               </Button>
             </Tooltip>
             {/* =============================================================== */}
             {/* SOCKET STATUS */}
             {/* =============================================================== */}
             <Typography sx={{ alignSelf: 'center' }}>
-              Status: {ConnState[app.connController.portState]}
+              Status: {ConnState[app.connController.connState]}
             </Typography>
           </div>
         </div>
@@ -700,17 +700,17 @@ function PortSettingsView(props: Props) {
               size="medium"
               sx={{ m: 1, width: 160 }}
               color={
-                portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
+                portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
                   'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                   ButtonPropsColorOverrides
                 >
               }
               onClick={() => {
-                if (app.connController.portState === ConnState.CLOSED) {
+                if (app.connController.connState === ConnState.CLOSED) {
                   app.connController.openConnection();
-                } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
                   app.connController.stopWaitingToReopenPort();
-                } else if (app.connController.portState === ConnState.OPENED) {
+                } else if (app.connController.connState === ConnState.OPENED) {
                   app.connController.closeConnection();
                 } else {
                   throw Error('Invalid port state.');
@@ -719,13 +719,13 @@ function PortSettingsView(props: Props) {
               disabled={!app.connController.isReadyToOpen()}
               data-testid="bluetooth-open-close-button"
             >
-              {portStateToButtonProps[app.connController.portState].text}
+              {portStateToButtonProps[app.connController.connState].text}
             </Button>
             {/* =============================================================== */}
             {/* BLUETOOTH STATUS */}
             {/* =============================================================== */}
             <Typography sx={{ m: 1, alignSelf: 'center' }}>
-              Status: {ConnState[app.connController.portState]}
+              Status: {ConnState[app.connController.connState]}
             </Typography>
           </div>
 

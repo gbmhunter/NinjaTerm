@@ -127,7 +127,7 @@ export default observer((props: Props) => {
                 <Select
                   value={app.settings.portConfiguration.connectionType}
                   label="Connection Type"
-                  disabled={app.connController.portState !== ConnState.CLOSED}
+                  disabled={app.connController.connState !== ConnState.CLOSED}
                   onChange={(e) => {
                     app.settings.portConfiguration.setConnectionType(e.target.value as ConnectionType);
                   }}
@@ -177,7 +177,7 @@ export default observer((props: Props) => {
                       }}
                     />
                   )}
-                  disabled={app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                  disabled={app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                   sx={{ mt: 1, width: 160 }}
                   size="small"
                   inputValue={app.settings.portConfiguration.baudRateInputValue}
@@ -198,7 +198,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.numDataBits}
                     label="Num. Data Bits"
-                    disabled={app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
                     }}
@@ -226,7 +226,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.parity}
                     label="Parity"
-                    disabled={app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setParity(e.target.value as Parity);
                     }}
@@ -254,7 +254,7 @@ export default observer((props: Props) => {
                   <Select
                     value={app.settings.portConfiguration.stopBits}
                     label="Stop Bits"
-                    disabled={app.connController.portState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
+                    disabled={app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                     onChange={async (e) => {
                       await app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
                     }}
@@ -286,7 +286,7 @@ export default observer((props: Props) => {
               <TextField
                 label="Host"
                 value={app.settings.portConfiguration.socketHost}
-                disabled={app.connController.portState !== ConnState.CLOSED}
+                disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {
                   app.settings.portConfiguration.setSocketHost(e.target.value);
                 }}
@@ -301,7 +301,7 @@ export default observer((props: Props) => {
               <TextField
                 label="Port"
                 value={socketPortInput}
-                disabled={app.connController.portState !== ConnState.CLOSED}
+                disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {
                   const value = e.target.value;
                   // Allow empty field and digits only
@@ -406,7 +406,7 @@ export default observer((props: Props) => {
                   app.settings.setActiveSettingsCategory(SettingsCategories.CONNECTION_CONFIGURATION);
                 }}
                 // Only let user select a new port if current one is closed
-                disabled={app.connController.portState !== ConnState.CLOSED}
+                disabled={app.connController.connState !== ConnState.CLOSED}
                 data-testid="request-port-access"
                 sx={{ width: '150px' }}
               >
@@ -418,17 +418,17 @@ export default observer((props: Props) => {
               <Button
                 variant="contained"
                 color={
-                  portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
+                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
                     'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
                     ButtonPropsColorOverrides
                   >
                 }
                 onClick={() => {
-                  if (app.connController.portState === ConnState.CLOSED) {
+                  if (app.connController.connState === ConnState.CLOSED) {
                     app.connController.openConnection();
-                  } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
                     app.connController.stopWaitingToReopenPort();
-                  } else if (app.connController.portState === ConnState.OPENED) {
+                  } else if (app.connController.connState === ConnState.OPENED) {
                     app.connController.closeConnection();
                   } else {
                     throw Error('Invalid port state.');
@@ -439,7 +439,7 @@ export default observer((props: Props) => {
                 sx={{ width: '150px' }}
                 data-testid="open-close-button"
               >
-                {portStateToButtonProps[app.connController.portState].text}
+                {portStateToButtonProps[app.connController.connState].text}
               </Button>
             </div>
           </AccordionDetails>
@@ -563,7 +563,7 @@ export default observer((props: Props) => {
                   onClick={async () => {
                     await app.sendBreakSignal();
                   }}
-                  disabled={app.connController.portState !== ConnState.OPENED}
+                  disabled={app.connController.connState !== ConnState.OPENED}
                   data-testid="send-break-button"
                 >
                   Send BREAK

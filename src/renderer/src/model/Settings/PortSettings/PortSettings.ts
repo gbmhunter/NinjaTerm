@@ -416,7 +416,7 @@ export class PortSettings {
    * Will close the port and reopen, if port is in the open state.
    */
   _reconnectIfNeeded = async () => {
-    if (this.app.connController.portState === ConnState.OPENED) {
+    if (this.app.connController.connState === ConnState.OPENED) {
       await this.app.connController.closeConnection({ silenceSnackbar: true});
       await this.app.connController.openConnection({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');

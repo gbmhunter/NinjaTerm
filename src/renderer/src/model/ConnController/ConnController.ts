@@ -43,7 +43,7 @@ export class ConnController {
    *
    * This is used no matter what the connection type is, e.g. it applies to serial ports, sockets, and Bluetooth.
    */
-  portState = ConnState.CLOSED;
+  connState = ConnState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
   // know what type of port to operate on
@@ -192,7 +192,7 @@ export class ConnController {
           this.stopPollingForReconnection();
           // Save port info for reconnection - selectedPort is already a PortInfo object
           this.serialPortInfo = selectedPort;
-          this.portState = ConnState.OPENED;
+          this.connState = ConnState.OPENED;
         });
 
         // Create timer to poll the readable signals across IPC
@@ -290,7 +290,7 @@ export class ConnController {
         runInAction(() => {
           // Stop any existing polling since we're now connected
           this.stopPollingForReconnection();
-          this.portState = ConnState.OPENED;
+          this.connState = ConnState.OPENED;
           this.lastSelectedPortType = PortType.SOCKET;
         });
 
@@ -396,13 +396,13 @@ export class ConnController {
     // Wrap in action
     runInAction(() => {
       if (goToReopenState) {
-        this.portState = ConnState.CLOSED_BUT_WILL_REOPEN;
+        this.connState = ConnState.CLOSED_BUT_WILL_REOPEN;
         // Start polling for Bluetooth device reconnection
         this.startPollingForReconnection();
       } else {
         // Stop polling if we're explicitly closing the device
         this.stopPollingForReconnection();
-        this.portState = ConnState.CLOSED;
+        this.connState = ConnState.CLOSED;
       }
     });
 
@@ -430,7 +430,7 @@ export class ConnController {
     } else {
       this.stopPollingForReconnection();
     }
-    this.portState = ConnState.CLOSED;
+    this.connState = ConnState.CLOSED;
   }
 
   /**
@@ -447,7 +447,7 @@ export class ConnController {
   private handlePortClosed() {
     console.log('handleUnexpectedPortClose() called');
     // We might have already closed the port, so don't do anything if it's already closed
-    if (this.portState === ConnState.CLOSED || this.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+    if (this.connState === ConnState.CLOSED || this.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
       return;
     }
 
@@ -491,7 +491,7 @@ export class ConnController {
   }
 
   setPortState(newPortState: ConnState) {
-    this.portState = newPortState;
+    this.connState = newPortState;
   }
 
   /**
@@ -513,7 +513,7 @@ export class ConnController {
     this.reconnectionPollingInterval = setInterval(async () => {
       try {
         // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
-        if (this.portState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+        if (this.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
           this.stopPollingForReconnection();
           return;
         }
@@ -566,7 +566,7 @@ export class ConnController {
               });
 
               runInAction(() => {
-                this.portState = ConnState.OPENED;
+                this.connState = ConnState.OPENED;
               });
 
               this.app.snackbar.sendToSnackbar(
@@ -756,7 +756,7 @@ export class ConnController {
    */
   isReadyToOpen(): boolean {
     // If port is not closed, it's either already open or will reopen, so connection control is available
-    if (this.portState !== ConnState.CLOSED) {
+    if (this.connState !== ConnState.CLOSED) {
       return true;
     }
 

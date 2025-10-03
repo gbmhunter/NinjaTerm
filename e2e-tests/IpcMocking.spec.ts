@@ -41,7 +41,7 @@ test.describe('IPC Mocking (Electron)', () => {
     const portState = await appTestHarness.page.evaluate(() => {
       const app = window.app;
       return {
-        portState: app.connController.portState,
+        portState: app.connController.connState,
         currentPortPath: app.connController.currentPortPath
       };
     });

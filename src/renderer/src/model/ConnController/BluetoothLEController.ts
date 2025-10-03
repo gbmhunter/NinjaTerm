@@ -183,7 +183,7 @@ export class BluetoothLEController {
     // Starting the connection can fail if we are already connecting to a device.
     if (result.error) {
       // Don't show error if we are already trying to reconnect as errors are to be expected here.
-      if (this.app.connController.portState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+      if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
         this.app.snackbar.sendToSnackbar(`Failed to start connection attempt to Bluetooth device. Error: ${result.error}.`, 'error');
       }
       return;
@@ -201,7 +201,7 @@ export class BluetoothLEController {
     console.log('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
     if (error) {
       // Don't show error if we are already trying to reconnect as errors are to be expected here.
-      if (this.app.connController.portState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+      if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
         this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
       }
       return;
@@ -222,7 +222,7 @@ export class BluetoothLEController {
       'success');
     runInAction(() => {
       this.connectedBluetoothDevice = this.selectedBluetoothDevice;
-      this.app.connController.portState = ConnState.OPENED;
+      this.app.connController.connState = ConnState.OPENED;
       this.stopPollingForReconnection();
     });
 
@@ -352,7 +352,7 @@ export class BluetoothLEController {
     runInAction(() => {
       this.connectedBluetoothDevice = null;
       this.connectedDeviceServices = [];
-      this.app.connController.portState = portState;
+      this.app.connController.connState = portState;
     });
 
     window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');

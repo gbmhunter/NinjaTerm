@@ -1305,7 +1305,7 @@ export default class FakePortsController {
 
   openPort() {
     this.fakePorts[this.selFakePortIdx].connect();
-    this.app.connController.portState = ConnState.OPENED;
+    this.app.connController.connState = ConnState.OPENED;
     this.fakePortOpen = true;
     this.app.connController.lastSelectedPortType = PortType.FAKE;
     this.app.snackbar.sendToSnackbar('Fake serial port opened.', 'success');
@@ -1318,7 +1318,7 @@ export default class FakePortsController {
 
   closePort() {
     this.fakePorts[this.selFakePortIdx].disconnect();
-    this.app.connController.portState = ConnState.CLOSED;
+    this.app.connController.connState = ConnState.CLOSED;
     this.fakePortOpen = false;
     this.app.snackbar.sendToSnackbar('Fake serial port closed.', 'success');
   }

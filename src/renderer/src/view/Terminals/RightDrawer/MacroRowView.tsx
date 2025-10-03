@@ -77,7 +77,7 @@ export default observer((props: Props) => {
             aria-label="send-macro-data"
             size="small"
             style={{ padding: "1px" }}
-            disabled={app.connController.portState !== ConnState.OPENED || !macro.canSend}
+            disabled={app.connController.connState !== ConnState.OPENED || !macro.canSend}
             onClick={async () => {
               await macroController.send(macro);
             }}

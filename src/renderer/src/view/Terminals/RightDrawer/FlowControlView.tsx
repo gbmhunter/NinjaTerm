@@ -44,7 +44,7 @@ export default observer((props: Props) => {
   const { app } = props;
   const rightDrawer = app.terminals.rightDrawer;
   const serialController = app.connController;
-  const isPortOpen = serialController.portState === ConnState.OPENED;
+  const isPortOpen = serialController.connState === ConnState.OPENED;
 
   return (
     <Accordion disableGutters expanded={rightDrawer.flowControlIsExpanded} onChange={rightDrawer.handleFlowControlAccordionChange} sx={{ width: '100%' }}>

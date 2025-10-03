@@ -116,30 +116,30 @@ export default observer((props: Props) => {
         <Button
           variant="outlined"
           color={
-            portStateToButtonProps[app.connController.portState].color as OverridableStringUnion<
+            portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
           onClick={() => {
-            if (app.connController.portState === ConnState.CLOSED) {
+            if (app.connController.connState === ConnState.CLOSED) {
               app.connController.openConnection();
-            } else if (app.connController.portState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+            } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
               app.connController.stopWaitingToReopenPort();
-            } else if (app.connController.portState === ConnState.OPENED) {
+            } else if (app.connController.connState === ConnState.OPENED) {
               app.connController.closeConnection();
             } else {
-              throw Error(`Unsupported port state. portState=${app.connController.portState}`);
+              throw Error(`Unsupported port state. portState=${app.connController.connState}`);
             }
           }}
-          startIcon={portStateToButtonProps[app.connController.portState].icon}
+          startIcon={portStateToButtonProps[app.connController.connState].icon}
           // Disabled when port is closed and no port is selected, or if the baud rate is invalid
           disabled={!app.connController.isReadyToOpen()}
           sx={responsiveButtonStyle}
           data-testid="open-close-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
-          {isSmallScreen ? '' : portStateToButtonProps[app.connController.portState].text}
+          {isSmallScreen ? '' : portStateToButtonProps[app.connController.connState].text}
         </Button>
         {/* ==================================================================== */}
         {/* CLEAR DATA BUTTON */}

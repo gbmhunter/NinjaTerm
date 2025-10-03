@@ -213,16 +213,25 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
 ));
 
 const PortStatusIndicator = observer(({ app }: { app: App }) => {
-  const getStatusText = (portState: ConnState, connectionType: ConnectionType) => {
-    const connectionTypeName = connectionType === ConnectionType.SOCKET ? 'Socket' : 'Port';
+  const getStatusText = (connState: ConnState, connectionType: ConnectionType) => {
+    let connectionTypeName = '';
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      connectionTypeName = 'Port';
+    } else if (connectionType === ConnectionType.SOCKET) {
+      connectionTypeName = 'Socket';
+    } else if (connectionType === ConnectionType.BLUETOOTH) {
+      connectionTypeName = 'Bluetooth';
+    } else {
+      connectionTypeName = '???';
+    }
 
-    switch (portState) {
+    switch (connState) {
       case ConnState.CLOSED:
-        return `${connectionTypeName} CLOSED`;
+        return `${connectionTypeName} NOT CONN`;
       case ConnState.CLOSED_BUT_WILL_REOPEN:
-        return `${connectionTypeName} CLOSED (will reopen)`;
+        return `${connectionTypeName} NOT CONN (will reopen)`;
       case ConnState.OPENED:
-        return `${connectionTypeName} OPENED`;
+        return `${connectionTypeName} CONN`;
       default:
         return `${connectionTypeName} UNKNOWN`;
     }
@@ -231,10 +240,10 @@ const PortStatusIndicator = observer(({ app }: { app: App }) => {
   return (
     <div
       style={{
-        backgroundColor: connStateToToolbarStatusProperties[app.connController.portState].color,
+        backgroundColor: connStateToToolbarStatusProperties[app.connController.connState].color,
         padding: '0 10px' }}
     >
-      {getStatusText(app.connController.portState, app.settings.portConfiguration.connectionType)}
+      {getStatusText(app.connController.connState, app.settings.portConfiguration.connectionType)}
     </div>
   );
 });
