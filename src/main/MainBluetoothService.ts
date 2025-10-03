@@ -258,7 +258,7 @@ export class MainBluetoothService {
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Connection attempt timed out.', null);
       this.connectionAttemptTimeout = null;
       // On Windows, I observed a problem where is the peripheral was reset (i.e. a drop the connection), then if we tried to connect again, noble would allow the connection to succeed, even though the peripheral was not definitely not connected to the computer. To combat this, we consider a connection attempt only complete if noble both reports it connects AND we can successfully scan for services and characteristics (the scan would not work for a "ghost" device). If this timeout occurs, it can be because it's connected to a "ghost" device. So force a disconnect.
-      this.peripheral!.disconnect();
+      this.peripheral?.disconnect();
     }, CONNECTION_ATTEMPT_TIMEOUT_MS);
 
     // Find the device in discovered peripherals

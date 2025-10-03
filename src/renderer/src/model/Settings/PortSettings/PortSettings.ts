@@ -383,9 +383,18 @@ export class PortSettings {
     return parsed.data;
   }
 
+  /**
+   * TODO: This really belongs in the ConnController (or the classes that are responsible for different connection types, e.g. BluetoothLEController).
+   */
   get shortSerialConfigName() {
     if (this.connectionType === ConnectionType.SOCKET) {
       return `${this.socketHost}:${this.socketPort}`;
+    } else if (this.connectionType === ConnectionType.BLUETOOTH) {
+      const connectedBluetoothDevice = this.app.connController.bluetoothLEController.connectedBluetoothDevice;
+      if (connectedBluetoothDevice === null) {
+        return 'n/a';
+      }
+      return `${connectedBluetoothDevice.nobleData.advertisement.localName} (${connectedBluetoothDevice.nobleData.id})`;
     } else {
       return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
     }
