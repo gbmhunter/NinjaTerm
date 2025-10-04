@@ -680,7 +680,7 @@ function PortSettingsView(props: Props) {
               variant="outlined"
               size="medium"
               sx={{ m: 1, width: 160 }}
-              // disabled={app.serialController.bluetoothLEController.isBluetoothScanning || app.serialController.portState !== PortState.CLOSED}
+              disabled={app.connController.connState !== ConnState.CLOSED}
               onClick={async () => {
                 if (app.connController.bluetoothLEController.isBluetoothScanning) {
                   app.connController.bluetoothLEController.stopBluetoothScan();

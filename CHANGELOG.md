@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added Bluetooth LE support to the app. You can now choose between connecting to a serial port, a socket server, or a Bluetooth LE device.
+
 ## [5.6.0] - 2025-09-14
 
 ### Added
