@@ -689,17 +689,17 @@ function PortSettingsView(props: Props) {
                 <MenuItem value={BluetoothProtocolSelection.FIRST_DETECTED}>
                   {BluetoothProtocolSelection.FIRST_DETECTED}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.NORDIC_NUS}>
-                  {BluetoothProtocolSelection.NORDIC_NUS}
+                <MenuItem value={BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS}>
+                  {BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS}
                 </MenuItem>
                 <MenuItem value={BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}>
                   {BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE}>
-                  {BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE}
+                <MenuItem value={BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP}>
+                  {BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS}>
-                  {BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS}
+                <MenuItem value={BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS}>
+                  {BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS}
                 </MenuItem>
                 <MenuItem value={BluetoothProtocolSelection.SILICON_LABS_SPP}>
                   {BluetoothProtocolSelection.SILICON_LABS_SPP}

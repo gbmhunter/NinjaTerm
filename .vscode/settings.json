@@ -73,6 +73,9 @@
     "swiftshader",
     "testid",
     "TXRX",
+    "u-blox",
+    "UART",
+    "Uconnect",
     "Umami",
     "validatorjs",
     "vitest",
@@ -81,6 +84,7 @@
     "XANY",
     "xlabel",
     "XOFF",
+    "Xpress",
     "XTAL",
     "xtype",
     "ylabel"

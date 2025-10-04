@@ -12,10 +12,10 @@ const RECONNECTION_POLLING_INTERVAL_MS = 1000;
  */
 export enum BluetoothProtocolSelection {
   FIRST_DETECTED = 'First detected serial protocol',
-  NORDIC_NUS = 'Nordic Uart Service (NUS)',
+  NORDIC_UART_SERVICE_NUS = 'Nordic Uart Service (NUS)',
   MICROCHIP_TRANSPARENT_UART = 'Microchip Transparent Uart Service',
-  TI_SERIAL_PORT_SERVICE = 'TI Serial Port Service (SPS)',
-  UBLOX_UCONNECTXPRESS = 'u-blox u-connectXpress',
+  TI_SERIAL_PORT_SERVICE_SPP = 'TI Serial Port Service (SPS)',
+  UBLOX_UCONNECT_XPRESS = 'u-blox u-connectXpress',
   SILICON_LABS_SPP = 'Silicon Labs SPP over BLE',
   MANUALLY_SPECIFY = 'Manually Specify',
 }
@@ -65,41 +65,42 @@ const nordicNus = new BluetoothLESerialProtocol(
   '6e400001b5a3f393e0a9e50e24dcca9e',
   '6e400003b5a3f393e0a9e50e24dcca9e',
   '6e400002b5a3f393e0a9e50e24dcca9e',
-  BluetoothProtocolSelection.NORDIC_NUS
+  BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS
 );
 
 const microchipTransparentUart = new BluetoothLESerialProtocol(
   'Microchip Transparent UART',
   '49535343fe7d4ae58fa99fafd205e455',
-  '49535343898542c4a1fe63ad44999dbd',
   '495353431e4d4bd9ba6123c647249616',
+  '49535343884143f4a8d4ecbe34729bb3',
   BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART
 );
 
 const tiSerialPortService = new BluetoothLESerialProtocol(
   'TI Serial Port Service',
-  'f000c0e014514000b000000000000000',
-  'f000c0e214514000b000000000000000',
-  'f000c0e114514000b000000000000000',
-  BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE
+  'f000c0e004514000b000000000000000',
+  'f000c0e104514000b000000000000000', // TI uses the same characteristic for read and write
+  'f000c0e104514000b000000000000000',
+  BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP
 );
 
 const ubloxUconnectXpress = new BluetoothLESerialProtocol(
   'u-blox u-connectXpress',
-  '2456e1b926e28f83e74553f1d8a1ff',
-  '2456e1b826e28f83e74553f1d8a1ff',
-  '2456e1b926e28f83e74553f1d8a1ff',
-  BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS
+  '2456e1b926e28f83e744f34f01e9d701',
+  '2456e1b926e28f83e744f34f01e9d703',
+  '2456e1b926e28f83e744f34f01e9d703', // UBlox uses the same characteristic for read and write
+  BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS
 );
 
 const siliconLabsSpp = new BluetoothLESerialProtocol(
   'Silicon Labs SPP',
-  '4880c12c5fa24e9e8014671b0c5f83',
-  '4880c12c5fa24e9e8014671b0c5f84',
-  '4880c12c5fa24e9e8014671b0c5f85',
+  '4880c12cfdcb40778920a450d7f9b907',
+  'fec26ec46d7144429f8155bc21d658d6',
+  'fec26ec46d7144429f8155bc21d658d6', // Silicon Labs uses the same characteristic for read and write
   BluetoothProtocolSelection.SILICON_LABS_SPP
 );
 
+/** A array of all recognized BLE serial protocols. */
 const bluetoothLESerialProtocols = [
   nordicNus,
   microchipTransparentUart,
