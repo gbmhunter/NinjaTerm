@@ -7,17 +7,38 @@ const SCAN_DURATION_MS = 5000;
 
 const RECONNECTION_POLLING_INTERVAL_MS = 1000;
 
+/**
+ * Enumeration of Bluetooth serial protocol selection options.
+ */
+export enum BluetoothProtocolSelection {
+  FIRST_DETECTED = 'First detected serial protocol',
+  NORDIC_NUS = 'Nordic Uart Service (NUS)',
+  MICROCHIP_TRANSPARENT_UART = 'Microchip Transparent Uart Service',
+  TI_SERIAL_PORT_SERVICE = 'TI Serial Port Service (SPS)',
+  UBLOX_UCONNECTXPRESS = 'u-blox u-connectXpress',
+  SILICON_LABS_SPP = 'Silicon Labs SPP over BLE',
+  MANUALLY_SPECIFY = 'Manually Specify',
+}
+
 // Combine serial capabilities with SerializableBluetoothDevice
 export class SerializableBluetoothDeviceWithMetadata {
   nobleData: SerializableBluetoothDevice;
   serialCapabilities: {
     nordicNus: boolean;
+    microchipTransparentUart: boolean;
+    tiSerialPortService: boolean;
+    ubloxUconnectXpress: boolean;
+    siliconLabsSpp: boolean;
   };
 
   constructor(nobleData: SerializableBluetoothDevice) {
     this.nobleData = nobleData;
     this.serialCapabilities = {
       nordicNus: false,
+      microchipTransparentUart: false,
+      tiSerialPortService: false,
+      ubloxUconnectXpress: false,
+      siliconLabsSpp: false,
     };
     makeAutoObservable(this);
   }
@@ -29,18 +50,63 @@ class BluetoothLESerialProtocol {
   serviceUuid: string;
   txUuid: string;
   rxUuid: string;
-  constructor(name: string, serviceUuid: string, txUuid: string, rxUuid: string) {
+  selectionType: BluetoothProtocolSelection;
+  constructor(name: string, serviceUuid: string, txUuid: string, rxUuid: string, selectionType: BluetoothProtocolSelection) {
     this.name = name;
     this.serviceUuid = serviceUuid;
     this.txUuid = txUuid;
     this.rxUuid = rxUuid;
+    this.selectionType = selectionType;
   }
 }
 
-"6e400003b5a3f393e0a9e50e24dcca9e"
-const nordicNus = new BluetoothLESerialProtocol('Nordic NUS', '6e400001b5a3f393e0a9e50e24dcca9e', '6e400003b5a3f393e0a9e50e24dcca9e', '6e400002b5a3f393e0a9e50e24dcca9e');
+const nordicNus = new BluetoothLESerialProtocol(
+  'Nordic NUS',
+  '6e400001b5a3f393e0a9e50e24dcca9e',
+  '6e400003b5a3f393e0a9e50e24dcca9e',
+  '6e400002b5a3f393e0a9e50e24dcca9e',
+  BluetoothProtocolSelection.NORDIC_NUS
+);
 
-const bluetoothLESerialProtocols = [nordicNus];
+const microchipTransparentUart = new BluetoothLESerialProtocol(
+  'Microchip Transparent UART',
+  '49535343fe7d4ae58fa99fafd205e455',
+  '49535343898542c4a1fe63ad44999dbd',
+  '495353431e4d4bd9ba6123c647249616',
+  BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART
+);
+
+const tiSerialPortService = new BluetoothLESerialProtocol(
+  'TI Serial Port Service',
+  'f000c0e014514000b000000000000000',
+  'f000c0e214514000b000000000000000',
+  'f000c0e114514000b000000000000000',
+  BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE
+);
+
+const ubloxUconnectXpress = new BluetoothLESerialProtocol(
+  'u-blox u-connectXpress',
+  '2456e1b926e28f83e74553f1d8a1ff',
+  '2456e1b826e28f83e74553f1d8a1ff',
+  '2456e1b926e28f83e74553f1d8a1ff',
+  BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS
+);
+
+const siliconLabsSpp = new BluetoothLESerialProtocol(
+  'Silicon Labs SPP',
+  '4880c12c5fa24e9e8014671b0c5f83',
+  '4880c12c5fa24e9e8014671b0c5f84',
+  '4880c12c5fa24e9e8014671b0c5f85',
+  BluetoothProtocolSelection.SILICON_LABS_SPP
+);
+
+const bluetoothLESerialProtocols = [
+  nordicNus,
+  microchipTransparentUart,
+  tiSerialPortService,
+  ubloxUconnectXpress,
+  siliconLabsSpp
+];
 
 /**
  * Controller for Bluetooth LE (BLE) operations.
@@ -66,6 +132,12 @@ export class BluetoothLEController {
   weInitiatedDisconnection = false;
 
   reconnectionPollingInterval: NodeJS.Timeout | null = null;
+
+  /**
+   * The selected Bluetooth protocol to use when connecting to a device.
+   * Defaults to FIRST_DETECTED which automatically selects the first valid protocol found.
+   */
+  selectedProtocol: BluetoothProtocolSelection = BluetoothProtocolSelection.FIRST_DETECTED;
 
   constructor(app: App) {
     this.app = app;
@@ -159,14 +231,30 @@ export class BluetoothLEController {
     // The following code gets run no matter if the device is already in the list or not
 
     let deviceInList = this.discoveredBluetoothDevices[index];
-    // Add some additional metadata
+    // Add some additional metadata - detect which serial protocols this device supports
     if (deviceInList.nobleData.advertisement.serviceUuids.includes('6e400001b5a3f393e0a9e50e24dcca9e')) {
       deviceInList.serialCapabilities.nordicNus = true;
+    }
+    if (deviceInList.nobleData.advertisement.serviceUuids.includes('49535343fe7d4ae58fa99fafd205e455')) {
+      deviceInList.serialCapabilities.microchipTransparentUart = true;
+    }
+    if (deviceInList.nobleData.advertisement.serviceUuids.includes('f000c0e014514000b000000000000000')) {
+      deviceInList.serialCapabilities.tiSerialPortService = true;
+    }
+    if (deviceInList.nobleData.advertisement.serviceUuids.includes('2456e1b926e28f83e74553f1d8a1ff')) {
+      deviceInList.serialCapabilities.ubloxUconnectXpress = true;
+    }
+    if (deviceInList.nobleData.advertisement.serviceUuids.includes('4880c12c5fa24e9e8014671b0c5f83')) {
+      deviceInList.serialCapabilities.siliconLabsSpp = true;
     }
   }
 
   setSelectedBluetoothDevice = (device: SerializableBluetoothDeviceWithMetadata) => {
     this.selectedBluetoothDevice = device;
+  }
+
+  setSelectedProtocol = (protocol: BluetoothProtocolSelection) => {
+    this.selectedProtocol = protocol;
   }
 
   /**
@@ -233,42 +321,68 @@ export class BluetoothLEController {
     }
 
     let foundProtocol: BluetoothLESerialProtocol | null = null;
-    for (const protocol of bluetoothLESerialProtocols) {
-      // Get index of service in result.bluetoothServicesMsg.services
-      const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
-      if (serviceIndex === -1) {
-        continue;
-      }
-      console.log('Found service.');
-      // Now make sure the read and write UUIDs are present
-      const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
 
-      // Check read UUID is present as has "writeWithoutResponse" property
-      const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.rxUuid);
-      if (readCharacteristicIndex === -1) {
-        continue;
-      }
-      const readCharacteristic = service.characteristics[readCharacteristicIndex];
-      if (!readCharacteristic.properties.includes('writeWithoutResponse')) {
-        continue;
-      }
-      console.log('Found read characteristic.');
+    // If user selected "First detected" or "Manually specify", search through all protocols
+    if (this.selectedProtocol === BluetoothProtocolSelection.FIRST_DETECTED || this.selectedProtocol === BluetoothProtocolSelection.MANUALLY_SPECIFY) {
+      for (const protocol of bluetoothLESerialProtocols) {
+        // Get index of service in result.bluetoothServicesMsg.services
+        const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
+        if (serviceIndex === -1) {
+          continue;
+        }
+        console.log('Found service.');
+        // Now make sure the read and write UUIDs are present
+        const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
 
-      // Check write UUID is present as has "notify" property
-      const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.txUuid);
-      if (writeCharacteristicIndex === -1) {
-        continue;
-      }
-      const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
-      if (!writeCharacteristic.properties.includes('notify')) {
-        continue;
-      }
-      console.log('Found write characteristic.');
-      console.log(`Found ${protocol.name} on connected Bluetooth device.`);
+        // Check read UUID is present as has "writeWithoutResponse" property
+        const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.rxUuid);
+        if (readCharacteristicIndex === -1) {
+          continue;
+        }
+        const readCharacteristic = service.characteristics[readCharacteristicIndex];
+        if (!readCharacteristic.properties.includes('writeWithoutResponse')) {
+          continue;
+        }
+        console.log('Found read characteristic.');
 
-      // Use the first valid serial protocol we find
-      foundProtocol = protocol;
-      break;
+        // Check write UUID is present as has "notify" property
+        const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.txUuid);
+        if (writeCharacteristicIndex === -1) {
+          continue;
+        }
+        const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
+        if (!writeCharacteristic.properties.includes('notify')) {
+          continue;
+        }
+        console.log('Found write characteristic.');
+        console.log(`Found ${protocol.name} on connected Bluetooth device.`);
+
+        // Use the first valid serial protocol we find
+        foundProtocol = protocol;
+        break;
+      }
+    } else {
+      // User selected a specific protocol, so only try that one
+      const selectedProtocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === this.selectedProtocol);
+      if (selectedProtocolObj) {
+        const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === selectedProtocolObj.serviceUuid);
+        if (serviceIndex !== -1) {
+          const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
+
+          const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === selectedProtocolObj.rxUuid);
+          const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === selectedProtocolObj.txUuid);
+
+          if (readCharacteristicIndex !== -1 && writeCharacteristicIndex !== -1) {
+            const readCharacteristic = service.characteristics[readCharacteristicIndex];
+            const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
+
+            if (readCharacteristic.properties.includes('writeWithoutResponse') && writeCharacteristic.properties.includes('notify')) {
+              foundProtocol = selectedProtocolObj;
+              console.log(`Found specifically selected ${selectedProtocolObj.name} on connected Bluetooth device.`);
+            }
+          }
+        }
+      }
     }
 
     if (!foundProtocol) {

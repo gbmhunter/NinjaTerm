@@ -38,7 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDeviceWithMetadata } from '@/model/ConnController/BluetoothLEController';
+import { SerializableBluetoothDeviceWithMetadata, BluetoothProtocolSelection } from '@/model/ConnController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -669,17 +669,56 @@ function PortSettingsView(props: Props) {
       {app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH && (
         <div style={{ width: '100%', marginBottom: 16 }}>
           <Typography variant="h6" gutterBottom>
-            Available Bluetooth Devices
+            Bluetooth Settings
           </Typography>
 
-          <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
+          {/* =============================================================== */}
+          {/* PROTOCOL SELECTION DROPDOWN */}
+          {/* =============================================================== */}
+          <div style={{ marginTop: '16px' }}>
+            <FormControl sx={{ minWidth: 300 }} size="small">
+              <InputLabel>Bluetooth Protocol</InputLabel>
+              <Select
+                value={app.connController.bluetoothLEController.selectedProtocol}
+                label="Bluetooth Protocol"
+                disabled={app.connController.connState !== ConnState.CLOSED}
+                onChange={(e) => {
+                  app.connController.bluetoothLEController.setSelectedProtocol(e.target.value as BluetoothProtocolSelection);
+                }}
+              >
+                <MenuItem value={BluetoothProtocolSelection.FIRST_DETECTED}>
+                  {BluetoothProtocolSelection.FIRST_DETECTED}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.NORDIC_NUS}>
+                  {BluetoothProtocolSelection.NORDIC_NUS}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}>
+                  {BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE}>
+                  {BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS}>
+                  {BluetoothProtocolSelection.UBLOX_UCONNECTXPRESS}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.SILICON_LABS_SPP}>
+                  {BluetoothProtocolSelection.SILICON_LABS_SPP}
+                </MenuItem>
+                <MenuItem value={BluetoothProtocolSelection.MANUALLY_SPECIFY}>
+                  {BluetoothProtocolSelection.MANUALLY_SPECIFY}
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+
+          <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 1 }}>
             {/* =============================================================== */}
             {/* SCAN/STOP SCANNING BUTTON */}
             {/* =============================================================== */}
             <Button
               variant="outlined"
-              size="medium"
-              sx={{ m: 1, width: 160 }}
+              size="small"
+              sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
               disabled={app.connController.connState !== ConnState.CLOSED}
               onClick={async () => {
                 if (app.connController.bluetoothLEController.isBluetoothScanning) {
@@ -698,7 +737,7 @@ function PortSettingsView(props: Props) {
             <Button
               variant="contained"
               size="medium"
-              sx={{ m: 1, width: 160 }}
+              sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
               color={
                 portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
                   'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
@@ -732,6 +771,9 @@ function PortSettingsView(props: Props) {
           {/* =============================================================== */}
           {/* TABLE OF SCANNED BLUETOOTH DEVICES */}
           {/* =============================================================== */}
+          <Typography variant="h6" gutterBottom>
+            Available Bluetooth Devices
+          </Typography>
           <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
             <Table
               size="small"
@@ -828,7 +870,15 @@ function PortSettingsView(props: Props) {
                         {device.nobleData.rssi || 'n/a'}
                       </TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
-                        {device.serialCapabilities.nordicNus ? 'Nordic NUS' : '-'}
+                        {(() => {
+                          const protocols: string[] = [];
+                          if (device.serialCapabilities.nordicNus) protocols.push('Nordic NUS');
+                          if (device.serialCapabilities.microchipTransparentUart) protocols.push('Microchip');
+                          if (device.serialCapabilities.tiSerialPortService) protocols.push('TI SPS');
+                          if (device.serialCapabilities.ubloxUconnectXpress) protocols.push('u-blox');
+                          if (device.serialCapabilities.siliconLabsSpp) protocols.push('Silicon Labs');
+                          return protocols.length > 0 ? protocols.join(', ') : '-';
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))
