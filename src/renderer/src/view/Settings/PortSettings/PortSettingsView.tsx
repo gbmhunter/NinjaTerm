@@ -64,7 +64,7 @@ function PortSettingsView(props: Props) {
     }
 
     // Find the protocol object for the selected protocol
-    const protocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === selectedProtocol);
+    const protocolObj = bluetoothLESerialProtocols.find((p) => p.selectionType === selectedProtocol);
     if (protocolObj) {
       return {
         serviceUuid: protocolObj.serviceUuid,
@@ -82,8 +82,7 @@ function PortSettingsView(props: Props) {
       return 'n/a';
     }
 
-    const hexBytes = Array.from(manufacturerData)
-      .map(byte => byte.toString(16).padStart(2, '0'));
+    const hexBytes = Array.from(manufacturerData).map((byte) => byte.toString(16).padStart(2, '0'));
 
     // Truncate if too long and add ellipsis
     if (hexBytes.length > 6) {
@@ -94,9 +93,7 @@ function PortSettingsView(props: Props) {
   };
 
   // Local state for socket port input to allow empty/partial values during editing
-  const [socketPortInput, setSocketPortInput] = useState<string>(
-    app.settings.portConfiguration.socketPort.toString()
-  );
+  const [socketPortInput, setSocketPortInput] = useState<string>(app.settings.portConfiguration.socketPort.toString());
 
   // Sync local state when model value changes externally
   useEffect(() => {
@@ -137,7 +134,7 @@ function PortSettingsView(props: Props) {
           >
             <MenuItem value={ConnectionType.SERIAL_PORT}>Serial Port</MenuItem>
             <MenuItem value={ConnectionType.SOCKET}>Socket</MenuItem>
-            <MenuItem value={ConnectionType.BLUETOOTH}>Bluetooth</MenuItem>
+            <MenuItem value={ConnectionType.BLUETOOTH_LE}>Bluetooth LE</MenuItem>
           </Select>
         </FormControl>
       </div>
@@ -149,356 +146,360 @@ function PortSettingsView(props: Props) {
             <Typography variant="h6" gutterBottom>
               Available Serial Ports
             </Typography>
-        <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">Select</TableCell>
-                <TableCell>Port Path</TableCell>
-                <TableCell>Friendly Name</TableCell>
-                <TableCell>Manufacturer</TableCell>
-                <TableCell>Vendor ID</TableCell>
-                <TableCell>Product ID</TableCell>
-                <TableCell>Serial Number</TableCell>
-                <TableCell>Location ID</TableCell>
-                <TableCell>PNP ID</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {(app.settings.portConfiguration.availableSerialPorts || []).length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                    No serial ports found. Click "Rescan" to search for ports.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                app.settings.portConfiguration.availableSerialPorts.map((port: any, idx: number) => (
-                  <TableRow
-                    key={port.path || idx}
-                    hover={!isTableDisabled}
-                    selected={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
-                    sx={{
-                      cursor: isTableDisabled ? 'not-allowed' : 'pointer',
-                      opacity: isTableDisabled ? 0.5 : 1
-                    }}
-                    onClick={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
-                  >
-                    <TableCell padding="checkbox">
-                      <Radio
-                        checked={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
-                        onChange={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
-                        value={port.path}
-                        name="serial-port-selection"
-                        disabled={isTableDisabled}
-                      />
-                    </TableCell>
-                    <TableCell>{port.path || 'Unknown'}</TableCell>
-                    <TableCell>{port.friendlyName || 'n/a'}</TableCell>
-                    <TableCell>{port.manufacturer || 'n/a'}</TableCell>
-                    <TableCell>{port.vendorId || 'n/a'}</TableCell>
-                    <TableCell>{port.productId || 'n/a'}</TableCell>
-                    <TableCell
-                      sx={{
-                        minWidth: 100,
-                        wordBreak: 'break-all',
-                      }}
-                    >{port.serialNumber || 'n/a'}</TableCell>
-                    <TableCell
-                      sx={{
-                        minWidth: 100,
-                        wordBreak: 'break-all',
-                      }}
-                    >{port.locationId || 'n/a'}</TableCell>
-                    <TableCell sx={{
-                      minWidth: 200,
-                      wordBreak: 'break-all',
-                    }}>
-                      {port.pnpId || 'n/a'}
-                    </TableCell>
+            <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: 1000 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox">Select</TableCell>
+                    <TableCell>Port Path</TableCell>
+                    <TableCell>Friendly Name</TableCell>
+                    <TableCell>Manufacturer</TableCell>
+                    <TableCell>Vendor ID</TableCell>
+                    <TableCell>Product ID</TableCell>
+                    <TableCell>Serial Number</TableCell>
+                    <TableCell>Location ID</TableCell>
+                    <TableCell>PNP ID</TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
+                </TableHead>
+                <TableBody>
+                  {(app.settings.portConfiguration.availableSerialPorts || []).length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                        No serial ports found. Click "Rescan" to search for ports.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    app.settings.portConfiguration.availableSerialPorts.map((port: any, idx: number) => (
+                      <TableRow
+                        key={port.path || idx}
+                        hover={!isTableDisabled}
+                        selected={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                        sx={{
+                          cursor: isTableDisabled ? 'not-allowed' : 'pointer',
+                          opacity: isTableDisabled ? 0.5 : 1,
+                        }}
+                        onClick={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                      >
+                        <TableCell padding="checkbox">
+                          <Radio
+                            checked={app.settings.portConfiguration.selectedSerialPort?.path === port.path}
+                            onChange={isTableDisabled ? undefined : () => app.settings.portConfiguration.setSelectedSerialPort(port)}
+                            value={port.path}
+                            name="serial-port-selection"
+                            disabled={isTableDisabled}
+                          />
+                        </TableCell>
+                        <TableCell>{port.path || 'Unknown'}</TableCell>
+                        <TableCell>{port.friendlyName || 'n/a'}</TableCell>
+                        <TableCell>{port.manufacturer || 'n/a'}</TableCell>
+                        <TableCell>{port.vendorId || 'n/a'}</TableCell>
+                        <TableCell>{port.productId || 'n/a'}</TableCell>
+                        <TableCell
+                          sx={{
+                            minWidth: 100,
+                            wordBreak: 'break-all',
+                          }}
+                        >
+                          {port.serialNumber || 'n/a'}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            minWidth: 100,
+                            wordBreak: 'break-all',
+                          }}
+                        >
+                          {port.locationId || 'n/a'}
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            minWidth: 200,
+                            wordBreak: 'break-all',
+                          }}
+                        >
+                          {port.pnpId || 'n/a'}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
 
-      <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        {/* =============================================================== */}
-        {/* RESCAN BUTTON */}
-        {/* =============================================================== */}
-        <Button
-          variant="outlined"
-          size="medium"
-          sx={{ m: 1 }}
-          onClick={async () => {
-            await app.settings.portConfiguration.scanForSerialPorts();
-          }}
-        >
-          Rescan
-        </Button>
-        {/* =============================================================== */}
-        {/* OPEN/CLOSE BUTTON */}
-        {/* =============================================================== */}
-        <Button
-          variant="contained"
-          size="medium"
-          sx={{ m: 1, width: 160 }}
-          color={
-            portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
-              'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-              ButtonPropsColorOverrides
-            >
-          }
-          onClick={() => {
-            if (app.connController.connState === ConnState.CLOSED) {
-              app.connController.openConnection();
-            } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-              app.connController.stopWaitingToReopenPort();
-            } else if (app.connController.connState === ConnState.OPENED) {
-              app.connController.closeConnection();
-            } else {
-              throw Error('Invalid port state.');
-            }
-          }}
-          // Disabled when connection is not ready to open
-          disabled={!app.connController.isReadyToOpen()}
-          data-testid="open-close-button"
-        >
-          {portStateToButtonProps[app.connController.connState].text}
-        </Button>
-        {/* =============================================================== */}
-        {/* PORT STATUS */}
-        {/* =============================================================== */}
-        <Typography sx={{ m: 1, alignSelf: 'center' }}>
-          Status: {ConnState[app.connController.connState]}
-        </Typography>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
-        {/* ============================================================== */}
-        {/* BAUD RATE */}
-        {/* ============================================================== */}
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
-        >
-          <Autocomplete
-            freeSolo
-            options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Baud rate"
-                error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
-                helperText={app.settings.portConfiguration.baudRateErrorMsg}
-                onKeyDown={async (e) => {
-                  if (e.key === 'Enter') {
-                    // Apply baud rate
-                    await app.settings.portConfiguration.setBaudRate();
-                  }
-                  // Prevent the global keydown event from being triggered
-                  e.stopPropagation();
-                }}
-                onBlur={async () => {
-                  // Apply baud rate
-                  await app.settings.portConfiguration.setBaudRate();
-                }}
-              />
-            )}
-            disabled={isPortSettingsDisabled}
-            sx={{ m: 1, width: 160 }}
-            size="small"
-            inputValue={app.settings.portConfiguration.baudRateInputValue}
-            onInputChange={(event, newInputValue) => {
-              app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
-            }}
-          />
-        </Tooltip>
-        {/* ============================================================== */}
-        {/* NUM. DATA BITS */}
-        {/* ============================================================== */}
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
-          placement="right"
-        >
-          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-            <InputLabel>Num. data bits</InputLabel>
-            <Select
-              value={app.settings.portConfiguration.numDataBits}
-              label="Num. Data Bits"
-              disabled={isPortSettingsDisabled}
-              onChange={(e) => {
-                app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
+          <div id="row-with-select-port-and-open-port-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            {/* =============================================================== */}
+            {/* RESCAN BUTTON */}
+            {/* =============================================================== */}
+            <Button
+              variant="outlined"
+              size="medium"
+              sx={{ m: 1 }}
+              onClick={async () => {
+                await app.settings.portConfiguration.scanForSerialPorts();
               }}
             >
-              {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
-                return (
-                  <MenuItem key={numDataBits} value={numDataBits}>
-                    {numDataBits.toString()}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </Tooltip>
-        {/* ============================================================== */}
-        {/* PARITY */}
-        {/* ============================================================== */}
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
-          placement="right"
-        >
-          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-            <InputLabel>Parity</InputLabel>
-            <Select
-              value={app.settings.portConfiguration.parity}
-              label="Parity"
-              disabled={isPortSettingsDisabled}
-              onChange={(e) => {
-                app.settings.portConfiguration.setParity(e.target.value as Parity);
+              Rescan
+            </Button>
+            {/* =============================================================== */}
+            {/* OPEN/CLOSE BUTTON */}
+            {/* =============================================================== */}
+            <Button
+              variant="contained"
+              size="medium"
+              sx={{ m: 1, width: 160 }}
+              color={
+                portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
+                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                  ButtonPropsColorOverrides
+                >
+              }
+              onClick={() => {
+                if (app.connController.connState === ConnState.CLOSED) {
+                  app.connController.openConnection();
+                } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                  app.connController.stopWaitingToReopenPort();
+                } else if (app.connController.connState === ConnState.OPENED) {
+                  app.connController.closeConnection();
+                } else {
+                  throw Error('Invalid port state.');
+                }
               }}
+              // Disabled when connection is not ready to open
+              disabled={!app.connController.isReadyToOpen()}
+              data-testid="open-close-button"
             >
-              {Object.values(Parity).map((parity) => {
-                return (
-                  <MenuItem key={parity} value={parity}>
-                    {parity}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </Tooltip>
-        {/* ============================================================== */}
-        {/* STOP BITS */}
-        {/* ============================================================== */}
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
-          placement="right"
-        >
-          <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
-            <InputLabel>Stop bits</InputLabel>
-            <Select
-              value={app.settings.portConfiguration.stopBits}
-              label="Stop Bits"
-              disabled={isPortSettingsDisabled}
-              onChange={(e) => {
-                app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
-              }}
+              {portStateToButtonProps[app.connController.connState].text}
+            </Button>
+            {/* =============================================================== */}
+            {/* PORT STATUS */}
+            {/* =============================================================== */}
+            <Typography sx={{ m: 1, alignSelf: 'center' }}>Status: {ConnState[app.connController.connState]}</Typography>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: 16 }}>
+            {/* ============================================================== */}
+            {/* BAUD RATE */}
+            {/* ============================================================== */}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The baud rate (bits/second) to use on the serial port. You can select one of the popular pre-defined options or enter in a custom rate. Custom value must be a integer in the range [1, 2000000 (2M)]. Most OSes/hardware will accept values outside their valid range without erroring, but will just not work properly. Common baud rates include 9600, 56700 and 115200. If you receive garbage data, it might be because you have the wrong baud rate selected."
             >
-              {STOP_BIT_OPTIONS.map((stopBits) => {
-                return (
-                  <MenuItem key={stopBits} value={stopBits}>
-                    {stopBits.toString()}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-        </Tooltip>
-      </div>
-
-      {/* =============================================================== */}
-      {/* FLOW CONTROL PARAMETERS */}
-      {/* =============================================================== */}
-      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
-        <Typography variant="subtitle2" color="text.secondary">
-          Flow Control Settings
-        </Typography>
-
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control."
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={app.settings.portConfiguration.rtscts}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setRtscts(e.target.checked);
-                }}
+              <Autocomplete
+                freeSolo
+                options={DEFAULT_BAUD_RATES.map((option) => option.toString())}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Baud rate"
+                    error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
+                    helperText={app.settings.portConfiguration.baudRateErrorMsg}
+                    onKeyDown={async (e) => {
+                      if (e.key === 'Enter') {
+                        // Apply baud rate
+                        await app.settings.portConfiguration.setBaudRate();
+                      }
+                      // Prevent the global keydown event from being triggered
+                      e.stopPropagation();
+                    }}
+                    onBlur={async () => {
+                      // Apply baud rate
+                      await app.settings.portConfiguration.setBaudRate();
+                    }}
+                  />
+                )}
                 disabled={isPortSettingsDisabled}
-              />
-            }
-            label="RTS/CTS hardware flow control"
-          />
-        </Tooltip>
-
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission."
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={app.settings.portConfiguration.xon}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setXon(e.target.checked);
+                sx={{ m: 1, width: 160 }}
+                size="small"
+                inputValue={app.settings.portConfiguration.baudRateInputValue}
+                onInputChange={(event, newInputValue) => {
+                  app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
                 }}
-                disabled={isPortSettingsDisabled}
               />
-            }
-            label="XON software flow control"
-          />
-        </Tooltip>
+            </Tooltip>
+            {/* ============================================================== */}
+            {/* NUM. DATA BITS */}
+            {/* ============================================================== */}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The number of bits in each frame of data. This is typically set to 8 bits (i.e. 1 byte)."
+              placement="right"
+            >
+              <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <InputLabel>Num. data bits</InputLabel>
+                <Select
+                  value={app.settings.portConfiguration.numDataBits}
+                  label="Num. Data Bits"
+                  disabled={isPortSettingsDisabled}
+                  onChange={(e) => {
+                    app.settings.portConfiguration.setNumDataBits(e.target.value as NumDataBits);
+                  }}
+                >
+                  {NUM_DATA_BITS_OPTIONS.map((numDataBits) => {
+                    return (
+                      <MenuItem key={numDataBits} value={numDataBits}>
+                        {numDataBits.toString()}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ============================================================== */}
+            {/* PARITY */}
+            {/* ============================================================== */}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title='The parity is an extra bit of data in a frame which is set to make the total number of 1s in the frame equal to the parity setting. If "none", no parity bit is used or expected. If "odd", an odd number of 1s is expected, if "even" an even number of 1s is expected. "none" is the most common setting.'
+              placement="right"
+            >
+              <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <InputLabel>Parity</InputLabel>
+                <Select
+                  value={app.settings.portConfiguration.parity}
+                  label="Parity"
+                  disabled={isPortSettingsDisabled}
+                  onChange={(e) => {
+                    app.settings.portConfiguration.setParity(e.target.value as Parity);
+                  }}
+                >
+                  {Object.values(Parity).map((parity) => {
+                    return (
+                      <MenuItem key={parity} value={parity}>
+                        {parity}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+            {/* ============================================================== */}
+            {/* STOP BITS */}
+            {/* ============================================================== */}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title='The num. of stop bits is the number of bits used to mark the end of the frame. "1" is the most common setting.'
+              placement="right"
+            >
+              <FormControl sx={{ m: 1, minWidth: 160 }} size="small">
+                <InputLabel>Stop bits</InputLabel>
+                <Select
+                  value={app.settings.portConfiguration.stopBits}
+                  label="Stop Bits"
+                  disabled={isPortSettingsDisabled}
+                  onChange={(e) => {
+                    app.settings.portConfiguration.setStopBits(e.target.value as StopBits);
+                  }}
+                >
+                  {STOP_BIT_OPTIONS.map((stopBits) => {
+                    return (
+                      <MenuItem key={stopBits} value={stopBits}>
+                        {stopBits.toString()}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Tooltip>
+          </div>
 
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission."
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={app.settings.portConfiguration.xoff}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setXoff(e.target.checked);
-                }}
-                disabled={isPortSettingsDisabled}
-              />
-            }
-            label="XOFF software flow control"
-          />
-        </Tooltip>
+          {/* =============================================================== */}
+          {/* FLOW CONTROL PARAMETERS */}
+          {/* =============================================================== */}
+          <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 8, marginTop: 16, gap: 8 }}>
+            <Typography variant="subtitle2" color="text.secondary">
+              Flow Control Settings
+            </Typography>
 
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html."
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={app.settings.portConfiguration.xany}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setXany(e.target.checked);
-                }}
-                disabled={isPortSettingsDisabled}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control."
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.rtscts}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setRtscts(e.target.checked);
+                    }}
+                    disabled={isPortSettingsDisabled}
+                  />
+                }
+                label="RTS/CTS hardware flow control"
               />
-            }
-            label="XANY (any character restarts output)"
-          />
-        </Tooltip>
+            </Tooltip>
 
-        <Tooltip
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards."
-        >
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={app.settings.portConfiguration.hupcl}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setHupcl(e.target.checked);
-                }}
-                disabled={isPortSettingsDisabled}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Software flow control using XON character (ASCII 17, Ctrl+Q). When enabled, receiving an XON character resumes transmission."
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.xon}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setXon(e.target.checked);
+                    }}
+                    disabled={isPortSettingsDisabled}
+                  />
+                }
+                label="XON software flow control"
               />
-            }
-            label="Drop DTR on close (HUPCL)"
-          />
-        </Tooltip>
-      </div>
+            </Tooltip>
+
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Software flow control using XOFF character (ASCII 19, Ctrl+S). When enabled, receiving an XOFF character pauses transmission."
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.xoff}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setXoff(e.target.checked);
+                    }}
+                    disabled={isPortSettingsDisabled}
+                  />
+                }
+                label="XOFF software flow control"
+              />
+            </Tooltip>
+
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Any character can restart output which was paused by XOFF. Normally only XON can restart transmission. This allows the user to override the software flow control and restart output with a key press. For more info, see IXANY on https://www.man7.org/linux/man-pages/man3/termios.3.html."
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.xany}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setXany(e.target.checked);
+                    }}
+                    disabled={isPortSettingsDisabled}
+                  />
+                }
+                label="XANY (any character restarts output)"
+              />
+            </Tooltip>
+
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Drop DTR (Data Terminal Ready) signal when the port is closed. This can be useful for triggering resets on connected devices like Arduino boards."
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.settings.portConfiguration.hupcl}
+                    onChange={(e) => {
+                      app.settings.portConfiguration.setHupcl(e.target.checked);
+                    }}
+                    disabled={isPortSettingsDisabled}
+                  />
+                }
+                label="Drop DTR on close (HUPCL)"
+              />
+            </Tooltip>
+          </div>
         </>
       )}
 
@@ -533,10 +534,7 @@ function PortSettingsView(props: Props) {
             {/* ============================================================== */}
             {/* PORT */}
             {/* ============================================================== */}
-            <Tooltip
-              {...app.settings.displaySettings.getBasicTooltipConfig()}
-              title="Port number of the TCP socket server to connect to. Must be between 1 and 65535 (inclusive)."
-            >
+            <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Port number of the TCP socket server to connect to. Must be between 1 and 65535 (inclusive).">
               <TextField
                 label="Port"
                 value={socketPortInput}
@@ -606,7 +604,7 @@ function PortSettingsView(props: Props) {
                 helperText="Port number"
                 inputProps={{
                   min: 1,
-                  max: 65535
+                  max: 65535,
                 }}
               />
             </Tooltip>
@@ -644,7 +642,7 @@ function PortSettingsView(props: Props) {
               size="small"
               inputProps={{
                 min: PortSettings.SOCKET_CONN_TIMEOUT_MIN_MS,
-                max: PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS
+                max: PortSettings.SOCKET_CONN_TIMEOUT_MAX_MS,
               }}
             />
           </Tooltip>
@@ -653,10 +651,7 @@ function PortSettingsView(props: Props) {
             {/* =============================================================== */}
             {/* OPEN/CLOSE BUTTON FOR SOCKET */}
             {/* =============================================================== */}
-            <Tooltip
-              {...app.settings.displaySettings.getBasicTooltipConfig()}
-              title="Open or close the socket connection."
-            >
+            <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Open or close the socket connection.">
               <Button
                 variant="contained"
                 size="medium"
@@ -687,160 +682,238 @@ function PortSettingsView(props: Props) {
             {/* =============================================================== */}
             {/* SOCKET STATUS */}
             {/* =============================================================== */}
-            <Typography sx={{ alignSelf: 'center' }}>
-              Status: {ConnState[app.connController.connState]}
-            </Typography>
+            <Typography sx={{ alignSelf: 'center' }}>Status: {ConnState[app.connController.connState]}</Typography>
           </div>
         </div>
       )}
 
+      {/* ====================================================================================== */}
+      {/* BLUETOOTH LE */}
+      {/* ====================================================================================== */}
       {/* Show Bluetooth configuration if Bluetooth is selected */}
-      {app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH && (
+      {app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH_LE && (
         <div style={{ width: '100%', marginBottom: 16 }}>
           <Typography variant="h6" gutterBottom>
-            Bluetooth Settings
+            Bluetooth LE Settings
           </Typography>
 
           {/* =============================================================== */}
           {/* PROTOCOL SELECTION DROPDOWN */}
           {/* =============================================================== */}
           <div style={{ marginTop: '16px' }}>
-            <FormControl sx={{ minWidth: 300 }} size="small">
-              <InputLabel>Bluetooth Protocol</InputLabel>
-              <Select
-                value={app.connController.bluetoothLEController.selectedSerialProtocol}
-                label="Bluetooth Protocol"
-                disabled={app.connController.connState !== ConnState.CLOSED}
-                onChange={(e) => {
-                  app.connController.bluetoothLEController.setSelectedProtocol(e.target.value as BluetoothLESerialProtocolType);
-                }}
-              >
-                <MenuItem value={BluetoothLESerialProtocolType.FIRST_DETECTED}>
-                  {BluetoothLESerialProtocolType.FIRST_DETECTED}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}>
-                  {BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}>
-                  {BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}>
-                  {BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}>
-                  {BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.SILICON_LABS_SPP}>
-                  {BluetoothLESerialProtocolType.SILICON_LABS_SPP}
-                </MenuItem>
-                <MenuItem value={BluetoothLESerialProtocolType.MANUALLY_SPECIFY}>
-                  {BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
-                </MenuItem>
-              </Select>
-            </FormControl>
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The protocol to use for serial communication over Bluetooth LE. This determines the service and TX/RX characteristic UUIDs to use."
+              placement="right"
+            >
+              <FormControl sx={{ minWidth: 300 }} size="small">
+                <InputLabel>Bluetooth LE Serial Protocol</InputLabel>
+                <Select
+                  value={app.connController.bluetoothLEController.selectedSerialProtocol}
+                  label="Bluetooth Protocol"
+                  disabled={app.connController.connState !== ConnState.CLOSED}
+                  onChange={(e) => {
+                    app.connController.bluetoothLEController.setSelectedProtocol(e.target.value as BluetoothLESerialProtocolType);
+                  }}
+                >
+                  {/* Make sure Tooltips are child elements of MenuItem, it doesn't work the other way around. */}
+                  <MenuItem value={BluetoothLESerialProtocolType.FIRST_DETECTED}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="This will check all supported protocols and use the first one that is found. This is generally the best option to use."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.FIRST_DETECTED}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="The Nordic UART Service (NUS) is used by many nRF MCUs and also other vendor MCUs. It is likely the most popular protocol for BLE serial communication."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="The Microchip Transparent UART Service is used by many Microchip MCUs."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="The TI Serial Port Service (SPP) is a BLE serial protocol used by Texas Instruments."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="The u-blox u-connectXpress is a BLE serial protocol used by u-blox."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.SILICON_LABS_SPP}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="The Silicon Labs SPP is a BLE serial protocol used by Silicon Labs."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.SILICON_LABS_SPP}</span>
+                    </Tooltip>
+                  </MenuItem>
+                  <MenuItem value={BluetoothLESerialProtocolType.MANUALLY_SPECIFY}>
+                    <Tooltip
+                      {...app.settings.displaySettings.getBasicTooltipConfig()}
+                      title="Manually specify the service, RX, and TX UUIDs to use for serial communication. Use this if you have implemented your own custom protocol."
+                      placement="right"
+                    >
+                      <span>{BluetoothLESerialProtocolType.MANUALLY_SPECIFY}</span>
+                    </Tooltip>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Tooltip>
           </div>
 
           {/* =============================================================== */}
           {/* UUID INPUT FIELDS */}
           {/* =============================================================== */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '16px', marginBottom: '16px' }}>
-            <TextField
-              label="Service UUID"
-              value={getDisplayUuids().serviceUuid}
-              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
-              onChange={(e) => {
-                app.connController.bluetoothLEController.setManualServiceUuid(e.target.value);
-              }}
-              size="small"
-              sx={{ width: 320 }}
-              helperText="Bluetooth service UUID"
-            />
-            <TextField
-              label="RX Characteristic UUID"
-              value={getDisplayUuids().rxUuid}
-              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
-              onChange={(e) => {
-                app.connController.bluetoothLEController.setManualRxCharacteristicUuid(e.target.value);
-              }}
-              size="small"
-              sx={{ width: 320 }}
-              helperText="Characteristic UUID for receiving data (RX)"
-            />
-            <TextField
-              label="TX Characteristic UUID"
-              value={getDisplayUuids().txUuid}
-              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
-              onChange={(e) => {
-                app.connController.bluetoothLEController.setManualTxCharacteristicUuid(e.target.value);
-              }}
-              size="small"
-              sx={{ width: 320 }}
-              helperText="Characteristic UUID for transmitting data (TX)"
-            />
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The service UUID to use for serial communication over Bluetooth LE. The same service UUID must be used for both the TX and RX characteristics."
+              placement="right"
+            >
+              <TextField
+                label="Service UUID"
+                value={getDisplayUuids().serviceUuid}
+                disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+                onChange={(e) => {
+                  app.connController.bluetoothLEController.setManualServiceUuid(e.target.value);
+                }}
+                size="small"
+                sx={{ width: 320 }}
+                helperText="Bluetooth service UUID containing the TX and RX characteristics"
+              />
+            </Tooltip>
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The RX characteristic UUID to use. This is named w.r.t. the BLE peripheral, i.e. NinjaTerm (the BLE central device) will write data to this characteristic."
+              placement="right"
+            >
+              <TextField
+                label="RX Characteristic UUID"
+                value={getDisplayUuids().rxUuid}
+                disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+                onChange={(e) => {
+                  app.connController.bluetoothLEController.setManualRxCharacteristicUuid(e.target.value);
+                }}
+                size="small"
+                sx={{ width: 320 }}
+                helperText="Characteristic UUID for BLE peripheral to receive data (RX)"
+              />
+            </Tooltip>
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="The TX characteristic UUID to use. This is named w.r.t. the BLE peripheral, i.e. NinjaTerm (the BLE central device) will read data from this characteristic."
+              placement="right"
+            >
+              <TextField
+                label="TX Characteristic UUID"
+                value={getDisplayUuids().txUuid}
+                disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+                onChange={(e) => {
+                  app.connController.bluetoothLEController.setManualTxCharacteristicUuid(e.target.value);
+                }}
+                size="small"
+                sx={{ width: 320 }}
+                helperText="Characteristic UUID for BLE peripheral to transmit data (TX)"
+              />
+            </Tooltip>
           </div>
 
           <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 1 }}>
             {/* =============================================================== */}
             {/* SCAN/STOP SCANNING BUTTON */}
             {/* =============================================================== */}
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
-              disabled={app.connController.connState !== ConnState.CLOSED}
-              onClick={async () => {
-                if (app.connController.bluetoothLEController.isBluetoothScanning) {
-                  app.connController.bluetoothLEController.stopBluetoothScan();
-                } else {
-                  await app.connController.bluetoothLEController.scanForBluetoothDevices();
-                }
-              }}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Start scanning for Bluetooth devices. Discovered devices will be displayed in the table below."
+              placement="right"
             >
-              {app.connController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
-            </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
+                disabled={app.connController.connState !== ConnState.CLOSED}
+                onClick={async () => {
+                  if (app.connController.bluetoothLEController.isBluetoothScanning) {
+                    app.connController.bluetoothLEController.stopBluetoothScan();
+                  } else {
+                    await app.connController.bluetoothLEController.scanForBluetoothDevices();
+                  }
+                }}
+              >
+                {app.connController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
+              </Button>
+            </Tooltip>
 
             {/* =============================================================== */}
             {/* OPEN/CLOSE BUTTON FOR BLUETOOTH */}
             {/* =============================================================== */}
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
-              color={
-                portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
-                  'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                  ButtonPropsColorOverrides
-                >
-              }
-              onClick={() => {
-                if (app.connController.connState === ConnState.CLOSED) {
-                  app.connController.openConnection();
-                } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-                  app.connController.stopWaitingToReopenPort();
-                } else if (app.connController.connState === ConnState.OPENED) {
-                  app.connController.closeConnection();
-                } else {
-                  throw Error('Invalid port state.');
-                }
-              }}
-              disabled={!app.connController.isReadyToOpen()}
-              data-testid="bluetooth-open-close-button"
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="Connect to the selected Bluetooth LE device, make sure the service, RX, and TX UUIDs are present, and start listening to the TX characteristic."
+              placement="right"
             >
-              {portStateToButtonProps[app.connController.connState].text}
-            </Button>
+              <Button
+                variant="contained"
+                size="medium"
+                sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
+                color={
+                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
+                    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                    ButtonPropsColorOverrides
+                  >
+                }
+                onClick={() => {
+                  if (app.connController.connState === ConnState.CLOSED) {
+                    app.connController.openConnection();
+                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                    app.connController.stopWaitingToReopenPort();
+                  } else if (app.connController.connState === ConnState.OPENED) {
+                    app.connController.closeConnection();
+                  } else {
+                    throw Error('Invalid port state.');
+                  }
+                }}
+                disabled={!app.connController.isReadyToOpen()}
+                data-testid="bluetooth-open-close-button"
+              >
+                {portStateToButtonProps[app.connController.connState].text}
+              </Button>
+            </Tooltip>
             {/* =============================================================== */}
             {/* BLUETOOTH STATUS */}
             {/* =============================================================== */}
-            <Typography sx={{ m: 1, alignSelf: 'center' }}>
-              Status: {ConnState[app.connController.connState]}
-            </Typography>
+            <Typography sx={{ m: 1, alignSelf: 'center' }}>Status: {ConnState[app.connController.connState]}</Typography>
           </div>
 
           {/* =============================================================== */}
           {/* TABLE OF SCANNED BLUETOOTH DEVICES */}
           {/* =============================================================== */}
           <Typography variant="h6" gutterBottom>
-            Available Bluetooth Devices
+            Available Bluetooth LE Devices
           </Typography>
           <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
             <Table
@@ -852,8 +925,8 @@ function PortSettingsView(props: Props) {
                   paddingTop: '5px',
                   paddingBottom: '5px',
                   paddingLeft: '8px',
-                  paddingRight: '8px'
-                }
+                  paddingRight: '8px',
+                },
               }}
             >
               <TableHead>
@@ -871,9 +944,7 @@ function PortSettingsView(props: Props) {
                 {(app.connController.bluetoothLEController.discoveredBluetoothDevices || []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                      <div style={{ padding: '16px' }}>
-                      No Bluetooth devices found. Click "Scan" to search for devices.
-                      </div>
+                      <div style={{ padding: '16px' }}>No Bluetooth devices found. Click "Scan" to search for devices.</div>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -884,7 +955,7 @@ function PortSettingsView(props: Props) {
                       selected={app.connController.bluetoothLEController.selectedBluetoothDevice?.nobleData.id === device.nobleData.id}
                       sx={{
                         cursor: isTableDisabled ? 'not-allowed' : 'pointer',
-                        opacity: isTableDisabled ? 0.5 : 1
+                        opacity: isTableDisabled ? 0.5 : 1,
                       }}
                       onClick={isTableDisabled ? undefined : () => app.connController.bluetoothLEController.setSelectedBluetoothDevice(device)}
                     >
@@ -895,27 +966,31 @@ function PortSettingsView(props: Props) {
                           value={device.nobleData.id}
                           name="bluetooth-device-selection"
                           disabled={isTableDisabled}
-                          size='small'
+                          size="small"
                           sx={{
-                            padding: '0px'
+                            padding: '0px',
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '0.8rem',
-                        fontFamily: 'monospace'
-                      }}>
+                      <TableCell
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          fontSize: '0.8rem',
+                          fontFamily: 'monospace',
+                        }}
+                      >
                         {device.nobleData.address || 'n/a'}
                       </TableCell>
-                      <TableCell sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '0.8rem'
-                      }}>
+                      <TableCell
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          fontSize: '0.8rem',
+                        }}
+                      >
                         {device.nobleData.advertisement.localName || '-'}
                       </TableCell>
                       <TableCell
@@ -925,18 +1000,14 @@ function PortSettingsView(props: Props) {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          color: 'text.secondary'
+                          color: 'text.secondary',
                         }}
                         title={formatManufacturerData(device.nobleData.advertisement.manufacturerData)}
                       >
                         {formatManufacturerData(device.nobleData.advertisement.manufacturerData)}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
-                        {device.nobleData.connectable ? '✓' : '✗'}
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
-                        {device.nobleData.rssi || 'n/a'}
-                      </TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>{device.nobleData.connectable ? '✓' : '✗'}</TableCell>
+                      <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>{device.nobleData.rssi || 'n/a'}</TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
                         {(() => {
                           return device.getHumanReadableSupportedSerialProtocolsInAdvData();
@@ -955,9 +1026,7 @@ function PortSettingsView(props: Props) {
       {/* GENERAL SETTINGS */}
       {/* =========================================================================== */}
       <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '8px', marginTop: '16px', gap: '8px' }}>
-        <Typography variant="h6">
-          General Settings
-        </Typography>
+        <Typography variant="h6">General Settings</Typography>
 
         {/* =============================================================== */}
         {/* ALLOW SETTINGS CHANGES WHEN OPEN - Only for serial ports */}
@@ -967,7 +1036,9 @@ function PortSettingsView(props: Props) {
             {...app.settings.displaySettings.getBasicTooltipConfig()}
             title={
               <div>
-                Check this if you want to be able to quickly change settings when the serial port is open. If a serial port setting is changed when the port is open, the port will be quickly closed and opened again.<br />
+                Check this if you want to be able to quickly change settings when the serial port is open. If a serial port setting is changed when the port is open, the port will
+                be quickly closed and opened again.
+                <br />
                 <br />
                 This setting is more relevant for the quick connection settings in the right-hand drawer on the terminal view.
               </div>
@@ -992,9 +1063,10 @@ function PortSettingsView(props: Props) {
         {/* =============================================================== */}
         <Tooltip
           {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
-            ? "Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!"
-            : "Connect to socket and go to the terminal view as soon as the connection is established, saving you a button press!"
+          title={
+            app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+              ? 'Open serial port and go to the terminal view as soon as it is selected from the popup, saving you two button presses!'
+              : 'Connect to socket and go to the terminal view as soon as the connection is established, saving you a button press!'
           }
         >
           <FormControlLabel
@@ -1007,9 +1079,10 @@ function PortSettingsView(props: Props) {
                 data-testid="connect-and-go-to-terminal-checkbox"
               />
             }
-            label={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
-              ? "Open connection and go to the terminal as soon as port is selected"
-              : "Connect and go to the terminal automatically"
+            label={
+              app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+                ? 'Open connection and go to the terminal as soon as port is selected'
+                : 'Connect and go to the terminal automatically'
             }
           />
         </Tooltip>
@@ -1039,9 +1112,10 @@ function PortSettingsView(props: Props) {
         {/* =============================================================== */}
         <Tooltip
           {...app.settings.displaySettings.getBasicTooltipConfig()}
-          title={app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
-            ? "If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again."
-            : "If the socket connection unexpectedly closes (e.g. network interruption), NinjaTerm will try to automatically reconnect when the server becomes available again."
+          title={
+            app.settings.portConfiguration.connectionType === ConnectionType.SERIAL_PORT
+              ? 'If the serial port unexpectedly closes (e.g. USB serial cable is removed), NinjaTerm will try to automatically reopen the port when it becomes available again.'
+              : 'If the socket connection unexpectedly closes (e.g. network interruption), NinjaTerm will try to automatically reconnect when the server becomes available again.'
           }
         >
           <FormControlLabel

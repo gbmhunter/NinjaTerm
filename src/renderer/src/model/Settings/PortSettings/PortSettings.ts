@@ -45,7 +45,7 @@ export enum ConnectionType {
   FAKE = 'fake',
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
-  BLUETOOTH = 'bluetooth',
+  BLUETOOTH_LE = 'bluetooth',
 }
 
 export class PortSettings {
@@ -389,7 +389,7 @@ export class PortSettings {
   get shortSerialConfigName() {
     if (this.connectionType === ConnectionType.SOCKET) {
       return `${this.socketHost}:${this.socketPort}`;
-    } else if (this.connectionType === ConnectionType.BLUETOOTH) {
+    } else if (this.connectionType === ConnectionType.BLUETOOTH_LE) {
       const connectedBluetoothDevice = this.app.connController.bluetoothLEController.connectedBluetoothDevice;
       if (connectedBluetoothDevice === null) {
         return 'n/a';

@@ -309,7 +309,7 @@ export class ConnController {
         this.app.setShowCircularProgressModal(false);
         return false;
       }
-    } else if (connectionType === ConnectionType.BLUETOOTH) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       this.bluetoothLEController.connect();
     } else {
       throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
@@ -380,7 +380,7 @@ export class ConnController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
-    } else if (connectionType === ConnectionType.BLUETOOTH) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // The Bluetooth LE controller handles closing the Bluetooth connection
       this.bluetoothLEController.close();
     } else if (connectionType === ConnectionType.FAKE) {
@@ -425,7 +425,7 @@ export class ConnController {
   stopWaitingToReopenPort() {
     const connectionType = this.app.settings.portConfiguration.connectionType;
     // Bluetooth logic is in the BluetoothLEController, for other connection types the logic is in this class.
-    if (this.app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH) {
+    if (this.app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH_LE) {
       this.bluetoothLEController.stopPollingForReconnection();
     } else {
       this.stopPollingForReconnection();
@@ -793,7 +793,7 @@ export class ConnController {
       }
 
       return true;
-    } else if (connectionType === ConnectionType.BLUETOOTH) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // For Bluetooth, need a selected device
       return this.bluetoothLEController.selectedBluetoothDevice !== null;
     }
@@ -825,7 +825,7 @@ export class ConnController {
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }
-    } else if (connectionType === ConnectionType.BLUETOOTH) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // Bluetooth connection
       this.bluetoothLEController.sendData(bytesToWrite);
     } else {

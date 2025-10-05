@@ -219,7 +219,7 @@ const PortStatusIndicator = observer(({ app }: { app: App }) => {
       connectionTypeName = 'Port';
     } else if (connectionType === ConnectionType.SOCKET) {
       connectionTypeName = 'Socket';
-    } else if (connectionType === ConnectionType.BLUETOOTH) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       connectionTypeName = 'Bluetooth';
     } else {
       connectionTypeName = '???';

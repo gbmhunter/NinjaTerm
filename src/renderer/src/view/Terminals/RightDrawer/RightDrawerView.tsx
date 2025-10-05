@@ -134,7 +134,7 @@ export default observer((props: Props) => {
                 >
                   <MenuItem value={ConnectionType.SERIAL_PORT}>Serial Port</MenuItem>
                   <MenuItem value={ConnectionType.SOCKET}>Socket</MenuItem>
-                  <MenuItem value={ConnectionType.BLUETOOTH}>Bluetooth</MenuItem>
+                  <MenuItem value={ConnectionType.BLUETOOTH_LE}>Bluetooth</MenuItem>
                 </Select>
               </FormControl>
             </div>
