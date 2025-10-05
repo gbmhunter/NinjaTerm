@@ -42,7 +42,6 @@ export class SerializableBluetoothDeviceWithMetadata {
     } else {
       humanReadableProtocols = '-';
     }
-    console.log(`humanReadableProtocols="${humanReadableProtocols}"`);
     return humanReadableProtocols;
   }
 
@@ -148,6 +147,10 @@ export class BluetoothLEController {
 
   constructor(app: App) {
     this.app = app;
+
+    // Reset the main process Bluetooth state, in case the renderer was reloaded but the main process was not
+    window.electronAPI.bluetooth.resetBluetoothState();
+
     // Register for Bluetooth device discovered events
     window.electronAPI.bluetooth.onDeviceDiscovered((device) => this.onIpcBluetoothDeviceDiscovered(device));
 
@@ -320,15 +323,6 @@ export class BluetoothLEController {
       return;
     }
 
-    this.app.snackbar.sendToSnackbar(
-      `Bluetooth device connected: ${this.selectedBluetoothDevice.nobleData.advertisement.localName} (${this.selectedBluetoothDevice.nobleData.id}).`,
-      'success');
-    runInAction(() => {
-      this.connectedBluetoothDevice = this.selectedBluetoothDevice;
-      this.app.connController.connState = ConnState.OPENED;
-      this.stopPollingForReconnection();
-    });
-
     // Look for valid services/characteristics in the returned information
     if(!bluetoothConnectionAttemptSuccess.services) {
       this.app.snackbar.sendToSnackbar('Services information was not returned from the main process.', 'error');
@@ -402,6 +396,8 @@ export class BluetoothLEController {
 
     if (!foundProtocol) {
       this.app.snackbar.sendToSnackbar('No valid serial protocol found on connected Bluetooth device.', 'error');
+      // We need to tell the main process to disconnect from the device
+      window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
       return;
     }
 
@@ -411,12 +407,25 @@ export class BluetoothLEController {
       foundProtocol.txUuid);
     if (!setupReadAndWriteResult.success) {
       this.app.snackbar.sendToSnackbar(`Failed to setup read and write on connected Bluetooth device. Error: ${setupReadAndWriteResult.error}.`, 'error');
+      // We need to tell the main process to disconnect from the device
+      window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
       return;
     }
 
     // Setup listener for RX data
     window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
       this.app.parseRxData(data);
+    });
+
+    // If we get here, we have connected to the device and have found valid services and characteristics for the selected serial protocol
+    // We can consider our connection attempt successful
+    this.app.snackbar.sendToSnackbar(
+      `Bluetooth device connected: ${this.selectedBluetoothDevice.nobleData.advertisement.localName} (${this.selectedBluetoothDevice.nobleData.id}).`,
+      'success');
+    runInAction(() => {
+      this.connectedBluetoothDevice = this.selectedBluetoothDevice;
+      this.app.connController.connState = ConnState.OPENED;
+      this.stopPollingForReconnection();
     });
   }
 

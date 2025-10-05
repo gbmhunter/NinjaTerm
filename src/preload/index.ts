@@ -136,6 +136,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Bluetooth operations
   bluetooth: {
+    resetBluetoothState: () => ipcRenderer.invoke('bluetooth:reset-bluetooth-state'),
     startPeripheralScan: () => ipcRenderer.invoke('bluetooth:start-peripheral-scan'),
     stopPeripheralScan: () => ipcRenderer.invoke('bluetooth:stop-peripheral-scan'),
     getDiscoveredDevices: () => ipcRenderer.invoke('bluetooth:get-discovered-devices'),
@@ -220,6 +221,7 @@ export interface ElectronAPI {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;
   };
   bluetooth: {
+    resetBluetoothState(): Promise<{ success: boolean; error?: string }>;
     startPeripheralScan(): Promise<{ success: boolean; error?: string }>;
     stopPeripheralScan(): Promise<{ success: boolean; error?: string }>;
     getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;

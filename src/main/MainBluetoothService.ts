@@ -62,6 +62,12 @@ export class MainBluetoothService {
     noble.on('stateChange', this.onNobleStateChange);
     noble.on('scanStop', this.onScanStop);
 
+    ipcMain.handle('bluetooth:reset-bluetooth-state', () => {
+      console.log('bluetooth:reset-bluetooth-state called.');
+      this.resetBluetoothState();
+      return { success: true };
+    });
+
     ipcMain.handle('bluetooth:start-peripheral-scan', () => {
       console.log('bluetooth:start-peripheral-scan called.');
       try {
@@ -139,6 +145,33 @@ export class MainBluetoothService {
       rssi: peripheral.rssi,
       state: peripheral.state
     };
+  }
+
+  resetBluetoothState = () => {
+    console.log('resetBluetoothState() called.');
+    // Disconnect from any connected device
+    this.peripheral?.disconnect();
+    // Clear the connected device
+    this.peripheral = null;
+    // Clear the discovered services
+    this.discoveredServices = [];
+    // Clear the TX and RX characteristics
+    this.txCharacteristic = null;
+    this.rxCharacteristic = null;
+    // Clear the connection state
+    this.connectionState = ConnectionState.DISCONNECTED;
+    this.discoveredDevices = [];
+    // Clear the scanning state
+    this.isScanningForPeripherals = false;
+    // Clear the scanning timer
+    if (this.scanningTimer) {
+      clearTimeout(this.scanningTimer);
+    }
+    // Clear the connection attempt timeout
+    if (this.connectionAttemptTimeout) {
+      clearTimeout(this.connectionAttemptTimeout);
+      this.connectionAttemptTimeout = null;
+    }
   }
 
   convertServicesToSerializable = (services: noble.Service[]): SerializableService[] => {
@@ -398,6 +431,12 @@ export class MainBluetoothService {
     this.discoveredServices = [];
     this.txCharacteristic = null;
     this.rxCharacteristic = null;
+
+    // Clear the connection attempt timeout
+    if (this.connectionAttemptTimeout) {
+      clearTimeout(this.connectionAttemptTimeout);
+      this.connectionAttemptTimeout = null;
+    }
 
     this.mainWindow!.webContents.send('bluetooth:device-disconnected', deviceId);
   }
