@@ -5,6 +5,11 @@ import { SerializableBluetoothDevice, BluetoothConnectionAttemptSuccess } from '
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
+  general: {
+    removeAllListeners: (channel: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    },
+  },
   // Serial port operations
   serial: {
     listPorts: () => ipcRenderer.invoke('serial:list-ports'),
@@ -168,6 +173,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 // Type definitions for the exposed API
 export interface ElectronAPI {
+  general: {
+    removeAllListeners(channel: string): void;
+  };
   serial: {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
     openPort(options: OpenOptions): Promise<{ success: boolean; error?: string }>;

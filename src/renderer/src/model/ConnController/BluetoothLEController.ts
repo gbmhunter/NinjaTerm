@@ -275,6 +275,7 @@ export class BluetoothLEController {
   }
 
   setSelectedBluetoothDevice = (device: SerializableBluetoothDeviceWithMetadata) => {
+    console.log('setSelectedBluetoothDevice() called. device=', device);
     this.selectedBluetoothDevice = device;
   }
 
@@ -348,69 +349,75 @@ export class BluetoothLEController {
       return;
     }
 
-    let foundProtocol: BluetoothLESerialProtocol | null = null;
+    // Build array of protocols to check based on user selection
+    let protocolsToCheck: BluetoothLESerialProtocol[] = [];
 
-    // If user selected "First detected" or "Manually specify", search through all protocols
-    if (this.selectedSerialProtocol === BluetoothLESerialProtocolType.FIRST_DETECTED || this.selectedSerialProtocol === BluetoothLESerialProtocolType.MANUALLY_SPECIFY) {
-      for (const protocol of bluetoothLESerialProtocols) {
-        // Get index of service in result.bluetoothServicesMsg.services
-        const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
-        if (serviceIndex === -1) {
-          continue;
-        }
-        console.log('Found service.');
-        // Now make sure the read and write UUIDs are present
-        const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
-
-        // Check read UUID is present as has "writeWithoutResponse" property
-        const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.rxUuid);
-        if (readCharacteristicIndex === -1) {
-          continue;
-        }
-        const readCharacteristic = service.characteristics[readCharacteristicIndex];
-        if (!readCharacteristic.properties.includes('writeWithoutResponse')) {
-          continue;
-        }
-        console.log('Found read characteristic.');
-
-        // Check write UUID is present as has "notify" property
-        const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.txUuid);
-        if (writeCharacteristicIndex === -1) {
-          continue;
-        }
-        const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
-        if (!writeCharacteristic.properties.includes('notify')) {
-          continue;
-        }
-        console.log('Found write characteristic.');
-        console.log(`Found ${protocol.name} on connected Bluetooth device.`);
-
-        // Use the first valid serial protocol we find
-        foundProtocol = protocol;
-        break;
+    if (this.selectedSerialProtocol === BluetoothLESerialProtocolType.MANUALLY_SPECIFY) {
+      // Validate that manual UUIDs are provided
+      if (!this.manualServiceUuid || !this.manualRxCharacteristicUuid || !this.manualTxCharacteristicUuid) {
+        this.app.snackbar.sendToSnackbar('Manual UUIDs not specified. Please enter Service, RX, and TX UUIDs.', 'error');
+        window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
+        return;
       }
+      // Create a protocol object with the manual UUIDs
+      protocolsToCheck = [
+        new BluetoothLESerialProtocol(
+          'Manually Specified',
+          this.manualServiceUuid,
+          this.manualTxCharacteristicUuid,
+          this.manualRxCharacteristicUuid,
+          BluetoothLESerialProtocolType.MANUALLY_SPECIFY
+        )
+      ];
+    } else if (this.selectedSerialProtocol === BluetoothLESerialProtocolType.FIRST_DETECTED) {
+      // Check all protocols
+      protocolsToCheck = bluetoothLESerialProtocols;
     } else {
-      // User selected a specific protocol, so only try that one
+      // User selected a specific protocol
       const selectedProtocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === this.selectedSerialProtocol);
       if (selectedProtocolObj) {
-        const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === selectedProtocolObj.serviceUuid);
-        if (serviceIndex !== -1) {
-          const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
+        protocolsToCheck = [selectedProtocolObj];
+      }
+    }
 
-          const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === selectedProtocolObj.rxUuid);
-          const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === selectedProtocolObj.txUuid);
+    // Iterate over protocols to find a valid one
+    let foundProtocol: BluetoothLESerialProtocol | null = null;
+    for (const protocol of protocolsToCheck) {
+      // Look for the service
+      const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
+      if (serviceIndex === -1) {
+        continue;
+      }
+      console.log('Found service.');
 
-          if (readCharacteristicIndex !== -1 && writeCharacteristicIndex !== -1) {
-            const readCharacteristic = service.characteristics[readCharacteristicIndex];
-            const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
+      const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
 
-            if (readCharacteristic.properties.includes('writeWithoutResponse') && writeCharacteristic.properties.includes('notify')) {
-              foundProtocol = selectedProtocolObj;
-              console.log(`Found specifically selected ${selectedProtocolObj.name} on connected Bluetooth device.`);
-            }
-          }
-        }
-      } // if (selectedProtocolObj)
+      // Check RX characteristic is present and has "writeWithoutResponse" property
+      const readCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.rxUuid);
+      if (readCharacteristicIndex === -1) {
+        continue;
+      }
+      const readCharacteristic = service.characteristics[readCharacteristicIndex];
+      if (!readCharacteristic.properties.includes('writeWithoutResponse')) {
+        continue;
+      }
+      console.log('Found read characteristic.');
+
+      // Check TX characteristic is present and has "notify" property
+      const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.txUuid);
+      if (writeCharacteristicIndex === -1) {
+        continue;
+      }
+      const writeCharacteristic = service.characteristics[writeCharacteristicIndex];
+      if (!writeCharacteristic.properties.includes('notify')) {
+        continue;
+      }
+      console.log('Found write characteristic.');
+      console.log(`Found ${protocol.name} on connected Bluetooth device.`);
+
+      // Use the first valid serial protocol we find
+      foundProtocol = protocol;
+      break;
     }
 
     if (!foundProtocol) {
