@@ -24,39 +24,6 @@ import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
 import { ConnController } from './ConnController/ConnController';
 
-import {createTRPCProxyClient, httpBatchLink, loggerLink} from '@trpc/client';
-import type {AppRouter} from "../../../shared/router";
-import {IpcRequest} from "../../../shared/api";
-
-const trpc = createTRPCProxyClient<AppRouter>({
-  links: [
-    loggerLink(),
-    httpBatchLink({
-      url: '/trpc',
-
-      // custom fetch implementation that sends the request over IPC to Main process
-      fetch: async (input, init) => {
-        const req: IpcRequest = {
-          url: input instanceof URL ? input.toString() : typeof input === 'string' ? input : input.url,
-          method: input instanceof Request ? input.method : init?.method!,
-          headers: input instanceof Request ? input.headers : init?.headers!,
-          body: input instanceof Request ? input.body : init?.body!,
-        };
-
-        const resp = await window.appApi.trpc(req);
-        // Since all tRPC really needs is the JSON, and we already have the JSON deserialized,
-        // construct a "fake" fetch Response object
-        return {
-          json: () => Promise.resolve(resp.body)
-        }
-      },
-    }),
-  ],
-});
-
-const user = await trpc.users.query();
-console.log('user=', user);
-
 declare global {
   interface String {
     insert(index: number, string: string): string;
@@ -168,9 +135,6 @@ export class App {
     if (this.testing) {
       console.log('Warning, testing mode is enabled!');
     }
-
-    // Clear any existing IPC listeners, to all channels. This needs to be done if the app refreshes (e.g. hot reloads during development) when the main process continues running.
-    window.electronAPI.general.removeAllListeners();
 
     // Read out the version number from package.json
     this.version = packageDotJson['version'];

@@ -155,24 +155,8 @@ function createWindow(): void {
   });
 }
 
-import {ipcRequestHandler} from "./ipcRequestHandler";
-import {IpcRequest} from "../shared/api";
-import {appRouter} from "../shared/router";
-
 // This method will be called when Electron has finished initialization
 app.whenReady().then(async () => {
-
-  ipcMain.handle('trpc', (event, req: IpcRequest) => {
-    return ipcRequestHandler({
-      endpoint: "/trpc",
-      req,
-      router: appRouter,
-      createContext: async () => {
-        return {};
-      }
-    });
-  })
-
   createWindow();
 
   // Initialize serial handlers

@@ -50,8 +50,6 @@
     "react-window": "^1.8.10",
     "serialport": "^13.0.0",
     "serve": "^14.2.3",
-    "@trpc/client": "11.0.0-rc.421",
-    "@trpc/server": "11.0.0-rc.421",
     "typescript": "^5.4.5",
     "validatorjs": "^3.22.1",
     "vite": "^6.3.5",

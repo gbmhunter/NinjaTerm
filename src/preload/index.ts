@@ -2,17 +2,6 @@ import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
 import { SerializableBluetoothDevice, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 
-
-import {IElectronAPI, IpcRequest} from "../shared/api";
-
-const api: IElectronAPI = {
-    node: () => process.versions.node,
-    chrome: () => process.versions.chrome,
-    electron: () => process.versions.electron,
-    trpc: (req: IpcRequest) => ipcRenderer.invoke('trpc', req),
-};
-contextBridge.exposeInMainWorld('appApi', api)
-
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -132,7 +121,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // Remove listeners
-    removeAllListeners: (channel?: string) => {
+    removeAllListeners: (channel: string) => {
       ipcRenderer.removeAllListeners(channel);
     },
 
@@ -185,7 +174,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // Type definitions for the exposed API
 export interface ElectronAPI {
   general: {
-    removeAllListeners(channel?: string): void;
+    removeAllListeners(channel: string): void;
   };
   serial: {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
