@@ -136,6 +136,9 @@ export class App {
       console.log('Warning, testing mode is enabled!');
     }
 
+    // Clear any existing IPC listeners, to all channels. This needs to be done if the app refreshes (e.g. hot reloads during development) when the main process continues running.
+    window.electronAPI.general.removeAllListeners();
+
     // Read out the version number from package.json
     this.version = packageDotJson['version'];
 

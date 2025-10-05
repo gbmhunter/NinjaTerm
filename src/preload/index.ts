@@ -6,7 +6,7 @@ import { SerializableBluetoothDevice, BluetoothConnectionAttemptSuccess } from '
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
   general: {
-    removeAllListeners: (channel: string) => {
+    removeAllListeners: (channel?: string) => {
       ipcRenderer.removeAllListeners(channel);
     },
   },
@@ -174,7 +174,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
 // Type definitions for the exposed API
 export interface ElectronAPI {
   general: {
-    removeAllListeners(channel: string): void;
+    /**
+     * Remove all listeners for a given channel. If no channel is provided, all listeners will be removed.
+     *
+     * This should be called when the renderer app loads, to prevent multiple listeners from being added in case of a hot reload or other situation in where the main process continues running.
+     *
+     * @param channel The channel to remove listeners for. Optional.
+     */
+    removeAllListeners(channel?: string): void;
   };
   serial: {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
