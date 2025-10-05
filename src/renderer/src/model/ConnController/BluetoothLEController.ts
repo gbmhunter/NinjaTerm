@@ -421,7 +421,7 @@ export class BluetoothLEController {
     }
 
     if (!foundProtocol) {
-      this.app.snackbar.sendToSnackbar('No valid serial protocol found on connected Bluetooth device.', 'error');
+      this.app.snackbar.sendToSnackbar('Correct service and characteristic UUIDs were not found on connected Bluetooth device.', 'error');
       // We need to tell the main process to disconnect from the device
       window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
       return;
