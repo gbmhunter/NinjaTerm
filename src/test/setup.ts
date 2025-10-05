@@ -36,6 +36,7 @@ beforeEach(() => {
         disconnectAllSocketsAndRemoveListeners: vi.fn(),
       },
       bluetooth: {
+        resetBluetoothState: vi.fn().mockResolvedValue({ success: true }),
         startPeripheralScan: vi.fn().mockResolvedValue({ success: true }),
         stopPeripheralScan: vi.fn().mockResolvedValue({ success: true }),
         connectDevice: vi.fn().mockResolvedValue({ success: true }),

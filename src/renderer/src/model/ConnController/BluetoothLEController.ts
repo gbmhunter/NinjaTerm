@@ -145,6 +145,13 @@ export class BluetoothLEController {
    */
   selectedSerialProtocol: BluetoothLESerialProtocolType = BluetoothLESerialProtocolType.FIRST_DETECTED;
 
+  /**
+   * Manual UUID inputs for when user selects "Manually Specify" protocol.
+   */
+  manualServiceUuid: string = '';
+  manualRxCharacteristicUuid: string = '';
+  manualTxCharacteristicUuid: string = '';
+
   constructor(app: App) {
     this.app = app;
 
@@ -275,6 +282,18 @@ export class BluetoothLEController {
     this.selectedSerialProtocol = protocol;
   }
 
+  setManualServiceUuid = (uuid: string) => {
+    this.manualServiceUuid = uuid;
+  }
+
+  setManualRxCharacteristicUuid = (uuid: string) => {
+    this.manualRxCharacteristicUuid = uuid;
+  }
+
+  setManualTxCharacteristicUuid = (uuid: string) => {
+    this.manualTxCharacteristicUuid = uuid;
+  }
+
   /**
    * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
    */
@@ -391,7 +410,7 @@ export class BluetoothLEController {
             }
           }
         }
-      }
+      } // if (selectedProtocolObj)
     }
 
     if (!foundProtocol) {
@@ -401,6 +420,7 @@ export class BluetoothLEController {
       return;
     }
 
+    // If we get here, we have found a valid serial protocol
     const setupReadAndWriteResult = await window.electronAPI.bluetooth.setupReadAndWrite(
       foundProtocol.serviceUuid,
       foundProtocol.rxUuid,

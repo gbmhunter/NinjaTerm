@@ -38,7 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDeviceWithMetadata, BluetoothLESerialProtocolType } from '@/model/ConnController/BluetoothLEController';
+import { SerializableBluetoothDeviceWithMetadata, BluetoothLESerialProtocolType, bluetoothLESerialProtocols } from '@/model/ConnController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -46,6 +46,35 @@ interface Props {
 
 function PortSettingsView(props: Props) {
   const { app } = props;
+
+  // Helper function to get the UUIDs to display based on selected protocol
+  const getDisplayUuids = () => {
+    const selectedProtocol = app.connController.bluetoothLEController.selectedSerialProtocol;
+
+    if (selectedProtocol === BluetoothLESerialProtocolType.FIRST_DETECTED) {
+      return { serviceUuid: '-', rxUuid: '-', txUuid: '-' };
+    }
+
+    if (selectedProtocol === BluetoothLESerialProtocolType.MANUALLY_SPECIFY) {
+      return {
+        serviceUuid: app.connController.bluetoothLEController.manualServiceUuid,
+        rxUuid: app.connController.bluetoothLEController.manualRxCharacteristicUuid,
+        txUuid: app.connController.bluetoothLEController.manualTxCharacteristicUuid,
+      };
+    }
+
+    // Find the protocol object for the selected protocol
+    const protocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === selectedProtocol);
+    if (protocolObj) {
+      return {
+        serviceUuid: protocolObj.serviceUuid,
+        rxUuid: protocolObj.rxUuid,
+        txUuid: protocolObj.txUuid,
+      };
+    }
+
+    return { serviceUuid: '-', rxUuid: '-', txUuid: '-' };
+  };
 
   // Helper function to format manufacturer data as hex
   const formatManufacturerData = (manufacturerData?: Buffer): string => {
@@ -709,6 +738,45 @@ function PortSettingsView(props: Props) {
                 </MenuItem>
               </Select>
             </FormControl>
+          </div>
+
+          {/* =============================================================== */}
+          {/* UUID INPUT FIELDS */}
+          {/* =============================================================== */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '16px', marginBottom: '16px' }}>
+            <TextField
+              label="Service UUID"
+              value={getDisplayUuids().serviceUuid}
+              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+              onChange={(e) => {
+                app.connController.bluetoothLEController.setManualServiceUuid(e.target.value);
+              }}
+              size="small"
+              sx={{ width: 320 }}
+              helperText="Bluetooth service UUID"
+            />
+            <TextField
+              label="RX Characteristic UUID"
+              value={getDisplayUuids().rxUuid}
+              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+              onChange={(e) => {
+                app.connController.bluetoothLEController.setManualRxCharacteristicUuid(e.target.value);
+              }}
+              size="small"
+              sx={{ width: 320 }}
+              helperText="Characteristic UUID for receiving data (RX)"
+            />
+            <TextField
+              label="TX Characteristic UUID"
+              value={getDisplayUuids().txUuid}
+              disabled={app.connController.bluetoothLEController.selectedSerialProtocol !== BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
+              onChange={(e) => {
+                app.connController.bluetoothLEController.setManualTxCharacteristicUuid(e.target.value);
+              }}
+              size="small"
+              sx={{ width: 320 }}
+              helperText="Characteristic UUID for transmitting data (TX)"
+            />
           </div>
 
           <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 1 }}>
