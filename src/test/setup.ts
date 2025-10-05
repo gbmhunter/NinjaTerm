@@ -7,6 +7,9 @@ beforeEach(() => {
   // Mock window.electronAPI
   Object.defineProperty(window, 'electronAPI', {
     value: {
+      general: {
+        removeAllListeners: vi.fn(),
+      },
       serial: {
         listPorts: vi.fn().mockResolvedValue({ success: true, ports: [] }),
         openPort: vi.fn().mockResolvedValue({ success: true }),
