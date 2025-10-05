@@ -2,8 +2,11 @@ import { SerializableBluetoothDevice, SerializableService, BluetoothConnectionAt
 import { App } from '@/model/App';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
+import { z } from 'zod';
 
-const SCAN_DURATION_MS = 5000;
+const DEFAULT_SCAN_DURATION_MS = 5000;
+export const SCAN_DURATION_MS_MIN = 100;
+export const SCAN_DURATION_MS_MAX = 30000;
 
 const RECONNECTION_POLLING_INTERVAL_MS = 1000;
 
@@ -152,6 +155,15 @@ export class BluetoothLEController {
   manualRxCharacteristicUuid: string = '';
   manualTxCharacteristicUuid: string = '';
 
+  /**
+   * The duration in milliseconds to scan for Bluetooth devices.
+   */
+  scanDurationMsInput: string = DEFAULT_SCAN_DURATION_MS.toString();
+  scanDurationMsValidated: number = DEFAULT_SCAN_DURATION_MS;
+  scanDurationMsError: boolean = false;
+  scanDurationMsHelperText: string = '';
+  scanDurationDefaultHelperText: string = 'The duration to scan for BLE devices.';
+
   constructor(app: App) {
     this.app = app;
 
@@ -170,6 +182,8 @@ export class BluetoothLEController {
     window.electronAPI.bluetooth.onConnectionAttemptComplete(async (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => {
       await this.onIpcBluetoothConnectionAttemptComplete(error, bluetoothConnectionAttemptSuccess);
     });
+
+    this.validateAndApplyScanDurationMs();
 
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
@@ -196,7 +210,7 @@ export class BluetoothLEController {
 
     this.scanningTimer = setTimeout(() => {
       this.stopBluetoothScan();
-    }, SCAN_DURATION_MS);
+    }, this.scanDurationMsValidated);
   }
 
   /**
@@ -249,21 +263,6 @@ export class BluetoothLEController {
 
     let deviceInList = this.discoveredBluetoothDevices[index];
     // Add some additional metadata - detect which serial protocols this device supports
-    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('6e400001b5a3f393e0a9e50e24dcca9e')) {
-    //   deviceInList.serialCapabilities.nordicNus = true;
-    // }
-    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('49535343fe7d4ae58fa99fafd205e455')) {
-    //   deviceInList.serialCapabilities.microchipTransparentUart = true;
-    // }
-    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('f000c0e014514000b000000000000000')) {
-    //   deviceInList.serialCapabilities.tiSerialPortService = true;
-    // }
-    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('2456e1b926e28f83e74553f1d8a1ff')) {
-    //   deviceInList.serialCapabilities.ubloxUconnectXpress = true;
-    // }
-    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('4880c12c5fa24e9e8014671b0c5f83')) {
-    //   deviceInList.serialCapabilities.siliconLabsSpp = true;
-    // }
     for (const protocol of bluetoothLESerialProtocols) {
       if (deviceInList.nobleData.advertisement.serviceUuids.includes(protocol.serviceUuid)) {
         // Add protocol to list of supported serial protocols in advertisement data, unless it is already in the list
@@ -293,6 +292,28 @@ export class BluetoothLEController {
 
   setManualTxCharacteristicUuid = (uuid: string) => {
     this.manualTxCharacteristicUuid = uuid;
+  }
+
+  /**
+   * Set the number of milliseconds to scan for Bluetooth devices. The user can always stop the scan prior to this timeout by clicking the "Stop scanning" button.
+   * @param durationMs The number of milliseconds to scan for Bluetooth devices.
+   */
+  setScanDurationMsInput = (durationMs: string) => {
+    this.scanDurationMsInput = durationMs;
+  }
+
+  validateAndApplyScanDurationMs = () => {
+    const parsed = z.coerce.number().int().min(SCAN_DURATION_MS_MIN).max(SCAN_DURATION_MS_MAX).safeParse(this.scanDurationMsInput);
+    if (!parsed.success) {
+      this.scanDurationMsError = true;
+      this.scanDurationMsHelperText = parsed.error.errors[0].message;
+      return;
+    }
+
+    // If we get here, the input is valid
+    this.scanDurationMsError = false;
+    this.scanDurationMsHelperText = this.scanDurationDefaultHelperText;
+    this.scanDurationMsValidated = parsed.data;
   }
 
   /**

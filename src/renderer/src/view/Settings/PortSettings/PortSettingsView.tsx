@@ -38,7 +38,13 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDeviceWithMetadata, BluetoothLESerialProtocolType, bluetoothLESerialProtocols } from '@/model/ConnController/BluetoothLEController';
+import {
+  SerializableBluetoothDeviceWithMetadata,
+  BluetoothLESerialProtocolType,
+  bluetoothLESerialProtocols,
+  SCAN_DURATION_MS_MIN,
+  SCAN_DURATION_MS_MAX,
+} from '@/model/ConnController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -842,6 +848,38 @@ function PortSettingsView(props: Props) {
             </Tooltip>
           </div>
 
+          {/* =============================================================== */}
+          {/* SCAN DURATION INPUT */}
+          {/* =============================================================== */}
+          <div style={{ marginTop: '16px' }}>
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title={`The duration (in milliseconds) to scan for Bluetooth LE devices. After this time, the scan will automatically stop. You can always stop the scan prior to this timeout by clicking the 'Stop scanning' button. Must be between ${SCAN_DURATION_MS_MIN} and ${SCAN_DURATION_MS_MAX} (inclusive).`}
+              placement="right"
+            >
+              <TextField
+                label="Scan duration (ms)"
+                value={app.connController.bluetoothLEController.scanDurationMsInput}
+                disabled={app.connController.connState !== ConnState.CLOSED}
+                onChange={(e) => {
+                  app.connController.bluetoothLEController.setScanDurationMsInput(e.target.value);
+                }}
+                onBlur={(e) => {
+                  app.connController.bluetoothLEController.validateAndApplyScanDurationMs();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    app.connController.bluetoothLEController.validateAndApplyScanDurationMs();
+                  }
+                }}
+                error={app.connController.bluetoothLEController.scanDurationMsError}
+                helperText={app.connController.bluetoothLEController.scanDurationMsHelperText}
+                size="small"
+                sx={{ width: 200 }}
+              />
+            </Tooltip>
+          </div>
+
           <div id="bluetooth-scan-open-close-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 1 }}>
             {/* =============================================================== */}
             {/* SCAN/STOP SCANNING BUTTON */}
@@ -851,21 +889,23 @@ function PortSettingsView(props: Props) {
               title="Start scanning for Bluetooth devices. Discovered devices will be displayed in the table below."
               placement="right"
             >
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
-                disabled={app.connController.connState !== ConnState.CLOSED}
-                onClick={async () => {
-                  if (app.connController.bluetoothLEController.isBluetoothScanning) {
-                    app.connController.bluetoothLEController.stopBluetoothScan();
-                  } else {
-                    await app.connController.bluetoothLEController.scanForBluetoothDevices();
-                  }
-                }}
-              >
-                {app.connController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
-              </Button>
+              <span>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
+                  disabled={app.connController.connState !== ConnState.CLOSED}
+                  onClick={async () => {
+                    if (app.connController.bluetoothLEController.isBluetoothScanning) {
+                      app.connController.bluetoothLEController.stopBluetoothScan();
+                    } else {
+                      await app.connController.bluetoothLEController.scanForBluetoothDevices();
+                    }
+                  }}
+                >
+                  {app.connController.bluetoothLEController.isBluetoothScanning ? 'Stop scanning' : 'Scan'}
+                </Button>
+              </span>
             </Tooltip>
 
             {/* =============================================================== */}
@@ -876,32 +916,34 @@ function PortSettingsView(props: Props) {
               title="Connect to the selected Bluetooth LE device, make sure the service, RX, and TX UUIDs are present, and start listening to the TX characteristic."
               placement="right"
             >
-              <Button
-                variant="contained"
-                size="medium"
-                sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
-                color={
-                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
-                    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                    ButtonPropsColorOverrides
-                  >
-                }
-                onClick={() => {
-                  if (app.connController.connState === ConnState.CLOSED) {
-                    app.connController.openConnection();
-                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-                    app.connController.stopWaitingToReopenPort();
-                  } else if (app.connController.connState === ConnState.OPENED) {
-                    app.connController.closeConnection();
-                  } else {
-                    throw Error('Invalid port state.');
+              <span>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  sx={{ mt: 1, mb: 1, ml: 0, mr: 0, width: 160 }}
+                  color={
+                    portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
+                      'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                      ButtonPropsColorOverrides
+                    >
                   }
-                }}
-                disabled={!app.connController.isReadyToOpen()}
-                data-testid="bluetooth-open-close-button"
-              >
-                {portStateToButtonProps[app.connController.connState].text}
-              </Button>
+                  onClick={() => {
+                    if (app.connController.connState === ConnState.CLOSED) {
+                      app.connController.openConnection();
+                    } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                      app.connController.stopWaitingToReopenPort();
+                    } else if (app.connController.connState === ConnState.OPENED) {
+                      app.connController.closeConnection();
+                    } else {
+                      throw Error('Invalid port state.');
+                    }
+                  }}
+                  disabled={!app.connController.isReadyToOpen()}
+                  data-testid="bluetooth-open-close-button"
+                >
+                  {portStateToButtonProps[app.connController.connState].text}
+                </Button>
+              </span>
             </Tooltip>
             {/* =============================================================== */}
             {/* BLUETOOTH STATUS */}
