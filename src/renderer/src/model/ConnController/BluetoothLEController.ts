@@ -10,7 +10,7 @@ const RECONNECTION_POLLING_INTERVAL_MS = 1000;
 /**
  * Enumeration of Bluetooth serial protocol selection options.
  */
-export enum BluetoothProtocolSelection {
+export enum BluetoothLESerialProtocolType {
   FIRST_DETECTED = 'First detected serial protocol',
   NORDIC_UART_SERVICE_NUS = 'Nordic Uart Service (NUS)',
   MICROCHIP_TRANSPARENT_UART = 'Microchip Transparent Uart Service',
@@ -23,24 +23,27 @@ export enum BluetoothProtocolSelection {
 // Combine serial capabilities with SerializableBluetoothDevice
 export class SerializableBluetoothDeviceWithMetadata {
   nobleData: SerializableBluetoothDevice;
-  serialCapabilities: {
-    nordicNus: boolean;
-    microchipTransparentUart: boolean;
-    tiSerialPortService: boolean;
-    ubloxUconnectXpress: boolean;
-    siliconLabsSpp: boolean;
-  };
+
+  /** These are the supported serial protocols determined by any services listed in device advertisement data. The device may choose not to list the service in the advertisement data, but still support the protocol (in which case you can't determine this until you connect to the device and retrieve all it's services and characteristics). */
+  supportedSerialProtocolsInAdvData: BluetoothLESerialProtocol[];
 
   constructor(nobleData: SerializableBluetoothDevice) {
     this.nobleData = nobleData;
-    this.serialCapabilities = {
-      nordicNus: false,
-      microchipTransparentUart: false,
-      tiSerialPortService: false,
-      ubloxUconnectXpress: false,
-      siliconLabsSpp: false,
-    };
+    this.supportedSerialProtocolsInAdvData = [];
     makeAutoObservable(this);
+  }
+
+  getHumanReadableSupportedSerialProtocolsInAdvData() {
+    // For each supported protocol, get the human readable name as set by the BluetoothLESerialProtocolType enum
+    // and create a comma separated string of the names
+    let humanReadableProtocols;
+    if (this.supportedSerialProtocolsInAdvData.length > 0) {
+      humanReadableProtocols = this.supportedSerialProtocolsInAdvData.map(protocol => protocol.selectionType).join(', ');
+    } else {
+      humanReadableProtocols = '-';
+    }
+    console.log(`humanReadableProtocols="${humanReadableProtocols}"`);
+    return humanReadableProtocols;
   }
 
 }
@@ -50,8 +53,8 @@ class BluetoothLESerialProtocol {
   serviceUuid: string;
   txUuid: string;
   rxUuid: string;
-  selectionType: BluetoothProtocolSelection;
-  constructor(name: string, serviceUuid: string, txUuid: string, rxUuid: string, selectionType: BluetoothProtocolSelection) {
+  selectionType: BluetoothLESerialProtocolType;
+  constructor(name: string, serviceUuid: string, txUuid: string, rxUuid: string, selectionType: BluetoothLESerialProtocolType) {
     this.name = name;
     this.serviceUuid = serviceUuid;
     this.txUuid = txUuid;
@@ -65,7 +68,7 @@ const nordicNus = new BluetoothLESerialProtocol(
   '6e400001b5a3f393e0a9e50e24dcca9e',
   '6e400003b5a3f393e0a9e50e24dcca9e',
   '6e400002b5a3f393e0a9e50e24dcca9e',
-  BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS
+  BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS
 );
 
 const microchipTransparentUart = new BluetoothLESerialProtocol(
@@ -73,7 +76,7 @@ const microchipTransparentUart = new BluetoothLESerialProtocol(
   '49535343fe7d4ae58fa99fafd205e455',
   '495353431e4d4bd9ba6123c647249616',
   '49535343884143f4a8d4ecbe34729bb3',
-  BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART
+  BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART
 );
 
 const tiSerialPortService = new BluetoothLESerialProtocol(
@@ -81,7 +84,7 @@ const tiSerialPortService = new BluetoothLESerialProtocol(
   'f000c0e004514000b000000000000000',
   'f000c0e104514000b000000000000000', // TI uses the same characteristic for read and write
   'f000c0e104514000b000000000000000',
-  BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP
+  BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP
 );
 
 const ubloxUconnectXpress = new BluetoothLESerialProtocol(
@@ -89,7 +92,7 @@ const ubloxUconnectXpress = new BluetoothLESerialProtocol(
   '2456e1b926e28f83e744f34f01e9d701',
   '2456e1b926e28f83e744f34f01e9d703',
   '2456e1b926e28f83e744f34f01e9d703', // UBlox uses the same characteristic for read and write
-  BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS
+  BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS
 );
 
 const siliconLabsSpp = new BluetoothLESerialProtocol(
@@ -97,11 +100,11 @@ const siliconLabsSpp = new BluetoothLESerialProtocol(
   '4880c12cfdcb40778920a450d7f9b907',
   'fec26ec46d7144429f8155bc21d658d6',
   'fec26ec46d7144429f8155bc21d658d6', // Silicon Labs uses the same characteristic for read and write
-  BluetoothProtocolSelection.SILICON_LABS_SPP
+  BluetoothLESerialProtocolType.SILICON_LABS_SPP
 );
 
 /** A array of all recognized BLE serial protocols. */
-const bluetoothLESerialProtocols = [
+export const bluetoothLESerialProtocols = [
   nordicNus,
   microchipTransparentUart,
   tiSerialPortService,
@@ -117,6 +120,9 @@ export class BluetoothLEController {
 
   discoveredBluetoothDevices: SerializableBluetoothDeviceWithMetadata[] = [];
 
+  /**
+   * This will be assigned when the user selects a Bluetooth device from the Bluetooth Settings.
+   */
   selectedBluetoothDevice: SerializableBluetoothDeviceWithMetadata | null = null;
 
   /**
@@ -138,7 +144,7 @@ export class BluetoothLEController {
    * The selected Bluetooth protocol to use when connecting to a device.
    * Defaults to FIRST_DETECTED which automatically selects the first valid protocol found.
    */
-  selectedProtocol: BluetoothProtocolSelection = BluetoothProtocolSelection.FIRST_DETECTED;
+  selectedSerialProtocol: BluetoothLESerialProtocolType = BluetoothLESerialProtocolType.FIRST_DETECTED;
 
   constructor(app: App) {
     this.app = app;
@@ -233,20 +239,28 @@ export class BluetoothLEController {
 
     let deviceInList = this.discoveredBluetoothDevices[index];
     // Add some additional metadata - detect which serial protocols this device supports
-    if (deviceInList.nobleData.advertisement.serviceUuids.includes('6e400001b5a3f393e0a9e50e24dcca9e')) {
-      deviceInList.serialCapabilities.nordicNus = true;
-    }
-    if (deviceInList.nobleData.advertisement.serviceUuids.includes('49535343fe7d4ae58fa99fafd205e455')) {
-      deviceInList.serialCapabilities.microchipTransparentUart = true;
-    }
-    if (deviceInList.nobleData.advertisement.serviceUuids.includes('f000c0e014514000b000000000000000')) {
-      deviceInList.serialCapabilities.tiSerialPortService = true;
-    }
-    if (deviceInList.nobleData.advertisement.serviceUuids.includes('2456e1b926e28f83e74553f1d8a1ff')) {
-      deviceInList.serialCapabilities.ubloxUconnectXpress = true;
-    }
-    if (deviceInList.nobleData.advertisement.serviceUuids.includes('4880c12c5fa24e9e8014671b0c5f83')) {
-      deviceInList.serialCapabilities.siliconLabsSpp = true;
+    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('6e400001b5a3f393e0a9e50e24dcca9e')) {
+    //   deviceInList.serialCapabilities.nordicNus = true;
+    // }
+    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('49535343fe7d4ae58fa99fafd205e455')) {
+    //   deviceInList.serialCapabilities.microchipTransparentUart = true;
+    // }
+    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('f000c0e014514000b000000000000000')) {
+    //   deviceInList.serialCapabilities.tiSerialPortService = true;
+    // }
+    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('2456e1b926e28f83e74553f1d8a1ff')) {
+    //   deviceInList.serialCapabilities.ubloxUconnectXpress = true;
+    // }
+    // if (deviceInList.nobleData.advertisement.serviceUuids.includes('4880c12c5fa24e9e8014671b0c5f83')) {
+    //   deviceInList.serialCapabilities.siliconLabsSpp = true;
+    // }
+    for (const protocol of bluetoothLESerialProtocols) {
+      if (deviceInList.nobleData.advertisement.serviceUuids.includes(protocol.serviceUuid)) {
+        // Add protocol to list of supported serial protocols in advertisement data, unless it is already in the list
+        if (!deviceInList.supportedSerialProtocolsInAdvData.includes(protocol)) {
+          deviceInList.supportedSerialProtocolsInAdvData.push(protocol);
+        }
+      }
     }
   }
 
@@ -254,8 +268,8 @@ export class BluetoothLEController {
     this.selectedBluetoothDevice = device;
   }
 
-  setSelectedProtocol = (protocol: BluetoothProtocolSelection) => {
-    this.selectedProtocol = protocol;
+  setSelectedProtocol = (protocol: BluetoothLESerialProtocolType) => {
+    this.selectedSerialProtocol = protocol;
   }
 
   /**
@@ -324,7 +338,7 @@ export class BluetoothLEController {
     let foundProtocol: BluetoothLESerialProtocol | null = null;
 
     // If user selected "First detected" or "Manually specify", search through all protocols
-    if (this.selectedProtocol === BluetoothProtocolSelection.FIRST_DETECTED || this.selectedProtocol === BluetoothProtocolSelection.MANUALLY_SPECIFY) {
+    if (this.selectedSerialProtocol === BluetoothLESerialProtocolType.FIRST_DETECTED || this.selectedSerialProtocol === BluetoothLESerialProtocolType.MANUALLY_SPECIFY) {
       for (const protocol of bluetoothLESerialProtocols) {
         // Get index of service in result.bluetoothServicesMsg.services
         const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === protocol.serviceUuid);
@@ -364,7 +378,7 @@ export class BluetoothLEController {
       }
     } else {
       // User selected a specific protocol, so only try that one
-      const selectedProtocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === this.selectedProtocol);
+      const selectedProtocolObj = bluetoothLESerialProtocols.find(p => p.selectionType === this.selectedSerialProtocol);
       if (selectedProtocolObj) {
         const serviceIndex = bluetoothConnectionAttemptSuccess.services.findIndex(service => service.uuid === selectedProtocolObj.serviceUuid);
         if (serviceIndex !== -1) {

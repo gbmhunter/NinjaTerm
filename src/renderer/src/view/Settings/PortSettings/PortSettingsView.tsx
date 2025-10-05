@@ -38,7 +38,7 @@ import {
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './PortSettingsView.module.css';
-import { SerializableBluetoothDeviceWithMetadata, BluetoothProtocolSelection } from '@/model/ConnController/BluetoothLEController';
+import { SerializableBluetoothDeviceWithMetadata, BluetoothLESerialProtocolType } from '@/model/ConnController/BluetoothLEController';
 
 interface Props {
   app: App;
@@ -679,33 +679,33 @@ function PortSettingsView(props: Props) {
             <FormControl sx={{ minWidth: 300 }} size="small">
               <InputLabel>Bluetooth Protocol</InputLabel>
               <Select
-                value={app.connController.bluetoothLEController.selectedProtocol}
+                value={app.connController.bluetoothLEController.selectedSerialProtocol}
                 label="Bluetooth Protocol"
                 disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {
-                  app.connController.bluetoothLEController.setSelectedProtocol(e.target.value as BluetoothProtocolSelection);
+                  app.connController.bluetoothLEController.setSelectedProtocol(e.target.value as BluetoothLESerialProtocolType);
                 }}
               >
-                <MenuItem value={BluetoothProtocolSelection.FIRST_DETECTED}>
-                  {BluetoothProtocolSelection.FIRST_DETECTED}
+                <MenuItem value={BluetoothLESerialProtocolType.FIRST_DETECTED}>
+                  {BluetoothLESerialProtocolType.FIRST_DETECTED}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS}>
-                  {BluetoothProtocolSelection.NORDIC_UART_SERVICE_NUS}
+                <MenuItem value={BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}>
+                  {BluetoothLESerialProtocolType.NORDIC_UART_SERVICE_NUS}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}>
-                  {BluetoothProtocolSelection.MICROCHIP_TRANSPARENT_UART}
+                <MenuItem value={BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}>
+                  {BluetoothLESerialProtocolType.MICROCHIP_TRANSPARENT_UART}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP}>
-                  {BluetoothProtocolSelection.TI_SERIAL_PORT_SERVICE_SPP}
+                <MenuItem value={BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}>
+                  {BluetoothLESerialProtocolType.TI_SERIAL_PORT_SERVICE_SPP}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS}>
-                  {BluetoothProtocolSelection.UBLOX_UCONNECT_XPRESS}
+                <MenuItem value={BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}>
+                  {BluetoothLESerialProtocolType.UBLOX_UCONNECT_XPRESS}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.SILICON_LABS_SPP}>
-                  {BluetoothProtocolSelection.SILICON_LABS_SPP}
+                <MenuItem value={BluetoothLESerialProtocolType.SILICON_LABS_SPP}>
+                  {BluetoothLESerialProtocolType.SILICON_LABS_SPP}
                 </MenuItem>
-                <MenuItem value={BluetoothProtocolSelection.MANUALLY_SPECIFY}>
-                  {BluetoothProtocolSelection.MANUALLY_SPECIFY}
+                <MenuItem value={BluetoothLESerialProtocolType.MANUALLY_SPECIFY}>
+                  {BluetoothLESerialProtocolType.MANUALLY_SPECIFY}
                 </MenuItem>
               </Select>
             </FormControl>
@@ -796,7 +796,7 @@ function PortSettingsView(props: Props) {
                   <TableCell sx={{ width: '150px' }}>Mfg Data</TableCell>
                   <TableCell sx={{ width: '90px' }}>Connectable</TableCell>
                   <TableCell sx={{ width: '70px' }}>RSSI</TableCell>
-                  <TableCell sx={{ width: '70px' }}>Supported Protocols</TableCell>
+                  <TableCell sx={{ width: '70px' }}>Advertised Protocols</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -871,13 +871,7 @@ function PortSettingsView(props: Props) {
                       </TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', textAlign: 'center' }}>
                         {(() => {
-                          const protocols: string[] = [];
-                          if (device.serialCapabilities.nordicNus) protocols.push('Nordic NUS');
-                          if (device.serialCapabilities.microchipTransparentUart) protocols.push('Microchip');
-                          if (device.serialCapabilities.tiSerialPortService) protocols.push('TI SPS');
-                          if (device.serialCapabilities.ubloxUconnectXpress) protocols.push('u-blox');
-                          if (device.serialCapabilities.siliconLabsSpp) protocols.push('Silicon Labs');
-                          return protocols.length > 0 ? protocols.join(', ') : '-';
+                          return device.getHumanReadableSupportedSerialProtocolsInAdvData();
                         })()}
                       </TableCell>
                     </TableRow>
