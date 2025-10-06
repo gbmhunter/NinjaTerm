@@ -6,18 +6,6 @@ import '@testing-library/jest-dom'
 // It gives the error:
 // stderr | Timeout._onTimeout (C:\personal\NinjaTerm\node_modules\electron-log\src\renderer\lib\transports\console.js:28:24)
 // 16:00:11.762 › electron-log: logger isn't initialized in the main process
-vi.mock('electron-log', () => ({
-  default: {
-    error: vi.fn(),
-    warn: vi.fn(),
-    info: vi.fn(),
-    verbose: vi.fn(),
-    debug: vi.fn(),
-    silly: vi.fn(),
-    log: vi.fn(),
-  },
-}))
-
 vi.mock('electron-log/renderer', () => ({
   default: {
     error: vi.fn(),
