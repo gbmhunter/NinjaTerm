@@ -1,4 +1,4 @@
-import rendererLogger from 'electron-log/renderer';
+import rendererLogger from 'electron-log/renderer.js'; // .js has to be here otherwise we get error in Playwright tests
 
 export const log = rendererLogger.scope('renderer');
 
