@@ -136,7 +136,7 @@ export class App {
     window.electronAPI.general.removeAllListeners();
 
     // Enable logging of main process messages to the devtools console
-    log.transports.ipc.level = 'silly';
+    // log.transports.ipc.level = 'silly';
     this.testing = testing;
     if (this.testing) {
       console.log('Warning, testing mode is enabled!');
