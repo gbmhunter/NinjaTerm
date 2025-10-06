@@ -4,9 +4,9 @@ const { autoUpdater } = pkg;
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
-import log from 'electron-log/main.js';
-import { LogLevel } from 'electron-log';
+import mainLogger from 'electron-log/main.js';
 
+import { initLogging, log } from './Log';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
@@ -60,7 +60,7 @@ function emitEventIfInProd(event: string) {
 
 
 // Configure auto-updater logging
-autoUpdater.logger = log;
+autoUpdater.logger = mainLogger;
 (autoUpdater.logger as any).transports.file.level = 'info';
 
 // Configure auto-updater to always check the latest release
@@ -161,9 +161,9 @@ function createWindow(): void {
 app.whenReady().then(async () => {
 
   // Initialize the logger to be available in renderer process
-  log.initialize();
-  log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] MAIN [{level}] {text}';
-  log.transports.ipc.level = 'silly';
+  initLogging();
+
+  log.info('Main process started.');
 
   createWindow();
 

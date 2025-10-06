@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
-import log from 'electron-log/main.js';
 
+import { log } from './Log';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
 
 // Don't call noble.reset(). On Windows this gave me the error:
@@ -10,9 +10,9 @@ import noble from '@abandonware/noble';
 /**
  * The timeout for Bluetooth connection attempts. This determines how quickly NinjaTerm will reconnect if the Bluetooth connection is unexpectedly dropped. Set it low for fast reconnection times, but no too low that it error out before a connection to a device can be established under normal conditions.
  *
- * Used to be 3 seconds. Then 5 seconds. Testing at 10 seconds.
+ * Used to be 3 seconds. But this was a little too quick for some OS drivers which took about 3 seconds to discover all services and characteristics. So now 5 seconds.
  */
-const CONNECTION_ATTEMPT_TIMEOUT_MS = 10 * 1000;
+const CONNECTION_ATTEMPT_TIMEOUT_MS = 5 * 1000;
 
 enum ConnectionState {
   DISCONNECTED,
@@ -109,12 +109,12 @@ export class MainBluetoothService {
   }
 
   onNobleStateChange = (state: string) => {
-    log.info('MAIN: onNobleStateChange called. state=', state);
+    log.info('onNobleStateChange called. state=', state);
     this.nobleState = state;
   }
 
   onNobleDiscover = (peripheral: noble.Peripheral) => {
-    log.info('MAIN: onNobleDiscover called. peripheral.id=', peripheral.id);
+    log.info('onNobleDiscover called. peripheral.id=', peripheral.id);
     this.mainWindow?.webContents.send('bluetooth:device-discovered', this.noblePeripheralToSerializable(peripheral));
     // If we get here, we have a valid device we want to present to the user
     this.discoveredDevices.push(peripheral);
@@ -134,7 +134,7 @@ export class MainBluetoothService {
   }
 
   resetBluetoothState = () => {
-    log.info('MAIN: resetBluetoothState() called.');
+    log.info('resetBluetoothState() called.');
     // Disconnect from any connected device
     this.peripheral?.disconnect();
     // Clear the connected device
@@ -178,12 +178,12 @@ export class MainBluetoothService {
   }
 
   onScanningError = (error?: Error) => {
-    log.error('MAIN: onScanningError called. error=', error);
     // For some reason, I saw noble fire this event as scanning was started, and error was undefined, and
     // devices were still being discovered. So I'm assuming it's not an error in this case and we can just ignore it.
     if (!error) {
       return;
     }
+    log.error('MainBluetoothService.onScanningError() called. error=', error);
     this.isScanningForPeripherals = false;
     // Clear timer
     if (this.scanningTimer) {
@@ -192,7 +192,7 @@ export class MainBluetoothService {
   }
 
   onScanStop = () => {
-    log.info('MAIN: onScanStop called.');
+    log.info('MainBluetoothService.onScanStop() called.');
     this.isScanningForPeripherals = false;
   }
 
@@ -200,7 +200,7 @@ export class MainBluetoothService {
    * Start scanning for peripherals. noble must be in the poweredOn state to do this.
    */
   startPeripheralScan = () => {
-    log.info('MAIN: startPeripheralScan called.');
+    log.info('startPeripheralScan called.');
     if (this.nobleState !== 'poweredOn') {
       throw new Error('noble must be in the poweredOn state to start scanning for peripherals.');
     }
@@ -217,7 +217,7 @@ export class MainBluetoothService {
   }
 
   onIpcStopPeripheralScan = (): { success: boolean; error?: string } => {
-    log.info('MAIN: onIpcStopPeripheralScan called.');
+    log.info('MainBluetoothService.onIpcStopPeripheralScan() called.');
     noble.stopScanning();
     return { success: true };
   }
@@ -226,7 +226,7 @@ export class MainBluetoothService {
    * Handler for when the renderer requests the list of discovered devices.
    */
   onIpcGetDiscoveredDevices = (): BluetoothDeviceResponse => {
-    log.info('MAIN: bluetooth:get-discovered-devices called.');
+    log.info('MainBluetoothService.onIpcGetDiscoveredDevices() called.');
     try {
       // Convert peripheral objects to serializable format
       const serializableDevices: SerializableBluetoothDevice[] = this.discoveredDevices.map(peripheral => ({
@@ -260,19 +260,19 @@ export class MainBluetoothService {
    * @returns
    */
   async onIpcConnectToDevice(deviceId: string): Promise<{ error?: string }> {
-    log.info('MAIN: onIpcConnectToDevice() called. deviceId=', deviceId);
+    log.info('MainBluetoothService.onIpcConnectToDevice() called. deviceId=', deviceId);
     if (this.connectionState === ConnectionState.CONNECTING) {
-      log.info('MAIN: Already connecting to a device. Cannot connect to another device.');
+      log.info('Already connecting to a device. Cannot connect to another device.');
       return { error: 'Already connecting to a device. Cannot connect to another device.' };
     }
     if (this.connectionState === ConnectionState.CONNECTED) {
-      log.info('MAIN: Already connected to a device. Cannot connect to another device.');
+      log.info('Already connected to a device. Cannot connect to another device.');
       return { error: 'Already connected to a device. Cannot connect to another device.' };
     }
     this.connectionState = ConnectionState.CONNECTING;
     // Set a timeout to fail the connection attempt if it takes too long
     this.connectionAttemptTimeout = setTimeout(() => {
-      log.info(`MAIN: Bluetooth connection attempt to ${deviceId} timed out.`);
+      log.error(`Bluetooth connection attempt to ${deviceId} timed out.`);
       this.connectionState = ConnectionState.DISCONNECTED;
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Connection attempt timed out.', null);
       this.connectionAttemptTimeout = null;
@@ -283,7 +283,7 @@ export class MainBluetoothService {
     // Find the device in discovered peripherals
     const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
     if (!peripheral) {
-      log.error(`MAIN: Device not found in discovered peripherals. deviceId=${deviceId}`);
+      log.error(`Device not found in discovered peripherals. deviceId=${deviceId}`);
       return { error: 'Device not found in discovered peripherals.' };
     }
 
@@ -296,7 +296,7 @@ export class MainBluetoothService {
     peripheral.connect((error: string | null) => {
       // We only need to handle errors here. If we connect successfully, we'll handle that in the connect event listener.
       if (error) {
-        log.error(`MAIN: Callback passed to connect() called and error was not null. Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+        log.error(`Callback passed to connect() called and error was not null. Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
         if (this.connectionAttemptTimeout) {
           clearTimeout(this.connectionAttemptTimeout);
           this.connectionAttemptTimeout = null;
@@ -313,7 +313,7 @@ export class MainBluetoothService {
 
   onConnect = (peripheral: noble.Peripheral, error: string | null) => {
     if (error) {
-      log.error(`MAIN: Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+      log.error(`Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
       if (this.connectionAttemptTimeout) {
         clearTimeout(this.connectionAttemptTimeout);
         this.connectionAttemptTimeout = null;
@@ -325,7 +325,7 @@ export class MainBluetoothService {
     }
 
     // If we get here, connection was successful
-    log.info(`MAIN: Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+    log.info(`Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
     this.peripheral = peripheral;
 
     // Handle disconnection
@@ -334,7 +334,7 @@ export class MainBluetoothService {
     });
 
     // Start discovering services and characteristics
-    log.info('MAIN: Starting discovering services and characteristics on peripheral...');
+    log.info('Starting discovering services and characteristics on peripheral...');
     peripheral.discoverAllServicesAndCharacteristics(this.onNobleDiscoveredServicesAndCharacteristics);
   }
 
@@ -345,7 +345,7 @@ export class MainBluetoothService {
    * @param characteristics
    */
   onNobleDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
-    log.info('MAIN: onNobleDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
+    log.info('MainBluetoothService.onNobleDiscoveredServicesAndCharacteristics() called. error=', error, 'services=', services, 'characteristics=', characteristics);
 
     // At this point, we have successfully discovered services and characteristics, so we consider the connection attempt complete.
     this.connectionState = ConnectionState.CONNECTED;
@@ -367,7 +367,7 @@ export class MainBluetoothService {
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
-    log.info('MAIN: disconnectFromDevice() called. deviceId=', deviceId);
+    log.info('MainBluetoothService.disconnectFromDevice() called. deviceId=', deviceId);
     try {
       const peripheral = this.peripheral;
       if (!peripheral) {
@@ -386,14 +386,14 @@ export class MainBluetoothService {
 
       return { success: true };
     } catch (error) {
-      log.error(`MAIN: Failed to disconnect from Bluetooth device ${deviceId}:`, error);
+      log.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
       return { success: false, error: (error as Error).message };
     }
   }
 
   /** Called by the noble library when a peripheral disconnects, e.g. after disconnectFromDevice() is called or the device itself initiates the disconnect. */
   onNoblePeripheralDisconnect(peripheral: noble.Peripheral) {
-    log.info('MAIN: onNoblePeripheralDisconnect called. peripheral.id=', peripheral.id);
+    log.info('MainBluetoothService.onNoblePeripheralDisconnect() called. peripheral.id=', peripheral.id);
     if (this.connectionState === ConnectionState.DISCONNECTED) {
       log.info('Got disconnect event for peripheral, but no device is connected. Ignoring.');
       return;
@@ -414,7 +414,7 @@ export class MainBluetoothService {
     }
 
     const deviceId = peripheral.id;
-    log.info(`MAIN: Bluetooth device disconnected: ${deviceId}`);
+    log.info(`Bluetooth device disconnected: ${deviceId}`);
     this.connectionState = ConnectionState.DISCONNECTED;
     this.peripheral = null;
     this.discoveredServices = [];
@@ -431,7 +431,7 @@ export class MainBluetoothService {
   }
 
   async setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
-    log.info('MAIN: setupReadAndWrite called. serviceUuid=', serviceUuid, 'rxCharacteristicUuid=', rxCharacteristicUuid, 'txCharacteristicUuid=', txCharacteristicUuid);
+    log.info('MainBluetoothService.setupReadAndWrite() called. serviceUuid=', serviceUuid, 'rxCharacteristicUuid=', rxCharacteristicUuid, 'txCharacteristicUuid=', txCharacteristicUuid);
     const peripheral = this.peripheral;
     if (!peripheral) {
       return { success: false, error: 'No device is connected. Cannot setup read and write.' };
@@ -462,11 +462,11 @@ export class MainBluetoothService {
     // Setup listener for TX data. Before we can do this, we need to start notifications.
     txCharacteristic.notify(true, (error) => {
       if (error) {
-        log.error(`MAIN: Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
+        log.error(`Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
       }
     });
     txCharacteristic.on('data', (data: Buffer) => {
-      log.info(`MAIN: Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
+      log.info(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
       // Send data to renderer
       this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
     });
@@ -475,7 +475,7 @@ export class MainBluetoothService {
   }
 
   async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {
-    log.info('MAIN: writeData called. data.length=', data.length, 'data=', data.toString('hex'));
+    log.info('MainBluetoothService.writeData() called. data.length=', data.length, 'data=', data.toString('hex'));
     if (!this.peripheral) {
       return { success: false, error: 'No device is connected. Cannot write data.' };
     }

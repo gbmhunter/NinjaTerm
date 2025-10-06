@@ -3,6 +3,8 @@ import { makeAutoObservable } from 'mobx';
 import { SnackbarAction, VariantType, enqueueSnackbar, closeSnackbar, SnackbarMessage } from 'notistack';
 import CloseIcon from '@mui/icons-material/Close.js';
 
+import { log } from '@/model/Util/Log';
+
 export default class SnackbarController {
 
   snackBarOpen: boolean;
@@ -51,9 +53,9 @@ export default class SnackbarController {
 
       // Also send message to console for debugging purposes
       if (variant === 'error') {
-        console.error(msg);
+        log.error('Snackbar msg:', msg);
       } else {
-        console.log(msg);
+        log.info('Snackbar msg:', msg);
       }
   }
 

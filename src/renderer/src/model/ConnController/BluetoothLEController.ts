@@ -1,11 +1,12 @@
-import { SerializableBluetoothDevice, SerializableService, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
-import { App } from '@/model/App';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
 import { z } from 'zod';
-import log from 'electron-log/renderer.js';
 
-const DEFAULT_SCAN_DURATION_MS = 5000;
+import { App } from '@/model/App';
+import { SerializableBluetoothDevice, SerializableService, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
+import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
+import { log } from '@/model/Util/Log';
+
+export const DEFAULT_SCAN_DURATION_MS = 5000;
 export const SCAN_DURATION_MS_MIN = 100;
 export const SCAN_DURATION_MS_MAX = 30000;
 

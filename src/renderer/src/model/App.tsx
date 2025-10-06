@@ -4,9 +4,9 @@ import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { closeSnackbar } from 'notistack';
 // import ReactGA from 'react-ga4';
 import { Button } from '@mui/material';
-import log from 'electron-log/renderer';
 
 // Import package.json to read out the version number
+import { log, initLogging } from './Util/Log';
 import packageDotJson from '../../../../package.json' with { type: 'json' };
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
@@ -132,11 +132,12 @@ export class App {
 
 
   constructor(testing = false) {
+    initLogging();
+    log.info('App constructor called.');
+
     // Clear any existing IPC listeners, to all channels. This needs to be done if the app refreshes (e.g. hot reloads during development) when the main process continues running.
     window.electronAPI.general.removeAllListeners();
 
-    // Enable logging of main process messages to the devtools console
-    // log.transports.ipc.level = 'silly';
     this.testing = testing;
     if (this.testing) {
       console.log('Warning, testing mode is enabled!');
