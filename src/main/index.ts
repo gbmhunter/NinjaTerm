@@ -1,10 +1,12 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
-import log from 'electron-log';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import log from 'electron-log/main.js';
+import { LogLevel } from 'electron-log';
+
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
@@ -157,6 +159,12 @@ function createWindow(): void {
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(async () => {
+
+  // Initialize the logger to be available in renderer process
+  log.initialize();
+  log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] MAIN [{level}] {text}';
+  log.transports.ipc.level = 'silly';
+
   createWindow();
 
   // Initialize serial handlers

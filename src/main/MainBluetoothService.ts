@@ -1,4 +1,6 @@
 import { ipcMain } from 'electron';
+import log from 'electron-log/main.js';
+
 import { SerializableBluetoothDevice, BluetoothDeviceResponse, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
 
 // Don't call noble.reset(). On Windows this gave me the error:
@@ -54,6 +56,7 @@ export class MainBluetoothService {
    * @param mainWindow The main window is needed to send Bluetooth events to the renderer (such as received data).
    */
   constructor(mainWindow?: Electron.BrowserWindow) {
+    log.info('MainBluetoothService constructor called.');
     this.mainWindow = mainWindow || null;
 
     // Initialize noble event handlers
@@ -63,13 +66,13 @@ export class MainBluetoothService {
     noble.on('scanStop', this.onScanStop);
 
     ipcMain.handle('bluetooth:reset-bluetooth-state', () => {
-      console.log('bluetooth:reset-bluetooth-state called.');
+      log.info('bluetooth:reset-bluetooth-state called.');
       this.resetBluetoothState();
       return { success: true };
     });
 
     ipcMain.handle('bluetooth:start-peripheral-scan', () => {
-      console.log('bluetooth:start-peripheral-scan called.');
+      log.info('bluetooth:start-peripheral-scan called.');
       try {
         this.startPeripheralScan();
       } catch (error) {
@@ -83,17 +86,17 @@ export class MainBluetoothService {
     ipcMain.handle('bluetooth:get-discovered-devices', this.onIpcGetDiscoveredDevices);
 
     ipcMain.handle('bluetooth:start-connection-attempt', async (_event, deviceId: string) => {
-      console.log('bluetooth:start-connection-attempt called. deviceId=', deviceId);
+      log.info('bluetooth:start-connection-attempt called. deviceId=', deviceId);
       return await this.onIpcConnectToDevice(deviceId);
     });
 
     ipcMain.handle('bluetooth:disconnect-device', async (_event, deviceId: string) => {
-      console.log('bluetooth:disconnect-device called. deviceId=', deviceId);
+      log.info('bluetooth:disconnect-device called. deviceId=', deviceId);
       return await this.disconnectFromDevice(deviceId);
     });
 
     ipcMain.handle('bluetooth:write-data', async (_event, data: Buffer) => {
-      console.log('bluetooth:write-data called. data.length=', data.length);
+      log.info('bluetooth:write-data called. data.length=', data.length);
       return await this.writeData(data);
     });
 
@@ -104,32 +107,13 @@ export class MainBluetoothService {
   }
 
   onNobleStateChange = (state: string) => {
-    console.log('onNobleStateChange called. state=', state);
+    log.info('MAIN: onNobleStateChange called. state=', state);
     this.nobleState = state;
   }
 
   onNobleDiscover = (peripheral: noble.Peripheral) => {
-    console.log('onNobleDiscover called. peripheral.id=', peripheral.id);
-
-    if (peripheral.id.startsWith('f7a2')) {
-      console.log('Peripheral:', peripheral);
-    }
-
+    log.info('MAIN: onNobleDiscover called. peripheral.id=', peripheral.id);
     this.mainWindow?.webContents.send('bluetooth:device-discovered', this.noblePeripheralToSerializable(peripheral));
-
-    // Check if we already have this device (avoid duplicates)
-    // const existingDevice = this.discoveredDevices.find(p => p.id === peripheral.id);
-    // if (existingDevice) {
-    //   return;
-    // }
-
-    // if (!peripheral.connectable) {
-    //   return;
-    // }
-
-    // Devices don't normally report services and characteristics during
-    // peripheral.discoverAllServicesAndCharacteristics(this.onDiscoveredServicesAndCharacteristics);
-
     // If we get here, we have a valid device we want to present to the user
     this.discoveredDevices.push(peripheral);
   }
@@ -148,7 +132,7 @@ export class MainBluetoothService {
   }
 
   resetBluetoothState = () => {
-    console.log('resetBluetoothState() called.');
+    log.info('MAIN: resetBluetoothState() called.');
     // Disconnect from any connected device
     this.peripheral?.disconnect();
     // Clear the connected device
@@ -192,7 +176,7 @@ export class MainBluetoothService {
   }
 
   onScanningError = (error?: Error) => {
-    console.error('onScanningError called. error=', error);
+    log.error('MAIN: onScanningError called. error=', error);
     // For some reason, I saw noble fire this event as scanning was started, and error was undefined, and
     // devices were still being discovered. So I'm assuming it's not an error in this case and we can just ignore it.
     if (!error) {
@@ -206,7 +190,7 @@ export class MainBluetoothService {
   }
 
   onScanStop = () => {
-    console.log('onScanStop called.');
+    log.info('MAIN: onScanStop called.');
     this.isScanningForPeripherals = false;
   }
 
@@ -214,7 +198,7 @@ export class MainBluetoothService {
    * Start scanning for peripherals. noble must be in the poweredOn state to do this.
    */
   startPeripheralScan = () => {
-    console.log('startPeripheralScan called.');
+    log.info('MAIN: startPeripheralScan called.');
     if (this.nobleState !== 'poweredOn') {
       throw new Error('noble must be in the poweredOn state to start scanning for peripherals.');
     }
@@ -231,7 +215,7 @@ export class MainBluetoothService {
   }
 
   onIpcStopPeripheralScan = (): { success: boolean; error?: string } => {
-    console.log('onIpcStopPeripheralScan called.');
+    log.info('MAIN: onIpcStopPeripheralScan called.');
     noble.stopScanning();
     return { success: true };
   }
@@ -240,7 +224,7 @@ export class MainBluetoothService {
    * Handler for when the renderer requests the list of discovered devices.
    */
   onIpcGetDiscoveredDevices = (): BluetoothDeviceResponse => {
-    console.log('bluetooth:get-discovered-devices called.');
+    log.info('MAIN: bluetooth:get-discovered-devices called.');
     try {
       // Convert peripheral objects to serializable format
       const serializableDevices: SerializableBluetoothDevice[] = this.discoveredDevices.map(peripheral => ({
@@ -274,19 +258,19 @@ export class MainBluetoothService {
    * @returns
    */
   async onIpcConnectToDevice(deviceId: string): Promise<{ error?: string }> {
-    console.log('onIpcConnectToDevice() called. deviceId=', deviceId);
+    log.info('MAIN: onIpcConnectToDevice() called. deviceId=', deviceId);
     if (this.connectionState === ConnectionState.CONNECTING) {
-      console.log('Already connecting to a device. Cannot connect to another device.');
+      log.info('MAIN: Already connecting to a device. Cannot connect to another device.');
       return { error: 'Already connecting to a device. Cannot connect to another device.' };
     }
     if (this.connectionState === ConnectionState.CONNECTED) {
-      console.log('Already connected to a device. Cannot connect to another device.');
+      log.info('MAIN: Already connected to a device. Cannot connect to another device.');
       return { error: 'Already connected to a device. Cannot connect to another device.' };
     }
     this.connectionState = ConnectionState.CONNECTING;
     // Set a timeout to fail the connection attempt if it takes too long
     this.connectionAttemptTimeout = setTimeout(() => {
-      console.log(`Bluetooth connection attempt to ${deviceId} timed out.`);
+      log.info(`MAIN: Bluetooth connection attempt to ${deviceId} timed out.`);
       this.connectionState = ConnectionState.DISCONNECTED;
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Connection attempt timed out.', null);
       this.connectionAttemptTimeout = null;
@@ -297,6 +281,7 @@ export class MainBluetoothService {
     // Find the device in discovered peripherals
     const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
     if (!peripheral) {
+      log.error(`MAIN: Device not found in discovered peripherals. deviceId=${deviceId}`);
       return { error: 'Device not found in discovered peripherals.' };
     }
 
@@ -309,7 +294,7 @@ export class MainBluetoothService {
     peripheral.connect((error: string | null) => {
       // We only need to handle errors here. If we connect successfully, we'll handle that in the connect event listener.
       if (error) {
-        console.error(`Callback passed to connect() called and error was not null. Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+        log.error(`MAIN: Callback passed to connect() called and error was not null. Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
         if (this.connectionAttemptTimeout) {
           clearTimeout(this.connectionAttemptTimeout);
           this.connectionAttemptTimeout = null;
@@ -326,7 +311,7 @@ export class MainBluetoothService {
 
   onConnect = (peripheral: noble.Peripheral, error: string | null) => {
     if (error) {
-      console.error(`Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+      log.error(`MAIN: Failed to connect to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
       if (this.connectionAttemptTimeout) {
         clearTimeout(this.connectionAttemptTimeout);
         this.connectionAttemptTimeout = null;
@@ -338,7 +323,7 @@ export class MainBluetoothService {
     }
 
     // If we get here, connection was successful
-    console.log(`Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
+    log.info(`MAIN: Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
     this.peripheral = peripheral;
 
     peripheral.discoverAllServicesAndCharacteristics(this.onNobleDiscoveredServicesAndCharacteristics);
@@ -356,7 +341,7 @@ export class MainBluetoothService {
    * @param characteristics
    */
   onNobleDiscoveredServicesAndCharacteristics = (error: string, services: noble.Service[], characteristics: noble.Characteristic[]) => {
-    console.log('onNobleDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
+    log.info('MAIN: onNobleDiscoveredServicesAndCharacteristics called. error=', error, 'services=', services, 'characteristics=', characteristics);
 
     // At this point, we have successfully discovered services and characteristics, so we consider the connection attempt complete.
     this.connectionState = ConnectionState.CONNECTED;
@@ -378,7 +363,7 @@ export class MainBluetoothService {
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
-    console.log('disconnectFromDevice() called. deviceId=', deviceId);
+    log.info('MAIN: disconnectFromDevice() called. deviceId=', deviceId);
     try {
       const peripheral = this.peripheral;
       if (!peripheral) {
@@ -397,35 +382,35 @@ export class MainBluetoothService {
 
       return { success: true };
     } catch (error) {
-      console.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
+      log.error(`MAIN: Failed to disconnect from Bluetooth device ${deviceId}:`, error);
       return { success: false, error: (error as Error).message };
     }
   }
 
   /** Called by the noble library when a peripheral disconnects, e.g. after disconnectFromDevice() is called or the device itself initiates the disconnect. */
   onNoblePeripheralDisconnect(peripheral: noble.Peripheral) {
-    console.log('onNoblePeripheralDisconnect called. peripheral.id=', peripheral.id);
+    log.info('MAIN: onNoblePeripheralDisconnect called. peripheral.id=', peripheral.id);
     if (this.connectionState === ConnectionState.DISCONNECTED) {
-      console.log('Got disconnect event for peripheral, but no device is connected. Ignoring.');
+      log.info('Got disconnect event for peripheral, but no device is connected. Ignoring.');
       return;
     }
 
     if (peripheral.id !== this.peripheral!.id) {
-      console.log('Got disconnect event for peripheral, but it is not the connected peripheral. Ignoring.');
+      log.info('Got disconnect event for peripheral, but it is not the connected peripheral. Ignoring.');
       return;
     }
 
     // I've seen sometimes that after connection, the device disconnects and scanning for services and characteristics does not work,
     // but also does not trigger an error (fails silently). This event gets triggered, so in this case we need to set connectionState to DISCONNECTED.
     if (this.connectionState === ConnectionState.CONNECTING) {
-      console.log('Got disconnect event for peripheral, but we are still connecting to it. Setting connectionState to DISCONNECTED.');
+      log.info('Got disconnect event for peripheral, but we are still connecting to it. Setting connectionState to DISCONNECTED.');
       this.connectionState = ConnectionState.DISCONNECTED;
       // Emit a IPC connection attempt complete message, indicating failure
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Device disconnected while still connecting and scanning for services and characteristics.', null);
     }
 
     const deviceId = peripheral.id;
-    console.log(`Bluetooth device disconnected: ${deviceId}`);
+    log.info(`MAIN: Bluetooth device disconnected: ${deviceId}`);
     this.connectionState = ConnectionState.DISCONNECTED;
     this.peripheral = null;
     this.discoveredServices = [];
@@ -442,7 +427,7 @@ export class MainBluetoothService {
   }
 
   async setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }> {
-    console.log('setupReadAndWrite called. serviceUuid=', serviceUuid, 'rxCharacteristicUuid=', rxCharacteristicUuid, 'txCharacteristicUuid=', txCharacteristicUuid);
+    log.info('MAIN: setupReadAndWrite called. serviceUuid=', serviceUuid, 'rxCharacteristicUuid=', rxCharacteristicUuid, 'txCharacteristicUuid=', txCharacteristicUuid);
     const peripheral = this.peripheral;
     if (!peripheral) {
       return { success: false, error: 'No device is connected. Cannot setup read and write.' };
@@ -473,11 +458,11 @@ export class MainBluetoothService {
     // Setup listener for TX data. Before we can do this, we need to start notifications.
     txCharacteristic.notify(true, (error) => {
       if (error) {
-        console.log(`Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
+        log.error(`MAIN: Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
       }
     });
     txCharacteristic.on('data', (data: Buffer) => {
-      console.log(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
+      log.info(`MAIN: Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
       // Send data to renderer
       this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
     });
@@ -486,35 +471,7 @@ export class MainBluetoothService {
   }
 
   async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {
-    console.log('writeData called. data.length=', data.length);
-    console.log('data=', data.toString('hex'));
-    // try {
-    //   const connection = this.connectedPeripherals.get(deviceId);
-    //   if (!connection) {
-    //     return { success: false, error: 'Device not connected' };
-    //   }
-
-    //   if (!connection.writeCharacteristic) {
-    //     return { success: false, error: 'No write characteristic available' };
-    //   }
-
-    //   const buffer = Buffer.from(data);
-
-    //   await new Promise<void>((resolve, reject) => {
-    //     connection.writeCharacteristic!.write(buffer, false, (error) => {
-    //       if (error) {
-    //         reject(error);
-    //       } else {
-    //         resolve();
-    //       }
-    //     });
-    //   });
-
-    //   return { success: true };
-    // } catch (error) {
-    //   console.error(`Failed to write data to Bluetooth device ${deviceId}:`, error);
-    //   return { success: false, error: (error as Error).message };
-    // }
+    log.info('MAIN: writeData called. data.length=', data.length, 'data=', data.toString('hex'));
     if (!this.peripheral) {
       return { success: false, error: 'No device is connected. Cannot write data.' };
     }
@@ -532,9 +489,6 @@ export class MainBluetoothService {
         }
       });
     });
-
-    console.log('writeData done. data.length=', data.length);
     return { success: true };
   }
-
 }

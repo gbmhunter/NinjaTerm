@@ -3,6 +3,7 @@ import { App } from '@/model/App';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { ConnState } from '@/model/Settings/PortSettings/PortSettings';
 import { z } from 'zod';
+import log from 'electron-log/renderer';
 
 const DEFAULT_SCAN_DURATION_MS = 5000;
 export const SCAN_DURATION_MS_MIN = 100;
@@ -274,7 +275,7 @@ export class BluetoothLEController {
   }
 
   setSelectedBluetoothDevice = (device: SerializableBluetoothDeviceWithMetadata) => {
-    console.log('setSelectedBluetoothDevice() called. device=', device);
+    log.info('setSelectedBluetoothDevice() called. device=', device);
     this.selectedBluetoothDevice = device;
   }
 
@@ -320,7 +321,7 @@ export class BluetoothLEController {
    * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
    */
   connect = async () => {
-    console.log('connect() called.');
+    log.info('connect() called.');
     if (!this.selectedBluetoothDevice) {
       this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
       return;
@@ -345,7 +346,7 @@ export class BluetoothLEController {
    * @returns
    */
   async onIpcBluetoothConnectionAttemptComplete (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) {
-    console.log('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
+    log.info('onIpcBluetoothConnectionAttemptComplete() called. error: ', error, 'bluetoothConnectionAttemptSuccess: ', bluetoothConnectionAttemptSuccess);
     if (error) {
       // Don't show error if we are already trying to reconnect as errors are to be expected here.
       if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
@@ -409,7 +410,7 @@ export class BluetoothLEController {
       if (serviceIndex === -1) {
         continue;
       }
-      console.log('Found service.');
+      log.info('Found service.');
 
       const service = bluetoothConnectionAttemptSuccess.services[serviceIndex];
 
@@ -422,7 +423,7 @@ export class BluetoothLEController {
       if (!readCharacteristic.properties.includes('writeWithoutResponse')) {
         continue;
       }
-      console.log('Found read characteristic.');
+      log.info('Found read characteristic.');
 
       // Check TX characteristic is present and has "notify" property
       const writeCharacteristicIndex = service.characteristics.findIndex(characteristic => characteristic.uuid === protocol.txUuid);
@@ -433,8 +434,7 @@ export class BluetoothLEController {
       if (!writeCharacteristic.properties.includes('notify')) {
         continue;
       }
-      console.log('Found write characteristic.');
-      console.log(`Found ${protocol.name} on connected Bluetooth device.`);
+      log.info(`Found write characteristic. This completed the check for the protocol. Found ${protocol.name} on connected Bluetooth device.`);
 
       // Use the first valid serial protocol we find
       foundProtocol = protocol;
@@ -489,9 +489,9 @@ export class BluetoothLEController {
 
   /** Close the Bluetooth connection to currently connected Bluetooth device. */
   close = async () => {
-    console.log('BluetoothLEController.close() called');
+    log.info('BluetoothLEController.close() called');
     if (!this.connectedBluetoothDevice) {
-      console.error('close() called but no Bluetooth device selected. Cannot close Bluetooth connection.');
+      log.error('close() called but no Bluetooth device selected. Cannot close Bluetooth connection.');
       return;
     }
 
@@ -507,11 +507,11 @@ export class BluetoothLEController {
 
   /** Called from the main process when a Bluetooth device is disconnected. This might be because we called close() and initiated the disconnection, or the device itself initiated the disconnection. */
   onIpcBluetoothDeviceDisconnected(deviceId: string) {
-    console.log('onIpcBluetoothDeviceDisconnected() called. deviceId=', deviceId);
+    log.info('onIpcBluetoothDeviceDisconnected() called. deviceId=', deviceId);
 
     // If we have already disconnected the device, don't do anything
     if (this.connectedBluetoothDevice === null) {
-      console.log('onIpcBluetoothDeviceDisconnected() called but no Bluetooth device connected. Ignoring.');
+      log.info('onIpcBluetoothDeviceDisconnected() called but no Bluetooth device connected. Ignoring.');
       return;
     }
 
