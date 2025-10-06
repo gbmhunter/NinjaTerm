@@ -15,6 +15,23 @@ vi.mock('electron-log/renderer.js', () => ({
     debug: vi.fn(),
     silly: vi.fn(),
     log: vi.fn(),
+    scope: vi.fn(() => ({
+      error: vi.fn(),
+      warn: vi.fn(),
+      info: vi.fn(),
+      verbose: vi.fn(),
+      debug: vi.fn(),
+      silly: vi.fn(),
+      log: vi.fn(),
+    })),
+    transports: {
+      console: {
+        format: '',
+      },
+      ipc: {
+        level: 'silly',
+      },
+    },
   },
 }))
 
