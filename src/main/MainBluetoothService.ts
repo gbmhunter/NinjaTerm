@@ -9,8 +9,10 @@ import noble from '@abandonware/noble';
 
 /**
  * The timeout for Bluetooth connection attempts. This determines how quickly NinjaTerm will reconnect if the Bluetooth connection is unexpectedly dropped. Set it low for fast reconnection times, but no too low that it error out before a connection to a device can be established under normal conditions.
+ *
+ * Used to be 3 seconds.
  */
-const CONNECTION_ATTEMPT_TIMEOUT_MS = 3 * 1000;
+const CONNECTION_ATTEMPT_TIMEOUT_MS = 5 * 1000;
 
 enum ConnectionState {
   DISCONNECTED,
@@ -326,12 +328,14 @@ export class MainBluetoothService {
     log.info(`MAIN: Connected to Bluetooth device: ${peripheral.advertisement!.localName} (${peripheral.id}). error=${error}.`);
     this.peripheral = peripheral;
 
-    peripheral.discoverAllServicesAndCharacteristics(this.onNobleDiscoveredServicesAndCharacteristics);
-
     // Handle disconnection
     peripheral.on('disconnect', () => {
       this.onNoblePeripheralDisconnect(peripheral);
     });
+
+    // Start discovering services and characteristics
+    log.info('MAIN: Starting discovering services and characteristics on peripheral...');
+    peripheral.discoverAllServicesAndCharacteristics(this.onNobleDiscoveredServicesAndCharacteristics);
   }
 
   /**
