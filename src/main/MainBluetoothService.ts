@@ -10,9 +10,9 @@ import noble from '@abandonware/noble';
 /**
  * The timeout for Bluetooth connection attempts. This determines how quickly NinjaTerm will reconnect if the Bluetooth connection is unexpectedly dropped. Set it low for fast reconnection times, but no too low that it error out before a connection to a device can be established under normal conditions.
  *
- * Used to be 3 seconds.
+ * Used to be 3 seconds. Then 5 seconds. Testing at 10 seconds.
  */
-const CONNECTION_ATTEMPT_TIMEOUT_MS = 5 * 1000;
+const CONNECTION_ATTEMPT_TIMEOUT_MS = 10 * 1000;
 
 enum ConnectionState {
   DISCONNECTED,
