@@ -67,3 +67,22 @@
 [data-theme='dark'] .documentation-table td {
   border-color: #444;
 }
+
+figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+figcaption {
+  text-align: center;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.featureVideo {
+  max-width: 100%;
+  width: 900px;
+  height: auto;
+  border-radius: 8px;
+}

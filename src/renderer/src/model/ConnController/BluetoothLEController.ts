@@ -10,6 +10,9 @@ export const DEFAULT_SCAN_DURATION_MS = 5000;
 export const SCAN_DURATION_MS_MIN = 100;
 export const SCAN_DURATION_MS_MAX = 30000;
 
+/**
+ * The interval (in milliseconds) to start re-connection attempts at. If a re-connection attempt is already in progress, another one will not be started.
+ */
 const RECONNECTION_POLLING_INTERVAL_MS = 1000;
 
 /**
