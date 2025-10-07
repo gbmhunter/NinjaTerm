@@ -177,6 +177,16 @@ export class BluetoothLEController {
    */
   hideUnconnectableDevices: boolean = true;
 
+  /**
+   * The column to sort the discovered Bluetooth devices by.
+   */
+  sortColumn: 'address' | 'localName' | 'connectable' | 'rssi' | null = 'rssi';
+
+  /**
+   * The direction to sort the discovered Bluetooth devices.
+   */
+  sortDirection: 'asc' | 'desc' = 'desc';
+
   constructor(app: App) {
     this.app = app;
 
@@ -210,6 +220,61 @@ export class BluetoothLEController {
       return this.discoveredBluetoothDevices.filter(device => device.nobleData.connectable);
     }
     return this.discoveredBluetoothDevices;
+  }
+
+  /**
+   * Returns the list of discovered Bluetooth devices, filtered and sorted according to current settings.
+   */
+  get sortedAndFilteredDiscoveredBluetoothDevices(): SerializableBluetoothDeviceWithMetadata[] {
+    let devices = this.filteredDiscoveredBluetoothDevices;
+
+    // If no sort column is set, return unsorted
+    if (!this.sortColumn) {
+      return devices;
+    }
+
+    // Create a shallow copy to avoid mutating the original array
+    const sortedDevices = [...devices];
+
+    // Sort based on the selected column
+    sortedDevices.sort((a, b) => {
+      let aValue: string | number | boolean;
+      let bValue: string | number | boolean;
+
+      switch (this.sortColumn) {
+        case 'address':
+          aValue = a.nobleData.address || '';
+          bValue = b.nobleData.address || '';
+          break;
+        case 'localName':
+          aValue = a.nobleData.advertisement.localName || '';
+          bValue = b.nobleData.advertisement.localName || '';
+          break;
+        case 'connectable':
+          aValue = a.nobleData.connectable ? 1 : 0;
+          bValue = b.nobleData.connectable ? 1 : 0;
+          break;
+        case 'rssi':
+          aValue = a.nobleData.rssi || -999;
+          bValue = b.nobleData.rssi || -999;
+          break;
+        default:
+          return 0;
+      }
+
+      // Compare values
+      let comparison = 0;
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        comparison = aValue.localeCompare(bValue);
+      } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      }
+
+      // Apply sort direction
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return sortedDevices;
   }
 
   /** Send a command to the main process to start scanning for Bluetooth devices. */
@@ -327,6 +392,16 @@ export class BluetoothLEController {
 
   setHideUnconnectableDevices = (hide: boolean) => {
     this.hideUnconnectableDevices = hide;
+  }
+
+  setSortColumn = (column: 'address' | 'localName' | 'connectable' | 'rssi') => {
+    // Toggle direction if clicking the same column, otherwise default to ascending
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
   }
 
   validateAndApplyScanDurationMs = () => {

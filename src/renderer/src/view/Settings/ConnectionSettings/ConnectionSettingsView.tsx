@@ -19,6 +19,7 @@ import {
   TableRow,
   Paper,
   Radio,
+  TableSortLabel,
 } from '@mui/material';
 import { OverridableStringUnion } from '@mui/types';
 import { observer } from 'mobx-react-lite';
@@ -974,9 +975,11 @@ function PortSettingsView(props: Props) {
           <Typography variant="h6" gutterBottom>
             Available Bluetooth LE Devices
           </Typography>
-          <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', overflowX: 'auto' }}>
+          <Typography>Click on a column header to sort by that column. Sorted by RSSI by default.</Typography>
+          <TableContainer component={Paper} variant="outlined" sx={{ maxWidth: '1200px', maxHeight: '400px', overflowX: 'auto' }}>
             <Table
               size="small"
+              stickyHeader
               sx={{
                 tableLayout: 'fixed',
                 minWidth: 900,
@@ -991,23 +994,55 @@ function PortSettingsView(props: Props) {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ width: '60px' }}>Select</TableCell>
-                  <TableCell sx={{ width: '120px' }}>Address</TableCell>
-                  <TableCell sx={{ width: '160px' }}>Advertisement Name</TableCell>
+                  <TableCell sx={{ width: '120px' }}>
+                    <TableSortLabel
+                      active={app.connController.bluetoothLEController.sortColumn === 'address'}
+                      direction={app.connController.bluetoothLEController.sortColumn === 'address' ? app.connController.bluetoothLEController.sortDirection : 'asc'}
+                      onClick={() => app.connController.bluetoothLEController.setSortColumn('address')}
+                    >
+                      Address
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={{ width: '160px' }}>
+                    <TableSortLabel
+                      active={app.connController.bluetoothLEController.sortColumn === 'localName'}
+                      direction={app.connController.bluetoothLEController.sortColumn === 'localName' ? app.connController.bluetoothLEController.sortDirection : 'asc'}
+                      onClick={() => app.connController.bluetoothLEController.setSortColumn('localName')}
+                    >
+                      Advertisement Name
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell sx={{ width: '150px' }}>Mfg Data</TableCell>
-                  <TableCell sx={{ width: '90px' }}>Connectable</TableCell>
-                  <TableCell sx={{ width: '70px' }}>RSSI</TableCell>
+                  <TableCell sx={{ width: '90px' }}>
+                    <TableSortLabel
+                      active={app.connController.bluetoothLEController.sortColumn === 'connectable'}
+                      direction={app.connController.bluetoothLEController.sortColumn === 'connectable' ? app.connController.bluetoothLEController.sortDirection : 'asc'}
+                      onClick={() => app.connController.bluetoothLEController.setSortColumn('connectable')}
+                    >
+                      Connectable
+                    </TableSortLabel>
+                  </TableCell>
+                  <TableCell sx={{ width: '70px' }}>
+                    <TableSortLabel
+                      active={app.connController.bluetoothLEController.sortColumn === 'rssi'}
+                      direction={app.connController.bluetoothLEController.sortColumn === 'rssi' ? app.connController.bluetoothLEController.sortDirection : 'asc'}
+                      onClick={() => app.connController.bluetoothLEController.setSortColumn('rssi')}
+                    >
+                      RSSI
+                    </TableSortLabel>
+                  </TableCell>
                   <TableCell sx={{ width: '70px' }}>Advertised Protocols</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {(app.connController.bluetoothLEController.filteredDiscoveredBluetoothDevices || []).length === 0 ? (
+                {(app.connController.bluetoothLEController.sortedAndFilteredDiscoveredBluetoothDevices || []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       <div style={{ padding: '16px' }}>No Bluetooth devices found. Click "Scan" to search for devices.</div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.connController.bluetoothLEController.filteredDiscoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
+                  app.connController.bluetoothLEController.sortedAndFilteredDiscoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
                     <TableRow
                       key={device.nobleData.id || idx}
                       hover={!isTableDisabled}
