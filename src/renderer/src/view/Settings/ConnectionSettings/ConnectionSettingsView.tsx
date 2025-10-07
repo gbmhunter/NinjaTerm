@@ -37,7 +37,7 @@ import {
   ConnectionType,
 } from '@/model/Settings/PortSettings/PortSettings';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
-import styles from './PortSettingsView.module.css';
+import styles from './ConnectionSettingsView.module.css';
 import {
   SerializableBluetoothDeviceWithMetadata,
   BluetoothLESerialProtocolType,
@@ -851,7 +851,7 @@ function PortSettingsView(props: Props) {
           {/* =============================================================== */}
           {/* SCAN DURATION INPUT */}
           {/* =============================================================== */}
-          <div style={{ marginTop: '16px' }}>
+          <div style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-start' }}>
             <Tooltip
               {...app.settings.displaySettings.getBasicTooltipConfig()}
               title={`The duration (in milliseconds) to scan for Bluetooth LE devices. After this time, the scan will automatically stop. You can always stop the scan prior to this timeout by clicking the 'Stop scanning' button. Must be between ${SCAN_DURATION_MS_MIN} and ${SCAN_DURATION_MS_MAX} (inclusive).`}
@@ -876,6 +876,23 @@ function PortSettingsView(props: Props) {
                 helperText={app.connController.bluetoothLEController.scanDurationMsHelperText}
                 size="small"
                 sx={{ width: 200 }}
+              />
+            </Tooltip>
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title="When checked, devices that do not advertise themselves as connectable will be hidden from the device list below."
+              placement="right"
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={app.connController.bluetoothLEController.hideUnconnectableDevices}
+                    onChange={(e) => {
+                      app.connController.bluetoothLEController.setHideUnconnectableDevices(e.target.checked);
+                    }}
+                  />
+                }
+                label="Hide unconnectable devices"
               />
             </Tooltip>
           </div>
@@ -983,14 +1000,14 @@ function PortSettingsView(props: Props) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {(app.connController.bluetoothLEController.discoveredBluetoothDevices || []).length === 0 ? (
+                {(app.connController.bluetoothLEController.filteredDiscoveredBluetoothDevices || []).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} align="center" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                       <div style={{ padding: '16px' }}>No Bluetooth devices found. Click "Scan" to search for devices.</div>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  app.connController.bluetoothLEController.discoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
+                  app.connController.bluetoothLEController.filteredDiscoveredBluetoothDevices.map((device: SerializableBluetoothDeviceWithMetadata, idx: number) => (
                     <TableRow
                       key={device.nobleData.id || idx}
                       hover={!isTableDisabled}

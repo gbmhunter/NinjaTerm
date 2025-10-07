@@ -166,6 +166,11 @@ export class BluetoothLEController {
   scanDurationMsHelperText: string = '';
   scanDurationDefaultHelperText: string = 'The duration to scan for BLE devices.';
 
+  /**
+   * If true, devices that are not connectable will be hidden from the device list.
+   */
+  hideUnconnectableDevices: boolean = true;
+
   constructor(app: App) {
     this.app = app;
 
@@ -189,6 +194,16 @@ export class BluetoothLEController {
 
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
+  }
+
+  /**
+   * Returns the list of discovered Bluetooth devices, optionally filtered to hide unconnectable devices.
+   */
+  get filteredDiscoveredBluetoothDevices(): SerializableBluetoothDeviceWithMetadata[] {
+    if (this.hideUnconnectableDevices) {
+      return this.discoveredBluetoothDevices.filter(device => device.nobleData.connectable);
+    }
+    return this.discoveredBluetoothDevices;
   }
 
   /** Send a command to the main process to start scanning for Bluetooth devices. */
@@ -302,6 +317,10 @@ export class BluetoothLEController {
    */
   setScanDurationMsInput = (durationMs: string) => {
     this.scanDurationMsInput = durationMs;
+  }
+
+  setHideUnconnectableDevices = (hide: boolean) => {
+    this.hideUnconnectableDevices = hide;
   }
 
   validateAndApplyScanDurationMs = () => {
