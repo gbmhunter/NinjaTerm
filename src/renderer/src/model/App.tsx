@@ -6,6 +6,7 @@ import { closeSnackbar } from 'notistack';
 import { Button } from '@mui/material';
 
 // Import package.json to read out the version number
+import { log, initLogging } from './Util/Log';
 import packageDotJson from '../../../../package.json' with { type: 'json' };
 // eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
@@ -13,7 +14,7 @@ import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
-import { PortState } from './Settings/PortSettings/PortSettings';
+import { ConnState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
 import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
@@ -22,7 +23,7 @@ import { isRunningOnWindows } from './Util/Util';
 import { AppDataManager } from './AppDataManager/AppDataManager';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
-import { SerialController } from './SerialController/SerialController';
+import { ConnController } from './ConnController/ConnController';
 
 declare global {
   interface String {
@@ -125,12 +126,18 @@ export class App {
   performanceMonitor: PerformanceMonitor;
 
   /**
-   * Responsible for all serial port related functionality.
+   * Responsible for all connection related functionality. This supports different types of connections (serial port, socket, Bluetooth).
    */
-  serialController: SerialController;
+  connController: ConnController;
 
 
   constructor(testing = false) {
+    initLogging();
+    log.info('App constructor called.');
+
+    // Clear any existing IPC listeners, to all channels. This needs to be done if the app refreshes (e.g. hot reloads during development) when the main process continues running.
+    window.electronAPI.general.removeAllListeners();
+
     this.testing = testing;
     if (this.testing) {
       console.log('Warning, testing mode is enabled!');
@@ -146,13 +153,12 @@ export class App {
 
     this.performanceMonitor = new PerformanceMonitor();
 
-    this.serialController = new SerialController(this);
+    this.connController = new ConnController(this);
 
     this.terminals = new Terminals(this);
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
-
 
     // Show the terminal by default
     this.shownMainPane = MainPanes.TERMINAL;
@@ -161,8 +167,6 @@ export class App {
     this.graphing = new Graphing(this.snackbar, this.profileManager);
 
     this.logging = new Logging(this);
-
-    // Serial port connection handling is now managed through the ElectronSerialAdapter
 
     // Listen for changes to the last applied profile name, and update the app title
     reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
@@ -201,7 +205,7 @@ export class App {
    * Stops any active polling and cleans up resources.
    */
   cleanup = () => {
-    this.serialController.cleanup();
+    this.connController.cleanup();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
 
@@ -653,7 +657,7 @@ export class App {
       }
 
       // Make sure serial port is open
-      if (this.serialController.portState !== PortState.OPENED) {
+      if (this.connController.connState !== ConnState.OPENED) {
         return;
       }
 
@@ -796,7 +800,7 @@ export class App {
     event.preventDefault();
     event.stopPropagation();
 
-    if (this.serialController.portState !== PortState.OPENED) {
+    if (this.connController.connState !== ConnState.OPENED) {
       // Serial port is not open, so don't send anything
       return;
     }
@@ -957,29 +961,11 @@ export class App {
    * @param bytesToWrite
    */
   async writeBytesToSerialPort(bytesToWrite: Uint8Array) {
-    if ((window as any).electronAPI) {
-      try {
-        // Check if we're using serial port or socket connection
-        if (this.serialController.currentPortPath) {
-          // Serial port connection
-          const result = await (window as any).electronAPI.serial.writeData(this.serialController.currentPortPath, Array.from(bytesToWrite));
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to write data');
-          }
-        } else if (this.serialController.currentSocketConnectionId) {
-          // Socket connection
-          const result = await (window as any).electronAPI.socket.writeData(this.serialController.currentSocketConnectionId, Array.from(bytesToWrite));
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to write data');
-          }
-        } else {
-          // No active connection
-          return;
-        }
-      } catch (error) {
-        this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
-        return;
-      }
+    try {
+      await this.connController.writeData(bytesToWrite);
+    } catch (error) {
+      this.snackbar.sendToSnackbar(`Error writing data: ${error}`, 'error');
+      return;
     }
 
     this.terminals.txTerminal.parseData(bytesToWrite, DataDirection.TX);

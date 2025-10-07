@@ -1,10 +1,12 @@
 import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
-import log from 'electron-log';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
+import mainLogger from 'electron-log/main.js';
+
+import { initLogging, log } from './Log';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
@@ -58,7 +60,7 @@ function emitEventIfInProd(event: string) {
 
 
 // Configure auto-updater logging
-autoUpdater.logger = log;
+autoUpdater.logger = mainLogger;
 (autoUpdater.logger as any).transports.file.level = 'info';
 
 // Configure auto-updater to always check the latest release
@@ -115,6 +117,9 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.webContents.send('update-downloaded', info);
 });
 
+// Initialize Bluetooth service (will be updated with mainWindow after createWindow)
+let bluetoothService: any;
+
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
 
@@ -134,6 +139,8 @@ function createWindow(): void {
     icon: path.join(__dirname, '../../img/logo/v3/icon-256x256.png')
   });
 
+  // Maximize the window (by default it starts of at a small size)
+  mainWindow.maximize();
 
   // Load the app
   if (process.env.NODE_ENV === 'development') {
@@ -151,14 +158,34 @@ function createWindow(): void {
 }
 
 // This method will be called when Electron has finished initialization
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+
+  // Initialize the logger to be available in renderer process
+  initLogging();
+
+  log.info('Main process started.');
+
   createWindow();
 
   // Initialize serial handlers
   initializeSerialHandlers(mainWindow);
-  
+
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
+
+  // Initialize Bluetooth service with mainWindow (only if not in CI environment)
+  const isCI = process.env.CI || process.env.NODE_ENV === 'test';
+  if (!isCI) {
+    try {
+      // require didn't work here, so using import instead
+      const { MainBluetoothService } = await import('./MainBluetoothService');
+      bluetoothService = new MainBluetoothService(mainWindow);
+    } catch (error) {
+      console.error('Failed to load Bluetooth service:', error);
+    }
+  } else {
+    console.log('Detected CI environment. Bluetooth service not loaded.');
+  }
 
   installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
     .then((ext) => console.log(`Added Extension:  ${ext.name}`))
@@ -270,10 +297,10 @@ ipcMain.handle('fs:get-default-log-directory', async () => {
   try {
     const homeDir = os.homedir();
     const defaultLogDir = path.join(homeDir, 'NinjaTerm', 'logs');
-    
+
     // Ensure the directory exists
     await fs.mkdir(defaultLogDir, { recursive: true });
-    
+
     return { success: true, path: defaultLogDir };
   } catch (error) {
     return { success: false, error: (error as Error).message };

@@ -31,11 +31,13 @@
     "rootDir": "./", // Allow code to back out of src/ if needed, e.g. to access package.json
     "paths": {
       "@/*": ["src/renderer/src/*"],
-      "src/*": ["src/renderer/src/*"]
+      "src/*": ["src/renderer/src/*"],
+      "@shared/*": ["src/shared/*"]
     }
   },
   "include": [
     "src",
+    "e2e-tests",
     // "node_modules/vite-plugin-pwa/client.d.ts",
   ],
 }

@@ -23,8 +23,8 @@ import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 
 import { App } from 'src/model/App';
-import { PortType } from 'src/model/SerialController/SerialController';
-import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
+import { PortType } from '@/model/ConnController/ConnController';
+import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
@@ -116,32 +116,30 @@ export default observer((props: Props) => {
         <Button
           variant="outlined"
           color={
-            portStateToButtonProps[app.serialController.portState].color as OverridableStringUnion<
+            portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
               'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
               ButtonPropsColorOverrides
             >
           }
           onClick={() => {
-            if (app.serialController.portState === PortState.CLOSED) {
-              app.serialController.openPort();
-            } else if (app.serialController.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
-              app.serialController.stopWaitingToReopenPort();
-            } else if (app.serialController.portState === PortState.OPENED) {
-              app.serialController.closePort();
+            if (app.connController.connState === ConnState.CLOSED) {
+              app.connController.openConnection();
+            } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+              app.connController.stopWaitingToReopenPort();
+            } else if (app.connController.connState === ConnState.OPENED) {
+              app.connController.closeConnection();
             } else {
-              throw Error(`Unsupported port state. portState=${app.serialController.portState}`);
+              throw Error(`Unsupported port state. portState=${app.connController.connState}`);
             }
           }}
-          startIcon={portStateToButtonProps[app.serialController.portState].icon}
+          startIcon={portStateToButtonProps[app.connController.connState].icon}
           // Disabled when port is closed and no port is selected, or if the baud rate is invalid
-          disabled={
-            (app.serialController.portState === PortState.CLOSED && app.settings.portConfiguration.selectedSerialPort === null && app.serialController.lastSelectedPortType !== PortType.FAKE) || app.settings.portConfiguration.baudRateErrorMsg !== ''
-          }
+          disabled={!app.connController.isReadyToOpen()}
           sx={responsiveButtonStyle}
           data-testid="open-close-button"
         >
           {/* Specify a width to prevent it resizing when the text changes */}
-          {isSmallScreen ? '' : portStateToButtonProps[app.serialController.portState].text}
+          {isSmallScreen ? '' : portStateToButtonProps[app.connController.connState].text}
         </Button>
         {/* ==================================================================== */}
         {/* CLEAR DATA BUTTON */}

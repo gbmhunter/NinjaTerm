@@ -3,6 +3,8 @@ import { makeAutoObservable } from 'mobx';
 import { SnackbarAction, VariantType, enqueueSnackbar, closeSnackbar, SnackbarMessage } from 'notistack';
 import CloseIcon from '@mui/icons-material/Close.js';
 
+import { log } from '@/model/Util/Log';
+
 export default class SnackbarController {
 
   snackBarOpen: boolean;
@@ -48,6 +50,13 @@ export default class SnackbarController {
         persist: persist,
         style: { whiteSpace: 'pre-line' } // This allows the new lines in the string above to also be carried through to the displayed message
       });
+
+      // Also send message to console for debugging purposes
+      if (variant === 'error') {
+        log.error('Snackbar msg:', msg);
+      } else {
+        log.info('Snackbar msg:', msg);
+      }
   }
 
 }

@@ -13,7 +13,7 @@ import { SnackbarProvider } from 'notistack';
 // PWA functionality removed - not needed in Electron app
 
 import { App, MainPanes } from '../model/App';
-import { PortState, ConnectionType } from '../model/Settings/PortSettings/PortSettings';
+import { ConnState, ConnectionType } from '../model/Settings/PortSettings/PortSettings';
 import './App.css';
 import SettingsDialog from './Settings/SettingsView';
 import TerminalView from './Terminals/TerminalsView';
@@ -65,18 +65,18 @@ const darkTheme = createTheme({
 /**
  * Maps a port state to the UI elements that should be used to represent it.
  */
-const portStateToToolbarStatusProperties: { [key in PortState]: any } = {
-  [PortState.CLOSED]: {
+const connStateToToolbarStatusProperties: { [key in ConnState]: any } = {
+  [ConnState.CLOSED]: {
     color: 'red',
-    text: 'Port CLOSED',
+    text: 'Conn CLOSED',
   },
-  [PortState.CLOSED_BUT_WILL_REOPEN]: {
+  [ConnState.CLOSED_BUT_WILL_REOPEN]: {
     color: 'orange',
-    text: 'Port CLOSED (will reopen)',
+    text: 'Conn CLOSED (will reopen)',
   },
-  [PortState.OPENED]: {
+  [ConnState.OPENED]: {
     color: 'green',
-    text: 'Port OPENED',
+    text: 'Conn OPENED',
   },
 };
 
@@ -213,16 +213,25 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
 ));
 
 const PortStatusIndicator = observer(({ app }: { app: App }) => {
-  const getStatusText = (portState: PortState, connectionType: ConnectionType) => {
-    const connectionTypeName = connectionType === ConnectionType.SOCKET ? 'Socket' : 'Port';
+  const getStatusText = (connState: ConnState, connectionType: ConnectionType) => {
+    let connectionTypeName = '';
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      connectionTypeName = 'Port';
+    } else if (connectionType === ConnectionType.SOCKET) {
+      connectionTypeName = 'Socket';
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
+      connectionTypeName = 'Bluetooth';
+    } else {
+      connectionTypeName = '???';
+    }
 
-    switch (portState) {
-      case PortState.CLOSED:
-        return `${connectionTypeName} CLOSED`;
-      case PortState.CLOSED_BUT_WILL_REOPEN:
-        return `${connectionTypeName} CLOSED (will reopen)`;
-      case PortState.OPENED:
-        return `${connectionTypeName} OPENED`;
+    switch (connState) {
+      case ConnState.CLOSED:
+        return `${connectionTypeName} NOT CONN`;
+      case ConnState.CLOSED_BUT_WILL_REOPEN:
+        return `${connectionTypeName} NOT CONN (will reopen)`;
+      case ConnState.OPENED:
+        return `${connectionTypeName} CONN`;
       default:
         return `${connectionTypeName} UNKNOWN`;
     }
@@ -231,10 +240,10 @@ const PortStatusIndicator = observer(({ app }: { app: App }) => {
   return (
     <div
       style={{
-        backgroundColor: portStateToToolbarStatusProperties[app.serialController.portState].color,
+        backgroundColor: connStateToToolbarStatusProperties[app.connController.connState].color,
         padding: '0 10px' }}
     >
-      {getStatusText(app.serialController.portState, app.settings.portConfiguration.connectionType)}
+      {getStatusText(app.connController.connState, app.settings.portConfiguration.connectionType)}
     </div>
   );
 });

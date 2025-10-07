@@ -1,9 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { OpenOptions, PortInfo, PortStatus } from '@serialport/bindings-interface';
+import { SerializableBluetoothDevice, BluetoothConnectionAttemptSuccess } from '@shared/types/bluetooth';
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
+  general: {
+    removeAllListeners: (channel?: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    },
+  },
   // Serial port operations
   serial: {
     listPorts: () => ipcRenderer.invoke('serial:list-ports'),
@@ -131,11 +137,52 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Analytics operations
   analytics: {
     event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
+  },
+
+  // Bluetooth operations
+  bluetooth: {
+    resetBluetoothState: () => ipcRenderer.invoke('bluetooth:reset-bluetooth-state'),
+    startPeripheralScan: () => ipcRenderer.invoke('bluetooth:start-peripheral-scan'),
+    stopPeripheralScan: () => ipcRenderer.invoke('bluetooth:stop-peripheral-scan'),
+    getDiscoveredDevices: () => ipcRenderer.invoke('bluetooth:get-discovered-devices'),
+    onDeviceDiscovered: (callback: (device: SerializableBluetoothDevice) => void) => {
+      ipcRenderer.on('bluetooth:device-discovered', (event, device) => callback(device));
+    },
+    startConnectionAttempt: (deviceId: string) => ipcRenderer.invoke('bluetooth:start-connection-attempt', deviceId),
+    onConnectionAttemptComplete: (callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void) => {
+      ipcRenderer.on('bluetooth:connection-attempt-complete', (event, error, bluetoothConnectionAttemptSuccess) => callback(error, bluetoothConnectionAttemptSuccess));
+    },
+    disconnectDevice: (deviceId: string) => ipcRenderer.invoke('bluetooth:disconnect-device', deviceId),
+    writeData: (data: Uint8Array) => ipcRenderer.invoke('bluetooth:write-data', data),
+
+    // Event listeners
+    onDataReceived: (callback: (deviceId: string, data: Buffer) => void) => {
+      ipcRenderer.on('bluetooth:data-received', (event, deviceId, data) => callback(deviceId, data));
+    },
+    onDeviceDisconnected: (callback: (deviceId: string) => void) => {
+      ipcRenderer.on('bluetooth:device-disconnected', (event, deviceId) => callback(deviceId));
+    },
+
+    // Remove listeners
+    removeAllListeners: (channel: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    },
+    setupReadAndWrite: (serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string) => ipcRenderer.invoke('bluetooth:setup-read-and-write', serviceUuid, rxCharacteristicUuid, txCharacteristicUuid),
   }
 });
 
 // Type definitions for the exposed API
 export interface ElectronAPI {
+  general: {
+    /**
+     * Remove all listeners for a given channel. If no channel is provided, all listeners will be removed.
+     *
+     * This should be called when the renderer app loads, to prevent multiple listeners from being added in case of a hot reload or other situation in where the main process continues running.
+     *
+     * @param channel The channel to remove listeners for. Optional.
+     */
+    removeAllListeners(channel?: string): void;
+  };
   serial: {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
     openPort(options: OpenOptions): Promise<{ success: boolean; error?: string }>;
@@ -187,6 +234,23 @@ export interface ElectronAPI {
   };
   analytics: {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;
+  };
+  bluetooth: {
+    resetBluetoothState(): Promise<{ success: boolean; error?: string }>;
+    startPeripheralScan(): Promise<{ success: boolean; error?: string }>;
+    stopPeripheralScan(): Promise<{ success: boolean; error?: string }>;
+    getDiscoveredDevices(): Promise<{ success: boolean; devices?: any[]; error?: string }>;
+    onDeviceDiscovered(callback: (device: SerializableBluetoothDevice) => void): void;
+    startConnectionAttempt(deviceId: string): Promise<{ error?: string }>;
+    onConnectionAttemptComplete(callback: (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => void): void;
+    disconnectDevice(deviceId: string): Promise<{ success: boolean; error?: string }>;
+    writeData(data: Uint8Array): Promise<{ success: boolean; error?: string }>;
+    onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
+    onDeviceDisconnected(callback: (deviceId: string) => void): void;
+    // onDeviceServicesDiscovered(callback: (servicesMessage: BluetoothOnConnectMessage) => void): void;
+    removeAllListeners(channel: string): void;
+    setupReadAndWrite(serviceUuid: string, rxCharacteristicUuid: string, txCharacteristicUuid: string): Promise<{ success: boolean; error?: string }>;
+    onDataReceived(callback: (deviceId: string, data: Buffer) => void): void;
   };
 }
 

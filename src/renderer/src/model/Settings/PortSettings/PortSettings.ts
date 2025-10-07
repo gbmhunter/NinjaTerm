@@ -3,9 +3,12 @@ import { z } from 'zod';
 
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
-import { SerialController } from '@/model/SerialController/SerialController';
+import { ConnController } from '@/model/ConnController/ConnController';
 
-export enum PortState {
+/**
+ * Enumerated the high-level connection states. This is used in a number of places in the app.
+ */
+export enum ConnState {
   CLOSED,
   CLOSED_BUT_WILL_REOPEN,
   OPENED
@@ -39,8 +42,10 @@ export enum FlowControl {
 };
 
 export enum ConnectionType {
+  FAKE = 'fake',
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
+  BLUETOOTH_LE = 'bluetooth',
 }
 
 export class PortSettings {
@@ -104,6 +109,11 @@ export class PortSettings {
   socketHost = '127.0.0.1';
   socketPort = 5000;
   socketConnTimeoutDispMs = '5000';
+
+  // Bluetooth connection settings
+  // availableBluetoothDevices: SerializableBluetoothDevice[] = [];
+  // selectedBluetoothDevice: SerializableBluetoothDevice | null = null;
+  // isBluetoothScanning = false;
 
   constructor(app: App) {
     this.app = app;
@@ -208,7 +218,7 @@ export class PortSettings {
     const result = await window.electronAPI.serial.listPorts();
     runInAction(() => {
       if (result.success) {
-        this.availableSerialPorts = SerialController.sortSerialPortsNaturally(result.ports!);
+        this.availableSerialPorts = ConnController.sortSerialPortsNaturally(result.ports!);
       } else {
         this.availableSerialPorts = [];
         this.app.snackbar.sendToSnackbar('Failed to scan for serial ports.', 'error');
@@ -219,6 +229,54 @@ export class PortSettings {
   setSelectedSerialPort = (port: any) => {
     this.selectedSerialPort = port;
   }
+
+  // scanForBluetoothDevices = async () => {
+  //   this.isBluetoothScanning = true;
+  //   this.availableBluetoothDevices = []; // Clear previous results
+
+  //   try {
+  //     const result = await window.electronAPI.bluetooth.startPeripheralScan();
+  //     if (result.success) {
+  //       this.app.snackbar.sendToSnackbar('Bluetooth scan started...', 'info');
+
+  //       // Poll for discovered devices during scan
+  //       const pollInterval = setInterval(async () => {
+  //         try {
+  //           const devicesResult = await window.electronAPI.bluetooth.getDiscoveredDevices();
+  //           if (devicesResult.success && devicesResult.devices) {
+  //             runInAction(() => {
+  //               this.availableBluetoothDevices = devicesResult.devices || [];
+  //             });
+  //           }
+  //         } catch (error) {
+  //           console.warn('Failed to poll for Bluetooth devices:', error);
+  //         }
+  //       }, 500); // Poll every 500ms
+
+  //       // Stop scanning indicator and polling after scan duration
+  //       setTimeout(() => {
+  //         clearInterval(pollInterval);
+  //         this.isBluetoothScanning = false;
+  //         this.app.snackbar.sendToSnackbar(`Bluetooth scan completed. Found ${this.availableBluetoothDevices.length} device(s).`, 'success');
+  //       }, 5000); // Stop scanning indicator after 5 seconds (matches bluetoothService timeout)
+  //     } else {
+  //       this.app.snackbar.sendToSnackbar(`Failed to scan for Bluetooth devices: ${result.error}`, 'error');
+  //       this.isBluetoothScanning = false;
+  //     }
+  //   } catch (error) {
+  //     this.app.snackbar.sendToSnackbar('Failed to scan for Bluetooth devices.', 'error');
+  //     this.isBluetoothScanning = false;
+  //   }
+  // }
+
+  /**
+   * Set the selected Bluetooth device.
+   *
+   * @param device The Bluetooth device to set as selected.
+   */
+  // setSelectedBluetoothDevice = (device: SerializableBluetoothDevice) => {
+  //   this.selectedBluetoothDevice = device;
+  // }
 
   setConnectionType = (connectionType: ConnectionType) => {
     this.connectionType = connectionType;
@@ -325,9 +383,18 @@ export class PortSettings {
     return parsed.data;
   }
 
+  /**
+   * TODO: This really belongs in the ConnController (or the classes that are responsible for different connection types, e.g. BluetoothLEController).
+   */
   get shortSerialConfigName() {
     if (this.connectionType === ConnectionType.SOCKET) {
       return `${this.socketHost}:${this.socketPort}`;
+    } else if (this.connectionType === ConnectionType.BLUETOOTH_LE) {
+      const connectedBluetoothDevice = this.app.connController.bluetoothLEController.connectedBluetoothDevice;
+      if (connectedBluetoothDevice === null) {
+        return 'n/a';
+      }
+      return `${connectedBluetoothDevice.nobleData.advertisement.localName} (${connectedBluetoothDevice.nobleData.id})`;
     } else {
       return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
     }
@@ -349,9 +416,9 @@ export class PortSettings {
    * Will close the port and reopen, if port is in the open state.
    */
   _reconnectIfNeeded = async () => {
-    if (this.app.serialController.portState === PortState.OPENED) {
-      await this.app.serialController.closePort({ silenceSnackbar: true});
-      await this.app.serialController.openPort({ silenceSnackbar: true});
+    if (this.app.connController.connState === ConnState.OPENED) {
+      await this.app.connController.closeConnection({ silenceSnackbar: true});
+      await this.app.connController.openConnection({ silenceSnackbar: true});
       this.app.snackbar.sendToSnackbar('Serial port re-opened with new settings.', 'success');
     }
   }

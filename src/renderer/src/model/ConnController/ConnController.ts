@@ -2,20 +2,24 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { PortInfo } from '@serialport/bindings-interface';
 
 import { App, MainPanes } from '../App';
-import { PortState, ConnectionType } from '../Settings/PortSettings/PortSettings';
+import { ConnState, ConnectionType } from '../Settings/PortSettings/PortSettings';
+import { BluetoothLEController } from './BluetoothLEController';
 
 export enum PortType {
   REAL,
   FAKE,
   SOCKET,
+  BLUETOOTH,
 }
 
 /**
- * Class responsible for all high-level serial port related functionality.
+ * Class responsible for all high-level connection related functionality.
  *
  * This used to be in App but moved here when the amount of logic was getting large.
+ *
+ * This supports different types of connections (serial port, socket, Bluetooth).
  */
-export class SerialController {
+export class ConnController {
 
   currentFlowControlState: {
     dtr: boolean; // DTE -> DCE. Data Terminal Ready. Write only (from node serialport).
@@ -31,7 +35,15 @@ export class SerialController {
   // Current socket connection ID for IPC communication
   currentSocketConnectionId: string | null = null;
 
-  portState = PortState.CLOSED;
+  // Current Bluetooth device ID for IPC communication
+  currentBluetoothDeviceId: string | null = null;
+
+  /**
+   * The state of the connection.
+   *
+   * This is used no matter what the connection type is, e.g. it applies to serial ports, sockets, and Bluetooth.
+   */
+  connState = ConnState.CLOSED;
 
   // Remembers the last selected port type, so open() and close()
   // know what type of port to operate on
@@ -45,6 +57,11 @@ export class SerialController {
   // Socket information for reconnection purposes
   socketConnectionInfo: { host: string; port: number } | null = null;
 
+  // Bluetooth device information for reconnection purposes
+  bluetoothDeviceInfo: { deviceId: string; deviceName?: string } | null = null;
+
+  bluetoothLEController: BluetoothLEController;
+
   // Auto-reconnection polling
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
   private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 500ms for serial ports
@@ -53,7 +70,7 @@ export class SerialController {
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
   /**
-   * Creates a new SerialController instance.
+   * Creates a new ConnController instance.
    *
    * @param app The main app instance.
    */
@@ -67,6 +84,8 @@ export class SerialController {
       dcd: false,
     };
 
+    this.bluetoothLEController = new BluetoothLEController(app);
+
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
   }
@@ -76,13 +95,13 @@ export class SerialController {
   }
 
   /**
-   * Opens the selected serial port using settings from the Port Configuration view.
+   * Opens the selected connection. This depends on the selected connection type, and the relevant connection settings per type.
    *
    * @param obj Optional object with the following properties:
    * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openPort({ silenceSnackbar = false } = {}) {
+  async openConnection({ silenceSnackbar = false } = {}) {
     // Determine the port type based on connection type
     const connectionType = this.app.settings.portConfiguration.connectionType;
 
@@ -173,7 +192,7 @@ export class SerialController {
           this.stopPollingForReconnection();
           // Save port info for reconnection - selectedPort is already a PortInfo object
           this.serialPortInfo = selectedPort;
-          this.portState = PortState.OPENED;
+          this.connState = ConnState.OPENED;
         });
 
         // Create timer to poll the readable signals across IPC
@@ -194,7 +213,7 @@ export class SerialController {
         // Remember this port so it can be reopened if the app is restarted
         const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
         lastUsedSerialPort.path = selectedPort.path;
-        lastUsedSerialPort.portState = PortState.OPENED;
+        lastUsedSerialPort.portState = ConnState.OPENED;
         this.app.profileManager.saveAppData();
 
       } catch (error) {
@@ -271,7 +290,7 @@ export class SerialController {
         runInAction(() => {
           // Stop any existing polling since we're now connected
           this.stopPollingForReconnection();
-          this.portState = PortState.OPENED;
+          this.connState = ConnState.OPENED;
           this.lastSelectedPortType = PortType.SOCKET;
         });
 
@@ -288,6 +307,14 @@ export class SerialController {
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
         this.app.setShowCircularProgressModal(false);
+        return false;
+      }
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
+      this.app.setShowCircularProgressModal(true);
+      const connectResult = await this.bluetoothLEController.connect();
+      this.app.setShowCircularProgressModal(false);
+      if (!connectResult.success) {
+        // The BluetoothLEController will have already shown a snackbar error, we just need to return false here
         return false;
       }
     } else {
@@ -308,49 +335,39 @@ export class SerialController {
   }
 
   /**
-   * Closes the open serial port.
+   * Closes the open connection.
    *
    * @param goToReopenState If true, the port will be set to the CLOSED_BUT_WILL_REOPEN state.
    * @param silenceSnackbar If true, the snackbar will not be shown when the port is closed successfully.
    */
-  async closePort({ goToReopenState = false, silenceSnackbar = false } = {}) {
-    if (this.lastSelectedPortType === PortType.REAL) {
-      if (this.currentPortPath) {
-        // Make direct IPC call to close the port
-        const result = await window.electronAPI.serial.closePort(this.currentPortPath);
-        if (!result.success) {
-          console.error('Error closing port:', result.error);
+  async closeConnection({ goToReopenState = false, silenceSnackbar = false } = {}) {
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      if (this.lastSelectedPortType === PortType.REAL) {
+        if (this.currentPortPath) {
+          // Make direct IPC call to close the port
+          const result = await window.electronAPI.serial.closePort(this.currentPortPath);
+          if (!result.success) {
+            console.error('Error closing port:', result.error);
+          }
         }
-      }
 
-      // Wrap in action
-      runInAction(() => {
-        if (goToReopenState) {
-          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
-          // Start polling for the port to become available again
-          this.startPollingForReconnection();
-        } else {
-          // Stop polling if we're explicitly closing the port
-          this.stopPollingForReconnection();
-          this.portState = PortState.CLOSED;
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar('Serial port closed.', 'success');
         }
-      });
 
-      if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar('Serial port closed.', 'success');
+        this.currentPortPath = null;
+        const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
+        lastUsedSerialPort.portState = ConnState.CLOSED;
+
+        // Disconnect all listeners
+        window.electronAPI.serial.removeAllListeners('serial:data-received');
+        window.electronAPI.serial.removeAllListeners('serial:error');
+        window.electronAPI.serial.removeAllListeners('serial:port-closed');
+
+        this.app.profileManager.saveAppData();
       }
-
-      this.currentPortPath = null;
-      const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-      lastUsedSerialPort.portState = PortState.CLOSED;
-
-      // Disconnect all listeners
-      window.electronAPI.serial.removeAllListeners('serial:data-received');
-      window.electronAPI.serial.removeAllListeners('serial:error');
-      window.electronAPI.serial.removeAllListeners('serial:port-closed');
-
-      this.app.profileManager.saveAppData();
-    } else if (this.lastSelectedPortType === PortType.SOCKET) {
+    } else if (connectionType === ConnectionType.SOCKET) {
       if (this.currentSocketConnectionId) {
         // Make direct IPC call to disconnect the socket
         const result = await window.electronAPI.socket.disconnect(this.currentSocketConnectionId);
@@ -358,19 +375,6 @@ export class SerialController {
           console.error('Error disconnecting socket:', result.error);
         }
       }
-
-      // Wrap in action
-      runInAction(() => {
-        if (goToReopenState) {
-          this.portState = PortState.CLOSED_BUT_WILL_REOPEN;
-          // Start polling for socket reconnection
-          this.startPollingForReconnection();
-        } else {
-          // Stop polling if we're explicitly closing the socket
-          this.stopPollingForReconnection();
-          this.portState = PortState.CLOSED;
-        }
-      });
 
       if (!silenceSnackbar) {
         this.app.snackbar.sendToSnackbar('Socket disconnected.', 'success');
@@ -382,11 +386,31 @@ export class SerialController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
-    } else if (this.lastSelectedPortType === PortType.FAKE) {
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
+      // The Bluetooth LE controller handles closing the Bluetooth connection
+      this.bluetoothLEController.close();
+    } else if (connectionType === ConnectionType.FAKE) {
       this.app.fakePortController.closePort();
     } else {
       throw Error('Unsupported port type!');
     }
+
+    //==============================================
+    // CODE BELOW IS THE SAME FOR ALL CONNECTION TYPES
+    //==============================================
+
+    // Wrap in action
+    runInAction(() => {
+      if (goToReopenState) {
+        this.connState = ConnState.CLOSED_BUT_WILL_REOPEN;
+        // Start polling for Bluetooth device reconnection
+        this.startPollingForReconnection();
+      } else {
+        // Stop polling if we're explicitly closing the device
+        this.stopPollingForReconnection();
+        this.connState = ConnState.CLOSED;
+      }
+    });
 
     // No matter what type, clear the flow control polling timer
     if (this.flowControlPollingTimer) {
@@ -405,8 +429,14 @@ export class SerialController {
   }
 
   stopWaitingToReopenPort() {
-    this.stopPollingForReconnection();
-    this.portState = PortState.CLOSED;
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+    // Bluetooth logic is in the BluetoothLEController, for other connection types the logic is in this class.
+    if (this.app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH_LE) {
+      this.bluetoothLEController.stopPollingForReconnection();
+    } else {
+      this.stopPollingForReconnection();
+    }
+    this.connState = ConnState.CLOSED;
   }
 
   /**
@@ -423,17 +453,17 @@ export class SerialController {
   private handlePortClosed() {
     console.log('handleUnexpectedPortClose() called');
     // We might have already closed the port, so don't do anything if it's already closed
-    if (this.portState === PortState.CLOSED || this.portState === PortState.CLOSED_BUT_WILL_REOPEN) {
+    if (this.connState === ConnState.CLOSED || this.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
       return;
     }
 
     // If the port was closed unexpectedly, we might want to reopen it
     if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
-      this.setPortState(PortState.CLOSED_BUT_WILL_REOPEN);
+      this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       // Start polling for the port to become available again
       this.startPollingForReconnection();
     } else {
-      this.setPortState(PortState.CLOSED);
+      this.setPortState(ConnState.CLOSED);
     }
     // Clear connection identifiers and remove appropriate event listeners
     if (this.lastSelectedPortType === PortType.SOCKET) {
@@ -466,8 +496,8 @@ export class SerialController {
     });
   }
 
-  setPortState(newPortState: PortState) {
-    this.portState = newPortState;
+  setPortState(newPortState: ConnState) {
+    this.connState = newPortState;
   }
 
   /**
@@ -489,7 +519,7 @@ export class SerialController {
     this.reconnectionPollingInterval = setInterval(async () => {
       try {
         // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
-        if (this.portState !== PortState.CLOSED_BUT_WILL_REOPEN) {
+        if (this.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
           this.stopPollingForReconnection();
           return;
         }
@@ -542,7 +572,7 @@ export class SerialController {
               });
 
               runInAction(() => {
-                this.portState = PortState.OPENED;
+                this.connState = ConnState.OPENED;
               });
 
               this.app.snackbar.sendToSnackbar(
@@ -577,7 +607,7 @@ export class SerialController {
             this.stopPollingForReconnection();
             // Set the selected port and attempt to reconnect
             this.setSelectedPort(matchingPort);
-            await this.openPort({ silenceSnackbar: true });
+            await this.openConnection({ silenceSnackbar: true });
             this.app.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
           }
         }
@@ -732,7 +762,7 @@ export class SerialController {
    */
   isReadyToOpen(): boolean {
     // If port is not closed, it's either already open or will reopen, so connection control is available
-    if (this.portState !== PortState.CLOSED) {
+    if (this.connState !== ConnState.CLOSED) {
       return true;
     }
 
@@ -769,9 +799,45 @@ export class SerialController {
       }
 
       return true;
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
+      // For Bluetooth, need a selected device
+      return this.bluetoothLEController.selectedBluetoothDevice !== null;
     }
 
     // Unknown connection type
     return false;
+  }
+
+  /**
+   * Write data to the current connection.
+   *
+   * @param bytesToWrite The data to write.
+   */
+  writeData = async (bytesToWrite: Uint8Array) => {
+
+    // Check based on connection type
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    // Check if we're using serial port or socket connection
+    if (connectionType === ConnectionType.SERIAL_PORT) {
+      // Serial port connection
+      const result = await window.electronAPI.serial.writeData(this.currentPortPath!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.SOCKET) {
+      // Socket connection
+      const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
+      // Bluetooth connection
+      this.bluetoothLEController.sendData(bytesToWrite);
+    } else {
+      // No active connection
+      return;
+    }
+
   }
 }

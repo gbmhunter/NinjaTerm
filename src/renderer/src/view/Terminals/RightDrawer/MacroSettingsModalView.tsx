@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close.js';
 
 import { MacroController } from 'src/model/Terminals/RightDrawer/Macros/MacroController';
 import { App } from 'src/model/App';
-import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
+import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import { MacroDataType } from 'src/model/Terminals/RightDrawer/Macros/Macro';
 import { EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
 import BorderedSection from 'src/view/Components/BorderedSection';
@@ -244,7 +244,7 @@ export default observer((props: Props) => {
             variant="contained"
             aria-label="send-macro-data"
             startIcon={<ArrowForwardIcon />}
-            disabled={app.serialController.portState !== PortState.OPENED || !macro.canSend}
+            disabled={app.connController.connState !== ConnState.OPENED || !macro.canSend}
             onClick={async () => {
               await macroController.send(macro);
             }}

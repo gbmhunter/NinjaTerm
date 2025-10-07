@@ -116,7 +116,7 @@ test.describe('TX data (Electron)', () => {
     await appTestHarness.page.waitForTimeout(100);
     await appTestHarness.updateWrittenDataFromMainProcess();
 
-    const expectedData = [];
+    const expectedData: number[] = [];
     expect(appTestHarness.writtenData).toEqual(expectedData);
   });
 

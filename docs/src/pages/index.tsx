@@ -26,6 +26,7 @@ const ControlCharAndHexCodeGlyphsWebM = '/img/control-char-and-hex-code-glyphs.w
 const LoggingWebM = '/img/logging.webm';
 const FilteringWebM = '/img/filtering.webm';
 const NumberTypesWebM = '/img/number-types.webm';
+const BluetoothLENusShellWebM = '/img/bluetooth-le-nus-shell.webm';
 
 interface GitHubAsset {
   name: string;
@@ -627,6 +628,19 @@ export default function Home(): JSX.Element {
                 </video>
               </div>
             </div>
+
+            <div className={styles.feature}>
+              <h3>Different Connection Types</h3>
+              <p>
+                NinjaTerm is not just limited to serial ports! You can also connect to serial streams over TCP sockets (great for debugging MCUs with ethernet or WiFi) or Bluetooth LE (great for debugging MCUs that you can't easily physically connect a serial cable to).
+              </p>
+              <div className={styles.videoContainer}>
+                <video autoPlay loop muted playsInline className={styles.featureVideo} poster={BluetoothLENusShellWebM}>
+                  <source src={BluetoothLENusShellWebM} type="video/webm" />
+                  Demonstration connecting to a Zephyr NUS (Nordic UART Service) shell across Bluetooth LE in NinjaTerm.
+                </video>
+              </div>
+            </div>
           </div>
 
           <div className={styles.section}>
@@ -640,7 +654,6 @@ export default function Home(): JSX.Element {
               </li>
               <li>Macros to send repetitive ASCII or HEX data easily.</li>
               <li>Send 200ms "break signals" with Ctrl-Shift-B.</li>
-              <li>Support for standard serial port and TCP socket connections.</li>
             </ul>
           </div>
 

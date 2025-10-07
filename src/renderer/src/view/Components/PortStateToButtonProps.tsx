@@ -1,7 +1,7 @@
 import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
-import { PortState } from 'src/model/Settings/PortSettings/PortSettings';
+import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 
 type PortStateToButtonPropsItem = {
   text: string;
@@ -9,18 +9,18 @@ type PortStateToButtonPropsItem = {
   icon: any;
 };
 
-export const portStateToButtonProps: { [key in PortState]: PortStateToButtonPropsItem; } = {
-  [PortState.CLOSED]: {
+export const portStateToButtonProps: { [key in ConnState]: PortStateToButtonPropsItem; } = {
+  [ConnState.CLOSED]: {
     text: 'Open',
     color: 'success',
     icon: <PlayArrowIcon />,
   },
-  [PortState.CLOSED_BUT_WILL_REOPEN]: {
+  [ConnState.CLOSED_BUT_WILL_REOPEN]: {
     text: 'Stop Waiting',
     color: 'warning',
     icon: <StopIcon />,
   },
-  [PortState.OPENED]: {
+  [ConnState.OPENED]: {
     text: 'Close',
     color: 'error',
     icon: <StopIcon />,

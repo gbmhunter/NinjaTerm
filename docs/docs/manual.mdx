@@ -36,16 +36,17 @@ The fastest way to get started is to use the web-based version:
 For the web-based version, you'll need:
 
 - **Chrome, Edge, Brave**: Full native support
-- **Opera**: Full native support  
+- **Opera**: Full native support
 - **Firefox**: Requires the [WebSerial for Firefox extension](https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/)
 - **Safari**: Not supported
 
 ## Connection Types
 
-NinjaTerm supports two different connection types:
+NinjaTerm supports the following connection types:
 
 - **Serial port**: This is your standard serial port style connection, which uses your OS drivers to connect to COM ports on Windows and devices such as `/dev/ttyUSB0`, `/dev/ttyACM0`, etc. on Linux and macOS.
 - **Socket**: This is a TCP socket connection, which allows you to connect NinjaTerm to a socket server. This is useful for when you want to connect to a remote device over a network. The remote device could be sending out data directly across the socket, or it could be another development computer running `socat` that is forwarding data from a local serial port.
+- **Bluetooth LE**: This allows you to stream bi-directional serial data across Bluetooth LE. There is no one official serial protocol across BLE, but there a number of popular ones by various vendors.
 
 ### Serial Port
 
@@ -75,6 +76,33 @@ Also `socket.setTimeout()` is used to set the timeout to 2 seconds during the co
 ```
 socket.setTimeout(2000);
 ```
+
+### Bluetooth LE (BLE)
+
+NinjaTerm supports connecting to BLE devices. There is no one official serial protocol across BLE, but there a number of popular ones by various vendors. NinjaTerm supports the following protocols:
+
+- Nordic UART Service (NUS)
+- Microchip Transparent UART Service
+- TI Serial Port Service (SPS)
+- u-blox u-connectXpress
+- Silicon Labs SPP over BLE
+
+See [BLE Serial on blog.mbedded.ninja](/electronics/communication-protocols/bluetooth/#ble-serial) for more information on these BLE serial protocols and how they work.
+
+Also, NinjaTerm allows you to manually specify the service UUID, and the RX and TX characteristic UUIDs to use for the serial communication. This is useful if you have implemented your own custom protocol.
+
+import BluetoothLENusShellWebM from '/img/bluetooth-le-nus-shell.webm';
+
+<figure>
+  <video autoPlay loop muted playsInline poster={BluetoothLENusShellWebM} class="featureVideo">
+    <source src={BluetoothLENusShellWebM} type="video/webm" />
+  </video>
+  <figcaption>Demonstration connecting to a Zephyr NUS (Nordic UART Service) shell across Bluetooth LE in NinjaTerm.</figcaption>
+</figure>
+
+Nordic MCUs in the nRF52, 53 and 54 families using Zephyr can be easily configured to implement a Zephyr NUS (Nordic UART Service) shell over BLE. NinjaTerm can then be used to connect to the NUS shell and send and receive data just like a regular serial port (including log messages and commands).
+
+NinjaTerm uses the [abandonware/noble](https://github.com/abandonware/noble) library to connect to BLE devices.
 
 ## ANSI Escape Codes
 

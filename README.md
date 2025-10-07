@@ -93,16 +93,16 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 ## Releasing
 
 1. Create a new branch off of `main` for the changes.
-1. Make changes to the code as required.
 1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or compete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
+1. Make changes to the code as required. Push commits to get test builds of the app pushed to a draft release on GitHub.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
 1. If you have updated the app data structure, save a copy of the default app data created by the app to `local-storage-data/`. You can do this by running the app, clearing app data in `Settings > General Settings`, loading up the Chrome dev. tools, and copying the key `appData` from local storage.
-1. Commit changes and push to your feature/bug fix branch.
 1. Create pull request on GitHub merging your branch into `main`.
 1. Once the build on `main` has been successfully run, merge your branch into `main` via the merge request.
 1. Tag the branch on main with the version number, e.g. `v4.1.0`.
-1. Create a release on GitHub pointing to the tag.
-1. Enter the CHANGELOG contents into the release body text.
+1. Find the draft release on GitHub and publish it. Enter the CHANGELOG contents into the release body text.
+
+The app is built by GitHub Actions on every commit. If the build is successful and there is not already a non-draft release for this version number, the build artifacts will be uploaded to the release (files in existing draft releases are overwritten).
 
 ## Deployment
 
@@ -173,6 +173,9 @@ The files with `default` in the name are the default data for that app version. 
 
 * Prettier ESLint: Provides formatting of .tsx files.
 * Playwright: Provides useful add-ons for running and debugging the Playwright E2E tests.
+
+
+npm install @abandonware/noble --save --target=37.2.4 --runtime=electron --dist-url=https://electronjs.org/headers
 
 [github-actions-status]: https://github.com/gbmhunter/NinjaTerm/actions/workflows/build-and-test.yml/badge.svg?branch=main
 [github-actions-url]: https://github.com/gbmhunter/NinjaTerm/actions
