@@ -310,7 +310,13 @@ export class ConnController {
         return false;
       }
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      this.bluetoothLEController.connect();
+      this.app.setShowCircularProgressModal(true);
+      const connectResult = await this.bluetoothLEController.connect();
+      this.app.setShowCircularProgressModal(false);
+      if (!connectResult.success) {
+        // The BluetoothLEController will have already shown a snackbar error, we just need to return false here
+        return false;
+      }
     } else {
       throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
     }

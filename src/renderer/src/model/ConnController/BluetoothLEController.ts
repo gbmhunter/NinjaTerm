@@ -145,6 +145,12 @@ export class BluetoothLEController {
   reconnectionPollingInterval: NodeJS.Timeout | null = null;
 
   /**
+   * Promise resolver for the connect() function. This is used to resolve the promise
+   * when the connection attempt is complete.
+   */
+  private connectionAttemptResolver: ((value: { success: boolean; error?: string }) => void) | null = null;
+
+  /**
    * The selected Bluetooth protocol to use when connecting to a device.
    * Defaults to FIRST_DETECTED which automatically selects the first valid protocol found.
    */
@@ -339,13 +345,21 @@ export class BluetoothLEController {
 
   /**
    * Starts the process of connecting to the selected Bluetooth device. This should be called when the user presses an "Open" button in NinjaTerm, and "Bluetooth" is selected as the connection type.
+   *
+   * @returns A promise that resolves when the connection attempt is complete (either success or failure).
    */
-  connect = async () => {
+  connect = async (): Promise<{ success: boolean; error?: string }> => {
     log.info('connect() called.');
     if (!this.selectedBluetoothDevice) {
       this.app.snackbar.sendToSnackbar('No Bluetooth device selected. Please select a device from the Bluetooth Settings.', 'error');
-      return;
+      return { success: false, error: 'No Bluetooth device selected' };
     }
+
+    // Create a promise that will be resolved when the connection attempt completes
+    const connectionPromise = new Promise<{ success: boolean; error?: string }>((resolve) => {
+      this.connectionAttemptResolver = resolve;
+    });
+
     // Make IPC call to start the connection attempt
     const result = await window.electronAPI.bluetooth.startConnectionAttempt(this.selectedBluetoothDevice.nobleData.id);
     // Starting the connection can fail if we are already connecting to a device.
@@ -354,8 +368,12 @@ export class BluetoothLEController {
       if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
         this.app.snackbar.sendToSnackbar(`Failed to start connection attempt to Bluetooth device. Error: ${result.error}.`, 'error');
       }
-      return;
+      this.connectionAttemptResolver = null;
+      return { success: false, error: result.error };
     }
+
+    // Wait for the connection attempt to complete
+    return connectionPromise;
   }
 
   /**
@@ -372,22 +390,42 @@ export class BluetoothLEController {
       if (this.app.connController.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
         this.app.snackbar.sendToSnackbar(`Failed to connect to Bluetooth device. Error: ${error}.`, 'error');
       }
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
     if (this.selectedBluetoothDevice === null) {
       this.app.snackbar.sendToSnackbar('No Bluetooth device selected (this.selectedBluetoothDevice is null) even though the connection attempt was successful.', 'error');
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error: 'No Bluetooth device selected' });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
     if (bluetoothConnectionAttemptSuccess === null) {
       this.app.snackbar.sendToSnackbar('Bluetooth connection success message was not returned from the main process.', 'error');
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error: 'Connection success message was not returned' });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
     // Look for valid services/characteristics in the returned information
     if(!bluetoothConnectionAttemptSuccess.services) {
       this.app.snackbar.sendToSnackbar('Services information was not returned from the main process.', 'error');
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error: 'Services information was not returned' });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
@@ -399,6 +437,11 @@ export class BluetoothLEController {
       if (!this.manualServiceUuid || !this.manualRxCharacteristicUuid || !this.manualTxCharacteristicUuid) {
         this.app.snackbar.sendToSnackbar('Manual UUIDs not specified. Please enter Service, RX, and TX UUIDs.', 'error');
         window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
+        // Resolve the connection promise with failure
+        if (this.connectionAttemptResolver) {
+          this.connectionAttemptResolver({ success: false, error: 'Manual UUIDs not specified' });
+          this.connectionAttemptResolver = null;
+        }
         return;
       }
       // Create a protocol object with the manual UUIDs
@@ -465,6 +508,11 @@ export class BluetoothLEController {
       this.app.snackbar.sendToSnackbar('Correct service and characteristic UUIDs were not found on connected Bluetooth device.', 'error');
       // We need to tell the main process to disconnect from the device
       window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error: 'Correct service and characteristic UUIDs were not found' });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
@@ -477,6 +525,11 @@ export class BluetoothLEController {
       this.app.snackbar.sendToSnackbar(`Failed to setup read and write on connected Bluetooth device. Error: ${setupReadAndWriteResult.error}.`, 'error');
       // We need to tell the main process to disconnect from the device
       window.electronAPI.bluetooth.disconnectDevice(this.selectedBluetoothDevice.nobleData.id);
+      // Resolve the connection promise with failure
+      if (this.connectionAttemptResolver) {
+        this.connectionAttemptResolver({ success: false, error: setupReadAndWriteResult.error });
+        this.connectionAttemptResolver = null;
+      }
       return;
     }
 
@@ -495,6 +548,12 @@ export class BluetoothLEController {
       this.app.connController.connState = ConnState.OPENED;
       this.stopPollingForReconnection();
     });
+
+    // Resolve the connection promise with success
+    if (this.connectionAttemptResolver) {
+      this.connectionAttemptResolver({ success: true });
+      this.connectionAttemptResolver = null;
+    }
   }
 
   /**
