@@ -1,7 +1,9 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
 import { OpenOptions, PortStatus, SetOptions } from '@serialport/bindings-interface';
+
 import { Parity } from '@/model/Settings/PortSettings/PortSettings';
+import { log } from './Logging';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 
@@ -48,7 +50,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.handle('serial:open-port', async (event, options: OpenOptions) => {
-    console.log('serial:open-port called. options: ', options);
+    log.info('serial:open-port called. options: ', options);
     const portPath = options.path;
     try {
       if (activeSerialPorts.has(options.path)) {
@@ -212,6 +214,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
     rts: boolean;
     cts: boolean;
   }) => {
+    log.info('serial:set-flow-control-signals called. portPath=', portPath, 'setOptions=', setOptions);
     try {
       const port = activeSerialPorts.get(portPath);
       if (!port) {
@@ -221,6 +224,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
       await new Promise<void>((resolve, reject) => {
         // Pass the setOptions to the port.set method.
         // set() is not well documented by node-serialport
+        log.info('Setting flow control signals. Calling port.set() with options: ', setOptions);
         port.set(setOptions, (err) => {
           if (err) {
             reject(err);

@@ -4,6 +4,7 @@ import { PortInfo } from '@serialport/bindings-interface';
 import { App, MainPanes } from '../App';
 import { ConnState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 import { BluetoothLEController } from './BluetoothLEController';
+import { log } from '../Util/Log';
 
 export enum PortType {
   REAL,
@@ -202,11 +203,15 @@ export class ConnController {
             return;
           }
           const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
+          if (!response.success) {
+            console.error('Error getting flow control signals:', response.error);
+            return;
+          }
           // Update the flow control state
           runInAction(() => {
-            this.currentFlowControlState.dsr = response.dsr;
-            this.currentFlowControlState.cts = response.cts;
-            this.currentFlowControlState.dcd = response.dcd;
+            this.currentFlowControlState.dsr = response.signals!.dsr || false;
+            this.currentFlowControlState.cts = response.signals!.cts || false;
+            this.currentFlowControlState.dcd = response.signals!.dcd || false;
           });
         }, 1000);
 
@@ -673,14 +678,13 @@ export class ConnController {
   getDsr() {
     return this.currentFlowControlState.dsr;
   }
-  setRts(rts: boolean) {
-    console.log('setRts() called. rts=', rts);
+  async setRts(rts: boolean) {
     this.currentFlowControlState.rts = rts;
     if (!this.currentPortPath) {
       return;
     }
     // Send IPC message to main process to update the flow control state
-    window.electronAPI.serial.setFlowControlSignals(
+    await window.electronAPI.serial.setFlowControlSignals(
       this.currentPortPath, {
         dtr: this.currentFlowControlState.dtr,
         dsr: this.currentFlowControlState.dsr,

@@ -42,7 +42,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     // Flow control operations
-    setFlowControlSignals: (signals: any) => ipcRenderer.send('serial:set-flow-control-signals', signals),
+    setFlowControlSignals: (portPath: string, signals: any) => ipcRenderer.invoke('serial:set-flow-control-signals', portPath, signals),
     getFlowControlSignals: (portPath: string) => {
       return ipcRenderer.invoke('serial:get-flow-control-signals', portPath);
     },
@@ -193,8 +193,8 @@ export interface ElectronAPI {
     onPortClosed(callback: (portPath: string) => void): void;
     removeAllListeners(channel: string): void;
     closeAllPortsAndRemoveListeners(): void;
-    setFlowControlSignals(portPath: string, signals: any): void;
-    getFlowControlSignals(portPath: string): Promise<PortStatus>;
+    setFlowControlSignals(portPath: string, signals: any): Promise<{ success: boolean; error?: string }>;
+    getFlowControlSignals(portPath: string): Promise<{ success: boolean; signals?: PortStatus; error?: string }>;
   };
   fs: {
     selectDirectory(): Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;
