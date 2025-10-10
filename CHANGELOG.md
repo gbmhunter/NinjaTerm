@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.7.1] - 2025-10-11
+
 ### Fixed
 
 - Fixed bug which meant flow control signals were not being set and read correctly.
@@ -943,7 +945,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.7.0...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.7.1...HEAD
+[5.7.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.7.0...v5.7.1
 [5.7.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.6.0...v5.7.0
 [5.6.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.5.0...v5.6.0
 [5.5.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.4.0...v5.5.0
