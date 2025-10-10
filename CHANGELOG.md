@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug which meant flow control signals were not being set and read correctly.
+- Improved the wording of the RTS/CTS flow control signal description to reflect how enabling the setting passes control of these signals to the underlying driver/OS.
+- RTS/CTS buttons are disabled when "Let driver/OS manage RTS/CTS signals" is enabled in Connection Settings.
+
 ## [5.7.0] - 2025-10-08
 
 ### Added

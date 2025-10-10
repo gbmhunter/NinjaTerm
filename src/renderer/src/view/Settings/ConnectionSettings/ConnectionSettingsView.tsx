@@ -419,7 +419,7 @@ function PortSettingsView(props: Props) {
 
             <Tooltip
               {...app.settings.displaySettings.getBasicTooltipConfig()}
-              title="Hardware flow control using RTS/CTS signals. When enabled, the RTS (Ready To Send) and CTS (Clear To Send) lines are used for flow control."
+              title="Enable the underlying driver/OS to manage hardware flow control using RTS/CTS signals. When enabled, you will no longer be able to manually control the RTS signal using the RTS button in the terminal window. You must NOT enable this if you want to control them manually. When disabled, you can toggle RTS manually and view the state of the CTS signal in the terminal right-hand drawer."
             >
               <FormControlLabel
                 control={
@@ -431,7 +431,7 @@ function PortSettingsView(props: Props) {
                     disabled={isPortSettingsDisabled}
                   />
                 }
-                label="RTS/CTS hardware flow control"
+                label="Let driver/OS manage RTS/CTS signals"
               />
             </Tooltip>
 

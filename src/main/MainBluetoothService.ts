@@ -3,7 +3,7 @@
 import noble from '@abandonware/noble';
 import { ipcMain } from 'electron';
 
-import { log } from './Log';
+import { log } from './Logging';
 import { SerializableBluetoothDevice, BluetoothDeviceResponse, SerializableService, BluetoothConnectionAttemptSuccess } from '../shared/types/bluetooth';
 
 /**

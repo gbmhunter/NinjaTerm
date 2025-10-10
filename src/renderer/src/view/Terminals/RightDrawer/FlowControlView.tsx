@@ -71,7 +71,11 @@ export default observer((props: Props) => {
           {/* Row 1: RTS */}
           <Tooltip
             {...app.settings.displaySettings.getBasicTooltipConfig()}
-            title="Request To Send. Write only. Traditionally asserted by the DTE (e.g. computer) to the DCE (e.g. modem) to indicate that it is ready to send data. Commonly used for hardware flow control."
+            title={
+              app.settings.portConfiguration.rtscts
+                ? "Request To Send. Manual control is disabled because \"Let driver/OS manage RTS/CTS signals\" is enabled in Connection Settings."
+                : "Request To Send. Write only. Traditionally asserted by the DTE (e.g. computer) to the DCE (e.g. modem) to indicate that it is ready to send data. Commonly used for hardware flow control. 0 is inactive, 1 is active. If this is connected to a UART, then 0 is 5V (inactive) and a 1 is 0V (active). You can disable manual control and let the driver/OS manage it by enabling \"Let driver/OS manage RTS/CTS signals\" in Connection Settings."
+            }
             placement="left"
           >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -79,8 +83,8 @@ export default observer((props: Props) => {
                 variant="outlined"
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
-                disabled={!isPortOpen}
-                onClick={() => serialController.setRts(!serialController.getRts())}
+                disabled={!isPortOpen || app.settings.portConfiguration.rtscts}
+                onClick={async () => await serialController.setRts(!serialController.getRts())}
               >
                 RTS
               </Button>
@@ -96,7 +100,11 @@ export default observer((props: Props) => {
           {/* Row 2: CTS */}
           <Tooltip
             {...app.settings.displaySettings.getBasicTooltipConfig()}
-            title="Clear To Send. Read/write. Commonly used for hardware flow control. If you set this and it quickly changes, it means the other end is driving the signal."
+            title={
+              app.settings.portConfiguration.rtscts
+                ? "Clear To Send. Manual control is disabled because \"Let driver/OS manage RTS/CTS signals\" is enabled in Connection Settings."
+                : "Clear To Send. Read/write. Commonly used for hardware flow control. You can not usually set this from NinjaTerm (the computer NinjaTerm is running on normally acts as the DTE), and if you set this and it quickly changes, it means the other end is driving the signal. 0 is inactive, 1 is active. If this is connected to a UART, then 0 is 5V (inactive) and a 1 is 0V (active). You can disable manual control and let the driver/OS manage it by enabling \"Let driver/OS manage RTS/CTS signals\" in Connection Settings."
+            }
             placement="left"
           >
             <Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -104,7 +112,7 @@ export default observer((props: Props) => {
                 variant="outlined"
                 size="small"
                 sx={{ minWidth: 50, fontSize: '10px' }}
-                disabled={!isPortOpen}
+                disabled={!isPortOpen || app.settings.portConfiguration.rtscts}
                 onClick={() => serialController.setCts(!serialController.getCts())}
               >
                 CTS
