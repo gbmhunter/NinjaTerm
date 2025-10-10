@@ -9,6 +9,6 @@ export function initLogging() {
 
   // Setting the IPC level in the main process here results in main log messages being forwarded to the renderer process and shown in the devtools console (useful for debugging without having to dig up the log file).
   // Set to false to disable.
-  mainLogger.transports.ipc.level = 'silly';
-  // mainLogger.transports.ipc.level = false;
+  // mainLogger.transports.ipc.level = 'silly';
+  mainLogger.transports.ipc.level = false;
 }
