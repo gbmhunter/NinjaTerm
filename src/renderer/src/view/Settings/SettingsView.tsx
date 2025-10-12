@@ -14,6 +14,7 @@ import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';
 import GeneralSettingsView from './GeneralSettings/GeneralSettingsView';
 import ProfileSettingsView from './ProfileSettings/ProfileSettingsView';
+import SoundsSettingsView from './SoundsSettings/SoundsSettingsView';
 
 interface Props {
   app: App;
@@ -40,6 +41,9 @@ function SettingsDialog(props: Props) {
     ),
     [SettingsCategories.PROFILES]: (
       <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />
+    ),
+    [SettingsCategories.SOUNDS]: (
+      <SoundsSettingsView soundsSettings={app.settings.soundsSettings} app={app} />
     ),
   };
 
@@ -157,6 +161,23 @@ function SettingsDialog(props: Props) {
                   data-testid="profile-settings-button"
                 >
                   <ListItemText>Profiles</ListItemText>
+                </ListItemButton>
+                {/* ================================================ */}
+                {/* SOUNDS */}
+                {/* ================================================ */}
+                <ListItemButton
+                  onClick={() => {
+                    app.settings.setActiveSettingsCategory(
+                      SettingsCategories.SOUNDS
+                    );
+                  }}
+                  selected={
+                    app.settings.activeSettingsCategory ===
+                    SettingsCategories.SOUNDS
+                  }
+                  data-testid="sounds-settings-button"
+                >
+                  <ListItemText>Sounds</ListItemText>
                 </ListItemButton>
               </List>
             </nav>

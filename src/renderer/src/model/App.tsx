@@ -24,6 +24,7 @@ import { AppDataManager } from './AppDataManager/AppDataManager';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
 import { ConnController } from './ConnController/ConnController';
+import { SoundPlayer } from './Util/SoundPlayer';
 
 declare global {
   interface String {
@@ -130,6 +131,16 @@ export class App {
    */
   connController: ConnController;
 
+  /**
+   * Sound player for playing audio feedback based on received data.
+   */
+  soundPlayer: SoundPlayer;
+
+  /**
+   * Buffer for detecting pass/fail strings across data chunks.
+   */
+  private soundDetectionBuffer: string = '';
+  private readonly SOUND_DETECTION_BUFFER_MAX_LENGTH = 100;
 
   constructor(testing = false) {
     initLogging();
@@ -154,6 +165,8 @@ export class App {
     this.performanceMonitor = new PerformanceMonitor();
 
     this.connController = new ConnController(this);
+
+    this.soundPlayer = new SoundPlayer();
 
     this.terminals = new Terminals(this);
 
@@ -208,6 +221,7 @@ export class App {
     this.connController.cleanup();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
+    this.soundPlayer.cleanup();
 
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
@@ -578,6 +592,11 @@ export class App {
 
     this.logging.handleRxData(rxData);
 
+    // Check for pass/fail strings and play sounds if enabled
+    if (this.settings.soundsSettings.playSoundsOnPassFail) {
+      this.detectAndPlaySounds(rxData);
+    }
+
     // End performance monitoring and record metrics
     const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
     this.performanceMonitor.recordDataProcessing(rxData.length, totalProcessingTime);
@@ -585,6 +604,37 @@ export class App {
     // Update stats
     this.numBytesReceived += rxData.length;
     this.recordRxDataPoint(rxData.length);
+  }
+
+  /**
+   * Detects "pass" and "fail" strings in received data and plays appropriate sounds.
+   * Uses a buffer to handle detection across data chunks.
+   *
+   * @param rxData The received data as a Uint8Array
+   */
+  private detectAndPlaySounds(rxData: Uint8Array) {
+    // Convert received data to string (lowercase for case-insensitive matching)
+    const dataStr = new TextDecoder().decode(rxData).toLowerCase();
+
+    // Add new data to buffer
+    this.soundDetectionBuffer += dataStr;
+
+    // Check for "pass" or "fail" in the buffer
+    if (this.soundDetectionBuffer.includes('pass')) {
+      this.soundPlayer.playDing();
+      // Clear buffer after detection to avoid repeated sounds
+      this.soundDetectionBuffer = '';
+    } else if (this.soundDetectionBuffer.includes('fail')) {
+      this.soundPlayer.playBuzzer();
+      // Clear buffer after detection to avoid repeated sounds
+      this.soundDetectionBuffer = '';
+    }
+
+    // Keep buffer length manageable
+    if (this.soundDetectionBuffer.length > this.SOUND_DETECTION_BUFFER_MAX_LENGTH) {
+      // Keep only the last portion of the buffer to catch strings split across chunks
+      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(-this.SOUND_DETECTION_BUFFER_MAX_LENGTH);
+    }
   }
 
 

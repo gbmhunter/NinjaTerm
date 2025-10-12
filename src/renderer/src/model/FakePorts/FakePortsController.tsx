@@ -202,6 +202,39 @@ export default class FakePortsController {
     );
 
     //=================================================================================
+    // pass/fail alternating, 0.2items/s (for testing sound functionality)
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'pass/fail alternating, 0.2items/s',
+        'Alternates between "pass" and "fail" every 5 seconds. Useful for testing sound notifications.',
+        () => {
+          let stringIdx = 0;
+          const strings = ['pass\n', 'fail\n'];
+          const intervalId = setInterval(() => {
+            const textToSend = strings[stringIdx];
+            let bytesToSend = [];
+            for (let i = 0; i < textToSend.length; i++) {
+              bytesToSend.push(textToSend.charCodeAt(i));
+            }
+            app.parseRxData(Uint8Array.from(bytesToSend));
+
+            stringIdx += 1;
+            if (stringIdx === strings.length) {
+              stringIdx = 0;
+            }
+          }, 5000);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     // red green, 0.2lps
     //=================================================================================
     this.fakePorts.push(
