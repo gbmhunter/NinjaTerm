@@ -465,7 +465,7 @@ export class MainBluetoothService {
       }
     });
     txCharacteristic.on('data', (data: Buffer) => {
-      log.info(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
+      log.debug(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
       // Send data to renderer
       this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
     });
