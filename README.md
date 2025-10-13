@@ -182,9 +182,6 @@ The files with `default` in the name are the default data for that app version. 
 * Prettier ESLint: Provides formatting of .tsx files.
 * Playwright: Provides useful add-ons for running and debugging the Playwright E2E tests.
 
-
-npm install @abandonware/noble --save --target=37.2.4 --runtime=electron --dist-url=https://electronjs.org/headers
-
 [github-actions-status]: https://github.com/gbmhunter/NinjaTerm/actions/workflows/build-and-test.yml/badge.svg?branch=main
 [github-actions-url]: https://github.com/gbmhunter/NinjaTerm/actions
 [github-tag-image]: https://img.shields.io/github/tag/gbmhunter/NinjaTerm.svg?label=version
