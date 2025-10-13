@@ -43,7 +43,7 @@ function SettingsDialog(props: Props) {
       <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />
     ),
     [SettingsCategories.SOUNDS]: (
-      <SoundsSettingsView soundsSettings={app.settings.soundsSettings} app={app} />
+      <SoundsSettingsView app={app} />
     ),
   };
 

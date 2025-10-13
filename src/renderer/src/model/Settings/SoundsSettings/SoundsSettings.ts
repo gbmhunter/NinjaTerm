@@ -4,6 +4,7 @@ import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
 export default class SoundsSettings {
   profileManager: AppDataManager;
 
+  // THESE DEFAULTS DON'T MATTER AS THEY ARE OVERRIDDEN WHEN CONFIG IS LOADED
   playSoundsOnPassFail = false;
 
   constructor(profileManager: AppDataManager) {

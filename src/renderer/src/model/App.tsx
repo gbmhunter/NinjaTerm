@@ -569,12 +569,9 @@ export class App {
   }
 
   /**
-   * In normal operation this is called from the readUntilClose() function above.
+   * This is called from whatever connection type is currently being used. All data should be funnelled through this function no matter what the connection type is.
    *
-   * Unit tests call this instead of mocking out the serial port read() function
-   * as setting up the deferred promise was too tricky.
-   *
-   * @param rxData
+   * @param rxData The received data.
    */
   parseRxData(rxData: Uint8Array) {
     // Start performance monitoring for data processing
@@ -609,6 +606,7 @@ export class App {
   /**
    * Detects "pass" and "fail" strings in received data and plays appropriate sounds.
    * Uses a buffer to handle detection across data chunks.
+   * Finds all occurrences of both patterns and plays them in order.
    *
    * @param rxData The received data as a Uint8Array
    */
@@ -619,15 +617,42 @@ export class App {
     // Add new data to buffer
     this.soundDetectionBuffer += dataStr;
 
-    // Check for "pass" or "fail" in the buffer
-    if (this.soundDetectionBuffer.includes('pass')) {
-      this.soundPlayer.playDing();
-      // Clear buffer after detection to avoid repeated sounds
-      this.soundDetectionBuffer = '';
-    } else if (this.soundDetectionBuffer.includes('fail')) {
-      this.soundPlayer.playBuzzer();
-      // Clear buffer after detection to avoid repeated sounds
-      this.soundDetectionBuffer = '';
+    // Find all occurrences of both patterns
+    const foundPatterns: Array<{index: number, type: 'pass' | 'fail', length: number}> = [];
+
+    // Find all "pass" occurrences
+    let searchIndex = 0;
+    while ((searchIndex = this.soundDetectionBuffer.indexOf('pass', searchIndex)) !== -1) {
+      foundPatterns.push({index: searchIndex, type: 'pass', length: 4});
+      searchIndex += 4; // Move past this occurrence
+    }
+
+    // Find all "fail" occurrences
+    searchIndex = 0;
+    while ((searchIndex = this.soundDetectionBuffer.indexOf('fail', searchIndex)) !== -1) {
+      foundPatterns.push({index: searchIndex, type: 'fail', length: 4});
+      searchIndex += 4; // Move past this occurrence
+    }
+
+    // Sort by index to play sounds in order they appear
+    foundPatterns.sort((a, b) => a.index - b.index);
+
+    // Play sounds in the order they appear
+    for (const pattern of foundPatterns) {
+      if (pattern.type === 'pass') {
+        this.soundPlayer.playDing();
+      } else {
+        this.soundPlayer.playBuzzer();
+      }
+    }
+
+    // Clear buffer only up to the end of the last found pattern
+    // This preserves any partial patterns at the end of the buffer
+    if (foundPatterns.length > 0) {
+      const lastPattern = foundPatterns[foundPatterns.length - 1];
+      const endOfLastPattern = lastPattern.index + lastPattern.length;
+      // Keep everything after the last pattern to preserve partial matches
+      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(endOfLastPattern);
     }
 
     // Keep buffer length manageable
