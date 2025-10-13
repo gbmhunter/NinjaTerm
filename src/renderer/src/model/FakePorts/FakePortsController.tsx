@@ -46,6 +46,7 @@ export default class FakePortsController {
   constructor(app: App) {
     this.app = app;
 
+    //=================================================================================
     // hello world, 0.1lps
     //=================================================================================
     this.fakePorts.push(
@@ -72,6 +73,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // hello world, 1lps
     //=================================================================================
     this.fakePorts.push(
@@ -98,6 +100,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // hello world, 5lps
     //=================================================================================
     this.fakePorts.push(
@@ -124,6 +127,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // hello world, 10lps
     //=================================================================================
     this.fakePorts.push(
@@ -150,6 +154,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // hello world, 20lps
     //=================================================================================
     this.fakePorts.push(
@@ -178,6 +183,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // 50 numbered lines all at once
     //=================================================================================
     this.fakePorts.push(
@@ -206,8 +212,8 @@ export default class FakePortsController {
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        'pass/fail alternating, 0.2items/s',
-        'Alternates between "pass" and "fail" every 5 seconds. Useful for testing sound notifications.',
+        'pass/fail alternating, 0.5items/s',
+        'Alternates between "pass" and "fail" every 2 seconds. Useful for testing sound notifications.',
         () => {
           let stringIdx = 0;
           const strings = ['pass\n', 'fail\n'];
@@ -223,7 +229,7 @@ export default class FakePortsController {
             if (stringIdx === strings.length) {
               stringIdx = 0;
             }
-          }, 5000);
+          }, 2000);
           return intervalId;
         },
         (intervalId: NodeJS.Timeout | null) => {
@@ -235,6 +241,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // red green, 0.2lps
     //=================================================================================
     this.fakePorts.push(
@@ -268,6 +275,7 @@ export default class FakePortsController {
       )
     );
 
+    //=================================================================================
     // all colors, 5cps
     //=================================================================================
     this.fakePorts.push(

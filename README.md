@@ -56,6 +56,14 @@ npm run dev
 npm run build
 ```
 
+## To Build A Single Executable
+
+```bash
+npm run dist
+```
+
+This will be generated in the `dist` directory.
+
 ## Testing
 
 Both unit tests and end-to-end tests can be run with:
