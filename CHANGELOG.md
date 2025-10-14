@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added the ability to play sounds when "pass" or "fail" is received from the serial connection.
 
+### Fixed
+
+- Improved Bluetooth disconnection logic by de-registering peripheral event listeners when the connection is lost.
+
 ## [5.7.1] - 2025-10-11
 
 ### Fixed

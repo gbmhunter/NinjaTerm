@@ -23,6 +23,8 @@ enum ConnectionState {
  * Provide a Bluetooth service running in the Electron main process for the renderer process to use.
  *
  * Uses the noble library under the hood to communicate with Bluetooth devices.
+ *
+ * This should probably be refactored to use a finite state machine, as the connection/disconnection logic is a bit messy, especially with all the event handler callbacks.
  */
 export class MainBluetoothService {
 
@@ -283,6 +285,7 @@ export class MainBluetoothService {
     const peripheral = this.discoveredDevices.find(p => p.id === deviceId);
     if (!peripheral) {
       log.error(`Device not found in discovered peripherals. deviceId=${deviceId}`);
+      this.connectionState = ConnectionState.DISCONNECTED;
       return { error: 'Device not found in discovered peripherals.' };
     }
 
@@ -318,6 +321,7 @@ export class MainBluetoothService {
         this.connectionAttemptTimeout = null;
       }
       this.connectionState = ConnectionState.DISCONNECTED;
+      peripheral.removeAllListeners();
       // Emit a IPC connection attempt complete message, indicating failure
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', error, null);
       return;
@@ -362,7 +366,10 @@ export class MainBluetoothService {
       deviceId: this.peripheral!.id,
       services: this.convertServicesToSerializable(services)
     };
-    this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', error, bluetoothConnectionAttemptSuccess);
+    this.mainWindow!.webContents.send(
+      'bluetooth:connection-attempt-complete',
+      error,
+      bluetoothConnectionAttemptSuccess);
   }
 
   async disconnectFromDevice(deviceId: string): Promise<{ success: boolean; error?: string }> {
@@ -382,7 +389,7 @@ export class MainBluetoothService {
           }
         });
       });
-
+      peripheral.removeAllListeners();
       return { success: true };
     } catch (error) {
       log.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
@@ -407,7 +414,6 @@ export class MainBluetoothService {
     // but also does not trigger an error (fails silently). This event gets triggered, so in this case we need to set connectionState to DISCONNECTED.
     if (this.connectionState === ConnectionState.CONNECTING) {
       log.info('Got disconnect event for peripheral, but we are still connecting to it. Setting connectionState to DISCONNECTED.');
-      this.connectionState = ConnectionState.DISCONNECTED;
       // Emit a IPC connection attempt complete message, indicating failure
       this.mainWindow!.webContents.send('bluetooth:connection-attempt-complete', 'Device disconnected while still connecting and scanning for services and characteristics.', null);
     }
@@ -415,6 +421,7 @@ export class MainBluetoothService {
     const deviceId = peripheral.id;
     log.info(`Bluetooth device disconnected: ${deviceId}`);
     this.connectionState = ConnectionState.DISCONNECTED;
+    peripheral.removeAllListeners();
     this.peripheral = null;
     this.discoveredServices = [];
     this.txCharacteristic = null;
