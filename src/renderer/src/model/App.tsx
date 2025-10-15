@@ -24,6 +24,7 @@ import { AppDataManager } from './AppDataManager/AppDataManager';
 import PerformanceMonitor from './Performance/PerformanceMonitor';
 import PerformanceTester, { PerformanceTestSuiteResult } from './Performance/PerformanceTester';
 import { ConnController } from './ConnController/ConnController';
+import { SoundPlayer } from './Util/SoundPlayer';
 
 declare global {
   interface String {
@@ -130,6 +131,16 @@ export class App {
    */
   connController: ConnController;
 
+  /**
+   * Sound player for playing audio feedback based on received data.
+   */
+  soundPlayer: SoundPlayer;
+
+  /**
+   * Buffer for detecting pass/fail strings across data chunks.
+   */
+  private soundDetectionBuffer: string = '';
+  private readonly SOUND_DETECTION_BUFFER_MAX_LENGTH = 100;
 
   constructor(testing = false) {
     initLogging();
@@ -154,6 +165,8 @@ export class App {
     this.performanceMonitor = new PerformanceMonitor();
 
     this.connController = new ConnController(this);
+
+    this.soundPlayer = new SoundPlayer();
 
     this.terminals = new Terminals(this);
 
@@ -208,6 +221,7 @@ export class App {
     this.connController.cleanup();
     this.stopRateCalculation();
     this.stopCpuMonitoring();
+    this.soundPlayer.cleanup();
 
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
@@ -555,12 +569,9 @@ export class App {
   }
 
   /**
-   * In normal operation this is called from the readUntilClose() function above.
+   * This is called from whatever connection type is currently being used. All data should be funnelled through this function no matter what the connection type is.
    *
-   * Unit tests call this instead of mocking out the serial port read() function
-   * as setting up the deferred promise was too tricky.
-   *
-   * @param rxData
+   * @param rxData The received data.
    */
   parseRxData(rxData: Uint8Array) {
     // Start performance monitoring for data processing
@@ -578,6 +589,11 @@ export class App {
 
     this.logging.handleRxData(rxData);
 
+    // Check for pass/fail strings and play sounds if enabled
+    if (this.settings.soundsSettings.playSoundsOnPassFail) {
+      this.detectAndPlaySounds(rxData);
+    }
+
     // End performance monitoring and record metrics
     const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
     this.performanceMonitor.recordDataProcessing(rxData.length, totalProcessingTime);
@@ -585,6 +601,65 @@ export class App {
     // Update stats
     this.numBytesReceived += rxData.length;
     this.recordRxDataPoint(rxData.length);
+  }
+
+  /**
+   * Detects "pass" and "fail" strings in received data and plays appropriate sounds.
+   * Uses a buffer to handle detection across data chunks.
+   * Finds all occurrences of both patterns and plays them in order.
+   *
+   * @param rxData The received data as a Uint8Array
+   */
+  private detectAndPlaySounds(rxData: Uint8Array) {
+    // Convert received data to string (lowercase for case-insensitive matching)
+    const dataStr = new TextDecoder().decode(rxData).toLowerCase();
+
+    // Add new data to buffer
+    this.soundDetectionBuffer += dataStr;
+
+    // Find all occurrences of both patterns
+    const foundPatterns: Array<{index: number, type: 'pass' | 'fail', length: number}> = [];
+
+    // Find all "pass" occurrences
+    let searchIndex = 0;
+    while ((searchIndex = this.soundDetectionBuffer.indexOf('pass', searchIndex)) !== -1) {
+      foundPatterns.push({index: searchIndex, type: 'pass', length: 4});
+      searchIndex += 4; // Move past this occurrence
+    }
+
+    // Find all "fail" occurrences
+    searchIndex = 0;
+    while ((searchIndex = this.soundDetectionBuffer.indexOf('fail', searchIndex)) !== -1) {
+      foundPatterns.push({index: searchIndex, type: 'fail', length: 4});
+      searchIndex += 4; // Move past this occurrence
+    }
+
+    // Sort by index to play sounds in order they appear
+    foundPatterns.sort((a, b) => a.index - b.index);
+
+    // Play sounds in the order they appear
+    for (const pattern of foundPatterns) {
+      if (pattern.type === 'pass') {
+        this.soundPlayer.playDing();
+      } else {
+        this.soundPlayer.playBuzzer();
+      }
+    }
+
+    // Clear buffer only up to the end of the last found pattern
+    // This preserves any partial patterns at the end of the buffer
+    if (foundPatterns.length > 0) {
+      const lastPattern = foundPatterns[foundPatterns.length - 1];
+      const endOfLastPattern = lastPattern.index + lastPattern.length;
+      // Keep everything after the last pattern to preserve partial matches
+      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(endOfLastPattern);
+    }
+
+    // Keep buffer length manageable
+    if (this.soundDetectionBuffer.length > this.SOUND_DETECTION_BUFFER_MAX_LENGTH) {
+      // Keep only the last portion of the buffer to catch strings split across chunks
+      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(-this.SOUND_DETECTION_BUFFER_MAX_LENGTH);
+    }
   }
 
 

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, session } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import * as path from 'path';
@@ -164,6 +164,19 @@ app.whenReady().then(async () => {
   initLogging();
 
   log.info('Main process started.');
+
+  // Uncomment this if we want to retry applying CSP correctly
+  // Apply Content Security Policy (CSP)
+  // session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+  //   callback({
+  //     responseHeaders: {
+  //       ...details.responseHeaders,
+  //       'Content-Security-Policy': [
+  //         "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://accounts.google.com https://*.gstatic.com; img-src 'self' data: https://*.gstatic.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com;"
+  //       ],
+  //     },
+  //   });
+  // });
 
   createWindow();
 

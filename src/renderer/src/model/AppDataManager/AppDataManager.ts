@@ -1,14 +1,15 @@
 import { makeAutoObservable } from 'mobx';
+import { VariantType } from 'notistack';
+import { PortInfo } from '@serialport/bindings-interface';
 
 import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
-import { VariantType } from 'notistack';
 import { AppData } from './DataClasses/AppData';
 import { Profile } from './DataClasses/Profile';
 import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
-import { PortInfo } from '@serialport/bindings-interface';
+import { log } from '@/model/Util/Log';
 
 export class LastUsedSerialPort {
   path: string = '';
@@ -54,20 +55,20 @@ export class AppDataManager {
    * @returns
    */
   onStorageEvent = (event: StorageEvent) => {
-    console.log('Caught storage event. event.key: ', event.key, ' event.newValue: ', event.newValue);
+    log.info('Caught storage event. event.key: ', event.key, ' event.newValue: ', event.newValue);
 
     if (event.key === APP_DATA_STORAGE_KEY) {
-      console.log('App data changed from another process. Checking if profiles changed...');
+      log.info('App data changed from another process. Checking if profiles changed...');
       // Check if the profiles changed
       const appDataAsJson = window.localStorage.getItem(APP_DATA_STORAGE_KEY);
       if (appDataAsJson === null) {
-        console.error('App data not found in local storage.');
+        log.error('App data not found in local storage.');
         return;
       }
       const appDataInStorage = JSON.parse(appDataAsJson);
       // Compare the JSON strings of the profiles to work out if they are different
       if (JSON.stringify(appDataInStorage.profiles) !== JSON.stringify(this.appData.profiles)) {
-        console.log('Profiles changed. Reloading profiles...');
+        log.info('Profiles changed. Reloading profiles...');
         // Reload just the profiles, we don't want to overwrite the current app config
         this.appData.profiles = appDataInStorage.profiles;
       }
@@ -84,7 +85,7 @@ export class AppDataManager {
     let appData: AppData;
     if (appDataAsJson === null) {
       // No config key found in users store, create one!
-      console.log('App data not found in local storage. Creating default app data...');
+      log.info('App data not found in local storage. Creating default app data...');
       appData = new AppData();
       // Save just-created config back to store.
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
@@ -119,11 +120,11 @@ export class AppDataManager {
     // VERSION 1 -> VERSION 2
     //=============================================================================
     if (updatedAppData.version === 1) {
-      console.log('Updating app data from version 1 to version 2...');
+      log.info('Updating app data from version 1 to version 2...');
       // Convert to v2
       // Port settings got a new field, display settings got two new fields
       let upgradeRootConfig = (rootConfig: any) => {
-        console.log('Upgrading profile: ', rootConfig);
+        log.info('Upgrading profile: ', rootConfig);
         rootConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
         rootConfig.settings.displaySettings.terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
         rootConfig.settings.displaySettings.terminalHeightChars = 25;
@@ -140,7 +141,7 @@ export class AppDataManager {
     // VERSION 2 -> VERSION 3
     //=============================================================================
     if (updatedAppData.version === 2) {
-      console.log('Updating app data from version 2 to version 3...');
+      log.info('Updating app data from version 2 to version 3...');
       let updateRootConfig = (rootConfig: any) => {
         // Add timestamp settings
         rootConfig.settings.rxSettings.addTimestamps = false;
@@ -174,7 +175,7 @@ export class AppDataManager {
     // VERSION 3 -> VERSION 4
     //=============================================================================
     if (updatedAppData.version === 3) {
-      console.log('Updating app data from version 3 to version 4...');
+      log.info('Updating app data from version 3 to version 4...');
       // Add auto-updates setting to app data (global setting, not per profile)
       updatedAppData.autoUpdatesEnabled = true;
 
@@ -220,7 +221,7 @@ export class AppDataManager {
     // VERSION 4 -> VERSION 5
     //=============================================================================
     if (updatedAppData.version === 4) {
-      console.log('Updating app data from version 4 to version 5...');
+      log.info('Updating app data from version 4 to version 5...');
       // Add detection mode to graphing settings for all profiles
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
         const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
@@ -236,7 +237,7 @@ export class AppDataManager {
     // VERSION 5 -> VERSION 6
     //=============================================================================
     if (updatedAppData.version === 5) {
-      console.log('Updating app data from version 5 to version 6...');
+      log.info('Updating app data from version 5 to version 6...');
       // Rename bufferDelimiter to processingTrigger in graphing settings for all profiles
       for (let i = 0; i < updatedAppData.profiles.length; i++) {
         const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
@@ -259,7 +260,7 @@ export class AppDataManager {
     // VERSION 6 -> VERSION 7
     //=============================================================================
     if (updatedAppData.version === 6) {
-      console.log('Updating app data from version 6 to version 7...');
+      log.info('Updating app data from version 6 to version 7...');
       // Add flow control settings to app data
       let updateProfileConfig = (rootConfig: any) => {
         rootConfig.terminal.rightDrawer.flowControlIsExpanded = true;
@@ -276,7 +277,7 @@ export class AppDataManager {
     // VERSION 7 -> VERSION 8
     //=============================================================================
     if (updatedAppData.version === 7) {
-      console.log('Updating app data from version 7 to version 8...');
+      log.info('Updating app data from version 7 to version 8...');
       // Add new flow control parameters and remove old flowControl property
       let updateProfileConfig = (rootConfig: any) => {
         // Remove the old flowControl property
@@ -313,7 +314,7 @@ export class AppDataManager {
     // VERSION 8 -> VERSION 9
     //=============================================================================
     if (updatedAppData.version === 8) {
-      console.log('Updating app data from version 8 to version 9...');
+      log.info('Updating app data from version 8 to version 9...');
       // Create new logSettings structure and move any existing log directory
       let updateProfileConfig = (rootConfig: any) => {
         // Create the new logSettings object with defaults
@@ -341,7 +342,7 @@ export class AppDataManager {
     // VERSION 9 -> VERSION 10
     //=============================================================================
     if (updatedAppData.version === 9) {
-      console.log('Updating app data from version 9 to version 10...');
+      log.info('Updating app data from version 9 to version 10...');
       // Add socket connection settings to port configuration
       let updateProfileConfig = (rootConfig: any) => {
         rootConfig.settings.portSettings.connectionType = ConnectionType.SERIAL_PORT;
@@ -361,7 +362,7 @@ export class AppDataManager {
     // VERSION 10 -> VERSION 11
     //=============================================================================
     if (updatedAppData.version === 10) {
-      console.log('Updating app data from version 10 to version 11...');
+      log.info('Updating app data from version 10 to version 11...');
       // Add tooltip settings to display settings for all profiles
       let updateProfileConfig = (rootConfig: any) => {
         rootConfig.settings.displaySettings.tooltipsEnabled = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
@@ -375,13 +376,33 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 11) {
-      console.error('Unknown app data version found: ', appData.version);
+    //=============================================================================
+    // VERSION 11 -> VERSION 12
+    //=============================================================================
+    // Sound settings were added for the first time in this version.
+    if (updatedAppData.version === 11) {
+      log.info('Updating app data from version 11 to version 12...');
+      // Add sounds settings to settings for all profiles
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.soundsSettings = {
+          playSoundsOnPassFail: false
+        };
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 12;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 12) {
+      log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;
     }
 
-    console.log('Updated app data to latest version.');
+    log.info('Updated app data to latest version.');
     return { appData: updatedAppData, wasChanged };
   }
 
@@ -454,7 +475,7 @@ export class AppDataManager {
       snackbarMessage += '\nAlready connected port matches one specified in profile. Leaving port connected.';
     } else {
       // They are both different and the profile one is non-empty. Check to see if the profile ports is available
-      console.log('Port infos are both different and non-empty. Checking if ports are available...');
+      log.info('Port infos are both different and non-empty. Checking if ports are available...');
       // const availablePorts = await navigator.serial.getPorts();
       const availablePortsResult = await window.electronAPI.serial.listPorts();
       if (!availablePortsResult.success) {
@@ -516,7 +537,7 @@ export class AppDataManager {
    * @param profileIdx The index of the profile to save the current app config to.
    */
   saveCurrentAppConfigToProfile = (profileIdx: number, noSnackbar = false) => {
-    console.log('Saving current app config to profile...');
+    log.info('Saving current app config to profile...');
     const profile = this.appData.profiles[profileIdx];
     profile.rootConfig = JSON.parse(JSON.stringify(this.appData.currentAppConfig));
     this.saveAppData();

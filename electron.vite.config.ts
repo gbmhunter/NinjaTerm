@@ -24,6 +24,9 @@ export default defineConfig({
   },
   renderer: {
     root: 'src/renderer',
+    // publicDir is where assets are served from that are accessible to the renderer process
+    // One use is for sounds,
+    publicDir: resolve(__dirname, 'public'),
     optimizeDeps: {
       include: [
         '@emotion/react',

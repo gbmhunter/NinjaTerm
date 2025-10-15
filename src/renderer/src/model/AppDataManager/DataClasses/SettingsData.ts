@@ -5,6 +5,7 @@ import { TxSettingsData } from './TxSettingsData';
 import { GeneralSettingsConfig } from './GeneralSettingsData';
 import { GraphingSettingsData } from './GraphingSettingsData';
 import { LogSettingsData } from './LogSettingsData';
+import { SoundsSettingsData } from './SoundsSettingsData';
 
 /**
  * Encapsulates all application settings data.
@@ -18,4 +19,5 @@ export class SettingsData {
   generalSettings = new GeneralSettingsConfig();
   graphingSettings = new GraphingSettingsData();
   logSettings = new LogSettingsData();
+  soundsSettings = new SoundsSettingsData();
 }

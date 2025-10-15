@@ -56,6 +56,14 @@ npm run dev
 npm run build
 ```
 
+## To Build A Single Executable
+
+```bash
+npm run dist
+```
+
+This will be generated in the `dist` directory.
+
 ## Testing
 
 Both unit tests and end-to-end tests can be run with:
@@ -99,7 +107,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 1. If you have updated the app data structure, save a copy of the default app data created by the app to `local-storage-data/`. You can do this by running the app, clearing app data in `Settings > General Settings`, loading up the Chrome dev. tools, and copying the key `appData` from local storage.
 1. Create pull request on GitHub merging your branch into `main`.
 1. Once the build on `main` has been successfully run, merge your branch into `main` via the merge request.
-1. Tag the branch on main with the version number, e.g. `v4.1.0`.
+1. Tag the branch on main with the version number, e.g. `v4.1.0`. Wait for the GitHub build and publish action spawned from the merge into main to complete (so that the artifacts from the build are used in the release in the next step).
 1. Find the draft release on GitHub and publish it. Enter the CHANGELOG contents into the release body text.
 
 The app is built by GitHub Actions on every commit. If the build is successful and there is not already a non-draft release for this version number, the build artifacts will be uploaded to the release (files in existing draft releases are overwritten).
@@ -173,9 +181,6 @@ The files with `default` in the name are the default data for that app version. 
 
 * Prettier ESLint: Provides formatting of .tsx files.
 * Playwright: Provides useful add-ons for running and debugging the Playwright E2E tests.
-
-
-npm install @abandonware/noble --save --target=37.2.4 --runtime=electron --dist-url=https://electronjs.org/headers
 
 [github-actions-status]: https://github.com/gbmhunter/NinjaTerm/actions/workflows/build-and-test.yml/badge.svg?branch=main
 [github-actions-url]: https://github.com/gbmhunter/NinjaTerm/actions

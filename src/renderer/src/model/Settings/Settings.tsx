@@ -9,6 +9,7 @@ import DisplaySettings from './DisplaySettings/DisplaySettings';
 import { PortSettings } from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
 import ProfilesSettings from './ProfileSettings/ProfileSettings';
+import SoundsSettings from './SoundsSettings/SoundsSettings';
 import { App } from '../App';
 
 export enum SettingsCategories {
@@ -18,6 +19,7 @@ export enum SettingsCategories {
   DISPLAY,
   GENERAL,
   PROFILES,
+  SOUNDS,
 }
 
 export class Settings {
@@ -39,6 +41,8 @@ export class Settings {
 
   profilesSettings: ProfilesSettings;
 
+  soundsSettings: SoundsSettings;
+
   /**
    * Constructor for the Settings class.
    *
@@ -54,6 +58,7 @@ export class Settings {
     this.displaySettings = new DisplaySettings(this.app.profileManager);
     this.generalSettings = new GeneralSettings(this.app.profileManager);
     this.profilesSettings = new ProfilesSettings(this.app.profileManager);
+    this.soundsSettings = new SoundsSettings(this.app.profileManager);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 

@@ -191,6 +191,7 @@ export class BluetoothLEController {
   sortDirection: 'asc' | 'desc' = 'desc';
 
   constructor(app: App) {
+    log.info('BluetoothLEController constructor called.');
     this.app = app;
 
     // Reset the main process Bluetooth state, in case the renderer was reloaded but the main process was not
@@ -207,6 +208,11 @@ export class BluetoothLEController {
     // Listen for connection attempt complete events
     window.electronAPI.bluetooth.onConnectionAttemptComplete(async (error: string | null, bluetoothConnectionAttemptSuccess: BluetoothConnectionAttemptSuccess | null) => {
       await this.onIpcBluetoothConnectionAttemptComplete(error, bluetoothConnectionAttemptSuccess);
+    });
+
+    // Listen for RX data. We should get any data until a device is connected.
+    window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
+      this.app.parseRxData(data);
     });
 
     this.validateAndApplyScanDurationMs();
@@ -611,11 +617,6 @@ export class BluetoothLEController {
       return;
     }
 
-    // Setup listener for RX data
-    window.electronAPI.bluetooth.onDataReceived((deviceId: string, data: Buffer) => {
-      this.app.parseRxData(data);
-    });
-
     // If we get here, we have connected to the device and have found valid services and characteristics for the selected serial protocol
     // We can consider our connection attempt successful
     this.app.snackbar.sendToSnackbar(
@@ -698,7 +699,8 @@ export class BluetoothLEController {
       this.app.connController.connState = portState;
     });
 
-    window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
+    // We don't need to remove the listener here as it is only added once in the constructor, not on every device connection.
+    // window.electronAPI.bluetooth.removeAllListeners('bluetooth:data-received');
   }
 
   /**
