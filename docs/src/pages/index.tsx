@@ -281,7 +281,7 @@ export default function Home(): JSX.Element {
           <div className={styles.section}>
             <p className={styles.description}>
               NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for
-              an embedded device (e.g. microcontroller). TEST
+              an embedded device (e.g. microcontroller).
             </p>
             <p className={styles.description}>
               If you are looking for a serious terminal for continual use, the installable desktop versions are recommended. If you are looking for a quick way to view some serial
