@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-## [5.8.0] - 2025-10-13
+## [5.8.1] - 2025-10-16
+
+### Fixed
+
+- Fixed bug where BLE peripheral event listeners were not being removed when the connection timed out.
+
+## [5.8.0] - 2025-10-16
 
 ### Added
 
