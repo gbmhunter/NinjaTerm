@@ -239,11 +239,17 @@ app.whenReady().then(async () => {
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
+  // The Electron docs have this follow example:
+  //==============================================================
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  // if (process.platform !== 'darwin') {
+  //   app.quit();
+  // }
+  //==============================================================
+  // However, I saw an issue on macOS where if you clicked the "X" to close the NinjaTerm window (i.e. close the window but don't quit the app), and then re-opened NinjaTerm, the IPC between main and renderer processes would be broken.
+  // So let's quit the app if all windows are closed on all platforms.
+  app.quit();
 });
 
 app.on('activate', () => {
