@@ -3,7 +3,7 @@ import { expect, test, describe, beforeEach } from 'vitest';
 import moment from 'moment';
 
 import { stringToUint8Array } from 'src/model/Util/Util';
-import { DataDirection, SingleTerminal } from './SingleTerminal';
+import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
@@ -727,6 +727,26 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
       expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(2);
+    });
+  });
+
+  describe('hex glyph tests', () => {
+    test('hex glyphs are rendered correctly', () => {
+      dataProcessingSettings.setNonVisibleCharDisplayBehavior(
+        NonVisibleCharDisplayBehaviors.HEX_GLYPHS
+      );
+      // Disable escape code parsing
+      dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
+      const data = new Uint8Array([0xFB, 0x1B]);
+      singleTerminal.parseData(data, DataDirection.RX);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(data.length + 1); // +1 for cursor
+      const row = singleTerminal.terminalRows[0];
+      // Check code points of the chars added to the row
+      for (let i = 0; i < data.length; i++) {
+        const char = row.terminalChars[i];
+        const codePoint = char.char.codePointAt(0);
+        expect(codePoint).toBe(START_OF_HEX_GLYPHS + data[i]);
+      }
     });
   });
 });

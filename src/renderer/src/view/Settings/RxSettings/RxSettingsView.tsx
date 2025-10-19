@@ -81,7 +81,7 @@ function RxSettingsView(props: Props) {
                     onChange={(e) => {
                       rxSettings.setAnsiEscapeCodeParsingEnabled(e.target.checked);
                     }}
-                    disabled={rxSettings.dataType !== 1}
+                    disabled={rxSettings.dataType !== DataType.ASCII}
                   />
                 }
                 label="Enable ANSI Escape Code Parsing"

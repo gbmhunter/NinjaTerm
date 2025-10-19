@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Fixed bug where closing the window on macOS and then re-opening would break the IPC between main and renderer processes.
 - Updated electron dependency from v37.2.4 to v38.3.0 to fix serious macOS 26 performance issues.
+- Fixed bug where the "Enable ANSI Escape Code Parsing" checkbox was disabled when the wrong data type was selected.
+- Fixed Vitest dependency incompatibility with Vite.
 
 ## [5.8.1] - 2025-10-16
 

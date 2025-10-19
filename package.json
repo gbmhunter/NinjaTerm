@@ -130,7 +130,7 @@
     "postcss": "^8.4.38",
     "postcss-nesting": "^12.1.5",
     "vite-plugin-checker": "^0.6.4",
-    "vitest": "^1.6.0"
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.ninjaterm.app",
