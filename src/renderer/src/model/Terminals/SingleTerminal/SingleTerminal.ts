@@ -22,8 +22,13 @@ import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplayS
 import { SelectionController } from 'src/model/SelectionController/SelectionController';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
-const START_OF_CONTROL_GLYPHS = 0xe000;
-const START_OF_HEX_GLYPHS = 0xe100;
+export const START_OF_CONTROL_GLYPHS = 0xe000;
+
+/**
+ * The code point at which custom hex glyphs start in the NinjaTerm font.
+ * The code point for any hex byte will be START_OF_HEX_GLYPHS + hex byte value.
+ */
+export const START_OF_HEX_GLYPHS = 0xe100;
 
 export enum DataDirection {
   TX = 'TX',

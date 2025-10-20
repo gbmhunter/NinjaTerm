@@ -23,7 +23,8 @@ let analytics: Analytics | null = null;
 // The electron-google-analytics4 package uses the machineId automatically if we don't provide it as the clientID. However, let's do it manually as it's useful for debugging and for future uses.
 // Using the machineId as the clientID is appropriate to distinguish "users" in analytics.
 const usersMachineId = nodeMachineIdPkg.machineIdSync();
-console.log('Machine ID: ', usersMachineId);
+log.info('Machine ID: ', usersMachineId);
+log.info(`Electron version: v${process.versions.electron}`);
 
 // Only initialize Google Analytics 4 in production
 if (app.isPackaged) {
@@ -239,11 +240,17 @@ app.whenReady().then(async () => {
 
 // Quit when all windows are closed
 app.on('window-all-closed', () => {
+  // The Electron docs have this follow example:
+  //==============================================================
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  // if (process.platform !== 'darwin') {
+  //   app.quit();
+  // }
+  //==============================================================
+  // However, I saw an issue on macOS where if you clicked the "X" to close the NinjaTerm window (i.e. close the window but don't quit the app), and then re-opened NinjaTerm, the IPC between main and renderer processes would be broken.
+  // So let's quit the app if all windows are closed on all platforms.
+  app.quit();
 });
 
 app.on('activate', () => {

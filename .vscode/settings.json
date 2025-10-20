@@ -25,7 +25,8 @@
     "npm-debug.log.*": true,
     "test/**/__snapshots__": true,
     "package-lock.json": true,
-    "*.{css,sass,scss}.d.ts": true
+    "*.{css,sass,scss}.d.ts": true,
+    "web": true
   },
   "cSpell.words": [
     "32m",

@@ -3,7 +3,7 @@ import { expect, test, describe, beforeEach } from 'vitest';
 import moment from 'moment';
 
 import { stringToUint8Array } from 'src/model/Util/Util';
-import { DataDirection, SingleTerminal } from './SingleTerminal';
+import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
@@ -727,6 +727,34 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
       expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(2);
+    });
+  });
+
+  describe('hex glyph tests', () => {
+    test('hex glyphs are rendered correctly', () => {
+      dataProcessingSettings.setNonVisibleCharDisplayBehavior(
+        NonVisibleCharDisplayBehaviors.HEX_GLYPHS
+      );
+      // Disable escape code parsing
+      dataProcessingSettings.setAnsiEscapeCodeParsingEnabled(false);
+      // First 5 bytes should be rendered as hex glyphs, the last 3 should be rendered as the text "LED"
+      const data = new Uint8Array([0xFB, 0x1B, 0x00, 0x03, 0x00, 0x4C, 0x45, 0x44]);
+      singleTerminal.parseData(data, DataDirection.RX);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(data.length + 1); // +1 for cursor
+      const row = singleTerminal.terminalRows[0];
+      // Check code points of the chars added to the row
+      for (let i = 0; i < 5; i++) {
+        const char = row.terminalChars[i];
+        const codePoint = char.char.codePointAt(0);
+        expect(codePoint, `codePoint for char ${i} should be ${START_OF_HEX_GLYPHS + data[i]} but is ${codePoint}`).toBe(START_OF_HEX_GLYPHS + data[i]);
+      }
+      const ledOffset = 5;
+      const string = "LED";
+      for (let i = 0; i < string.length; i++) {
+        const char = row.terminalChars[i + ledOffset];
+        const codePoint = char.char.codePointAt(0);
+        expect(codePoint, `codePoint for char ${i} should be ${string.charCodeAt(i)} but is ${codePoint}`).toBe(string.charCodeAt(i));
+      }
     });
   });
 });
