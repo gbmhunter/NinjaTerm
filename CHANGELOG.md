@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed bug where copying selected text failed if the selection anchor or focus row had been scrolled off-screen (virtualized away by react-window).
+- Fixed bug where the selection highlight would snap to row 0 after scrolling past the selected rows and back again.
+- Fixed bug where the fake port Stop button did not stop data transmission.
+
 ## [5.8.2] - 2025-10-20
 
 ### Fixed

@@ -235,8 +235,12 @@ export class SelectionController {
     // Also convert from focus/anchor to first/last
     // Anchor is were the user began the selection, focus is where they ended it
     // Assume it's true, check all conditions that would make it false
+    // NOTE: Row IDs end with a numeric suffix (e.g. 'tx-rx-terminal-row-100').
+    // We must compare numerically, not lexicographically, to avoid '70' > '100' being true.
+    const anchorRowNum = parseInt(anchorRowId.split('-').slice(-1)[0]);
+    const focusRowNum = parseInt(focusRowId.split('-').slice(-1)[0]);
     let isSelectionForwards = true
-    if (anchorRowId > focusRowId) {
+    if (anchorRowNum > focusRowNum) {
       isSelectionForwards = false;
     } else if (anchorRowId === focusRowId) {
       // Need to look at spans

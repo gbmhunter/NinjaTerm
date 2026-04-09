@@ -1,6 +1,6 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import React, { useRef, ReactElement, useLayoutEffect, forwardRef, useMemo } from 'react';
+import React, { useRef, ReactElement, useLayoutEffect, useEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -89,6 +89,44 @@ export default observer((props: Props) => {
     }
   });
 
+  // Capture the selection into the cache on mouseup (after the user finishes dragging).
+  // At mouseup time both endpoints are guaranteed to be in the DOM, so getSelectionInfo
+  // returns a valid result. We do NOT use selectionchange because Chrome fires it when
+  // react-window removes DOM nodes, and the adjusted selection may be wrong.
+  // Cache is cleared when the user clicks outside this terminal.
+  useEffect(() => {
+    let isSelectingInThisTerminal = false;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Always clear the cache on mousedown. This ensures that while the user is mid-drag,
+      // getSelectionInfoIfWithinTerminal() falls back to the live DOM selection (which is
+      // correct for on-screen rows). The cache is repopulated at mouseup.
+      terminal.lastKnownSelectionInfo = null;
+      const terminalEl = document.getElementById(terminal.id);
+      if (terminalEl && terminalEl.contains(e.target as Node)) {
+        isSelectingInThisTerminal = true;
+      } else {
+        isSelectingInThisTerminal = false;
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (!isSelectingInThisTerminal) return;
+      isSelectingInThisTerminal = false;
+      const info = SelectionController.getSelectionInfo(window.getSelection(), terminal.id);
+      if (info !== null) {
+        terminal.lastKnownSelectionInfo = info;
+      }
+    };
+
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [terminal.id]);
+
   // SELECTION LOGIC
   //=============================================================================
 
@@ -97,18 +135,71 @@ export default observer((props: Props) => {
   // that the selection starts and ends at
   let selectionInfo = SelectionController.getSelectionInfo(selection, terminal.id);
 
-  // This code runs after render to re-select the same text as was selected before the render,
-  // only if the selection was contained within this terminal.
-  useLayoutEffect(() => {
-    if (selectionInfo === null) {
-      return;
+  // Re-applies the mouseup-cached selection (with clamping for off-screen endpoints).
+  // Called from both useLayoutEffect (React re-renders) and onItemsRendered (scroll
+  // events that bypass React re-renders). Without the onItemsRendered call, Chrome
+  // permanently moves the selection anchor when a row is virtualized away during a
+  // wheel scroll, because no React re-render occurs to correct it.
+  const applyLastKnownSelection = () => {
+    const lastKnown = terminal.lastKnownSelectionInfo;
+    if (lastKnown === null) return false;
+
+    const firstRowIdNum = parseInt(lastKnown.firstRowId.split('-').slice(-1)[0]);
+    const lastRowIdNum = parseInt(lastKnown.lastRowId.split('-').slice(-1)[0]);
+
+    let effectiveFirstRowId = lastKnown.firstRowId;
+    let effectiveFirstColIdx = lastKnown.firstColIdx;
+    if (!document.getElementById(lastKnown.firstRowId)) {
+      const firstVisible = terminal.filteredTerminalRows.find(
+        (row) =>
+          row.uniqueRowId >= firstRowIdNum &&
+          row.uniqueRowId <= lastRowIdNum &&
+          document.getElementById(terminal.id + '-row-' + row.uniqueRowId) !== null
+      );
+      if (!firstVisible) return true; // entire selection off-screen — nothing to highlight
+      effectiveFirstRowId = terminal.id + '-row-' + firstVisible.uniqueRowId;
+      effectiveFirstColIdx = 0;
     }
 
-    // Re-select the same text that was selected before the render. Preserve the document order of the anchor and focus.
-    // This returns false if the selection was not possible, but we don't care
+    let effectiveLastRowId = lastKnown.lastRowId;
+    let effectiveLastColIdx = lastKnown.lastColIdx;
+    if (!document.getElementById(lastKnown.lastRowId)) {
+      let lastVisible: TerminalRow | null = null;
+      for (const row of terminal.filteredTerminalRows) {
+        if (
+          row.uniqueRowId >= firstRowIdNum &&
+          row.uniqueRowId <= lastRowIdNum &&
+          document.getElementById(terminal.id + '-row-' + row.uniqueRowId) !== null
+        ) {
+          lastVisible = row;
+        }
+      }
+      if (!lastVisible) return true; // entire selection off-screen — nothing to highlight
+      effectiveLastRowId = terminal.id + '-row-' + lastVisible.uniqueRowId;
+      effectiveLastColIdx = lastVisible.terminalChars.length;
+    }
+
     SelectionController.selectTerminalText(
-      selectionInfo.anchorRowId, selectionInfo.anchorColIdx,
-      selectionInfo.focusRowId, selectionInfo.focusColIdx);
+      effectiveFirstRowId, effectiveFirstColIdx,
+      effectiveLastRowId, effectiveLastColIdx
+    );
+    return true;
+  };
+
+  // After every render, re-apply the selection highlight so it stays visible even as
+  // react-window adds/removes rows. We prefer the mouseup-cached selection over the
+  // live DOM selection because after virtualization Chrome adjusts the live selection
+  // to another connected node, which would overwrite the correct highlight.
+  useLayoutEffect(() => {
+    if (applyLastKnownSelection()) return;
+
+    // No cached selection (mousedown cleared it) — fall back to the live DOM selection.
+    // This handles the mid-drag case where the user is actively making a selection.
+    if (selectionInfo !== null) {
+      SelectionController.selectTerminalText(
+        selectionInfo.anchorRowId, selectionInfo.anchorColIdx,
+        selectionInfo.focusRowId, selectionInfo.focusColIdx);
+    }
   });
 
   //=============================================================================
@@ -299,6 +390,13 @@ export default observer((props: Props) => {
             itemCount={terminal.filteredTerminalRows.length}
             onScroll={(scrollProps) => {
               terminal.fixedSizedListOnScroll(scrollProps);
+            }}
+            onItemsRendered={() => {
+              // Wheel scrolling does not trigger a React re-render of this component,
+              // so useLayoutEffect never runs. We re-apply the cached selection here
+              // every time react-window renders a new set of rows (including on scroll)
+              // so the browser selection is always corrected after virtualization.
+              applyLastKnownSelection();
             }}
             overscanCount={5}
             outerElementType={outerListElementMemoized}

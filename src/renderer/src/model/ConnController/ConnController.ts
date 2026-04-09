@@ -371,6 +371,8 @@ export class ConnController {
         window.electronAPI.serial.removeAllListeners('serial:port-closed');
 
         this.app.profileManager.saveAppData();
+      } else if (this.lastSelectedPortType === PortType.FAKE) {
+        this.app.fakePortController.closePort();
       }
     } else if (connectionType === ConnectionType.SOCKET) {
       if (this.currentSocketConnectionId) {
