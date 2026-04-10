@@ -49,6 +49,13 @@ export default class TxSettings {
    */
   sendEscCharWhenAltKeyPressed = true;
 
+  /**
+   * If true, Ctrl+C copies selected text to clipboard (like Windows Terminal/iTerm2).
+   * If no text is selected, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes from clipboard.
+   * If false, Ctrl+C/V always send control codes (0x03/0x16); use Ctrl+Shift+C/V for copy/paste.
+   */
+  useCtrlCVForCopyPaste = true;
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
@@ -66,6 +73,7 @@ export default class TxSettings {
     this.deleteKeyPressBehavior = configToLoad.deleteKeyPressBehavior;
     this.send0x01Thru0x1AWhenCtrlAThruZPressed = configToLoad.send0x01Thru0x1AWhenCtrlAThruZPressed;
     this.sendEscCharWhenAltKeyPressed = configToLoad.sendEscCharWhenAltKeyPressed;
+    this.useCtrlCVForCopyPaste = configToLoad.useCtrlCVForCopyPaste;
   };
 
   _saveConfig = () => {
@@ -76,6 +84,7 @@ export default class TxSettings {
     config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
     config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
     config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
+    config.useCtrlCVForCopyPaste = this.useCtrlCVForCopyPaste;
 
     this.profileManager.saveAppData();
   };
@@ -102,6 +111,11 @@ export default class TxSettings {
 
   setSendEscCharWhenAltKeyPressed = (value: boolean) => {
     this.sendEscCharWhenAltKeyPressed = value;
+    this._saveConfig();
+  }
+
+  setUseCtrlCVForCopyPaste = (value: boolean) => {
+    this.useCtrlCVForCopyPaste = value;
     this._saveConfig();
   }
 }

@@ -132,9 +132,26 @@ The bottom toolbar provides a quick overview of the current state of the applica
 
 ## Other Terminal Features
 
-### Copy All Text Button
+### Copy and Paste
 
-Each terminal window has a "Copy all text" button, allowing you to quickly copy the entire content of that terminal, including its scrollback buffer, to your clipboard. You can also copy text by selecting it and pressing `Ctrl+Shift+C`, although the selection only works if it is all on screen.
+#### Copying Text
+
+Each terminal window has a "Copy all text" button, allowing you to quickly copy the entire content of that terminal, including its scrollback buffer, to your clipboard.
+
+You can also select text and copy it with `Ctrl+C` (or `Ctrl+Shift+C`). By default, `Ctrl+C` uses smart copy/paste mode (matching the behavior of Windows Terminal and iTerm2):
+
+- If text is selected, `Ctrl+C` copies it to the clipboard and clears the selection.
+- If no text is selected, `Ctrl+C` sends the 0x03 control code to the serial port as normal (requires _Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed_ to also be enabled in TX Settings).
+
+`Ctrl+Shift+C` always copies selected text to the clipboard regardless of this setting.
+
+#### Pasting Text
+
+`Ctrl+V` (or `Ctrl+Shift+V`) pastes text from the clipboard to the serial port. In smart copy/paste mode (default), `Ctrl+V` always pastes; with the setting disabled, use `Ctrl+Shift+V`.
+
+#### Configuring Copy/Paste Behavior
+
+The smart `Ctrl+C`/`Ctrl+V` behavior can be toggled in `Settings > TX > Meta Keys` via the _Use Ctrl+C/V for copy/paste_ checkbox. Disable it if you need `Ctrl+C` and `Ctrl+V` to always send raw control codes (0x03 and 0x16).
 
 ### Auto Scroll Lock on TX
 

@@ -396,7 +396,24 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 12) {
+    //=============================================================================
+    // VERSION 12 -> VERSION 13
+    //=============================================================================
+    if (updatedAppData.version === 12) {
+      log.info('Updating app data from version 12 to version 13...');
+      // Add useCtrlCVForCopyPaste to tx settings for all profiles
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.txSettings.useCtrlCVForCopyPaste = true;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 13;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 13) {
       log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

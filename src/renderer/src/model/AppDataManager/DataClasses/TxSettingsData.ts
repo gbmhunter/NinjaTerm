@@ -26,4 +26,11 @@ export class TxSettingsData {
    * This emulates standard meta key behavior in most terminals.
    */
   sendEscCharWhenAltKeyPressed = true;
+
+  /**
+   * If true, Ctrl+C copies selected text to clipboard (like Windows Terminal/iTerm2).
+   * If no text is selected, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes from clipboard.
+   * If false, Ctrl+C/V always send control codes (0x03/0x16); use Ctrl+Shift+C/V for copy/paste.
+   */
+  useCtrlCVForCopyPaste = true;
 }

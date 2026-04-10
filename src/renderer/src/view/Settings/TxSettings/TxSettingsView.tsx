@@ -153,6 +153,28 @@ function TxSettingsView(props: Props) {
             sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
+        {/* =============================================================================== */}
+        {/* SMART CTRL-C/V */}
+        {/* =============================================================================== */}
+        <Tooltip
+          title="When enabled (default): Ctrl+C copies selected text to clipboard; if nothing is selected, Ctrl+C sends 0x03 as normal (requires 'Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed' to also be enabled). Ctrl+V always pastes clipboard text to the serial port. This matches the behavior of Windows Terminal and iTerm2. When disabled: Ctrl+C/V always send control codes (0x03/0x16); use Ctrl+Shift+C/V for copy/paste."
+          placement="top"
+          followCursor
+          {...txSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={txSettings.useCtrlCVForCopyPaste}
+                onChange={(e) => {
+                  txSettings.setUseCtrlCVForCopyPaste(e.target.checked);
+                }}
+              />
+            }
+            label="Use Ctrl+C/V for copy/paste (Ctrl+C copies if text selected, Ctrl+V always pastes)"
+            sx={{ marginBottom: '10px' }}
+          />
+        </Tooltip>
       </BorderedSection>
     </div>
   );

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Added smart Ctrl+C/V copy/paste behavior (enabled by default, configurable in TX Settings): Ctrl+C copies selected text to clipboard; if no text is selected and "Send 0x01-0x1A when Ctrl+A thru Ctrl+Z" is enabled, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes clipboard text to the serial port. This matches the behavior of Windows Terminal and iTerm2.
+
 ### Fixed
 
 - Fixed bug where copying selected text failed if the selection anchor or focus row had been scrolled off-screen (virtualized away by react-window).

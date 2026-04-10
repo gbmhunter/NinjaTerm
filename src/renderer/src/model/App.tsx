@@ -718,32 +718,35 @@ export class App {
       this.handleCopyToClipboard(event);
     }
     //============================================
+    // SMART CTRL-C: copy if text selected, else send 0x03
+    //============================================
+    else if (event.ctrlKey && !event.shiftKey && event.key === 'c' && this.settings.txSettings.useCtrlCVForCopyPaste) {
+      const terminalsToCheck = [this.terminals.txRxTerminal, this.terminals.txTerminal, this.terminals.rxTerminal];
+      const hasSelection = terminalsToCheck.some(t => t.getSelectionInfoIfWithinTerminal() !== null);
+      if (hasSelection) {
+        this.handleCopyToClipboard(event);
+        // Clear cached selection so a second Ctrl-C sends 0x03
+        for (const t of terminalsToCheck) {
+          t.lastKnownSelectionInfo = null;
+        }
+        window.getSelection()?.removeAllRanges();
+      } else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
+        // No selection — pass through as terminal control code (0x03)
+        this.handleTerminalKeyDown(event);
+      }
+    }
+    //============================================
     // PASTE KEYBOARD SHORTCUT
     //============================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'V') {
       // Ctrl-Shift-V is pressed, handle paste
-      // Get clipboard text and send it out the serial port if either the TXRX or TX terminal is in focus
-      // Calling readText() will ask the user for permission to access the clipboard on the first time
-      let text = await navigator.clipboard.readText();
-
-      // Convert CRLF to LF if setting is enabled
-      if (this.settings.generalSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
-        text = text.replace(/\r\n/g, '\n');
-      }
-
-      // Make sure serial port is open
-      if (this.connController.connState !== ConnState.OPENED) {
-        return;
-      }
-
-      // Make sure either the TXRX or TX terminal is in focus
-      if (!this.terminals.txRxTerminal.isFocused && !this.terminals.txTerminal.isFocused) {
-        return;
-      }
-
-      // Convert string to Uint8Array
-      const dataAsUint8Array = new TextEncoder().encode(text);
-      await this.writeBytesToSerialPort(dataAsUint8Array);
+      await this.handlePasteFromClipboard(event);
+    }
+    //============================================
+    // SMART CTRL-V: paste from clipboard
+    //============================================
+    else if (event.ctrlKey && !event.shiftKey && event.key === 'v' && this.settings.txSettings.useCtrlCVForCopyPaste) {
+      await this.handlePasteFromClipboard(event);
     }
     //=============================================
     // TERMINAL DATA
@@ -752,6 +755,36 @@ export class App {
       // If we get here and the terminals are in focus, assume it's terminal data
       this.handleTerminalKeyDown(event);
     }
+  }
+
+  /**
+   * Pastes text from the clipboard to the serial port.
+   * Called by both Ctrl-Shift-V and smart Ctrl-V.
+   */
+  private async handlePasteFromClipboard(event: React.KeyboardEvent) {
+    event.preventDefault();
+    // Get clipboard text and send it out the serial port if either the TXRX or TX terminal is in focus
+    // Calling readText() will ask the user for permission to access the clipboard on the first time
+    let text = await navigator.clipboard.readText();
+
+    // Convert CRLF to LF if setting is enabled
+    if (this.settings.generalSettings.whenPastingOnWindowsReplaceCRLFWithLF && isRunningOnWindows()) {
+      text = text.replace(/\r\n/g, '\n');
+    }
+
+    // Make sure serial port is open
+    if (this.connController.connState !== ConnState.OPENED) {
+      return;
+    }
+
+    // Make sure either the TXRX or TX terminal is in focus
+    if (!this.terminals.txRxTerminal.isFocused && !this.terminals.txTerminal.isFocused) {
+      return;
+    }
+
+    // Convert string to Uint8Array
+    const dataAsUint8Array = new TextEncoder().encode(text);
+    await this.writeBytesToSerialPort(dataAsUint8Array);
   }
 
   /**
