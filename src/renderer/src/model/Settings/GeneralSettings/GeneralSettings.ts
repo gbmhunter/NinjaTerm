@@ -15,6 +15,14 @@ export default class GeneralSettings {
     return this.profileManager.appData.autoUpdatesEnabled;
   }
 
+  get mcpEnabled() {
+    return this.profileManager.appData.mcpEnabled;
+  }
+
+  get mcpPort() {
+    return this.profileManager.appData.mcpPort;
+  }
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
@@ -37,6 +45,27 @@ export default class GeneralSettings {
   setAutoUpdatesEnabled = (value: boolean) => {
     this.profileManager.appData.autoUpdatesEnabled = value;
     this.profileManager.saveAppData();
+  };
+
+  setMcpEnabled = (value: boolean) => {
+    this.profileManager.appData.mcpEnabled = value;
+    this.profileManager.saveAppData();
+    if (value) {
+      window.electronAPI.mcp.start(this.profileManager.appData.mcpPort);
+    } else {
+      window.electronAPI.mcp.stop();
+    }
+  };
+
+  setMcpPort = (value: number) => {
+    this.profileManager.appData.mcpPort = value;
+    this.profileManager.saveAppData();
+    // Restart server on port change if currently enabled
+    if (this.profileManager.appData.mcpEnabled) {
+      window.electronAPI.mcp.stop().then(() => {
+        window.electronAPI.mcp.start(value);
+      });
+    }
   };
 
   setPerformanceTestResults = (results: string | null) => {

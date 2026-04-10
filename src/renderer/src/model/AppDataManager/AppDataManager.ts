@@ -413,7 +413,19 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 13) {
+    //=============================================================================
+    // VERSION 13 -> VERSION 14
+    //=============================================================================
+    if (updatedAppData.version === 13) {
+      log.info('Updating app data from version 13 to version 14...');
+      // Add MCP server settings at the global app level
+      updatedAppData.mcpEnabled = false;
+      updatedAppData.mcpPort = 3579;
+      updatedAppData.version = 14;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 14) {
       log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

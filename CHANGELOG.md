@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added MCP (Model Context Protocol) server, allowing AI coding assistants such as Claude Code to read serial terminal output and send commands directly. Enable in Settings → General → MCP Server. Exposes tools: `get_terminal_output`, `send_data`, `get_connection_status`, `list_available_ports`.
 - Added smart Ctrl+C/V copy/paste behavior (enabled by default, configurable in TX Settings): Ctrl+C copies selected text to clipboard; if no text is selected and "Send 0x01-0x1A when Ctrl+A thru Ctrl+Z" is enabled, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes clipboard text to the serial port. This matches the behavior of Windows Terminal and iTerm2.
 
 ### Fixed

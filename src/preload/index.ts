@@ -139,6 +139,23 @@ contextBridge.exposeInMainWorld('electronAPI', {
     event: (eventName: string) => ipcRenderer.invoke('analytics:event', eventName)
   },
 
+  // MCP server operations
+  mcp: {
+    start: (port: number) => ipcRenderer.invoke('mcp:start', port),
+    stop: () => ipcRenderer.invoke('mcp:stop'),
+    getStatus: () => ipcRenderer.invoke('mcp:get-status'),
+    // Renderer registers this to receive data requests from the main process MCP server
+    onRequest: (callback: (payload: { id: string; method: string; params: any }) => void) => {
+      ipcRenderer.on('mcp:request', (event, payload) => callback(payload));
+    },
+    // Renderer calls this to send a response back to the main process
+    respond: (id: string, data: any, error?: string) =>
+      ipcRenderer.invoke('mcp:response', { id, data, error }),
+    removeAllListeners: () => {
+      ipcRenderer.removeAllListeners('mcp:request');
+    },
+  },
+
   // Bluetooth operations
   bluetooth: {
     resetBluetoothState: () => ipcRenderer.invoke('bluetooth:reset-bluetooth-state'),
@@ -234,6 +251,14 @@ export interface ElectronAPI {
   };
   analytics: {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;
+  };
+  mcp: {
+    start(port: number): Promise<{ success: boolean; error?: string }>;
+    stop(): Promise<{ success: boolean; error?: string }>;
+    getStatus(): Promise<{ success: boolean; running: boolean; port: number; error?: string }>;
+    onRequest(callback: (payload: { id: string; method: string; params: any }) => void): void;
+    respond(id: string, data: any, error?: string): Promise<void>;
+    removeAllListeners(): void;
   };
   bluetooth: {
     resetBluetoothState(): Promise<{ success: boolean; error?: string }>;

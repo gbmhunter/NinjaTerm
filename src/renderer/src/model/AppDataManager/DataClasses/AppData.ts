@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx";
 import { Profile } from "./Profile";
 import { ProfileConfig } from "./ProfileConfig";
 
-export const LATEST_VERSION = 13;
+export const LATEST_VERSION = 14;
 
 export class AppData {
   // Version of the AppData class.
@@ -23,6 +23,17 @@ export class AppData {
    * This is stored at the app level rather than per-profile since it affects the entire application.
    */
   autoUpdatesEnabled = true;
+
+  /**
+   * Global setting for enabling the MCP (Model Context Protocol) server.
+   * Stored at app level since it's a system-wide feature, not per-profile.
+   */
+  mcpEnabled = false;
+
+  /**
+   * Port number for the MCP server.
+   */
+  mcpPort = 3579;
 
   constructor() {
     this.profiles = [];

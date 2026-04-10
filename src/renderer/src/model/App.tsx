@@ -196,6 +196,9 @@ export class App {
     // Set up auto-updater event listeners
     this.setupAutoUpdater();
 
+    // Set up MCP server request handlers and auto-start if enabled
+    this.setupMcp();
+
     // Set up cleanup on window unload
     window.addEventListener('beforeunload', this.cleanup);
 
@@ -467,6 +470,49 @@ export class App {
         true // persist
       );
     });
+  }
+
+  private setupMcp() {
+    if (!(window as any).electronAPI?.mcp) {
+      return; // MCP not available (e.g., in web version)
+    }
+
+    const electronAPI = (window as any).electronAPI;
+
+    // Remove any stale listeners from hot reloads
+    electronAPI.mcp.removeAllListeners();
+
+    // Handle data requests from the main process MCP server
+    electronAPI.mcp.onRequest(async ({ id, method, params }: { id: string; method: string; params: any }) => {
+      try {
+        let data: any;
+
+        if (method === 'get_terminal_output') {
+          const lines = params.lines ?? 50;
+          const terminal = this.terminals.txRxTerminal;
+          const rows = terminal.terminalRows.slice(-lines);
+          const text = rows.map((row: any) => row.terminalChars.map((c: any) => c.char).join('')).join('\n');
+          data = { text };
+        } else if (method === 'get_connection_status') {
+          data = {
+            state: this.connController.connState,
+            portPath: this.settings.portConfiguration.selectedSerialPort?.path ?? null,
+            baudRate: this.settings.portConfiguration.baudRate,
+          };
+        } else {
+          throw new Error(`Unknown MCP method: ${method}`);
+        }
+
+        await electronAPI.mcp.respond(id, data);
+      } catch (err) {
+        await electronAPI.mcp.respond(id, null, (err as Error).message);
+      }
+    });
+
+    // Auto-start the MCP server if enabled in settings
+    if (this.settings.generalSettings.mcpEnabled) {
+      electronAPI.mcp.start(this.settings.generalSettings.mcpPort);
+    }
   }
 
   /**
