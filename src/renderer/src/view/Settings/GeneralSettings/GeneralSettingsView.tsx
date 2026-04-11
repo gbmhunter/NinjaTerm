@@ -301,7 +301,9 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
                 </Tooltip>
               </div>
               <Typography variant="caption" color="text.secondary" sx={{ marginTop: '8px', display: 'block' }}>
-                Available tools: <code>get_terminal_output</code>, <code>send_data</code>, <code>get_connection_status</code>, <code>list_available_ports</code>
+                Tools: <code>get_terminal_output</code>, <code>send_data</code>, <code>get_connection_status</code>, <code>list_available_ports</code>
+                <br />
+                Resources: <code>ninjaterm://terminal/rxstream</code> — subscribe for push notifications when new serial data arrives; read to get buffered data since last read
               </Typography>
             </div>
           )}

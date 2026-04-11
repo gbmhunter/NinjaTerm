@@ -647,6 +647,12 @@ export class App {
     // Update stats
     this.numBytesReceived += rxData.length;
     this.recordRxDataPoint(rxData.length);
+
+    // Push raw text to MCP service for streaming resource subscribers
+    if (this.settings.generalSettings.mcpEnabled) {
+      const text = new TextDecoder('utf-8', { fatal: false }).decode(rxData);
+      window.electronAPI.mcp.pushRxData(text);
+    }
   }
 
   /**

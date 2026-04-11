@@ -486,6 +486,11 @@ ipcMain.handle('mcp:response', (event, { id, data, error }: { id: string; data: 
   mcpService?.handleRendererResponse(id, data, error);
 });
 
+// Bridge: renderer pushes new RX data for streaming resource subscribers
+ipcMain.on('mcp:rx-data', (_event, text: string) => {
+  mcpService?.handleRxData(text);
+});
+
 // Clean up on app quit
 app.on('before-quit', async () => {
   await mcpService?.stop();

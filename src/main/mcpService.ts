@@ -15,7 +15,7 @@ export class McpService {
   private httpServer: Server | null = null;
   private mainWindow: BrowserWindow | null = null;
   /** Active sessions keyed by session ID. A new entry is created for each initialize request. */
-  private sessions = new Map<string, { server: McpServer; transport: StreamableHTTPServerTransport }>();
+  private sessions = new Map<string, { mcpServer: McpServer; transport: StreamableHTTPServerTransport; rxBuffer: { text: string } }>();
   private registeredPort: number = 0;
 
   /**
@@ -89,10 +89,11 @@ export class McpService {
 
         if (!sessionId) {
           // New session: create a fresh McpServer + transport pair
+          const rxBuffer = { text: '' };
           const transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => randomUUID(),
             onsessioninitialized: (id) => {
-              this.sessions.set(id, { server, transport });
+              this.sessions.set(id, { mcpServer: server, transport, rxBuffer });
               log.info(`MCP session initialized: ${id}`);
             },
           });
@@ -105,7 +106,7 @@ export class McpService {
             }
           };
           const server = new McpServer({ name: 'ninjaterm', version: '1.0.0' });
-          this.registerTools(server);
+          this.registerTools(server, rxBuffer);
           await server.connect(transport);
           await transport.handleRequest(req, res, req.body);
         } else {
@@ -160,7 +161,18 @@ export class McpService {
     return this.httpServer !== null && this.httpServer.listening;
   }
 
-  private registerTools(server: McpServer) {
+  /**
+   * Called when new RX data arrives from the renderer. Buffers the text for each active session
+   * and sends a resource-updated notification so subscribed clients know to call resources/read.
+   */
+  handleRxData(text: string) {
+    for (const [, session] of this.sessions) {
+      session.rxBuffer.text += text;
+      session.mcpServer.server.sendResourceUpdated({ uri: 'ninjaterm://terminal/rxstream' }).catch(() => {});
+    }
+  }
+
+  private registerTools(server: McpServer, rxBuffer: { text: string }) {
 
     server.tool(
       'get_terminal_output',
@@ -233,6 +245,24 @@ export class McpService {
         } catch (err) {
           return { content: [{ type: 'text' as const, text: `Error: ${(err as Error).message}` }], isError: true };
         }
+      }
+    );
+
+    server.resource(
+      'rxstream',
+      'ninjaterm://terminal/rxstream',
+      {
+        description:
+          'Real-time stream of incoming serial data. Subscribe to receive push notifications ' +
+          '(notifications/resources/updated) when new data arrives, then read this resource to ' +
+          'retrieve buffered data since the last read. For historical data use the get_terminal_output tool.',
+      },
+      async () => {
+        const data = rxBuffer.text;
+        rxBuffer.text = '';
+        return {
+          contents: [{ uri: 'ninjaterm://terminal/rxstream', mimeType: 'text/plain', text: data }],
+        };
       }
     );
   }
