@@ -186,6 +186,23 @@ const StatusIndicators = observer(({ app }: { app: App }) => (
   </>
 ));
 
+const McpIndicator = observer(({ app }: { app: App }) => (
+  <div
+    className={`${styles.onHover} ${styles.centerText}`}
+    onClick={() => {
+      app.setShownMainPane(MainPanes.SETTINGS);
+      app.settings.setActiveSettingsCategory(SettingsCategories.GENERAL);
+    }}
+    style={{
+      backgroundColor: app.settings.generalSettings.mcpEnabled ? '#388e3c' : '',
+      padding: '0 5px',
+      width: '80px',
+    }}
+  >
+    {app.settings.generalSettings.mcpEnabled ? 'MCP ON' : 'MCP OFF'}
+  </div>
+));
+
 const DataTypeIndicator = observer(({ app }: { app: App }) => (
   <div
     className={`${styles.onHover} ${styles.centerText}`}
@@ -438,6 +455,9 @@ const AppView = observer((props: Props) => {
 
             {/* STATUS INDICATORS - Separated reactive components */}
             <StatusIndicators app={app} />
+
+            {/* MCP SERVER INDICATOR */}
+            <McpIndicator app={app} />
 
             {/* TX/RX ACTIVITY INDICATORS - Isolated reactive component */}
             <ActivityIndicators app={app} />
