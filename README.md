@@ -101,16 +101,18 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 ## Releasing
 
 1. Create a new branch off of `main` for the changes.
-1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or compete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
-1. Make changes to the code as required. Push commits to get test builds of the app pushed to a draft release on GitHub.
+1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or complete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
+1. On GitHub, manually create a **draft release** for the new version (e.g. `v4.2.0`) with no tag yet. This is required for the next step to work.
+1. Make changes to the code as required. Push commits to `dev` or `main` — CI will automatically upload build artifacts to the draft release (all three platforms) on each successful build.
 1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
 1. If you have updated the app data structure, save a copy of the default app data created by the app to `local-storage-data/`. You can do this by running the app, clearing app data in `Settings > General Settings`, loading up the Chrome dev. tools, and copying the key `appData` from local storage.
-1. Create pull request on GitHub merging your branch into `main`.
-1. Once the build on `main` has been successfully run, merge your branch into `main` via the merge request.
-1. Tag the branch on main with the version number, e.g. `v4.1.0`. Wait for the GitHub build and publish action spawned from the merge into main to complete (so that the artifacts from the build are used in the release in the next step).
-1. Find the draft release on GitHub and publish it. Enter the CHANGELOG contents into the release body text.
+1. Create a pull request on GitHub merging your branch into `main` and merge it once CI passes.
+1. Push a version tag to `main`, e.g. `git tag v4.2.0 && git push origin v4.2.0`. This triggers the `release` CI job, which builds all three platforms and uploads the final artifacts to the draft release using `--publish always`.
+1. Find the draft release on GitHub, enter the CHANGELOG contents into the release body, and publish it.
 
-The app is built by GitHub Actions on every commit. If the build is successful and there is not already a non-draft release for this version number, the build artifacts will be uploaded to the release (files in existing draft releases are overwritten).
+**How CI publishing works:**
+- On every push to `main` or `dev`: CI builds and tests all three platforms. If a **draft release already exists** for the current version number, artifacts are uploaded to it (`--publish onTagOrDraft`). If no draft release exists, the build still runs but nothing is published.
+- On a `v*` tag push: CI first runs the full build and test suite (`test-electron` job), then the `release` job runs and publishes artifacts unconditionally (`--publish always`). Files in the draft release are overwritten.
 
 ## Deployment
 
