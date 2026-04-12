@@ -1,6 +1,7 @@
-import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert, TextField, IconButton, InputAdornment } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import React, { useState, useRef } from "react";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
 import { App, MainPanes } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -213,6 +214,99 @@ ${'-'.repeat(30)} | ${'-'.repeat(8)} | ${'-'.repeat(8)} | ${'-'.repeat(7)} | ${'
               : "Automatic updates are disabled. Click the button above to manually check for updates."
             }
           </div>
+        </div>
+      </BorderedSection>
+
+      {/* =============================================================================== */}
+      {/* MCP SERVER */}
+      {/* =============================================================================== */}
+      <BorderedSection title="MCP Server (AI Integration)">
+        <div style={{ display: 'flex', flexDirection: 'column', width: '700px' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '12px' }}>
+            Expose NinjaTerm as an MCP (Model Context Protocol) server so AI assistants like Claude Code
+            can read serial output and send commands directly — no copy-pasting required.
+          </Typography>
+
+          <Tooltip
+            title="When enabled, NinjaTerm starts a local HTTP server that AI tools can connect to. The server only accepts connections from 127.0.0.1 (this machine)."
+            placement="top"
+            followCursor
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={generalSettings.mcpEnabled}
+                  onChange={(e) => generalSettings.setMcpEnabled(e.target.checked)}
+                />
+              }
+              label="Enable MCP server"
+              sx={{ marginBottom: '8px' }}
+            />
+          </Tooltip>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <TextField
+              label="Port"
+              type="number"
+              size="small"
+              value={generalSettings.mcpPort}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                if (!isNaN(val) && val > 0 && val < 65536) {
+                  generalSettings.setMcpPort(val);
+                }
+              }}
+              inputProps={{ min: 1024, max: 65535 }}
+              style={{ width: '120px' }}
+              disabled={!generalSettings.mcpEnabled}
+            />
+            {generalSettings.mcpEnabled && (
+              <Typography variant="body2" color="success.main">
+                Running on http://127.0.0.1:{generalSettings.mcpPort}/mcp
+              </Typography>
+            )}
+          </div>
+
+          {generalSettings.mcpEnabled && (
+            <div>
+              <Typography variant="body2" color="text.secondary" sx={{ marginBottom: '4px' }}>
+                Add to Claude Code with:
+              </Typography>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Typography
+                  variant="body2"
+                  component="code"
+                  sx={{
+                    fontFamily: 'Consolas, monospace',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  {`claude mcp add --transport http ninjaterm http://127.0.0.1:${generalSettings.mcpPort}/mcp`}
+                </Typography>
+                <Tooltip title="Copy command" placement="top" {...app.settings.displaySettings.getBasicTooltipConfig()}>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(
+                        `claude mcp add --transport http ninjaterm http://127.0.0.1:${generalSettings.mcpPort}/mcp`
+                      );
+                    }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </div>
+              <Typography variant="caption" color="text.secondary" sx={{ marginTop: '8px', display: 'block' }}>
+                Tools: <code>get_terminal_output</code>, <code>send_data</code>, <code>get_connection_status</code>, <code>list_available_ports</code>
+                <br />
+                Resources: <code>ninjaterm://terminal/rxstream</code> — subscribe for push notifications when new serial data arrives; read to get buffered data since last read
+              </Typography>
+            </div>
+          )}
         </div>
       </BorderedSection>
 

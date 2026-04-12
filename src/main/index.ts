@@ -10,6 +10,7 @@ import { initLogging, log } from './Logging';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
+import { McpService } from './mcpService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
 import nodeMachineIdPkg from 'node-machine-id';
@@ -121,6 +122,8 @@ autoUpdater.on('update-downloaded', (info) => {
 // Initialize Bluetooth service (will be updated with mainWindow after createWindow)
 let bluetoothService: any;
 
+let mcpService: McpService | null = null;
+
 // Keep a global reference of the window object
 let mainWindow: BrowserWindow;
 
@@ -186,6 +189,9 @@ app.whenReady().then(async () => {
 
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
+
+  // Initialize MCP service
+  mcpService = new McpService(mainWindow);
 
   // Initialize Bluetooth service with mainWindow (only if not in CI environment)
   const isCI = process.env.CI || process.env.NODE_ENV === 'test';
@@ -447,8 +453,47 @@ ipcMain.handle('analytics:event', async (event, eventName: string) => {
   }
 });
 
+// MCP server IPC handlers
+ipcMain.handle('mcp:start', async (event, port: number) => {
+  try {
+    await mcpService?.start(port);
+    return { success: true };
+  } catch (error) {
+    log.error('Failed to start MCP server:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('mcp:stop', async () => {
+  try {
+    await mcpService?.stop();
+    return { success: true };
+  } catch (error) {
+    log.error('Failed to stop MCP server:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+ipcMain.handle('mcp:get-status', async () => {
+  return {
+    success: true,
+    running: mcpService?.isRunning ?? false,
+  };
+});
+
+// Bridge: renderer sends a response to a pending MCP renderer-request
+ipcMain.handle('mcp:response', (event, { id, data, error }: { id: string; data: any; error?: string }) => {
+  mcpService?.handleRendererResponse(id, data, error);
+});
+
+// Bridge: renderer pushes new RX data for streaming resource subscribers
+ipcMain.on('mcp:rx-data', (_event, text: string) => {
+  mcpService?.handleRxData(text);
+});
+
 // Clean up on app quit
-app.on('before-quit', () => {
+app.on('before-quit', async () => {
+  await mcpService?.stop();
   cleanupSerialPorts();
   cleanupSockets();
 });

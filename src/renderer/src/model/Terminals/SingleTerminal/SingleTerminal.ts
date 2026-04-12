@@ -19,7 +19,7 @@ import RxSettings, {
   TimestampFormat,
 } from 'src/model/Settings/RxSettings/RxSettings';
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import { SelectionController } from 'src/model/SelectionController/SelectionController';
+import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 
 export const START_OF_CONTROL_GLYPHS = 0xe000;
@@ -182,6 +182,13 @@ export class SingleTerminal {
   partialNumberBuffer: number[] = [];
 
   /**
+   * Caches the last valid SelectionInfo captured while both anchor and focus rows were
+   * in the DOM. Used to recover clipboard selection when rows have been virtualized
+   * (scrolled off-screen and removed from the DOM by react-window).
+   */
+  lastKnownSelectionInfo: SelectionInfo | null = null;
+
+  /**
    * Create a new terminal instance.
    *
    * @param id A string identifier for this terminal instance.
@@ -256,6 +263,7 @@ export class SingleTerminal {
     makeAutoObservable(this, {
       filteredTerminalRows: computed,
       terminalRows: observable.shallow, // Only observe array changes, not individual row changes
+      lastKnownSelectionInfo: false, // Not MobX-tracked; updated during renders, not via actions
     });
   }
 
@@ -1631,6 +1639,16 @@ export class SingleTerminal {
   }
 
   getSelectionInfoIfWithinTerminal() {
+    // Prefer the cached selection (set at mouseup time) when it is available.
+    // After react-window virtualizes rows, Chrome adjusts the live DOM selection to the
+    // nearest still-connected node — meaning getSelectionInfo() can return a non-null but
+    // wrong result. The mouseup-captured cache is the only reliable source of truth once
+    // rows have been scrolled off-screen.
+    // The cache is cleared on every mousedown, so it is only non-null when the user has
+    // finished a drag selection without starting a new one.
+    if (this.lastKnownSelectionInfo !== null) {
+      return this.lastKnownSelectionInfo;
+    }
     return SelectionController.getSelectionInfo(window.getSelection(), this.id);
   }
 

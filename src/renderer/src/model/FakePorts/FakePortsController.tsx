@@ -184,14 +184,14 @@ export default class FakePortsController {
     );
 
     //=================================================================================
-    // 50 numbered lines all at once
+    // 200 numbered lines all at once
     //=================================================================================
     this.fakePorts.push(
       new FakePort(
-        '50 numbered lines all at once',
-        'Sends "0\\n1\\n ..." to 49 (50 numbers) all at once. Useful for testing scroll behaviour.',
+        '200 numbered lines all at once',
+        'Sends "0\\n1\\n ..." to 199 (200 numbers) all at once. Useful for testing scroll behaviour.',
         () => {
-          for (let i = 0; i < 50; i++) {
+          for (let i = 0; i < 200; i++) {
             const textToSend = `${i}\n`;
             let bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {

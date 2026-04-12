@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.9.0] - 2026-04-12
+
+### Added
+
+- Added MCP (Model Context Protocol) server, allowing AI coding assistants such as Claude Code to read serial terminal output and send commands directly. Enable in Settings → General → MCP Server. Exposes tools: `get_terminal_output`, `send_data`, `get_connection_status`, `list_available_ports`.
+- Added smart Ctrl+C/V copy/paste behavior (enabled by default, configurable in TX Settings): Ctrl+C copies selected text to clipboard; if no text is selected and "Send 0x01-0x1A when Ctrl+A thru Ctrl+Z" is enabled, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes clipboard text to the serial port. This matches the behavior of Windows Terminal and iTerm2.
+
+### Fixed
+
+- Fixed bug where copying selected text failed if the selection anchor or focus row had been scrolled off-screen (virtualized away by react-window).
+- Fixed bug where the selection highlight would snap to row 0 after scrolling past the selected rows and back again.
+- Fixed bug where the fake port Stop button did not stop data transmission.
+
 ## [5.8.2] - 2025-10-20
 
 ### Fixed
@@ -970,7 +983,8 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added auto-scroll to TX pane, closes #89.
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
-[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...HEAD
+[unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...v5.9.0
 [5.8.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.1...v5.8.2
 [5.8.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.0...v5.8.1
 [5.8.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.7.1...v5.8.0

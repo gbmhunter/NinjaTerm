@@ -396,7 +396,36 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 12) {
+    //=============================================================================
+    // VERSION 12 -> VERSION 13
+    //=============================================================================
+    if (updatedAppData.version === 12) {
+      log.info('Updating app data from version 12 to version 13...');
+      // Add useCtrlCVForCopyPaste to tx settings for all profiles
+      let updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.txSettings.useCtrlCVForCopyPaste = true;
+      }
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 13;
+      wasChanged = true;
+    }
+
+    //=============================================================================
+    // VERSION 13 -> VERSION 14
+    //=============================================================================
+    if (updatedAppData.version === 13) {
+      log.info('Updating app data from version 13 to version 14...');
+      // Add MCP server settings at the global app level
+      updatedAppData.mcpEnabled = false;
+      updatedAppData.mcpPort = 3579;
+      updatedAppData.version = 14;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 14) {
       log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

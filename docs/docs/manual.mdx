@@ -132,9 +132,26 @@ The bottom toolbar provides a quick overview of the current state of the applica
 
 ## Other Terminal Features
 
-### Copy All Text Button
+### Copy and Paste
 
-Each terminal window has a "Copy all text" button, allowing you to quickly copy the entire content of that terminal, including its scrollback buffer, to your clipboard. You can also copy text by selecting it and pressing `Ctrl+Shift+C`, although the selection only works if it is all on screen.
+#### Copying Text
+
+Each terminal window has a "Copy all text" button, allowing you to quickly copy the entire content of that terminal, including its scrollback buffer, to your clipboard.
+
+You can also select text and copy it with `Ctrl+C` (or `Ctrl+Shift+C`). By default, `Ctrl+C` uses smart copy/paste mode (matching the behavior of Windows Terminal and iTerm2):
+
+- If text is selected, `Ctrl+C` copies it to the clipboard and clears the selection.
+- If no text is selected, `Ctrl+C` sends the 0x03 control code to the serial port as normal (requires _Send 0x01-0x1A when Ctrl+A thru Ctrl+Z is pressed_ to also be enabled in TX Settings).
+
+`Ctrl+Shift+C` always copies selected text to the clipboard regardless of this setting.
+
+#### Pasting Text
+
+`Ctrl+V` (or `Ctrl+Shift+V`) pastes text from the clipboard to the serial port. In smart copy/paste mode (default), `Ctrl+V` always pastes; with the setting disabled, use `Ctrl+Shift+V`.
+
+#### Configuring Copy/Paste Behavior
+
+The smart `Ctrl+C`/`Ctrl+V` behavior can be toggled in `Settings > TX > Meta Keys` via the _Use Ctrl+C/V for copy/paste_ checkbox. Disable it if you need `Ctrl+C` and `Ctrl+V` to always send raw control codes (0x03 and 0x16).
 
 ### Auto Scroll Lock on TX
 
@@ -405,6 +422,97 @@ $NT:GPH:ADD_FIG,id=sensors,title="Temperature Log";
 $NT:GPH:ADD_TRACE,fig=sensors,id=temp,xtype=data,name="Temperature",color=#FF0000;
 $NT:GPH:ADD_DATA,trace=temp,data=1,25|2,26|3,18|4,22|5,20;
 ```
+
+## AI Integration (MCP Server)
+
+NinjaTerm includes a built-in [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that lets AI coding assistants — such as Claude Code, Cursor, and Copilot — read serial output and send commands directly, without copy-pasting between windows.
+
+### Enabling the MCP Server
+
+1. Open `Settings > General`
+2. Check **Enable MCP server**
+3. Optionally change the port (default: `3579`)
+
+When enabled, the status bar at the bottom of the window shows **MCP ON** (green). Clicking it jumps back to the General settings page.
+
+### Connecting an AI Client
+
+Once the server is running, register it with your AI tool.
+
+**Claude Code:**
+
+```bash
+claude mcp add --transport http ninjaterm http://127.0.0.1:3579/mcp
+```
+
+**Cursor** — add the following to `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project-specific):
+
+```json
+{
+  "mcpServers": {
+    "ninjaterm": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:3579/mcp"
+    }
+  }
+}
+```
+
+**GitHub Copilot (VS Code)** — add the following to `.vscode/mcp.json` in your workspace (or run `MCP: Open Workspace Folder Configuration` from the VS Code command palette):
+
+```json
+{
+  "servers": {
+    "ninjaterm": {
+      "type": "http",
+      "url": "http://127.0.0.1:3579/mcp"
+    }
+  }
+}
+```
+
+**OpenAI (ChatGPT)** — OpenAI's MCP support currently requires a publicly accessible HTTPS endpoint and is not compatible with NinjaTerm's local-only server.
+
+The server only accepts connections from `127.0.0.1` (this machine), so it is not accessible from other devices on your network.
+
+### Available Tools
+
+| Tool | Description |
+|---|---|
+| `get_terminal_output` | Returns the last N lines of received serial data as plain text. Good for reading historical output or taking a snapshot after sending a command. |
+| `send_data` | Sends a string to the currently open serial port. Appends a newline by default (configurable). |
+| `get_connection_status` | Returns the current port path, baud rate, and connection state. |
+| `list_available_ports` | Lists serial ports visible to the operating system. |
+
+### Streaming Resource
+
+For real-time monitoring, subscribe to the `ninjaterm://terminal/rxstream` resource instead of polling `get_terminal_output`:
+
+| Scenario | Recommended approach |
+|---|---|
+| Read output that arrived before connecting | `get_terminal_output` tool |
+| React to data as it arrives | Subscribe to `ninjaterm://terminal/rxstream` |
+| One-shot snapshot after sending a command | `get_terminal_output` with a `lines` count |
+
+When the AI client subscribes, NinjaTerm sends a `notifications/resources/updated` push notification whenever new serial data arrives. The client then reads the resource to retrieve all data buffered since the last read — the buffer is cleared on each read.
+
+### Example Workflow
+
+With a microcontroller connected and NinjaTerm open, you can ask your AI assistant things like:
+
+- *"Work out why the MCU crashed based on the recent serial logs"* → the AI calls `get_terminal_output` to retrieve the last N lines and analyses them for error messages, stack traces, or fault indicators
+- *"Send the 'motor on' command via the serial port and verify by the returned log messages that the motor turned on successfully"* → the AI calls `send_data` to send the command, then calls `get_terminal_output` to check the response and confirm the expected log messages appeared
+- *"Build and flash the firmware using the connected J-Link, then verify the new feature is working"* → the AI subscribes to `ninjaterm://terminal/rxstream`, runs the build and flash commands (e.g. `cmake`, `ninja`, `JLinkExe`), then watches the incoming serial output to confirm the expected behaviour appears — all in one uninterrupted agentic loop
+
+### Why Use NinjaTerm Instead of Connecting Directly?
+
+You might wonder why an AI assistant can't just open the serial port itself using Python or Node.js. NinjaTerm stays in the loop for several good reasons:
+
+- **Human visibility** — You watch the serial output in real time as the AI works. If something looks wrong you can intervene immediately, rather than waiting for the AI to report back.
+- **No port conflicts** — Serial ports can only be opened by one process at a time. NinjaTerm holds the connection; the AI reads data through the MCP bridge without competing for the port.
+- **Zero serial configuration for the AI** — The AI doesn't need to know the COM port name, baud rate, parity, or stop bits, and doesn't need to handle platform differences in serial libraries. NinjaTerm already has the connection open and configured.
+- **Full scrollback history** — Data that arrived before the AI connected is still accessible via `get_terminal_output`, because NinjaTerm maintains a scrollback buffer. A script started fresh would miss everything that came before it.
+- **Your workflow stays the same** — If you already have NinjaTerm open during development, AI assistance is purely additive. There's nothing extra to set up and nothing to tear down when you want to go back to working manually.
 
 ## Tooltips
 

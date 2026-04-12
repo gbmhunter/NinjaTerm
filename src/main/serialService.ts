@@ -265,6 +265,37 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
   });
 }
 
+/**
+ * Returns the path of the first currently open serial port, or null if none are open.
+ * Used by the MCP service to know where to write data.
+ */
+export function getActivePortPath(): string | null {
+  for (const [portPath] of activeSerialPorts) {
+    return portPath;
+  }
+  return null;
+}
+
+/**
+ * Write bytes to an open serial port. Used by the MCP service.
+ */
+export function writeToPort(portPath: string, data: number[]): Promise<void> {
+  const port = activeSerialPorts.get(portPath);
+  if (!port) return Promise.reject(new Error(`Port not open: ${portPath}`));
+  return new Promise((resolve, reject) => {
+    port.write(Buffer.from(data), (err) => {
+      if (err) reject(err); else resolve();
+    });
+  });
+}
+
+/**
+ * List available serial ports. Used by the MCP service.
+ */
+export function listPorts() {
+  return SerialPort.list();
+}
+
 export function cleanupSerialPorts() {
   for (const [portPath, port] of activeSerialPorts) {
     try {

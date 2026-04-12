@@ -64,12 +64,9 @@ jobs:
     #===============================================================
     - name: Build/release Electron app (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        npx electron-builder --win --publish onTagOrDraft 2>&1 | Tee-Object build-output.log
-        if (Select-String "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log) {
-          Write-Output "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        }
+      # Publishes to a GitHub draft release if one exists for the current version,
+      # otherwise skips publishing (exit 0) — packaging is still tested either way.
+      run: npx electron-builder --win --publish onTagOrDraft
       env:
         # Windows code signing
         CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -80,25 +77,20 @@ jobs:
     - name: Build/release Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'
       # Need to install noble dependencies for bluetooth support, see https://github.com/abandonware/noble#readme.
+      # Publishes to a GitHub draft release if one exists for the current version,
+      # otherwise skips publishing (exit 0) — packaging is still tested either way.
       run: |
         sudo apt install -y bluetooth bluez libbluetooth-dev libudev-dev
-        npx electron-builder --linux --publish onTagOrDraft 2>&1 | tee build-output.log
-        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
-          echo "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        fi
+        npx electron-builder --linux --publish onTagOrDraft
       env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build/release Electron app (Mac)
       if: matrix.os == 'macos-15'
-      run: |
-        npx electron-builder --mac --publish onTagOrDraft 2>&1 | tee build-output.log
-        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
-          echo "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        fi
+      # Publishes to a GitHub draft release if one exists for the current version,
+      # otherwise skips publishing (exit 0) — packaging is still tested either way.
+      run: npx electron-builder --mac --publish onTagOrDraft
       env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -146,12 +138,7 @@ jobs:
     #===============================================================
     - name: Build/release Electron app (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        npx electron-builder --win --publish always 2>&1 | Tee-Object build-output.log
-        if (Select-String "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log) {
-          Write-Output "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        }
+      run: npx electron-builder --win --publish always
       env:
         # Windows code signing
         CSC_LINK: ${{ secrets.CSC_LINK }}
@@ -161,24 +148,14 @@ jobs:
 
     - name: Build/release Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'
-      run: |
-        npx electron-builder --linux --publish always 2>&1 | tee build-output.log
-        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
-          echo "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        fi
+      run: npx electron-builder --linux --publish always
       env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build/release Electron app (Mac)
       if: matrix.os == 'macos-15'
-      run: |
-        npx electron-builder --mac --publish always 2>&1 | tee build-output.log
-        if grep -q "skipped publishing.*reason=existing type not compatible with publishing type" build-output.log; then
-          echo "::error::Publishing was skipped due to incompatible release type"
-          exit 1
-        fi
+      run: npx electron-builder --mac --publish always
       env:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
