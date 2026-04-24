@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.11.0] - 2026-04-24
+
 ### Changed
 
 - Release process is now fully automated from a single command: `npm run release <X.Y.Z>`. The script runs typecheck + unit tests + app-data-snapshot preflight, finalizes CHANGELOG (moves Unreleased into a dated section and adds the compare-link), bumps `package.json`, commits, tags, and pushes. CI takes over from there — builds and signs all three platforms, creates the GitHub Release with `electron-builder --publish always`, uploads artifacts, and extracts the matching `## [X.Y.Z]` section of CHANGELOG.md as the Release body via `gh release edit`. No more manual draft-release creation, no hand-pasted release notes. See the [Releasing section of the README](./README.md#releasing) for the full walkthrough.
@@ -1004,6 +1006,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.10.0...v5.11.0
 [5.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...v5.9.0
 [5.8.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.1...v5.8.2
