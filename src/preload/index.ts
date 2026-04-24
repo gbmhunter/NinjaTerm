@@ -103,6 +103,42 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isOpen: () => ipcRenderer.invoke('devtools:is-open')
   },
 
+  // Segger RTT operations
+  rtt: {
+    connect: (options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string }) =>
+      ipcRenderer.invoke('rtt:connect', options),
+    disconnect: (connectionId: string) => ipcRenderer.invoke('rtt:disconnect', connectionId),
+    writeData: (connectionId: string, data: number[]) => ipcRenderer.invoke('rtt:write-data', connectionId, data),
+    browseExe: () => ipcRenderer.invoke('rtt:browse-exe'),
+    resolveExePath: (userPath: string) => ipcRenderer.invoke('rtt:resolve-exe-path', userPath),
+
+    // Event listeners
+    onDataReceived: (callback: (connectionId: string, data: Buffer) => void) => {
+      ipcRenderer.on('rtt:data-received', (event, connectionId, data) => callback(connectionId, data));
+    },
+    onError: (callback: (connectionId: string, error: string) => void) => {
+      ipcRenderer.on('rtt:error', (event, connectionId, error) => callback(connectionId, error));
+    },
+    onClosed: (callback: (connectionId: string) => void) => {
+      ipcRenderer.on('rtt:closed', (event, connectionId) => callback(connectionId));
+    },
+    onServerLog: (callback: (connectionId: string, line: string) => void) => {
+      ipcRenderer.on('rtt:server-log', (event, connectionId, line) => callback(connectionId, line));
+    },
+
+    removeAllListeners: (channel: string) => {
+      ipcRenderer.removeAllListeners(channel);
+    },
+
+    disconnectAllAndRemoveListeners: () => {
+      ipcRenderer.removeAllListeners('rtt:data-received');
+      ipcRenderer.removeAllListeners('rtt:error');
+      ipcRenderer.removeAllListeners('rtt:closed');
+      ipcRenderer.removeAllListeners('rtt:server-log');
+      ipcRenderer.invoke('rtt:disconnect-all');
+    },
+  },
+
   // Socket operations
   socket: {
     connect: (options: { host: string; port: number }) => ipcRenderer.invoke('socket:connect', options),
@@ -249,6 +285,19 @@ export interface ElectronAPI {
     onClosed(callback: (connectionId: string) => void): void;
     removeAllListeners(channel: string): void;
     disconnectAllSocketsAndRemoveListeners(): void;
+  };
+  rtt: {
+    connect(options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
+    disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
+    writeData(connectionId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    browseExe(): Promise<{ success: boolean; canceled?: boolean; path?: string }>;
+    resolveExePath(userPath: string): Promise<{ success: boolean; path: string | null }>;
+    onDataReceived(callback: (connectionId: string, data: Buffer) => void): void;
+    onError(callback: (connectionId: string, error: string) => void): void;
+    onClosed(callback: (connectionId: string) => void): void;
+    onServerLog(callback: (connectionId: string, line: string) => void): void;
+    removeAllListeners(channel: string): void;
+    disconnectAllAndRemoveListeners(): void;
   };
   analytics: {
     event(eventName: string): Promise<{ success: boolean; error?: string }>;

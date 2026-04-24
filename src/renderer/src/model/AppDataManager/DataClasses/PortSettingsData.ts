@@ -1,4 +1,4 @@
-import { NumDataBits, Parity, StopBits, ConnectionType, PortSettings } from "src/model/Settings/PortSettings/PortSettings";
+import { NumDataBits, Parity, StopBits, ConnectionType, PortSettings, RttInterface } from "src/model/Settings/PortSettings/PortSettings";
 
 export class PortSettingsData {
   baudRate = 115200;
@@ -29,4 +29,11 @@ export class PortSettingsData {
   socketHost = '127.0.0.1';
   socketPort = 5000;
   socketConnTimeoutMs = PortSettings.SOCKET_CONN_TIMEOUT_DEFAULT_MS;
+
+  // Segger RTT settings. rttServerExePath='' means auto-detect. rttJLinkSerialNumber='' means first available J-Link.
+  rttDevice = '';
+  rttInterface: RttInterface = RttInterface.SWD;
+  rttSpeedKHz = 4000;
+  rttServerExePath = '';
+  rttJLinkSerialNumber = '';
 }

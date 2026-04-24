@@ -11,6 +11,7 @@ export enum PortType {
   FAKE,
   SOCKET,
   BLUETOOTH,
+  RTT,
 }
 
 /**
@@ -36,6 +37,16 @@ export class ConnController {
   // Current socket connection ID for IPC communication
   currentSocketConnectionId: string | null = null;
 
+  // Current RTT connection ID for IPC communication
+  currentRttConnectionId: string | null = null;
+
+  /**
+   * Ring buffer of recent log lines from the spawned JLinkGDBServer process, shown in the
+   * Connection Settings pane so users can diagnose target-detection failures.
+   */
+  rttServerLogLines: string[] = [];
+  static RTT_SERVER_LOG_MAX_LINES = 500;
+
   // Current Bluetooth device ID for IPC communication
   currentBluetoothDeviceId: string | null = null;
 
@@ -57,6 +68,15 @@ export class ConnController {
 
   // Socket information for reconnection purposes
   socketConnectionInfo: { host: string; port: number } | null = null;
+
+  // RTT connection info (captured at open time for display / reconnection)
+  rttConnectionInfo: {
+    device: string;
+    interfaceType: 'SWD' | 'JTAG';
+    speedKHz: number;
+    serverExePath: string;
+    jLinkSerialNumber: string;
+  } | null = null;
 
   // Bluetooth device information for reconnection purposes
   bluetoothDeviceInfo: { deviceId: string; deviceName?: string } | null = null;
@@ -314,6 +334,95 @@ export class ConnController {
         this.app.setShowCircularProgressModal(false);
         return false;
       }
+    } else if (connectionType === ConnectionType.RTT) {
+      // Segger RTT connection via JLinkGDBServer
+      const portConfig = this.app.settings.portConfiguration;
+      if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
+        this.app.snackbar.sendToSnackbar('No RTT target device specified. Set the device (e.g. nRF52832_xxAA) in Connection Settings.', 'error');
+        return false;
+      }
+
+      this.app.setShowCircularProgressModal(true);
+
+      // Clear previous server log so the user sees only output from this attempt.
+      runInAction(() => {
+        this.rttServerLogLines = [];
+      });
+
+      // Register the server log listener before connect so we capture startup messages.
+      window.electronAPI.rtt.onServerLog((connectionId: string, line: string) => {
+        if (connectionId === this.currentRttConnectionId || this.currentRttConnectionId === null) {
+          runInAction(() => {
+            this.rttServerLogLines.push(line);
+            const overflow = this.rttServerLogLines.length - ConnController.RTT_SERVER_LOG_MAX_LINES;
+            if (overflow > 0) {
+              this.rttServerLogLines.splice(0, overflow);
+            }
+          });
+        }
+      });
+
+      try {
+        const result = await window.electronAPI.rtt.connect({
+          device: portConfig.rttDevice,
+          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
+          speedKHz: portConfig.rttSpeedKHz,
+          serverExePath: portConfig.rttServerExePath,
+          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        this.currentRttConnectionId = result.connectionId!;
+        this.rttConnectionInfo = {
+          device: portConfig.rttDevice,
+          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
+          speedKHz: portConfig.rttSpeedKHz,
+          serverExePath: portConfig.rttServerExePath,
+          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
+        };
+
+        window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
+          if (connectionId === this.currentRttConnectionId) {
+            const uint8Array = new Uint8Array(data);
+            this.app.parseRxData(uint8Array);
+          }
+        });
+
+        window.electronAPI.rtt.onError((connectionId: string, error: string) => {
+          if (connectionId === this.currentRttConnectionId) {
+            this.app.snackbar.sendToSnackbar(`RTT error: ${error}`, 'error');
+            this.handlePortError();
+          }
+        });
+
+        window.electronAPI.rtt.onClosed((connectionId: string) => {
+          if (connectionId === this.currentRttConnectionId) {
+            this.handlePortClosed();
+          }
+        });
+
+        runInAction(() => {
+          this.stopPollingForReconnection();
+          this.connState = ConnState.OPENED;
+          this.lastSelectedPortType = PortType.RTT;
+        });
+
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar(`RTT connected (${portConfig.rttDevice}).`, 'success');
+        }
+
+        this.app.setShowCircularProgressModal(false);
+        await window.electronAPI.analytics.event('rtt_connect');
+      } catch (error) {
+        const msg = `Error connecting via RTT: ${error}`;
+        this.app.snackbar.sendToSnackbar(msg, 'error');
+        console.error(msg);
+        this.app.setShowCircularProgressModal(false);
+        return false;
+      }
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       this.app.setShowCircularProgressModal(true);
       const connectResult = await this.bluetoothLEController.connect();
@@ -393,6 +502,24 @@ export class ConnController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else if (connectionType === ConnectionType.RTT) {
+      if (this.currentRttConnectionId) {
+        const result = await window.electronAPI.rtt.disconnect(this.currentRttConnectionId);
+        if (!result.success) {
+          console.error('Error disconnecting RTT:', result.error);
+        }
+      }
+
+      if (!silenceSnackbar) {
+        this.app.snackbar.sendToSnackbar('RTT disconnected.', 'success');
+      }
+
+      this.currentRttConnectionId = null;
+
+      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
+      window.electronAPI.rtt.removeAllListeners('rtt:error');
+      window.electronAPI.rtt.removeAllListeners('rtt:closed');
+      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // The Bluetooth LE controller handles closing the Bluetooth connection
       this.bluetoothLEController.close();
@@ -464,8 +591,9 @@ export class ConnController {
       return;
     }
 
-    // If the port was closed unexpectedly, we might want to reopen it
-    if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
+    // If the port was closed unexpectedly, we might want to reopen it.
+    // Auto-reopen is not supported for RTT in v1 — respawning JLinkGDBServer automatically is out of scope.
+    if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed && this.lastSelectedPortType !== PortType.RTT) {
       this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       // Start polling for the port to become available again
       this.startPollingForReconnection();
@@ -479,6 +607,12 @@ export class ConnController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else if (this.lastSelectedPortType === PortType.RTT) {
+      this.currentRttConnectionId = null;
+      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
+      window.electronAPI.rtt.removeAllListeners('rtt:error');
+      window.electronAPI.rtt.removeAllListeners('rtt:closed');
+      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
     } else {
       this.currentPortPath = null;
       // Remove serial port event listeners
@@ -808,6 +942,15 @@ export class ConnController {
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // For Bluetooth, need a selected device
       return this.bluetoothLEController.selectedBluetoothDevice !== null;
+    } else if (connectionType === ConnectionType.RTT) {
+      const portConfig = this.app.settings.portConfiguration;
+      if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
+        return false;
+      }
+      if (portConfig.rttSpeedErrorMsg !== '') {
+        return false;
+      }
+      return true;
     }
 
     // Unknown connection type
@@ -834,6 +977,11 @@ export class ConnController {
     } else if (connectionType === ConnectionType.SOCKET) {
       // Socket connection
       const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.RTT) {
+      const result = await window.electronAPI.rtt.writeData(this.currentRttConnectionId!, Array.from(bytesToWrite));
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }

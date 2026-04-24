@@ -46,6 +46,12 @@ export enum ConnectionType {
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
   BLUETOOTH_LE = 'bluetooth',
+  RTT = 'rtt',
+}
+
+export enum RttInterface {
+  SWD = 'SWD',
+  JTAG = 'JTAG',
 }
 
 export class PortSettings {
@@ -70,6 +76,12 @@ export class PortSettings {
 
   /** Validation error message for the socket connection timeout input. Is an empty string if the input is valid. */
   socketConnTimeoutErrorMsg = '';
+
+  static RTT_SPEED_MIN_KHZ = 1;
+  static RTT_SPEED_DEFAULT_KHZ = 4000;
+  static RTT_SPEED_MAX_KHZ = 50000;
+  rttSpeedValidation = z.coerce.number().int().min(PortSettings.RTT_SPEED_MIN_KHZ).max(PortSettings.RTT_SPEED_MAX_KHZ);
+  rttSpeedErrorMsg = '';
 
   baudRate = 115200;
 
@@ -109,6 +121,13 @@ export class PortSettings {
   socketHost = '127.0.0.1';
   socketPort = 5000;
   socketConnTimeoutDispMs = '5000';
+
+  // Segger RTT settings
+  rttDevice = '';
+  rttInterface: RttInterface = RttInterface.SWD;
+  rttSpeedDispKHz = '4000';
+  rttServerExePath = '';
+  rttJLinkSerialNumber = '';
 
   // Bluetooth connection settings
   // availableBluetoothDevices: SerializableBluetoothDevice[] = [];
@@ -316,6 +335,40 @@ export class PortSettings {
     this._saveConfig();
   }
 
+  setRttDevice = (device: string) => {
+    this.rttDevice = device;
+    this._saveConfig();
+  }
+
+  setRttInterface = (iface: RttInterface) => {
+    this.rttInterface = iface;
+    this._saveConfig();
+  }
+
+  setRttSpeedDispKHz = (value: string) => {
+    this.rttSpeedDispKHz = value;
+  }
+
+  applyRttSpeed = () => {
+    const parsed = this.rttSpeedValidation.safeParse(this.rttSpeedDispKHz);
+    if (!parsed.success) {
+      this.rttSpeedErrorMsg = parsed.error.errors[0].message;
+      return;
+    }
+    this.rttSpeedErrorMsg = '';
+    this._saveConfig();
+  }
+
+  setRttServerExePath = (value: string) => {
+    this.rttServerExePath = value;
+    this._saveConfig();
+  }
+
+  setRttJLinkSerialNumber = (value: string) => {
+    this.rttJLinkSerialNumber = value;
+    this._saveConfig();
+  }
+
   _loadConfig = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
@@ -342,6 +395,14 @@ export class PortSettings {
     this.socketConnTimeoutDispMs = configToLoad.socketConnTimeoutMs.toString();
     this.applySocketConnTimeout();
 
+    // Load RTT settings
+    this.rttDevice = configToLoad.rttDevice;
+    this.rttInterface = configToLoad.rttInterface;
+    this.rttSpeedDispKHz = configToLoad.rttSpeedKHz.toString();
+    this.applyRttSpeed();
+    this.rttServerExePath = configToLoad.rttServerExePath;
+    this.rttJLinkSerialNumber = configToLoad.rttJLinkSerialNumber;
+
     this.setBaudRateInputValue(this.baudRate.toString());
   };
 
@@ -366,6 +427,12 @@ export class PortSettings {
     config.socketPort = this.socketPort;
     config.socketConnTimeoutMs = this.socketConnTimeoutMs;
 
+    config.rttDevice = this.rttDevice;
+    config.rttInterface = this.rttInterface;
+    config.rttSpeedKHz = this.rttSpeedKHz;
+    config.rttServerExePath = this.rttServerExePath;
+    config.rttJLinkSerialNumber = this.rttJLinkSerialNumber;
+
     this.profileManager.saveAppData();
   };
 
@@ -383,6 +450,14 @@ export class PortSettings {
     return parsed.data;
   }
 
+  get rttSpeedKHz() {
+    const parsed = this.rttSpeedValidation.safeParse(this.rttSpeedDispKHz);
+    if (!parsed.success) {
+      return PortSettings.RTT_SPEED_DEFAULT_KHZ;
+    }
+    return parsed.data;
+  }
+
   /**
    * TODO: This really belongs in the ConnController (or the classes that are responsible for different connection types, e.g. BluetoothLEController).
    */
@@ -395,6 +470,9 @@ export class PortSettings {
         return 'n/a';
       }
       return `${connectedBluetoothDevice.nobleData.advertisement.localName} (${connectedBluetoothDevice.nobleData.id})`;
+    } else if (this.connectionType === ConnectionType.RTT) {
+      const device = this.rttDevice || 'no device';
+      return `${device} ${this.rttInterface} ${this.rttSpeedKHz}kHz`;
     } else {
       return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
     }
