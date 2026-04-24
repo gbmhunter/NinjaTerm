@@ -670,32 +670,34 @@ function PortSettingsView(props: Props) {
             {/* OPEN/CLOSE BUTTON FOR SOCKET */}
             {/* =============================================================== */}
             <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Open or close the socket connection.">
-              <Button
-                variant="contained"
-                size="medium"
-                sx={{ width: 160 }}
-                color={
-                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
-                    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                    ButtonPropsColorOverrides
-                  >
-                }
-                onClick={() => {
-                  if (app.connController.connState === ConnState.CLOSED) {
-                    app.connController.openConnection();
-                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-                    app.connController.stopWaitingToReopenPort();
-                  } else if (app.connController.connState === ConnState.OPENED) {
-                    app.connController.closeConnection();
-                  } else {
-                    throw Error('Invalid port state.');
+              <span>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  sx={{ width: 160 }}
+                  color={
+                    portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
+                      'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                      ButtonPropsColorOverrides
+                    >
                   }
-                }}
-                disabled={!app.connController.isReadyToOpen()}
-                data-testid="socket-open-close-button"
-              >
-                {portStateToButtonProps[app.connController.connState].text}
-              </Button>
+                  onClick={() => {
+                    if (app.connController.connState === ConnState.CLOSED) {
+                      app.connController.openConnection();
+                    } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                      app.connController.stopWaitingToReopenPort();
+                    } else if (app.connController.connState === ConnState.OPENED) {
+                      app.connController.closeConnection();
+                    } else {
+                      throw Error('Invalid port state.');
+                    }
+                  }}
+                  disabled={!app.connController.isReadyToOpen()}
+                  data-testid="socket-open-close-button"
+                >
+                  {portStateToButtonProps[app.connController.connState].text}
+                </Button>
+              </span>
             </Tooltip>
             {/* =============================================================== */}
             {/* SOCKET STATUS */}
@@ -893,51 +895,55 @@ function PortSettingsView(props: Props) {
               {...app.settings.displaySettings.getBasicTooltipConfig()}
               title="Search the standard SEGGER install locations on this machine and fill in the first path found."
             >
-              <Button
-                variant="outlined"
-                size="medium"
-                disabled={app.connController.connState !== ConnState.CLOSED}
-                onClick={async () => {
-                  const result = await window.electronAPI.rtt.resolveExePath('');
-                  if (result.success && result.path) {
-                    app.settings.portConfiguration.setRttServerExePath(result.path);
-                    app.snackbar.sendToSnackbar(`Found J-Link Commander at ${result.path}`, 'success');
-                  } else {
-                    app.snackbar.sendToSnackbar('J-Link Commander not found in standard install locations. Use Browse... to select it manually.', 'warning');
-                  }
-                }}
-              >
-                Locate
-              </Button>
+              <span>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  disabled={app.connController.connState !== ConnState.CLOSED}
+                  onClick={async () => {
+                    const result = await window.electronAPI.rtt.resolveExePath('');
+                    if (result.success && result.path) {
+                      app.settings.portConfiguration.setRttServerExePath(result.path);
+                      app.snackbar.sendToSnackbar(`Found J-Link Commander at ${result.path}`, 'success');
+                    } else {
+                      app.snackbar.sendToSnackbar('J-Link Commander not found in standard install locations. Use Browse... to select it manually.', 'warning');
+                    }
+                  }}
+                >
+                  Locate
+                </Button>
+              </span>
             </Tooltip>
           </div>
 
           <div id="rtt-open-close-button" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: 16 }}>
             <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Open or close the RTT connection. Spawns J-Link Commander on open.">
-              <Button
-                variant="contained"
-                size="medium"
-                sx={{ width: 160 }}
-                color={
-                  portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
-                    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-                    ButtonPropsColorOverrides
-                  >
-                }
-                onClick={() => {
-                  if (app.connController.connState === ConnState.CLOSED) {
-                    app.connController.openConnection();
-                  } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-                    app.connController.stopWaitingToReopenPort();
-                  } else if (app.connController.connState === ConnState.OPENED) {
-                    app.connController.closeConnection();
+              <span>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  sx={{ width: 160 }}
+                  color={
+                    portStateToButtonProps[app.connController.connState].color as OverridableStringUnion<
+                      'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+                      ButtonPropsColorOverrides
+                    >
                   }
-                }}
-                disabled={!app.connController.isReadyToOpen()}
-                data-testid="rtt-open-close-button"
-              >
-                {portStateToButtonProps[app.connController.connState].text}
-              </Button>
+                  onClick={() => {
+                    if (app.connController.connState === ConnState.CLOSED) {
+                      app.connController.openConnection();
+                    } else if (app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
+                      app.connController.stopWaitingToReopenPort();
+                    } else if (app.connController.connState === ConnState.OPENED) {
+                      app.connController.closeConnection();
+                    }
+                  }}
+                  disabled={!app.connController.isReadyToOpen()}
+                  data-testid="rtt-open-close-button"
+                >
+                  {portStateToButtonProps[app.connController.connState].text}
+                </Button>
+              </span>
             </Tooltip>
             <Typography sx={{ alignSelf: 'center' }}>Status: {ConnState[app.connController.connState]}</Typography>
           </div>
