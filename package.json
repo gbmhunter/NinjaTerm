@@ -219,7 +219,8 @@
     "publish": {
       "provider": "github",
       "owner": "gbmhunter",
-      "repo": "NinjaTerm"
+      "repo": "NinjaTerm",
+      "releaseType": "release"
     }
   },
   "type": "module"

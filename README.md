@@ -130,9 +130,13 @@ Choosing a number follows semver:
 
 The script runs typecheck + unit tests + the snapshot preflight, finalizes
 CHANGELOG (moves `Unreleased` into a dated section and adds the compare link),
-writes `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}`, and pushes
-`main` with the tag. Pass `--dry-run` to preview the changes without writing
-anything, or `--allow-dev` to release from the `dev` branch.
+writes `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}` (annotated),
+and pushes `main` with the tag. Pass `--preview` to see what the changes would
+look like without writing anything, or `--allow-dev` to release from the `dev`
+branch.
+
+(We use `--preview` rather than `--dry-run` because npm intercepts `--dry-run`
+as one of its own flags before it reaches the script.)
 
 From there CI takes over: it builds and signs all three platforms, creates the
 GitHub Release, uploads the installers / updater manifests, and extracts the
