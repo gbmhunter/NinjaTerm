@@ -45,7 +45,9 @@ export class ConnController {
    * Connection Settings pane so users can diagnose target-detection failures.
    */
   rttServerLogLines: string[] = [];
-  static RTT_SERVER_LOG_MAX_LINES = 500;
+  // Capped to keep the Connection Settings log pane from bloating memory or re-render cost
+  // during long-running sessions that emit periodic log noise.
+  static RTT_SERVER_LOG_MAX_LINES = 100;
 
   // Current Bluetooth device ID for IPC communication
   currentBluetoothDeviceId: string | null = null;

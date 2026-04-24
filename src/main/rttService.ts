@@ -19,10 +19,10 @@ const SERVER_READY_TIMEOUT_MS = 15 * 1000;
 const RTT_TELNET_PORT = 19021;
 
 /**
- * How many lines of server stdout/stderr to keep in memory per session. Surfaced to the renderer
- * so the user can see target detection errors (wrong device, wrong interface, probe not plugged in, etc.).
+ * Main-side ring-buffer cap for Commander log lines. Only used for the error-message tail
+ * (last 10 lines) when startup fails — the renderer has its own 100-line cap for display.
  */
-const MAX_SERVER_LOG_LINES = 500;
+const MAX_SERVER_LOG_LINES = 100;
 
 interface RttSession {
   serverProcess: ChildProcess;
