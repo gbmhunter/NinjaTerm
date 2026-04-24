@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.10.0] - 2026-04-24
+
 ### Added
 
 - Added Segger RTT as a new connection type. NinjaTerm spawns J-Link Commander (`JLink.exe`) with a generated script, attaches to the target, and connects to RTT channel 0 on TCP port 19021 for bidirectional communication. Connection Settings pane has fields for target device, interface (SWD/JTAG), speed, J-Link serial number, and an auto-detecting "Locate" button for the Commander path (searches versioned `C:\Program Files\SEGGER\JLink_V*` install folders and picks the newest).
@@ -998,6 +1000,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...v5.9.0
 [5.8.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.1...v5.8.2
 [5.8.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.0...v5.8.1
