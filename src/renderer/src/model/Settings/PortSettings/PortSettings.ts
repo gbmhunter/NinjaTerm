@@ -128,6 +128,8 @@ export class PortSettings {
   rttSpeedDispKHz = '4000';
   rttServerExePath = '';
   rttJLinkSerialNumber = '';
+  rttRecentDevices: string[] = [];
+  static RTT_RECENT_DEVICES_MAX = 5;
 
   // Bluetooth connection settings
   // availableBluetoothDevices: SerializableBluetoothDevice[] = [];
@@ -369,7 +371,36 @@ export class PortSettings {
     this._saveConfig();
   }
 
+  /**
+   * Record that an RTT device was just used successfully. The device moves to the front of
+   * the recent list; the list is capped at `RTT_RECENT_DEVICES_MAX` entries. Empty values
+   * are ignored.
+   */
+  pushRttRecentDevice = (device: string) => {
+    const trimmed = device.trim();
+    if (trimmed === '') return;
+    const without = this.rttRecentDevices.filter((d) => d !== trimmed);
+    this.rttRecentDevices = [trimmed, ...without].slice(0, PortSettings.RTT_RECENT_DEVICES_MAX);
+    this._saveConfig();
+  }
+
+  /**
+   * When true, `_saveConfig` is a no-op. Set while `_loadConfig` runs so that helpers like
+   * `applySocketConnTimeout` — which normally save — don't clobber localStorage with a
+   * half-populated snapshot before the rest of the fields have been read from disk.
+   */
+  _isLoading = false;
+
   _loadConfig = () => {
+    this._isLoading = true;
+    try {
+      this._loadConfigInner();
+    } finally {
+      this._isLoading = false;
+    }
+  };
+
+  _loadConfigInner = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
     // At this point we are confident that the deserialized config matches what
@@ -402,11 +433,14 @@ export class PortSettings {
     this.applyRttSpeed();
     this.rttServerExePath = configToLoad.rttServerExePath;
     this.rttJLinkSerialNumber = configToLoad.rttJLinkSerialNumber;
+    // Tolerate saved blobs from before this field existed.
+    this.rttRecentDevices = Array.isArray(configToLoad.rttRecentDevices) ? configToLoad.rttRecentDevices : [];
 
     this.setBaudRateInputValue(this.baudRate.toString());
   };
 
   _saveConfig = () => {
+    if (this._isLoading) return;
     let config = this.profileManager.appData.currentAppConfig.settings.portSettings;
 
     config.baudRate = this.baudRate;
@@ -432,6 +466,7 @@ export class PortSettings {
     config.rttSpeedKHz = this.rttSpeedKHz;
     config.rttServerExePath = this.rttServerExePath;
     config.rttJLinkSerialNumber = this.rttJLinkSerialNumber;
+    config.rttRecentDevices = this.rttRecentDevices.slice();
 
     this.profileManager.saveAppData();
   };

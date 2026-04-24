@@ -38,6 +38,7 @@ import {
   ConnectionType,
   RttInterface,
 } from '@/model/Settings/PortSettings/PortSettings';
+import { COMMON_JLINK_DEVICES } from '@/model/Settings/PortSettings/JLinkDevices';
 import { portStateToButtonProps } from '@/view/Components/PortStateToButtonProps';
 import styles from './ConnectionSettingsView.module.css';
 import {
@@ -719,22 +720,47 @@ function PortSettingsView(props: Props) {
 
           <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', marginTop: '16px', gap: '10px' }}>
             {/* DEVICE */}
-            <Tooltip
-              {...app.settings.displaySettings.getBasicTooltipConfig()}
-              title="SEGGER target device identifier, e.g. nRF52832_xxAA, STM32F407VG, RP2040_M0_0. Use the same name accepted by the `device` command in J-Link Commander."
-            >
-              <TextField
-                label="Target device"
-                value={app.settings.portConfiguration.rttDevice}
-                disabled={app.connController.connState !== ConnState.CLOSED}
-                onChange={(e) => {
-                  app.settings.portConfiguration.setRttDevice(e.target.value);
-                }}
-                sx={{ width: 260 }}
-                size="small"
-                helperText="SEGGER device name"
-              />
-            </Tooltip>
+            {(() => {
+              const recents = app.settings.portConfiguration.rttRecentDevices;
+              const recentsSet = new Set(recents);
+              // Recents come first (so they sort to the top of their group), followed by curated
+              // common devices with recents filtered out to avoid duplicate entries.
+              const deviceOptions = [
+                ...recents,
+                ...COMMON_JLINK_DEVICES.filter((d) => !recentsSet.has(d)),
+              ];
+              return (
+                <Tooltip
+                  {...app.settings.displaySettings.getBasicTooltipConfig()}
+                  title="SEGGER target device identifier, e.g. nRF52832_xxAA, STM32F407VG, RP2040_M0_0. Pick from the suggestions or type any device name accepted by J-Link Commander's `device` command. J-Link's full device list has thousands of entries — if yours isn't in the dropdown just type it in."
+                >
+                  <Autocomplete
+                    freeSolo
+                    autoHighlight
+                    selectOnFocus
+                    options={deviceOptions}
+                    groupBy={(option) => (recentsSet.has(option) ? 'Recently used' : 'Common devices')}
+                    value={app.settings.portConfiguration.rttDevice}
+                    onChange={(_e, newValue) => {
+                      app.settings.portConfiguration.setRttDevice(newValue ?? '');
+                    }}
+                    onInputChange={(_e, newInputValue) => {
+                      app.settings.portConfiguration.setRttDevice(newInputValue);
+                    }}
+                    disabled={app.connController.connState !== ConnState.CLOSED}
+                    sx={{ width: 260 }}
+                    size="small"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Target device"
+                        helperText="SEGGER device name (type to filter)"
+                      />
+                    )}
+                  />
+                </Tooltip>
+              );
+            })()}
 
             {/* INTERFACE */}
             <Tooltip

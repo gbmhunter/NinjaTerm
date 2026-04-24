@@ -36,4 +36,6 @@ export class PortSettingsData {
   rttSpeedKHz = 4000;
   rttServerExePath = '';
   rttJLinkSerialNumber = '';
+  // Last N device names that successfully connected, most recent first. Surfaced at the top of the device dropdown.
+  rttRecentDevices: string[] = [];
 }

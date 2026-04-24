@@ -46,6 +46,7 @@
     "Disp",
     "distros",
     "domcontentloaded",
+    "Espressif",
     "gbmhunter",
     "HUPCL",
     "IXANY",
@@ -65,6 +66,7 @@
     "Rescan",
     "RSSI",
     "rtscts",
+    "SAMD",
     "samuelmeuli",
     "scrollback",
     "Scrolllock",
@@ -88,6 +90,7 @@
     "XOFF",
     "Xpress",
     "XTAL",
+    "Xtensa",
     "xtype",
     "ylabel"
   ],

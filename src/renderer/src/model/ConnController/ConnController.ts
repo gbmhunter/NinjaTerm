@@ -414,6 +414,9 @@ export class ConnController {
           this.app.snackbar.sendToSnackbar(`RTT connected (${portConfig.rttDevice}).`, 'success');
         }
 
+        // Promote this device to the top of the recently-used list now that we know it works.
+        this.app.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
+
         this.app.setShowCircularProgressModal(false);
         await window.electronAPI.analytics.event('rtt_connect');
       } catch (error) {
