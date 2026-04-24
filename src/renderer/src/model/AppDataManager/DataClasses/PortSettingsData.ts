@@ -36,6 +36,9 @@ export class PortSettingsData {
   rttSpeedKHz = 4000;
   rttServerExePath = '';
   rttJLinkSerialNumber = '';
+  // RTT up/down channel index. Default 0 ("Terminal"). J-Link supports up to 16 channels;
+  // selection is sent to J-Link's TCP telnet server via a config string immediately after connect.
+  rttChannel = 0;
   // Last N device names that successfully connected, most recent first. Surfaced at the top of the device dropdown.
   rttRecentDevices: string[] = [];
 }

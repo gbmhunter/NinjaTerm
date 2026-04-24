@@ -437,6 +437,7 @@ export class AppDataManager {
         rootConfig.settings.portSettings.rttSpeedKHz = 4000;
         rootConfig.settings.portSettings.rttServerExePath = '';
         rootConfig.settings.portSettings.rttJLinkSerialNumber = '';
+        rootConfig.settings.portSettings.rttChannel = 0;
         rootConfig.settings.portSettings.rttRecentDevices = [];
       };
       for (let i = 0; i < updatedAppData.profiles.length; i++) {

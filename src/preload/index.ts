@@ -105,7 +105,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Segger RTT operations
   rtt: {
-    connect: (options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string }) =>
+    connect: (options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string; channel: number }) =>
       ipcRenderer.invoke('rtt:connect', options),
     disconnect: (connectionId: string) => ipcRenderer.invoke('rtt:disconnect', connectionId),
     writeData: (connectionId: string, data: number[]) => ipcRenderer.invoke('rtt:write-data', connectionId, data),
@@ -287,7 +287,7 @@ export interface ElectronAPI {
     disconnectAllSocketsAndRemoveListeners(): void;
   };
   rtt: {
-    connect(options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
+    connect(options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string; channel: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
     disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
     writeData(connectionId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
     browseExe(): Promise<{ success: boolean; canceled?: boolean; path?: string }>;

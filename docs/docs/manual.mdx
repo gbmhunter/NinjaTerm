@@ -126,7 +126,7 @@ A **J-Link Commander output** pane is shown on the Connection Settings page duri
 
 If the probe disappears mid-session (e.g. dev kit unplugged), NinjaTerm detects the loss from the Commander log (`Connection to emulator lost!`), transitions the connection to `CLOSED_BUT_WILL_REOPEN`, and polls every 5 seconds. When the dev kit is plugged back in, the session is automatically restored with a confirmation snackbar. On Windows, before each reconnection attempt NinjaTerm runs a quick `Get-PnpDevice` query for a SEGGER USB device (VID 0x1366) so Commander's interactive "Probe selection" GUI dialog is never triggered while the cable is still out.
 
-Only RTT up-channel 0 and down-channel 0 are used — the default Segger `SEGGER_RTT_printf` / `SEGGER_RTT_Read` channels. Multi-channel RTT is not currently supported.
+NinjaTerm defaults to RTT up/down channel 0 (the "Terminal" channel, what `SEGGER_RTT_printf` / `SEGGER_RTT_Read` use by default). A different channel can be selected via the **RTT channel** field in Connection Settings (0–15). Under the hood, NinjaTerm sends SEGGER's telnet config string `$$SEGGER_TELNET_ConfigStr=RTTCh;N$$` immediately after the TCP connect so J-Link's server forwards the requested channel. See [SEGGER's J-Link RTT TELNET Channel docs](https://kb.segger.com/J-Link_RTT_TELNET_Channel) for details.
 
 ## ANSI Escape Codes
 

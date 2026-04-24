@@ -385,6 +385,7 @@ export class ConnController {
           speedKHz: portConfig.rttSpeedKHz,
           serverExePath: portConfig.rttServerExePath,
           jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
+          channel: portConfig.rttChannel,
         });
 
         if (!result.success) {

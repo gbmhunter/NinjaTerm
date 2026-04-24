@@ -811,6 +811,34 @@ function PortSettingsView(props: Props) {
               />
             </Tooltip>
 
+            {/* RTT CHANNEL */}
+            <Tooltip
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+              title={`RTT up/down channel index (${PortSettings.RTT_CHANNEL_MIN}-${PortSettings.RTT_CHANNEL_MAX}). Almost all firmwares use channel 0 (Terminal) — leave at 0 unless you know your firmware uses a different RTT channel.`}
+            >
+              <TextField
+                label="RTT channel"
+                value={app.settings.portConfiguration.rttChannelDisp}
+                disabled={app.connController.connState !== ConnState.CLOSED}
+                error={app.settings.portConfiguration.rttChannelErrorMsg !== ''}
+                helperText={app.settings.portConfiguration.rttChannelErrorMsg || `${PortSettings.RTT_CHANNEL_MIN}-${PortSettings.RTT_CHANNEL_MAX} (0 = Terminal)`}
+                onChange={(e) => {
+                  app.settings.portConfiguration.setRttChannelDisp(e.target.value);
+                }}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    app.settings.portConfiguration.applyRttChannel();
+                  }
+                  e.stopPropagation();
+                }}
+                onBlur={() => {
+                  app.settings.portConfiguration.applyRttChannel();
+                }}
+                sx={{ width: 120 }}
+                size="small"
+              />
+            </Tooltip>
+
             {/* JLINK SERIAL NUMBER */}
             <Tooltip
               {...app.settings.displaySettings.getBasicTooltipConfig()}

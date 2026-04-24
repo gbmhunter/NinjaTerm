@@ -83,6 +83,13 @@ export class PortSettings {
   rttSpeedValidation = z.coerce.number().int().min(PortSettings.RTT_SPEED_MIN_KHZ).max(PortSettings.RTT_SPEED_MAX_KHZ);
   rttSpeedErrorMsg = '';
 
+  // J-Link supports up to 16 RTT channels. 0 is the default "Terminal" channel and
+  // is what the vast majority of firmwares use.
+  static RTT_CHANNEL_MIN = 0;
+  static RTT_CHANNEL_MAX = 15;
+  rttChannelValidation = z.coerce.number().int().min(PortSettings.RTT_CHANNEL_MIN).max(PortSettings.RTT_CHANNEL_MAX);
+  rttChannelErrorMsg = '';
+
   baudRate = 115200;
 
   numDataBits: NumDataBits = 8;
@@ -128,6 +135,7 @@ export class PortSettings {
   rttSpeedDispKHz = '4000';
   rttServerExePath = '';
   rttJLinkSerialNumber = '';
+  rttChannelDisp = '0';
   rttRecentDevices: string[] = [];
   static RTT_RECENT_DEVICES_MAX = 5;
 
@@ -371,6 +379,20 @@ export class PortSettings {
     this._saveConfig();
   }
 
+  setRttChannelDisp = (value: string) => {
+    this.rttChannelDisp = value;
+  }
+
+  applyRttChannel = () => {
+    const parsed = this.rttChannelValidation.safeParse(this.rttChannelDisp);
+    if (!parsed.success) {
+      this.rttChannelErrorMsg = parsed.error.errors[0].message;
+      return;
+    }
+    this.rttChannelErrorMsg = '';
+    this._saveConfig();
+  }
+
   /**
    * Record that an RTT device was just used successfully. The device moves to the front of
    * the recent list; the list is capped at `RTT_RECENT_DEVICES_MAX` entries. Empty values
@@ -433,7 +455,10 @@ export class PortSettings {
     this.applyRttSpeed();
     this.rttServerExePath = configToLoad.rttServerExePath;
     this.rttJLinkSerialNumber = configToLoad.rttJLinkSerialNumber;
-    // Tolerate saved blobs from before this field existed.
+    // Tolerate saved blobs from before these fields existed.
+    const savedChannel = typeof configToLoad.rttChannel === 'number' ? configToLoad.rttChannel : 0;
+    this.rttChannelDisp = savedChannel.toString();
+    this.applyRttChannel();
     this.rttRecentDevices = Array.isArray(configToLoad.rttRecentDevices) ? configToLoad.rttRecentDevices : [];
 
     this.setBaudRateInputValue(this.baudRate.toString());
@@ -466,6 +491,7 @@ export class PortSettings {
     config.rttSpeedKHz = this.rttSpeedKHz;
     config.rttServerExePath = this.rttServerExePath;
     config.rttJLinkSerialNumber = this.rttJLinkSerialNumber;
+    config.rttChannel = this.rttChannel;
     config.rttRecentDevices = this.rttRecentDevices.slice();
 
     this.profileManager.saveAppData();
@@ -489,6 +515,14 @@ export class PortSettings {
     const parsed = this.rttSpeedValidation.safeParse(this.rttSpeedDispKHz);
     if (!parsed.success) {
       return PortSettings.RTT_SPEED_DEFAULT_KHZ;
+    }
+    return parsed.data;
+  }
+
+  get rttChannel() {
+    const parsed = this.rttChannelValidation.safeParse(this.rttChannelDisp);
+    if (!parsed.success) {
+      return 0;
     }
     return parsed.data;
   }

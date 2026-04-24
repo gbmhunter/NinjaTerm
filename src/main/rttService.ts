@@ -54,6 +54,8 @@ export interface RttConnectOptions {
   speedKHz: number;
   serverExePath: string;
   jLinkSerialNumber: string;
+  /** RTT up/down channel index (0..15). 0 = default "Terminal" channel. */
+  channel: number;
 }
 
 function sendBatchedData(connectionId: string, mainWindow: BrowserWindow | null) {
@@ -599,6 +601,20 @@ async function spawnAndConnect(
       await new Promise((r) => setTimeout(r, 250));
     }
   })();
+
+  // Select a non-default RTT channel via SEGGER's telnet config-string protocol. J-Link's
+  // TCP server accepts exactly one config string within 100 ms of the connect, after which
+  // any bytes we write are treated as plain data. Writing immediately here is well within
+  // the window. Omitted entirely for channel 0 (default) to avoid any risk of interference.
+  // See https://kb.segger.com/J-Link_RTT_TELNET_Channel
+  const channel = Number.isInteger(options.channel) ? options.channel : 0;
+  if (channel > 0) {
+    try {
+      socket.write(`$$SEGGER_TELNET_ConfigStr=RTTCh;${channel}$$`);
+    } catch (err) {
+      console.error('Failed to send RTT channel config string:', err);
+    }
+  }
 
   session.socket = socket;
   attachSocketHandlers(socket, mainWindow, connectionId);
