@@ -19,6 +19,14 @@ const SERVER_READY_TIMEOUT_MS = 15 * 1000;
 const RTT_TELNET_PORT = 19021;
 
 /**
+ * SEGGER's USB vendor ID. Used by J-Link and J-Link OB (onboard on Nordic DKs, STM32 Nucleo
+ * etc.). We check for this at the OS level before spawning Commander so we can skip the
+ * spawn entirely when no probe is plugged in — otherwise Commander briefly pops its
+ * interactive "Probe selection" GUI dialog even with `-ExitOnError 1`.
+ */
+const SEGGER_USB_VID_HEX = '1366';
+
+/**
  * Main-side ring-buffer cap for Commander log lines. Only used for the error-message tail
  * (last 10 lines) when startup fails — the renderer has its own 100-line cap for display.
  */
@@ -172,6 +180,37 @@ export function isServerReadyLog(logText: string): boolean {
   );
 }
 
+/**
+ * Returns true if the given line indicates the J-Link probe has dropped (e.g. USB cable
+ * pulled). Commander keeps running and holds port 19021 open after this, so we can't rely
+ * on the RTT socket closing — we have to watch the log to detect the disconnection.
+ */
+export function isProbeLostLog(logText: string): boolean {
+  return (
+    logText.includes('Connection to emulator lost') ||
+    logText.includes('Connection to J-Link lost') ||
+    logText.includes('Emulator connection lost') ||
+    logText.includes('Target connection lost')
+  );
+}
+
+/**
+ * Returns true if the line indicates Commander failed to find any probe at startup. When
+ * we see this we kill Commander immediately to stop its interactive "Probe selection" GUI
+ * dialog from popping up (common during reconnection polling while the cable is still out).
+ */
+export function isNoProbeLog(logText: string): boolean {
+  return (
+    logText.includes('No J-Link emulator') ||
+    logText.includes('No probes connected') ||
+    logText.includes('Cannot find any J-Link') ||
+    logText.includes('Failed to open USB device') ||
+    logText.includes('Connecting to J-Link via USB...FAIL') ||
+    logText.includes('Cannot connect to the probe') ||
+    logText.includes('Probe selection')
+  );
+}
+
 function appendServerLog(session: RttSession, line: string) {
   session.serverLogLines.push(line);
   if (session.serverLogLines.length > MAX_SERVER_LOG_LINES) {
@@ -272,6 +311,52 @@ function attachSocketHandlers(socket: net.Socket, mainWindow: BrowserWindow, con
 }
 
 /**
+ * Returns true if at least one USB device with SEGGER's vendor ID (1366) is currently
+ * enumerated by the OS. Used to skip spawning J-Link Commander when no probe is plugged
+ * in, which prevents Commander's interactive "Probe selection" GUI dialog from flashing up
+ * during reconnection polling.
+ *
+ * Windows-only for now (uses PowerShell's Get-PnpDevice). On other platforms we return
+ * true, letting the spawn proceed normally — Commander on macOS/Linux prints an error and
+ * exits without a GUI dialog anyway.
+ */
+export function checkJLinkProbePresent(timeoutMs = 2500): Promise<boolean> {
+  if (process.platform !== 'win32') return Promise.resolve(true);
+  return new Promise<boolean>((resolve) => {
+    let settled = false;
+    let timer: NodeJS.Timeout | null = null;
+    const done = (present: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      resolve(present);
+    };
+    try {
+      const ps = spawn(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          `(@(Get-PnpDevice -PresentOnly -ErrorAction SilentlyContinue | Where-Object { $_.InstanceId -like 'USB\\VID_${SEGGER_USB_VID_HEX}*' }).Count -gt 0)`,
+        ],
+        { windowsHide: true },
+      );
+      let out = '';
+      ps.stdout?.on('data', (d: Buffer) => (out += d.toString()));
+      ps.once('error', () => done(true)); // If PowerShell itself fails, fall back to "assume present" so we don't block.
+      ps.once('exit', () => done(out.trim().toLowerCase() === 'true'));
+      timer = setTimeout(() => {
+        try { if (!ps.killed) ps.kill(); } catch { /* ignore */ }
+        done(true); // Don't block the session on a slow PowerShell.
+      }, timeoutMs);
+    } catch {
+      done(true);
+    }
+  });
+}
+
+/**
  * One attempt at a TCP connect. Resolves with the connected socket on success (the caller
  * owns it from there), or `null` on timeout/error (socket is already destroyed).
  */
@@ -320,6 +405,11 @@ function writeCommanderScript(connectionId: string, options: RttConnectOptions):
   // Commander I/O to a file in real time, which we can tail.
   const lines: string[] = [];
   lines.push(`Log ${logFilePath}`);
+  // Force non-interactive error handling. Without this, a failed USB connect (e.g. probe
+  // unplugged during reconnection polling) triggers Commander's interactive "Probe selection"
+  // GUI dialog. With it set, Commander exits with a non-zero code on any error, which our
+  // spawnAndConnect polling loop treats as a failed attempt and retries.
+  lines.push('ExitOnError 1');
   // Select a specific probe if the user gave an S/N. Must come before `connect`.
   if (options.jLinkSerialNumber && options.jLinkSerialNumber.trim() !== '') {
     lines.push(`USB ${options.jLinkSerialNumber.trim()}`);
@@ -372,6 +462,8 @@ function startLogFileTail(
       const text = session.logLineCarry + buf.subarray(0, read).toString('utf8');
       const parts = text.split(/\r?\n/);
       session.logLineCarry = parts.pop() ?? '';
+      let lostDetected = false;
+      let noProbeDetected = false;
       for (const line of parts) {
         if (line === '') continue;
         appendServerLog(session, line);
@@ -379,6 +471,22 @@ function startLogFileTail(
         if (!session.serverReady && isServerReadyLog(line)) {
           session.serverReady = true;
         }
+        if (!lostDetected && isProbeLostLog(line)) {
+          lostDetected = true;
+        }
+        // Only treat "no probe" messages as terminal during startup. After the server is
+        // ready a probe-specific failure would have surfaced as isProbeLostLog instead.
+        if (!session.serverReady && !noProbeDetected && isNoProbeLog(line)) {
+          noProbeDetected = true;
+        }
+      }
+      if ((lostDetected || noProbeDetected) && activeSessions.has(connectionId)) {
+        const msg = noProbeDetected
+          ? 'J-Link probe not found. Check USB cable and try again.'
+          : 'J-Link probe disconnected (cable unplugged?).';
+        mainWindow?.webContents.send('rtt:error', connectionId, msg);
+        cleanupSession(connectionId);
+        mainWindow?.webContents.send('rtt:closed', connectionId);
       }
     } finally {
       fs.closeSync(fd);
@@ -399,7 +507,13 @@ async function spawnAndConnect(
   exePath: string,
 ): Promise<void> {
   const { scriptPath, logFilePath } = writeCommanderScript(connectionId, options);
-  const serverProcess = spawn(exePath, ['-CommanderScript', scriptPath], { windowsHide: true });
+  // `-ExitOnError 1` as a CLI flag takes effect before the first script command runs, so
+  // Commander exits on the initial USB-connect failure instead of falling back to its
+  // interactive "Probe selection" GUI dialog. The script duplicates this for safety.
+  // (We intentionally do NOT pass `-USB` — it expects a serial-number argument and will
+  // consume the following flag token if no S/N is provided.)
+  const cliArgs = ['-ExitOnError', '1', '-CommanderScript', scriptPath];
+  const serverProcess = spawn(exePath, cliArgs, { windowsHide: true });
 
   const session: RttSession = {
     serverProcess,
@@ -417,6 +531,33 @@ async function spawnAndConnect(
   activeSessions.set(connectionId, session);
 
   startLogFileTail(mainWindow, connectionId, session);
+
+  // Dialog watchdog. If Commander hangs on a modal GUI dialog (rare — mostly the "Probe
+  // selection" fallback when no USB probe is enumerated, which -USB + -ExitOnError should
+  // already prevent), the Log command never executes and the log file is never created.
+  // If the log file doesn't exist 3 seconds after spawn, kill Commander to dismiss the
+  // dialog and surface a clear error.
+  const DIALOG_WATCHDOG_MS = 3 * 1000;
+  const dialogWatchdog = setTimeout(() => {
+    if (!activeSessions.has(connectionId)) return;
+    let logExists = false;
+    try {
+      logExists = fs.existsSync(logFilePath) && fs.statSync(logFilePath).size > 0;
+    } catch {
+      logExists = false;
+    }
+    if (!logExists) {
+      mainWindow?.webContents.send(
+        'rtt:error',
+        connectionId,
+        'J-Link Commander appears to be blocked on a GUI dialog (no probe found?). Killed.',
+      );
+      cleanupSession(connectionId);
+      mainWindow?.webContents.send('rtt:closed', connectionId);
+    }
+  }, DIALOG_WATCHDOG_MS);
+  // Make sure we don't leak the timer if the session ends quickly for any other reason.
+  serverProcess.once('exit', () => clearTimeout(dialogWatchdog));
 
   // Also surface any bytes J-Link Commander happens to push on stdout/stderr (usually
   // buffered or empty, but cheap to capture). The primary log source is the `Log` file above.
@@ -485,6 +626,17 @@ export function initializeRttHandlers(mainWindow: BrowserWindow) {
         return {
           success: false,
           error: 'J-Link Commander (JLink.exe) not found. Install SEGGER J-Link software or set the path explicitly.',
+        };
+      }
+
+      // Pre-check for a USB J-Link probe before spawning Commander. Without this, Commander
+      // briefly pops its interactive "Probe selection" GUI dialog when no probe is found,
+      // which is jarring during reconnection polling while the cable is still out.
+      const probePresent = await checkJLinkProbePresent();
+      if (!probePresent) {
+        return {
+          success: false,
+          error: 'No J-Link probe detected on USB. Check the cable and try again.',
         };
       }
 

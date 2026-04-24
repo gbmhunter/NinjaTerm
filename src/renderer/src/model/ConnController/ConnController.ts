@@ -93,6 +93,14 @@ export class ConnController {
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
   /**
+   * Gate for the RTT reconnection polling loop. RTT reconnection attempts spawn J-Link
+   * Commander and wait for it to attach to the target, which can take multiple seconds —
+   * longer than the polling interval. Without this gate, timer ticks would stack up
+   * parallel reconnection attempts and step on each other.
+   */
+  private rttReconnectInFlight = false;
+
+  /**
    * Creates a new ConnController instance.
    *
    * @param app The main app instance.
@@ -124,9 +132,15 @@ export class ConnController {
    * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openConnection({ silenceSnackbar = false } = {}) {
+  async openConnection({ silenceSnackbar = false, suppressProgressModal = false } = {}) {
     // Determine the port type based on connection type
     const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    // The circular-progress modal is disruptive during background reconnection polling, so
+    // callers can opt out. Open/close it via this local helper everywhere below.
+    const showProgressModal = (show: boolean) => {
+      if (!suppressProgressModal) this.app.setShowCircularProgressModal(show);
+    };
 
     if (connectionType === ConnectionType.SERIAL_PORT) {
       // Handle fake ports
@@ -155,7 +169,7 @@ export class ConnController {
       this.lastSelectedPortType = PortType.REAL;
 
       // Show the circular progress modal when trying to open the port
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
 
       try {
         // Make direct IPC call to open the port
@@ -247,7 +261,7 @@ export class ConnController {
         const msg = `Error opening serial port: ${error}`;
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
         return false;
       }
 
@@ -255,7 +269,7 @@ export class ConnController {
         this.app.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
 
-      this.app.setShowCircularProgressModal(false);
+      showProgressModal(false);
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
       await window.electronAPI.analytics.event('port_open');
@@ -270,7 +284,7 @@ export class ConnController {
       }
 
       // Show the circular progress modal when trying to connect to socket
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
 
       try {
         // Make direct IPC call to connect to socket
@@ -325,7 +339,7 @@ export class ConnController {
           this.app.snackbar.sendToSnackbar(`Socket connected to ${host}:${port}.`, 'success');
         }
 
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
 
         // Create custom GA4 event to see how many socket connections have been opened in NinjaTerm
         await window.electronAPI.analytics.event('socket_connect');
@@ -333,7 +347,7 @@ export class ConnController {
         const msg = `Error connecting to socket: ${error}`;
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
         return false;
       }
     } else if (connectionType === ConnectionType.RTT) {
@@ -344,7 +358,7 @@ export class ConnController {
         return false;
       }
 
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
 
       // Clear previous server log so the user sees only output from this attempt.
       runInAction(() => {
@@ -419,19 +433,19 @@ export class ConnController {
         // Promote this device to the top of the recently-used list now that we know it works.
         this.app.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
 
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
         await window.electronAPI.analytics.event('rtt_connect');
       } catch (error) {
         const msg = `Error connecting via RTT: ${error}`;
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
         return false;
       }
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
       const connectResult = await this.bluetoothLEController.connect();
-      this.app.setShowCircularProgressModal(false);
+      showProgressModal(false);
       if (!connectResult.success) {
         // The BluetoothLEController will have already shown a snackbar error, we just need to return false here
         return false;
@@ -597,8 +611,7 @@ export class ConnController {
     }
 
     // If the port was closed unexpectedly, we might want to reopen it.
-    // Auto-reopen is not supported for RTT in v1 — respawning JLinkGDBServer automatically is out of scope.
-    if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed && this.lastSelectedPortType !== PortType.RTT) {
+    if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
       this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       // Start polling for the port to become available again
       this.startPollingForReconnection();
@@ -657,8 +670,10 @@ export class ConnController {
 
     // Determine connection type and set appropriate polling interval
     const isSocket = this.lastSelectedPortType === PortType.SOCKET;
-    const pollingInterval = isSocket ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
-    const connectionType = isSocket ? 'socket' : 'port';
+    const isRtt = this.lastSelectedPortType === PortType.RTT;
+    const pollingInterval =
+      isSocket || isRtt ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
+    const connectionType = isSocket ? 'socket' : isRtt ? 'RTT' : 'port';
 
     console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
 
@@ -670,7 +685,27 @@ export class ConnController {
           return;
         }
 
-        if (isSocket) {
+        if (isRtt) {
+          // RTT reconnection: just call openConnection with the stored RTT settings. It will
+          // re-spawn J-Link Commander and re-establish the socket. We gate with an in-flight
+          // flag because a single attempt can take longer than the polling interval.
+          if (this.rttReconnectInFlight) return;
+          this.rttReconnectInFlight = true;
+          try {
+            const rttDevice = this.app.settings.portConfiguration.rttDevice;
+            console.log(`Attempting RTT reconnection to device "${rttDevice}"...`);
+            const ok = await this.openConnection({ silenceSnackbar: true, suppressProgressModal: true });
+            if (ok) {
+              this.stopPollingForReconnection();
+              this.app.snackbar.sendToSnackbar(
+                `Automatically reconnected RTT to "${rttDevice}".`,
+                'success',
+              );
+            }
+          } finally {
+            this.rttReconnectInFlight = false;
+          }
+        } else if (isSocket) {
           // Socket reconnection logic
           if (!this.socketConnectionInfo) {
             console.log('No socket connection info found, stopping polling');
