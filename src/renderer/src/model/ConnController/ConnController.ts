@@ -11,6 +11,7 @@ export enum PortType {
   FAKE,
   SOCKET,
   BLUETOOTH,
+  RTT,
 }
 
 /**
@@ -36,6 +37,18 @@ export class ConnController {
   // Current socket connection ID for IPC communication
   currentSocketConnectionId: string | null = null;
 
+  // Current RTT connection ID for IPC communication
+  currentRttConnectionId: string | null = null;
+
+  /**
+   * Ring buffer of recent log lines from the spawned JLinkGDBServer process, shown in the
+   * Connection Settings pane so users can diagnose target-detection failures.
+   */
+  rttServerLogLines: string[] = [];
+  // Capped to keep the Connection Settings log pane from bloating memory or re-render cost
+  // during long-running sessions that emit periodic log noise.
+  static RTT_SERVER_LOG_MAX_LINES = 100;
+
   // Current Bluetooth device ID for IPC communication
   currentBluetoothDeviceId: string | null = null;
 
@@ -58,6 +71,15 @@ export class ConnController {
   // Socket information for reconnection purposes
   socketConnectionInfo: { host: string; port: number } | null = null;
 
+  // RTT connection info (captured at open time for display / reconnection)
+  rttConnectionInfo: {
+    device: string;
+    interfaceType: 'SWD' | 'JTAG';
+    speedKHz: number;
+    serverExePath: string;
+    jLinkSerialNumber: string;
+  } | null = null;
+
   // Bluetooth device information for reconnection purposes
   bluetoothDeviceInfo: { deviceId: string; deviceName?: string } | null = null;
 
@@ -69,6 +91,14 @@ export class ConnController {
   private readonly SOCKET_RECONNECTION_INTERVAL_MS = 5000; // Poll every 5 seconds for sockets
 
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
+
+  /**
+   * Gate for the RTT reconnection polling loop. RTT reconnection attempts spawn J-Link
+   * Commander and wait for it to attach to the target, which can take multiple seconds —
+   * longer than the polling interval. Without this gate, timer ticks would stack up
+   * parallel reconnection attempts and step on each other.
+   */
+  private rttReconnectInFlight = false;
 
   /**
    * Creates a new ConnController instance.
@@ -102,9 +132,15 @@ export class ConnController {
    * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
    * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
    */
-  async openConnection({ silenceSnackbar = false } = {}) {
+  async openConnection({ silenceSnackbar = false, suppressProgressModal = false } = {}) {
     // Determine the port type based on connection type
     const connectionType = this.app.settings.portConfiguration.connectionType;
+
+    // The circular-progress modal is disruptive during background reconnection polling, so
+    // callers can opt out. Open/close it via this local helper everywhere below.
+    const showProgressModal = (show: boolean) => {
+      if (!suppressProgressModal) this.app.setShowCircularProgressModal(show);
+    };
 
     if (connectionType === ConnectionType.SERIAL_PORT) {
       // Handle fake ports
@@ -133,7 +169,7 @@ export class ConnController {
       this.lastSelectedPortType = PortType.REAL;
 
       // Show the circular progress modal when trying to open the port
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
 
       try {
         // Make direct IPC call to open the port
@@ -225,7 +261,7 @@ export class ConnController {
         const msg = `Error opening serial port: ${error}`;
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
         return false;
       }
 
@@ -233,7 +269,7 @@ export class ConnController {
         this.app.snackbar.sendToSnackbar('Serial port opened.', 'success');
       }
 
-      this.app.setShowCircularProgressModal(false);
+      showProgressModal(false);
 
       // Create custom GA4 event to see how many ports have been opened in NinjaTerm
       await window.electronAPI.analytics.event('port_open');
@@ -248,7 +284,7 @@ export class ConnController {
       }
 
       // Show the circular progress modal when trying to connect to socket
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
 
       try {
         // Make direct IPC call to connect to socket
@@ -303,7 +339,7 @@ export class ConnController {
           this.app.snackbar.sendToSnackbar(`Socket connected to ${host}:${port}.`, 'success');
         }
 
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
 
         // Create custom GA4 event to see how many socket connections have been opened in NinjaTerm
         await window.electronAPI.analytics.event('socket_connect');
@@ -311,13 +347,106 @@ export class ConnController {
         const msg = `Error connecting to socket: ${error}`;
         this.app.snackbar.sendToSnackbar(msg, 'error');
         console.error(msg);
-        this.app.setShowCircularProgressModal(false);
+        showProgressModal(false);
+        return false;
+      }
+    } else if (connectionType === ConnectionType.RTT) {
+      // Segger RTT connection via JLinkGDBServer
+      const portConfig = this.app.settings.portConfiguration;
+      if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
+        this.app.snackbar.sendToSnackbar('No RTT target device specified. Set the device (e.g. nRF52832_xxAA) in Connection Settings.', 'error');
+        return false;
+      }
+
+      showProgressModal(true);
+
+      // Clear previous server log so the user sees only output from this attempt.
+      runInAction(() => {
+        this.rttServerLogLines = [];
+      });
+
+      // Register the server log listener before connect so we capture startup messages.
+      window.electronAPI.rtt.onServerLog((connectionId: string, line: string) => {
+        if (connectionId === this.currentRttConnectionId || this.currentRttConnectionId === null) {
+          runInAction(() => {
+            this.rttServerLogLines.push(line);
+            const overflow = this.rttServerLogLines.length - ConnController.RTT_SERVER_LOG_MAX_LINES;
+            if (overflow > 0) {
+              this.rttServerLogLines.splice(0, overflow);
+            }
+          });
+        }
+      });
+
+      try {
+        const result = await window.electronAPI.rtt.connect({
+          device: portConfig.rttDevice,
+          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
+          speedKHz: portConfig.rttSpeedKHz,
+          serverExePath: portConfig.rttServerExePath,
+          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
+          channel: portConfig.rttChannel,
+        });
+
+        if (!result.success) {
+          throw new Error(result.error);
+        }
+
+        this.currentRttConnectionId = result.connectionId!;
+        this.rttConnectionInfo = {
+          device: portConfig.rttDevice,
+          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
+          speedKHz: portConfig.rttSpeedKHz,
+          serverExePath: portConfig.rttServerExePath,
+          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
+        };
+
+        window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
+          if (connectionId === this.currentRttConnectionId) {
+            const uint8Array = new Uint8Array(data);
+            this.app.parseRxData(uint8Array);
+          }
+        });
+
+        window.electronAPI.rtt.onError((connectionId: string, error: string) => {
+          if (connectionId === this.currentRttConnectionId) {
+            this.app.snackbar.sendToSnackbar(`RTT error: ${error}`, 'error');
+            this.handlePortError();
+          }
+        });
+
+        window.electronAPI.rtt.onClosed((connectionId: string) => {
+          if (connectionId === this.currentRttConnectionId) {
+            this.handlePortClosed();
+          }
+        });
+
+        runInAction(() => {
+          this.stopPollingForReconnection();
+          this.connState = ConnState.OPENED;
+          this.lastSelectedPortType = PortType.RTT;
+        });
+
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar(`RTT connected (${portConfig.rttDevice}).`, 'success');
+        }
+
+        // Promote this device to the top of the recently-used list now that we know it works.
+        this.app.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
+
+        showProgressModal(false);
+        await window.electronAPI.analytics.event('rtt_connect');
+      } catch (error) {
+        const msg = `Error connecting via RTT: ${error}`;
+        this.app.snackbar.sendToSnackbar(msg, 'error');
+        console.error(msg);
+        showProgressModal(false);
         return false;
       }
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      this.app.setShowCircularProgressModal(true);
+      showProgressModal(true);
       const connectResult = await this.bluetoothLEController.connect();
-      this.app.setShowCircularProgressModal(false);
+      showProgressModal(false);
       if (!connectResult.success) {
         // The BluetoothLEController will have already shown a snackbar error, we just need to return false here
         return false;
@@ -393,6 +522,24 @@ export class ConnController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else if (connectionType === ConnectionType.RTT) {
+      if (this.currentRttConnectionId) {
+        const result = await window.electronAPI.rtt.disconnect(this.currentRttConnectionId);
+        if (!result.success) {
+          console.error('Error disconnecting RTT:', result.error);
+        }
+      }
+
+      if (!silenceSnackbar) {
+        this.app.snackbar.sendToSnackbar('RTT disconnected.', 'success');
+      }
+
+      this.currentRttConnectionId = null;
+
+      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
+      window.electronAPI.rtt.removeAllListeners('rtt:error');
+      window.electronAPI.rtt.removeAllListeners('rtt:closed');
+      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // The Bluetooth LE controller handles closing the Bluetooth connection
       this.bluetoothLEController.close();
@@ -464,7 +611,7 @@ export class ConnController {
       return;
     }
 
-    // If the port was closed unexpectedly, we might want to reopen it
+    // If the port was closed unexpectedly, we might want to reopen it.
     if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
       this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
       // Start polling for the port to become available again
@@ -479,6 +626,12 @@ export class ConnController {
       window.electronAPI.socket.removeAllListeners('socket:data-received');
       window.electronAPI.socket.removeAllListeners('socket:error');
       window.electronAPI.socket.removeAllListeners('socket:closed');
+    } else if (this.lastSelectedPortType === PortType.RTT) {
+      this.currentRttConnectionId = null;
+      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
+      window.electronAPI.rtt.removeAllListeners('rtt:error');
+      window.electronAPI.rtt.removeAllListeners('rtt:closed');
+      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
     } else {
       this.currentPortPath = null;
       // Remove serial port event listeners
@@ -518,8 +671,10 @@ export class ConnController {
 
     // Determine connection type and set appropriate polling interval
     const isSocket = this.lastSelectedPortType === PortType.SOCKET;
-    const pollingInterval = isSocket ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
-    const connectionType = isSocket ? 'socket' : 'port';
+    const isRtt = this.lastSelectedPortType === PortType.RTT;
+    const pollingInterval =
+      isSocket || isRtt ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
+    const connectionType = isSocket ? 'socket' : isRtt ? 'RTT' : 'port';
 
     console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
 
@@ -531,7 +686,27 @@ export class ConnController {
           return;
         }
 
-        if (isSocket) {
+        if (isRtt) {
+          // RTT reconnection: just call openConnection with the stored RTT settings. It will
+          // re-spawn J-Link Commander and re-establish the socket. We gate with an in-flight
+          // flag because a single attempt can take longer than the polling interval.
+          if (this.rttReconnectInFlight) return;
+          this.rttReconnectInFlight = true;
+          try {
+            const rttDevice = this.app.settings.portConfiguration.rttDevice;
+            console.log(`Attempting RTT reconnection to device "${rttDevice}"...`);
+            const ok = await this.openConnection({ silenceSnackbar: true, suppressProgressModal: true });
+            if (ok) {
+              this.stopPollingForReconnection();
+              this.app.snackbar.sendToSnackbar(
+                `Automatically reconnected RTT to "${rttDevice}".`,
+                'success',
+              );
+            }
+          } finally {
+            this.rttReconnectInFlight = false;
+          }
+        } else if (isSocket) {
           // Socket reconnection logic
           if (!this.socketConnectionInfo) {
             console.log('No socket connection info found, stopping polling');
@@ -808,6 +983,15 @@ export class ConnController {
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // For Bluetooth, need a selected device
       return this.bluetoothLEController.selectedBluetoothDevice !== null;
+    } else if (connectionType === ConnectionType.RTT) {
+      const portConfig = this.app.settings.portConfiguration;
+      if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
+        return false;
+      }
+      if (portConfig.rttSpeedErrorMsg !== '') {
+        return false;
+      }
+      return true;
     }
 
     // Unknown connection type
@@ -834,6 +1018,11 @@ export class ConnController {
     } else if (connectionType === ConnectionType.SOCKET) {
       // Socket connection
       const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, Array.from(bytesToWrite));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to write data');
+      }
+    } else if (connectionType === ConnectionType.RTT) {
+      const result = await window.electronAPI.rtt.writeData(this.currentRttConnectionId!, Array.from(bytesToWrite));
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }

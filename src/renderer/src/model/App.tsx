@@ -63,6 +63,20 @@ const tipsToDisplayOnStartup = [
   'TIP: Press Ctrl-Shift-B to send the "break" signal.',
 ];
 
+/**
+ * Returns true if the keyboard event originated from an editable element (input, textarea,
+ * select, or contenteditable). Used to suppress plain-letter app shortcuts while the user
+ * is typing into a form field.
+ */
+function isTypingInField(event: React.KeyboardEvent): boolean {
+  const target = event.target as HTMLElement | null;
+  if (!target) return false;
+  const tag = target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+  if (target.isContentEditable) return true;
+  return false;
+}
+
 export class App {
   settings: Settings;
 
@@ -744,7 +758,9 @@ export class App {
   async handleKeyDown(event: React.KeyboardEvent) {
     // console.log('handleKeyDown() called. event.key=', event.key);
     // SPECIAL TESTING "FAKE PORTS"
-    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.CONNECTION_CONFIGURATION && event.key === 'f') {
+    // Guard against firing while the user is typing into an input/textarea/contenteditable
+    // (e.g. the RTT target device field also lives on the Connection Configuration pane).
+    if (this.shownMainPane === MainPanes.SETTINGS && this.settings.activeSettingsCategory === SettingsCategories.CONNECTION_CONFIGURATION && event.key === 'f' && !isTypingInField(event)) {
       this.fakePortController.setIsDialogOpen(true);
     }
     //============================================

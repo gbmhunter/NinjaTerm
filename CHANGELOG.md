@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.10.0] - 2026-04-24
+
+### Added
+
+- Added Segger RTT as a new connection type. NinjaTerm spawns J-Link Commander (`JLink.exe`) with a generated script, attaches to the target, and connects to RTT channel 0 on TCP port 19021 for bidirectional communication. Connection Settings pane has fields for target device, interface (SWD/JTAG), speed, J-Link serial number, and an auto-detecting "Locate" button for the Commander path (searches versioned `C:\Program Files\SEGGER\JLink_V*` install folders and picks the newest).
+- Added searchable device-name autocomplete for the RTT target device field (~45 curated devices across Nordic nRF51/52/53/54/91, STM32, RP2040/2350, ESP32, NXP, Microchip SAM, TI). Free-solo so any device name not in the list can still be typed verbatim.
+- Added a "Recently used" section at the top of the RTT device dropdown showing the last 5 devices that successfully connected.
+- Added a live J-Link Commander output pane under RTT Connection Settings (tail of the Commander log file, capped at 100 lines), useful for diagnosing target-detection failures.
+- Added automatic reconnection for RTT. When the J-Link probe disappears mid-session (e.g. dev kit unplugged), NinjaTerm detects the loss, transitions to CLOSED_BUT_WILL_REOPEN, and polls every 5 seconds. Plugging the dev kit back in automatically restores the RTT session with a confirmation snackbar. Before each reconnection attempt on Windows, a fast `Get-PnpDevice` check ensures a SEGGER USB probe is present so Commander's interactive "Probe selection" GUI dialog never appears.
+- Added an `nrf52_rtt` Zephyr test firmware under `firmware-test-apps/` for exercising the RTT connection type against a real nRF52 DK.
+
+### Fixed
+
+- Fixed bug where settings loaded from `localStorage` were wiped by a mid-load save cycle. `PortSettings._loadConfig` called helpers (`applySocketConnTimeout`, `applyRttSpeed`) that internally saved, so any field loaded after those helpers was silently overwritten with its default value on every app start. Added an `_isLoading` reentrancy guard so `_saveConfig` is a no-op during load.
+- Fixed bug where the fake-port keyboard shortcut (`f` on the Connection Configuration pane) fired while typing into an input field. The shortcut now only triggers when the event target is not an input/textarea/select/contenteditable.
+
 ## [5.9.0] - 2026-04-12
 
 ### Added
@@ -984,6 +1000,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...v5.9.0
 [5.8.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.1...v5.8.2
 [5.8.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.0...v5.8.1

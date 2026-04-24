@@ -10,6 +10,7 @@ import { initLogging, log } from './Logging';
 import { installExtension, REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { initializeSerialHandlers, cleanupSerialPorts } from './serialService';
 import { initializeSocketHandlers, cleanupSockets } from './socketService';
+import { initializeRttHandlers, cleanupRtt } from './rttService';
 import { McpService } from './mcpService';
 
 // Looks to be a module issue with Electron here, import as single package and destructure manually
@@ -189,6 +190,9 @@ app.whenReady().then(async () => {
 
   // Initialize socket handlers
   initializeSocketHandlers(mainWindow);
+
+  // Initialize Segger RTT handlers
+  initializeRttHandlers(mainWindow);
 
   // Initialize MCP service
   mcpService = new McpService(mainWindow);
@@ -496,4 +500,5 @@ app.on('before-quit', async () => {
   await mcpService?.stop();
   cleanupSerialPorts();
   cleanupSockets();
+  cleanupRtt();
 });

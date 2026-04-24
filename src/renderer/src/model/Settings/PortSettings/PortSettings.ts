@@ -46,6 +46,12 @@ export enum ConnectionType {
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
   BLUETOOTH_LE = 'bluetooth',
+  RTT = 'rtt',
+}
+
+export enum RttInterface {
+  SWD = 'SWD',
+  JTAG = 'JTAG',
 }
 
 export class PortSettings {
@@ -70,6 +76,19 @@ export class PortSettings {
 
   /** Validation error message for the socket connection timeout input. Is an empty string if the input is valid. */
   socketConnTimeoutErrorMsg = '';
+
+  static RTT_SPEED_MIN_KHZ = 1;
+  static RTT_SPEED_DEFAULT_KHZ = 4000;
+  static RTT_SPEED_MAX_KHZ = 50000;
+  rttSpeedValidation = z.coerce.number().int().min(PortSettings.RTT_SPEED_MIN_KHZ).max(PortSettings.RTT_SPEED_MAX_KHZ);
+  rttSpeedErrorMsg = '';
+
+  // J-Link supports up to 16 RTT channels. 0 is the default "Terminal" channel and
+  // is what the vast majority of firmwares use.
+  static RTT_CHANNEL_MIN = 0;
+  static RTT_CHANNEL_MAX = 15;
+  rttChannelValidation = z.coerce.number().int().min(PortSettings.RTT_CHANNEL_MIN).max(PortSettings.RTT_CHANNEL_MAX);
+  rttChannelErrorMsg = '';
 
   baudRate = 115200;
 
@@ -109,6 +128,16 @@ export class PortSettings {
   socketHost = '127.0.0.1';
   socketPort = 5000;
   socketConnTimeoutDispMs = '5000';
+
+  // Segger RTT settings
+  rttDevice = '';
+  rttInterface: RttInterface = RttInterface.SWD;
+  rttSpeedDispKHz = '4000';
+  rttServerExePath = '';
+  rttJLinkSerialNumber = '';
+  rttChannelDisp = '0';
+  rttRecentDevices: string[] = [];
+  static RTT_RECENT_DEVICES_MAX = 5;
 
   // Bluetooth connection settings
   // availableBluetoothDevices: SerializableBluetoothDevice[] = [];
@@ -316,7 +345,84 @@ export class PortSettings {
     this._saveConfig();
   }
 
+  setRttDevice = (device: string) => {
+    this.rttDevice = device;
+    this._saveConfig();
+  }
+
+  setRttInterface = (iface: RttInterface) => {
+    this.rttInterface = iface;
+    this._saveConfig();
+  }
+
+  setRttSpeedDispKHz = (value: string) => {
+    this.rttSpeedDispKHz = value;
+  }
+
+  applyRttSpeed = () => {
+    const parsed = this.rttSpeedValidation.safeParse(this.rttSpeedDispKHz);
+    if (!parsed.success) {
+      this.rttSpeedErrorMsg = parsed.error.errors[0].message;
+      return;
+    }
+    this.rttSpeedErrorMsg = '';
+    this._saveConfig();
+  }
+
+  setRttServerExePath = (value: string) => {
+    this.rttServerExePath = value;
+    this._saveConfig();
+  }
+
+  setRttJLinkSerialNumber = (value: string) => {
+    this.rttJLinkSerialNumber = value;
+    this._saveConfig();
+  }
+
+  setRttChannelDisp = (value: string) => {
+    this.rttChannelDisp = value;
+  }
+
+  applyRttChannel = () => {
+    const parsed = this.rttChannelValidation.safeParse(this.rttChannelDisp);
+    if (!parsed.success) {
+      this.rttChannelErrorMsg = parsed.error.errors[0].message;
+      return;
+    }
+    this.rttChannelErrorMsg = '';
+    this._saveConfig();
+  }
+
+  /**
+   * Record that an RTT device was just used successfully. The device moves to the front of
+   * the recent list; the list is capped at `RTT_RECENT_DEVICES_MAX` entries. Empty values
+   * are ignored.
+   */
+  pushRttRecentDevice = (device: string) => {
+    const trimmed = device.trim();
+    if (trimmed === '') return;
+    const without = this.rttRecentDevices.filter((d) => d !== trimmed);
+    this.rttRecentDevices = [trimmed, ...without].slice(0, PortSettings.RTT_RECENT_DEVICES_MAX);
+    this._saveConfig();
+  }
+
+  /**
+   * When true, `_saveConfig` is a no-op. Set while `_loadConfig` runs so that helpers like
+   * `applySocketConnTimeout` — which normally save — don't clobber localStorage with a
+   * half-populated snapshot before the rest of the fields have been read from disk.
+   */
+  _isLoading = false;
+
   _loadConfig = () => {
+    this._isLoading = true;
+    try {
+      this._loadConfigInner();
+    } finally {
+      this._isLoading = false;
+    }
+  };
+
+  _loadConfigInner = () => {
     let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
     // At this point we are confident that the deserialized config matches what
@@ -342,10 +448,24 @@ export class PortSettings {
     this.socketConnTimeoutDispMs = configToLoad.socketConnTimeoutMs.toString();
     this.applySocketConnTimeout();
 
+    // Load RTT settings
+    this.rttDevice = configToLoad.rttDevice;
+    this.rttInterface = configToLoad.rttInterface;
+    this.rttSpeedDispKHz = configToLoad.rttSpeedKHz.toString();
+    this.applyRttSpeed();
+    this.rttServerExePath = configToLoad.rttServerExePath;
+    this.rttJLinkSerialNumber = configToLoad.rttJLinkSerialNumber;
+    // Tolerate saved blobs from before these fields existed.
+    const savedChannel = typeof configToLoad.rttChannel === 'number' ? configToLoad.rttChannel : 0;
+    this.rttChannelDisp = savedChannel.toString();
+    this.applyRttChannel();
+    this.rttRecentDevices = Array.isArray(configToLoad.rttRecentDevices) ? configToLoad.rttRecentDevices : [];
+
     this.setBaudRateInputValue(this.baudRate.toString());
   };
 
   _saveConfig = () => {
+    if (this._isLoading) return;
     let config = this.profileManager.appData.currentAppConfig.settings.portSettings;
 
     config.baudRate = this.baudRate;
@@ -366,6 +486,14 @@ export class PortSettings {
     config.socketPort = this.socketPort;
     config.socketConnTimeoutMs = this.socketConnTimeoutMs;
 
+    config.rttDevice = this.rttDevice;
+    config.rttInterface = this.rttInterface;
+    config.rttSpeedKHz = this.rttSpeedKHz;
+    config.rttServerExePath = this.rttServerExePath;
+    config.rttJLinkSerialNumber = this.rttJLinkSerialNumber;
+    config.rttChannel = this.rttChannel;
+    config.rttRecentDevices = this.rttRecentDevices.slice();
+
     this.profileManager.saveAppData();
   };
 
@@ -383,6 +511,22 @@ export class PortSettings {
     return parsed.data;
   }
 
+  get rttSpeedKHz() {
+    const parsed = this.rttSpeedValidation.safeParse(this.rttSpeedDispKHz);
+    if (!parsed.success) {
+      return PortSettings.RTT_SPEED_DEFAULT_KHZ;
+    }
+    return parsed.data;
+  }
+
+  get rttChannel() {
+    const parsed = this.rttChannelValidation.safeParse(this.rttChannelDisp);
+    if (!parsed.success) {
+      return 0;
+    }
+    return parsed.data;
+  }
+
   /**
    * TODO: This really belongs in the ConnController (or the classes that are responsible for different connection types, e.g. BluetoothLEController).
    */
@@ -395,6 +539,9 @@ export class PortSettings {
         return 'n/a';
       }
       return `${connectedBluetoothDevice.nobleData.advertisement.localName} (${connectedBluetoothDevice.nobleData.id})`;
+    } else if (this.connectionType === ConnectionType.RTT) {
+      const device = this.rttDevice || 'no device';
+      return `${device} ${this.rttInterface} ${this.rttSpeedKHz}kHz`;
     } else {
       return PortSettings.computeShortSerialConfigName(this.baudRate, this.numDataBits, this.parity, this.stopBits);
     }

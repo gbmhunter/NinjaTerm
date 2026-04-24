@@ -93,4 +93,23 @@ describe('app data manager tests', () => {
     const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v10-app-v5.5.0-default.json', 'utf8'));
     updateAndCompare(savedAppData);
   });
+
+  test('pushRttRecentDevice persists across a reload of AppDataManager', () => {
+    // Regression test: `_loadConfig` used to call `applySocketConnTimeout` / `applyRttSpeed`
+    // mid-load, both of which save. Because they ran *before* `rttRecentDevices` was read
+    // from disk, the save persisted the default `[]` back to localStorage and wiped recent
+    // devices on every app start. `_isLoading` makes `_saveConfig` a no-op during load.
+    const app1 = new App();
+    const deviceA = 'nRF52832_xxAA';
+    const deviceB = 'STM32F407VG';
+
+    app1.settings.portConfiguration.pushRttRecentDevice(deviceA);
+    app1.settings.portConfiguration.pushRttRecentDevice(deviceB);
+    // Re-adding deviceA moves it to the front; should not duplicate.
+    app1.settings.portConfiguration.pushRttRecentDevice(deviceA);
+    expect(app1.settings.portConfiguration.rttRecentDevices).toEqual([deviceA, deviceB]);
+
+    const app2 = new App();
+    expect(app2.settings.portConfiguration.rttRecentDevices).toEqual([deviceA, deviceB]);
+  });
 });

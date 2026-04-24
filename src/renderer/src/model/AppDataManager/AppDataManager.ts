@@ -425,7 +425,30 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 14) {
+    //=============================================================================
+    // VERSION 14 -> VERSION 15
+    //=============================================================================
+    if (updatedAppData.version === 14) {
+      log.info('Updating app data from version 14 to version 15...');
+      // Add Segger RTT settings to port configuration
+      const updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.portSettings.rttDevice = '';
+        rootConfig.settings.portSettings.rttInterface = 'SWD';
+        rootConfig.settings.portSettings.rttSpeedKHz = 4000;
+        rootConfig.settings.portSettings.rttServerExePath = '';
+        rootConfig.settings.portSettings.rttJLinkSerialNumber = '';
+        rootConfig.settings.portSettings.rttChannel = 0;
+        rootConfig.settings.portSettings.rttRecentDevices = [];
+      };
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 15;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 15) {
       log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;
