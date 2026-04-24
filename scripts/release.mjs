@@ -8,8 +8,13 @@
 //   npm run release 5.11.0          # or any explicit semver
 //   npm run release v5.11.0         # v-prefix accepted, normalized away
 //   npm run release 5.11.0-rc.1     # prerelease
-//   npm run release 5.11.0 --dry-run
+//   npm run release 5.11.0 --preview
 //   npm run release 5.11.0 --allow-dev
+//
+// NB: we use `--preview` instead of `--dry-run` because npm itself intercepts
+// `--dry-run` as one of its own CLI flags before passing args through to the
+// script (unless you write `npm run release -- 5.11.0 --dry-run`). Easier to
+// rename than to rely on users remembering the `--` separator.
 
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -18,14 +23,14 @@ import { dirname, join } from 'node:path';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
-const dryRun = args.includes('--dry-run');
+const preview = args.includes('--preview');
 const allowDev = args.includes('--allow-dev');
 const rawVersionArg = args.find((a) => !a.startsWith('--'));
 
 if (!rawVersionArg) {
-  console.error('Usage: npm run release <X.Y.Z[-prerelease]> [--dry-run] [--allow-dev]');
+  console.error('Usage: npm run release <X.Y.Z[-prerelease]> [--preview] [--allow-dev]');
   console.error('Example: npm run release 5.11.0');
-  console.error('Example: npm run release 5.11.0-rc.1 --dry-run');
+  console.error('Example: npm run release 5.11.0-rc.1 --preview');
   process.exit(2);
 }
 
@@ -111,10 +116,10 @@ if (!changelog.includes(prevLinkLine)) {
 }
 changelog = changelog.replace(prevLinkLine, compareLine + prevLinkLine);
 
-// --- Dry-run ----------------------------------------------------------------
+// --- Preview ----------------------------------------------------------------
 
-if (dryRun) {
-  console.log(`\n--- DRY RUN: would release ${newTag} (${prevVersion} -> ${newVersion}) ---`);
+if (preview) {
+  console.log(`\n--- PREVIEW: would release ${newTag} (${prevVersion} -> ${newVersion}) ---`);
   console.log(`\npackage.json version field would become: "${newVersion}"\n`);
   console.log('CHANGELOG.md would gain heading:  ## [' + newVersion + '] - ' + today);
   console.log('CHANGELOG.md would gain link:     ' + compareLine.trim());
@@ -130,7 +135,10 @@ writeFileSync(changelogPath, changelog);
 console.log(`\nCommitting release ${newTag}...`);
 shInherit('git add package.json CHANGELOG.md');
 shInherit(`git commit -m "Release ${newTag}"`);
-shInherit(`git tag ${newTag}`);
+// Annotated tag (-a -m) so `git push --follow-tags` will push it alongside the
+// commit. Lightweight tags are NOT pushed by --follow-tags, which was a bug in
+// earlier versions of this script.
+shInherit(`git tag -a ${newTag} -m "Release ${newTag}"`);
 
 console.log(`Pushing ${branch} and ${newTag}...`);
 shInherit(`git push origin ${branch} --follow-tags`);
