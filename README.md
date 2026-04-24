@@ -100,19 +100,53 @@ Arduino sketches in `firmware-test-apps/arduino_*/` allow you to program differe
 
 ## Releasing
 
-1. Create a new branch off of `main` for the changes.
-1. Update the version number to the appropriate number in `package.json`. Major version number change for big changes (e.g. framework change or complete overhaul of UI). Minor version change when additional features have been added. Patch version change for bug fixes and small changes to existing functionality.
-1. On GitHub, manually create a **draft release** for the new version (e.g. `v4.2.0`) with no tag yet. This is required for the next step to work.
-1. Make changes to the code as required. Push commits to `dev` or `main` — CI will automatically upload build artifacts to the draft release (all three platforms) on each successful build.
-1. Update the CHANGELOG (don't forget the links right at the bottom of the page).
-1. If you have updated the app data structure, save a copy of the default app data created by the app to `local-storage-data/`. You can do this by running the app, clearing app data in `Settings > General Settings`, loading up the Chrome dev. tools, and copying the key `appData` from local storage.
-1. Create a pull request on GitHub merging your branch into `main` and merge it once CI passes.
-1. Push a version tag to `main`, e.g. `git tag v4.2.0 && git push origin v4.2.0`. This triggers the `release` CI job, which builds all three platforms and uploads the final artifacts to the draft release using `--publish always`.
-1. Find the draft release on GitHub, enter the CHANGELOG contents into the release body, and publish it.
+Releases are fully automated from a single command. Prerequisites on release day:
 
-**How CI publishing works:**
-- On every push to `main` or `dev`: CI builds and tests all three platforms. If a **draft release already exists** for the current version number, artifacts are uploaded to it (`--publish onTagOrDraft`). If no draft release exists, the build still runs but nothing is published.
-- On a `v*` tag push: CI first runs the full build and test suite (`test-electron` job), then the `release` job runs and publishes artifacts unconditionally (`--publish always`). Files in the draft release are overwritten.
+1. You're on `main` with a clean working tree, and the merge of the dev branch has landed.
+2. The CHANGELOG's `## Unreleased` section covers everything going out.
+3. If the app data schema (`LATEST_VERSION` in `src/renderer/src/model/AppDataManager/DataClasses/AppData.ts`) was bumped this cycle, save a fresh default snapshot:
+   - Run `npm run dev` and open the app.
+   - `Settings → General → Clear app data`.
+   - DevTools Console: `copy(localStorage.getItem('appData'))`.
+   - Save clipboard to `local-storage-data/appData-v{N}-app-v{X.Y.Z}-default.json`.
+
+Then cut the release. Always pass the full version explicitly — no `patch` /
+`minor` / `major` shortcuts, just one consistent form for stable, prerelease, or
+otherwise:
+
+```
+npm run release 5.11.0         # next minor
+npm run release 5.10.1         # patch
+npm run release 5.11.0-rc.1    # prerelease
+npm run release v5.11.0        # v-prefix accepted too
+```
+
+Choosing a number follows semver:
+
+- **Major** (`X.0.0`) — breaking changes. Examples from the README's history:
+  framework change, complete UI overhaul.
+- **Minor** (`5.X.0`) — new features added without breaking existing ones.
+- **Patch** (`5.10.X`) — bug fixes and small changes to existing functionality.
+
+The script runs typecheck + unit tests + the snapshot preflight, finalizes
+CHANGELOG (moves `Unreleased` into a dated section and adds the compare link),
+writes `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}`, and pushes
+`main` with the tag. Pass `--dry-run` to preview the changes without writing
+anything, or `--allow-dev` to release from the `dev` branch.
+
+From there CI takes over: it builds and signs all three platforms, creates the
+GitHub Release, uploads the installers / updater manifests, and extracts the
+`## [X.Y.Z]` section from CHANGELOG.md as the Release body. There's no manual
+"create draft release" step any more.
+
+**How CI works:**
+- On every `main` / `dev` push: `test-electron` runs unit tests, the Electron
+  e2e suite (Ubuntu), and a packaging smoke-test on all three platforms with
+  `--publish never`. No upload.
+- On a `v*` tag push: `test-electron` runs first, then the `release` job
+  rebuilds all three platforms with signing + `electron-builder --publish always`,
+  which creates the GitHub Release and attaches the artifacts. A follow-up
+  `release-notes` job fills the Release body from CHANGELOG via `gh release edit`.
 
 ## Deployment
 
