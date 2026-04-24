@@ -13,11 +13,6 @@ const RX_DATA_BATCH_TIMEOUT_MS = 50;
 const SERVER_READY_TIMEOUT_MS = 15 * 1000;
 
 /**
- * How long to wait for the RTT telnet socket to connect after the server is ready.
- */
-const SOCKET_CONNECT_TIMEOUT_MS = 5 * 1000;
-
-/**
  * J-Link Commander's built-in RTT telnet port. Exposed on localhost once the target is attached,
  * streams channel 0 bidirectionally.
  */
@@ -237,54 +232,15 @@ function cleanupSession(connectionId: string) {
   activeSessions.delete(connectionId);
 }
 
-async function connectRttSocket(mainWindow: BrowserWindow, connectionId: string): Promise<void> {
-  const session = activeSessions.get(connectionId);
-  if (!session) {
-    throw new Error('RTT session not found');
-  }
-
-  const socket = new net.Socket();
-  session.socket = socket;
-
-  await new Promise<void>((resolve, reject) => {
-    let settled = false;
-
-    const onConnect = () => {
-      if (settled) return;
-      settled = true;
-      cleanupListeners();
-      resolve();
-    };
-    const onError = (err: Error) => {
-      if (settled) return;
-      settled = true;
-      cleanupListeners();
-      reject(err);
-    };
-    const cleanupListeners = () => {
-      socket.removeListener('connect', onConnect);
-      socket.removeListener('error', onError);
-    };
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      cleanupListeners();
-      if (!socket.destroyed) socket.destroy();
-      reject(new Error(`Timed out connecting to RTT telnet port ${RTT_TELNET_PORT}.`));
-    }, SOCKET_CONNECT_TIMEOUT_MS);
-
-    socket.once('connect', () => {
-      clearTimeout(timeout);
-      onConnect();
-    });
-    socket.once('error', (err) => {
-      clearTimeout(timeout);
-      onError(err);
-    });
-
-    socket.connect(RTT_TELNET_PORT, '127.0.0.1');
-  });
-
+/**
+ * Attaches RX/error/close handlers to an already-connected TCP socket. J-Link's RTT telnet
+ * server only allows a single concurrent client — if we open a probe socket and then a
+ * second "real" socket, the server rejects the second with
+ * "Connection refused - There already is an active connection." before the first close has
+ * propagated. So the probe socket itself becomes the session socket; this function just
+ * wires the handlers onto it.
+ */
+function attachSocketHandlers(socket: net.Socket, mainWindow: BrowserWindow, connectionId: string): void {
   socket.on('data', (data: Buffer) => {
     const current = activeSessions.get(connectionId);
     if (!current) return;
@@ -312,6 +268,34 @@ async function connectRttSocket(mainWindow: BrowserWindow, connectionId: string)
       cleanupSession(connectionId);
       mainWindow?.webContents.send('rtt:closed', connectionId);
     }
+  });
+}
+
+/**
+ * One attempt at a TCP connect. Resolves with the connected socket on success (the caller
+ * owns it from there), or `null` on timeout/error (socket is already destroyed).
+ */
+function tryConnectOnce(port: number, host: string, perAttemptTimeoutMs: number): Promise<net.Socket | null> {
+  return new Promise((resolve) => {
+    const sock = new net.Socket();
+    let settled = false;
+
+    const finish = (success: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (success) {
+        resolve(sock);
+      } else {
+        if (!sock.destroyed) sock.destroy();
+        resolve(null);
+      }
+    };
+
+    const timer = setTimeout(() => finish(false), perAttemptTimeoutMs);
+    sock.once('connect', () => finish(true));
+    sock.once('error', () => finish(false));
+    sock.connect(port, host);
   });
 }
 
@@ -448,55 +432,35 @@ async function spawnAndConnect(
   serverProcess.stdout?.on('data', (data: Buffer) => forwardStdio('', data));
   serverProcess.stderr?.on('data', (data: Buffer) => forwardStdio('[stderr] ', data));
 
-  await new Promise<void>((resolve, reject) => {
+  // Wait for Commander to open its RTT telnet port. The first successful connect IS the
+  // session socket — don't probe-and-reconnect (see attachSocketHandlers comment).
+  const socket = await (async (): Promise<net.Socket> => {
     const startTime = Date.now();
-    const pollIntervalMs = 250;
-
-    const interval = setInterval(() => {
+    while (true) {
       if (!activeSessions.has(connectionId)) {
-        clearInterval(interval);
-        reject(new Error('RTT session was cancelled before server became ready.'));
-        return;
+        throw new Error('RTT session was cancelled before server became ready.');
       }
-
       if (serverProcess.exitCode !== null) {
-        clearInterval(interval);
         const tail = session.serverLogLines.slice(-10).join('\n');
-        reject(new Error(
+        throw new Error(
           `J-Link Commander exited with code ${serverProcess.exitCode} before RTT was ready.\n${tail}`.trim(),
-        ));
-        return;
+        );
       }
-
       if (Date.now() - startTime > SERVER_READY_TIMEOUT_MS) {
-        clearInterval(interval);
         const tail = session.serverLogLines.slice(-10).join('\n');
-        reject(new Error(
+        throw new Error(
           `J-Link Commander did not open the RTT port within ${SERVER_READY_TIMEOUT_MS / 1000}s. Check device name, interface and probe connection.\n${tail}`.trim(),
-        ));
-        return;
+        );
       }
 
-      // Try to connect. If the server hasn't opened the port yet this will fail and we retry.
-      const probe = new net.Socket();
-      let probeSettled = false;
-      probe.once('connect', () => {
-        if (probeSettled) return;
-        probeSettled = true;
-        probe.destroy();
-        clearInterval(interval);
-        resolve();
-      });
-      probe.once('error', () => {
-        if (probeSettled) return;
-        probeSettled = true;
-        probe.destroy();
-      });
-      probe.connect(RTT_TELNET_PORT, '127.0.0.1');
-    }, pollIntervalMs);
-  });
+      const candidate = await tryConnectOnce(RTT_TELNET_PORT, '127.0.0.1', 500);
+      if (candidate) return candidate;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  })();
 
-  await connectRttSocket(mainWindow, connectionId);
+  session.socket = socket;
+  attachSocketHandlers(socket, mainWindow, connectionId);
 
   serverProcess.on('exit', (code) => {
     if (activeSessions.has(connectionId)) {
