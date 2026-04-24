@@ -47,6 +47,7 @@ NinjaTerm supports the following connection types:
 - **Serial port**: This is your standard serial port style connection, which uses your OS drivers to connect to COM ports on Windows and devices such as `/dev/ttyUSB0`, `/dev/ttyACM0`, etc. on Linux and macOS.
 - **Socket**: This is a TCP socket connection, which allows you to connect NinjaTerm to a socket server. This is useful for when you want to connect to a remote device over a network. The remote device could be sending out data directly across the socket, or it could be another development computer running `socat` that is forwarding data from a local serial port.
 - **Bluetooth LE**: This allows you to stream bi-directional serial data across Bluetooth LE. There is no one official serial protocol across BLE, but there a number of popular ones by various vendors.
+- **Segger RTT**: This allows you to stream bi-directional data over Segger's Real Time Transfer (RTT) protocol via a SEGGER J-Link (or J-Link OB) debug probe. Useful for getting shell/log output from embedded firmware at high speed without consuming a UART peripheral.
 
 ### Serial Port
 
@@ -103,6 +104,29 @@ import BluetoothLENusShellWebM from '/img/bluetooth-le-nus-shell.webm';
 Nordic MCUs in the nRF52, 53 and 54 families using Zephyr can be easily configured to implement a Zephyr NUS (Nordic UART Service) shell over BLE. NinjaTerm can then be used to connect to the NUS shell and send and receive data just like a regular serial port (including log messages and commands).
 
 NinjaTerm uses the [abandonware/noble](https://github.com/abandonware/noble) library to connect to BLE devices.
+
+### Segger RTT
+
+[Segger RTT (Real Time Transfer)](https://www.segger.com/products/debug-probes/j-link/technology/about-real-time-transfer/) is a bi-directional communication channel between a host PC and an embedded target microcontroller via a SEGGER J-Link debug probe. It can be an attractive alternative to a typical UART serial port for logs because it uses the same cable as the programmer/debugger.
+
+To use RTT from NinjaTerm:
+
+1. Install [SEGGER's J-Link software](https://www.segger.com/downloads/jlink/).
+2. Connect the J-Link (or dev kit with J-Link OB) to the host PC.
+3. In NinjaTerm, open `Settings → Connection Configuration` and pick `Segger RTT` as the connection type.
+4. Fill in the target device identifier (e.g. `nRF52832_xxAA`, `STM32F407VG`, `RP2040_M0_0`). The field is an autocomplete — start typing and pick from the suggestions, or type any device name accepted by J-Link Commander's `device` command. Previously-used devices appear under a **Recently used** section at the top.
+5. Pick the debug interface (usually `SWD`) and speed (typical values 1000–50000 kHz; 4000 is a good default).
+6. Optionally point the **J-Link Commander path** field at `JLink.exe` (Windows) or `JLinkExe` (macOS/Linux). Leave it blank to auto-detect — the **Locate** button searches the standard SEGGER install locations (including versioned `C:\Program Files\SEGGER\JLink_V*` folders produced by the "do not replace" install option) and picks the newest version found.
+7. Optionally fill in a specific J-Link probe serial number — only needed if multiple probes are connected.
+8. Click **Open**.
+
+Under the hood, NinjaTerm spawns J-Link Commander (`JLink.exe`) with a generated script that sets the interface, speed, and device and then calls `connect`. Once the target is attached, Commander exposes RTT channel 0 on TCP port 19021 as a bidirectional telnet stream; NinjaTerm opens a single TCP client to that port for both RX and TX.
+
+A **J-Link Commander output** pane is shown on the Connection Settings page during a session. It is tailed from Commander's own log file and capped at the last 100 lines, useful for diagnosing target-detection failures (wrong device name, wrong interface, unresponsive target, etc.).
+
+If the probe disappears mid-session (e.g. dev kit unplugged), NinjaTerm detects the loss from the Commander log (`Connection to emulator lost!`), transitions the connection to `CLOSED_BUT_WILL_REOPEN`, and polls every 5 seconds. When the dev kit is plugged back in, the session is automatically restored with a confirmation snackbar. On Windows, before each reconnection attempt NinjaTerm runs a quick `Get-PnpDevice` query for a SEGGER USB device (VID 0x1366) so Commander's interactive "Probe selection" GUI dialog is never triggered while the cable is still out.
+
+Only RTT up-channel 0 and down-channel 0 are used — the default Segger `SEGGER_RTT_printf` / `SEGGER_RTT_Read` channels. Multi-channel RTT is not currently supported.
 
 ## ANSI Escape Codes
 
