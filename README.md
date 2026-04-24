@@ -29,7 +29,7 @@ Below is the directory structure of this repository:
 
 ```
 ninjaterm/
-├── arduino-serial/ # Contains Arduino sketches for testing the serial port
+├── firmware-test-apps/ # Contains firmware test applications (Arduino sketches and a Zephyr RTT test app) used for exercising NinjaTerm against real hardware.
 ├── docs/ # Contains Docusaurus website which contains the homepage, installation guide and manual. Self-contained node project.
 ├── src/ # Contains the Electron application code.
 ├── tests/ # Contains the end-to-end tests using Playwright.
@@ -96,7 +96,7 @@ The Playwright plug-in for VS Code is recommended if interacting with these test
 
 ### Real Tests With An Arduino 
 
-Arduino sketches in `arduino-serial` allow you to program different applications onto an Arduino for testing the serial port with.
+Arduino sketches in `firmware-test-apps/arduino_*/` allow you to program different applications onto an Arduino for testing the serial port with.
 
 ## Releasing
 

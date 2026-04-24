@@ -1,5 +1,0 @@
-{
-    "nrf-connect.applications": [
-        "${workspaceFolder}\\nrf52-rtt"
-    ]
-}

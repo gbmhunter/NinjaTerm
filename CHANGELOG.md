@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added a "Recently used" section at the top of the RTT device dropdown showing the last 5 devices that successfully connected.
 - Added a live J-Link Commander output pane under RTT Connection Settings (tail of the Commander log file, capped at 100 lines), useful for diagnosing target-detection failures.
 - Added automatic reconnection for RTT. When the J-Link probe disappears mid-session (e.g. dev kit unplugged), NinjaTerm detects the loss, transitions to CLOSED_BUT_WILL_REOPEN, and polls every 5 seconds. Plugging the dev kit back in automatically restores the RTT session with a confirmation snackbar. Before each reconnection attempt on Windows, a fast `Get-PnpDevice` check ensures a SEGGER USB probe is present so Commander's interactive "Probe selection" GUI dialog never appears.
-- Added an `nrf52-rtt` Zephyr test firmware under `firmware-test-apps/` for exercising the RTT connection type against a real nRF52 DK.
+- Added an `nrf52_rtt` Zephyr test firmware under `firmware-test-apps/` for exercising the RTT connection type against a real nRF52 DK.
 
 ### Fixed
 
