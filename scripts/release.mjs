@@ -5,12 +5,11 @@
 // extracted from CHANGELOG.
 //
 // Usage:
-//   npm run release patch         # 5.10.0 -> 5.10.1
-//   npm run release minor         # 5.10.0 -> 5.11.0
-//   npm run release major         # 5.10.0 -> 6.0.0
-//   npm run release 5.11.0-rc.1   # explicit version
-//   npm run release patch --dry-run
-//   npm run release minor --allow-dev
+//   npm run release 5.11.0          # or any explicit semver
+//   npm run release v5.11.0         # v-prefix accepted, normalized away
+//   npm run release 5.11.0-rc.1     # prerelease
+//   npm run release 5.11.0 --dry-run
+//   npm run release 5.11.0 --allow-dev
 
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -21,10 +20,19 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const allowDev = args.includes('--allow-dev');
-const bumpArg = args.find((a) => !a.startsWith('--'));
+const rawVersionArg = args.find((a) => !a.startsWith('--'));
 
-if (!bumpArg) {
-  console.error('Usage: npm run release <patch|minor|major|X.Y.Z> [--dry-run] [--allow-dev]');
+if (!rawVersionArg) {
+  console.error('Usage: npm run release <X.Y.Z[-prerelease]> [--dry-run] [--allow-dev]');
+  console.error('Example: npm run release 5.11.0');
+  console.error('Example: npm run release 5.11.0-rc.1 --dry-run');
+  process.exit(2);
+}
+
+// Accept v-prefix (v5.11.0) — normalize it away. We re-add the `v` only for the git tag.
+const newVersion = rawVersionArg.replace(/^v/, '');
+if (!/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/.test(newVersion)) {
+  console.error(`"${rawVersionArg}" is not a valid semver version (expected e.g. 5.11.0 or 5.11.0-rc.1).`);
   process.exit(2);
 }
 
@@ -55,26 +63,18 @@ shInherit('npm run test:unit');
 console.log('Checking app-data snapshot...');
 shInherit('node scripts/check-appdata-snapshot.mjs');
 
-// --- Compute next version ----------------------------------------------------
+// --- Record current version --------------------------------------------------
 
 const pkgPath = join(repoRoot, 'package.json');
 const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
 const prevVersion = pkg.version;
 
-function bump(prev, kind) {
-  const m = prev.match(/^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/);
-  if (!m) throw new Error(`Unparseable current version: ${prev}`);
-  let [, maj, min, pat] = m.map((v, i) => (i === 0 ? v : Number(v)));
-  if (kind === 'patch') pat += 1;
-  else if (kind === 'minor') { min += 1; pat = 0; }
-  else if (kind === 'major') { maj += 1; min = 0; pat = 0; }
-  else throw new Error(`Unknown bump kind: ${kind}`);
-  return `${maj}.${min}.${pat}`;
+if (newVersion === prevVersion) {
+  console.error(`New version ${newVersion} matches current package.json version; nothing to release.`);
+  process.exit(1);
 }
 
-const newVersion = /^\d+\.\d+\.\d+/.test(bumpArg) ? bumpArg : bump(prevVersion, bumpArg);
 const newTag = `v${newVersion}`;
-
 if (sh('git tag -l ' + newTag)) {
   console.error(`Tag ${newTag} already exists locally.`);
   process.exit(1);

@@ -110,19 +110,27 @@ Releases are fully automated from a single command. Prerequisites on release day
    - DevTools Console: `copy(localStorage.getItem('appData'))`.
    - Save clipboard to `local-storage-data/appData-v{N}-app-v{X.Y.Z}-default.json`.
 
-Then cut the release:
+Then cut the release. Always pass the full version explicitly — no `patch` /
+`minor` / `major` shortcuts, just one consistent form for stable, prerelease, or
+otherwise:
 
 ```
-npm run release patch   # bug-fix release (e.g. 5.10.0 → 5.10.1)
-npm run release minor   # new feature     (e.g. 5.10.0 → 5.11.0)
-npm run release major   # breaking change (e.g. 5.10.0 → 6.0.0)
-# or an explicit version:
-npm run release 5.11.0-rc.1
+npm run release 5.11.0         # next minor
+npm run release 5.10.1         # patch
+npm run release 5.11.0-rc.1    # prerelease
+npm run release v5.11.0        # v-prefix accepted too
 ```
+
+Choosing a number follows semver:
+
+- **Major** (`X.0.0`) — breaking changes. Examples from the README's history:
+  framework change, complete UI overhaul.
+- **Minor** (`5.X.0`) — new features added without breaking existing ones.
+- **Patch** (`5.10.X`) — bug fixes and small changes to existing functionality.
 
 The script runs typecheck + unit tests + the snapshot preflight, finalizes
 CHANGELOG (moves `Unreleased` into a dated section and adds the compare link),
-bumps `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}`, and pushes
+writes `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}`, and pushes
 `main` with the tag. Pass `--dry-run` to preview the changes without writing
 anything, or `--allow-dev` to release from the `dev` branch.
 
