@@ -55,6 +55,8 @@ interface RttSession {
    *  sees the actionable error instead of the generic "session cancelled" fallback that
    *  would otherwise come from cleanupSession running in parallel. */
   terminalError: string | null;
+  /** Snapshot of connection options for diagnostics — included verbatim in error messages. */
+  device: string;
 }
 
 const activeSessions = new Map<string, RttSession>();
@@ -516,11 +518,11 @@ function startLogFileTail(
       if ((lostDetected || noProbeDetected || unknownDeviceDetected) && activeSessions.has(connectionId)) {
         let msg: string;
         if (unknownDeviceDetected) {
-          msg = 'Unknown target device. Check the "Target device" field in Connection Settings (J-Link Commander showed its device-picker dialog).';
+          msg = `Unknown target device "${session.device}". J-Link Commander did not recognise this name and tried to open its device-picker dialog. Check the "Target device" field in Connection Settings.`;
         } else if (noProbeDetected) {
-          msg = 'J-Link probe not found. Check USB cable and try again.';
+          msg = `J-Link probe not found while attempting to attach to "${session.device}". Check USB cable and try again.`;
         } else {
-          msg = 'J-Link probe disconnected (cable unplugged?).';
+          msg = `J-Link probe disconnected (cable unplugged?). Was attached to "${session.device}".`;
         }
         if (session.serverReady) {
           // Mid-session failure: surface to renderer immediately and tear down. The
@@ -594,6 +596,7 @@ async function spawnAndConnect(
     logLineCarry: '',
     lastLogActivity: Date.now(),
     terminalError: null,
+    device: options.device,
   };
   activeSessions.set(connectionId, session);
 
@@ -617,7 +620,7 @@ async function spawnAndConnect(
       mainWindow?.webContents.send(
         'rtt:error',
         connectionId,
-        'J-Link Commander appears to be blocked on a GUI dialog (no probe found?). Killed.',
+        `J-Link Commander appears to be blocked on a GUI dialog while attempting to attach to "${session.device}" (no probe found?). Killed.`,
       );
       cleanupSession(connectionId);
       mainWindow?.webContents.send('rtt:closed', connectionId);
@@ -664,7 +667,7 @@ async function spawnAndConnect(
       if (serverProcess.exitCode !== null) {
         const tail = session.serverLogLines.slice(-10).join('\n');
         throw new Error(
-          `J-Link Commander exited with code ${serverProcess.exitCode} before RTT was ready.\n${tail}`.trim(),
+          `J-Link Commander exited with code ${serverProcess.exitCode} before RTT was ready (target "${session.device}").\n${tail}`.trim(),
         );
       }
       const sinceLastLog = Date.now() - session.lastLogActivity;
@@ -672,13 +675,13 @@ async function spawnAndConnect(
       if (elapsed > LOG_STAGNATION_MS && sinceLastLog > LOG_STAGNATION_MS) {
         const tail = session.serverLogLines.slice(-10).join('\n');
         throw new Error(
-          `J-Link Commander appears stuck on an interactive dialog (no log activity for ${Math.round(sinceLastLog / 1000)}s). The most common cause is an unknown target device name. Check the "Target device" field.\n${tail}`.trim(),
+          `J-Link Commander appears stuck on an interactive dialog (no log activity for ${Math.round(sinceLastLog / 1000)}s, target "${session.device}"). The most common cause is an unknown target device name. Check the "Target device" field.\n${tail}`.trim(),
         );
       }
       if (elapsed > SERVER_READY_TIMEOUT_MS) {
         const tail = session.serverLogLines.slice(-10).join('\n');
         throw new Error(
-          `J-Link Commander did not open the RTT port within ${SERVER_READY_TIMEOUT_MS / 1000}s. Check device name, interface and probe connection.\n${tail}`.trim(),
+          `J-Link Commander did not open the RTT port within ${SERVER_READY_TIMEOUT_MS / 1000}s (target "${session.device}"). Check device name, interface and probe connection.\n${tail}`.trim(),
         );
       }
 
@@ -707,7 +710,7 @@ async function spawnAndConnect(
 
   serverProcess.on('exit', (code) => {
     if (activeSessions.has(connectionId)) {
-      const msg = `J-Link Commander exited (code ${code}).`;
+      const msg = `J-Link Commander exited (code ${code}, target "${session.device}").`;
       mainWindow?.webContents.send('rtt:error', connectionId, msg);
       cleanupSession(connectionId);
       mainWindow?.webContents.send('rtt:closed', connectionId);
