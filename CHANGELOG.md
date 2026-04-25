@@ -10,11 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 - The J-Link Commander path field on the RTT Connection Settings pane auto-populates on first visit. If the field is empty when the user navigates to RTT, NinjaTerm transparently runs the same scan the **Locate** button performs (versioned `C:\Program Files\SEGGER\JLink_V*` folders, then legacy install paths) and fills the field with the newest version found. Manually-typed paths are preserved and never overwritten; clearing the field acts as a re-scan.
+- RTT error messages now include the target device name verbatim, e.g. `Unknown target device "ddd"...` or `J-Link probe disconnected (cable unplugged?). Was attached to "nRF52832_xxAA".`. Applies to all eight startup / mid-session failure paths: unknown device, probe not found, probe lost, log stagnation, dialog watchdog, server-ready timeout, early Commander exit, and mid-session Commander exit.
 
 ### Fixed
 
 - Fixed crash on RTT connection attempt when the user-supplied J-Link Commander path doesn't exist (e.g. a typo like `JLink.exedd`). Previously the asynchronous spawn ENOENT was uncaught and Electron showed a fatal error dialog. NinjaTerm now pre-checks the path with `fs.existsSync` before spawning and surfaces a normal "J-Link Commander not found at …" snackbar; an `'error'` listener on the spawned process catches any spawn-time failures that slip past (e.g. permissions errors).
 - Fixed RTT connection hanging for ~15 seconds when an unknown target device name is entered, while J-Link Commander silently displayed its interactive "Target device settings" picker. NinjaTerm now watches the Commander log file for the `JLINK_DEVICE_GetIndex … returns -1` and `JLINK_DEVICE_SelectDialog` lines that fire the moment the dialog opens, kills Commander immediately to dismiss the dialog, and surfaces a clear error message pointing the user at the device-name field. As a safety net for any other interactive dialog scenario, the spawn-and-connect loop also fails fast if the Commander log file has been quiet for more than 4 seconds during startup.
+- Fixed RTT startup-failure error messages being masked by a generic `RTT session was cancelled before server became ready.` string. The log-tail detectors and the spawn-and-connect loop now coordinate via a `terminalError` field on the session, so the actionable message ("Unknown target device …", "J-Link probe not found …", etc.) is the one the user actually sees.
 
 ## [5.11.0] - 2026-04-24
 
