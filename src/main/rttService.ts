@@ -49,6 +49,12 @@ interface RttSession {
    *  (e.g. unknown device → "Target device settings" picker). When the log goes quiet
    *  for too long during startup, we fail fast instead of waiting the full 15s timeout. */
   lastLogActivity: number;
+  /** Set by log-tail detectors during the startup phase (before serverReady) when they
+   *  identify a definitive failure (unknown device, probe missing, etc.). spawn-and-connect
+   *  picks this up on its next iteration and throws with this exact message, so the user
+   *  sees the actionable error instead of the generic "session cancelled" fallback that
+   *  would otherwise come from cleanupSession running in parallel. */
+  terminalError: string | null;
 }
 
 const activeSessions = new Map<string, RttSession>();
@@ -516,9 +522,20 @@ function startLogFileTail(
         } else {
           msg = 'J-Link probe disconnected (cable unplugged?).';
         }
-        mainWindow?.webContents.send('rtt:error', connectionId, msg);
-        cleanupSession(connectionId);
-        mainWindow?.webContents.send('rtt:closed', connectionId);
+        if (session.serverReady) {
+          // Mid-session failure: surface to renderer immediately and tear down. The
+          // renderer's onClosed handler will trigger reconnection polling.
+          mainWindow?.webContents.send('rtt:error', connectionId, msg);
+          cleanupSession(connectionId);
+          mainWindow?.webContents.send('rtt:closed', connectionId);
+        } else {
+          // Startup-phase failure: don't tear down here — spawnAndConnect's polling loop
+          // is awaiting and would race us, throwing the generic "session cancelled" error.
+          // Stash the message on the session and let spawnAndConnect read it on the next
+          // iteration and throw with this exact text. The IPC handler's catch then cleans
+          // up and the renderer sees the actionable message via the IPC return value.
+          session.terminalError = msg;
+        }
       }
     } finally {
       fs.closeSync(fd);
@@ -576,6 +593,7 @@ async function spawnAndConnect(
     logFileOffset: 0,
     logLineCarry: '',
     lastLogActivity: Date.now(),
+    terminalError: null,
   };
   activeSessions.set(connectionId, session);
 
@@ -634,6 +652,12 @@ async function spawnAndConnect(
   const socket = await (async (): Promise<net.Socket> => {
     const startTime = Date.now();
     while (true) {
+      // The log-tail detectors set `terminalError` when they identify a definitive
+      // startup failure (unknown device, no probe, etc.). Surface that exact message
+      // — it's actionable, unlike the "session cancelled" string we'd otherwise throw.
+      if (session.terminalError) {
+        throw new Error(session.terminalError);
+      }
       if (!activeSessions.has(connectionId)) {
         throw new Error('RTT session was cancelled before server became ready.');
       }
