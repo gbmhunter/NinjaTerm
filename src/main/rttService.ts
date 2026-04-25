@@ -44,6 +44,11 @@ interface RttSession {
   logWatcher: NodeJS.Timeout | null;
   logFileOffset: number;
   logLineCarry: string;
+  /** Wall-clock ms timestamp of the most recent log-file activity. Used by the
+   *  spawn-and-connect loop to detect Commander hanging on an interactive GUI dialog
+   *  (e.g. unknown device → "Target device settings" picker). When the log goes quiet
+   *  for too long during startup, we fail fast instead of waiting the full 15s timeout. */
+  lastLogActivity: number;
 }
 
 const activeSessions = new Map<string, RttSession>();
@@ -210,6 +215,20 @@ export function isNoProbeLog(logText: string): boolean {
     logText.includes('Connecting to J-Link via USB...FAIL') ||
     logText.includes('Cannot connect to the probe') ||
     logText.includes('Probe selection')
+  );
+}
+
+/**
+ * Returns true if the line indicates Commander is about to (or has just) opened the
+ * "Target device settings" GUI dialog because the device name we passed was unknown.
+ * The DLL logs `JLINK_DEVICE_GetIndex(... sDeviceName = ddd) ... returns -1` and then
+ * `JLINK_DEVICE_SelectDialog(...)` before opening the dialog. Detecting either lets us
+ * kill Commander before the user sees the dialog (or seconds later if it's already up).
+ */
+export function isUnknownDeviceLog(logText: string): boolean {
+  return (
+    logText.includes('JLINK_DEVICE_SelectDialog') ||
+    /JLINK_DEVICE_GetIndex.*returns -1/.test(logText)
   );
 }
 
@@ -460,12 +479,14 @@ function startLogFileTail(
       const bytesToRead = stat.size - session.logFileOffset;
       const buf = Buffer.alloc(bytesToRead);
       const read = fs.readSync(fd, buf, 0, bytesToRead, session.logFileOffset);
+      if (read > 0) session.lastLogActivity = Date.now();
       session.logFileOffset += read;
       const text = session.logLineCarry + buf.subarray(0, read).toString('utf8');
       const parts = text.split(/\r?\n/);
       session.logLineCarry = parts.pop() ?? '';
       let lostDetected = false;
       let noProbeDetected = false;
+      let unknownDeviceDetected = false;
       for (const line of parts) {
         if (line === '') continue;
         appendServerLog(session, line);
@@ -476,16 +497,25 @@ function startLogFileTail(
         if (!lostDetected && isProbeLostLog(line)) {
           lostDetected = true;
         }
-        // Only treat "no probe" messages as terminal during startup. After the server is
-        // ready a probe-specific failure would have surfaced as isProbeLostLog instead.
+        // Only treat "no probe" / "unknown device" messages as terminal during startup.
+        // After the server is ready a probe-specific failure would have surfaced as
+        // isProbeLostLog instead.
         if (!session.serverReady && !noProbeDetected && isNoProbeLog(line)) {
           noProbeDetected = true;
         }
+        if (!session.serverReady && !unknownDeviceDetected && isUnknownDeviceLog(line)) {
+          unknownDeviceDetected = true;
+        }
       }
-      if ((lostDetected || noProbeDetected) && activeSessions.has(connectionId)) {
-        const msg = noProbeDetected
-          ? 'J-Link probe not found. Check USB cable and try again.'
-          : 'J-Link probe disconnected (cable unplugged?).';
+      if ((lostDetected || noProbeDetected || unknownDeviceDetected) && activeSessions.has(connectionId)) {
+        let msg: string;
+        if (unknownDeviceDetected) {
+          msg = 'Unknown target device. Check the "Target device" field in Connection Settings (J-Link Commander showed its device-picker dialog).';
+        } else if (noProbeDetected) {
+          msg = 'J-Link probe not found. Check USB cable and try again.';
+        } else {
+          msg = 'J-Link probe disconnected (cable unplugged?).';
+        }
         mainWindow?.webContents.send('rtt:error', connectionId, msg);
         cleanupSession(connectionId);
         mainWindow?.webContents.send('rtt:closed', connectionId);
@@ -545,6 +575,7 @@ async function spawnAndConnect(
     logWatcher: null,
     logFileOffset: 0,
     logLineCarry: '',
+    lastLogActivity: Date.now(),
   };
   activeSessions.set(connectionId, session);
 
@@ -593,6 +624,13 @@ async function spawnAndConnect(
 
   // Wait for Commander to open its RTT telnet port. The first successful connect IS the
   // session socket — don't probe-and-reconnect (see attachSocketHandlers comment).
+  // Two failure modes we fail fast on:
+  //   1. Process exits early (typical case: ExitOnError 1 + USB-connect failure).
+  //   2. Log file stops growing for >LOG_STAGNATION_MS while we have NOT yet connected.
+  //      That signals Commander is hung on an interactive GUI dialog (most commonly the
+  //      "Target device settings" picker for an unknown device name). Without this check
+  //      we'd wait the full SERVER_READY_TIMEOUT_MS while the user is staring at the dialog.
+  const LOG_STAGNATION_MS = 4 * 1000;
   const socket = await (async (): Promise<net.Socket> => {
     const startTime = Date.now();
     while (true) {
@@ -605,7 +643,15 @@ async function spawnAndConnect(
           `J-Link Commander exited with code ${serverProcess.exitCode} before RTT was ready.\n${tail}`.trim(),
         );
       }
-      if (Date.now() - startTime > SERVER_READY_TIMEOUT_MS) {
+      const sinceLastLog = Date.now() - session.lastLogActivity;
+      const elapsed = Date.now() - startTime;
+      if (elapsed > LOG_STAGNATION_MS && sinceLastLog > LOG_STAGNATION_MS) {
+        const tail = session.serverLogLines.slice(-10).join('\n');
+        throw new Error(
+          `J-Link Commander appears stuck on an interactive dialog (no log activity for ${Math.round(sinceLastLog / 1000)}s). The most common cause is an unknown target device name. Check the "Target device" field.\n${tail}`.trim(),
+        );
+      }
+      if (elapsed > SERVER_READY_TIMEOUT_MS) {
         const tail = session.serverLogLines.slice(-10).join('\n');
         throw new Error(
           `J-Link Commander did not open the RTT port within ${SERVER_READY_TIMEOUT_MS / 1000}s. Check device name, interface and probe connection.\n${tail}`.trim(),

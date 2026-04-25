@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Fixed crash on RTT connection attempt when the user-supplied J-Link Commander path doesn't exist (e.g. a typo like `JLink.exedd`). Previously the asynchronous spawn ENOENT was uncaught and Electron showed a fatal error dialog. NinjaTerm now pre-checks the path with `fs.existsSync` before spawning and surfaces a normal "J-Link Commander not found at …" snackbar; an `'error'` listener on the spawned process catches any spawn-time failures that slip past (e.g. permissions errors).
+- Fixed RTT connection hanging for ~15 seconds when an unknown target device name is entered, while J-Link Commander silently displayed its interactive "Target device settings" picker. NinjaTerm now watches the Commander log file for the `JLINK_DEVICE_GetIndex … returns -1` and `JLINK_DEVICE_SelectDialog` lines that fire the moment the dialog opens, kills Commander immediately to dismiss the dialog, and surfaces a clear error message pointing the user at the device-name field. As a safety net for any other interactive dialog scenario, the spawn-and-connect loop also fails fast if the Commander log file has been quiet for more than 4 seconds during startup.
 
 ## [5.11.0] - 2026-04-24
 
