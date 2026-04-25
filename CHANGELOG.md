@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- The J-Link Commander path field on the RTT Connection Settings pane auto-populates on first visit. If the field is empty when the user navigates to RTT, NinjaTerm transparently runs the same scan the **Locate** button performs (versioned `C:\Program Files\SEGGER\JLink_V*` folders, then legacy install paths) and fills the field with the newest version found. Manually-typed paths are preserved and never overwritten; clearing the field acts as a re-scan.
+
+### Fixed
+
+- Fixed crash on RTT connection attempt when the user-supplied J-Link Commander path doesn't exist (e.g. a typo like `JLink.exedd`). Previously the asynchronous spawn ENOENT was uncaught and Electron showed a fatal error dialog. NinjaTerm now pre-checks the path with `fs.existsSync` before spawning and surfaces a normal "J-Link Commander not found at …" snackbar; an `'error'` listener on the spawned process catches any spawn-time failures that slip past (e.g. permissions errors).
+
 ## [5.11.0] - 2026-04-24
 
 ### Changed

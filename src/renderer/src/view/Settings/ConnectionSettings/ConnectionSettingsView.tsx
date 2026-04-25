@@ -123,6 +123,33 @@ function PortSettingsView(props: Props) {
     app.settings.portConfiguration.scanForSerialPorts();
   }, []); // Empty dependency array means this runs once when component mounts
 
+  // Auto-populate the J-Link Commander path field on first navigation to the RTT pane,
+  // so users don't have to click "Locate" themselves. Runs whenever the RTT pane becomes
+  // visible AND the path is currently empty. If the resolver fails (no SEGGER install
+  // detected), we leave the field empty and stay silent — the user can still type a path
+  // manually or click Browse.
+  const rttExePath = app.settings.portConfiguration.rttServerExePath;
+  const connType = app.settings.portConfiguration.connectionType;
+  useEffect(() => {
+    if (connType !== ConnectionType.RTT) return;
+    if (rttExePath !== '') return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await window.electronAPI.rtt.resolveExePath('');
+        if (cancelled) return;
+        if (result.success && result.path) {
+          app.settings.portConfiguration.setRttServerExePath(result.path);
+        }
+      } catch {
+        // Resolver errors are non-fatal — the user can still set the path manually.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [connType, rttExePath]);
+
   const isPortSettingsDisabled = app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
   // like baud rate, data bits, etc. can be changed when the port is open, not the port itself.

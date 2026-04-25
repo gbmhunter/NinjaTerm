@@ -516,6 +516,22 @@ async function spawnAndConnect(
   // consume the following flag token if no S/N is provided.)
   const cliArgs = ['-ExitOnError', '1', '-CommanderScript', scriptPath];
   const serverProcess = spawn(exePath, cliArgs, { windowsHide: true });
+  // ENOENT and similar spawn failures arrive asynchronously via 'error', not as a thrown
+  // exception. Without a listener Node treats them as uncaught and Electron shows a fatal
+  // dialog. Wire a no-op listener; cleanupSession (triggered via the watchdog or process
+  // 'exit') is what ultimately surfaces the error to the renderer.
+  serverProcess.on('error', (err) => {
+    console.error('J-Link Commander spawn error:', err);
+    if (activeSessions.has(connectionId)) {
+      mainWindow?.webContents.send(
+        'rtt:error',
+        connectionId,
+        `Failed to spawn J-Link Commander: ${err.message}`,
+      );
+      cleanupSession(connectionId);
+      mainWindow?.webContents.send('rtt:closed', connectionId);
+    }
+  });
 
   const session: RttSession = {
     serverProcess,
@@ -642,6 +658,18 @@ export function initializeRttHandlers(mainWindow: BrowserWindow) {
         return {
           success: false,
           error: 'J-Link Commander (JLink.exe) not found. Install SEGGER J-Link software or set the path explicitly.',
+        };
+      }
+
+      // Verify the resolved path actually exists on disk before spawning. spawn() emits
+      // ENOENT asynchronously via the 'error' event and without a listener Node treats it
+      // as a fatal uncaught exception. The spawnAndConnect path also wires an 'error'
+      // handler as a safety net, but pre-checking here gives a faster, cleaner error to
+      // the user (especially when they've typed a bogus explicit path).
+      if (!fs.existsSync(exePath)) {
+        return {
+          success: false,
+          error: `J-Link Commander not found at "${exePath}". Click Locate to auto-detect or Browse to pick a different file.`,
         };
       }
 
