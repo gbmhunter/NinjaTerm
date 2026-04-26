@@ -89,6 +89,10 @@ export class ConnController {
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
   private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 500ms for serial ports
   private readonly SOCKET_RECONNECTION_INTERVAL_MS = 5000; // Poll every 5 seconds for sockets
+  // RTT can poll fast: when no probe is plugged in, JLINKARM_EMU_GetList returns 0
+  // synchronously with no I/O, so a tight cadence is cheap. Tries are gated by
+  // rttReconnectInFlight so a slow attach doesn't stack overlapping retries.
+  private readonly RTT_RECONNECTION_INTERVAL_MS = 500;
 
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
@@ -678,8 +682,11 @@ export class ConnController {
     // Determine connection type and set appropriate polling interval
     const isSocket = this.lastSelectedPortType === PortType.SOCKET;
     const isRtt = this.lastSelectedPortType === PortType.RTT;
-    const pollingInterval =
-      isSocket || isRtt ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
+    const pollingInterval = isSocket
+      ? this.SOCKET_RECONNECTION_INTERVAL_MS
+      : isRtt
+        ? this.RTT_RECONNECTION_INTERVAL_MS
+        : this.RECONNECTION_POLLING_INTERVAL_MS;
     const connectionType = isSocket ? 'socket' : isRtt ? 'RTT' : 'port';
 
     console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
