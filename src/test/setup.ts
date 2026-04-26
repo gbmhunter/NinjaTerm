@@ -37,6 +37,12 @@ vi.mock('electron-log/renderer.js', () => ({
 
 // Mock Electron APIs
 beforeEach(() => {
+  // The real preload returns a per-listener disposer from every `on*` method
+  // (see src/preload/index.ts). Mocks must do the same so callers like
+  // ConnController, which capture and later invoke the disposer, don't blow
+  // up on `undefined()`.
+  const onMock = () => vi.fn(() => vi.fn());
+
   // Mock window.electronAPI
   Object.defineProperty(window, 'electronAPI', {
     value: {
@@ -48,9 +54,9 @@ beforeEach(() => {
         openPort: vi.fn().mockResolvedValue({ success: true }),
         closePort: vi.fn().mockResolvedValue({ success: true }),
         writeData: vi.fn().mockResolvedValue({ success: true }),
-        onDataReceived: vi.fn(),
-        onError: vi.fn(),
-        onPortClosed: vi.fn(),
+        onDataReceived: onMock(),
+        onError: onMock(),
+        onPortClosed: onMock(),
         removeAllListeners: vi.fn(),
         closeAllPortsAndRemoveListeners: vi.fn(),
       },
@@ -65,9 +71,9 @@ beforeEach(() => {
         connect: vi.fn().mockResolvedValue({ success: true, connectionId: 'mock-connection-id' }),
         disconnect: vi.fn().mockResolvedValue({ success: true }),
         writeData: vi.fn().mockResolvedValue({ success: true }),
-        onDataReceived: vi.fn(),
-        onError: vi.fn(),
-        onClosed: vi.fn(),
+        onDataReceived: onMock(),
+        onError: onMock(),
+        onClosed: onMock(),
         removeAllListeners: vi.fn(),
         disconnectAllSocketsAndRemoveListeners: vi.fn(),
       },
@@ -78,12 +84,12 @@ beforeEach(() => {
         connectDevice: vi.fn().mockResolvedValue({ success: true }),
         disconnectDevice: vi.fn().mockResolvedValue({ success: true }),
         writeData: vi.fn().mockResolvedValue({ success: true }),
-        onDeviceDiscovered: vi.fn(),
-        onDataReceived: vi.fn(),
-        onDeviceDisconnected: vi.fn(),
-        onDeviceServicesDiscovered: vi.fn(),
+        onDeviceDiscovered: onMock(),
+        onDataReceived: onMock(),
+        onDeviceDisconnected: onMock(),
+        onDeviceServicesDiscovered: onMock(),
         removeAllListeners: vi.fn(),
-        onConnectionAttemptComplete: vi.fn(),
+        onConnectionAttemptComplete: onMock(),
       }
     },
     writable: true,

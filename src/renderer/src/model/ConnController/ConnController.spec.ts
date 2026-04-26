@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
 import { ConnController } from './ConnController';
+import { App } from '../App';
 
 describe('SerialController', () => {
   describe('sortSerialPortsNaturally', () => {
@@ -114,6 +115,45 @@ describe('SerialController', () => {
       const sortedPorts = ConnController.sortSerialPortsNaturally(singlePort);
       expect(sortedPorts).toHaveLength(1);
       expect(sortedPorts[0].path).toBe('COM1');
+    });
+  });
+
+  describe('IPC listener disposers', () => {
+    beforeEach(() => {
+      window.localStorage.clear();
+    });
+
+    it('cleanup() invokes every captured disposer and clears the list', () => {
+      const app = new App();
+      const conn: any = app.connController;
+
+      const dispose1 = vi.fn();
+      const dispose2 = vi.fn();
+      conn.connDisposers.push(dispose1, dispose2);
+
+      conn.cleanup();
+
+      expect(dispose1).toHaveBeenCalledTimes(1);
+      expect(dispose2).toHaveBeenCalledTimes(1);
+      expect(conn.connDisposers).toEqual([]);
+    });
+
+    it('a throwing disposer does not block the rest', () => {
+      // If a stale wrapper somehow throws on removal, the remaining listeners
+      // must still be cleaned up. Otherwise one bad disposer leaks every
+      // sibling listener for the rest of the session.
+      const app = new App();
+      const conn: any = app.connController;
+
+      const throwingDispose = vi.fn(() => { throw new Error('boom'); });
+      const goodDispose = vi.fn();
+      conn.connDisposers.push(throwingDispose, goodDispose);
+
+      conn.cleanup();
+
+      expect(throwingDispose).toHaveBeenCalledTimes(1);
+      expect(goodDispose).toHaveBeenCalledTimes(1);
+      expect(conn.connDisposers).toEqual([]);
     });
   });
 });

@@ -40,13 +40,23 @@ export class AppDataManager {
     this.app = app;
     this.appData = new AppData();
 
-    addEventListener('storage', this.onStorageEvent);
+    window.addEventListener('storage', this.onStorageEvent);
 
     // Load app data from storage
     this._loadAppDataFromStorage();
 
     makeAutoObservable(this);
   }
+
+  /**
+   * Removes listeners that this manager registered on the global window.
+   * Called from App.cleanup() so a recreated App (e.g. hot reload during dev)
+   * does not leave stale `storage`-event handlers attached to the previous
+   * instance.
+   */
+  cleanup = () => {
+    window.removeEventListener('storage', this.onStorageEvent);
+  };
 
   /**
    * Function should be registered as a listener for the 'storage' event. It will check
@@ -65,7 +75,15 @@ export class AppDataManager {
         log.error('App data not found in local storage.');
         return;
       }
-      const appDataInStorage = JSON.parse(appDataAsJson);
+      let appDataInStorage: any;
+      try {
+        appDataInStorage = JSON.parse(appDataAsJson);
+      } catch (err) {
+        // Another tab/process wrote unparseable data. Skip the cross-tab
+        // sync rather than crashing the renderer.
+        log.error('Failed to parse app data from storage event. err=', err);
+        return;
+      }
       // Compare the JSON strings of the profiles to work out if they are different
       if (JSON.stringify(appDataInStorage.profiles) !== JSON.stringify(this.appData.profiles)) {
         log.info('Profiles changed. Reloading profiles...');
@@ -91,7 +109,20 @@ export class AppDataManager {
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
     } else {
       // A version of app data was found in local storage. Load it.
-      let appDataUnknownVersion = JSON.parse(appDataAsJson);
+      let appDataUnknownVersion: any;
+      try {
+        appDataUnknownVersion = JSON.parse(appDataAsJson);
+      } catch (err) {
+        // Corrupt / truncated localStorage entry. Without this guard, an
+        // unparseable value crashes the App constructor and leaves the
+        // renderer dead on launch with no way to recover. Fall back to a
+        // fresh default and overwrite the bad value.
+        log.error('Failed to parse app data from local storage. Falling back to defaults. err=', err);
+        appData = new AppData();
+        window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
+        this.appData = appData;
+        return;
+      }
       let wasChanged;
       ({ appData, wasChanged } = this._updateAppData(appDataUnknownVersion));
 

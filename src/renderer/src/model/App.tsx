@@ -97,12 +97,23 @@ export class App {
   private readonly RATE_CALCULATION_WINDOW_MS = 3000; // 3 seconds
   private readonly RATE_UPDATE_INTERVAL_MS = 500; // Update every 500ms
 
+  // Hard cap so a burst of small chunks (e.g. one BLE notification per byte)
+  // can't grow these arrays without bound between cleanup ticks. With a
+  // 500ms cleanup interval, 2048 entries is well above the chunk count any
+  // real transport would produce in that window.
+  private readonly MAX_DATA_POINTS = 2048;
+
   // Arrays to track byte counts over time
   private rxDataPoints: Array<{ timestamp: number; bytes: number }> = [];
   private txDataPoints: Array<{ timestamp: number; bytes: number }> = [];
 
   // Timer for rate calculations
   private rateCalculationInterval: NodeJS.Timeout | null = null;
+
+  // Disposer for the title-update reaction. Captured at register-time so
+  // cleanup() can release it; without this, recreating App (e.g. on hot
+  // reload during dev) leaves stale reactions firing forever.
+  private titleReactionDispose: (() => void) | null = null;
 
   // CPU usage tracking
   cpuUsagePercent: number = 0;
@@ -196,7 +207,10 @@ export class App {
     this.logging = new Logging(this);
 
     // Listen for changes to the last applied profile name, and update the app title
-    reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
+    this.titleReactionDispose = reaction(
+      () => this.profileManager.lastAppliedProfileName,
+      this.onLastAppliedProfileNameChanged,
+    );
     this.onLastAppliedProfileNameChanged();
 
     // Close any existing ports which might be open in the main process, and remove
@@ -239,6 +253,12 @@ export class App {
     this.stopRateCalculation();
     this.stopCpuMonitoring();
     this.soundPlayer.cleanup();
+    this.profileManager.cleanup();
+
+    if (this.titleReactionDispose) {
+      this.titleReactionDispose();
+      this.titleReactionDispose = null;
+    }
 
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
@@ -323,6 +343,11 @@ export class App {
       timestamp: Date.now(),
       bytes: bytes
     });
+    if (this.rxDataPoints.length > this.MAX_DATA_POINTS) {
+      // Drop the oldest entries. Splice from index 0 keeps the tail in place
+      // and is fine at this small scale (cap is 2048).
+      this.rxDataPoints.splice(0, this.rxDataPoints.length - this.MAX_DATA_POINTS);
+    }
   }
 
   /**
@@ -333,6 +358,9 @@ export class App {
       timestamp: Date.now(),
       bytes: bytes
     });
+    if (this.txDataPoints.length > this.MAX_DATA_POINTS) {
+      this.txDataPoints.splice(0, this.txDataPoints.length - this.MAX_DATA_POINTS);
+    }
   }
 
   /**

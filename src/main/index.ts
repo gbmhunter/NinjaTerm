@@ -46,6 +46,18 @@ if (app.isPackaged) {
   console.log('Detected dev. environment, not initializing Google Analytics.');
 }
 
+// Catch unhandled rejections / uncaught exceptions so the failure makes it
+// into the log file instead of dying silently. Without these handlers an
+// unhandled async rejection during startup (e.g. RTT FFI init, Bluetooth
+// adapter probing) leaves the renderer talking to a half-initialised main
+// process with no diagnostic trail.
+process.on('uncaughtException', (err, origin) => {
+  log.error('uncaughtException origin=', origin, ' err=', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  log.error('unhandledRejection promise=', promise, ' reason=', reason);
+});
+
 // Note: result = await ... status always seems to be 204 even if I use an invalid secret key, so
 // we can't use that to check if the event was sent successfully.
 emitEventIfInProd('app_start');
