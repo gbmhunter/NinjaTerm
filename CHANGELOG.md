@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.11.1] - 2026-04-26
+
 ### Changed
 
 - **RTT now talks to `JLinkARM.dll` (or its `.dylib` / `.so` equivalent) directly via FFI** instead of spawning J-Link Commander as a subprocess. The previous architecture of invoking JLink.exe and then polling J-Link's log file at 200 ms, three string-matching detectors for SEGGER's internal trace messages, a 3-second dialog watchdog, a 4-second log-stagnation watchdog, a Windows-only PowerShell USB pre-scan, and TCP-socket plumbing for an internal telnet endpoint — all because Commander would silently pop interactive GUI dialogs that we had to detect and kill. The new implementation calls the DLL directly using [koffi](https://koffi.dev): every error comes back as a numeric return code, no GUI dialogs can pop, no subprocesses to babysit. The IPC surface and the renderer code are unchanged.
@@ -1019,6 +1021,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.11.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.0...v5.11.1
 [5.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.10.0...v5.11.0
 [5.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...v5.10.0
 [5.9.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.8.2...v5.9.0
