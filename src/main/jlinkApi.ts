@@ -183,8 +183,8 @@ function installDllMessageHandlers(lib: koffi.IKoffiLib) {
   // `koffi.pointer(LogProto)` — using plain `void *` hands the DLL an opaque koffi
   // handle instead of a real function pointer, and the DLL silently falls back to
   // its default MessageBox handler.
-  const setErrorOutHandler = lib.func('void', 'JLINKARM_SetErrorOutHandler', [LogProtoPtr]);
-  const setWarnOutHandler = lib.func('void', 'JLINKARM_SetWarnOutHandler', [LogProtoPtr]);
+  const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(JlinkLogCallback *cb)');
+  const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(JlinkLogCallback *cb)');
 
   errorHandlerCb = koffi.register((msg: string) => dispatchDllMessage('error', msg), LogProtoPtr);
   warnHandlerCb = koffi.register((msg: string) => dispatchDllMessage('warn', msg), LogProtoPtr);
@@ -233,7 +233,7 @@ function bindFunctions(lib: koffi.IKoffiLib) {
      * Returns NULL on success, or a pointer to a static error string on failure (per
      * SEGGER's API — confirmed via PyLink's `JLINKARM_OpenEx.restype = c_char_p`).
      */
-    openEx: lib.func('str', 'JLINKARM_OpenEx', [LogProtoPtr, LogProtoPtr]),
+    openEx: lib.func('const char *JLINKARM_OpenEx(JlinkLogCallback *log, JlinkLogCallback *err)'),
     /** Close the J-Link connection. */
     close: lib.func('void JLINKARM_Close()'),
     /** True if the J-Link DLL has an open connection to a probe. */
