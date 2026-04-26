@@ -94,6 +94,22 @@ describe('app data manager tests', () => {
     updateAndCompare(savedAppData);
   });
 
+  test('falls back to defaults when localStorage holds invalid JSON', () => {
+    // _loadAppDataFromStorage calls JSON.parse() on the raw localStorage value
+    // with no try/catch. If a previous version wrote a partial value, or the
+    // value was truncated, this would crash AppDataManager construction and
+    // take the whole renderer with it. Recovery should be: log + fall back to
+    // a fresh AppData.
+    window.localStorage.setItem('appData', '{not valid json');
+
+    const app = new App();
+    expect(() => new AppDataManager(app)).not.toThrow();
+
+    const profileManager = new AppDataManager(app);
+    expect(profileManager.appData.profiles.length).toEqual(1);
+    expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
+  });
+
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {
     // Regression test: `_loadConfig` used to call `applySocketConnTimeout` / `applyRttSpeed`
     // mid-load, both of which save. Because they ran *before* `rttRecentDevices` was read
