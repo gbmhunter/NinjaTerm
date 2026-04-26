@@ -134,6 +134,7 @@ export class PortSettings {
   rttInterface: RttInterface = RttInterface.SWD;
   rttSpeedDispKHz = '4000';
   rttServerExePath = '';
+  rttServerExePathUserModified = false;
   rttJLinkSerialNumber = '';
   rttChannelDisp = '0';
   rttRecentDevices: string[] = [];
@@ -369,7 +370,22 @@ export class PortSettings {
     this._saveConfig();
   }
 
+  /**
+   * Called only when the user explicitly modifies the path (typing, Browse, or Locate).
+   * Sticks `rttServerExePathUserModified` so the auto-detect on RTT-pane navigation no
+   * longer fights the user — including when they deliberately clear the field.
+   */
   setRttServerExePath = (value: string) => {
+    this.rttServerExePath = value;
+    this.rttServerExePathUserModified = true;
+    this._saveConfig();
+  }
+
+  /**
+   * Used by the auto-detect on first RTT-pane navigation. Does NOT mark the field as
+   * user-modified, so the next pane visit will still auto-detect if the resolver fails.
+   */
+  setRttServerExePathFromAutoDetect = (value: string) => {
     this.rttServerExePath = value;
     this._saveConfig();
   }
@@ -454,6 +470,8 @@ export class PortSettings {
     this.rttSpeedDispKHz = configToLoad.rttSpeedKHz.toString();
     this.applyRttSpeed();
     this.rttServerExePath = configToLoad.rttServerExePath;
+    // Tolerate saved blobs from before this field existed.
+    this.rttServerExePathUserModified = configToLoad.rttServerExePathUserModified ?? false;
     this.rttJLinkSerialNumber = configToLoad.rttJLinkSerialNumber;
     // Tolerate saved blobs from before these fields existed.
     const savedChannel = typeof configToLoad.rttChannel === 'number' ? configToLoad.rttChannel : 0;
@@ -490,6 +508,7 @@ export class PortSettings {
     config.rttInterface = this.rttInterface;
     config.rttSpeedKHz = this.rttSpeedKHz;
     config.rttServerExePath = this.rttServerExePath;
+    config.rttServerExePathUserModified = this.rttServerExePathUserModified;
     config.rttJLinkSerialNumber = this.rttJLinkSerialNumber;
     config.rttChannel = this.rttChannel;
     config.rttRecentDevices = this.rttRecentDevices.slice();

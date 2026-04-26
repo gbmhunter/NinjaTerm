@@ -52,6 +52,8 @@
     "HUPCL",
     "IXANY",
     "JLINK",
+    "JLINKARM",
+    "JTAG",
     "Kofi",
     "ledblue",
     "ledyellow",

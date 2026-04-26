@@ -124,22 +124,23 @@ function PortSettingsView(props: Props) {
   }, []); // Empty dependency array means this runs once when component mounts
 
   // Auto-populate the J-Link Commander path field on first navigation to the RTT pane,
-  // so users don't have to click "Locate" themselves. Runs whenever the RTT pane becomes
-  // visible AND the path is currently empty. If the resolver fails (no SEGGER install
-  // detected), we leave the field empty and stay silent — the user can still type a path
-  // manually or click Browse.
+  // so users don't have to click "Locate" themselves. Skipped once the user has explicitly
+  // modified the field (typing, Browse, or Locate) — even if they cleared it to empty —
+  // so the auto-fill never fights an intentional user change.
   const rttExePath = app.settings.portConfiguration.rttServerExePath;
+  const rttExePathUserModified = app.settings.portConfiguration.rttServerExePathUserModified;
   const connType = app.settings.portConfiguration.connectionType;
   useEffect(() => {
     if (connType !== ConnectionType.RTT) return;
     if (rttExePath !== '') return;
+    if (rttExePathUserModified) return;
     let cancelled = false;
     (async () => {
       try {
         const result = await window.electronAPI.rtt.resolveExePath('');
         if (cancelled) return;
         if (result.success && result.path) {
-          app.settings.portConfiguration.setRttServerExePath(result.path);
+          app.settings.portConfiguration.setRttServerExePathFromAutoDetect(result.path);
         }
       } catch {
         // Resolver errors are non-fatal — the user can still set the path manually.
@@ -148,7 +149,7 @@ function PortSettingsView(props: Props) {
     return () => {
       cancelled = true;
     };
-  }, [connType, rttExePath]);
+  }, [connType, rttExePath, rttExePathUserModified]);
 
   const isPortSettingsDisabled = app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen;
   // The table remains disabled even if the "Allow settings changes when open" checkbox is checked. Only the port settings
@@ -894,7 +895,7 @@ function PortSettingsView(props: Props) {
               title="Path to J-Link Commander (JLink.exe on Windows, JLinkExe on macOS/Linux). Leave blank to auto-detect in the standard SEGGER install location."
             >
               <TextField
-                label="J-Link Commander path (optional)"
+                label="J-Link Commander path"
                 value={app.settings.portConfiguration.rttServerExePath}
                 disabled={app.connController.connState !== ConnState.CLOSED}
                 onChange={(e) => {

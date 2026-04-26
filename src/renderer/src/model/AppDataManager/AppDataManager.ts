@@ -448,7 +448,25 @@ export class AppDataManager {
       wasChanged = true;
     }
 
-    if (updatedAppData.version !== 15) {
+    //=============================================================================
+    // VERSION 15 -> VERSION 16
+    //=============================================================================
+    if (updatedAppData.version === 15) {
+      log.info('Updating app data from version 15 to version 16...');
+      // Track whether the user has explicitly modified the J-Link Commander path so the
+      // RTT pane's auto-detect on first navigation never overwrites a deliberate change.
+      const updateProfileConfig = (rootConfig: any) => {
+        rootConfig.settings.portSettings.rttServerExePathUserModified = false;
+      };
+      for (let i = 0; i < updatedAppData.profiles.length; i++) {
+        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
+      }
+      updateProfileConfig(updatedAppData.currentAppConfig);
+      updatedAppData.version = 16;
+      wasChanged = true;
+    }
+
+    if (updatedAppData.version !== 16) {
       log.error('Unknown app data version found: ', appData.version);
       updatedAppData = new AppData();
       wasChanged = true;

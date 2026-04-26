@@ -35,6 +35,10 @@ export class PortSettingsData {
   rttInterface: RttInterface = RttInterface.SWD;
   rttSpeedKHz = 4000;
   rttServerExePath = '';
+  // True once the user has explicitly modified the path field (typed, browsed, or located).
+  // While false, the RTT pane auto-populates the field on first navigation. Once true, the
+  // app never overwrites the user's value — even if they cleared it to empty.
+  rttServerExePathUserModified = false;
   rttJLinkSerialNumber = '';
   // RTT up/down channel index. Default 0 ("Terminal"). J-Link supports up to 16 channels;
   // selection is sent to J-Link's TCP telnet server via a config string immediately after connect.
