@@ -438,8 +438,14 @@ export class ConnController {
         await window.electronAPI.analytics.event('rtt_connect');
       } catch (error) {
         const msg = `Error connecting via RTT: ${error}`;
-        this.app.snackbar.sendToSnackbar(msg, 'error');
+        // Always log to the dev console — useful for diagnostics — but only toast on
+        // user-initiated attempts. Background reconnection polling passes
+        // silenceSnackbar=true so a failed retry while the cable is still out doesn't
+        // spam a snackbar every 5 seconds.
         console.error(msg);
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar(msg, 'error');
+        }
         showProgressModal(false);
         return false;
       }
