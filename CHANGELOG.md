@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- **RTT now talks to `JLinkARM.dll` (or its `.dylib` / `.so` equivalent) directly via FFI** instead of spawning J-Link Commander as a subprocess. The previous architecture of invoking JLink.exe and then polling J-Link's log file at 200 ms, three string-matching detectors for SEGGER's internal trace messages, a 3-second dialog watchdog, a 4-second log-stagnation watchdog, a Windows-only PowerShell USB pre-scan, and TCP-socket plumbing for an internal telnet endpoint — all because Commander would silently pop interactive GUI dialogs that we had to detect and kill. The new implementation calls the DLL directly using [koffi](https://koffi.dev): every error comes back as a numeric return code, no GUI dialogs can pop, no subprocesses to babysit. The IPC surface and the renderer code are unchanged.
+- The J-Link Commander path field on the RTT Connection Settings pane auto-populates on first visit. If the field is empty *and the user has never touched it*, NinjaTerm transparently runs the same scan the **Locate** button performs (versioned `C:\Program Files\SEGGER\JLink_V*` folders, then legacy install paths) and fills the field with the newest version found. Once the user types in the field, clicks **Locate**, or clicks **Browse...**, the path becomes sticky — even if the user clears it back to empty, the auto-fill never overwrites it. The user-modified flag persists across app restarts. Removed the misleading `(optional)` from the field label, since the path is required for RTT to work.
+- RTT error messages now include the target device name verbatim, e.g. `Unknown target device "ddd"...` or `J-Link probe disconnected (cable unplugged?). Was attached to "nRF52832_xxAA".`.
+
+### Fixed
+
+- Suppressed the SEGGER J-Link "Probe selection — connect via IP instead?" Windows dialog that the DLL would pop when `JLINKARM_OpenEx` was called with no USB probe attached (or after one was unplugged mid-session). NinjaTerm now does a `JLINKARM_EMU_GetList(USB, NULL, 0)` pre-flight to count probes; when the count is zero we surface a clean snackbar error and never invoke `OpenEx`, so the dialog has no chance to appear. Also wires up `JLINKARM_SetErrorOutHandler` / `JLINKARM_SetWarnOutHandler` to route any other DLL diagnostic chatter into the in-app log pane via the existing `rtt:server-log` IPC, instead of letting the DLL's default MessageBox handler take over.
+- Connecting with an unknown target device name (e.g. `ddd`) no longer hangs for 15 seconds while J-Link silently shows its "Target device settings" picker; the failure is now an immediate clean error from `JLINKARM_DEVICE_GetIndex` returning `-1`.
+- Pulling the dev-kit USB cable while connected no longer triggers J-Link's "Probe selection" GUI dialog flicker on each reconnection-poll attempt; probe presence is checked directly via `JLINKARM_EMU_IsConnected`.
+- RTT connection attempts with a non-existent J-Link Commander path no longer surface as "RTT session was cancelled before server became ready." — the user-friendly error makes it through.
+
 ## [5.11.0] - 2026-04-24
 
 ### Changed

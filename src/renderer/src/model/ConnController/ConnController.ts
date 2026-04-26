@@ -89,6 +89,10 @@ export class ConnController {
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
   private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 500ms for serial ports
   private readonly SOCKET_RECONNECTION_INTERVAL_MS = 5000; // Poll every 5 seconds for sockets
+  // RTT can poll fast: when no probe is plugged in, JLINKARM_EMU_GetList returns 0
+  // synchronously with no I/O, so a tight cadence is cheap. Tries are gated by
+  // rttReconnectInFlight so a slow attach doesn't stack overlapping retries.
+  private readonly RTT_RECONNECTION_INTERVAL_MS = 500;
 
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
@@ -438,8 +442,14 @@ export class ConnController {
         await window.electronAPI.analytics.event('rtt_connect');
       } catch (error) {
         const msg = `Error connecting via RTT: ${error}`;
-        this.app.snackbar.sendToSnackbar(msg, 'error');
+        // Always log to the dev console — useful for diagnostics — but only toast on
+        // user-initiated attempts. Background reconnection polling passes
+        // silenceSnackbar=true so a failed retry while the cable is still out doesn't
+        // spam a snackbar every 5 seconds.
         console.error(msg);
+        if (!silenceSnackbar) {
+          this.app.snackbar.sendToSnackbar(msg, 'error');
+        }
         showProgressModal(false);
         return false;
       }
@@ -672,8 +682,11 @@ export class ConnController {
     // Determine connection type and set appropriate polling interval
     const isSocket = this.lastSelectedPortType === PortType.SOCKET;
     const isRtt = this.lastSelectedPortType === PortType.RTT;
-    const pollingInterval =
-      isSocket || isRtt ? this.SOCKET_RECONNECTION_INTERVAL_MS : this.RECONNECTION_POLLING_INTERVAL_MS;
+    const pollingInterval = isSocket
+      ? this.SOCKET_RECONNECTION_INTERVAL_MS
+      : isRtt
+        ? this.RTT_RECONNECTION_INTERVAL_MS
+        : this.RECONNECTION_POLLING_INTERVAL_MS;
     const connectionType = isSocket ? 'socket' : isRtt ? 'RTT' : 'port';
 
     console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
