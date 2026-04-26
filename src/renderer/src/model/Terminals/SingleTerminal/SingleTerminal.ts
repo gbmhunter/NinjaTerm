@@ -398,15 +398,29 @@ export class SingleTerminal {
   }
 
   _parseAsciiData(data: Uint8Array, direction: DataDirection) {
-    let remainingData: number[] = [];
-    for (let idx = 0; idx < data.length; idx += 1) {
-      remainingData.push(data[idx]);
-    }
+    // Walk `data` with an index instead of shifting bytes off the front of an
+    // array — the previous implementation was O(n^2) on chunk size because
+    // Array.shift() reflows the whole array each call.
+    //
+    // `prependedBytes` covers the rare "rewind" case where we exceed the
+    // partial-escape-code length limit and need to reprocess the buffered
+    // chars (minus the leading ESC). It is tiny — bounded by
+    // maxEscapeCodeLengthChars — so its own indexed walk is also fine.
+    const len = data.length;
+    let dataIdx = 0;
+    let prependedBytes: number[] | null = null;
+    let prependedIdx = 0;
 
     while (true) {
-      // Remove char from start of remaining data
-      let rxByte = remainingData.shift();
-      if (rxByte === undefined) {
+      let rxByte: number;
+      if (prependedBytes !== null && prependedIdx < prependedBytes.length) {
+        rxByte = prependedBytes[prependedIdx];
+        prependedIdx += 1;
+      } else if (dataIdx < len) {
+        prependedBytes = null;
+        rxByte = data[dataIdx];
+        dataIdx += 1;
+      } else {
         // We've processed all received bytes, let's get outta here!
         break;
       }
@@ -542,11 +556,22 @@ export class SingleTerminal {
           // this.app.snackbar.sendToSnackbar(
           //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
           //   'warning');
-          // Remove the ESC byte, and then prepend the rest onto the data to be processed
-          // Got to shift them in backwards
-          for (let partialIdx = this.partialEscapeCode.length - 1; partialIdx >= 1; partialIdx -= 1) {
-            remainingData.unshift(this.partialEscapeCode[partialIdx].charCodeAt(0));
+          // Remove the ESC byte, and then prepend the rest onto the data to be processed.
+          // Stream order to resume: partialEscapeCode[1..], then any prepended
+          // bytes that were already queued and not yet consumed, then the
+          // unconsumed tail of `data`.
+          const partial = this.partialEscapeCode;
+          const newPrepended: number[] = [];
+          for (let p = 1; p < partial.length; p += 1) {
+            newPrepended.push(partial.charCodeAt(p));
           }
+          if (prependedBytes !== null) {
+            for (let p = prependedIdx; p < prependedBytes.length; p += 1) {
+              newPrepended.push(prependedBytes[p]);
+            }
+          }
+          prependedBytes = newPrepended;
+          prependedIdx = 0;
           this._resetEscapeCodeParserState();
           this.inIdleState = true;
         }
