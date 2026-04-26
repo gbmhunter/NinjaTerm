@@ -97,6 +97,12 @@ export class App {
   private readonly RATE_CALCULATION_WINDOW_MS = 3000; // 3 seconds
   private readonly RATE_UPDATE_INTERVAL_MS = 500; // Update every 500ms
 
+  // Hard cap so a burst of small chunks (e.g. one BLE notification per byte)
+  // can't grow these arrays without bound between cleanup ticks. With a
+  // 500ms cleanup interval, 2048 entries is well above the chunk count any
+  // real transport would produce in that window.
+  private readonly MAX_DATA_POINTS = 2048;
+
   // Arrays to track byte counts over time
   private rxDataPoints: Array<{ timestamp: number; bytes: number }> = [];
   private txDataPoints: Array<{ timestamp: number; bytes: number }> = [];
@@ -323,6 +329,11 @@ export class App {
       timestamp: Date.now(),
       bytes: bytes
     });
+    if (this.rxDataPoints.length > this.MAX_DATA_POINTS) {
+      // Drop the oldest entries. Splice from index 0 keeps the tail in place
+      // and is fine at this small scale (cap is 2048).
+      this.rxDataPoints.splice(0, this.rxDataPoints.length - this.MAX_DATA_POINTS);
+    }
   }
 
   /**
@@ -333,6 +344,9 @@ export class App {
       timestamp: Date.now(),
       bytes: bytes
     });
+    if (this.txDataPoints.length > this.MAX_DATA_POINTS) {
+      this.txDataPoints.splice(0, this.txDataPoints.length - this.MAX_DATA_POINTS);
+    }
   }
 
   /**
