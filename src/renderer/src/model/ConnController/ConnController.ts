@@ -65,6 +65,16 @@ export class ConnController {
 
   private app: App;
 
+  /**
+   * Disposers for IPC listeners registered against the active connection.
+   * Each `on*` call returns a disposer that removes only its own callback;
+   * we collect them here and clear the lot on close. Replaces the old
+   * `removeAllListeners(channel)` hammer, which nuked every subscriber on
+   * the channel and required keeping a hand-maintained list of channel
+   * names in sync between the open and close paths.
+   */
+  private connDisposers: Array<() => void> = [];
+
   // Port information for reconnection purposes
   serialPortInfo: Partial<PortInfo> | null = null;
 
@@ -127,6 +137,22 @@ export class ConnController {
 
   cleanup() {
     this.stopPollingForReconnection();
+    this.disposeConnListeners();
+  }
+
+  /**
+   * Calls every captured IPC listener disposer and resets the list. Safe to
+   * call multiple times.
+   */
+  private disposeConnListeners() {
+    for (const dispose of this.connDisposers) {
+      try {
+        dispose();
+      } catch (err) {
+        log.error('IPC listener disposer threw. err=', err);
+      }
+    }
+    this.connDisposers = [];
   }
 
   /**
@@ -199,34 +225,38 @@ export class ConnController {
         // Store the current port path for IPC communication
         this.currentPortPath = selectedPort.path;
 
-        // Set up IPC event listeners for data reception
-        // The listeners are cleared in the app constructor. This is useful during development with hot reloading, if we
-        // didn't do this, the listeners would be added multiple times.
-        window.electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
-          if (portPath === this.currentPortPath) {
-            // console.log('onDataReceived() called. data.length=', data.length);
-            // Buffer can be used directly as Uint8Array - much faster than conversion
-            const uint8Array = new Uint8Array(data);
-            this.app.parseRxData(uint8Array);
-          }
-        });
+        // Set up IPC event listeners for data reception. Capture each disposer
+        // so close/reconnect can remove only the listeners we registered.
+        this.connDisposers.push(
+          window.electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
+            if (portPath === this.currentPortPath) {
+              // Buffer can be used directly as Uint8Array - much faster than conversion
+              const uint8Array = new Uint8Array(data);
+              this.app.parseRxData(uint8Array);
+            }
+          })
+        );
 
         // Listen for errors
-        window.electronAPI.serial.onError((portPath: string, error: string) => {
-          if (portPath === this.currentPortPath) {
-            this.app.snackbar.sendToSnackbar(`Serial port error: ${error}`, 'error');
-            this.handlePortError();
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.serial.onError((portPath: string, error: string) => {
+            if (portPath === this.currentPortPath) {
+              this.app.snackbar.sendToSnackbar(`Serial port error: ${error}`, 'error');
+              this.handlePortError();
+            }
+          })
+        );
 
-        // Listen for port close events
-        // This is called even if we trigger the close with the closePort() function
-        window.electronAPI.serial.onPortClosed((portPath: string) => {
-          console.log('onPortClosed() called. portPath=', portPath);
-          if (portPath === this.currentPortPath) {
-            this.handlePortClosed();
-          }
-        });
+        // Listen for port close events. Fires whether the close was triggered
+        // by us or by the device disappearing.
+        this.connDisposers.push(
+          window.electronAPI.serial.onPortClosed((portPath: string) => {
+            console.log('onPortClosed() called. portPath=', portPath);
+            if (portPath === this.currentPortPath) {
+              this.handlePortClosed();
+            }
+          })
+        );
 
         runInAction(() => {
           // Stop any existing polling since we're now connected
@@ -308,29 +338,35 @@ export class ConnController {
         this.socketConnectionInfo = { host, port };
 
         // Set up IPC event listeners for data reception
-        window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
-          if (connectionId === this.currentSocketConnectionId) {
-            // Buffer can be used directly as Uint8Array - much faster than conversion
-            const uint8Array = new Uint8Array(data);
-            this.app.parseRxData(uint8Array);
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
+            if (connectionId === this.currentSocketConnectionId) {
+              // Buffer can be used directly as Uint8Array - much faster than conversion
+              const uint8Array = new Uint8Array(data);
+              this.app.parseRxData(uint8Array);
+            }
+          })
+        );
 
         // Listen for errors
-        window.electronAPI.socket.onError((connectionId: string, error: string) => {
-          if (connectionId === this.currentSocketConnectionId) {
-            this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
-            this.handlePortError();
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.socket.onError((connectionId: string, error: string) => {
+            if (connectionId === this.currentSocketConnectionId) {
+              this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
+              this.handlePortError();
+            }
+          })
+        );
 
         // Listen for socket close events
-        window.electronAPI.socket.onClosed((connectionId: string) => {
-          console.log('onSocketClosed() called. connectionId=', connectionId);
-          if (connectionId === this.currentSocketConnectionId) {
-            this.handlePortClosed();
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.socket.onClosed((connectionId: string) => {
+            console.log('onSocketClosed() called. connectionId=', connectionId);
+            if (connectionId === this.currentSocketConnectionId) {
+              this.handlePortClosed();
+            }
+          })
+        );
 
         runInAction(() => {
           // Stop any existing polling since we're now connected
@@ -370,17 +406,19 @@ export class ConnController {
       });
 
       // Register the server log listener before connect so we capture startup messages.
-      window.electronAPI.rtt.onServerLog((connectionId: string, line: string) => {
-        if (connectionId === this.currentRttConnectionId || this.currentRttConnectionId === null) {
-          runInAction(() => {
-            this.rttServerLogLines.push(line);
-            const overflow = this.rttServerLogLines.length - ConnController.RTT_SERVER_LOG_MAX_LINES;
-            if (overflow > 0) {
-              this.rttServerLogLines.splice(0, overflow);
-            }
-          });
-        }
-      });
+      this.connDisposers.push(
+        window.electronAPI.rtt.onServerLog((connectionId: string, line: string) => {
+          if (connectionId === this.currentRttConnectionId || this.currentRttConnectionId === null) {
+            runInAction(() => {
+              this.rttServerLogLines.push(line);
+              const overflow = this.rttServerLogLines.length - ConnController.RTT_SERVER_LOG_MAX_LINES;
+              if (overflow > 0) {
+                this.rttServerLogLines.splice(0, overflow);
+              }
+            });
+          }
+        })
+      );
 
       try {
         const result = await window.electronAPI.rtt.connect({
@@ -405,25 +443,31 @@ export class ConnController {
           jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
         };
 
-        window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
-          if (connectionId === this.currentRttConnectionId) {
-            const uint8Array = new Uint8Array(data);
-            this.app.parseRxData(uint8Array);
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
+            if (connectionId === this.currentRttConnectionId) {
+              const uint8Array = new Uint8Array(data);
+              this.app.parseRxData(uint8Array);
+            }
+          })
+        );
 
-        window.electronAPI.rtt.onError((connectionId: string, error: string) => {
-          if (connectionId === this.currentRttConnectionId) {
-            this.app.snackbar.sendToSnackbar(`RTT error: ${error}`, 'error');
-            this.handlePortError();
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.rtt.onError((connectionId: string, error: string) => {
+            if (connectionId === this.currentRttConnectionId) {
+              this.app.snackbar.sendToSnackbar(`RTT error: ${error}`, 'error');
+              this.handlePortError();
+            }
+          })
+        );
 
-        window.electronAPI.rtt.onClosed((connectionId: string) => {
-          if (connectionId === this.currentRttConnectionId) {
-            this.handlePortClosed();
-          }
-        });
+        this.connDisposers.push(
+          window.electronAPI.rtt.onClosed((connectionId: string) => {
+            if (connectionId === this.currentRttConnectionId) {
+              this.handlePortClosed();
+            }
+          })
+        );
 
         runInAction(() => {
           this.stopPollingForReconnection();
@@ -504,10 +548,7 @@ export class ConnController {
         const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
         lastUsedSerialPort.portState = ConnState.CLOSED;
 
-        // Disconnect all listeners
-        window.electronAPI.serial.removeAllListeners('serial:data-received');
-        window.electronAPI.serial.removeAllListeners('serial:error');
-        window.electronAPI.serial.removeAllListeners('serial:port-closed');
+        this.disposeConnListeners();
 
         this.app.profileManager.saveAppData();
       } else if (this.lastSelectedPortType === PortType.FAKE) {
@@ -528,10 +569,7 @@ export class ConnController {
 
       this.currentSocketConnectionId = null;
 
-      // Disconnect all listeners
-      window.electronAPI.socket.removeAllListeners('socket:data-received');
-      window.electronAPI.socket.removeAllListeners('socket:error');
-      window.electronAPI.socket.removeAllListeners('socket:closed');
+      this.disposeConnListeners();
     } else if (connectionType === ConnectionType.RTT) {
       if (this.currentRttConnectionId) {
         const result = await window.electronAPI.rtt.disconnect(this.currentRttConnectionId);
@@ -546,10 +584,7 @@ export class ConnController {
 
       this.currentRttConnectionId = null;
 
-      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
-      window.electronAPI.rtt.removeAllListeners('rtt:error');
-      window.electronAPI.rtt.removeAllListeners('rtt:closed');
-      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
+      this.disposeConnListeners();
     } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
       // The Bluetooth LE controller handles closing the Bluetooth connection
       this.bluetoothLEController.close();
@@ -629,26 +664,16 @@ export class ConnController {
     } else {
       this.setPortState(ConnState.CLOSED);
     }
-    // Clear connection identifiers and remove appropriate event listeners
+    // Clear connection identifiers and remove the listeners that this
+    // connection registered.
     if (this.lastSelectedPortType === PortType.SOCKET) {
       this.currentSocketConnectionId = null;
-      // Remove socket event listeners
-      window.electronAPI.socket.removeAllListeners('socket:data-received');
-      window.electronAPI.socket.removeAllListeners('socket:error');
-      window.electronAPI.socket.removeAllListeners('socket:closed');
     } else if (this.lastSelectedPortType === PortType.RTT) {
       this.currentRttConnectionId = null;
-      window.electronAPI.rtt.removeAllListeners('rtt:data-received');
-      window.electronAPI.rtt.removeAllListeners('rtt:error');
-      window.electronAPI.rtt.removeAllListeners('rtt:closed');
-      window.electronAPI.rtt.removeAllListeners('rtt:server-log');
     } else {
       this.currentPortPath = null;
-      // Remove serial port event listeners
-      window.electronAPI.serial.removeAllListeners('serial:data-received');
-      window.electronAPI.serial.removeAllListeners('serial:error');
-      window.electronAPI.serial.removeAllListeners('serial:port-closed');
     }
+    this.disposeConnListeners();
 
     // No matter what type, clear the flow control polling timer
     if (this.flowControlPollingTimer) {
@@ -743,28 +768,40 @@ export class ConnController {
               // Store the new connection ID
               this.currentSocketConnectionId = result.connectionId!;
 
+              // Drop any listeners left over from the previous connection
+              // before registering fresh ones — without this, every successful
+              // auto-reconnect adds another set of handlers and the same byte
+              // would fire parseRxData N times after N reconnects.
+              this.disposeConnListeners();
+
               // Set up IPC event listeners for the reconnected socket
-              window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
-                if (connectionId === this.currentSocketConnectionId) {
-                  // Buffer can be used directly as Uint8Array - much faster than conversion
-                  const uint8Array = new Uint8Array(data);
-                  this.app.parseRxData(uint8Array);
-                }
-              });
+              this.connDisposers.push(
+                window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
+                  if (connectionId === this.currentSocketConnectionId) {
+                    // Buffer can be used directly as Uint8Array - much faster than conversion
+                    const uint8Array = new Uint8Array(data);
+                    this.app.parseRxData(uint8Array);
+                  }
+                })
+              );
 
-              window.electronAPI.socket.onError((connectionId: string, error: string) => {
-                if (connectionId === this.currentSocketConnectionId) {
-                  this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
-                  this.handlePortError();
-                }
-              });
+              this.connDisposers.push(
+                window.electronAPI.socket.onError((connectionId: string, error: string) => {
+                  if (connectionId === this.currentSocketConnectionId) {
+                    this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
+                    this.handlePortError();
+                  }
+                })
+              );
 
-              window.electronAPI.socket.onClosed((connectionId: string) => {
-                console.log('onSocketClosed() called during reconnection. connectionId=', connectionId);
-                if (connectionId === this.currentSocketConnectionId) {
-                  this.handlePortClosed();
-                }
-              });
+              this.connDisposers.push(
+                window.electronAPI.socket.onClosed((connectionId: string) => {
+                  console.log('onSocketClosed() called during reconnection. connectionId=', connectionId);
+                  if (connectionId === this.currentSocketConnectionId) {
+                    this.handlePortClosed();
+                  }
+                })
+              );
 
               runInAction(() => {
                 this.connState = ConnState.OPENED;
