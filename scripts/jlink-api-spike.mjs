@@ -74,6 +74,16 @@ console.log(`Loading: ${dllPath}`);
 
 const lib = koffi.load(dllPath);
 
+// Suppress the DLL's default Windows MessageBox handlers BEFORE any other call. Without
+// this, JLINKARM_OpenEx pops a "Probe selection" dialog when no probe is plugged in.
+const LogProto = koffi.proto('void JlinkLogCallback(const char *msg)');
+const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(void *)');
+const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(void *)');
+const errCb = koffi.register((m) => console.error('[JLinkARM err]', m), koffi.pointer(LogProto));
+const warnCb = koffi.register((m) => console.warn('[JLinkARM warn]', m), koffi.pointer(LogProto));
+setErrorOutHandler(errCb);
+setWarnOutHandler(warnCb);
+
 const openEx = lib.func('int JLINKARM_OpenEx(void *, void *)');
 const close = lib.func('void JLINKARM_Close()');
 const emuIsConnected = lib.func('int JLINKARM_EMU_IsConnected()');

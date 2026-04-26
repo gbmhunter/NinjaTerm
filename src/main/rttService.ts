@@ -18,7 +18,7 @@ import { BrowserWindow, dialog, ipcMain } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { describeJLinkError, JLINK_TIF, loadJLinkArm, RTT_CMD } from './jlinkApi';
+import { describeJLinkError, JLINK_TIF, loadJLinkArm, onDllMessage, RTT_CMD } from './jlinkApi';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 /** How often we ask the DLL for new RTT bytes. Tight enough to feel responsive in a shell, loose enough not to peg a CPU. */
@@ -343,6 +343,14 @@ function connectViaDll(
 // ---------------------------------------------------------------------------
 
 export function initializeRttHandlers(mainWindow: BrowserWindow) {
+  // Bridge DLL error/warn messages into the diagnostic log of the active session.
+  // The DLL fires these via the handlers we install in jlinkApi (which is also what
+  // suppresses its native MessageBox dialogs). Subscribed once for the process lifetime.
+  onDllMessage((kind, msg) => {
+    if (!activeSession) return;
+    emitLog(mainWindow, activeSession, `[${kind}] ${msg}`);
+  });
+
   ipcMain.handle('rtt:connect', async (_event, options: RttConnectOptions) => {
     if (!options.device || options.device.trim() === '') {
       return { success: false, error: 'No target device specified.' };

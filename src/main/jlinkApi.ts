@@ -101,6 +101,59 @@ export const RTT_CMD = {
 let lib: koffi.IKoffiLib | null = null;
 let api: ReturnType<typeof bindFunctions> | null = null;
 
+/** Subscribers to messages emitted by the DLL's error/warn handlers. */
+type DllMessageKind = 'error' | 'warn';
+type DllMessageListener = (kind: DllMessageKind, msg: string) => void;
+const dllMessageListeners: DllMessageListener[] = [];
+
+/** koffi callback handles. Module-level to keep them alive for the process lifetime. */
+let errorHandlerCb: unknown = null;
+let warnHandlerCb: unknown = null;
+
+/**
+ * Subscribe to error / warning messages emitted by the DLL. Used by `rttService` to
+ * forward DLL chatter into the diagnostic-log pane in Connection Settings. Returns
+ * an unsubscribe function.
+ */
+export function onDllMessage(listener: DllMessageListener): () => void {
+  dllMessageListeners.push(listener);
+  return () => {
+    const i = dllMessageListeners.indexOf(listener);
+    if (i >= 0) dllMessageListeners.splice(i, 1);
+  };
+}
+
+function dispatchDllMessage(kind: DllMessageKind, msg: string) {
+  const trimmed = (msg || '').replace(/\r?\n$/, '');
+  if (trimmed === '') return;
+  if (kind === 'error') console.error('[JLinkARM]', trimmed);
+  else console.warn('[JLinkARM]', trimmed);
+  for (const l of dllMessageListeners) {
+    try { l(kind, trimmed); } catch (err) { console.error('DLL message listener threw:', err); }
+  }
+}
+
+/**
+ * Install no-op (well, log-routing) error/warn handlers in the DLL the moment we load
+ * it. Without this the DLL falls back to its own default handlers, which on Windows
+ * pop a Windows MessageBox dialog (e.g. "No probes connected via USB. Do you want to
+ * connect via TCP/IP instead?") that blocks the process. PyLink uses the same trick.
+ *
+ * Registered exactly once per process — koffi callbacks consume slots and the DLL is
+ * loaded at most once anyway.
+ */
+function installDllMessageHandlers(lib: koffi.IKoffiLib) {
+  if (errorHandlerCb !== null) return;
+  const LogProto = koffi.proto('void JlinkLogCallback(const char *msg)');
+  const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(void *)');
+  const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(void *)');
+
+  errorHandlerCb = koffi.register((msg: string) => dispatchDllMessage('error', msg), koffi.pointer(LogProto));
+  warnHandlerCb = koffi.register((msg: string) => dispatchDllMessage('warn', msg), koffi.pointer(LogProto));
+  setErrorOutHandler(errorHandlerCb);
+  setWarnOutHandler(warnHandlerCb);
+}
+
 /**
  * Load JLinkARM.dll/.dylib/.so from the user's J-Link install directory and bind the
  * subset of functions we need. Called lazily on first connect attempt; subsequent
@@ -116,6 +169,7 @@ export function loadJLinkArm(jlinkInstallDir: string): ReturnType<typeof bindFun
     );
   }
   lib = koffi.load(dllPath);
+  installDllMessageHandlers(lib);
   api = bindFunctions(lib);
   return api;
 }
