@@ -101,6 +101,10 @@ export const RTT_CMD = {
 let lib: koffi.IKoffiLib | null = null;
 let api: ReturnType<typeof bindFunctions> | null = null;
 
+/** Shared koffi prototype for the JLINKARM log/error callback signature `void(*)(const char *)`. */
+const LogProto = koffi.proto('void JlinkLogCallback(const char *msg)');
+const LogProtoPtr = koffi.pointer(LogProto);
+
 /** Subscribers to messages emitted by the DLL's error/warn handlers. */
 type DllMessageKind = 'error' | 'warn';
 type DllMessageListener = (kind: DllMessageKind, msg: string) => void;
@@ -134,24 +138,63 @@ function dispatchDllMessage(kind: DllMessageKind, msg: string) {
 }
 
 /**
- * Install no-op (well, log-routing) error/warn handlers in the DLL the moment we load
- * it. Without this the DLL falls back to its own default handlers, which on Windows
- * pop a Windows MessageBox dialog (e.g. "No probes connected via USB. Do you want to
- * connect via TCP/IP instead?") that blocks the process. PyLink uses the same trick.
+ * Pointer to the log callback we register with koffi. Stored at module level so it
+ * (a) survives across calls without being GC'd, and (b) can be passed to JLINKARM_OpenEx
+ * as one of its two callback arguments — without that, OpenEx falls back to the DLL's
+ * default error handler, which is a blocking Windows MessageBox.
+ */
+let logHandlerCbPtr: unknown = null;
+let errorHandlerCbPtr: unknown = null;
+
+/**
+ * Returns a pointer suitable for passing as the log/error callback argument to
+ * `JLINKARM_OpenEx`. The callback routes to `dispatchDllMessage`, so DLL chatter ends
+ * up in our diagnostic log instead of a MessageBox.
+ */
+export function getOpenLogCallback(): unknown {
+  return logHandlerCbPtr;
+}
+export function getOpenErrorCallback(): unknown {
+  return errorHandlerCbPtr;
+}
+
+/**
+ * Install error/warn handlers in the DLL the moment we load it. Without this the DLL
+ * falls back to its own default handlers, which on Windows pop a Windows MessageBox
+ * dialog (e.g. "No probes connected via USB. Do you want to connect via TCP/IP
+ * instead?") that blocks the process. PyLink uses the same trick.
+ *
+ * NB: there are TWO independent handler systems in JLinkARM. This function wires up
+ * BOTH of them, because each suppresses dialogs at different times:
+ *   - Global handlers via `JLINKARM_SetErrorOutHandler` / `JLINKARM_SetWarnOutHandler`
+ *     — used for any DLL message that occurs while the connection is open.
+ *   - Per-OpenEx handlers passed as arguments to `JLINKARM_OpenEx` — used for messages
+ *     emitted DURING the open call itself (which is the "no probe" / "probe selection"
+ *     dialog case). PyLink passes these too. We expose the registered handles via
+ *     `getOpenLogCallback()` / `getOpenErrorCallback()` so the caller of OpenEx can
+ *     pass them.
  *
  * Registered exactly once per process — koffi callbacks consume slots and the DLL is
  * loaded at most once anyway.
  */
 function installDllMessageHandlers(lib: koffi.IKoffiLib) {
   if (errorHandlerCb !== null) return;
-  const LogProto = koffi.proto('void JlinkLogCallback(const char *msg)');
-  const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(void *)');
-  const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(void *)');
+  // IMPORTANT: callback params on the C functions must be declared with
+  // `koffi.pointer(LogProto)` — using plain `void *` hands the DLL an opaque koffi
+  // handle instead of a real function pointer, and the DLL silently falls back to
+  // its default MessageBox handler.
+  const setErrorOutHandler = lib.func('void', 'JLINKARM_SetErrorOutHandler', [LogProtoPtr]);
+  const setWarnOutHandler = lib.func('void', 'JLINKARM_SetWarnOutHandler', [LogProtoPtr]);
 
-  errorHandlerCb = koffi.register((msg: string) => dispatchDllMessage('error', msg), koffi.pointer(LogProto));
-  warnHandlerCb = koffi.register((msg: string) => dispatchDllMessage('warn', msg), koffi.pointer(LogProto));
+  errorHandlerCb = koffi.register((msg: string) => dispatchDllMessage('error', msg), LogProtoPtr);
+  warnHandlerCb = koffi.register((msg: string) => dispatchDllMessage('warn', msg), LogProtoPtr);
   setErrorOutHandler(errorHandlerCb);
   setWarnOutHandler(warnHandlerCb);
+
+  // Two more callbacks — these are the ones we hand to JLINKARM_OpenEx so it doesn't
+  // pop its native MessageBox. PyLink's `_log_handler` and `_error_handler` map to these.
+  logHandlerCbPtr = koffi.register((msg: string) => dispatchDllMessage('warn', msg), LogProtoPtr);
+  errorHandlerCbPtr = koffi.register((msg: string) => dispatchDllMessage('error', msg), LogProtoPtr);
 }
 
 /**
@@ -180,8 +223,17 @@ function bindFunctions(lib: koffi.IKoffiLib) {
   // code or a count. Negative values are errors.
   return {
     // --- Probe + connection management ---
-    /** Open the first available J-Link probe via USB. Returns 0 on success, negative on error. */
-    openEx: lib.func('int JLINKARM_OpenEx(void *, void *)'),
+    /**
+     * Open the first available J-Link probe via USB. The TWO arguments are log + error
+     * callback function pointers — passing real callbacks is what suppresses the DLL's
+     * MessageBox dialogs at open time. Callback args MUST be declared as
+     * `koffi.pointer(LogProto)`; passing `void *` hands an opaque koffi handle to the
+     * DLL and the DLL falls back to its default MessageBox handler.
+     *
+     * Returns NULL on success, or a pointer to a static error string on failure (per
+     * SEGGER's API — confirmed via PyLink's `JLINKARM_OpenEx.restype = c_char_p`).
+     */
+    openEx: lib.func('str', 'JLINKARM_OpenEx', [LogProtoPtr, LogProtoPtr]),
     /** Close the J-Link connection. */
     close: lib.func('void JLINKARM_Close()'),
     /** True if the J-Link DLL has an open connection to a probe. */
@@ -190,6 +242,17 @@ function bindFunctions(lib: koffi.IKoffiLib) {
     emuIsConnected: lib.func('int JLINKARM_EMU_IsConnected()'),
     /** Select probe by USB serial number (0-based) or by serial number string. */
     selectByUsbSn: lib.func('int JLINKARM_EMU_SelectByUSBSN(uint32_t)'),
+    /**
+     * Count probes available on a given host interface (1=USB, 2=IP, 3=both). Pass NULL
+     * + 0 to get just the count — no info struct populated. Returns the number of probes
+     * detected. Used as a pre-flight check before `openEx`: when no probe is connected,
+     * `openEx` blocks on a "Probe selection — connect via IP instead?" GUI dialog that
+     * NONE of the available callbacks/settings (SetErrorOutHandler, OpenEx callbacks,
+     * SelectUSB) suppress. Calling EMU_GetList first avoids OpenEx entirely in that case.
+     */
+    emuGetList: lib.func('int JLINKARM_EMU_GetList(int hostIfs, void *paConnectInfo, int maxInfos)'),
+    /** Lock the DLL to USB-only mode. Selects port 0 = first USB probe. */
+    selectUsb: lib.func('int JLINKARM_SelectUSB(int port)'),
 
     // --- Device + interface configuration ---
     /** Returns index for a device name, -1 if unknown. */

@@ -18,7 +18,7 @@ import { BrowserWindow, dialog, ipcMain } from 'electron';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { describeJLinkError, JLINK_TIF, loadJLinkArm, onDllMessage, RTT_CMD } from './jlinkApi';
+import { describeJLinkError, getOpenErrorCallback, getOpenLogCallback, JLINK_TIF, loadJLinkArm, onDllMessage, RTT_CMD } from './jlinkApi';
 
 const RX_DATA_BATCH_TIMEOUT_MS = 50;
 /** How often we ask the DLL for new RTT bytes. Tight enough to feel responsive in a shell, loose enough not to peg a CPU. */
@@ -275,11 +275,30 @@ function connectViaDll(
     }
   }
 
-  // Open the J-Link probe. PyLink passes (NULL, NULL) for the optional log/error callbacks.
-  const openResult = api.openEx(null, null);
-  emitLog(mainWindow, session, `JLINKARM_OpenEx -> ${openResult}`);
-  if (openResult < 0) {
-    return { ok: false, error: `J-Link probe not found while attempting to attach to "${options.device}". ${describeJLinkError(openResult)}.` };
+  // Pre-flight: count USB probes WITHOUT invoking OpenEx. OpenEx blocks on an
+  // interactive "Probe selection — connect via IP instead?" GUI dialog when no probe
+  // is found, and that dialog is NOT suppressed by error/warn handlers, OpenEx
+  // callbacks, or SelectUSB. EMU_GetList is the only safe way to short-circuit.
+  const probeCount = api.emuGetList(1 /* USB */, null, 0);
+  emitLog(mainWindow, session, `JLINKARM_EMU_GetList(USB) -> ${probeCount}`);
+  if (probeCount === 0) {
+    return { ok: false, error: `J-Link probe not found while attempting to attach to "${options.device}". No emulator (probe) connected on USB.` };
+  }
+
+  // Defensive: lock the DLL to USB-only mode before OpenEx. Doesn't suppress the
+  // dialog on its own (that's what the pre-check above is for) but keeps the open
+  // path unambiguous when a probe IS present.
+  api.selectUsb(0);
+
+  // Open the J-Link probe. The two callbacks we pass replace the DLL's default error
+  // handler (Windows MessageBox) for any error message that does fire post-open.
+  // Returns NULL on success, or a pointer to a static error string on failure (koffi
+  // surfaces null vs string).
+  const openErrStr = api.openEx(getOpenLogCallback(), getOpenErrorCallback()) as string | null;
+  emitLog(mainWindow, session, `JLINKARM_OpenEx -> ${openErrStr === null ? 'OK' : `"${openErrStr}"`}`);
+  if (openErrStr) {
+    const detail = openErrStr.trim() || 'No emulator (probe) connected';
+    return { ok: false, error: `J-Link probe not found while attempting to attach to "${options.device}". ${detail}.` };
   }
 
   // Validate device name BEFORE telling the DLL to use it. Returns -1 for unknown

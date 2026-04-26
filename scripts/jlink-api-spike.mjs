@@ -76,15 +76,32 @@ const lib = koffi.load(dllPath);
 
 // Suppress the DLL's default Windows MessageBox handlers BEFORE any other call. Without
 // this, JLINKARM_OpenEx pops a "Probe selection" dialog when no probe is plugged in.
-const LogProto = koffi.proto('void JlinkLogCallback(const char *msg)');
-const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(void *)');
-const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(void *)');
-const errCb = koffi.register((m) => console.error('[JLinkARM err]', m), koffi.pointer(LogProto));
-const warnCb = koffi.register((m) => console.warn('[JLinkARM warn]', m), koffi.pointer(LogProto));
+// IMPORTANT: callback parameters must be declared with `koffi.pointer(proto)` typing —
+// using plain `void *` hands the DLL an opaque koffi handle, not a real function pointer,
+// and the DLL falls back to its default MessageBox handler.
+console.log('proto');
+koffi.proto('void JlinkLogCallback(const char *msg)');
+console.log('lib.func setErr');
+const setErrorOutHandler = lib.func('void JLINKARM_SetErrorOutHandler(JlinkLogCallback *cb)');
+console.log('lib.func setWarn');
+const setWarnOutHandler = lib.func('void JLINKARM_SetWarnOutHandler(JlinkLogCallback *cb)');
+console.log('register errCb');
+const errCb = koffi.register((m) => console.error('[JLinkARM err]', m), 'JlinkLogCallback *');
+console.log('register warnCb');
+const warnCb = koffi.register((m) => console.warn('[JLinkARM warn]', m), 'JlinkLogCallback *');
+console.log('setErrorOutHandler call');
 setErrorOutHandler(errCb);
+console.log('setWarnOutHandler call');
 setWarnOutHandler(warnCb);
+console.log('handlers installed');
 
-const openEx = lib.func('int JLINKARM_OpenEx(void *, void *)');
+// Returns const char * (NULL on success, error string on failure), not int.
+const openEx = lib.func('const char *JLINKARM_OpenEx(JlinkLogCallback *log, JlinkLogCallback *err)');
+// Lock to USB-only mode to suppress the DLL's "no probe → would you like IP?" dialog.
+const selectUsb = lib.func('int JLINKARM_SelectUSB(int port)');
+// Enumerate probes WITHOUT side-effects. Interface bit 0 = USB, bit 1 = IP. Passing
+// NULL for the info array + 0 for the max count returns the available count cheaply.
+const emuGetList = lib.func('int JLINKARM_EMU_GetList(int hostIfs, void *paConnectInfo, int maxInfos)');
 const close = lib.func('void JLINKARM_Close()');
 const emuIsConnected = lib.func('int JLINKARM_EMU_IsConnected()');
 const deviceGetIndex = lib.func('int JLINKARM_DEVICE_GetIndex(const char *)');
@@ -109,7 +126,34 @@ function step(label, action) {
 }
 
 try {
-  step('JLINKARM_OpenEx', () => openEx(null, null));
+  // Pre-flight: count USB probes WITHOUT calling OpenEx. OpenEx pops an interactive
+  // "Probe selection — connect via IP instead?" dialog when it can't find a USB probe,
+  // and that dialog isn't suppressed by callbacks, SelectUSB, or any setting we've
+  // tried. EMU_GetList(USB, NULL, 0) returns the probe count cheaply with no UI.
+  console.log('JLINKARM_EMU_GetList(USB, NULL, 0) ...');
+  const probeCount = emuGetList(1 /* USB */, null, 0);
+  console.log(`  -> ${probeCount} probe(s) found`);
+  if (probeCount === 0) {
+    console.error('=> No USB J-Link probe found. Failing without invoking OpenEx so no dialog can pop.');
+    console.error('=> This is the production-safe path for the no-probe case.');
+    process.exit(0);
+  }
+
+  // Lock to USB connection mode (defensive — keeps the probe-selection logic in USB mode).
+  console.log('JLINKARM_SelectUSB(0) ...');
+  const selUsb = selectUsb(0);
+  console.log(`  -> ${selUsb}`);
+
+  // Pass non-NULL callbacks so OpenEx doesn't pop a MessageBox in any other code path.
+  // Treat the returned string as the failure indicator (NULL = success).
+  const openErr = openEx(errCb, errCb);
+  console.log(`JLINKARM_OpenEx ... ${openErr === null ? 'OK' : `FAIL: "${openErr}"`}`);
+  if (openErr) {
+    console.error(`\n=> Open failed cleanly without a dialog: ${openErr}`);
+    console.error('=> No GUI dialog popped. Spike result: SUCCESS for the no-probe case.');
+    close();
+    process.exit(0);
+  }
   step('JLINKARM_EMU_IsConnected', () => emuIsConnected());
 
   const idx = step(`JLINKARM_DEVICE_GetIndex("${argDevice}")`, () => deviceGetIndex(argDevice));
