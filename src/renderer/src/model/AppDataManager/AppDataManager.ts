@@ -40,13 +40,23 @@ export class AppDataManager {
     this.app = app;
     this.appData = new AppData();
 
-    addEventListener('storage', this.onStorageEvent);
+    window.addEventListener('storage', this.onStorageEvent);
 
     // Load app data from storage
     this._loadAppDataFromStorage();
 
     makeAutoObservable(this);
   }
+
+  /**
+   * Removes listeners that this manager registered on the global window.
+   * Called from App.cleanup() so a recreated App (e.g. hot reload during dev)
+   * does not leave stale `storage`-event handlers attached to the previous
+   * instance.
+   */
+  cleanup = () => {
+    window.removeEventListener('storage', this.onStorageEvent);
+  };
 
   /**
    * Function should be registered as a listener for the 'storage' event. It will check

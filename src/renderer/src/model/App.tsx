@@ -110,6 +110,11 @@ export class App {
   // Timer for rate calculations
   private rateCalculationInterval: NodeJS.Timeout | null = null;
 
+  // Disposer for the title-update reaction. Captured at register-time so
+  // cleanup() can release it; without this, recreating App (e.g. on hot
+  // reload during dev) leaves stale reactions firing forever.
+  private titleReactionDispose: (() => void) | null = null;
+
   // CPU usage tracking
   cpuUsagePercent: number = 0;
 
@@ -202,7 +207,10 @@ export class App {
     this.logging = new Logging(this);
 
     // Listen for changes to the last applied profile name, and update the app title
-    reaction(() => this.profileManager.lastAppliedProfileName, this.onLastAppliedProfileNameChanged);
+    this.titleReactionDispose = reaction(
+      () => this.profileManager.lastAppliedProfileName,
+      this.onLastAppliedProfileNameChanged,
+    );
     this.onLastAppliedProfileNameChanged();
 
     // Close any existing ports which might be open in the main process, and remove
@@ -245,6 +253,12 @@ export class App {
     this.stopRateCalculation();
     this.stopCpuMonitoring();
     this.soundPlayer.cleanup();
+    this.profileManager.cleanup();
+
+    if (this.titleReactionDispose) {
+      this.titleReactionDispose();
+      this.titleReactionDispose = null;
+    }
 
     // Clean up auto-updater listeners
     if ((window as any).electronAPI?.updater) {
