@@ -1,7 +1,5 @@
 import { expect, test, describe, beforeEach } from 'vitest';
 
-import moment from 'moment';
-
 import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
@@ -432,14 +430,10 @@ describe('single terminal tests', () => {
 
       // Extract the timestamp from the first row
       const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
-      const timestampFromTerminal = moment(timestampFromTerminalStr, 'YYYY-MM-DDTHH:mm:ss.SSS')
-
-      // Get local time in ISO format, in timezone of the machine running the test
-      const now = new Date();
-      const timestamp = moment(now);
-
-      // Check that the timestamp is within 1 second of the current time
-      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+      // Parse the ISO-without-tz form back to a Date by appending the local
+      // offset; assert it's within a second of "now".
+      const timestampFromTerminal = new Date(timestampFromTerminalStr.trim()).getTime();
+      expect(Math.abs(timestampFromTerminal - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
       const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
@@ -492,14 +486,8 @@ describe('single terminal tests', () => {
       let timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
       // Remove space from the end
       timestampFromTerminalStr = timestampFromTerminalStr.slice(0, -1);
-      const timestampFromTerminal = moment(timestampFromTerminalStr, 'X');
-
-      // Get local time in ISO format, in timezone of the machine running the test
-      const now = new Date();
-      const timestamp = moment(now);
-
-      // Check that the timestamp is within 1 second of the current time
-      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+      const timestampFromTerminalMs = parseInt(timestampFromTerminalStr, 10) * 1000;
+      expect(Math.abs(timestampFromTerminalMs - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
       const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
@@ -523,16 +511,12 @@ describe('single terminal tests', () => {
       // Total length will be 15 (timestamp) + 1 (space) + 3 (data) + 1 (cursor) = 20
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
-      // Extract the timestamp from the first row
+      // Extract the timestamp from the first row, format is 'X.SSS '.
       const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
-      const timestampFromTerminal = moment(timestampFromTerminalStr, 'x');
-
-      // Get local time in ISO format, in timezone of the machine running the test
-      const now = new Date();
-      const timestamp = moment(now);
-
-      // Check that the timestamp is within 1 second of the current time
-      expect(timestampFromTerminal.diff(timestamp, 'seconds')).toBeLessThan(1);
+      // Parse "<unix_seconds>.<ms>" back into a ms value.
+      const [secStr, msStr] = timestampFromTerminalStr.trim().split('.');
+      const timestampFromTerminalMs = parseInt(secStr, 10) * 1000 + parseInt(msStr, 10);
+      expect(Math.abs(timestampFromTerminalMs - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
       const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');

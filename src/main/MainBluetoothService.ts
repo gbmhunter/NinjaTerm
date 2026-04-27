@@ -46,6 +46,15 @@ export class MainBluetoothService {
   txCharacteristic: noble.Characteristic | null = null;
   rxCharacteristic: noble.Characteristic | null = null;
 
+  /**
+   * The 'data' event handler currently bound to `txCharacteristic`. Held here
+   * so we can `off()` exactly this listener on disconnect / re-setup. Without
+   * this, every reconnect adds another listener to the previous characteristic
+   * (which the closure keeps alive), and old handlers continue firing into a
+   * mainWindow reference that may already be stale.
+   */
+  private txCharacteristicDataHandler: ((data: Buffer) => void) | null = null;
+
   // For storing received data batches similar to serial/socket services
   // private dataBatches = new Map<string, Buffer[]>();
   // private batchTimeouts = new Map<string, NodeJS.Timeout>();
@@ -117,8 +126,17 @@ export class MainBluetoothService {
   onNobleDiscover = (peripheral: noble.Peripheral) => {
     log.info('onNobleDiscover called. peripheral.id=', peripheral.id);
     this.mainWindow?.webContents.send('bluetooth:device-discovered', this.noblePeripheralToSerializable(peripheral));
-    // If we get here, we have a valid device we want to present to the user
-    this.discoveredDevices.push(peripheral);
+    // Noble emits a fresh peripheral object for every advertisement received.
+    // In a busy RF environment this fires several times per second per device,
+    // so a long scan would balloon `discoveredDevices` with thousands of
+    // duplicate entries. Replace any existing entry with the same id so we
+    // keep the most recent advertisement (fresher RSSI) without growing.
+    const existingIdx = this.discoveredDevices.findIndex(p => p.id === peripheral.id);
+    if (existingIdx >= 0) {
+      this.discoveredDevices[existingIdx] = peripheral;
+    } else {
+      this.discoveredDevices.push(peripheral);
+    }
   }
 
   noblePeripheralToSerializable = (peripheral: noble.Peripheral): SerializableBluetoothDevice => {
@@ -142,6 +160,10 @@ export class MainBluetoothService {
     this.peripheral = null;
     // Clear the discovered services
     this.discoveredServices = [];
+    // Drop the tx 'data' handler before clearing the characteristic so we
+    // don't leak the closure (and its `mainWindow` capture) for the rest of
+    // the session.
+    this.removeTxCharacteristicDataHandler();
     // Clear the TX and RX characteristics
     this.txCharacteristic = null;
     this.rxCharacteristic = null;
@@ -391,6 +413,7 @@ export class MainBluetoothService {
         });
       });
       peripheral.removeAllListeners();
+      this.removeTxCharacteristicDataHandler();
       return { success: true };
     } catch (error) {
       log.error(`Failed to disconnect from Bluetooth device ${deviceId}:`, error);
@@ -472,13 +495,30 @@ export class MainBluetoothService {
         log.error(`Failed to start notifications on tx characteristic ${txCharacteristicUuid}:`, error);
       }
     });
-    txCharacteristic.on('data', (data: Buffer) => {
+    // If a previous setup left a handler bound to a prior characteristic,
+    // remove it before binding a new one. Otherwise stale handlers keep
+    // firing into the renderer indefinitely.
+    this.removeTxCharacteristicDataHandler();
+    const handler = (data: Buffer) => {
       log.debug(`Received data from ${peripheral.id} on write characteristic. data: ${data.toString('hex')}`);
       // Send data to renderer
       this.mainWindow?.webContents.send('bluetooth:data-received', peripheral.id, data);
-    });
+    };
+    txCharacteristic.on('data', handler);
+    this.txCharacteristicDataHandler = handler;
 
     return { success: true };
+  }
+
+  /**
+   * Removes the current `txCharacteristic` 'data' handler if one is bound.
+   * Safe to call when no handler exists.
+   */
+  private removeTxCharacteristicDataHandler() {
+    if (this.txCharacteristic && this.txCharacteristicDataHandler) {
+      this.txCharacteristic.off('data', this.txCharacteristicDataHandler);
+    }
+    this.txCharacteristicDataHandler = null;
   }
 
   async writeData(data: Buffer): Promise<{ success: boolean; error?: string }> {

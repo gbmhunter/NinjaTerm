@@ -18,7 +18,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src/renderer/src'),
-      'src': resolve(__dirname, 'src/renderer/src')
+      'src': resolve(__dirname, 'src/renderer/src'),
+      // Mirror the alias defined in electron.vite.config.ts. Without this,
+      // any test importing from `@shared/*` fails to resolve.
+      '@shared': resolve(__dirname, 'src/shared')
     }
   }
 })
