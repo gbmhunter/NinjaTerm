@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell, session } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from 'electron';
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 import * as path from 'path';
@@ -73,7 +73,6 @@ function emitEventIfInProd(event: string) {
   }
 }
 
-
 // Configure auto-updater logging
 autoUpdater.logger = mainLogger;
 (autoUpdater.logger as any).transports.file.level = 'info';
@@ -132,8 +131,8 @@ autoUpdater.on('update-downloaded', (info) => {
   mainWindow?.webContents.send('update-downloaded', info);
 });
 
-// Initialize Bluetooth service (will be updated with mainWindow after createWindow)
-let bluetoothService: any;
+// Bluetooth service registers its IPC handlers in the constructor; we don't
+// keep a reference because nothing else in this file calls it back.
 
 let mcpService: McpService | null = null;
 
@@ -215,7 +214,8 @@ app.whenReady().then(async () => {
     try {
       // require didn't work here, so using import instead
       const { MainBluetoothService } = await import('./MainBluetoothService');
-      bluetoothService = new MainBluetoothService(mainWindow);
+      // Constructor registers its IPC handlers via side effects; no need to retain a reference.
+      new MainBluetoothService(mainWindow);
     } catch (error) {
       console.error('Failed to load Bluetooth service:', error);
     }
@@ -283,7 +283,6 @@ app.on('activate', () => {
   }
 });
 
-
 // File system operations for logging
 ipcMain.handle('fs:select-directory', async () => {
   try {
@@ -326,11 +325,11 @@ ipcMain.handle('fs:get-file-size', async (event, filePath: string) => {
   }
 });
 
-ipcMain.handle('fs:file-exists', async (event, filePath: string) => {
+ipcMain.handle('fs:file-exists', async (_event, filePath: string) => {
   try {
     await fs.access(filePath);
     return { success: true, exists: true };
-  } catch (error) {
+  } catch {
     return { success: true, exists: false };
   }
 });

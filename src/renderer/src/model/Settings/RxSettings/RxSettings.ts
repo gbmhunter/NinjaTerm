@@ -183,7 +183,7 @@ export default class RxSettings {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
 
     /**
      * How to interpret the received data from the serial port.
@@ -243,7 +243,7 @@ export default class RxSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
     config.dataType = this.dataType;
 
     // ASCII-SPECIFIC SETTINGS

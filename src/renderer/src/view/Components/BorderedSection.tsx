@@ -6,6 +6,9 @@ import { SvgIconTypeMap } from "@mui/material/SvgIcon";
 import { OverridableComponent } from "@mui/material/OverridableComponent";
 
 type BorderedSectionProps = {
+  // MUI's `SvgIconTypeMap` is parameterised on a `{}` props object — that's
+  // their public type signature for "no extra props", not something we choose.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   icon?: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { props: { className?: string } };
   title?: string;
   style?: React.CSSProperties;

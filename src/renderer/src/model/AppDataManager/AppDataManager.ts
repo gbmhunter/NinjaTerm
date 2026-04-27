@@ -220,18 +220,16 @@ export class AppDataManager {
     let snackbarMessage = `Profile "${profile.name}" loaded.`;
     let snackbarVariant: VariantType = 'success';
     if (profileLastUsedPortPath == '{}') {
-      weNeedToConnect = false;
+      // No connection info to act on — leave default `false`.
     } else if (profileLastUsedPortPath === currentPortPath) {
-      // Same serial port, no need to disconnect and connect
-      // Note there is a chance we are not connected to the right one due to
-      // ambiguity...but if already connected it is a better user experience to
-      // not disconnect on the high chance it is the correct port
-      weNeedToConnect = false;
+      // Same serial port, no need to disconnect and connect.
+      // There is a chance we are not connected to the right one due to
+      // ambiguity, but if already connected it is a better user experience to
+      // not disconnect on the high chance it is the correct port.
       snackbarMessage += '\nAlready connected port matches one specified in profile. Leaving port connected.';
     } else {
       // They are both different and the profile one is non-empty. Check to see if the profile ports is available
       log.info('Port infos are both different and non-empty. Checking if ports are available...');
-      // const availablePorts = await navigator.serial.getPorts();
       const availablePortsResult = await window.electronAPI.serial.listPorts();
       if (!availablePortsResult.success) {
         throw new Error('Failed to list available ports.');
@@ -241,16 +239,13 @@ export class AppDataManager {
 
       if (matchedAvailablePorts.length === 0) {
         // The profile port is not available
-        weNeedToConnect = false;
         snackbarMessage += '\nNo available port matches the profile port info. No connecting to any.';
         snackbarVariant = 'warning';
       } else if (matchedAvailablePorts.length === 1) {
         // The profile port is available
         weNeedToConnect = true;
       } else {
-        // There are multiple ports that match the profile port, too ambiguous, do
-        // not connect to any
-        weNeedToConnect = false;
+        // Multiple ports match, ambiguous — don't connect to any.
         snackbarMessage += '\nMultiple available ports info match the profile port info (ambiguous). Not connecting to any.';
         snackbarVariant = 'warning';
       }

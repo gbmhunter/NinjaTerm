@@ -1,18 +1,4 @@
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  Switch,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Switch, TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
 import { App } from "src/model/App";

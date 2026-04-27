@@ -8,7 +8,7 @@ import ApplyableTextField, { ApplyableNumberField } from "src/view/Components/Ap
  * @param configObject The config object to update.
  */
 export function updateConfigFromSerializable(serializedSettings: any, configObject: any) {
-  Object.keys(configObject).forEach(function (key, index) {
+  Object.keys(configObject).forEach(function (key, _index) {
     // console.log('key:', key, 'index:', index);
     // let key1 = key as keyof ConfigV1;
     // console.log(typeof (me.config[key1]));

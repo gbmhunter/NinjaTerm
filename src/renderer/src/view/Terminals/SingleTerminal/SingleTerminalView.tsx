@@ -1,6 +1,6 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import React, { useRef, ReactElement, useLayoutEffect, useEffect, forwardRef, useMemo } from 'react';
+import React, { useRef, useLayoutEffect, useEffect, forwardRef, useMemo } from 'react';
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -23,7 +23,7 @@ interface Props {
 interface RowProps {
   data: TerminalRow[]; // This is the array of indexes into the terminalRows array
   index: number; // This is the index into the data array above
-  style: {};
+  style: React.CSSProperties;
 }
 
 export default observer((props: Props) => {
@@ -138,7 +138,7 @@ export default observer((props: Props) => {
   const selection = window.getSelection();
   // Convert the selection (which has pointers to the nodes) into the rows and columns of the terminal
   // that the selection starts and ends at
-  let selectionInfo = SelectionController.getSelectionInfo(selection, terminal.id);
+  const selectionInfo = SelectionController.getSelectionInfo(selection, terminal.id);
 
   // Re-applies the mouseup-cached selection (with clamping for off-screen endpoints).
   // Called from both useLayoutEffect (React re-renders) and onItemsRendered (scroll
@@ -259,7 +259,6 @@ export default observer((props: Props) => {
     ))
   }, []);
 
-
   let scrollLockUnlockIcon;
   if (terminal.scrollLock) {
     scrollLockUnlockIcon = <LockIcon
@@ -301,13 +300,13 @@ export default observer((props: Props) => {
           '--default-tx-color': terminal.defaultTxColor,
           '--default-rx-color': terminal.defaultRxColor,
         } as React.CSSProperties & { [key: string]: string | number }}
-        onFocus={(e) => {
+        onFocus={(_e) => {
           terminal.setIsFocused(true);
         }}
-        onBlur={(e) => {
+        onBlur={(_e) => {
           terminal.setIsFocused(false);
         }}
-        onKeyDown={(e) => {
+        onKeyDown={(_e) => {
           // Key presses now dealt with by global handler in App component
           // terminal.handleKeyDown(e);
         }}

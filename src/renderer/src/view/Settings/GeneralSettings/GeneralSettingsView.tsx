@@ -1,9 +1,9 @@
-import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert, TextField, IconButton, InputAdornment } from "@mui/material";
+import { Checkbox, FormControlLabel, Tooltip, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Alert, TextField, IconButton } from "@mui/material";
 import { observer } from "mobx-react-lite";
 import React, { useState, useRef } from "react";
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import GeneralSettings from "src/model/Settings/GeneralSettings/GeneralSettings";
-import { App, MainPanes } from "src/model/App";
+import { App } from "src/model/App";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import SpeedIcon from '@mui/icons-material/Speed';

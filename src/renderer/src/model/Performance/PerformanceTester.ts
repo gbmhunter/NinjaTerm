@@ -1,6 +1,5 @@
 import { App, MainPanes } from '../App';
 import DataGenerator from './DataGenerator';
-import PerformanceMonitor from './PerformanceMonitor';
 import { DetectionMode } from '../Graphing/Graphing';
 
 /**
@@ -244,8 +243,8 @@ export class PerformanceTester {
 
     const startTime = Date.now();
     let totalBytesProcessed = 0;
-    let processingTimes: number[] = [];
-    let frameRates: number[] = [];
+    const processingTimes: number[] = [];
+    const frameRates: number[] = [];
 
     // Create data stream
     const dataStream = DataGenerator.createDataStream(

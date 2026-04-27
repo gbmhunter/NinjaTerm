@@ -1,10 +1,13 @@
+import React from 'react';
+
 /**
  * Represents a single character in the terminal
  */
 export default class TerminalChar {
   char: string;
 
-  style: {};
+  // Reserved for inline style overrides; empty object by default.
+  style: React.CSSProperties;
 
   className = '';
 

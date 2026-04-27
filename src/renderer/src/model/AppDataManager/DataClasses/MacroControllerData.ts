@@ -11,7 +11,7 @@ export class MacroControllerData {
     // saved config from local storage
     this.macroConfigs = [];
     for (let i = 0; i < NUM_MACROS; i++) {
-      let macroConfig = new MacroDataV1();
+      const macroConfig = new MacroDataV1();
       this.macroConfigs.push(macroConfig);
     }
     this.macroConfigs[0].data = 'Hello\\n';

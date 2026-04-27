@@ -83,7 +83,7 @@ export class SelectionController {
    */
   static selectTerminalText(startRowId: string, startColIdx: number, endRowId: string, endColIdx: number) {
     // console.log('Selecting text from row:', startRowId, 'column:', startColIdx, 'to row:', endRowId, 'column:', endColIdx);
-    let selection = window.getSelection();
+    const selection = window.getSelection();
     if (selection === null) {
       return false;
     }
@@ -254,34 +254,14 @@ export class SelectionController {
       }
     }
 
-    let firstRowId = '';
-    let firstRowSpanIndex = 0;
-    let firstRowOffset = 0;
-    let firstRowColIdx = 0;
-    let lastRowId = '';
-    let lastRowSpanIndex = 0;
-    let lastRowOffset = 0;
-    let lastRowColIdx = 0;
-    if (isSelectionForwards) {
-      firstRowId = anchorRowId;
-      firstRowSpanIndex = anchorSpanIndexInRow;
-      firstRowOffset = anchorOffset;
-      firstRowColIdx = anchorColIdx;
-      lastRowId = focusRowId;
-      lastRowSpanIndex = focusSpanIndexInRow;
-      lastRowOffset = focusOffset;
-      lastRowColIdx = focusColIdx;
-    } else {
-      // Invert everything
-      firstRowId = focusRowId;
-      firstRowSpanIndex = focusSpanIndexInRow;
-      firstRowOffset = focusOffset;
-      firstRowColIdx = focusColIdx;
-      lastRowId = anchorRowId;
-      lastRowSpanIndex = anchorSpanIndexInRow;
-      lastRowOffset = anchorOffset;
-      lastRowColIdx = anchorColIdx;
-    }
+    const firstRowId = isSelectionForwards ? anchorRowId : focusRowId;
+    const firstRowSpanIndex = isSelectionForwards ? anchorSpanIndexInRow : focusSpanIndexInRow;
+    const firstRowOffset = isSelectionForwards ? anchorOffset : focusOffset;
+    const firstRowColIdx = isSelectionForwards ? anchorColIdx : focusColIdx;
+    const lastRowId = isSelectionForwards ? focusRowId : anchorRowId;
+    const lastRowSpanIndex = isSelectionForwards ? focusSpanIndexInRow : anchorSpanIndexInRow;
+    const lastRowOffset = isSelectionForwards ? focusOffset : anchorOffset;
+    const lastRowColIdx = isSelectionForwards ? focusColIdx : anchorColIdx;
 
 
     return new SelectionInfo(

@@ -235,7 +235,7 @@ export class BluetoothLEController {
    * Returns the list of discovered Bluetooth devices, filtered and sorted according to current settings.
    */
   get sortedAndFilteredDiscoveredBluetoothDevices(): SerializableBluetoothDeviceWithMetadata[] {
-    let devices = this.filteredDiscoveredBluetoothDevices;
+    const devices = this.filteredDiscoveredBluetoothDevices;
 
     // If no sort column is set, return unsorted
     if (!this.sortColumn) {
@@ -338,7 +338,7 @@ export class BluetoothLEController {
     let index = this.discoveredBluetoothDevices.findIndex(deviceInList => deviceInList.nobleData.id === device.id);
     if (index !== -1) {
       // Device already exists. Update specific fields if they have not been set before
-      let deviceInList = this.discoveredBluetoothDevices[index];
+      const deviceInList = this.discoveredBluetoothDevices[index];
       if (deviceInList.nobleData.advertisement.localName === '') {
         deviceInList.nobleData.advertisement.localName = device.advertisement.localName;
       }
@@ -358,7 +358,7 @@ export class BluetoothLEController {
     }
     // The following code gets run no matter if the device is already in the list or not
 
-    let deviceInList = this.discoveredBluetoothDevices[index];
+    const deviceInList = this.discoveredBluetoothDevices[index];
     // Add some additional metadata - detect which serial protocols this device supports
     for (const protocol of bluetoothLESerialProtocols) {
       if (deviceInList.nobleData.advertisement.serviceUuids.includes(protocol.serviceUuid)) {

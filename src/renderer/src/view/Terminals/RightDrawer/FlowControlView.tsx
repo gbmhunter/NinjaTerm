@@ -15,7 +15,7 @@ interface FlowControlIndicatorProps {
   active: boolean;
 }
 
-const FlowControlIndicator = ({ label, active }: FlowControlIndicatorProps) => {
+const FlowControlIndicator = ({ active }: FlowControlIndicatorProps) => {
   return (
     <Box
       sx={{

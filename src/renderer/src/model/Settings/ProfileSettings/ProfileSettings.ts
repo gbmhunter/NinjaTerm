@@ -86,7 +86,7 @@ export default class ProfilesSettings {
     if (this.selectedProfiles.length !== 1) {
       throw new Error('Expected there to be one profile selected.');
     }
-    let selectedProfileIdx = this.selectedProfiles[0];
+    const selectedProfileIdx = this.selectedProfiles[0];
     await this.profileManager.applyProfileToApp(selectedProfileIdx as number);
   };
 
@@ -97,7 +97,7 @@ export default class ProfilesSettings {
     if (this.selectedProfiles.length !== 1) {
       throw new Error('Expected there to be one profile selected.');
     }
-    let selectedProfileIdx = this.selectedProfiles[0];
+    const selectedProfileIdx = this.selectedProfiles[0];
     this.profileManager.saveCurrentAppConfigToProfile(selectedProfileIdx as number);
   }
 
@@ -105,7 +105,7 @@ export default class ProfilesSettings {
     if (this.selectedProfiles.length !== 1) {
       throw new Error('Expected there to be one profile selected.');
     }
-    let selectedProfileIdx = this.selectedProfiles[0];
+    const selectedProfileIdx = this.selectedProfiles[0];
     this.profileManager.deleteProfile(selectedProfileIdx as number);
   }
 }

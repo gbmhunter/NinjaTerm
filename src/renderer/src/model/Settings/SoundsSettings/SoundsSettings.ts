@@ -22,7 +22,7 @@ export default class SoundsSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.settings.soundsSettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.soundsSettings;
 
     config.playSoundsOnPassFail = this.playSoundsOnPassFail;
 
@@ -30,7 +30,7 @@ export default class SoundsSettings {
   };
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.soundsSettings;
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.soundsSettings;
 
     this.playSoundsOnPassFail = configToLoad.playSoundsOnPassFail;
   };

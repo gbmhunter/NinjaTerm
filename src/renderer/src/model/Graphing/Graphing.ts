@@ -1,5 +1,4 @@
 import { makeAutoObservable } from 'mobx';
-import Validator from 'validatorjs';
 import { z } from 'zod';
 
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
@@ -156,7 +155,6 @@ class Graphing {
 
 	customValueSeparator = new ApplyableTextField(',', z.string());
 
-
 	/**
 	 * Whether to clear existing plot data when new values arrive.
 	 * Only applicable when multipleValuesPerBuffer is enabled.
@@ -268,7 +266,6 @@ class Graphing {
 		this._saveConfig();
 	}
 
-
 	setClearPlotOnNewValues = (value: boolean) => {
 		this.clearPlotOnNewValues = value;
 		this._saveConfig();
@@ -314,7 +311,7 @@ class Graphing {
 
 		for (let i = 0; i < data.length; i++) {
 			// Convert byte into a character
-			let char = String.fromCharCode(data[i]);
+			const char = String.fromCharCode(data[i]);
 
 			// Advanced mode: stream parser for $NT-prefixed commands terminated by ';' outside of quotes
 			if (this.detectionMode === DetectionMode.ADVANCED_CMD) {
@@ -971,7 +968,7 @@ class Graphing {
 	}
 
 	_saveConfig = () => {
-		let config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+		const config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
 		config.graphingEnabled = this.graphingEnabled;
 		config.processingTrigger = this.processingTrigger;
@@ -997,7 +994,7 @@ class Graphing {
 	};
 
 	_loadConfig = () => {
-		let configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
+		const configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
 
 		this.graphingEnabled = configToLoad.graphingEnabled;
 		this.processingTrigger = configToLoad.processingTrigger;

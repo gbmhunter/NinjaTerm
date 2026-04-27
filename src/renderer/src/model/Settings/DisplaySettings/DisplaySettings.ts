@@ -140,7 +140,7 @@ export default class DisplaySettings {
    * Save the relevant settings from this class into the current app config in the profile manager.
    */
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
     config.charSizePx = this.charSizePx.appliedValue;
     config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
@@ -164,7 +164,7 @@ export default class DisplaySettings {
    * Load the relevant settings from the current app config in the profile manager into this class.
    */
   _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
 
     this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
     this.charSizePx.apply({notify: false});

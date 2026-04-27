@@ -1,15 +1,8 @@
 import {
-  Box,
   Button,
   ButtonPropsColorOverrides,
-  FormControl,
-  FormControlLabel,
   IconButton,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
   Tooltip,
   Typography,
   useMediaQuery,
@@ -23,10 +16,9 @@ import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 
 import { App } from 'src/model/App';
-import { PortType } from '@/model/ConnController/ConnController';
 import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
-import { DataViewConfiguration, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import RightDrawerView from './RightDrawer/RightDrawerView';
