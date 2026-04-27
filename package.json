@@ -42,7 +42,6 @@
     "kofi-button": "^1.1.1",
     "mobx": "^6.12.4",
     "mobx-react-lite": "^4.0.7",
-    "moment": "^2.30.1",
     "node-abi": "^4.14.0",
     "node-machine-id": "^1.1.12",
     "notistack": "^3.0.1",
@@ -87,6 +86,7 @@
     "preview": "electron-vite preview",
     "test": "tsc && vitest run && playwright test",
     "test:unit": "vitest run",
+    "lint": "eslint src",
     "test:web": "tsc && vitest run && playwright test",
     "test:electron": "playwright test",
     "test:electron:headed": "cross-env HEADED=1 playwright test",
@@ -98,12 +98,6 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "publish": "npm run build && electron-builder --publish=always",
     "release": "node scripts/release.mjs"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -119,6 +113,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.54.1",
     "@types/noble": "^0.0.44",
     "@types/react-resizable": "^3.0.7",
@@ -129,11 +124,14 @@
     "electron-builder": "^26.0.12",
     "electron-devtools-installer": "^4.0.0",
     "electron-vite": "^3.1.0",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "jest-canvas-mock": "^2.5.2",
     "jsdom": "^24.1.0",
     "playwright-electron": "^0.5.0",
     "postcss": "^8.4.38",
     "postcss-nesting": "^12.1.5",
+    "typescript-eslint": "^8.59.0",
     "vite-plugin-checker": "^0.6.4",
     "vitest": "^3.2.4"
   },

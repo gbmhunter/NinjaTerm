@@ -8,7 +8,6 @@ import { Button } from '@mui/material';
 // Import package.json to read out the version number
 import { log, initLogging } from './Util/Log';
 import packageDotJson from '../../../../package.json' with { type: 'json' };
-// eslint-disable-next-line import/no-cycle
 import { Settings, SettingsCategories } from './Settings/Settings';
 import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';

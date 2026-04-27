@@ -2,7 +2,6 @@
 
 import { makeAutoObservable } from 'mobx';
 
-// eslint-disable-next-line import/no-cycle
 import TxSettings from './TxSettings/TxSettings';
 import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';

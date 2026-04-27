@@ -36,7 +36,12 @@ export default observer((props: Props) => {
     const terminalRowToRender = data[index];
     const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
 
-    // Use memoized span generation from TerminalRow
+    // Use memoized span generation from TerminalRow.
+    // `Row` is a nested function component (declared inside the parent's
+    // body) so ESLint's rules-of-hooks heuristic flags this useMemo as
+    // a hook-in-callback. It's actually a valid hook call site — `Row` is
+    // returned to react-window as the row renderer. Disable just this one.
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const spans = useMemo(() => {
       // Determine cursor class
       const cursorClass = terminal.isFocused ? styles.cursorFocused : styles.cursorUnfocused;

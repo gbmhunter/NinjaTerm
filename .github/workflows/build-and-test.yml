@@ -2,11 +2,11 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main ]
     tags:
       - 'v*'
-  # pull_request:
-  #   branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test-electron:
@@ -31,6 +31,12 @@ jobs:
 
     - name: Install dependencies
       run: npm ci
+
+    - name: Lint
+      # Run on every OS so a platform-specific issue is caught quickly.
+      # Currently zero errors are tolerated but warnings are allowed; tighten
+      # over time as the codebase is cleaned up.
+      run: npm run lint
 
     - name: Run unit tests
       run: npm run test:unit
