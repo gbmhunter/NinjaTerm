@@ -1,7 +1,8 @@
 /* eslint-disable no-continue */
 import { autorun, makeAutoObservable, reaction, computed, observable } from 'mobx';
 import { ListOnScrollProps } from 'react-window';
-import moment from 'moment';
+
+import { formatTimestamp } from 'src/model/Util/timestamp';
 
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
@@ -153,7 +154,7 @@ export class SingleTerminal {
    * `_maybeAddVisibleByteAndTimestamp` checks `cachedTimestampMs` against
    * `Date.now()` and reuses `cachedTimestampString` if they match. With chunky
    * RX delivery, every line in the same chunk falls in the same ms, so
-   * `moment(...).format(...)` runs once per chunk instead of once per line.
+   * `formatTimestamp(...)` runs once per chunk instead of once per line.
    * Cleared at the top of each `parseData` call so settings changes take
    * effect on the next chunk.
    */
@@ -1380,28 +1381,28 @@ export class SingleTerminal {
     const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
     if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
       // Reuse the cached formatted string when this line falls in the same
-      // millisecond as the previous line in the chunk. moment() construction
-      // and `.format(...)` together are the dominant cost on streams with
-      // many short lines.
+      // millisecond as the previous line in the chunk. Even with the small
+      // native formatter, building the string repeatedly per line on a chunk
+      // of many short lines adds up.
       const nowMs = Date.now();
       let timestampString: string;
       if (nowMs === this.cachedTimestampMs) {
         timestampString = this.cachedTimestampString;
       } else {
-        const timestamp = moment(nowMs);
+        const date = new Date(nowMs);
         if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITHOUT_TIMEZONE) {
-          timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSS ');
+          timestampString = formatTimestamp(date, 'YYYY-MM-DDTHH:mm:ss.SSS ');
         } else if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITH_TIMEZONE) {
-          timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSSZ ');
+          timestampString = formatTimestamp(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ ');
         } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
-          timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');
+          timestampString = formatTimestamp(date, 'YYYY-MM-DD HH:mm:ss.SSS ');
         } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
-          timestampString = timestamp.format('X ');
+          timestampString = formatTimestamp(date, 'X ');
         } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS) {
           // 'X.SSS' = Unix seconds with ms after the decimal point.
-          timestampString = timestamp.format('X.SSS ');
+          timestampString = formatTimestamp(date, 'X.SSS ');
         } else if (this.rxSettings.timestampFormat === TimestampFormat.CUSTOM) {
-          timestampString = timestamp.format(this.rxSettings.customTimestampFormatString.appliedValue);
+          timestampString = formatTimestamp(date, this.rxSettings.customTimestampFormatString.appliedValue);
         } else {
           throw Error('Invalid timestamp format. timestampFormat=' + this.rxSettings.timestampFormat);
         }
