@@ -29,7 +29,7 @@ export function stringToUint8Array(str: string) {
  */
 export function getChildNodeIndex(child: Element | null)
 {
-    var i = 0;
+    let i = 0;
     while ((child = child!.previousElementSibling) != null )
     i++;
 

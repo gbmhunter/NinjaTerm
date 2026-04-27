@@ -18,13 +18,14 @@ export class DataGenerator {
         }
         break;
 
-      case 'repeated':
+      case 'repeated': {
         // Repeating pattern: "Hello World!\n"
         const message = "Hello World!\n";
         for (let i = 0; i < numBytes; i++) {
           data[i] = message.charCodeAt(i % message.length);
         }
         break;
+      }
 
       case 'mixed':
         // Mix of text, numbers, and control characters
@@ -192,7 +193,7 @@ export class DataGenerator {
         }
         break;
 
-      case 'float32':
+      case 'float32': {
         // Generate float32 values (4 bytes each)
         const floatArray = new Float32Array(Math.floor(numBytes / 4));
         for (let i = 0; i < floatArray.length; i++) {
@@ -200,6 +201,7 @@ export class DataGenerator {
         }
         data.set(new Uint8Array(floatArray.buffer));
         break;
+      }
     }
 
     return data;

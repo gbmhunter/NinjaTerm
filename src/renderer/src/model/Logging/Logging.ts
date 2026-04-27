@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction, toJS } from 'mobx';
-import { ZodString, z } from 'zod';
+import { z } from 'zod';
 
 import { App } from 'src/model/App';
 import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
@@ -104,7 +104,7 @@ export default class Logging {
       // Initialize the ApplyableTextField for custom filename
       this.customFileName = new ApplyableTextField(
         logSettings.customFileName,
-        z.string().min(1).regex(new RegExp(/^[\w,\s\.-]+$/), 'Filename should contain only alphanumeric characters, spaces, periods, and dashes.'),
+        z.string().min(1).regex(new RegExp(/^[\w,\s.-]+$/), 'Filename should contain only alphanumeric characters, spaces, periods, and dashes.'),
       );
 
       // Set up a listener to save custom filename changes back to profile

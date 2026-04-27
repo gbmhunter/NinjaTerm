@@ -77,7 +77,7 @@ export default class GeneralSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.settings.generalSettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.generalSettings;
 
     config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
     config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
@@ -86,7 +86,7 @@ export default class GeneralSettings {
   };
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.generalSettings;
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.generalSettings;
 
     this.whenPastingOnWindowsReplaceCRLFWithLF = configToLoad.whenPastingOnWindowsReplaceCRLFWithLF;
     this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configToLoad.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;

@@ -628,7 +628,6 @@ export class ConnController {
   }
 
   stopWaitingToReopenPort() {
-    const connectionType = this.app.settings.portConfiguration.connectionType;
     // Bluetooth logic is in the BluetoothLEController, for other connection types the logic is in this class.
     if (this.app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH_LE) {
       this.bluetoothLEController.stopPollingForReconnection();

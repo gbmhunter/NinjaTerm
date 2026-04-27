@@ -56,13 +56,13 @@ export default class Terminals {
   }
 
   _saveConfig = () => {
-    let config = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    const config = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
     config.showRightDrawer = this.showRightDrawer;
     this.app.profileManager.saveAppData();
   };
 
   _loadConfig = () => {
-    let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    const configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
     this.showRightDrawer = configToLoad.showRightDrawer;
   };
 }

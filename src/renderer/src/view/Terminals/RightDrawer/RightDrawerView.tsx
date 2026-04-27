@@ -24,7 +24,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { OverridableStringUnion } from '@mui/types';
 
 import { App, MainPanes } from '@/model/App';
-import { PortType } from '@/model/ConnController/ConnController';
+
 import MacroView from './MacroRowView';
 import MacroSettingsModalView from './MacroSettingsModalView';
 import ApplyableTextFieldView from '@/view/Components/ApplyableTextFieldView';
@@ -73,7 +73,7 @@ export default observer((props: Props) => {
     <Resizable // This what provides the resizing functionality for the right drawer
       className="box"
       width={rightDrawer.drawerWidth_px}
-      onResize={(e, { node, size, handle }) => {
+      onResize={(_e, { size }) => {
         rightDrawer.setDrawerWidth(size.width);
       }}
       resizeHandles={['w']}

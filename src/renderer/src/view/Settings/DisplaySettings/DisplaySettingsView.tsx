@@ -1,10 +1,9 @@
-import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel, Popover, IconButton, Checkbox, FormControlLabel } from '@mui/material';
+import { FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip, Button, FormLabel, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
 import { App } from 'src/model/App';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
-import BorderedSection from 'src/view/Components/BorderedSection';
 import { DataViewConfiguration, TerminalHeightMode, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import PopoverColorPicker from 'src/view/Components/PopoverColorPicker';
 

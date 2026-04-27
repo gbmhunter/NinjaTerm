@@ -56,12 +56,6 @@ export enum MainPanes {
   LOGGING,
 }
 
-const tipsToDisplayOnStartup = [
-  'TIP: Use Ctrl-Shift-C to copy text \nfrom the terminal, and Ctrl-Shift-V to paste.',
-  'TIP: Change the type of data displayed between ASCII, HEX and other number types in Settings → RX Settings.',
-  'TIP: Press Ctrl-Shift-B to send the "break" signal.',
-];
-
 /**
  * Returns true if the keyboard event originated from an editable element (input, textarea,
  * select, or contenteditable). Used to suppress plain-letter app shortcuts while the user
@@ -274,11 +268,6 @@ export class App {
    */
   async onAppUiLoaded() {
     // Auto-reconnection on startup is now handled through the PortSettings selectedSerialPort
-
-    // Send 1 random tip to snackbar on app load
-    // Choose random tip from array
-    // const randomIndex = Math.floor(Math.random() * tipsToDisplayOnStartup.length);
-    // this.snackbar.sendToSnackbar(tipsToDisplayOnStartup[randomIndex], 'info');
   }
 
   // Serial port connection and auto-reconnection is now handled through PortSettings
@@ -286,7 +275,6 @@ export class App {
   setCloseSettingsDialogOnPortOpenOrClose(trueFalse: boolean) {
     this.closeSettingsDialogOnPortOpenOrClose = trueFalse;
   }
-
 
   /**
    * Starts the rate calculation timer.
@@ -382,7 +370,6 @@ export class App {
    * the main thread's busy vs idle time including React rendering.
    */
   private startCpuMonitoring() {
-    let lastFrameTime = performance.now();
     let frameStartTime = performance.now();
     let busyTime = 0;
     let measurementStartTime = performance.now();
@@ -470,7 +457,7 @@ export class App {
     });
 
     // Update not available
-    electronAPI.updater.onUpdateNotAvailable((updateInfo: any) => {
+    electronAPI.updater.onUpdateNotAvailable((_updateInfo: any) => {
       console.log('No updates available');
       this.snackbar.sendToSnackbar('No updates available. You are running the latest version.', 'info');
     });
@@ -755,7 +742,6 @@ export class App {
     }
   }
 
-
   /**
    * Run performance tests to measure baseline performance and identify bottlenecks
    */
@@ -770,8 +756,6 @@ export class App {
   getPerformanceReport(): string {
     return this.performanceMonitor.getPerformanceReport();
   }
-
-
 
   /** Central place which handles all key pressed in the app.
    * This includes:
@@ -914,19 +898,13 @@ export class App {
       }
     }
 
-    let clipboardText = '';
-    if (selectionInfo !== null) {
-      // Copy the text from the start node to the end node (NOTE: not the same as
-      // the anchor and focus node if the user clicked at the end and released at the start)
-      clipboardText = this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!);
-    } else {
-      // Since selection is not fully contained within a single terminal pane,
-      // do a basic toString() copy of the text to the clipboard
-      // Do we need to await the promise?
-      // WARNING: As per spec at: https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext
-      //   On Windows replace `\n` characters with `\r\n` in data before creating textBlob
-      clipboardText = selection.toString();
-    }
+    // Selection lives in one terminal pane = walk it ourselves; otherwise
+    // fall back to a plain `toString()` of the live DOM selection.
+    // WARNING: As per spec at https://w3c.github.io/clipboard-apis/#dom-clipboard-writetext,
+    //   on Windows we should replace `\n` with `\r\n` before creating a textBlob.
+    const clipboardText = selectionInfo !== null
+      ? this.extractClipboardTextFromTerminal(selectionInfo, terminalSelectionWasIn!)
+      : selection.toString();
 
     navigator.clipboard.writeText(clipboardText);
     // Create toast telling user that text was copied to clipboard

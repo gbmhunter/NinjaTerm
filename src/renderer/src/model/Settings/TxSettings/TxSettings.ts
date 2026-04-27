@@ -66,7 +66,7 @@ export default class TxSettings {
   }
 
   _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.txSettings;
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.txSettings;
 
     this.enterKeyPressBehavior = configToLoad.enterKeyPressBehavior;
     this.backspaceKeyPressBehavior = configToLoad.backspaceKeyPressBehavior;
@@ -77,7 +77,7 @@ export default class TxSettings {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.settings.txSettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.txSettings;
 
     config.enterKeyPressBehavior = this.enterKeyPressBehavior;
     config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;

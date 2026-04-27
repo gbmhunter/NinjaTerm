@@ -1,15 +1,4 @@
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
-  Tooltip,
-  IconButton,
-} from "@mui/material";
+import { Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Tooltip, IconButton } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { observer } from "mobx-react-lite";
@@ -61,7 +50,7 @@ export default observer((props: Props) => {
 
   // Calculate x-axis label based on x variable source
   const xVarSource = app.graphing.xVarSource;
-  let xVarLabel = "";
+  let xVarLabel: string;
   if (xVarSource === "Received Time") {
     xVarLabel = "Time [s]";
   } else if (xVarSource === "Counter") {
@@ -457,7 +446,6 @@ export default observer((props: Props) => {
               />
             </Tooltip>
           )}
-
 
           {/* CLEAR PLOT ON NEW VALUES */}
           {/* ============================================================== */}

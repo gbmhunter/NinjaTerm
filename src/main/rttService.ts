@@ -193,7 +193,7 @@ function startRxPolling(mainWindow: BrowserWindow, session: RttSession) {
 function startProbePresencePolling(mainWindow: BrowserWindow, session: RttSession) {
   session.presencePollTimer = setInterval(() => {
     if (session.closed) return;
-    let connected = 0;
+    let connected: number;
     try {
       connected = session.api.emuIsConnected();
     } catch {

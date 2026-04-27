@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Radio, RadioGroup, Tooltip } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';

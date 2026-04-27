@@ -635,7 +635,7 @@ export class SingleTerminal {
       if (numberStr === '') {
         numberStr = '1';
       }
-      let numRowsToGoUp = parseInt(numberStr, 10);
+      const numRowsToGoUp = parseInt(numberStr, 10);
       if (Number.isNaN(numRowsToGoUp)) {
         console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
         return;
@@ -725,7 +725,7 @@ export class SingleTerminal {
         for (let charIdx = 0; charIdx < this.cursorPosition[1]; charIdx += 1) {
           currRow.terminalChars[charIdx].char = ' ';
           currRow.terminalChars[charIdx].forCursor = false;
-          currRow.terminalChars[charIdx].style = '';
+          currRow.terminalChars[charIdx].style = {};
         }
       } else if (numberN === 2) {
         // Erase entire screen
@@ -843,7 +843,7 @@ export class SingleTerminal {
       // Add received byte to number array
       this.partialNumberBuffer.push(rxByte);
 
-      let numberAsBigInt = BigInt(0); // This is used for the new line on match feature
+      let numberAsBigInt: bigint; // This is used for the new line on match feature
       let numberStr = ''; // This is used for displaying the number in the terminal
       //========================================================================
       // CREATE NUMBER PART OF STRING
@@ -1029,7 +1029,7 @@ export class SingleTerminal {
       //========================================================================
       if (this.rxSettings.padValues) {
         // If padding is set to automatic, pad to the largest possible value for the selected number type
-        let paddingChar = ' ';
+        let paddingChar: string;
         if (this.rxSettings.paddingCharacter === PaddingCharacter.ZERO) {
           paddingChar = '0';
         } else if (this.rxSettings.paddingCharacter === PaddingCharacter.WHITESPACE) {
@@ -1103,7 +1103,6 @@ export class SingleTerminal {
       // 2) The terminal column width is high enough to fit an entire value in it
       if (this.rxSettings.preventValuesWrappingAcrossRows && this.displaySettings.terminalWidthChars.appliedValue >= numberStr.length) {
         // Create a new terminal row if the hex value will not fit on existing row
-        const currRow = this.terminalRows[this.cursorPosition[0]];
         const numColsLeftOnRow = this.displaySettings.terminalWidthChars.appliedValue - this.cursorPosition[1];
         if (numberStr.length > numColsLeftOnRow) {
           // Move cursor to next row
@@ -1135,7 +1134,6 @@ export class SingleTerminal {
 
       // Add to string to the the terminal
       for (let charIdx = 0; charIdx < numberStr.length; charIdx += 1) {
-        const charCode = numberStr.charCodeAt(charIdx);
         this._maybeAddVisibleByteAndTimestamp(numberStr.charCodeAt(charIdx), direction);
       }
       // Append the hex separator string
@@ -1350,7 +1348,7 @@ export class SingleTerminal {
   _maybeAddVisibleByteAndTimestamp(rxByte: number, direction: DataDirection) {
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
-    let char = '';
+    let char: string;
     if (rxByte >= 0x20 && rxByte <= 0x7e) {
       // Is printable ASCII character, no shifting needed
       char = String.fromCharCode(rxByte);
@@ -1423,7 +1421,7 @@ export class SingleTerminal {
     terminalChar.char = char;
 
     // This stores all classes we wish to apply to the char
-    let classList = [];
+    const classList = [];
 
     // Apply a class indicating the direction of the data
     if (direction === DataDirection.TX) {
@@ -1681,18 +1679,18 @@ export class SingleTerminal {
   /**
    * No longer needed - filteredTerminalRows is now computed automatically
    */
-  _addToFilteredRows(terminalRowToInsert: TerminalRow) {
+  _addToFilteredRows(_terminalRowToInsert: TerminalRow) {
     // This method is no longer needed since filteredTerminalRows is computed
   }
 
   /**
    * No longer needed - filteredTerminalRows is now computed automatically
    */
-  _removeFromFilteredRows(terminalRowToRemove: TerminalRow) {
+  _removeFromFilteredRows(_terminalRowToRemove: TerminalRow) {
     // This method is no longer needed since filteredTerminalRows is computed
   }
 
-  _addOrRemoveRowFromFilteredRows = (rowIdx: number) => {
+  _addOrRemoveRowFromFilteredRows = (_rowIdx: number) => {
     // This method is no longer needed since filteredTerminalRows is computed automatically
   }
 

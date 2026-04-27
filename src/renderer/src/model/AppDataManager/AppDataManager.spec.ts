@@ -38,7 +38,10 @@ function updateAndCompare(savedAppData: any) {
   const appDataManager = new AppDataManager(app);
 
   const savedAppVersion = savedAppData.version;
-  let {appData: savedAndUpdatedAppData, wasChanged} = appDataManager._updateAppData(savedAppData);
+  // Split out of one destructure: `savedAndUpdatedAppData` is reassigned
+  // below by `userSpecificReplacer`, but `wasChanged` is only read.
+  const { appData: initialAppData, wasChanged } = appDataManager._updateAppData(savedAppData);
+  let savedAndUpdatedAppData = initialAppData;
   let latestCorrectAppData = new AppData();
   const latestAppDataVersion = latestCorrectAppData.version;
   // v10 adds a ["settings"]["logSettings"]["logDirectory"] path in each profile which is specific to the user's machine because it the default directory

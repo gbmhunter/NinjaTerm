@@ -21,8 +21,8 @@ interface Props {
 export default observer((props: Props) => {
   const { app, macroController, macro, macroIdx } = props;
 
-  let dataTypeShort = "";
-  let dataTypeColor = "";
+  let dataTypeShort: string;
+  let dataTypeColor: string;
   if (macro.dataType === "ASCII") {
     dataTypeShort = "A";
     dataTypeColor = "#FFD700";

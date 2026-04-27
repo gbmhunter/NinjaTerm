@@ -439,7 +439,7 @@ export class PortSettings {
   };
 
   _loadConfigInner = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
+    const configToLoad = this.profileManager.appData.currentAppConfig.settings.portSettings
 
     // At this point we are confident that the deserialized config matches what
     // this classes config object wants, so we can go ahead and update.
@@ -484,7 +484,7 @@ export class PortSettings {
 
   _saveConfig = () => {
     if (this._isLoading) return;
-    let config = this.profileManager.appData.currentAppConfig.settings.portSettings;
+    const config = this.profileManager.appData.currentAppConfig.settings.portSettings;
 
     config.baudRate = this.baudRate;
     config.numDataBits = this.numDataBits;

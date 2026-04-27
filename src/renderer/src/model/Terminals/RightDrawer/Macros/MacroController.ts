@@ -87,7 +87,7 @@ export class MacroController {
 
   _saveConfig = () => {
 
-    let config = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
+    const config = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     config.macroConfigs = this.macrosArray.map((macro) => {
       return macro.toConfig();
@@ -97,13 +97,13 @@ export class MacroController {
   };
 
   _loadConfig() {
-    let configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
+    const configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
     // If we get here we loaded a valid config. Apply config.
     this.recreateMacros(configToLoad.macroConfigs.length);
     for (let i = 0; i < configToLoad.macroConfigs.length; i++) {
       const macroConfig = configToLoad.macroConfigs[i];
-      let macro = this.macrosArray[i];
+      const macro = this.macrosArray[i];
       macro.loadConfig(macroConfig);
     };
   }

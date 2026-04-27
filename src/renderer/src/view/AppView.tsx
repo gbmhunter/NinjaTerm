@@ -23,9 +23,9 @@ import styles from './AppView.module.css';
 import FakePortDialogView from './FakePorts/FakePortDialogView';
 import { useEffect } from 'react';
 import LoggingView from './Logging/LoggingView';
-import { SelectionController, SelectionInfo } from '../model/SelectionController/SelectionController';
+import { SelectionController } from '../model/SelectionController/SelectionController';
 import 'src/model/WindowTypes';
-import { DataType } from 'src/model/Settings/RxSettings/RxSettings';
+
 import { SettingsCategories } from 'src/model/Settings/Settings';
 
 // Create dark theme for MUI
@@ -80,9 +80,7 @@ const connStateToToolbarStatusProperties: { [key in ConnState]: any } = {
   },
 };
 
-interface Props {
-  // app: App;
-}
+// AppView takes no props — it uses the module-level `app` singleton below.
 
 const app = new App();
 
@@ -231,7 +229,7 @@ const PortConfigIndicator = observer(({ app }: { app: App }) => (
 
 const PortStatusIndicator = observer(({ app }: { app: App }) => {
   const getStatusText = (connState: ConnState, connectionType: ConnectionType) => {
-    let connectionTypeName = '';
+    let connectionTypeName: string;
     if (connectionType === ConnectionType.SERIAL_PORT) {
       connectionTypeName = 'Port';
     } else if (connectionType === ConnectionType.SOCKET) {
@@ -289,7 +287,7 @@ const MainPaneSelector = observer(({ app }: { app: App }) => {
   }
 });
 
-const AppView = observer((props: Props) => {
+const AppView = observer(() => {
   useEffect(() => {
     // Initialize the app after it has rendered
     const initFn = async () => {

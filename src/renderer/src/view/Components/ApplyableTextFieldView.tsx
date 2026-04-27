@@ -1,22 +1,8 @@
 import React from "react";
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  TextFieldProps,
-} from "@mui/material";
+import { TextField, TextFieldProps } from "@mui/material";
 import { observer } from "mobx-react-lite";
 
-import ApplyableField, { ApplyableTextField } from "./ApplyableTextField";
+import ApplyableField from "./ApplyableTextField";
 
 interface ModelProps {
   applyableTextField: ApplyableField;

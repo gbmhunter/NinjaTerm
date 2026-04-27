@@ -222,12 +222,12 @@ export function initializeSocketHandlers(mainWindow: BrowserWindow) {
         return { success: false, error: 'Socket not found' };
       }
 
-      await new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve, _reject) => {
         socket.end(() => {
           resolve();
         });
 
-        socket.on('error', (err) => {
+        socket.on('error', (_err) => {
           // Still resolve on error during close
           resolve();
         });

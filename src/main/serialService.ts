@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
-import { OpenOptions, PortStatus, SetOptions } from '@serialport/bindings-interface';
+import { OpenOptions, PortStatus } from '@serialport/bindings-interface';
 
 import { Parity } from '@/model/Settings/PortSettings/PortSettings';
 import { log } from './Logging';
@@ -171,7 +171,7 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
   });
 
   ipcMain.handle('serial:close-all-ports', async () => {
-    for (const [portPath, port] of activeSerialPorts) {
+    for (const [, port] of activeSerialPorts) {
       await port.close();
     }
 

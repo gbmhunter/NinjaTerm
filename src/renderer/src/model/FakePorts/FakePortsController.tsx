@@ -56,7 +56,7 @@ export default class FakePortsController {
         () => {
           const intervalId = setInterval(() => {
             const textToSend = 'Hello, world!\n';
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -83,7 +83,7 @@ export default class FakePortsController {
         () => {
           const intervalId = setInterval(() => {
             const textToSend = 'Hello, world!\n';
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -110,7 +110,7 @@ export default class FakePortsController {
         () => {
           const intervalId = setInterval(() => {
             const textToSend = 'Hello, world!\n';
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -137,7 +137,7 @@ export default class FakePortsController {
         () => {
           const intervalId = setInterval(() => {
             const textToSend = 'Hello, world!\n';
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -165,7 +165,7 @@ export default class FakePortsController {
           const intervalId = setInterval(() => {
             for (let i = 0; i < 20; i++) {
               const textToSend = 'Hello, world!\n';
-              let bytesToSend = [];
+              const bytesToSend = [];
               for (let i = 0; i < textToSend.length; i++) {
                 bytesToSend.push(textToSend.charCodeAt(i));
               }
@@ -193,7 +193,7 @@ export default class FakePortsController {
         () => {
           for (let i = 0; i < 200; i++) {
             const textToSend = `${i}\n`;
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -201,7 +201,7 @@ export default class FakePortsController {
           }
           return null;
         },
-        (intervalId: NodeJS.Timeout | null) => {
+        (_intervalId: NodeJS.Timeout | null) => {
           // Do nothing
         }
       )
@@ -219,7 +219,7 @@ export default class FakePortsController {
           const strings = ['pass\n', 'fail\n'];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -253,7 +253,7 @@ export default class FakePortsController {
           const strings = ['\x1b[31mred', '\x1b[32mgreen'];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -357,7 +357,7 @@ export default class FakePortsController {
           ];
           const intervalId = setInterval(() => {
             const textToSend = strings[stringIdx];
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -390,13 +390,8 @@ export default class FakePortsController {
           let sendIdx = 0;
 
           const intervalId = setInterval(() => {
-            let textToSend = '';
-            if (sendIdx < 50) {
-              textToSend = `Line ${sendIdx}\n`;
-            } else {
-              textToSend = '\x1b[1J';
-            }
-            let bytesToSend = [];
+            const textToSend = sendIdx < 50 ? `Line ${sendIdx}\n` : '\x1b[1J';
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -435,7 +430,7 @@ export default class FakePortsController {
             } else {
               textToSend = '\x1b[2J';
             }
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -471,7 +466,7 @@ export default class FakePortsController {
           }
           textToSend += '\x1b[2J';
 
-          let bytesToSend = [];
+          const bytesToSend = [];
           for (let i = 0; i < textToSend.length; i++) {
             bytesToSend.push(textToSend.charCodeAt(i));
           }
@@ -497,7 +492,7 @@ export default class FakePortsController {
         () => {
           const intervalId = setInterval(() => {
             const textToSend = generateRandomString(80) + '\n';
-            let bytesToSend = [];
+            const bytesToSend = [];
             for (let i = 0; i < textToSend.length; i++) {
               bytesToSend.push(textToSend.charCodeAt(i));
             }
@@ -1175,7 +1170,6 @@ export default class FakePortsController {
           }
 
           let secondCounter = 0;
-          let sampleBatch = 0;
 
           // Single timer that fires every second
           const intervalId = setInterval(() => {
@@ -1217,8 +1211,6 @@ export default class FakePortsController {
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_a,data=[${phaseAData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_b,data=[${phaseBData.join(',')}];\n`));
               app.parseRxData(new TextEncoder().encode(`$NT:GPH:ADD_DATA,trace=phase_c,data=[${phaseCData.join(',')}];\n`));
-
-              sampleBatch++;
             }
           }, 1000); // Fire every second
 

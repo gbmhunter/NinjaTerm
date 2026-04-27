@@ -31,7 +31,7 @@ function ProfileSettingsView(props: Props) {
   ];
 
   // Create rows in profiles table
-  let rows: any = [];
+  const rows: any = [];
   for (let idx = 0; idx < profiles.length; idx++) {
     const profile = profiles[idx];
     const portSettings = profile.rootConfig.settings.portSettings;

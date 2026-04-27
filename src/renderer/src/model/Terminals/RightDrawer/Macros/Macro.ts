@@ -103,7 +103,7 @@ export class Macro {
    * @returns The Uint8Array representation of the data.
    */
   dataToTxSequence = (): TxSequence => {
-    let txSequence = new TxSequence();
+    const txSequence = new TxSequence();
     if (this.dataType === MacroDataType.ASCII) {
       // Replace all instances of LF with the newLinesChar
       // NOTE: This has to be done before JSON.parse() is called below, otherwise the LF that
@@ -111,7 +111,7 @@ export class Macro {
       // let str = this.data;
 
       // Split the string into lines
-      let lines = this.data.split('\n');
+      const lines = this.data.split('\n');
 
       // Loop through each line
       let processedStr = '';
@@ -124,7 +124,7 @@ export class Macro {
           // JSON.parse will throw a SyntaxError if the string is not valid JSON
           try {
             processedStr += JSON.parse(`"${lines[i]}"`);
-          } catch (e) {
+          } catch {
             throw new Error('Line failed during JSON.parse(). Likely has unfinished escape codes or unescaped quotes.');
           }
         } else {
@@ -139,7 +139,7 @@ export class Macro {
       }
 
       // Convert to Uint8Array
-      let txStepData = new TxStepData(stringToUint8Array(processedStr));
+      const txStepData = new TxStepData(stringToUint8Array(processedStr));
       txSequence.steps.push(txStepData);
     } else if (this.dataType === MacroDataType.HEX) {
       // If "sendEnterValueForEveryNewLineInTextBox" is true, then we need to parse the hex
@@ -176,7 +176,7 @@ export class Macro {
         }
 
         // Convert hex string to Uint8Array
-        let txStepData = new TxStepData(this._hexStringToUint8Array(str));
+        const txStepData = new TxStepData(this._hexStringToUint8Array(str));
         txSequence.steps.push(txStepData);
 
         if (this.sendBreakAtEndOfEveryLineOfHex) {

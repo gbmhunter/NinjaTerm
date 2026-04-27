@@ -68,7 +68,7 @@ export default class RightDrawer {
   };
 
   _saveConfig = () => {
-    let config = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+    const config = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
 
     config.rightDrawerWidth_px = this.drawerWidth_px;
 
