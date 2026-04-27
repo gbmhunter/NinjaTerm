@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- **Parser is dramatically faster on chunky data.** Replaced the O(n²) `Array.shift()` loop in `_parseAsciiData` with an indexed walk; switched the partial-escape buffer from per-byte string concat to a `number[]`; cached formatted timestamps at ms granularity. A 256 KB single chunk now parses ~14× faster (10 KB/s → 140 KB/s); typical streams ~2.4×. Methodology in `performance-profiles/THROUGHPUT_BASELINES.md`.
+- **Per-listener IPC disposers.** Every preload `on*(callback)` (serial, socket, RTT, Bluetooth, MCP, updater) now returns a disposer; `ConnController` collects them and clears on close, replacing the hand-maintained channel-name lists.
+- **Replaced `moment` with a tiny native formatter** (`Util/timestamp.ts`) — drops ~70 KB. Supports the moment tokens NinjaTerm uses; the `[literal]` escape syntax is not supported.
+- Open Graph / social card image is now NinjaTerm-branded (red, matching the app icon `logo512.png`) instead of the Docusaurus default.
+- Wired up real ESLint (flat `eslint.config.js`, typescript-eslint + react-hooks). Previous setup was the deprecated CRA `react-app` preset embedded in `package.json` and ESLint wasn't even in `devDependencies`. Runs via `npm run lint`; gates CI. `react-hooks/rules-of-hooks` at error, most other rules at warn for now.
+- Re-enabled `pull_request:` CI gating, bumped CodeQL action v2 → v3, added the missing `@shared` alias to `vitest.config.ts`.
+
+### Fixed
+
+- **Corrupt `localStorage` no longer crashes the renderer at startup.** Both `JSON.parse` sites in `AppDataManager` are now guarded; initial load falls back to defaults and overwrites the bad value, the cross-tab handler skips the sync.
+- **Socket auto-reconnect was stacking IPC listeners.** Each successful retry added three new listeners without disposing the prior set, so after N reconnects each byte fired `parseRxData` N times.
+- Bluetooth `discoveredDevices` no longer accumulates duplicates during long scans — same-id advertisements now replace the existing entry instead of pushing.
+- Bluetooth `txCharacteristic.on('data', ...)` handler is now removed on disconnect; previously each reconnect leaked the prior handler (along with its captured `mainWindow` / peripheral references).
+- `rxDataPoints` / `txDataPoints` are now bounded at 2048 entries — were growing unbounded under bursts of small chunks between 500 ms cleanup-interval ticks.
+- The MobX reaction in `App` and the `storage` event listener in `AppDataManager` are now disposed in `cleanup()`, so dev hot-reload doesn't leave stale handlers.
+- Main-process `uncaughtException` / `unhandledRejection` are now logged via `electron-log` instead of leaving the renderer talking to a half-initialised main process with no diagnostic trail.
+
 ## [5.11.1] - 2026-04-26
 
 ### Changed
