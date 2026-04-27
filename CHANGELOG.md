@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **Failed RTT connect attempts no longer multiply log lines on retry.** The `rtt:server-log` listener is registered before `rtt.connect()` to capture startup messages; the catch block didn't dispose it on failure, so each retry stacked another listener and each line was emitted N times after N failures. `ConnController` now calls `disposeConnListeners()` in the RTT failure path.
+
 ## [5.11.2] - 2026-04-27
 
 ### Changed
