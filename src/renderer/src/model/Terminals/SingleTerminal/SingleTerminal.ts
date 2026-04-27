@@ -137,7 +137,28 @@ export class SingleTerminal {
   // Reset back to false when receive SGR code of "0" (reset or normal)
   boldOrIncreasedIntensity: boolean;
 
-  partialEscapeCode: string;
+  /**
+   * Char codes accumulated for the in-flight ANSI escape (including the leading
+   * 0x1B). Stored as a `number[]` rather than a string so the per-byte
+   * accumulation is a cheap `push` instead of allocating a fresh string for
+   * every byte (the previous `partialEscapeCode += String.fromCharCode(rxByte)`
+   * was an O(N²) string build per escape). The string form is materialised
+   * only when needed, e.g. when handing the completed sequence to
+   * `_parseCSISequence`.
+   */
+  partialEscapeCode: number[];
+
+  /**
+   * Cached timestamp string and the millisecond it was formatted from.
+   * `_maybeAddVisibleByteAndTimestamp` checks `cachedTimestampMs` against
+   * `Date.now()` and reuses `cachedTimestampString` if they match. With chunky
+   * RX delivery, every line in the same chunk falls in the same ms, so
+   * `moment(...).format(...)` runs once per chunk instead of once per line.
+   * Cleared at the top of each `parseData` call so settings changes take
+   * effect on the next chunk.
+   */
+  private cachedTimestampMs: number = -1;
+  private cachedTimestampString: string = '';
 
   defaultBackgroundColor: string;
   defaultTxColor: string;
@@ -218,9 +239,9 @@ export class SingleTerminal {
         // ANSI escape code parsing has been disabled
         // Flush any partial ANSI escape code
         for (let idx = 0; idx < this.partialEscapeCode.length; idx += 1) {
-          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx].charCodeAt(0), DataDirection.RX);
+          this._maybeAddVisibleByteAndTimestamp(this.partialEscapeCode[idx], DataDirection.RX);
         }
-        this.partialEscapeCode = '';
+        this.partialEscapeCode = [];
         this.inAnsiEscapeCode = false;
         this.inCSISequence = false;
         this.inIdleState = true;
@@ -248,7 +269,7 @@ export class SingleTerminal {
 
     this.inIdleState = true;
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = '';
+    this.partialEscapeCode = [];
     this.inCSISequence = false;
     this.boldOrIncreasedIntensity = false;
 
@@ -383,6 +404,10 @@ export class SingleTerminal {
     // reaches it's length limit, the ESC char is stripped and the remainder of the partial is
     // prepending onto dataAsStr for further processing
     // let dataAsStr = String.fromCharCode.apply(null, Array.from(data));
+
+    // Reset the per-chunk timestamp cache. A settings change between chunks
+    // would otherwise be masked until the cached ms tick rolled over.
+    this.cachedTimestampMs = -1;
 
     if (this.rxSettings.dataType === DataType.ASCII) {
       this._parseAsciiData(data, direction);
@@ -529,17 +554,27 @@ export class SingleTerminal {
 
       // Process ANSI escape codes
       if (this.rxSettings.ansiEscapeCodeParsingEnabled && this.inAnsiEscapeCode) {
-        // Add received char to partial escape code
-        this.partialEscapeCode += String.fromCharCode(rxByte);
-        if (this.partialEscapeCode === '\x1B[') {
+        // Push the char code rather than concatenating onto a string. The
+        // string form is only built when we actually need to hand a complete
+        // sequence to `_parseCSISequence` below.
+        this.partialEscapeCode.push(rxByte);
+        if (
+          this.partialEscapeCode.length === 2 &&
+          this.partialEscapeCode[0] === 0x1B &&
+          this.partialEscapeCode[1] === 0x5B // '['
+        ) {
           this.inCSISequence = true;
         }
 
         if (this.inCSISequence) {
-          // Wait for alphabetic character to end CSI sequence
-          const charStr = String.fromCharCode(rxByte);
-          if (charStr.toUpperCase() !== charStr.toLowerCase()) {
-            this._parseCSISequence(this.partialEscapeCode);
+          // Wait for alphabetic character to end CSI sequence. ASCII letters
+          // are exactly the codes whose lower- and upper-case forms differ;
+          // checking this against the raw code avoids two String.fromCharCode
+          // allocations per byte.
+          const isAsciiLetter =
+            (rxByte >= 0x41 && rxByte <= 0x5A) || (rxByte >= 0x61 && rxByte <= 0x7A);
+          if (isAsciiLetter) {
+            this._parseCSISequence(String.fromCharCode(...this.partialEscapeCode));
             this._resetEscapeCodeParserState();
             this.inIdleState = true;
           }
@@ -549,13 +584,9 @@ export class SingleTerminal {
         // parsing an escape code, and we've hit the escape code length limit,
         // then bail on escape code parsing. Emit partial code as data and go back to IDLE
         const maxEscapeCodeLengthChars = this.rxSettings.maxEscapeCodeLengthChars.appliedValue;
-        // const maxEscapeCodeLengthChars = 10;
 
         if (this.inAnsiEscapeCode && this.partialEscapeCode.length === maxEscapeCodeLengthChars) {
           console.log(`Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`);
-          // this.app.snackbar.sendToSnackbar(
-          //   `Reached max. length (${maxEscapeCodeLengthChars}) for partial escape code.`,
-          //   'warning');
           // Remove the ESC byte, and then prepend the rest onto the data to be processed.
           // Stream order to resume: partialEscapeCode[1..], then any prepended
           // bytes that were already queued and not yet consumed, then the
@@ -563,7 +594,7 @@ export class SingleTerminal {
           const partial = this.partialEscapeCode;
           const newPrepended: number[] = [];
           for (let p = 1; p < partial.length; p += 1) {
-            newPrepended.push(partial.charCodeAt(p));
+            newPrepended.push(partial[p]);
           }
           if (prependedBytes !== null) {
             for (let p = prependedIdx; p < prependedBytes.length; p += 1) {
@@ -1348,40 +1379,39 @@ export class SingleTerminal {
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
     if (startOfLineNotDueToWrapping && this.rxSettings.addTimestamps) {
-      // Need to add timestamp. First, we need to format it based on the timestamp format setting
-      const now = new Date();
-      const timestamp = moment(now)
-      let timestampString = '';
-      if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITHOUT_TIMEZONE) {
-        // Format as ISO8601 with millisecond precision and no timezone
-        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSS ');
-      } else if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITH_TIMEZONE) {
-        // Format as ISO8601 with millisecond precision and timezone
-        timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSSZ ');
-      } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
-        // Format as local time (no timezone info)
-        timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');
-      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
-        // Format as Unix time in seconds
-        timestampString = timestamp.format('X ');
-      } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS) {
-        // Format as Unix time in seconds with milliseconds
-        // timestampString = timestamp.format('x');
-        // This returns the timestamp in milliseconds, we need to convert to seconds by adding a decimal point
-        // before the last 3 digits
-        timestampString = timestamp.format('X.SSS ');
-      } else if (this.rxSettings.timestampFormat === TimestampFormat.CUSTOM) {
-        // Format as custom string
-        timestampString = timestamp.format(this.rxSettings.customTimestampFormatString.appliedValue);
+      // Reuse the cached formatted string when this line falls in the same
+      // millisecond as the previous line in the chunk. moment() construction
+      // and `.format(...)` together are the dominant cost on streams with
+      // many short lines.
+      const nowMs = Date.now();
+      let timestampString: string;
+      if (nowMs === this.cachedTimestampMs) {
+        timestampString = this.cachedTimestampString;
       } else {
-        throw Error('Invalid timestamp format. timestampFormat=' + this.rxSettings.timestampFormat);
+        const timestamp = moment(nowMs);
+        if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITHOUT_TIMEZONE) {
+          timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSS ');
+        } else if (this.rxSettings.timestampFormat === TimestampFormat.ISO8601_WITH_TIMEZONE) {
+          timestampString = timestamp.format('YYYY-MM-DDTHH:mm:ss.SSSZ ');
+        } else if (this.rxSettings.timestampFormat === TimestampFormat.LOCAL) {
+          timestampString = timestamp.format('YYYY-MM-DD HH:mm:ss.SSS ');
+        } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS) {
+          timestampString = timestamp.format('X ');
+        } else if (this.rxSettings.timestampFormat === TimestampFormat.UNIX_SECONDS_AND_MILLISECONDS) {
+          // 'X.SSS' = Unix seconds with ms after the decimal point.
+          timestampString = timestamp.format('X.SSS ');
+        } else if (this.rxSettings.timestampFormat === TimestampFormat.CUSTOM) {
+          timestampString = timestamp.format(this.rxSettings.customTimestampFormatString.appliedValue);
+        } else {
+          throw Error('Invalid timestamp format. timestampFormat=' + this.rxSettings.timestampFormat);
+        }
+        this.cachedTimestampMs = nowMs;
+        this.cachedTimestampString = timestampString;
       }
 
       for (let idx = 0; idx < timestampString.length; idx += 1) {
         this.addVisibleChar(timestampString[idx], direction);
       }
-      // Add a space after the timestamp
-      // this.addVisibleChar(' ');
     }
 
     this.addVisibleChar(char, direction);
@@ -1519,7 +1549,9 @@ export class SingleTerminal {
 
   _resetEscapeCodeParserState() {
     this.inAnsiEscapeCode = false;
-    this.partialEscapeCode = '';
+    // Mutate in place rather than allocating a new array — common path runs
+    // every time an escape completes.
+    this.partialEscapeCode.length = 0;
     this.inCSISequence = false;
   }
 

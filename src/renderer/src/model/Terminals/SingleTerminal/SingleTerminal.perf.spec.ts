@@ -12,11 +12,15 @@ import SnackbarController from 'src/model/SnackbarController/SnackbarController'
  *
  * These tests are intentionally generous on the assertion bound — the *number*
  * printed to stdout (MB/s) is what matters. Run before and after a perf change
- * and compare. Suspect hot-path issues:
- *   - _parseAsciiData() uses Array.shift() in a loop -> O(n^2) on chunk size.
- *   - partialEscapeCode += String.fromCharCode(b) allocates per byte while
- *     parsing ANSI escape codes.
- *   - moment() called per visible byte when timestamps are enabled.
+ * and compare. The remaining hot spots, in rough order of cost:
+ *   - per-char `addVisibleChar` MobX-observable push to terminalRows[i]
+ *   - row creation + `_addOrRemoveRowFromFilteredRows` on every wrap
+ *   - moment().format() on the first non-cache-hit visible byte of a new ms
+ *
+ * Past regressions to guard against:
+ *   - _parseAsciiData() Array.shift() loop (O(n^2) on chunk size) — fixed
+ *   - partialEscapeCode += String.fromCharCode(b) per byte — fixed
+ *   - moment() per line regardless of millisecond — fixed (cached at ms)
  */
 describe('SingleTerminal parsing throughput', () => {
   let singleTerminal: SingleTerminal;
@@ -95,5 +99,20 @@ describe('SingleTerminal parsing throughput', () => {
 
     const mbPerSec = measure('ansi-heavy', payload, 4);
     expect(mbPerSec).toBeGreaterThan(0.1);
+  }, 30_000);
+
+  test('timestamps enabled (per-line moment formatting)', () => {
+    // Many short lines so the per-line `moment(new Date()).format(...)` cost
+    // dominates. With ~5-byte lines, every 5th byte triggers the timestamp
+    // path, vs ~1 in 80 for the other scenarios.
+    singleTerminal['rxSettings'].setAddTimestamps(true);
+    const line = 'log\n'; // 4 bytes -> short logical lines
+    const text = line.repeat(8192); // ~32 KB per chunk
+    const payload = new TextEncoder().encode(text);
+
+    const mbPerSec = measure('timestamps-many-short-lines', payload, 4);
+    // Pre-cache throughput was ~0.020 MB/s; current floor ≈0.025 MB/s. The
+    // floor is loose because variance on this scenario is real (±20%).
+    expect(mbPerSec).toBeGreaterThan(0.015);
   }, 30_000);
 });

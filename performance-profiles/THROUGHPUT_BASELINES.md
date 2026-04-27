@@ -81,6 +81,38 @@ and the MobX-observable `terminalRows[i].terminalChars` push. Plain-ASCII and
 ANSI scenarios sit around the same ~0.14 MB/s ceiling because the body byte
 path is identical between them.
 
+## 2026-04-27 — buffer escape codes as char codes; cache formatted timestamp
+
+- Branch: `feature/parser-perf-round-2` (off `main` @ `145a8cf`)
+- Host: same as baseline (Ryzen 9 4900HS, Win 11, Node v24.10.0, vitest 3.2.4)
+- Changes:
+  - `partialEscapeCode` is now a `number[]` of char codes; the per-byte
+    `+= String.fromCharCode(...)` string concat is gone. The string form is
+    materialised only when handing a complete sequence to `_parseCSISequence`.
+  - `_maybeAddVisibleByteAndTimestamp` caches the formatted timestamp at
+    millisecond granularity, so a multi-line chunk reformats `moment()` at
+    most once per ms instead of once per line.
+  - Adds a new `timestamps-many-short-lines` scenario so the timestamp path
+    has a regression target.
+- Notes: medians of 3 runs (variance ±15%). "Before" column is on the same
+  branch / commit, just before the two fixes were applied — so improvements
+  reflect just these two changes, not host or JIT noise.
+
+| Scenario | Before | After | Δ |
+|---|---|---|---|
+| plain-ASCII | 0.125 MB/s | 0.155 MB/s | ~1.24× |
+| large-single-chunk-256KB | 0.134 MB/s | 0.170 MB/s | ~1.27× |
+| ansi-heavy | 0.134 MB/s | 0.160 MB/s | ~1.19× |
+| timestamps-many-short-lines | 0.020 MB/s | 0.025 MB/s | ~1.25× |
+
+The cache hits roughly 99% of the time within a chunk — every line in a
+single `parseData` call almost always falls in the same ms — so the
+remaining timestamp cost is just the per-char `addVisibleChar` overhead of
+emitting the ~24-char timestamp string into the row. The ANSI improvement
+is modest because escape-code char-buffer accumulation is bounded by
+`maxEscapeCodeLengthChars` (default 10), so the ceiling on this fix is
+around one allocation saved per escape rather than per byte.
+
 <!--
 ## YYYY-MM-DD — <change description>
 
