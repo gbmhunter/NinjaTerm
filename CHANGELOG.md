@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.11.2] - 2026-04-27
+
 ### Changed
 
 - **Parser is dramatically faster on chunky data.** Replaced the O(n²) `Array.shift()` loop in `_parseAsciiData` with an indexed walk; switched the partial-escape buffer from per-byte string concat to a `number[]`; cached formatted timestamps at ms granularity. A 256 KB single chunk now parses ~14× faster (10 KB/s → 140 KB/s); typical streams ~2.4×. Methodology in `performance-profiles/THROUGHPUT_BASELINES.md`.
@@ -1041,6 +1043,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.11.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.1...v5.11.2
 [5.11.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.0...v5.11.1
 [5.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.10.0...v5.11.0
 [5.10.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...v5.10.0
