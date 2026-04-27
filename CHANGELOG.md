@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Open Graph / social card image is now NinjaTerm-branded (red, matching the app icon `logo512.png`) instead of the Docusaurus default.
 - Wired up real ESLint (flat `eslint.config.js`, typescript-eslint + react-hooks). Previous setup was the deprecated CRA `react-app` preset embedded in `package.json` and ESLint wasn't even in `devDependencies`. Runs via `npm run lint`; gates CI. `react-hooks/rules-of-hooks` at error, most other rules at warn for now.
 - Re-enabled `pull_request:` CI gating, bumped CodeQL action v2 → v3, added the missing `@shared` alias to `vitest.config.ts`.
+- AppData migration steps are now typed (`./AppDataManager/appDataMigrations.ts`). A typo in a settings-tree field name inside a migration is now a TS error rather than the silent runtime no-op the previous `(any) => any` chain produced. Each `migrateVNtoVN+1` is a small pure function backed by a strict-but-optional `MigrationAppData` shape.
 
 ### Fixed
 

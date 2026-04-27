@@ -2,13 +2,11 @@ import { makeAutoObservable } from 'mobx';
 import { VariantType } from 'notistack';
 import { PortInfo } from '@serialport/bindings-interface';
 
-import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
+import { ConnState } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
 import { AppData } from './DataClasses/AppData';
 import { Profile } from './DataClasses/Profile';
-import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
-import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
+import { migrateAppData } from './appDataMigrations';
 import { log } from '@/model/Util/Log';
 
 export class LastUsedSerialPort {
@@ -140,372 +138,28 @@ export class AppDataManager {
    *
    * Does not modify the input object, instead returns a new object with the updated version.
    *
+   * The actual per-version migration steps live in `./appDataMigrations.ts` —
+   * each one is a small typed function so a typo in a settings-tree field name
+   * is a TS error rather than the silent runtime no-op the previous
+   * `(any) => any` chain produced.
+   *
    * @param appData The app data object to update.
-   * @returns An object containing the updated app data and a boolean indicating if the app data was changed.
+   * @returns An object containing the updated app data and a boolean
+   *   indicating if the app data was changed.
    */
-  _updateAppData = (appData: any): { appData: AppData, wasChanged: boolean } => {
-    let wasChanged = false;
-    let updatedAppData = JSON.parse(JSON.stringify(appData)) as any;
-
-    //=============================================================================
-    // VERSION 1 -> VERSION 2
-    //=============================================================================
-    if (updatedAppData.version === 1) {
-      log.info('Updating app data from version 1 to version 2...');
-      // Convert to v2
-      // Port settings got a new field, display settings got two new fields
-      let upgradeRootConfig = (rootConfig: any) => {
-        log.info('Upgrading profile: ', rootConfig);
-        rootConfig.settings.portSettings.allowSettingsChangesWhenOpen = false;
-        rootConfig.settings.displaySettings.terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
-        rootConfig.settings.displaySettings.terminalHeightChars = 25;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        upgradeRootConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      upgradeRootConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 2;
-      wasChanged = true;
+  _updateAppData = (appData: unknown): { appData: AppData, wasChanged: boolean } => {
+    const result = migrateAppData(appData);
+    if (result.unknownVersion) {
+      log.error('Unknown app data version found. Falling back to a fresh AppData. version=', (appData as any)?.version);
+      return { appData: new AppData(), wasChanged: true };
     }
-
-    //=============================================================================
-    // VERSION 2 -> VERSION 3
-    //=============================================================================
-    if (updatedAppData.version === 2) {
-      log.info('Updating app data from version 2 to version 3...');
-      let updateRootConfig = (rootConfig: any) => {
-        // Add timestamp settings
-        rootConfig.settings.rxSettings.addTimestamps = false;
-        rootConfig.settings.rxSettings.timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
-        rootConfig.settings.rxSettings.customTimestampFormatString = "YYYY-MM-DD HH:mm:ss.SSS ";
-        // Display settings got new color fields
-        rootConfig.settings.displaySettings.defaultBackgroundColor = DEFAULT_BACKGROUND_COLOR;
-        rootConfig.settings.displaySettings.defaultTxTextColor = DEFAULT_TX_COLOR;
-        rootConfig.settings.displaySettings.defaultRxTextColor = DEFAULT_RX_COLOR;
-        // Display settings got a new tab stop width field
-        rootConfig.settings.displaySettings.tabStopWidth = 8;
-        // Display settings gets the new autoScrollLockOnTx field
-        rootConfig.settings.displaySettings.autoScrollLockOnTx = true;
-
-        // Remove version for a number of objects as we are now just using the single
-        // "app version" in the root data class
-        delete rootConfig.settings.rxSettings.version;
-        delete rootConfig.terminal.macroController.version;
-        delete rootConfig.settings.displaySettings.version;
-        delete rootConfig.settings.txSettings.version;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateRootConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateRootConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 3;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 3 -> VERSION 4
-    //=============================================================================
-    if (updatedAppData.version === 3) {
-      log.info('Updating app data from version 3 to version 4...');
-      // Add auto-updates setting to app data (global setting, not per profile)
-      updatedAppData.autoUpdatesEnabled = true;
-
-      // We switched from using Web Serial to the node serialport library here. Now we can get the actual path of
-      // the serial port and we use that as the ID.
-      // This updates to the new ID format, but will lose all users last used serial port info
-      // (this is ok)
-      // Need to set lastUsedSerialPort":{"path":"","portState":0}
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.lastUsedSerialPort = { path: '', portState: ConnState.CLOSED };
-        // Add graphing settings to each profile
-        rootConfig.settings.graphingSettings = {
-          graphingEnabled: false,
-          processingTrigger: 'LF (\\n)',
-          maxBufferSize: '1000',
-          maxNumDataPoints: '500',
-          xVarSource: 'Received Time',
-          xVarPrefix: 'x=',
-          yVarPrefix: 'y=',
-          multipleValuesPerBuffer: false,
-          valueSeparator: 'Comma (,)',
-          customValueSeparator: ',',
-          clearPlotOnNewValues: true,
-          xAxisRangeMode: 'Auto',
-          xAxisRangeMin: '0',
-          xAxisRangeMax: '100',
-          yAxisRangeMode: 'Auto',
-          yAxisRangeMin: '0',
-          yAxisRangeMax: '100',
-          xVarUnit: 's',
-          detectionMode: 'Basic Prefix Mode'
-        };
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 4;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 4 -> VERSION 5
-    //=============================================================================
-    if (updatedAppData.version === 4) {
-      log.info('Updating app data from version 4 to version 5...');
-      // Add detection mode to graphing settings for all profiles
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
-        if (graphingSettings && !graphingSettings.detectionMode) {
-          graphingSettings.detectionMode = 'Basic Prefix Mode';
-        }
-      }
-      updatedAppData.version = 5;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 5 -> VERSION 6
-    //=============================================================================
-    if (updatedAppData.version === 5) {
-      log.info('Updating app data from version 5 to version 6...');
-      // Rename bufferDelimiter to processingTrigger in graphing settings for all profiles
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        const graphingSettings = updatedAppData.profiles[i].rootConfig.settings.graphingSettings;
-        if (graphingSettings && graphingSettings.bufferDelimiter !== undefined) {
-          graphingSettings.processingTrigger = graphingSettings.bufferDelimiter;
-          delete graphingSettings.bufferDelimiter;
-        }
-      }
-      // Also update current app config
-      const currentGraphingSettings = updatedAppData.currentAppConfig.settings.graphingSettings;
-      if (currentGraphingSettings && currentGraphingSettings.bufferDelimiter !== undefined) {
-        currentGraphingSettings.processingTrigger = currentGraphingSettings.bufferDelimiter;
-        delete currentGraphingSettings.bufferDelimiter;
-      }
-      updatedAppData.version = 6;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 6 -> VERSION 7
-    //=============================================================================
-    if (updatedAppData.version === 6) {
-      log.info('Updating app data from version 6 to version 7...');
-      // Add flow control settings to app data
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.terminal.rightDrawer.flowControlIsExpanded = true;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 7;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 7 -> VERSION 8
-    //=============================================================================
-    if (updatedAppData.version === 7) {
-      log.info('Updating app data from version 7 to version 8...');
-      // Add new flow control parameters and remove old flowControl property
-      let updateProfileConfig = (rootConfig: any) => {
-        // Remove the old flowControl property
-        if (rootConfig.settings.portSettings.flowControl !== undefined) {
-          delete rootConfig.settings.portSettings.flowControl;
-        }
-
-        // Add new flow control parameters with defaults if not present
-        if (rootConfig.settings.portSettings.rtscts === undefined) {
-          rootConfig.settings.portSettings.rtscts = false;
-        }
-        if (rootConfig.settings.portSettings.xon === undefined) {
-          rootConfig.settings.portSettings.xon = false;
-        }
-        if (rootConfig.settings.portSettings.xoff === undefined) {
-          rootConfig.settings.portSettings.xoff = false;
-        }
-        if (rootConfig.settings.portSettings.xany === undefined) {
-          rootConfig.settings.portSettings.xany = false;
-        }
-        if (rootConfig.settings.portSettings.hupcl === undefined) {
-          rootConfig.settings.portSettings.hupcl = true; // defaults to true
-        }
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 8;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 8 -> VERSION 9
-    //=============================================================================
-    if (updatedAppData.version === 8) {
-      log.info('Updating app data from version 8 to version 9...');
-      // Create new logSettings structure and move any existing log directory
-      let updateProfileConfig = (rootConfig: any) => {
-        // Create the new logSettings object with defaults
-        const logSettings = {
-          logDirectory: null, // No existing logDirectory to migrate from version 8
-          whatToNameTheFile: 0, // WhatToNameTheFile.CURRENT_DATETIME
-          customFileName: 'custom-file-name.log',
-          existingFileBehavior: 0, // ExistingFileBehaviors.APPEND
-          logRawTxData: false,
-          logRawRxData: true
-        };
-
-        // Add the new logSettings to settings
-        rootConfig.settings.logSettings = logSettings;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 9;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 9 -> VERSION 10
-    //=============================================================================
-    if (updatedAppData.version === 9) {
-      log.info('Updating app data from version 9 to version 10...');
-      // Add socket connection settings to port configuration
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.portSettings.connectionType = ConnectionType.SERIAL_PORT;
-        rootConfig.settings.portSettings.socketHost = '127.0.0.1';
-        rootConfig.settings.portSettings.socketPort = 5000;
-        rootConfig.settings.portSettings.socketConnTimeoutMs = PortSettings.SOCKET_CONN_TIMEOUT_DEFAULT_MS;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 10;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 10 -> VERSION 11
-    //=============================================================================
-    if (updatedAppData.version === 10) {
-      log.info('Updating app data from version 10 to version 11...');
-      // Add tooltip settings to display settings for all profiles
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.displaySettings.tooltipsEnabled = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
-        rootConfig.settings.displaySettings.tooltipDelayMs = DisplaySettings.DEFAULT_TOOLTIP_DELAY_MS;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 11;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 11 -> VERSION 12
-    //=============================================================================
-    // Sound settings were added for the first time in this version.
-    if (updatedAppData.version === 11) {
-      log.info('Updating app data from version 11 to version 12...');
-      // Add sounds settings to settings for all profiles
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.soundsSettings = {
-          playSoundsOnPassFail: false
-        };
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 12;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 12 -> VERSION 13
-    //=============================================================================
-    if (updatedAppData.version === 12) {
-      log.info('Updating app data from version 12 to version 13...');
-      // Add useCtrlCVForCopyPaste to tx settings for all profiles
-      let updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.txSettings.useCtrlCVForCopyPaste = true;
-      }
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 13;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 13 -> VERSION 14
-    //=============================================================================
-    if (updatedAppData.version === 13) {
-      log.info('Updating app data from version 13 to version 14...');
-      // Add MCP server settings at the global app level
-      updatedAppData.mcpEnabled = false;
-      updatedAppData.mcpPort = 3579;
-      updatedAppData.version = 14;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 14 -> VERSION 15
-    //=============================================================================
-    if (updatedAppData.version === 14) {
-      log.info('Updating app data from version 14 to version 15...');
-      // Add Segger RTT settings to port configuration
-      const updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.portSettings.rttDevice = '';
-        rootConfig.settings.portSettings.rttInterface = 'SWD';
-        rootConfig.settings.portSettings.rttSpeedKHz = 4000;
-        rootConfig.settings.portSettings.rttServerExePath = '';
-        rootConfig.settings.portSettings.rttJLinkSerialNumber = '';
-        rootConfig.settings.portSettings.rttChannel = 0;
-        rootConfig.settings.portSettings.rttRecentDevices = [];
-      };
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 15;
-      wasChanged = true;
-    }
-
-    //=============================================================================
-    // VERSION 15 -> VERSION 16
-    //=============================================================================
-    if (updatedAppData.version === 15) {
-      log.info('Updating app data from version 15 to version 16...');
-      // Track whether the user has explicitly modified the J-Link Commander path so the
-      // RTT pane's auto-detect on first navigation never overwrites a deliberate change.
-      const updateProfileConfig = (rootConfig: any) => {
-        rootConfig.settings.portSettings.rttServerExePathUserModified = false;
-      };
-      for (let i = 0; i < updatedAppData.profiles.length; i++) {
-        updateProfileConfig(updatedAppData.profiles[i].rootConfig);
-      }
-      updateProfileConfig(updatedAppData.currentAppConfig);
-      updatedAppData.version = 16;
-      wasChanged = true;
-    }
-
-    if (updatedAppData.version !== 16) {
-      log.error('Unknown app data version found: ', appData.version);
-      updatedAppData = new AppData();
-      wasChanged = true;
-    }
-
-    log.info('Updated app data to latest version.');
-    return { appData: updatedAppData, wasChanged };
+    // The migrated object has the right shape but is a plain object — the
+    // class methods on `AppData` / `Profile` aren't reattached. Existing
+    // callers treat it as plain JSON anyway (the manager re-saves the whole
+    // tree via JSON.stringify), so the cast is safe.
+    return { appData: result.appData as unknown as AppData, wasChanged: result.wasChanged };
   }
+
 
   /**
    * Save the current app configuration to local storage.
