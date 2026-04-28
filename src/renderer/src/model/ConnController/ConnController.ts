@@ -494,6 +494,11 @@ export class ConnController {
         if (!silenceSnackbar) {
           this.app.snackbar.sendToSnackbar(msg, 'error');
         }
+        // Drop any IPC listeners we registered for this attempt (the server-log listener
+        // is registered before connect to capture startup messages). Without this, a
+        // failed attempt leaves the listener attached and the next attempt stacks
+        // another, so each line gets emitted N times after N failures.
+        this.disposeConnListeners();
         showProgressModal(false);
         return false;
       }
