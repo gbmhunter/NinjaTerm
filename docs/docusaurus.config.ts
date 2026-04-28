@@ -6,7 +6,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'NinjaTerm',
-  tagline: 'A serial port terminal that\'s got your back.',
+  tagline: 'An embedded developer\'s terminal that\'s got your back.',
   favicon: 'img/ninjaterm-logo.png',
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future

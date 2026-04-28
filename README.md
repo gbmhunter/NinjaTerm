@@ -1,6 +1,6 @@
 <p align="center"><img src="img/logo/v3/github-readme-logo.png" alt="The NinjaTerm logo." height="200px"></p>
 
-#### A serial port terminal that's got your back.
+#### An embedded developer's terminal that's got your back.
 
 <br>
 

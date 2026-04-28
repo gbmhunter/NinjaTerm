@@ -8,7 +8,7 @@ export default function App(): JSX.Element {
   }, []);
 
   return (
-    <Layout title="Redirecting to NinjaTerm Web App...">
+    <Layout title="Redirecting to Web App...">
       <div style={{
         display: 'flex',
         justifyContent: 'center',
