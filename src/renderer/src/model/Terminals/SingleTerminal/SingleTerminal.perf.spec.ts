@@ -73,7 +73,10 @@ describe('SingleTerminal parsing throughput', () => {
     const mbPerSec = measure('plain-ASCII', payload, 4);
     // Loose floor — the printed number is the metric, this just guards
     // against catastrophic regressions (e.g. an O(n^2) loop creeping back in).
-    expect(mbPerSec).toBeGreaterThan(0.1);
+    // 0.07 not 0.1: a slow GitHub-hosted windows-latest runner clocked 0.0997
+    // MB/s — within noise of a healthy ~0.15 MB/s baseline but enough to flake
+    // a 0.1 floor.
+    expect(mbPerSec).toBeGreaterThan(0.07);
   }, 30_000);
 
   test('large single chunk (stresses Array.shift O(n^2))', () => {
