@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Homepage and `/app` redirect-page browser titles no longer say "NinjaTerm" twice. Docusaurus auto-appends ` | NinjaTerm` from `siteConfig.title`, so the per-page `Layout` titles now omit the brand prefix (homepage tab is now `An embedded developer's terminal that's got your back | NinjaTerm`).
+- **Tagline + homepage copy refreshed** for four-transport scope (serial, TCP socket, Bluetooth LE, SEGGER RTT). Tagline now "An embedded developer's terminal that's got your back."; homepage hero, browser titles, Docusaurus site tagline, manual intro, README, `<Layout>` SEO description, JSON-LD structured-data description/keywords, root `index.html` meta description, and the body intro paragraph no longer describe NinjaTerm as a serial port terminal.
+
 ### Fixed
 
 - **Failed RTT connect attempts no longer multiply log lines on retry.** The `rtt:server-log` listener is registered before `rtt.connect()` to capture startup messages; the catch block didn't dispose it on failure, so each retry stacked another listener and each line was emitted N times after N failures. `ConnController` now calls `disposeConnListeners()` in the RTT failure path.

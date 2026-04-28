@@ -160,9 +160,9 @@ export default function Home(): JSX.Element {
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Cross-platform (Web-based)',
     description:
-      'NinjaTerm is a free, open-source, web-based serial port terminal for embedded developers. View debug data, send commands, and streamline your embedded development workflow with features like ANSI escape code support, graphing, logging, filtering and more.',
+      'NinjaTerm is a free, open-source, cross-platform terminal for embedded developers. Connect via serial port, TCP socket, Bluetooth LE, or SEGGER RTT. View debug data, send commands, and streamline your embedded development workflow with features like ANSI escape code support, graphing, logging, filtering and more.',
     keywords:
-      'NinjaTerm, Ninja Term, terminal, serial port, serial terminal, web serial, developer tool, embedded, IoT, microcontroller, firmware, debug, open source, serial monitor, graphing, logging, filtering, smart scrolling, number types',
+      'NinjaTerm, Ninja Term, terminal, serial port, serial terminal, TCP socket, Bluetooth LE, SEGGER RTT, J-Link, web serial, developer tool, embedded, IoT, microcontroller, firmware, debug, open source, serial monitor, graphing, logging, filtering, smart scrolling, number types',
     url: 'https://ninjaterm.mbedded.ninja/',
     potentialAction: {
       '@type': 'ViewAction',
@@ -177,8 +177,8 @@ export default function Home(): JSX.Element {
 
   return (
     <Layout
-      title="NinjaTerm - A serial port terminal that's got your back"
-      description="NinjaTerm is a free, open-source serial port terminal for embedded developers with features like ANSI escape codes, graphing, logging, and more."
+      title="An embedded developer's terminal that's got your back"
+      description="NinjaTerm is a free, open-source terminal for embedded developers — supports serial ports, TCP sockets, Bluetooth LE, and SEGGER RTT, with features like ANSI escape codes, graphing, logging, and more."
     >
       <Head>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
@@ -192,7 +192,7 @@ export default function Home(): JSX.Element {
       <Grid size={12} sx={{ height: '20px' }} />
       <Grid size={12} sx={{ display: 'flex', justifyContent: 'center' }}>
         <span style={{ fontFamily: 'monospace', fontSize: 'clamp(18px, 5vw, 30px)', textAlign: 'center' }}>
-          A serial port terminal that's got your back.
+          An embedded developer's terminal that's got your back.
           <span className={styles.cursor}>&nbsp;</span>
         </span>
       </Grid>
@@ -280,8 +280,8 @@ export default function Home(): JSX.Element {
         <div className="container">
           <div className={styles.section}>
             <p className={styles.description}>
-              NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug serial port data and sending commands when developing firmware for
-              an embedded device (e.g. microcontroller).
+              NinjaTerm is an open source and free electron (or web-based) application designed for viewing debug data and sending commands when developing firmware for an embedded
+              device (e.g. microcontroller). Connect via serial port, TCP socket, Bluetooth LE, or SEGGER RTT.
             </p>
             <p className={styles.description}>
               If you are looking for a serious terminal for continual use, the installable desktop versions are recommended. If you are looking for a quick way to view some serial
