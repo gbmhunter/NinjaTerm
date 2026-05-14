@@ -4,6 +4,7 @@ import React, { useRef, useLayoutEffect, useEffect, forwardRef, useMemo } from '
 import LockIcon from '@mui/icons-material/Lock';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import SearchIcon from '@mui/icons-material/Search';
 import { FixedSizeList } from 'react-window';
 
 import { SingleTerminal } from 'src/model/Terminals/SingleTerminal/SingleTerminal';
@@ -394,7 +395,7 @@ export default observer((props: Props) => {
           style={{
             position: 'absolute',
             top: 0,
-            right: '60px',
+            right: '90px',
             padding: '0px 10px',
             backgroundColor: 'rgba(40, 40, 40, 0.5)',
             fontFamily: 'Consolas, Menlo, monospace',
@@ -402,6 +403,34 @@ export default observer((props: Props) => {
         >
           {directionLabel}
         </div>
+        {/* ======================================================= */}
+        {/* FIND BUTTON (per-pane, opens Find on THIS terminal) */}
+        {/* ======================================================= */}
+        <Tooltip
+          {...displaySettings.getBasicTooltipConfig()}
+          title={`Find text in this ${directionLabel} terminal's scrollback (Ctrl+F).`}>
+        <IconButton
+          onClick={() => {
+            terminal.openFind();
+          }}
+          sx={{
+            position: 'absolute',
+            top: '0px',
+            right: '60px',
+            padding: '5px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            zIndex: 1,
+          }}
+          data-testid={testId + '-find-button'}
+        >
+          <SearchIcon
+            sx={{
+              width: '20px',
+              height: '20px',
+            }}
+          />
+        </IconButton>
+        </Tooltip>
         {/* ======================================================= */}
         {/* CLIPBOARD COPY BUTTON */}
         {/* ======================================================= */}
