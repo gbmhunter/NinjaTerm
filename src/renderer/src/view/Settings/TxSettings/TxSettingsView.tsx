@@ -175,6 +175,28 @@ function TxSettingsView(props: Props) {
             sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
+        {/* =============================================================================== */}
+        {/* CTRL+F → FIND */}
+        {/* =============================================================================== */}
+        <Tooltip
+          title="When enabled (default): Ctrl+F opens the Find bar over the focused terminal pane. When disabled: Ctrl+F passes through to the Ctrl+A-Z handler, sending the ACK control byte (0x06) to the connected device — useful if your target firmware listens for it. The on-screen Find magnifier buttons next to each terminal still open Find regardless of this setting."
+          placement="top"
+          followCursor
+          {...txSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={txSettings.useCtrlFForFind}
+                onChange={(e) => {
+                  txSettings.setUseCtrlFForFind(e.target.checked);
+                }}
+              />
+            }
+            label="Use Ctrl+F to open Find in scrollback (when off, Ctrl+F sends 0x06 / ACK)"
+            sx={{ marginBottom: '10px' }}
+          />
+        </Tooltip>
       </BorderedSection>
     </div>
   );

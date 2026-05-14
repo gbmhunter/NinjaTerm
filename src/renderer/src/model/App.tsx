@@ -793,7 +793,10 @@ export class App {
     //============================================
     // FIND-IN-SCROLLBACK SHORTCUT (Ctrl+F)
     //============================================
-    else if (event.ctrlKey && !event.shiftKey && (event.key === 'f' || event.key === 'F') && this.shownMainPane === MainPanes.TERMINAL) {
+    // When `useCtrlFForFind` is disabled, this branch is skipped and the
+    // event falls through to `handleTerminalKeyDown` so Ctrl+F sends the
+    // ACK control byte (0x06) like a historic terminal would.
+    else if (event.ctrlKey && !event.shiftKey && (event.key === 'f' || event.key === 'F') && this.shownMainPane === MainPanes.TERMINAL && this.settings.txSettings.useCtrlFForFind) {
       event.preventDefault(); // suppress the browser's built-in find dialog
       this.openFindOnPreferredTerminal();
     }

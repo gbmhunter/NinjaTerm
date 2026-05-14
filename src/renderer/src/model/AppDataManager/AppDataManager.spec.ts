@@ -3,7 +3,8 @@ import fs from 'fs';
 import { expect, test, describe, beforeEach } from 'vitest';
 
 import { AppDataManager } from './AppDataManager';
-import { AppData } from './DataClasses/AppData';
+import { AppData, LATEST_VERSION } from './DataClasses/AppData';
+import { migrateAppData } from './appDataMigrations';
 import { App } from '../App';
 
 beforeEach(() => {
@@ -129,6 +130,31 @@ describe('app data manager tests', () => {
     const profileManager = new AppDataManager(app);
     expect(profileManager.appData.profiles.length).toEqual(1);
     expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
+  });
+
+  test('migration v16->v17 seeds useCtrlFForFind=true on currentAppConfig and every profile', () => {
+    // Hand-crafted minimal v16 input — full snapshot fixtures live alongside
+    // the existing upgrade-from-vN tests; this one targets just the new step.
+    const v16Input = {
+      version: 16,
+      profiles: [
+        { name: 'p1', rootConfig: { settings: { txSettings: {} } } },
+        { name: 'p2', rootConfig: { settings: { txSettings: { useCtrlCVForCopyPaste: false } } } },
+      ],
+      currentAppConfig: { settings: { txSettings: {} } },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v16Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+    expect(appData.currentAppConfig?.settings?.txSettings?.useCtrlFForFind).toBe(true);
+    for (const profile of appData.profiles ?? []) {
+      expect(profile.rootConfig?.settings?.txSettings?.useCtrlFForFind).toBe(true);
+    }
+    // Other v16 fields must be left untouched.
+    expect(appData.profiles?.[1].rootConfig?.settings?.txSettings?.useCtrlCVForCopyPaste).toBe(false);
   });
 
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {

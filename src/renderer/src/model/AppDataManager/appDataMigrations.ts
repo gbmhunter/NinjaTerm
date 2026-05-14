@@ -99,6 +99,8 @@ type MigrationTxSettings = {
   version?: number;
   // v12->v13
   useCtrlCVForCopyPaste?: boolean;
+  // v16->v17
+  useCtrlFForFind?: boolean;
 };
 
 type MigrationGraphingSettings = {
@@ -441,6 +443,18 @@ function migrateV15toV16(appData: MigrationAppData): void {
   appData.version = 16;
 }
 
+function migrateV16toV17(appData: MigrationAppData): void {
+  // Default the new Ctrl+F → Find toggle to true so existing users get the
+  // Find shortcut. Users who want raw Ctrl+F passthrough (sends 0x06 / ACK)
+  // can opt out in TX Settings.
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    rootConfig.settings.txSettings = rootConfig.settings.txSettings ?? {};
+    rootConfig.settings.txSettings.useCtrlFForFind = true;
+  });
+  appData.version = 17;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -463,6 +477,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 13, apply: migrateV13toV14 },
   { from: 14, apply: migrateV14toV15 },
   { from: 15, apply: migrateV15toV16 },
+  { from: 16, apply: migrateV16toV17 },
 ];
 
 // --------------------------------------------------------------------------
