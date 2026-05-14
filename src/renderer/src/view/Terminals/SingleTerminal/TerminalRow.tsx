@@ -61,17 +61,47 @@ export default class TerminalRow {
   }
 
   /**
-   * Memoized span generation to avoid recreating spans on every render
+   * Memoized span generation to avoid recreating spans on every render.
+   *
+   * `findRanges` highlights matched columns from the Find feature. Each entry
+   * applies an extra class (`findMatch` for normal hits, `findMatchCurrent`
+   * for the active hit). Ranges within a single row are not expected to
+   * overlap. Passing the ranges through this method (rather than wrapping
+   * spans after generation) keeps the span-merging logic in one place and
+   * lets it correctly split runs of identical ANSI styling at match
+   * boundaries.
    */
-  getSpans(terminalId: string, cursorPosition: [number, number], terminalRowCursorIsOn: TerminalRow | null, styles: any): ReactElement[] {
+  getSpans(
+    terminalId: string,
+    cursorPosition: [number, number],
+    terminalRowCursorIsOn: TerminalRow | null,
+    styles: any,
+    findRanges: { colStart: number; colEnd: number; isCurrent: boolean }[] = [],
+  ): ReactElement[] {
     const currentHash = this.terminalCharsHash;
     const isCursorRow = this === terminalRowCursorIsOn;
-    const cacheKey = `${currentHash}:${isCursorRow}:${cursorPosition[1]}`;
-    
+    // Serialise findRanges into the cache key so the cache invalidates when
+    // the find state changes for this row. Cheap because per-row range count
+    // is tiny in practice.
+    const findKey = findRanges.length === 0
+      ? ''
+      : findRanges.map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`).join(',');
+    const cacheKey = `${currentHash}:${isCursorRow}:${cursorPosition[1]}:${findKey}`;
+
     // Return cached spans if nothing changed
     if (this._spanCache && this._spanCache.terminalCharsHash === cacheKey) {
       return this._spanCache.spans;
     }
+
+    const findClassForCol = (colIdx: number): string => {
+      for (let i = 0; i < findRanges.length; i += 1) {
+        const r = findRanges[i];
+        if (colIdx >= r.colStart && colIdx < r.colEnd) {
+          return r.isCurrent ? ' findMatchCurrent' : ' findMatch';
+        }
+      }
+      return '';
+    };
 
     // Generate new spans
     const spans: ReactElement[] = [];
@@ -81,11 +111,15 @@ export default class TerminalRow {
     for (let colIdx = 0; colIdx < this.terminalChars.length; colIdx += 1) {
       const terminalChar = this.terminalChars[colIdx];
       let thisCharsClassName = terminalChar.className;
-      
+
       // Check if this is the cursor position
       if (isCursorRow && colIdx === cursorPosition[1]) {
         thisCharsClassName += ' ' + styles.cursorFocused;
       }
+
+      // Apply find-match highlight class (concatenated so it stacks with
+      // ANSI color classes — see SingleTerminalView.css for the rules).
+      thisCharsClassName += findClassForCol(colIdx);
 
       if (colIdx === 0) {
         prevClassName = thisCharsClassName;

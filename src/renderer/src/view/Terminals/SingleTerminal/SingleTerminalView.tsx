@@ -12,6 +12,7 @@ import styles from './SingleTerminalView.module.css';
 import './SingleTerminalView.css';
 import { SelectionController } from 'src/model/SelectionController/SelectionController';
 import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import FindBar from './FindBar';
 
 interface Props {
   terminal: SingleTerminal;
@@ -36,6 +37,25 @@ export default observer((props: Props) => {
     const terminalRowToRender = data[index];
     const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
 
+    // Find-match ranges for this row (if any). Reads `findMatchesByRow` so
+    // MobX re-renders this row when the find state changes.
+    const rowFindMatches = terminal.findMatchesByRow.get(index);
+    const currentMatch = terminal.currentMatch;
+    const findRanges = rowFindMatches
+      ? rowFindMatches.map((m) => ({
+          colStart: m.colStart,
+          colEnd: m.colEnd,
+          isCurrent:
+            currentMatch !== null &&
+            currentMatch.rowIndex === m.rowIndex &&
+            currentMatch.colStart === m.colStart,
+        }))
+      : [];
+    // Stable string for the useMemo dependency array.
+    const findRangesKey = findRanges
+      .map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`)
+      .join(',');
+
     // Use memoized span generation from TerminalRow.
     // `Row` is a nested function component (declared inside the parent's
     // body) so ESLint's rules-of-hooks heuristic flags this useMemo as
@@ -46,19 +66,21 @@ export default observer((props: Props) => {
       // Determine cursor class
       const cursorClass = terminal.isFocused ? styles.cursorFocused : styles.cursorUnfocused;
       const stylesWithCursor = { ...styles, cursorFocused: cursorClass };
-      
+
       return terminalRowToRender.getSpans(
         terminal.id,
         terminal.cursorPosition,
         terminalRowCursorIsOn,
-        stylesWithCursor
+        stylesWithCursor,
+        findRanges,
       );
     }, [
       terminalRowToRender.terminalCharsHash,
       terminal.cursorPosition[0],
       terminal.cursorPosition[1],
       terminal.isFocused,
-      terminalRowCursorIsOn?.uniqueRowId
+      terminalRowCursorIsOn?.uniqueRowId,
+      findRangesKey,
     ]);
 
     // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal
@@ -81,8 +103,25 @@ export default observer((props: Props) => {
   // removed from the start (buffer is full).
   // This needs to be done because when we recreate the list it does not
   // remember it's scroll position
+  // Read find-state observables here at render time so the `observer` HOC
+  // subscribes to them. MobX only tracks reads that happen during render —
+  // reads inside `useLayoutEffect` bodies do NOT subscribe, so without these
+  // lines the parent wouldn't re-render when the user clicks Next/Prev
+  // (currentMatch changes in isolation), and the scroll effect below
+  // wouldn't fire.
+  const isFindOpen = terminal.isFindOpen;
+  const currentMatchRowIndex = terminal.currentMatch?.rowIndex ?? -1;
+  const currentMatchColStart = terminal.currentMatch?.colStart ?? -1;
+
   useLayoutEffect(() => {
     if (reactWindowRef.current === null) {
+      return;
+    }
+    // While Find is open and pointing at a real match, scroll to keep that
+    // match in view. This takes precedence over scroll-lock so the user sees
+    // the highlighted hit instead of the tail of the buffer.
+    if (isFindOpen && currentMatchRowIndex >= 0) {
+      reactWindowRef.current.scrollToItem(currentMatchRowIndex, 'center');
       return;
     }
     if (terminal.scrollLock) {
@@ -94,11 +133,34 @@ export default observer((props: Props) => {
     }
   });
 
+  // Dedicated effect for find-driven scrolling. Fires when the user changes
+  // the query, hits next/prev, or opens Find — all of which the main effect
+  // above misses because nothing else in the parent's render reads these
+  // observables, so the parent wouldn't re-render on those events alone.
+  // Keying off rowIndex + colStart is enough to catch every navigation
+  // including consecutive matches on the same row.
+  useLayoutEffect(() => {
+    if (reactWindowRef.current === null) return;
+    if (!isFindOpen) return;
+    if (currentMatchRowIndex < 0) return;
+    reactWindowRef.current.scrollToItem(currentMatchRowIndex, 'center');
+  }, [isFindOpen, currentMatchRowIndex, currentMatchColStart]);
+
   // Capture the selection into the cache on mouseup (after the user finishes dragging).
   // At mouseup time both endpoints are guaranteed to be in the DOM, so getSelectionInfo
   // returns a valid result. We do NOT use selectionchange because Chrome fires it when
   // react-window removes DOM nodes, and the adjusted selection may be wrong.
   // Cache is cleared when the user clicks outside this terminal.
+  // Returns true if the given DOM node is inside this terminal's Find bar.
+  // The Find bar lives inside the outer terminal wrapper but is logically not
+  // part of the scrollback, so clicks / focus inside it must not be treated
+  // as terminal text selections.
+  const isInFindBar = (node: Node | null): boolean => {
+    if (!node) return false;
+    const findBarEl = document.querySelector(`[data-testid="${terminal.id}-find-bar"]`);
+    return findBarEl !== null && findBarEl.contains(node);
+  };
+
   useEffect(() => {
     let isSelectingInThisTerminal = false;
 
@@ -108,7 +170,12 @@ export default observer((props: Props) => {
       // correct for on-screen rows). The cache is repopulated at mouseup.
       terminal.lastKnownSelectionInfo = null;
       const terminalEl = document.getElementById(terminal.id);
-      if (terminalEl && terminalEl.contains(e.target as Node)) {
+      // Clicks inside the Find bar must NOT count as a terminal text selection.
+      // Otherwise mouseup would cache a SelectionInfo derived from the Find bar
+      // DOM, and the layout-effect selection-restore would call setBaseAndExtent
+      // on every subsequent RX-driven re-render — which yanks focus out of the
+      // Find input.
+      if (terminalEl && terminalEl.contains(e.target as Node) && !isInFindBar(e.target as Node)) {
         isSelectingInThisTerminal = true;
       } else {
         isSelectingInThisTerminal = false;
@@ -196,6 +263,11 @@ export default observer((props: Props) => {
   // live DOM selection because after virtualization Chrome adjusts the live selection
   // to another connected node, which would overwrite the correct highlight.
   useLayoutEffect(() => {
+    // Skip entirely when the user is interacting with the Find bar — any call
+    // to `selection.setBaseAndExtent` here would move the document selection
+    // and pull focus out of the Find input.
+    if (isInFindBar(document.activeElement)) return;
+
     if (applyLastKnownSelection()) return;
 
     // No cached selection (mousedown cleared it) — fall back to the live DOM selection.
@@ -312,6 +384,10 @@ export default observer((props: Props) => {
         }}
       >
         {/* ======================================================= */}
+        {/* FIND BAR (only visible when terminal.isFindOpen) */}
+        {/* ======================================================= */}
+        <FindBar terminal={terminal} />
+        {/* ======================================================= */}
         {/* DIRECTION INDICATOR */}
         {/* ======================================================= */}
         <div
@@ -400,6 +476,9 @@ export default observer((props: Props) => {
               // so useLayoutEffect never runs. We re-apply the cached selection here
               // every time react-window renders a new set of rows (including on scroll)
               // so the browser selection is always corrected after virtualization.
+              // Same guard as the layout-effect: don't disturb the document
+              // selection while the Find input has focus.
+              if (isInFindBar(document.activeElement)) return;
               applyLastKnownSelection();
             }}
             overscanCount={5}
