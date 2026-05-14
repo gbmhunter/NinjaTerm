@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { OverridableStringUnion } from '@mui/types';
 import KofiButton from 'kofi-button';
@@ -146,6 +147,22 @@ export default observer((props: Props) => {
         >
           {isSmallScreen ? '' : 'Clear'}
         </Button>
+        {/* ==================================================================== */}
+        {/* FIND BUTTON (Ctrl+F) */}
+        {/* ==================================================================== */}
+        <Tooltip title="Find text in the terminal scrollback (Ctrl+F).">
+          <Button
+            variant="outlined"
+            startIcon={<SearchIcon />}
+            onClick={() => {
+              app.openFindOnPreferredTerminal();
+            }}
+            sx={responsiveButtonStyle}
+            data-testid="find-button"
+          >
+            {isSmallScreen ? '' : 'Find'}
+          </Button>
+        </Tooltip>
         {/* ======================================================= */}
         {/* FILTER TEXT INPUT */}
         {/* ======================================================= */}

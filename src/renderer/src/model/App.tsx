@@ -885,8 +885,11 @@ export class App {
    * the current view mode and focus state. Falls back to a sensible default
    * when nothing is focused (the combined pane in single mode, the RX pane
    * in separate mode — that's where the bulk of searchable data lives).
+   *
+   * Public so the toolbar Find button in `TerminalsView` can share the same
+   * targeting logic as the Ctrl+F keyboard shortcut.
    */
-  private openFindOnPreferredTerminal() {
+  openFindOnPreferredTerminal() {
     const isSeparate = this.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS;
     let target: SingleTerminal;
     if (this.terminals.txTerminal.isFocused && isSeparate) {
