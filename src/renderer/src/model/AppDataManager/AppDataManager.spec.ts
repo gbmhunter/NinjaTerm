@@ -167,7 +167,16 @@ describe('app data manager tests', () => {
     const checkSlot = (settings: any) => {
       expect(settings.soundsSettings).toBeUndefined();
       expect(settings.rulesSettings).toBeDefined();
-      expect(settings.rulesSettings.rules).toEqual([]);
+      // v17→v18 seeds two starter rules (Warning / Error). Assert shape
+      // rather than exact equality so default colors can shift without
+      // breaking this test.
+      const rules = settings.rulesSettings.rules;
+      expect(rules.length).toBe(2);
+      expect(rules[0].name).toBe('Warning');
+      expect(rules[0].pattern).toBe('warning');
+      expect(rules[1].name).toBe('Error');
+      expect(rules[1].pattern).toBe('error');
+      expect(rules[1].sound).toBe('buzzer');
     };
     checkSlot(appData.currentAppConfig?.settings);
     for (const p of appData.profiles ?? []) {

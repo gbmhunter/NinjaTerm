@@ -28,6 +28,7 @@ import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings
 import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
+import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
 
 // --------------------------------------------------------------------------
 // Types
@@ -478,12 +479,14 @@ function migrateV17toV18(appData: MigrationAppData): void {
   // Replace the legacy `soundsSettings` (a single `playSoundsOnPassFail`
   // toggle hardcoded to literal "pass" / "fail" matches) with the new
   // `rulesSettings` highlight-rules system. Per design we do NOT carry the
-  // old toggle forward — users who relied on pass/fail sounds re-create
-  // them as explicit rules.
+  // old toggle forward, but we DO seed two starter rules
+  // (Warning / Error — see `makeDefaultHighlightRules`) so existing users
+  // get useful highlighting out of the box. Fresh installs get the same
+  // defaults via `RulesSettingsData`'s field initializer.
   forEachRootConfig(appData, (rootConfig) => {
     rootConfig.settings = rootConfig.settings ?? {};
     delete rootConfig.settings.soundsSettings;
-    rootConfig.settings.rulesSettings = { rules: [] };
+    rootConfig.settings.rulesSettings = { rules: makeDefaultHighlightRules() };
   });
   appData.version = 18;
 }

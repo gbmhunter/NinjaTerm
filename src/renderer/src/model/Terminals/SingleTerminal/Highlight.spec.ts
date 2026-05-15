@@ -26,6 +26,10 @@ function buildHarness() {
   const displaySettings = new DisplaySettings(profileManager);
   const snackbar = new SnackbarController();
   const rulesSettings = new RulesSettings(profileManager);
+  // Strip the two starter rules so each test composes its own clean
+  // rule list via `addRule`. `splice(0)` mutates in place — the existing
+  // ref captured by `SingleTerminal` stays valid.
+  rulesSettings.rules.splice(0);
   const player = new SoundPlayer();
   const playDing = vi.spyOn(player, 'playDing').mockImplementation(() => {});
   const playBuzzer = vi.spyOn(player, 'playBuzzer').mockImplementation(() => {});
