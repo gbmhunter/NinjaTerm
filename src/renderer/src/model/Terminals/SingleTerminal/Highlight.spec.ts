@@ -48,6 +48,11 @@ function buildHarness() {
 
   const addRule = (cfg: Partial<HighlightRule>) => {
     const rule = new HighlightRule();
+    // The runtime default is LINE scope (matching the product behaviour),
+    // but the bulk of these tests target match-only positions. Pin MATCH
+    // here so each test focuses on its specific assertion; LINE-scope
+    // tests pass `scope: HighlightScope.LINE` explicitly.
+    rule.scope = HighlightScope.MATCH;
     Object.assign(rule, cfg);
     rulesSettings.rules.push(rule);
     return rule;

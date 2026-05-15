@@ -36,9 +36,10 @@ export class HighlightRuleData {
   /**
    * Whether the background extends only over the matched characters or
    * across the whole logical line (covering wrap segments). See
-   * `HighlightScope`.
+   * `HighlightScope`. Defaults to `LINE` because that's what most users
+   * reach for (e.g. `\berror\b` paints the whole error row).
    */
-  scope: HighlightScope = HighlightScope.MATCH;
+  scope: HighlightScope = HighlightScope.LINE;
 }
 
 /**
@@ -52,6 +53,8 @@ export class HighlightRuleData {
  * all match without users having to write regex flags themselves.
  */
 export function makeDefaultHighlightRules(): HighlightRuleData[] {
+  // Both default rules use LINE scope (inherited from the POD field
+  // initializer) so a matching log line lights up across wrap segments.
   const warning = new HighlightRuleData();
   warning.name = 'Warning';
   warning.pattern = 'warning';

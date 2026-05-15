@@ -177,9 +177,10 @@ describe('app data manager tests', () => {
       expect(rules[1].name).toBe('Error');
       expect(rules[1].pattern).toBe('error');
       expect(rules[1].sound).toBe('buzzer');
-      // Seeded defaults have `scope='match'` from the POD class field.
-      expect(rules[0].scope).toBe('match');
-      expect(rules[1].scope).toBe('match');
+      // Seeded defaults use whole-line scope so matching log lines colour
+      // across wrap segments.
+      expect(rules[0].scope).toBe('line');
+      expect(rules[1].scope).toBe('line');
     };
     checkSlot(appData.currentAppConfig?.settings);
     for (const p of appData.profiles ?? []) {
