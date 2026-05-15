@@ -160,3 +160,19 @@
 .b47.b, .b107 {
   background-color: var(--vga-bright-white);
 }
+
+/* FIND-IN-SCROLLBACK HIGHLIGHTS */
+/*================================================================*/
+/* Applied to every char in a non-current find match. */
+.findMatch {
+  background-color: rgba(255, 213, 79, 0.45); /* soft amber */
+  color: #111;
+}
+
+/* Applied to every char in the currently-focused find match. The Find bar
+   auto-scrolls to keep this in view; the stronger contrast makes it easy
+   to spot on a noisy screen. */
+.findMatchCurrent {
+  background-color: rgb(255, 152, 0); /* saturated amber */
+  color: #111;
+}

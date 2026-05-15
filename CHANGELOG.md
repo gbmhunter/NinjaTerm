@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **TX Settings: opt out of Ctrl+F → Find.** New `Use Ctrl+F to open Find in scrollback` checkbox (default on). When off, Ctrl+F falls through to the Ctrl+A–Z handler so the ACK control byte (0x06) reaches the device — preserves the historic terminal behavior some embedded targets rely on. The per-pane Find magnifier buttons keep working either way. AppData migrated v16 → v17.
+- **Find in scrollback (Ctrl+F).** Floating bar over the terminal pane with case-toggle, match counter, and prev/next nav (Enter / Shift+Enter, Esc closes). Also discoverable via a magnifying-glass icon in each pane's top-right (next to the copy-all button) — per-pane so in separate TX/RX mode each terminal has its own button and its own independent Find session. Matches are highlighted in-place via two new CSS classes; current match is auto-scrolled into view, overriding scroll-lock while find is open. `SingleTerminalView`'s selection-restore logic is skipped while the Find input has focus so incoming RX traffic can't yank the caret out via `setBaseAndExtent`; FindBar clicks are also excluded from the mouseup selection-cache path. Implemented in `SingleTerminal.findMatches`, `FindBar.tsx`, and `TerminalRow.getSpans`.
+
 ### Changed
 
 - Homepage and `/app` redirect-page browser titles no longer say "NinjaTerm" twice. Docusaurus auto-appends ` | NinjaTerm` from `siteConfig.title`, so the per-page `Layout` titles now omit the brand prefix (homepage tab is now `An embedded developer's terminal that's got your back | NinjaTerm`).

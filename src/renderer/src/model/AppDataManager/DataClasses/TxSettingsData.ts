@@ -33,4 +33,12 @@ export class TxSettingsData {
    * If false, Ctrl+C/V always send control codes (0x03/0x16); use Ctrl+Shift+C/V for copy/paste.
    */
   useCtrlCVForCopyPaste = true;
+
+  /**
+   * If true (default), Ctrl+F opens the in-pane Find bar. If false, Ctrl+F
+   * falls through to the Ctrl+A–Z send path so the ACK control byte (0x06)
+   * is sent to the connected device, matching historic terminal behavior.
+   * The on-screen Find magnifier buttons work regardless of this setting.
+   */
+  useCtrlFForFind = true;
 }

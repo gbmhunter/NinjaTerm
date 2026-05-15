@@ -37,6 +37,17 @@ export enum DataDirection {
 }
 
 /**
+ * Represents a single match for the Find feature. Row index is into
+ * `filteredTerminalRows`, columns are character offsets into that row's
+ * `terminalChars` array. `colEnd` is exclusive.
+ */
+export interface FindMatch {
+  rowIndex: number;
+  colStart: number;
+  colEnd: number;
+}
+
+/**
  * Represents a single terminal-style user interface.
  */
 export class SingleTerminal {
@@ -104,6 +115,22 @@ export class SingleTerminal {
    */
   filterText: string = '';
 
+  //======================================================================
+  // FIND-IN-SCROLLBACK STATE
+  //======================================================================
+
+  /** True when the Find bar is visible on top of this terminal. */
+  isFindOpen: boolean = false;
+
+  /** Active find query. Empty string disables matching. */
+  findQuery: string = '';
+
+  /** Whether the find query is matched case-sensitively. */
+  findCaseSensitive: boolean = false;
+
+  /** Index into `findMatches` of the "current" match (the one auto-scrolled to). */
+  currentMatchIndex: number = 0;
+
   /**
    * The array of terminal rows which should be included in the filtered view
    * due to the filter text. This is a subset of the terminalRows array.
@@ -121,6 +148,54 @@ export class SingleTerminal {
       // Otherwise, check if the row text contains the filter text
       return row.text.includes(this.filterText);
     });
+  }
+
+  /**
+   * All matches of the active find query within `filteredTerminalRows`, in
+   * top-to-bottom, left-to-right order. Empty when find is closed, the
+   * query is empty, or there are no hits. Computed property — recomputed
+   * automatically when query, case-sensitivity, or rows change.
+   */
+  get findMatches(): FindMatch[] {
+    if (!this.isFindOpen || this.findQuery === '') {
+      return [];
+    }
+    const query = this.findCaseSensitive ? this.findQuery : this.findQuery.toLowerCase();
+    if (query.length === 0) {
+      return [];
+    }
+    const matches: FindMatch[] = [];
+    const rows = this.filteredTerminalRows;
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+      const rowText = rows[rowIndex].text;
+      const haystack = this.findCaseSensitive ? rowText : rowText.toLowerCase();
+      let from = 0;
+      let idx = haystack.indexOf(query, from);
+      while (idx !== -1) {
+        matches.push({ rowIndex, colStart: idx, colEnd: idx + query.length });
+        from = idx + query.length;
+        idx = haystack.indexOf(query, from);
+      }
+    }
+    return matches;
+  }
+
+  /**
+   * Matches grouped by their row index for O(1) lookup during row rendering.
+   * Saves the FixedSizeList row renderer from doing a linear scan of
+   * `findMatches` for every visible row on every render.
+   */
+  get findMatchesByRow(): Map<number, FindMatch[]> {
+    const map = new Map<number, FindMatch[]>();
+    for (const match of this.findMatches) {
+      const list = map.get(match.rowIndex);
+      if (list) {
+        list.push(match);
+      } else {
+        map.set(match.rowIndex, [match]);
+      }
+    }
+    return map;
   }
 
   // True if this RX data parser is just processing text as plain text, i.e.
@@ -284,6 +359,9 @@ export class SingleTerminal {
 
     makeAutoObservable(this, {
       filteredTerminalRows: computed,
+      findMatches: computed,
+      findMatchesByRow: computed,
+      currentMatch: computed,
       terminalRows: observable.shallow, // Only observe array changes, not individual row changes
       lastKnownSelectionInfo: false, // Not MobX-tracked; updated during renders, not via actions
     });
@@ -1631,6 +1709,65 @@ export class SingleTerminal {
    * rows containing the filter text will be displayed.
    * @param filterText
    */
+  //======================================================================
+  // FIND-IN-SCROLLBACK ACTIONS
+  //======================================================================
+
+  openFind() {
+    this.isFindOpen = true;
+    // Reset the current-match pointer so navigation starts from the top of
+    // the new search. The first nextMatch() / scroll effect snaps to match 0.
+    this.currentMatchIndex = 0;
+  }
+
+  closeFind() {
+    this.isFindOpen = false;
+    this.findQuery = '';
+    this.currentMatchIndex = 0;
+  }
+
+  setFindQuery(query: string) {
+    this.findQuery = query;
+    // Any change to the query invalidates the previous match cursor — reset
+    // to match 0 so the user lands on the first hit of the new query.
+    this.currentMatchIndex = 0;
+  }
+
+  setFindCaseSensitive(value: boolean) {
+    this.findCaseSensitive = value;
+    this.currentMatchIndex = 0;
+  }
+
+  /** Advance to the next match, wrapping to the start at the end. No-op if there are no matches. */
+  nextMatch() {
+    const total = this.findMatches.length;
+    if (total === 0) {
+      this.currentMatchIndex = 0;
+      return;
+    }
+    this.currentMatchIndex = (this.currentMatchIndex + 1) % total;
+  }
+
+  /** Go to the previous match, wrapping to the end at the start. No-op if there are no matches. */
+  prevMatch() {
+    const total = this.findMatches.length;
+    if (total === 0) {
+      this.currentMatchIndex = 0;
+      return;
+    }
+    this.currentMatchIndex = (this.currentMatchIndex - 1 + total) % total;
+  }
+
+  /** The currently-focused match, or null if there are no matches. */
+  get currentMatch(): FindMatch | null {
+    const matches = this.findMatches;
+    if (matches.length === 0) {
+      return null;
+    }
+    const idx = Math.min(this.currentMatchIndex, matches.length - 1);
+    return matches[idx];
+  }
+
   setFilterText(filterText: string) {
     this.filterText = filterText;
 

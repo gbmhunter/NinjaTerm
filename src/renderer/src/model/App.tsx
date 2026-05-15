@@ -9,6 +9,7 @@ import { Button } from '@mui/material';
 import { log, initLogging } from './Util/Log';
 import packageDotJson from '../../../../package.json' with { type: 'json' };
 import { Settings, SettingsCategories } from './Settings/Settings';
+import { DataViewConfiguration } from './Settings/DisplaySettings/DisplaySettings';
 import SnackbarController from './SnackbarController/SnackbarController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
@@ -790,6 +791,16 @@ export class App {
       await this.toggleDevTools();
     }
     //============================================
+    // FIND-IN-SCROLLBACK SHORTCUT (Ctrl+F)
+    //============================================
+    // When `useCtrlFForFind` is disabled, this branch is skipped and the
+    // event falls through to `handleTerminalKeyDown` so Ctrl+F sends the
+    // ACK control byte (0x06) like a historic terminal would.
+    else if (event.ctrlKey && !event.shiftKey && (event.key === 'f' || event.key === 'F') && this.shownMainPane === MainPanes.TERMINAL && this.settings.txSettings.useCtrlFForFind) {
+      event.preventDefault(); // suppress the browser's built-in find dialog
+      this.openFindOnPreferredTerminal();
+    }
+    //============================================
     // COPY KEYBOARD SHORTCUT
     //============================================
     else if (event.ctrlKey && event.shiftKey && event.key === 'C') {
@@ -872,6 +883,28 @@ export class App {
    * @param event The keyboard event.
    * @returns
    */
+  /**
+   * Opens the Find bar on whichever terminal is the most useful target given
+   * the current view mode and focus state. Falls back to a sensible default
+   * when nothing is focused (the combined pane in single mode, the RX pane
+   * in separate mode — that's where the bulk of searchable data lives).
+   *
+   * Public so the toolbar Find button in `TerminalsView` can share the same
+   * targeting logic as the Ctrl+F keyboard shortcut.
+   */
+  openFindOnPreferredTerminal() {
+    const isSeparate = this.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS;
+    let target: SingleTerminal;
+    if (this.terminals.txTerminal.isFocused && isSeparate) {
+      target = this.terminals.txTerminal;
+    } else if (this.terminals.txRxTerminal.isFocused && !isSeparate) {
+      target = this.terminals.txRxTerminal;
+    } else {
+      target = isSeparate ? this.terminals.rxTerminal : this.terminals.txRxTerminal;
+    }
+    target.openFind();
+  }
+
   private handleCopyToClipboard(event: React.KeyboardEvent) {
     // Prevents Ctrl-Shift-C from opening the browser's dev tools
     event.preventDefault();

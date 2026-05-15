@@ -56,6 +56,14 @@ export default class TxSettings {
    */
   useCtrlCVForCopyPaste = true;
 
+  /**
+   * If true (default), Ctrl+F opens the in-pane Find bar. If false, Ctrl+F
+   * passes through to the Ctrl+A–Z handler so the ACK control byte (0x06)
+   * is sent to the connected device. The on-screen Find magnifier buttons
+   * work regardless of this setting.
+   */
+  useCtrlFForFind = true;
+
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
@@ -74,6 +82,7 @@ export default class TxSettings {
     this.send0x01Thru0x1AWhenCtrlAThruZPressed = configToLoad.send0x01Thru0x1AWhenCtrlAThruZPressed;
     this.sendEscCharWhenAltKeyPressed = configToLoad.sendEscCharWhenAltKeyPressed;
     this.useCtrlCVForCopyPaste = configToLoad.useCtrlCVForCopyPaste;
+    this.useCtrlFForFind = configToLoad.useCtrlFForFind;
   };
 
   _saveConfig = () => {
@@ -85,6 +94,7 @@ export default class TxSettings {
     config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
     config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
     config.useCtrlCVForCopyPaste = this.useCtrlCVForCopyPaste;
+    config.useCtrlFForFind = this.useCtrlFForFind;
 
     this.profileManager.saveAppData();
   };
@@ -116,6 +126,11 @@ export default class TxSettings {
 
   setUseCtrlCVForCopyPaste = (value: boolean) => {
     this.useCtrlCVForCopyPaste = value;
+    this._saveConfig();
+  }
+
+  setUseCtrlFForFind = (value: boolean) => {
+    this.useCtrlFForFind = value;
     this._saveConfig();
   }
 }
