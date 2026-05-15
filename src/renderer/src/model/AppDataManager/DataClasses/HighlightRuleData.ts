@@ -35,10 +35,10 @@ export function makeDefaultHighlightRules(): HighlightRuleData[] {
   const warning = new HighlightRuleData();
   warning.name = 'Warning';
   warning.pattern = 'warning';
-  // Dark amber. Contrast vs white text ≈ 9.3:1 — well above WCAG AAA
-  // (7:1). Earlier picks (#ff9800 ~2:1, #bf360a ~6.7:1) still didn't
-  // read cleanly with the default light terminal text.
-  warning.backgroundColor = '#7a4100';
+  // Material deep-orange 900. Contrast vs white text ≈ 6.7:1 —
+  // comfortably above WCAG AA (4.5:1). The vivid #ff9800 we started
+  // with was ~2:1 and washed out white text.
+  warning.backgroundColor = '#bf360a';
   // sound stays NONE — warnings shouldn't nag
 
   const error = new HighlightRuleData();
