@@ -57,6 +57,20 @@ export default observer((props: Props) => {
       .map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`)
       .join(',');
 
+    // Highlight-rule ranges for this row (if any). Reads
+    // `highlightMatchesByRow` so MobX re-renders when rule state changes.
+    const rowHighlightMatches = terminal.highlightMatchesByRow.get(index);
+    const highlightRanges = rowHighlightMatches
+      ? rowHighlightMatches.map((m) => ({
+          colStart: m.colStart,
+          colEnd: m.colEnd,
+          backgroundColor: m.backgroundColor,
+        }))
+      : [];
+    const highlightRangesKey = highlightRanges
+      .map((r) => `${r.colStart}-${r.colEnd}-${r.backgroundColor}`)
+      .join(',');
+
     // Use memoized span generation from TerminalRow.
     // `Row` is a nested function component (declared inside the parent's
     // body) so ESLint's rules-of-hooks heuristic flags this useMemo as
@@ -74,6 +88,7 @@ export default observer((props: Props) => {
         terminalRowCursorIsOn,
         stylesWithCursor,
         findRanges,
+        highlightRanges,
       );
     }, [
       terminalRowToRender.terminalCharsHash,
@@ -82,6 +97,7 @@ export default observer((props: Props) => {
       terminal.isFocused,
       terminalRowCursorIsOn?.uniqueRowId,
       findRangesKey,
+      highlightRangesKey,
     ]);
 
     // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal

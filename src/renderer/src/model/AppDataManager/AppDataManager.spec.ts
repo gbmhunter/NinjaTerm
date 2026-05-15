@@ -132,6 +132,49 @@ describe('app data manager tests', () => {
     expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
   });
 
+  test('migration v17->v18 strips soundsSettings and seeds empty rulesSettings', () => {
+    // v17 input includes the legacy `soundsSettings` toggle. After v18 the
+    // toggle is gone and replaced with the new `rulesSettings.rules` list.
+    // Per design we do NOT carry the toggle forward — users opt back in by
+    // creating explicit rules.
+    const v17Input = {
+      version: 17,
+      profiles: [
+        {
+          name: 'p1',
+          rootConfig: {
+            settings: {
+              soundsSettings: { playSoundsOnPassFail: true },
+              txSettings: { useCtrlCVForCopyPaste: true, useCtrlFForFind: true },
+            },
+          },
+        },
+      ],
+      currentAppConfig: {
+        settings: {
+          soundsSettings: { playSoundsOnPassFail: false },
+          txSettings: { useCtrlCVForCopyPaste: true, useCtrlFForFind: true },
+        },
+      },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v17Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    const checkSlot = (settings: any) => {
+      expect(settings.soundsSettings).toBeUndefined();
+      expect(settings.rulesSettings).toBeDefined();
+      expect(settings.rulesSettings.rules).toEqual([]);
+    };
+    checkSlot(appData.currentAppConfig?.settings);
+    for (const p of appData.profiles ?? []) {
+      checkSlot(p.rootConfig?.settings);
+    }
+  });
+
   test('migration v16->v17 seeds useCtrlFForFind=true on currentAppConfig and every profile', () => {
     // Hand-crafted minimal v16 input — full snapshot fixtures live alongside
     // the existing upgrade-from-vN tests; this one targets just the new step.

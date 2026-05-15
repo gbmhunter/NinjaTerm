@@ -65,8 +65,16 @@ export default class TerminalRow {
    *
    * `findRanges` highlights matched columns from the Find feature. Each entry
    * applies an extra class (`findMatch` for normal hits, `findMatchCurrent`
-   * for the active hit). Ranges within a single row are not expected to
-   * overlap. Passing the ranges through this method (rather than wrapping
+   * for the active hit).
+   *
+   * `highlightRanges` applies an inline background-color style on matched
+   * chars from user-defined regex highlight rules. Inline style (rather
+   * than CSS class) lets each rule carry an arbitrary user-picked color
+   * without polluting the stylesheet. Find always wins on overlap — chars
+   * inside a find range skip the highlight inline style so the find class
+   * isn't visually masked.
+   *
+   * Passing both range arrays through this method (rather than wrapping
    * spans after generation) keeps the span-merging logic in one place and
    * lets it correctly split runs of identical ANSI styling at match
    * boundaries.
@@ -77,16 +85,20 @@ export default class TerminalRow {
     terminalRowCursorIsOn: TerminalRow | null,
     styles: any,
     findRanges: { colStart: number; colEnd: number; isCurrent: boolean }[] = [],
+    highlightRanges: { colStart: number; colEnd: number; backgroundColor: string }[] = [],
   ): ReactElement[] {
     const currentHash = this.terminalCharsHash;
     const isCursorRow = this === terminalRowCursorIsOn;
-    // Serialise findRanges into the cache key so the cache invalidates when
-    // the find state changes for this row. Cheap because per-row range count
-    // is tiny in practice.
+    // Serialise both range arrays into the cache key so the cache
+    // invalidates correctly. Per-row range counts are tiny so the string
+    // build is cheap.
     const findKey = findRanges.length === 0
       ? ''
       : findRanges.map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`).join(',');
-    const cacheKey = `${currentHash}:${isCursorRow}:${cursorPosition[1]}:${findKey}`;
+    const highlightKey = highlightRanges.length === 0
+      ? ''
+      : highlightRanges.map((r) => `${r.colStart}-${r.colEnd}-${r.backgroundColor}`).join(',');
+    const cacheKey = `${currentHash}:${isCursorRow}:${cursorPosition[1]}:${findKey}:${highlightKey}`;
 
     // Return cached spans if nothing changed
     if (this._spanCache && this._spanCache.terminalCharsHash === cacheKey) {
@@ -103,10 +115,44 @@ export default class TerminalRow {
       return '';
     };
 
-    // Generate new spans
+    // Later highlight ranges win on overlap (matches the iteration order of
+    // rules in `RulesSettings.rules`, last-defined-wins).
+    const highlightBgForCol = (colIdx: number): string => {
+      let bg = '';
+      for (let i = 0; i < highlightRanges.length; i += 1) {
+        const r = highlightRanges[i];
+        if (colIdx >= r.colStart && colIdx < r.colEnd) {
+          bg = r.backgroundColor;
+        }
+      }
+      return bg;
+    };
+
+    const isInFindRange = (colIdx: number): boolean => {
+      for (let i = 0; i < findRanges.length; i += 1) {
+        const r = findRanges[i];
+        if (colIdx >= r.colStart && colIdx < r.colEnd) return true;
+      }
+      return false;
+    };
+
+    // Generate new spans. We also track an "effective inline background"
+    // per char so we can split spans at background-color boundaries the
+    // same way we already split at className boundaries.
     const spans: ReactElement[] = [];
     let text = '';
     let prevClassName = '';
+    let prevBgColor = '';
+
+    const flushSpan = () => {
+      const style = prevBgColor === '' ? undefined : { backgroundColor: prevBgColor };
+      spans.push(
+        <span key={spans.length} className={prevClassName} style={style}>
+          {text}
+        </span>
+      );
+      text = '';
+    };
 
     for (let colIdx = 0; colIdx < this.terminalChars.length; colIdx += 1) {
       const terminalChar = this.terminalChars[colIdx];
@@ -121,30 +167,26 @@ export default class TerminalRow {
       // ANSI color classes — see SingleTerminalView.css for the rules).
       thisCharsClassName += findClassForCol(colIdx);
 
+      // Rule highlights paint an inline background unless this char is
+      // also a find hit (in which case find wins and we suppress the bg).
+      const thisCharsBgColor = isInFindRange(colIdx) ? '' : highlightBgForCol(colIdx);
+
       if (colIdx === 0) {
         prevClassName = thisCharsClassName;
+        prevBgColor = thisCharsBgColor;
       }
 
-      if (thisCharsClassName !== prevClassName) {
-        // Class name has changed. Dump all existing text into a span
-        spans.push(
-          <span key={spans.length} className={prevClassName}>
-            {text}
-          </span>
-        );
-        text = '';
+      if (thisCharsClassName !== prevClassName || thisCharsBgColor !== prevBgColor) {
+        flushSpan();
         prevClassName = thisCharsClassName;
+        prevBgColor = thisCharsBgColor;
       }
 
       text += terminalChar.char;
     }
 
     // Add the last span
-    spans.push(
-      <span key={spans.length} className={prevClassName}>
-        {text}
-      </span>
-    );
+    flushSpan();
 
     // Cache the result
     this._spanCache = {
