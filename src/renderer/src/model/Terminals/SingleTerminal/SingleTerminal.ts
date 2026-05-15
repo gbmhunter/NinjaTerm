@@ -24,7 +24,7 @@ import { SelectionController, SelectionInfo } from 'src/model/SelectionControlle
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
 import { SoundPlayer } from 'src/model/Util/SoundPlayer';
-import { HighlightRuleSound } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
+import { HighlightRuleSound, HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 
 export const START_OF_CONTROL_GLYPHS = 0xe000;
 
@@ -226,10 +226,55 @@ export class SingleTerminal {
     if (this.rulesSettings === null) return [];
     const matches: HighlightMatch[] = [];
     const rows = this.filteredTerminalRows;
+    // Pre-compute logical-line groups once per highlight pass so multiple
+    // LINE-scope rules don't each repeat the grouping walk.
+    let logicalLinesCache: Array<{ rowIndexes: number[]; combinedText: string }> | null = null;
+    const getLogicalLines = () => {
+      if (logicalLinesCache !== null) return logicalLinesCache;
+      const groups: Array<{ rowIndexes: number[]; combinedText: string }> = [];
+      let current: { rowIndexes: number[]; combinedText: string } | null = null;
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        if (row.wasCreatedDueToWrapping && current !== null) {
+          current.rowIndexes.push(i);
+          current.combinedText += row.text;
+        } else {
+          if (current !== null) groups.push(current);
+          current = { rowIndexes: [i], combinedText: row.text };
+        }
+      }
+      if (current !== null) groups.push(current);
+      logicalLinesCache = groups;
+      return groups;
+    };
+
     for (const rule of this.rulesSettings.rules) {
       if (!rule.enabled) continue;
       const re = rule.compiledRegex;
       if (re === null) continue;
+
+      if (rule.scope === HighlightScope.LINE) {
+        // Whole-line scope: build the combined text per logical line, test
+        // once per group, paint every constituent row's full width when it
+        // matches. The full-row range guarantees wrap segments also colour.
+        for (const group of getLogicalLines()) {
+          re.lastIndex = 0;
+          if (!re.test(group.combinedText)) continue;
+          for (const rowIndex of group.rowIndexes) {
+            const rowLen = rows[rowIndex].terminalChars.length;
+            if (rowLen === 0) continue;
+            matches.push({
+              rowIndex,
+              colStart: 0,
+              colEnd: rowLen,
+              backgroundColor: rule.backgroundColor,
+            });
+          }
+        }
+        continue;
+      }
+
+      // MATCH scope (default): per-row regex, exact match positions.
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
         const rowText = rows[rowIndex].text;
         re.lastIndex = 0;

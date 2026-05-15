@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - **Fake port "highlight rules demo"** that emits a randomised mix of info/warning/error log lines (with some 250-char lines that wrap) for visually testing the new Rules feature.
+- **Highlight rules now support an "Entire line" scope.** Each rule has a new `Highlight scope` dropdown (defaults to *Matched text only*). When set to *Entire line (incl. wraps)*, a matching line gets its full background painted across every wrap segment, so long log lines colour cleanly even when the terminal wraps them. AppData migrated v18→v19 — existing rules backfilled with `scope: 'match'`.
 - **Regex highlight rules** in a new **Rules** settings pane (renamed from Sounds). Each rule has a name, regex, case-sensitive toggle, background color, optional sound (none/ding/buzzer), and enabled flag. Matching characters get the rule's background painted inline in the terminal; sounds fire once per finalised row that matches. Two starter rules ship out of the box: `Warning` (orange) and `Error` (dark red + buzzer) — fresh installs get them via `RulesSettingsData`'s field initializer, upgrades via the v17→v18 migration. Implemented via `RulesSettings` + `HighlightRule` model and `HighlightMatch` / `highlightMatchesByRow` computeds on `SingleTerminal`; rendering reuses the `TerminalRow.getSpans` extension that Find already plugs into.
 
 ### Removed

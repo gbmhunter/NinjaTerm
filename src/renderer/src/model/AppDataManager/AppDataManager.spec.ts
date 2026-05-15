@@ -177,11 +177,36 @@ describe('app data manager tests', () => {
       expect(rules[1].name).toBe('Error');
       expect(rules[1].pattern).toBe('error');
       expect(rules[1].sound).toBe('buzzer');
+      // v18→v19 backfilled `scope='match'` for every rule.
+      expect(rules[0].scope).toBe('match');
+      expect(rules[1].scope).toBe('match');
     };
     checkSlot(appData.currentAppConfig?.settings);
     for (const p of appData.profiles ?? []) {
       checkSlot(p.rootConfig?.settings);
     }
+  });
+
+  test('migration v18->v19 backfills scope on existing rules without one', () => {
+    const v18Input = {
+      version: 18,
+      profiles: [],
+      currentAppConfig: {
+        settings: {
+          rulesSettings: {
+            rules: [
+              { name: 'A', pattern: 'a', enabled: true, caseSensitive: false, backgroundColor: '#000', sound: 'none' },
+              { name: 'B', pattern: 'b', enabled: true, caseSensitive: false, backgroundColor: '#fff', sound: 'buzzer', scope: 'line' },
+            ],
+          },
+        },
+      },
+    };
+    const { appData } = migrateAppData(v18Input);
+    const rules = appData.currentAppConfig?.settings?.rulesSettings?.rules ?? [];
+    // Missing → match; explicit value preserved.
+    expect(rules[0].scope).toBe('match');
+    expect(rules[1].scope).toBe('line');
   });
 
   test('migration v16->v17 seeds useCtrlFForFind=true on currentAppConfig and every profile', () => {

@@ -9,7 +9,7 @@ import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
 import { HighlightRule } from 'src/model/Settings/RulesSettings/HighlightRule';
-import { HighlightRuleSound } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
+import { HighlightRuleSound, HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 import { SoundPlayer } from 'src/model/Util/SoundPlayer';
 
 /**
@@ -53,7 +53,7 @@ function buildHarness() {
     return rule;
   };
 
-  return { terminal, rulesSettings, playDing, playBuzzer, addRule };
+  return { terminal, rulesSettings, displaySettings, playDing, playBuzzer, addRule };
 }
 
 describe('SingleTerminal highlight matches', () => {
@@ -133,6 +133,75 @@ describe('SingleTerminal highlight matches', () => {
     expect(byRow.get(0)?.length).toBe(1);
     expect(byRow.get(1)?.length).toBe(1);
     expect(byRow.has(2)).toBe(false);
+  });
+});
+
+describe('SingleTerminal LINE-scope highlights', () => {
+  let h: ReturnType<typeof buildHarness>;
+
+  beforeEach(() => {
+    h = buildHarness();
+  });
+
+  test('LINE scope paints the whole row when regex matches anywhere', () => {
+    h.addRule({ pattern: 'error', backgroundColor: '#f00', scope: HighlightScope.LINE });
+    h.terminal.parseData(stringToUint8Array('hello error world\n'), DataDirection.RX);
+    // Row 0 is the only match; expect a single range covering its full width.
+    const row0 = h.terminal.filteredTerminalRows[0];
+    const matches = h.terminal.highlightMatchesByRow.get(0) ?? [];
+    expect(matches.length).toBe(1);
+    expect(matches[0].colStart).toBe(0);
+    expect(matches[0].colEnd).toBe(row0.terminalChars.length);
+  });
+
+  test('LINE scope leaves non-matching rows alone', () => {
+    h.addRule({ pattern: 'error', backgroundColor: '#f00', scope: HighlightScope.LINE });
+    h.terminal.parseData(stringToUint8Array('hello world\n'), DataDirection.RX);
+    expect(h.terminal.highlightMatches).toEqual([]);
+  });
+
+  test('LINE scope paints every wrap segment of a matching logical line', () => {
+    // Narrow the terminal so a single logical line spans multiple TerminalRow
+    // segments. Width 5 against "hello error world" produces several wrapped
+    // segments — the first that contains "error" plus the others that don't.
+    h.displaySettings.terminalWidthChars.setDispValue('5');
+    h.displaySettings.terminalWidthChars.apply();
+
+    h.addRule({ pattern: 'error', backgroundColor: '#f00', scope: HighlightScope.LINE });
+    h.terminal.parseData(stringToUint8Array('hello error world\n'), DataDirection.RX);
+
+    const rows = h.terminal.filteredTerminalRows;
+    // First wrap segment + every wasCreatedDueToWrapping=true row that
+    // belongs to the same logical line must all carry a full-row highlight.
+    // Walk until we find the row holding the cursor — it should be the
+    // newly-created empty row after the logical line.
+    let lineRowsCount = 0;
+    for (let i = 0; i < rows.length; i += 1) {
+      if (i === 0 || rows[i].wasCreatedDueToWrapping) {
+        lineRowsCount += 1;
+      } else {
+        break;
+      }
+    }
+    expect(lineRowsCount).toBeGreaterThan(1); // confirm wrapping actually happened
+    for (let i = 0; i < lineRowsCount; i += 1) {
+      const rowMatches = h.terminal.highlightMatchesByRow.get(i) ?? [];
+      expect(rowMatches.length).toBe(1);
+      expect(rowMatches[0].colStart).toBe(0);
+      expect(rowMatches[0].colEnd).toBe(rows[i].terminalChars.length);
+    }
+  });
+
+  test('MATCH scope still works alongside LINE-scope rules', () => {
+    h.addRule({ pattern: 'foo', backgroundColor: '#0a0', scope: HighlightScope.MATCH });
+    h.addRule({ pattern: 'bar', backgroundColor: '#a00', scope: HighlightScope.LINE });
+    h.terminal.parseData(stringToUint8Array('foo bar baz\n'), DataDirection.RX);
+    const row0 = h.terminal.filteredTerminalRows[0];
+    const matches = h.terminal.highlightMatchesByRow.get(0) ?? [];
+    // One narrow match from "foo" rule + one full-row range from "bar" rule.
+    expect(matches.length).toBe(2);
+    expect(matches.some((m) => m.backgroundColor === '#0a0' && m.colEnd - m.colStart === 3)).toBe(true);
+    expect(matches.some((m) => m.backgroundColor === '#a00' && m.colEnd === row0.terminalChars.length)).toBe(true);
   });
 });
 

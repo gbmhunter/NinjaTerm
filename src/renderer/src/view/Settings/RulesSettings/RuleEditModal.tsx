@@ -15,7 +15,7 @@ import { useState } from 'react';
 
 import { App } from 'src/model/App';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
-import { HighlightRuleSound } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
+import { HighlightRuleSound, HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 import PopoverColorPicker from 'src/view/Components/PopoverColorPicker';
 
 interface Props {
@@ -138,6 +138,27 @@ export default observer((props: Props) => {
           onApply={(color) => rule.setBackgroundColor(color)}
           onCancel={() => {}}
         />
+
+        {/* SCOPE */}
+        <Tooltip
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
+          title='"Matched text only" paints the background just over the characters the regex captured. "Entire line" paints every character of the matched line, including wrap segments — useful for rules like \berror\b where the whole row should read as red.'
+          placement="top"
+        >
+          <FormControl size="small">
+            <InputLabel id="rule-scope-label">Highlight scope</InputLabel>
+            <Select
+              labelId="rule-scope-label"
+              label="Highlight scope"
+              value={rule.scope}
+              onChange={(e) => rule.setScope(e.target.value as HighlightScope)}
+              data-testid="rule-scope-select"
+            >
+              <MenuItem value={HighlightScope.MATCH}>Matched text only</MenuItem>
+              <MenuItem value={HighlightScope.LINE}>Entire line (incl. wraps)</MenuItem>
+            </Select>
+          </FormControl>
+        </Tooltip>
 
         {/* SOUND */}
         <FormControl size="small">

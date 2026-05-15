@@ -9,6 +9,20 @@ export enum HighlightRuleSound {
   BUZZER = 'buzzer',
 }
 
+/**
+ * How wide the painted background extends when a rule matches.
+ *
+ * - `MATCH` paints only the characters the regex matched (the historic
+ *   behavior — first version of the feature).
+ * - `LINE` paints every row that belongs to the matched logical line,
+ *   including wrap segments. This is useful for rules like
+ *   `(?i)\berror\b` where the user wants the whole line to read as red.
+ */
+export enum HighlightScope {
+  MATCH = 'match',
+  LINE = 'line',
+}
+
 export class HighlightRuleData {
   version = 1;
   name = '';
@@ -19,6 +33,12 @@ export class HighlightRuleData {
   /** Hex string e.g. "#ffd54f". Painted as the background of matched chars. */
   backgroundColor = '#ffd54f';
   sound: HighlightRuleSound = HighlightRuleSound.NONE;
+  /**
+   * Whether the background extends only over the matched characters or
+   * across the whole logical line (covering wrap segments). See
+   * `HighlightScope`.
+   */
+  scope: HighlightScope = HighlightScope.MATCH;
 }
 
 /**
@@ -38,7 +58,7 @@ export function makeDefaultHighlightRules(): HighlightRuleData[] {
   // Material deep-orange 900. Contrast vs white text ≈ 6.7:1 —
   // comfortably above WCAG AA (4.5:1). The vivid #ff9800 we started
   // with was ~2:1 and washed out white text.
-  warning.backgroundColor = '#bf360a';
+  warning.backgroundColor = '#df8004';
   // sound stays NONE — warnings shouldn't nag
 
   const error = new HighlightRuleData();
