@@ -153,7 +153,7 @@ type MigrationHighlightRule = {
   caseSensitive?: boolean;
   backgroundColor?: string;
   sound?: string;
-  // v18->v19
+  // Added in v17->v18 alongside the rest of the rule shape.
   scope?: string;
 };
 
@@ -477,19 +477,6 @@ function migrateV16toV17(appData: MigrationAppData): void {
   appData.version = 17;
 }
 
-function migrateV18toV19(appData: MigrationAppData): void {
-  // Highlight rules grew a `scope` field (match-only vs whole-line). Backfill
-  // every existing rule with `match` so behavior is unchanged.
-  forEachRootConfig(appData, (rootConfig) => {
-    const rules = rootConfig.settings?.rulesSettings?.rules;
-    if (!rules) return;
-    for (const rule of rules) {
-      if (rule.scope === undefined) rule.scope = 'match';
-    }
-  });
-  appData.version = 19;
-}
-
 function migrateV17toV18(appData: MigrationAppData): void {
   // Replace the legacy `soundsSettings` (a single `playSoundsOnPassFail`
   // toggle hardcoded to literal "pass" / "fail" matches) with the new
@@ -530,7 +517,6 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 15, apply: migrateV15toV16 },
   { from: 16, apply: migrateV16toV17 },
   { from: 17, apply: migrateV17toV18 },
-  { from: 18, apply: migrateV18toV19 },
 ];
 
 // --------------------------------------------------------------------------
