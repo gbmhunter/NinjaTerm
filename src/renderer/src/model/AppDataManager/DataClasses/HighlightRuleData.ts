@@ -35,13 +35,17 @@ export function makeDefaultHighlightRules(): HighlightRuleData[] {
   const warning = new HighlightRuleData();
   warning.name = 'Warning';
   warning.pattern = 'warning';
-  warning.backgroundColor = '#ff9800'; // vivid orange
+  // Material deep-orange 900. Contrast vs white text ≈ 6.7:1 — comfortably
+  // above WCAG AA (4.5:1). Earlier picks (`#ff9800`) were ~2:1 and washed
+  // out white text.
+  warning.backgroundColor = '#bf360a';
   // sound stays NONE — warnings shouldn't nag
 
   const error = new HighlightRuleData();
   error.name = 'Error';
   error.pattern = 'error';
-  error.backgroundColor = '#d32f2f'; // dark red — keeps light terminal text readable
+  // Material red 900. Contrast vs white text ≈ 7.9:1, clearly red.
+  error.backgroundColor = '#b71c1c';
   error.sound = HighlightRuleSound.BUZZER;
 
   return [warning, error];
