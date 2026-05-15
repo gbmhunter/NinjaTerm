@@ -242,6 +242,74 @@ export default class FakePortsController {
     );
 
     //=================================================================================
+    // highlight rules demo — mix of info/warning/error, short and very long
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'highlight rules demo: info/warning/error mix, ~1.4lps',
+        'Emits a randomised mix of info, warning, and error log lines roughly once a second. Includes some very long lines (200+ chars) that wrap in the terminal so you can verify the highlight rule renders correctly across wrapped row segments. Pair with the default Warning + Error rules.',
+        () => {
+          const shortInfo = [
+            'INFO: heartbeat ok',
+            'INFO: telemetry batch sent',
+            'INFO: configuration loaded from flash',
+            'SENSOR: temp=23.5C humidity=45%',
+            'BLE: client polling for new records',
+            'STORAGE: flushed 4 records to NVS',
+            'NET: keepalive 200 ok',
+            'ADC: battery voltage 3.85V',
+          ];
+          const shortWarning = [
+            'WARNING: low memory, 1024 bytes free',
+            'WARNING: signal strength low (-85 dBm)',
+            'WARNING: retry attempt 3 of 5 on uplink',
+            'WARNING: i2c bus 1 jitter detected',
+            'WARNING: clock drift exceeded 50ppm',
+          ];
+          const shortError = [
+            'ERROR: failed to write to flash sector 0x12',
+            'ERROR: i2c timeout on bus 1',
+            'ERROR: device disconnected unexpectedly',
+            'ERROR: assertion failed at main.c:142',
+            'ERROR: stack overflow in worker task',
+          ];
+          // Long lines (~250 chars) so they wrap at typical terminal widths.
+          // Useful to confirm the highlight rule still paints the matched
+          // word even when the line spans several rendered rows.
+          const longInfo = [
+            'INFO: telemetry batch dump: ' + 'sample=42 '.repeat(25) + '— end of batch',
+            'INFO: configuration dump: ' + 'param=value '.repeat(20) + '— done',
+          ];
+          const longWarning = [
+            'WARNING: degraded performance on subsystem A — diagnostic trail: ' + 'step=ok '.repeat(30) + '— continuing in fallback mode',
+            'WARNING: prolonged sensor calibration anomaly: ' + 'delta=+0.03 '.repeat(20) + '— flagging next cycle for re-calibration',
+          ];
+          const longError = [
+            'ERROR: critical fault in subsystem B with diagnostic trace: ' + 'frame@0xDEAD '.repeat(20) + '— scheduling reboot',
+            'ERROR: unhandled exception during packet reassembly: ' + 'byte=0xFF '.repeat(25) + '— dropping connection',
+          ];
+          // Pool weights: info appears ~3x, warning/error 1x each, long
+          // variants 1x each — keeps the stream readable while still
+          // hitting every code path.
+          const pools = [shortInfo, shortInfo, shortInfo, shortWarning, shortError, longInfo, longWarning, longError];
+          const pickLine = () => {
+            const pool = pools[Math.floor(Math.random() * pools.length)];
+            return pool[Math.floor(Math.random() * pool.length)] + '\n';
+          };
+          const intervalId = setInterval(() => {
+            app.parseRxData(new TextEncoder().encode(pickLine()));
+          }, 700);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
     // red green, 0.2lps
     //=================================================================================
     this.fakePorts.push(
