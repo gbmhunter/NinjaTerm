@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- **UI primary colour switched from MUI-default blue to muted teal `#5eead4`.** Toolbar icons, the settings-sidebar selected chip, and other `color="primary"` widgets now render in teal — the complementary opposite of the logo red `#dc3545`, well clear of the semantic green/orange/red status slots, and a better fit for the embedded-tech aesthetic. Set in the `createTheme` palette in `AppView.tsx`; the sidebar's hardcoded selected-chip rgba was retuned to match. Graphing's "Update X/Y Range From Data" buttons were also flipped from `color="success"` to `color="primary"` since they're actions, not status indicators.
-- **Terminal panes no longer need to be clicked before typing.** Removed the click-focus concept from terminals: keystrokes now route to the active terminal (combined TX/RX in single mode, TX in split mode) whenever the terminal pane is shown and no input field is absorbing keys. Also drops the red `#de3545` hover/focus glow that several users mistook for an RX error indicator, the hollow "unfocused" cursor, and the now-redundant `isFocused`/`isFocusable` model state and `tabIndex`/`onFocus`/`onBlur` view wiring. In split mode the RX pane no longer renders a cursor.
-- **Settings sidebar refresh.** Sections now have icons, a brand-tinted rounded "selected" chip, and are grouped under Communication / Appearance / Application subheaders; the hard right border is gone in favour of subtler chrome. `SettingsView.tsx` is driven from a `groups` array instead of seven hand-rolled `ListItemButton`s. "Connection Configuration" label shortened to "Connection".
+- **UI primary switched from MUI-default blue to muted teal `#5eead4`.** Complementary opposite of the logo red; set in `createTheme` in `AppView.tsx`. Graphing's "Update X/Y Range From Data" buttons also flipped from `color="success"` to `color="primary"`.
+- **Terminal keystrokes no longer require clicking the pane first.** Typing routes to the active terminal whenever the terminal pane is shown and no input field has focus — dropped `isFocused`/`isFocusable` state, the red focus glow, and the hollow-cursor style; RX in split mode no longer renders a cursor.
+- **Settings sidebar refresh.** Icons, grouped subheaders (Communication / Appearance / Application), and a teal-tinted rounded selected chip; `SettingsView.tsx` is now driven from a `groups` array.
 
 ### Added
 
