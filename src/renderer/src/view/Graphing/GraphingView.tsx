@@ -555,7 +555,7 @@ export default observer((props: Props) => {
           {/* ============================================================== */}
           <Button
             variant="outlined"
-            color="success"
+            color="primary"
             onClick={() => {
               app.graphing.updateXRangeFromData();
             }}
@@ -645,7 +645,7 @@ export default observer((props: Props) => {
           {/* ============================================================== */}
           <Button
             variant="outlined"
-            color="success"
+            color="primary"
             onClick={() => {
               app.graphing.updateYRangeFromData();
             }}
