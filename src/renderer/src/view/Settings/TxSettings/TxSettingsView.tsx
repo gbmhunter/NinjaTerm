@@ -171,7 +171,7 @@ function TxSettingsView(props: Props) {
                 }}
               />
             }
-            label="Use Ctrl+C/V for copy/paste (Ctrl+C copies if text selected, Ctrl+V always pastes)"
+            label="Use Ctrl+C/V for copy/paste (Ctrl+C copies if text selected, Ctrl+V always pastes, will override sending 0x01-0x1A)"
             sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
@@ -193,7 +193,7 @@ function TxSettingsView(props: Props) {
                 }}
               />
             }
-            label="Use Ctrl+F to open Find in scrollback (when off, Ctrl+F sends 0x06 / ACK)"
+            label="Use Ctrl+F to open Find in scrollback (will override sending 0x01-0x1A)"
             sx={{ marginBottom: '10px' }}
           />
         </Tooltip>
