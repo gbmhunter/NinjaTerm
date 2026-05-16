@@ -364,16 +364,12 @@ export class SingleTerminal {
   currBackgroundColorNum: number | null;
 
   /**
-   * Set to true when the user clicks within the Terminals bounding box.
-   * Used to:
-   * - Know when to capture key strokes for the Terminal.
-   * - Send data to the serial port when the Paste shortcut is pressed
+   * True for terminals that act as the destination of typed keystrokes
+   * (single-pane TX/RX and the split-mode TX pane). When false, the terminal
+   * is purely an output view: no cursor is rendered. Set once at construction
+   * — there is no click-focus state.
    */
-  isFocused: boolean;
-
-  // If this is set to false, the Terminal is not focusable. It will not have a background
-  // glow on hover or click, and the cursor will always outlined, never filled in.
-  isFocusable: boolean;
+  showCursor: boolean;
 
   /**
    * This is used to keep track of the order in which rows are received so that
@@ -429,7 +425,7 @@ export class SingleTerminal {
    * Create a new terminal instance.
    *
    * @param id A string identifier for this terminal instance.
-   * @param isFocusable If true, the terminal will be allowed to be focused by the user.
+   * @param showCursor If true, the terminal renders a blinking cursor and is eligible to receive typed keystrokes (via `Terminals.activeTerminal`).
    * @param rxSettings RX settings that the terminal will use.
    * @param displaySettings Display settings that the terminal will use.
    * @param onTerminalKeyDown Callback which will be called whenever a key is pressed while the terminal is focused.
@@ -438,7 +434,7 @@ export class SingleTerminal {
    */
   constructor(
     id: string,
-    isFocusable: boolean,
+    showCursor: boolean,
     rxSettings: RxSettings,
     displaySettings: DisplaySettings,
     snackbarController: SnackbarController,
@@ -448,7 +444,7 @@ export class SingleTerminal {
   ) {
     // Save passed in variables and dependencies
     this.id = id;
-    this.isFocusable = isFocusable;
+    this.showCursor = showCursor;
     this.rxSettings = rxSettings;
     this.displaySettings = displaySettings;
     this.snackbarController = snackbarController;
@@ -497,8 +493,6 @@ export class SingleTerminal {
 
     this.currForegroundColorNum = null;
     this.currBackgroundColorNum = null;
-
-    this.isFocused = false;
 
     // Register listener for whenever the number type is changed, and clear the partial number buffer.
     reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
@@ -1889,20 +1883,6 @@ export class SingleTerminal {
       }
       this.scrollPos = newScrollPos;
     }
-  }
-
-  /**
-   * Use this to set whether the terminal is considered focused or not. If focused, the
-   * terminal will be given a glow border and the cursor will go solid.
-   *
-   * @param value True to set as focused, false to not be focused.
-   */
-  setIsFocused(value: boolean) {
-    // Only let this be set if terminal is focusable
-    if (!this.isFocusable) {
-      return;
-    }
-    this.isFocused = value;
   }
 
   async handleKeyDown(event: React.KeyboardEvent) {

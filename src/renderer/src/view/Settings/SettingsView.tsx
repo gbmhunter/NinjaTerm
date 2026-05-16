@@ -176,15 +176,16 @@ function SettingsDialog(props: Props) {
                               paddingY: 0.6,
                               paddingX: 1.25,
                               '&.Mui-selected': {
-                                backgroundColor: 'rgba(144, 202, 249, 0.18)',
+                                // Brand-primary (muted teal #5eead4) at low opacity for the chip background.
+                                backgroundColor: 'rgba(94, 234, 212, 0.16)',
                                 '&:hover': {
-                                  backgroundColor: 'rgba(144, 202, 249, 0.24)',
+                                  backgroundColor: 'rgba(94, 234, 212, 0.22)',
                                 },
                                 '& .MuiListItemIcon-root': {
-                                  color: 'primary.light',
+                                  color: 'primary.main',
                                 },
                                 '& .MuiListItemText-primary': {
-                                  color: 'primary.light',
+                                  color: 'primary.main',
                                   fontWeight: 600,
                                 },
                               },

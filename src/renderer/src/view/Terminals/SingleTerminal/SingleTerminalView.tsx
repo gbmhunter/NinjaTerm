@@ -78,8 +78,11 @@ export default observer((props: Props) => {
     // returned to react-window as the row renderer. Disable just this one.
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const spans = useMemo(() => {
-      // Determine cursor class
-      const cursorClass = terminal.isFocused ? styles.cursorFocused : styles.cursorUnfocused;
+      // The TerminalRow span generator always applies `styles.cursorFocused`
+      // to the cursor cell. For output-only terminals (RX pane in split
+      // mode) we want no cursor at all, so swap the class for an empty
+      // string — the span is still emitted but carries no cursor styling.
+      const cursorClass = terminal.showCursor ? styles.cursorFocused : '';
       const stylesWithCursor = { ...styles, cursorFocused: cursorClass };
 
       return terminalRowToRender.getSpans(
@@ -94,7 +97,7 @@ export default observer((props: Props) => {
       terminalRowToRender.terminalCharsHash,
       terminal.cursorPosition[0],
       terminal.cursorPosition[1],
-      terminal.isFocused,
+      terminal.showCursor,
       terminalRowCursorIsOn?.uniqueRowId,
       findRangesKey,
       highlightRangesKey,
@@ -373,8 +376,7 @@ export default observer((props: Props) => {
       {/* This is the outer terminal div which sets the background colour */}
       <div
         id={terminal.id} // Assign terminal ID to outer most DOM element
-        tabIndex={terminal.isFocusable ? 0 : undefined}
-        className={`${styles.outerTerminalWrapper} ${terminal.isFocusable ? styles.focusable : ''}`}
+        className={styles.outerTerminalWrapper}
         data-testid={testId + '-outer'}
         style={{
           flexGrow: 1,
@@ -389,16 +391,6 @@ export default observer((props: Props) => {
           '--default-tx-color': terminal.defaultTxColor,
           '--default-rx-color': terminal.defaultRxColor,
         } as React.CSSProperties & { [key: string]: string | number }}
-        onFocus={(_e) => {
-          terminal.setIsFocused(true);
-        }}
-        onBlur={(_e) => {
-          terminal.setIsFocused(false);
-        }}
-        onKeyDown={(_e) => {
-          // Key presses now dealt with by global handler in App component
-          // terminal.handleKeyDown(e);
-        }}
       >
         {/* ======================================================= */}
         {/* FIND BAR (only visible when terminal.isFindOpen) */}

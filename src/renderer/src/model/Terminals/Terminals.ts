@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, computed } from 'mobx';
 
 import { App } from 'src/model/App';
 import { SingleTerminal } from './SingleTerminal/SingleTerminal';
 import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import RightDrawer from './RightDrawer/RightDrawer';
+import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 export default class Terminals {
 
@@ -26,7 +27,7 @@ export default class Terminals {
     this.app = app;
 
     this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
-    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer); // Not focusable
+    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
     this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
     this.rightDrawer = new RightDrawer(app);
 
@@ -38,7 +39,23 @@ export default class Terminals {
       this._loadConfig();
     });
 
-    makeAutoObservable(this); // Make sure this near the end
+    makeAutoObservable(this, {
+      activeTerminal: computed,
+    }); // Make sure this near the end
+  }
+
+  /**
+   * The terminal that receives keystrokes typed by the user and shows a
+   * blinking cursor. In single-pane mode this is the combined TX/RX terminal;
+   * in split mode it's the TX pane (the RX pane is output-only). There is no
+   * notion of click-focus — the active terminal is fully determined by the
+   * current `dataViewConfiguration`.
+   */
+  get activeTerminal(): SingleTerminal {
+    if (this.app.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS) {
+      return this.txTerminal;
+    }
+    return this.txRxTerminal;
   }
 
   /**

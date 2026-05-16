@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- **UI primary colour switched from MUI-default blue to muted teal `#5eead4`.** Toolbar icons, the settings-sidebar selected chip, and other `color="primary"` widgets now render in teal — the complementary opposite of the logo red `#dc3545`, well clear of the semantic green/orange/red status slots, and a better fit for the embedded-tech aesthetic. Set in the `createTheme` palette in `AppView.tsx`; the sidebar's hardcoded selected-chip rgba was retuned to match.
+- **Terminal panes no longer need to be clicked before typing.** Removed the click-focus concept from terminals: keystrokes now route to the active terminal (combined TX/RX in single mode, TX in split mode) whenever the terminal pane is shown and no input field is absorbing keys. Also drops the red `#de3545` hover/focus glow that several users mistook for an RX error indicator, the hollow "unfocused" cursor, and the now-redundant `isFocused`/`isFocusable` model state and `tabIndex`/`onFocus`/`onBlur` view wiring. In split mode the RX pane no longer renders a cursor.
 - **Settings sidebar refresh.** Sections now have icons, a brand-tinted rounded "selected" chip, and are grouped under Communication / Appearance / Application subheaders; the hard right border is gone in favour of subtler chrome. `SettingsView.tsx` is driven from a `groups` array instead of seven hand-rolled `ListItemButton`s. "Connection Configuration" label shortened to "Connection".
 
 ### Added

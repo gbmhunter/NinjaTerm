@@ -5,19 +5,16 @@
 }
 
 .outerTerminalWrapper {
-  /* Prevent default white outline from showing on the terminal. Only really applicable if terminal
-  is focusable, but no harm applying this to unfocusable terminals also */
+  /* Belt-and-braces: the wrapper is no longer focusable (no tabindex,
+     no onFocus handler), so this rule is unreachable today — kept so
+     a future change that makes it focusable won't accidentally
+     resurrect the browser's default focus ring. */
   outline: none;
 }
 
-/* Make the outer Terminal div glow when either it's hovered over OR
-it is focused. This makes it obvious to the user that they have clicked/selected
-it */
-.focusable.outerTerminalWrapper:hover, .focusable.outerTerminalWrapper:focus-within {
-  box-shadow: 0px 0px 10px 0px #de3545; /* Give a box shadow when focused or hovered */
-}
-
-/* When the Terminal is focused, show the cursor as a solid blinking rectangle */
+/* Solid blinking rectangle cursor — applied only to terminals with
+   `showCursor: true` (single-pane TX/RX, and the TX pane in split mode).
+   Output-only panes (RX in split mode) render no cursor. */
 .cursorFocused {
   -webkit-animation: blinkFocused 0.8s infinite;
   animation: blinkFocused 0.8s infinite;
@@ -36,35 +33,6 @@ it */
   }
   100% {
     background-color: #222;
-  }
-}
-
-/* When the Terminal is unfocused, show the cursor as just a blinking outline */
-.cursorUnfocused {
-  -webkit-animation: blinkunfocused 0.8s infinite;
-  animation: blinkunfocused 0.8s infinite;
-
-  /* To prevent the cursor border from being clipped, we use outline-
-  instead of border- and also use outline-offset */
-  outline-width: 1px;
-  outline-style: solid;
-  outline-offset: -1px;
-
-  /* This white-space is needed to be set like this so the cursor displays correctly,
-  otherwise you just get a vertical line at the start of the char. Not sure
-  why it's needed?!? */
-  white-space: break-spaces;
-}
-
-@keyframes blinkunfocused {
-  0% {
-    outline-color: #222;
-  }
-  50% {
-    outline-color: white;
-  }
-  100% {
-    outline-color: #222;
   }
 }
 

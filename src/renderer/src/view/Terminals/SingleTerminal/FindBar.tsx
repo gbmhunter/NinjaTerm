@@ -35,22 +35,14 @@ export default observer((props: Props) => {
   }, [terminal.isFindOpen]);
 
   /**
-   * Closes Find and parks focus on something that still bubbles keydown into
-   * `App.handleKeyDown`. Otherwise the input unmounts, focus falls back to
-   * `document.body` (outside `#outer-border`), and the next Ctrl+F is
-   * swallowed until the user clicks somewhere inside the app.
-   *
-   * Prefer the terminal pane itself when it is focusable, so the user can
-   * keep typing serial data immediately after closing Find. Fall back to
-   * `#outer-border` for non-focusable panes (e.g. the RX pane in
-   * separate-TX/RX mode).
+   * Closes Find and parks focus on `#outer-border` so the next keystroke
+   * still bubbles into `App.handleKeyDown`. Otherwise the input unmounts,
+   * focus falls back to `document.body` (outside `#outer-border`), and the
+   * next Ctrl+F is swallowed until the user clicks somewhere inside the app.
    */
   const closeAndRestoreFocus = () => {
-    const terminalEl = document.getElementById(terminal.id) as HTMLElement | null;
     const outerBorder = document.getElementById('outer-border') as HTMLElement | null;
-    const focusTarget =
-      terminalEl && terminal.isFocusable ? terminalEl : outerBorder ?? terminalEl;
-    focusTarget?.focus();
+    outerBorder?.focus();
     terminal.closeFind();
   };
 
