@@ -147,7 +147,7 @@ test.describe('RX data (Electron)', () => {
 
     const expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: 'u', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: 'u', classNames: 'cursorFocused' }),
         new ExpectedTerminalChar({ char: 'p' }),
       ],
       [
@@ -170,7 +170,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: '1' }),
       ],
       [
-        new ExpectedTerminalChar({ char: 'r', classNames: 'cursorUnfocused' }), // Cursor should be here now!
+        new ExpectedTerminalChar({ char: 'r', classNames: 'cursorFocused' }), // Cursor should be here now!
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: '2' }),
@@ -199,7 +199,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: 'r' }),
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
-        new ExpectedTerminalChar({ char: '1', classNames: 'cursorUnfocused' }), // Cursor should be moved back 1
+        new ExpectedTerminalChar({ char: '1', classNames: 'cursorFocused' }), // Cursor should be moved back 1
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -211,7 +211,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: 'A' }), // 1 should be changed to A
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -229,7 +229,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: 'o' }),
         new ExpectedTerminalChar({ char: 'w' }),
         new ExpectedTerminalChar({ char: 'A' }),
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -247,7 +247,7 @@ test.describe('RX data (Electron)', () => {
       [
         new ExpectedTerminalChar({ char: 'r' }),
         new ExpectedTerminalChar({ char: 'o' }), // All data after this 'o' should be gone!
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -262,7 +262,7 @@ test.describe('RX data (Electron)', () => {
     // be displayed on screen
     let expectedDisplay: ExpectedTerminalChar[][] = [
       [
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -283,7 +283,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: '6' }),
         new ExpectedTerminalChar({ char: '7' }),
         new ExpectedTerminalChar({ char: '8' }),
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -303,7 +303,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: '1' }),
         new ExpectedTerminalChar({ char: '2' }),
         new ExpectedTerminalChar({ char: '3' }),
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -350,7 +350,7 @@ test.describe('RX data (Electron)', () => {
         new ExpectedTerminalChar({ char: '9' }),
       ],
       [
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }),
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }),
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
