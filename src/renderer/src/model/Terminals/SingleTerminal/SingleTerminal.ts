@@ -22,6 +22,9 @@ import RxSettings, {
 import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
+import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
+import { SoundPlayer } from 'src/model/Util/SoundPlayer';
+import { HighlightRuleSound, HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 
 export const START_OF_CONTROL_GLYPHS = 0xe000;
 
@@ -45,6 +48,19 @@ export interface FindMatch {
   rowIndex: number;
   colStart: number;
   colEnd: number;
+}
+
+/**
+ * One highlight match for a single rule on a single row. Has the same
+ * row+col shape as `FindMatch` but also carries the rule's background
+ * color so the view can apply an inline style without re-looking-up the
+ * rule.
+ */
+export interface HighlightMatch {
+  rowIndex: number;
+  colStart: number;
+  colEnd: number;
+  backgroundColor: string;
 }
 
 /**
@@ -198,6 +214,109 @@ export class SingleTerminal {
     return map;
   }
 
+  /**
+   * All highlight-rule matches against `filteredTerminalRows`, with each
+   * match carrying the rule's background color so the renderer can apply
+   * it without re-looking-up the rule. Rules are evaluated in declaration
+   * order; later rules overwrite earlier rules on the same chars in the
+   * `getSpans` per-char lookup (later range wins because it's matched
+   * last when iterating).
+   */
+  get highlightMatches(): HighlightMatch[] {
+    if (this.rulesSettings === null) return [];
+    const matches: HighlightMatch[] = [];
+    const rows = this.filteredTerminalRows;
+    // Pre-compute logical-line groups once per highlight pass so multiple
+    // LINE-scope rules don't each repeat the grouping walk.
+    let logicalLinesCache: Array<{ rowIndexes: number[]; combinedText: string }> | null = null;
+    const getLogicalLines = () => {
+      if (logicalLinesCache !== null) return logicalLinesCache;
+      const groups: Array<{ rowIndexes: number[]; combinedText: string }> = [];
+      let current: { rowIndexes: number[]; combinedText: string } | null = null;
+      for (let i = 0; i < rows.length; i += 1) {
+        const row = rows[i];
+        if (row.wasCreatedDueToWrapping && current !== null) {
+          current.rowIndexes.push(i);
+          current.combinedText += row.text;
+        } else {
+          if (current !== null) groups.push(current);
+          current = { rowIndexes: [i], combinedText: row.text };
+        }
+      }
+      if (current !== null) groups.push(current);
+      logicalLinesCache = groups;
+      return groups;
+    };
+
+    for (const rule of this.rulesSettings.rules) {
+      if (!rule.enabled) continue;
+      const re = rule.compiledRegex;
+      if (re === null) continue;
+
+      if (rule.scope === HighlightScope.LINE) {
+        // Whole-line scope: build the combined text per logical line, test
+        // once per group, paint every constituent row's full width when it
+        // matches. The full-row range guarantees wrap segments also colour.
+        for (const group of getLogicalLines()) {
+          re.lastIndex = 0;
+          if (!re.test(group.combinedText)) continue;
+          for (const rowIndex of group.rowIndexes) {
+            const rowLen = rows[rowIndex].terminalChars.length;
+            if (rowLen === 0) continue;
+            matches.push({
+              rowIndex,
+              colStart: 0,
+              colEnd: rowLen,
+              backgroundColor: rule.backgroundColor,
+            });
+          }
+        }
+        continue;
+      }
+
+      // MATCH scope (default): per-row regex, exact match positions.
+      for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const rowText = rows[rowIndex].text;
+        re.lastIndex = 0;
+        let m = re.exec(rowText);
+        while (m !== null) {
+          // Zero-width matches would loop forever — advance manually.
+          const matchLen = m[0].length;
+          if (matchLen === 0) {
+            re.lastIndex = m.index + 1;
+          } else {
+            matches.push({
+              rowIndex,
+              colStart: m.index,
+              colEnd: m.index + matchLen,
+              backgroundColor: rule.backgroundColor,
+            });
+          }
+          m = re.exec(rowText);
+        }
+      }
+    }
+    return matches;
+  }
+
+  /**
+   * Highlight matches grouped by row index — same access pattern as
+   * `findMatchesByRow`, used by the row renderer to skip a linear scan
+   * per visible row per render.
+   */
+  get highlightMatchesByRow(): Map<number, HighlightMatch[]> {
+    const map = new Map<number, HighlightMatch[]>();
+    for (const match of this.highlightMatches) {
+      const list = map.get(match.rowIndex);
+      if (list) {
+        list.push(match);
+      } else {
+        map.set(match.rowIndex, [match]);
+      }
+    }
+    return map;
+  }
+
   // True if this RX data parser is just processing text as plain text, i.e.
   // no partial escape code has been detected.
   inIdleState: boolean;
@@ -286,6 +405,27 @@ export class SingleTerminal {
   lastKnownSelectionInfo: SelectionInfo | null = null;
 
   /**
+   * Highlight-rules source for `highlightMatches` and the per-row sound
+   * reaction. Optional so existing unit-test call sites that construct a
+   * bare terminal don't need to plumb it through.
+   */
+  rulesSettings: RulesSettings | null;
+
+  /**
+   * Sound player used by the per-row sound reaction below. Optional for the
+   * same reason as `rulesSettings`.
+   */
+  soundPlayer: SoundPlayer | null;
+
+  /**
+   * Highest `uniqueRowId` whose row has already been evaluated for
+   * rule-driven sound playback. Cursor row id <= watermark means nothing to
+   * do; > watermark means rows have finalised since the last check and we
+   * need to walk them.
+   */
+  private _lastSoundCheckedRowUniqueId: number = -1;
+
+  /**
    * Create a new terminal instance.
    *
    * @param id A string identifier for this terminal instance.
@@ -293,6 +433,8 @@ export class SingleTerminal {
    * @param rxSettings RX settings that the terminal will use.
    * @param displaySettings Display settings that the terminal will use.
    * @param onTerminalKeyDown Callback which will be called whenever a key is pressed while the terminal is focused.
+   * @param rulesSettings Optional. Provides the active highlight rules. Without it `highlightMatches` is always empty and no sounds fire.
+   * @param soundPlayer Optional. Used by the per-row sound reaction.
    */
   constructor(
     id: string,
@@ -300,7 +442,9 @@ export class SingleTerminal {
     rxSettings: RxSettings,
     displaySettings: DisplaySettings,
     snackbarController: SnackbarController,
-    onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null
+    onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null,
+    rulesSettings: RulesSettings | null = null,
+    soundPlayer: SoundPlayer | null = null,
   ) {
     // Save passed in variables and dependencies
     this.id = id;
@@ -309,6 +453,8 @@ export class SingleTerminal {
     this.displaySettings = displaySettings;
     this.snackbarController = snackbarController;
     this.onTerminalKeyDown = onTerminalKeyDown;
+    this.rulesSettings = rulesSettings;
+    this.soundPlayer = soundPlayer;
 
     autorun(() => {
       if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
@@ -362,9 +508,59 @@ export class SingleTerminal {
       findMatches: computed,
       findMatchesByRow: computed,
       currentMatch: computed,
+      highlightMatches: computed,
+      highlightMatchesByRow: computed,
       terminalRows: observable.shallow, // Only observe array changes, not individual row changes
       lastKnownSelectionInfo: false, // Not MobX-tracked; updated during renders, not via actions
     });
+  }
+
+  /**
+   * Walks rows that have finalised since the last call (i.e. every row
+   * with a uniqueRowId strictly less than the current cursor row's
+   * uniqueRowId and strictly greater than the watermark), and plays the
+   * sound configured by each enabled rule whose regex matches.
+   *
+   * Called imperatively at the end of `parseData` rather than from a MobX
+   * reaction so the firing is synchronous and testable, and so we don't
+   * need to plumb extra disposers for cleanup.
+   */
+  private _checkFinalisedRowsForSounds() {
+    if (this.rulesSettings === null || this.soundPlayer === null) return;
+    const cursorRow = this.terminalRows[this.cursorPosition[0]];
+    if (!cursorRow) return;
+    const currentCursorRowId = cursorRow.uniqueRowId;
+    // Backwards jump (e.g. clear()) — just resync the watermark and bail.
+    if (currentCursorRowId <= this._lastSoundCheckedRowUniqueId) {
+      this._lastSoundCheckedRowUniqueId = currentCursorRowId - 1;
+      return;
+    }
+    for (const row of this.terminalRows) {
+      if (row.uniqueRowId <= this._lastSoundCheckedRowUniqueId) continue;
+      // Cursor row is still in progress — stop before it.
+      if (row.uniqueRowId >= currentCursorRowId) break;
+      this._fireSoundsForRow(row.text);
+    }
+    this._lastSoundCheckedRowUniqueId = currentCursorRowId - 1;
+  }
+
+  private _fireSoundsForRow(rowText: string) {
+    if (this.rulesSettings === null || this.soundPlayer === null) return;
+    for (const rule of this.rulesSettings.rules) {
+      if (!rule.enabled) continue;
+      if (rule.sound === HighlightRuleSound.NONE) continue;
+      const re = rule.compiledRegex;
+      if (re === null) continue;
+      // /g regex carries `lastIndex` between calls; reset so each row is
+      // tested from the start.
+      re.lastIndex = 0;
+      if (!re.test(rowText)) continue;
+      if (rule.sound === HighlightRuleSound.DING) {
+        this.soundPlayer.playDing();
+      } else if (rule.sound === HighlightRuleSound.BUZZER) {
+        this.soundPlayer.playBuzzer();
+      }
+    }
   }
 
   //======================================================================
@@ -499,6 +695,13 @@ export class SingleTerminal {
     // Right at the end of adding everything, limit the num. of max. rows in the terminal
     // as determined by the settings
     this._limitNumRows();
+
+    // Fire any rule-driven sounds for rows that finalised during this chunk.
+    // Done synchronously (rather than via a MobX reaction) so the firing
+    // happens deterministically on the same tick the data is parsed —
+    // which the unit tests rely on, and which avoids reaction-scheduler
+    // pitfalls in production.
+    this._checkFinalisedRowsForSounds();
   }
 
   _parseAsciiData(data: Uint8Array, direction: DataDirection) {
@@ -1582,6 +1785,10 @@ export class SingleTerminal {
 
     this.terminalRows = [];
     this.uniqueRowIndexCount = 0;
+    // `uniqueRowIndexCount` restarts at 0, so previously-evaluated row
+    // ids collide with new ones. Reset the watermark so future rows can
+    // fire their sounds again.
+    this._lastSoundCheckedRowUniqueId = -1;
 
     // Now we've cleared all existing rows, create single row
     // with one space in it to hold the cursor.

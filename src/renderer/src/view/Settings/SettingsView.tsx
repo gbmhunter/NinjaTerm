@@ -14,7 +14,7 @@ import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';
 import GeneralSettingsView from './GeneralSettings/GeneralSettingsView';
 import ProfileSettingsView from './ProfileSettings/ProfileSettingsView';
-import SoundsSettingsView from './SoundsSettings/SoundsSettingsView';
+import RulesSettingsView from './RulesSettings/RulesSettingsView';
 
 interface Props {
   app: App;
@@ -42,8 +42,8 @@ function SettingsDialog(props: Props) {
     [SettingsCategories.PROFILES]: (
       <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />
     ),
-    [SettingsCategories.SOUNDS]: (
-      <SoundsSettingsView app={app} />
+    [SettingsCategories.RULES]: (
+      <RulesSettingsView app={app} />
     ),
   };
 
@@ -163,21 +163,21 @@ function SettingsDialog(props: Props) {
                   <ListItemText>Profiles</ListItemText>
                 </ListItemButton>
                 {/* ================================================ */}
-                {/* SOUNDS */}
+                {/* RULES (formerly Sounds — now regex highlight rules) */}
                 {/* ================================================ */}
                 <ListItemButton
                   onClick={() => {
                     app.settings.setActiveSettingsCategory(
-                      SettingsCategories.SOUNDS
+                      SettingsCategories.RULES
                     );
                   }}
                   selected={
                     app.settings.activeSettingsCategory ===
-                    SettingsCategories.SOUNDS
+                    SettingsCategories.RULES
                   }
-                  data-testid="sounds-settings-button"
+                  data-testid="rules-settings-button"
                 >
-                  <ListItemText>Sounds</ListItemText>
+                  <ListItemText>Rules</ListItemText>
                 </ListItemButton>
               </List>
             </nav>

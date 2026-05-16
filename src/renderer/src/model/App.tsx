@@ -155,12 +155,6 @@ export class App {
    */
   soundPlayer: SoundPlayer;
 
-  /**
-   * Buffer for detecting pass/fail strings across data chunks.
-   */
-  private soundDetectionBuffer: string = '';
-  private readonly SOUND_DETECTION_BUFFER_MAX_LENGTH = 100;
-
   constructor(testing = false) {
     initLogging();
     log.info('App constructor called.');
@@ -664,10 +658,10 @@ export class App {
 
     this.logging.handleRxData(rxData);
 
-    // Check for pass/fail strings and play sounds if enabled
-    if (this.settings.soundsSettings.playSoundsOnPassFail) {
-      this.detectAndPlaySounds(rxData);
-    }
+    // Sound playback for matching regex rules is driven by per-row reactions
+    // in `SingleTerminal` (see the `_setupRuleSoundReaction` setup there),
+    // not from this raw-byte path. That gives line-level granularity and
+    // avoids re-firing as bytes trickle in.
 
     // End performance monitoring and record metrics
     const totalProcessingTime = this.performanceMonitor.endTiming('dataProcessing');
@@ -681,65 +675,6 @@ export class App {
     if (this.settings.generalSettings.mcpEnabled) {
       const text = new TextDecoder('utf-8', { fatal: false }).decode(rxData);
       window.electronAPI.mcp.pushRxData(text);
-    }
-  }
-
-  /**
-   * Detects "pass" and "fail" strings in received data and plays appropriate sounds.
-   * Uses a buffer to handle detection across data chunks.
-   * Finds all occurrences of both patterns and plays them in order.
-   *
-   * @param rxData The received data as a Uint8Array
-   */
-  private detectAndPlaySounds(rxData: Uint8Array) {
-    // Convert received data to string (lowercase for case-insensitive matching)
-    const dataStr = new TextDecoder().decode(rxData).toLowerCase();
-
-    // Add new data to buffer
-    this.soundDetectionBuffer += dataStr;
-
-    // Find all occurrences of both patterns
-    const foundPatterns: Array<{index: number, type: 'pass' | 'fail', length: number}> = [];
-
-    // Find all "pass" occurrences
-    let searchIndex = 0;
-    while ((searchIndex = this.soundDetectionBuffer.indexOf('pass', searchIndex)) !== -1) {
-      foundPatterns.push({index: searchIndex, type: 'pass', length: 4});
-      searchIndex += 4; // Move past this occurrence
-    }
-
-    // Find all "fail" occurrences
-    searchIndex = 0;
-    while ((searchIndex = this.soundDetectionBuffer.indexOf('fail', searchIndex)) !== -1) {
-      foundPatterns.push({index: searchIndex, type: 'fail', length: 4});
-      searchIndex += 4; // Move past this occurrence
-    }
-
-    // Sort by index to play sounds in order they appear
-    foundPatterns.sort((a, b) => a.index - b.index);
-
-    // Play sounds in the order they appear
-    for (const pattern of foundPatterns) {
-      if (pattern.type === 'pass') {
-        this.soundPlayer.playDing();
-      } else {
-        this.soundPlayer.playBuzzer();
-      }
-    }
-
-    // Clear buffer only up to the end of the last found pattern
-    // This preserves any partial patterns at the end of the buffer
-    if (foundPatterns.length > 0) {
-      const lastPattern = foundPatterns[foundPatterns.length - 1];
-      const endOfLastPattern = lastPattern.index + lastPattern.length;
-      // Keep everything after the last pattern to preserve partial matches
-      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(endOfLastPattern);
-    }
-
-    // Keep buffer length manageable
-    if (this.soundDetectionBuffer.length > this.SOUND_DETECTION_BUFFER_MAX_LENGTH) {
-      // Keep only the last portion of the buffer to catch strings split across chunks
-      this.soundDetectionBuffer = this.soundDetectionBuffer.slice(-this.SOUND_DETECTION_BUFFER_MAX_LENGTH);
     }
   }
 

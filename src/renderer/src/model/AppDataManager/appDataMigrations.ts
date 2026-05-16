@@ -28,6 +28,7 @@ import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings
 import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
+import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
 
 // --------------------------------------------------------------------------
 // Types
@@ -140,7 +141,25 @@ type MigrationLogSettings = {
 
 type MigrationSoundsSettings = {
   // v11->v12 (added wholesale)
+  // Removed in v17->v18 when sounds were folded into highlight rules.
   playSoundsOnPassFail?: boolean;
+};
+
+type MigrationHighlightRule = {
+  version?: number;
+  name?: string;
+  enabled?: boolean;
+  pattern?: string;
+  caseSensitive?: boolean;
+  backgroundColor?: string;
+  sound?: string;
+  // Added in v17->v18 alongside the rest of the rule shape.
+  scope?: string;
+};
+
+type MigrationRulesSettings = {
+  // v17->v18 (added wholesale)
+  rules?: MigrationHighlightRule[];
 };
 
 type MigrationSettings = {
@@ -150,7 +169,10 @@ type MigrationSettings = {
   txSettings?: MigrationTxSettings;
   graphingSettings?: MigrationGraphingSettings;
   logSettings?: MigrationLogSettings;
+  // Legacy field; removed in v17->v18. Kept in the migration type so the
+  // delete step in `migrateV17toV18` is well-typed.
   soundsSettings?: MigrationSoundsSettings;
+  rulesSettings?: MigrationRulesSettings;
 };
 
 type MigrationMacroController = {
@@ -455,6 +477,22 @@ function migrateV16toV17(appData: MigrationAppData): void {
   appData.version = 17;
 }
 
+function migrateV17toV18(appData: MigrationAppData): void {
+  // Replace the legacy `soundsSettings` (a single `playSoundsOnPassFail`
+  // toggle hardcoded to literal "pass" / "fail" matches) with the new
+  // `rulesSettings` highlight-rules system. Per design we do NOT carry the
+  // old toggle forward, but we DO seed two starter rules
+  // (Warning / Error — see `makeDefaultHighlightRules`) so existing users
+  // get useful highlighting out of the box. Fresh installs get the same
+  // defaults via `RulesSettingsData`'s field initializer.
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    delete rootConfig.settings.soundsSettings;
+    rootConfig.settings.rulesSettings = { rules: makeDefaultHighlightRules() };
+  });
+  appData.version = 18;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -478,6 +516,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 14, apply: migrateV14toV15 },
   { from: 15, apply: migrateV15toV16 },
   { from: 16, apply: migrateV16toV17 },
+  { from: 17, apply: migrateV17toV18 },
 ];
 
 // --------------------------------------------------------------------------

@@ -132,6 +132,62 @@ describe('app data manager tests', () => {
     expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
   });
 
+  test('migration v17->v18 strips soundsSettings and seeds empty rulesSettings', () => {
+    // v17 input includes the legacy `soundsSettings` toggle. After v18 the
+    // toggle is gone and replaced with the new `rulesSettings.rules` list.
+    // Per design we do NOT carry the toggle forward — users opt back in by
+    // creating explicit rules.
+    const v17Input = {
+      version: 17,
+      profiles: [
+        {
+          name: 'p1',
+          rootConfig: {
+            settings: {
+              soundsSettings: { playSoundsOnPassFail: true },
+              txSettings: { useCtrlCVForCopyPaste: true, useCtrlFForFind: true },
+            },
+          },
+        },
+      ],
+      currentAppConfig: {
+        settings: {
+          soundsSettings: { playSoundsOnPassFail: false },
+          txSettings: { useCtrlCVForCopyPaste: true, useCtrlFForFind: true },
+        },
+      },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v17Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    const checkSlot = (settings: any) => {
+      expect(settings.soundsSettings).toBeUndefined();
+      expect(settings.rulesSettings).toBeDefined();
+      // v17→v18 seeds two starter rules (Warning / Error). Assert shape
+      // rather than exact equality so default colors can shift without
+      // breaking this test.
+      const rules = settings.rulesSettings.rules;
+      expect(rules.length).toBe(2);
+      expect(rules[0].name).toBe('Warning');
+      expect(rules[0].pattern).toBe('warning');
+      expect(rules[1].name).toBe('Error');
+      expect(rules[1].pattern).toBe('error');
+      expect(rules[1].sound).toBe('buzzer');
+      // Seeded defaults use whole-line scope so matching log lines colour
+      // across wrap segments.
+      expect(rules[0].scope).toBe('line');
+      expect(rules[1].scope).toBe('line');
+    };
+    checkSlot(appData.currentAppConfig?.settings);
+    for (const p of appData.profiles ?? []) {
+      checkSlot(p.rootConfig?.settings);
+    }
+  });
+
   test('migration v16->v17 seeds useCtrlFForFind=true on currentAppConfig and every profile', () => {
     // Hand-crafted minimal v16 input — full snapshot fixtures live alongside
     // the existing upgrade-from-vN tests; this one targets just the new step.
