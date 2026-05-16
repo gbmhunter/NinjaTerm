@@ -2,7 +2,16 @@ import {
   List,
   ListItemText,
   ListItemButton,
+  ListItemIcon,
+  ListSubheader,
 } from '@mui/material';
+import CableIcon from '@mui/icons-material/Cable';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import MonitorIcon from '@mui/icons-material/Monitor';
+import RuleIcon from '@mui/icons-material/Rule';
+import SettingsIcon from '@mui/icons-material/Settings';
+import PersonIcon from '@mui/icons-material/Person';
 import { observer } from 'mobx-react-lite';
 
 import { App } from '../../model/App';
@@ -19,6 +28,76 @@ import RulesSettingsView from './RulesSettings/RulesSettingsView';
 interface Props {
   app: App;
 }
+
+type Section = {
+  id: SettingsCategories;
+  label: string;
+  icon: React.ReactNode;
+  testId?: string;
+};
+
+type Group = {
+  heading: string;
+  sections: Section[];
+};
+
+const groups: Group[] = [
+  {
+    heading: 'Communication',
+    sections: [
+      {
+        id: SettingsCategories.CONNECTION_CONFIGURATION,
+        label: 'Connection',
+        icon: <CableIcon fontSize="small" />,
+      },
+      {
+        id: SettingsCategories.TX_SETTINGS,
+        label: 'TX Settings',
+        icon: <ArrowUpwardIcon fontSize="small" />,
+      },
+      {
+        id: SettingsCategories.RX_SETTINGS,
+        label: 'RX Settings',
+        icon: <ArrowDownwardIcon fontSize="small" />,
+        testId: 'rx-settings-button',
+      },
+    ],
+  },
+  {
+    heading: 'Appearance',
+    sections: [
+      {
+        id: SettingsCategories.DISPLAY,
+        label: 'Display',
+        icon: <MonitorIcon fontSize="small" />,
+        testId: 'display-settings-button',
+      },
+      {
+        id: SettingsCategories.RULES,
+        label: 'Rules',
+        icon: <RuleIcon fontSize="small" />,
+        testId: 'rules-settings-button',
+      },
+    ],
+  },
+  {
+    heading: 'Application',
+    sections: [
+      {
+        id: SettingsCategories.GENERAL,
+        label: 'General',
+        icon: <SettingsIcon fontSize="small" />,
+        testId: 'general-settings-button',
+      },
+      {
+        id: SettingsCategories.PROFILES,
+        label: 'Profiles',
+        icon: <PersonIcon fontSize="small" />,
+        testId: 'profile-settings-button',
+      },
+    ],
+  },
+];
 
 function SettingsDialog(props: Props) {
   const { app } = props;
@@ -49,136 +128,92 @@ function SettingsDialog(props: Props) {
 
   return (
       <div data-testid="settings-pane" style={{ width: '100%', height: '100%', display: 'flex', flexGrow: 1, flexDirection: 'row', overflowY: 'hidden' }}>
-          {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width colum with selected subcategory settings. Force height to 100% so that the left hand list border always stretches from top to bottom */}
-          {/* Add a little border to the right-hand side to separate from sub-category settings */}
+          {/* Outer box containing left-hand fixed-width column with setting sub-categories, and right-hand adjustable width colum with selected subcategory settings. */}
           <div
             id="settings-pane-left"
             style={{
-              minWidth: '180px',
-              marginRight: '10px',
-              borderRight: 1,
-              borderColor: 'grey.700',
+              minWidth: '200px',
+              marginRight: '16px',
             }}
           >
             <nav aria-label="main">
-              <List sx={{ marginRight: '10px' }}>
-                {/* ================================================ */}
-                {/* PORT CONFIGURATION */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.CONNECTION_CONFIGURATION
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.CONNECTION_CONFIGURATION
-                  }
-                >
-                  <ListItemText>Connection Configuration</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* TX SETTINGS */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.TX_SETTINGS
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.TX_SETTINGS
-                  }
-                >
-                  <ListItemText>TX Settings</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* RX SETTINGS */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.RX_SETTINGS
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.RX_SETTINGS
-                  }
-                  data-testid="rx-settings-button"
-                >
-                  <ListItemText>RX Settings</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* DISPLAY */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.DISPLAY
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.DISPLAY
-                  }
-                  data-testid="display-settings-button"
-                >
-                  <ListItemText>Display</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* GENERAL */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.GENERAL
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.GENERAL
-                  }
-                  data-testid="general-settings-button"
-                >
-                  <ListItemText>General</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* PROFILES */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.PROFILES
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.PROFILES
-                  }
-                  data-testid="profile-settings-button"
-                >
-                  <ListItemText>Profiles</ListItemText>
-                </ListItemButton>
-                {/* ================================================ */}
-                {/* RULES (formerly Sounds — now regex highlight rules) */}
-                {/* ================================================ */}
-                <ListItemButton
-                  onClick={() => {
-                    app.settings.setActiveSettingsCategory(
-                      SettingsCategories.RULES
-                    );
-                  }}
-                  selected={
-                    app.settings.activeSettingsCategory ===
-                    SettingsCategories.RULES
-                  }
-                  data-testid="rules-settings-button"
-                >
-                  <ListItemText>Rules</ListItemText>
-                </ListItemButton>
+              <List sx={{ paddingTop: 0 }}>
+                {groups.map((group, groupIdx) => (
+                  <li key={group.heading} style={{ listStyle: 'none' }}>
+                    <ul style={{ padding: 0, margin: 0 }}>
+                      <ListSubheader
+                        disableSticky
+                        sx={{
+                          backgroundColor: 'transparent',
+                          color: 'text.secondary',
+                          fontSize: '0.7rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                          lineHeight: 2,
+                          paddingLeft: 1.5,
+                          paddingRight: 1.5,
+                          marginTop: groupIdx === 0 ? 0.5 : 1.5,
+                        }}
+                      >
+                        {group.heading}
+                      </ListSubheader>
+                      {group.sections.map((section) => {
+                        const isSelected =
+                          app.settings.activeSettingsCategory === section.id;
+                        return (
+                          <ListItemButton
+                            key={section.id}
+                            data-testid={section.testId}
+                            onClick={() => {
+                              app.settings.setActiveSettingsCategory(section.id);
+                            }}
+                            selected={isSelected}
+                            sx={{
+                              marginX: 0.75,
+                              marginY: 0.25,
+                              borderRadius: 1,
+                              paddingY: 0.6,
+                              paddingX: 1.25,
+                              '&.Mui-selected': {
+                                backgroundColor: 'rgba(144, 202, 249, 0.18)',
+                                '&:hover': {
+                                  backgroundColor: 'rgba(144, 202, 249, 0.24)',
+                                },
+                                '& .MuiListItemIcon-root': {
+                                  color: 'primary.light',
+                                },
+                                '& .MuiListItemText-primary': {
+                                  color: 'primary.light',
+                                  fontWeight: 600,
+                                },
+                              },
+                              '&:hover': {
+                                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                              },
+                            }}
+                          >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 32,
+                                color: 'text.secondary',
+                              }}
+                            >
+                              {section.icon}
+                            </ListItemIcon>
+                            <ListItemText
+                              primaryTypographyProps={{
+                                fontSize: '0.875rem',
+                              }}
+                            >
+                              {section.label}
+                            </ListItemText>
+                          </ListItemButton>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                ))}
               </List>
             </nav>
           </div>

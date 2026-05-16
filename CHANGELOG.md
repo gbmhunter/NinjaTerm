@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- **Settings sidebar refresh.** Sections now have icons, a brand-tinted rounded "selected" chip, and are grouped under Communication / Appearance / Application subheaders; the hard right border is gone in favour of subtler chrome. `SettingsView.tsx` is driven from a `groups` array instead of seven hand-rolled `ListItemButton`s. "Connection Configuration" label shortened to "Connection".
+
 ### Added
 
 - **Fake port "highlight rules demo"** that emits a randomised mix of info/warning/error log lines (with some 250-char lines that wrap) for visually testing the new Rules feature.
