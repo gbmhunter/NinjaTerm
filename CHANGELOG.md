@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.12.0] - 2026-05-17
+
 ### Added
 
 - **Auto-response macros ([#364](https://github.com/gbmhunter/NinjaTerm/issues/364)).** Each macro has new optional *Send on connect*, *Send on RX match (regex)*, and *Send on interval (ms)* triggers in its settings modal. RX matches test each finalised line from the wire (TX echo is ignored, so a macro can't loop on its own response); interval timers run only while the port is OPENED. V1 is ASCII-regex only; hex byte matching is a follow-up. Wiring: `MacroController.onRxBytes` fed from `App.parseRxData`, a `connState` reaction in `App` for connect/disconnect hooks, a per-macro MobX-driven `setInterval` map for interval timers, six new fields on `Macro` + `MacroDataV1`, seeded with defaults by the unreleased v18 migration.
@@ -1068,6 +1070,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.2...v5.12.0
 [5.11.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.1...v5.11.2
 [5.11.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.0...v5.11.1
 [5.11.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.10.0...v5.11.0
