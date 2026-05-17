@@ -39,7 +39,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -70,7 +70,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: 'A' }),
         new ExpectedTerminalChar({ char: 'B' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -104,7 +104,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: 'a' }), // Should be lowercase!
         new ExpectedTerminalChar({ char: 'b' }), // Should be lowercase!
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -145,7 +145,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: '3' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -190,7 +190,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: '4' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -223,7 +223,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '7' }),
         new ExpectedTerminalChar({ char: '1' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -253,7 +253,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '2' }),
         new ExpectedTerminalChar({ char: '3' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -290,7 +290,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '-' }), // Unlike padding with zeroes, padding with spaces means negative sign should be here, after the padding
         new ExpectedTerminalChar({ char: '3' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -321,7 +321,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '5' }),
         new ExpectedTerminalChar({ char: '6' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -356,7 +356,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '5' }),
         new ExpectedTerminalChar({ char: '6' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -388,7 +388,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -427,7 +427,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '2' }),
         new ExpectedTerminalChar({ char: '1' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -463,7 +463,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '5' }),
         new ExpectedTerminalChar({ char: '1' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -500,7 +500,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '4' }),
         new ExpectedTerminalChar({ char: '6' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -551,7 +551,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '9' }),
         new ExpectedTerminalChar({ char: '0' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);
@@ -587,7 +587,7 @@ test.describe('Parsing RX data as numbers (Electron)', () => {
         new ExpectedTerminalChar({ char: '.' }),
         new ExpectedTerminalChar({ char: '5' }),
         new ExpectedTerminalChar({ char: ' ' }), // Separator
-        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorUnfocused' }), // Cursor
+        new ExpectedTerminalChar({ char: ' ', classNames: 'cursorFocused' }), // Cursor
       ],
     ];
     await appTestHarness.checkTerminalTextAgainstExpected(expectedDisplay);

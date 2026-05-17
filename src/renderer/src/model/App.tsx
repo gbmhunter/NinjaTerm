@@ -755,7 +755,7 @@ export class App {
           t.lastKnownSelectionInfo = null;
         }
         window.getSelection()?.removeAllRanges();
-      } else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
+      } else if (this.shownMainPane === MainPanes.TERMINAL && !isTypingInField(event)) {
         // No selection — pass through as terminal control code (0x03)
         this.handleTerminalKeyDown(event);
       }
@@ -776,8 +776,11 @@ export class App {
     //=============================================
     // TERMINAL DATA
     //=============================================
-    else if (this.terminals.txRxTerminal.isFocused || this.terminals.txTerminal.isFocused) {
-      // If we get here and the terminals are in focus, assume it's terminal data
+    else if (this.shownMainPane === MainPanes.TERMINAL && !isTypingInField(event)) {
+      // Terminal pane is shown and the user isn't typing into a settings
+      // field / find bar / other input — route the keystroke to the active
+      // terminal. There is no notion of click-focus; the active terminal is
+      // determined entirely by single-vs-split pane mode.
       this.handleTerminalKeyDown(event);
     }
   }
@@ -788,8 +791,9 @@ export class App {
    */
   private async handlePasteFromClipboard(event: React.KeyboardEvent) {
     event.preventDefault();
-    // Get clipboard text and send it out the serial port if either the TXRX or TX terminal is in focus
-    // Calling readText() will ask the user for permission to access the clipboard on the first time
+    // Get clipboard text and send it out the serial port. Paste is allowed
+    // whenever the terminal pane is shown and the user isn't typing into a
+    // form field — the active terminal is the implicit target.
     let text = await navigator.clipboard.readText();
 
     // Convert CRLF to LF if setting is enabled
@@ -802,8 +806,9 @@ export class App {
       return;
     }
 
-    // Make sure either the TXRX or TX terminal is in focus
-    if (!this.terminals.txRxTerminal.isFocused && !this.terminals.txTerminal.isFocused) {
+    // Only paste if the terminal pane is the active view and no input field
+    // is currently absorbing keys.
+    if (this.shownMainPane !== MainPanes.TERMINAL || isTypingInField(event)) {
       return;
     }
 
@@ -819,24 +824,17 @@ export class App {
    * @returns
    */
   /**
-   * Opens the Find bar on whichever terminal is the most useful target given
-   * the current view mode and focus state. Falls back to a sensible default
-   * when nothing is focused (the combined pane in single mode, the RX pane
-   * in separate mode — that's where the bulk of searchable data lives).
+   * Opens the Find bar on the terminal that contains the most searchable
+   * data: the combined pane in single mode, the RX pane in separate-TX/RX
+   * mode. With click-focus removed there's no per-user-action variation to
+   * consider — the target is purely a function of pane mode.
    *
    * Public so the toolbar Find button in `TerminalsView` can share the same
    * targeting logic as the Ctrl+F keyboard shortcut.
    */
   openFindOnPreferredTerminal() {
     const isSeparate = this.settings.displaySettings.dataViewConfiguration === DataViewConfiguration.SEPARATE_TX_RX_TERMINALS;
-    let target: SingleTerminal;
-    if (this.terminals.txTerminal.isFocused && isSeparate) {
-      target = this.terminals.txTerminal;
-    } else if (this.terminals.txRxTerminal.isFocused && !isSeparate) {
-      target = this.terminals.txRxTerminal;
-    } else {
-      target = isSeparate ? this.terminals.rxTerminal : this.terminals.txRxTerminal;
-    }
+    const target = isSeparate ? this.terminals.rxTerminal : this.terminals.txRxTerminal;
     target.openFind();
   }
 
@@ -1078,12 +1076,9 @@ export class App {
     // for example the user could be pressing Ctrl-Shift-C to copy text to the clipboard
     // and the autoscroll would suddenly be enabled.
     if (this.settings.displaySettings.autoScrollLockOnTx) {
-      if (this.terminals.txTerminal.isFocused) {
-        this.terminals.txTerminal.setScrollLock(true);
-      }
-      if (this.terminals.txRxTerminal.isFocused) {
-        this.terminals.txRxTerminal.setScrollLock(true);
-      }
+      // Only the active terminal can produce typed-TX traffic now (no
+      // click-focus), so lock its scroll directly.
+      this.terminals.activeTerminal.setScrollLock(true);
     }
 
     if (sendBreakSignal) {

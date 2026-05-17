@@ -7,30 +7,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-### Changed
-
-- **Settings sidebar refresh.** Sections now have icons, a brand-tinted rounded "selected" chip, and are grouped under Communication / Appearance / Application subheaders; the hard right border is gone in favour of subtler chrome. `SettingsView.tsx` is driven from a `groups` array instead of seven hand-rolled `ListItemButton`s. "Connection Configuration" label shortened to "Connection".
-
 ### Added
 
-- **Fake port "highlight rules demo"** that emits a randomised mix of info/warning/error log lines (with some 250-char lines that wrap) for visually testing the new Rules feature.
-- **Highlight rules support an "Entire line" scope** in addition to the default "Matched text only". When set to *Entire line (incl. wraps)*, a matching line gets its full background painted across every wrap segment, so long log lines colour cleanly even when the terminal wraps them. New `Highlight scope` dropdown in the rule edit modal.
 - **Regex highlight rules** in a new **Rules** settings pane (renamed from Sounds). Each rule has a name, regex, case-sensitive toggle, background color, optional sound (none/ding/buzzer), and enabled flag. Matching characters get the rule's background painted inline in the terminal; sounds fire once per finalised row that matches. Two starter rules ship out of the box: `Warning` (orange) and `Error` (dark red + buzzer) — fresh installs get them via `RulesSettingsData`'s field initializer, upgrades via the v17→v18 migration. Implemented via `RulesSettings` + `HighlightRule` model and `HighlightMatch` / `highlightMatchesByRow` computeds on `SingleTerminal`; rendering reuses the `TerminalRow.getSpans` extension that Find already plugs into.
+- **Highlight rules support an "Entire line" scope** in addition to the default "Matched text only". When set to *Entire line (incl. wraps)*, a matching line gets its full background painted across every wrap segment, so long log lines colour cleanly even when the terminal wraps them. New `Highlight scope` dropdown in the rule edit modal.
+- **Fake port "highlight rules demo"** that emits a randomised mix of info/warning/error log lines (with some 250-char lines that wrap) for visually testing the new Rules feature.
+- **Find in scrollback (Ctrl+F).** Floating bar over the terminal pane with case-toggle, match counter, and prev/next nav (Enter / Shift+Enter, Esc closes). Also discoverable via a magnifying-glass icon in each pane's top-right (next to the copy-all button) — per-pane so in separate TX/RX mode each terminal has its own button and its own independent Find session. Matches are highlighted in-place via two new CSS classes; current match is auto-scrolled into view, overriding scroll-lock while find is open. `SingleTerminalView`'s selection-restore logic is skipped while the Find input has focus so incoming RX traffic can't yank the caret out via `setBaseAndExtent`; FindBar clicks are also excluded from the mouseup selection-cache path. Implemented in `SingleTerminal.findMatches`, `FindBar.tsx`, and `TerminalRow.getSpans`.
+- **TX Settings: opt out of Ctrl+F → Find.** New `Use Ctrl+F to open Find in scrollback` checkbox (default on). When off, Ctrl+F falls through to the Ctrl+A–Z handler so the ACK control byte (0x06) reaches the device — preserves the historic terminal behavior some embedded targets rely on. The per-pane Find magnifier buttons keep working either way. AppData migrated v16 → v17.
+
+### Changed
+
+- **UI primary switched from MUI-default blue to muted teal `#5eead4`.** Complementary opposite of the logo red; set in `createTheme` in `AppView.tsx`. Graphing's "Update X/Y Range From Data" buttons also flipped from `color="success"` to `color="primary"`.
+- **Terminal keystrokes no longer require clicking the pane first.** Typing routes to the active terminal whenever the terminal pane is shown and no input field has focus — dropped `isFocused`/`isFocusable` state, the red focus glow, and the hollow-cursor style; RX in split mode no longer renders a cursor.
+- **Settings sidebar refresh.** Icons, grouped subheaders (Communication / Appearance / Application), and a teal-tinted rounded selected chip; `SettingsView.tsx` is now driven from a `groups` array.
+- **Tagline + homepage copy refreshed** for four-transport scope (serial, TCP socket, Bluetooth LE, SEGGER RTT). Tagline now "An embedded developer's terminal that's got your back."; homepage hero, browser titles, Docusaurus site tagline, manual intro, README, `<Layout>` SEO description, JSON-LD structured-data description/keywords, root `index.html` meta description, and the body intro paragraph no longer describe NinjaTerm as a serial port terminal.
+- Homepage and `/app` redirect-page browser titles no longer say "NinjaTerm" twice. Docusaurus auto-appends ` | NinjaTerm` from `siteConfig.title`, so the per-page `Layout` titles now omit the brand prefix (homepage tab is now `An embedded developer's terminal that's got your back | NinjaTerm`).
 
 ### Removed
 
 - **Old pass/fail sounds toggle** (`playSoundsOnPassFail`) is gone. The byte-streaming buffer that matched literal `"pass"` / `"fail"` is replaced by the regex highlight rules above. AppData migration v17→v18 strips the legacy field; users who relied on the toggle re-create it as two explicit rules.
-
-
-### Added
-
-- **TX Settings: opt out of Ctrl+F → Find.** New `Use Ctrl+F to open Find in scrollback` checkbox (default on). When off, Ctrl+F falls through to the Ctrl+A–Z handler so the ACK control byte (0x06) reaches the device — preserves the historic terminal behavior some embedded targets rely on. The per-pane Find magnifier buttons keep working either way. AppData migrated v16 → v17.
-- **Find in scrollback (Ctrl+F).** Floating bar over the terminal pane with case-toggle, match counter, and prev/next nav (Enter / Shift+Enter, Esc closes). Also discoverable via a magnifying-glass icon in each pane's top-right (next to the copy-all button) — per-pane so in separate TX/RX mode each terminal has its own button and its own independent Find session. Matches are highlighted in-place via two new CSS classes; current match is auto-scrolled into view, overriding scroll-lock while find is open. `SingleTerminalView`'s selection-restore logic is skipped while the Find input has focus so incoming RX traffic can't yank the caret out via `setBaseAndExtent`; FindBar clicks are also excluded from the mouseup selection-cache path. Implemented in `SingleTerminal.findMatches`, `FindBar.tsx`, and `TerminalRow.getSpans`.
-
-### Changed
-
-- Homepage and `/app` redirect-page browser titles no longer say "NinjaTerm" twice. Docusaurus auto-appends ` | NinjaTerm` from `siteConfig.title`, so the per-page `Layout` titles now omit the brand prefix (homepage tab is now `An embedded developer's terminal that's got your back | NinjaTerm`).
-- **Tagline + homepage copy refreshed** for four-transport scope (serial, TCP socket, Bluetooth LE, SEGGER RTT). Tagline now "An embedded developer's terminal that's got your back."; homepage hero, browser titles, Docusaurus site tagline, manual intro, README, `<Layout>` SEO description, JSON-LD structured-data description/keywords, root `index.html` meta description, and the body intro paragraph no longer describe NinjaTerm as a serial port terminal.
 
 ### Fixed
 

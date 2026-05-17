@@ -35,14 +35,13 @@ const darkTheme = createTheme({
     background: {
       default: '#202020',
       paper: '#202020',
-      // paper: deepOrange[900],
     },
-    // primary: {
-    //   main: '#dc3545', // your primary color
-    // },
-    // secondary: {
-    //   main: '#35dccb', // your secondary color
-    // },
+    primary: {
+      // Muted teal — complementary opposite of the logo red (#dc3545) so the
+      // two colours reinforce instead of fight, and well clear of the
+      // semantic success-green / warning-orange / error-red slots.
+      main: '#5eead4',
+    },
   },
   typography: {
     // Make all fonts slightly smaller by default for a dense layout
