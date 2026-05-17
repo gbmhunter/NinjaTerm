@@ -109,6 +109,10 @@ export class App {
   // reload during dev) leaves stale reactions firing forever.
   private titleReactionDispose: (() => void) | null = null;
 
+  // Disposer for the connection-state reaction that drives auto-response
+  // macros' on-connect / on-disconnect triggers (issue #364).
+  private connStateReactionDispose: (() => void) | null = null;
+
   // CPU usage tracking
   cpuUsagePercent: number = 0;
 
@@ -201,6 +205,21 @@ export class App {
     );
     this.onLastAppliedProfileNameChanged();
 
+    // Drive auto-response macros: fire on-connect macros each time the port
+    // transitions to OPENED, and reset the RX-line buffer on close so a
+    // stale partial line can't bleed into the next session (issue #364).
+    this.connStateReactionDispose = reaction(
+      () => this.connController.connState,
+      (state) => {
+        const macroController = this.terminals.rightDrawer.macroController;
+        if (state === ConnState.OPENED) {
+          macroController.onConnect();
+        } else if (state === ConnState.CLOSED) {
+          macroController.onDisconnect();
+        }
+      },
+    );
+
     // Close any existing ports which might be open in the main process, and remove
     // all IPC event listeners.
     window.electronAPI.serial.closeAllPortsAndRemoveListeners();
@@ -246,6 +265,11 @@ export class App {
     if (this.titleReactionDispose) {
       this.titleReactionDispose();
       this.titleReactionDispose = null;
+    }
+
+    if (this.connStateReactionDispose) {
+      this.connStateReactionDispose();
+      this.connStateReactionDispose = null;
     }
 
     // Clean up auto-updater listeners
@@ -657,6 +681,11 @@ export class App {
     this.performanceMonitor.endTiming('graphingProcessing');
 
     this.logging.handleRxData(rxData);
+
+    // Auto-response macros: feed raw RX bytes into the macro controller's
+    // line matcher. TX (including local echo) never enters parseRxData, so
+    // a macro can't accidentally trigger itself via its own response.
+    this.terminals.rightDrawer.macroController.onRxBytes(rxData);
 
     // Sound playback for matching regex rules is driven by per-row reactions
     // in `SingleTerminal` (see the `_setupRuleSoundReaction` setup there),

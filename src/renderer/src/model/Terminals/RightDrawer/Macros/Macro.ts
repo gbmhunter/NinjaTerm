@@ -36,6 +36,24 @@ export class Macro {
 
   sendBreakAtEndOfEveryLineOfHex: boolean = false;
 
+  /**
+   * Auto-response triggers (issue #364). When `sendOnConnect` is true, the
+   * macro fires once each time the serial port transitions to OPENED. When
+   * `sendOnRxMatch` is true, every finalised RX line is tested against
+   * `rxMatchPattern` (interpreted as a regex) and the macro fires for each
+   * matching line. `rxMatchCaseSensitive` controls regex flags.
+   */
+  sendOnConnect: boolean = false;
+  sendOnRxMatch: boolean = false;
+  rxMatchPattern: string = '';
+  rxMatchCaseSensitive: boolean = false;
+
+  /** Compile error from the most recent `rxMatchPattern`, or `''` if the pattern is valid (or empty). */
+  rxMatchRegexErrorMsg: string = '';
+
+  /** Memoised compile of `rxMatchPattern`. Recomputed when pattern or case-sensitivity changes. */
+  private _rxMatchRegexCache: { key: string; regex: RegExp | null } | null = null;
+
   errorMsg: string = '';
 
   /**
@@ -221,7 +239,13 @@ export class Macro {
     this.dataType = config.dataType;
     this.processEscapeChars = config.processEscapeChars;
     this.sendOnEnterValueForEveryNewLineInTextBox = config.sendOnEnterValueForEveryNewLineInTextBox;
-    this.sendBreakAtEndOfEveryLineOfHex = config.sendBreakAtEndOfEveryLineOfHex
+    this.sendBreakAtEndOfEveryLineOfHex = config.sendBreakAtEndOfEveryLineOfHex;
+    // Fall back to defaults if reading older / partially-migrated data.
+    this.sendOnConnect = config.sendOnConnect ?? false;
+    this.sendOnRxMatch = config.sendOnRxMatch ?? false;
+    this.rxMatchPattern = config.rxMatchPattern ?? '';
+    this.rxMatchCaseSensitive = config.rxMatchCaseSensitive ?? false;
+    this._rxMatchRegexCache = null;
   }
 
   toConfig = (): MacroDataV1 => {
@@ -233,6 +257,10 @@ export class Macro {
       processEscapeChars: this.processEscapeChars,
       sendOnEnterValueForEveryNewLineInTextBox: this.sendOnEnterValueForEveryNewLineInTextBox,
       sendBreakAtEndOfEveryLineOfHex: this.sendBreakAtEndOfEveryLineOfHex,
+      sendOnConnect: this.sendOnConnect,
+      sendOnRxMatch: this.sendOnRxMatch,
+      rxMatchPattern: this.rxMatchPattern,
+      rxMatchCaseSensitive: this.rxMatchCaseSensitive,
     };
   }
 
@@ -264,6 +292,67 @@ export class Macro {
     this.validateData();
     if (this.onChange) {
       this.onChange();
+    }
+  }
+
+  setSendOnConnect(value: boolean) {
+    this.sendOnConnect = value;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setSendOnRxMatch(value: boolean) {
+    this.sendOnRxMatch = value;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setRxMatchPattern(value: string) {
+    this.rxMatchPattern = value;
+    this._rxMatchRegexCache = null;
+    // Re-validate so the modal can surface a compile error promptly.
+    void this.rxMatchRegex;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setRxMatchCaseSensitive(value: boolean) {
+    this.rxMatchCaseSensitive = value;
+    this._rxMatchRegexCache = null;
+    void this.rxMatchRegex;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  /**
+   * Compiled regex for `rxMatchPattern`, or `null` if the pattern is empty or
+   * fails to compile. Side-effect: writes `rxMatchRegexErrorMsg` so the
+   * settings modal can surface invalid-regex feedback in red.
+   */
+  get rxMatchRegex(): RegExp | null {
+    const key = `${this.rxMatchPattern} ${this.rxMatchCaseSensitive ? 'c' : 'i'}`;
+    if (this._rxMatchRegexCache !== null && this._rxMatchRegexCache.key === key) {
+      return this._rxMatchRegexCache.regex;
+    }
+    if (this.rxMatchPattern.length === 0) {
+      this._rxMatchRegexCache = { key, regex: null };
+      this.rxMatchRegexErrorMsg = '';
+      return null;
+    }
+    try {
+      const flags = this.rxMatchCaseSensitive ? '' : 'i';
+      const regex = new RegExp(this.rxMatchPattern, flags);
+      this._rxMatchRegexCache = { key, regex };
+      this.rxMatchRegexErrorMsg = '';
+      return regex;
+    } catch (e) {
+      this._rxMatchRegexCache = { key, regex: null };
+      this.rxMatchRegexErrorMsg = e instanceof Error ? e.message : String(e);
+      return null;
     }
   }
 }

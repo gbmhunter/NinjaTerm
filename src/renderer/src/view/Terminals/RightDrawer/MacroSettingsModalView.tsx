@@ -239,6 +239,83 @@ export default observer((props: Props) => {
             }}
           />
         </Tooltip>
+        {/* ================================================================= */}
+        {/* TRIGGERS (issue #364: auto-response macros) */}
+        {/* ================================================================= */}
+        <BorderedSection
+          title="Triggers"
+          childStyle={{
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '5px',
+            gap: '4px',
+          }}
+        >
+          <Tooltip
+            title="Send this macro automatically every time the serial port transitions to OPENED."
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={macro.sendOnConnect}
+                  onChange={(e) => {
+                    macro.setSendOnConnect(e.target.checked);
+                  }}
+                  data-testid="macro-send-on-connect-cb"
+                />
+              }
+              label="Send on connect"
+            />
+          </Tooltip>
+          <Tooltip
+            title="When enabled, every finalised line of received data is tested against the pattern below (interpreted as a JavaScript regex). The macro fires for each line that matches. TX echo is ignored, so a macro can't trigger itself via its own response."
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={macro.sendOnRxMatch}
+                  onChange={(e) => {
+                    macro.setSendOnRxMatch(e.target.checked);
+                  }}
+                  data-testid="macro-send-on-rx-match-cb"
+                />
+              }
+              label="Send on RX match"
+            />
+          </Tooltip>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+            <TextField
+              variant="outlined"
+              size="small"
+              label="RX match pattern (regex)"
+              value={macro.rxMatchPattern}
+              onChange={(e) => macro.setRxMatchPattern(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              disabled={!macro.sendOnRxMatch}
+              helperText={macro.rxMatchRegexErrorMsg}
+              error={macro.rxMatchRegexErrorMsg !== ''}
+              sx={{ minWidth: 280 }}
+              data-testid="macro-rx-match-pattern-tf"
+            />
+            <FormControlLabel
+              disabled={!macro.sendOnRxMatch}
+              control={
+                <Checkbox
+                  checked={macro.rxMatchCaseSensitive}
+                  onChange={(e) => {
+                    macro.setRxMatchCaseSensitive(e.target.checked);
+                  }}
+                  data-testid="macro-rx-match-case-sensitive-cb"
+                />
+              }
+              label="Case sensitive"
+            />
+          </div>
+        </BorderedSection>
         <div className="button-row" style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', gap: '10px' }}>
           <Button
             variant="contained"

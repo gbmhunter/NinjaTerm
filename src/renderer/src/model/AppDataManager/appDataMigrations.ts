@@ -175,8 +175,20 @@ type MigrationSettings = {
   rulesSettings?: MigrationRulesSettings;
 };
 
+type MigrationMacro = {
+  // Auto-response triggers introduced in the unreleased v18 migration.
+  // Optional because pre-v18 snapshots don't carry them.
+  sendOnConnect?: boolean;
+  sendOnRxMatch?: boolean;
+  rxMatchPattern?: string;
+  rxMatchCaseSensitive?: boolean;
+  // Other macro fields exist on the runtime shape but the migration only
+  // touches the auto-response fields, so they're not declared here.
+};
+
 type MigrationMacroController = {
   version?: number;
+  macroConfigs?: MigrationMacro[];
 };
 
 type MigrationTerminal = {
@@ -478,17 +490,31 @@ function migrateV16toV17(appData: MigrationAppData): void {
 }
 
 function migrateV17toV18(appData: MigrationAppData): void {
-  // Replace the legacy `soundsSettings` (a single `playSoundsOnPassFail`
+  // (1) Replace the legacy `soundsSettings` (a single `playSoundsOnPassFail`
   // toggle hardcoded to literal "pass" / "fail" matches) with the new
   // `rulesSettings` highlight-rules system. Per design we do NOT carry the
   // old toggle forward, but we DO seed two starter rules
   // (Warning / Error — see `makeDefaultHighlightRules`) so existing users
   // get useful highlighting out of the box. Fresh installs get the same
   // defaults via `RulesSettingsData`'s field initializer.
+  //
+  // (2) Seed defaults for the auto-response macro fields (issue #364) on
+  // every existing macro config. `MacroData.loadConfig` also has `??`
+  // fallbacks, but explicit seeding keeps the on-disk shape uniform.
   forEachRootConfig(appData, (rootConfig) => {
     rootConfig.settings = rootConfig.settings ?? {};
     delete rootConfig.settings.soundsSettings;
     rootConfig.settings.rulesSettings = { rules: makeDefaultHighlightRules() };
+
+    const macroConfigs = rootConfig.terminal?.macroController?.macroConfigs;
+    if (macroConfigs !== undefined) {
+      for (const macroConfig of macroConfigs) {
+        macroConfig.sendOnConnect = macroConfig.sendOnConnect ?? false;
+        macroConfig.sendOnRxMatch = macroConfig.sendOnRxMatch ?? false;
+        macroConfig.rxMatchPattern = macroConfig.rxMatchPattern ?? '';
+        macroConfig.rxMatchCaseSensitive = macroConfig.rxMatchCaseSensitive ?? false;
+      }
+    }
   });
   appData.version = 18;
 }

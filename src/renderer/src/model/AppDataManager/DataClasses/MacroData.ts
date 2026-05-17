@@ -8,4 +8,13 @@ export class MacroDataV1 {
   processEscapeChars = true;
   sendOnEnterValueForEveryNewLineInTextBox = false;
   sendBreakAtEndOfEveryLineOfHex = false;
+
+  // Auto-response triggers (issue #364). Added in the unreleased v18
+  // migration; absent fields read as the field-initializer defaults below
+  // via `MacroData.loadConfig`'s `??` fallbacks, but the migration also
+  // seeds explicit defaults on every existing macro entry.
+  sendOnConnect = false;
+  sendOnRxMatch = false;
+  rxMatchPattern = '';
+  rxMatchCaseSensitive = false;
 }
