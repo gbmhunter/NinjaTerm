@@ -1,6 +1,8 @@
-import { expect, test, describe, beforeEach, vi } from 'vitest';
+import { expect, test, describe, beforeEach, afterEach, vi } from 'vitest';
+import { runInAction } from 'mobx';
 
 import { App } from 'src/model/App';
+import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import { MacroController } from './MacroController';
 import { Macro, MacroDataType } from './Macro';
 
@@ -174,5 +176,151 @@ describe('MacroController auto-response triggers (issue #364)', () => {
     macroController.onRxBytes(bytes('c\n'));
     await Promise.resolve();
     expect(writeSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('MacroController interval triggers (issue #364)', () => {
+  let app: App;
+  let macroController: MacroController;
+  let writeSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    window.localStorage.clear();
+    app = new App();
+    macroController = app.terminals.rightDrawer.macroController;
+    writeSpy = vi.fn(async (_bytes: Uint8Array) => {});
+    app.writeBytesToSerialPort = writeSpy as any;
+  });
+
+  afterEach(() => {
+    macroController.cleanup();
+    vi.useRealTimers();
+  });
+
+  function openPort(): void {
+    runInAction(() => {
+      app.connController.connState = ConnState.OPENED;
+    });
+  }
+
+  function closePort(): void {
+    runInAction(() => {
+      app.connController.connState = ConnState.CLOSED;
+    });
+  }
+
+  test('timer fires every intervalMs while OPENED', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('100');
+    macro.setSendOnInterval(true);
+
+    openPort();
+    // Just before the first tick, no fire yet.
+    vi.advanceTimersByTime(99);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+
+    vi.advanceTimersByTime(1);
+    expect(writeSpy).toHaveBeenCalledTimes(1);
+
+    // Three more periods = three more fires.
+    vi.advanceTimersByTime(300);
+    expect(writeSpy).toHaveBeenCalledTimes(4);
+  });
+
+  test('timer does not run while port is CLOSED', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('50');
+    macro.setSendOnInterval(true);
+
+    // No openPort() — port stays CLOSED.
+    vi.advanceTimersByTime(1000);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('closing the port stops the timer', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('50');
+    macro.setSendOnInterval(true);
+
+    openPort();
+    vi.advanceTimersByTime(150); // 3 fires
+    expect(writeSpy).toHaveBeenCalledTimes(3);
+
+    closePort();
+    writeSpy.mockClear();
+    vi.advanceTimersByTime(1000);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('toggling sendOnInterval off stops the timer', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('50');
+    macro.setSendOnInterval(true);
+
+    openPort();
+    vi.advanceTimersByTime(150);
+    expect(writeSpy).toHaveBeenCalledTimes(3);
+
+    macro.setSendOnInterval(false);
+    writeSpy.mockClear();
+    vi.advanceTimersByTime(1000);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('changing intervalMs mid-flight applies the new period', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('100');
+    macro.setSendOnInterval(true);
+
+    openPort();
+    vi.advanceTimersByTime(100); // 1 fire at 100ms
+    expect(writeSpy).toHaveBeenCalledTimes(1);
+
+    macro.setIntervalMs('50');
+    writeSpy.mockClear();
+    // After the change, ticks come every 50ms.
+    vi.advanceTimersByTime(50);
+    expect(writeSpy).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(50);
+    expect(writeSpy).toHaveBeenCalledTimes(2);
+  });
+
+  test('invalid intervalMs prevents any fires', () => {
+    const macro = macroController.macrosArray[0];
+    asciiMacro(macro, 'tick\n');
+    macro.setIntervalMs('0'); // invalid
+    macro.setSendOnInterval(true);
+
+    openPort();
+    vi.advanceTimersByTime(10_000);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+
+    macro.setIntervalMs('-1'); // also invalid
+    vi.advanceTimersByTime(10_000);
+    expect(writeSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test('two macros with different intervals both fire independently', () => {
+    const m0 = macroController.macrosArray[0];
+    asciiMacro(m0, 'a\n');
+    m0.setIntervalMs('100');
+    m0.setSendOnInterval(true);
+
+    const m1 = macroController.macrosArray[1];
+    asciiMacro(m1, 'b\n');
+    m1.setIntervalMs('150');
+    m1.setSendOnInterval(true);
+
+    openPort();
+    vi.advanceTimersByTime(300);
+    // m0: fires at 100, 200, 300 = 3 times.
+    // m1: fires at 150, 300        = 2 times.
+    expect(writeSpy).toHaveBeenCalledTimes(5);
   });
 });

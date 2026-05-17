@@ -17,4 +17,8 @@ export class MacroDataV1 {
   sendOnRxMatch = false;
   rxMatchPattern = '';
   rxMatchCaseSensitive = false;
+  sendOnInterval = false;
+  // Stored as a string so the text field can hold any mid-edit state
+  // verbatim; the parsed integer is derived at runtime by `Macro.intervalMsNumber`.
+  intervalMs = '1000';
 }

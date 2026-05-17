@@ -326,6 +326,45 @@ export default observer((props: Props) => {
               label="Case sensitive"
             />
           </div>
+          <Tooltip
+            title="When enabled, the macro is sent every N milliseconds for as long as the serial port is open. The timer pauses on disconnect and resumes (from zero) on the next connect."
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={macro.sendOnInterval}
+                  onChange={(e) => {
+                    macro.setSendOnInterval(e.target.checked);
+                  }}
+                  data-testid="macro-send-on-interval-cb"
+                />
+              }
+              label="Send on interval"
+            />
+          </Tooltip>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+            {/* Bound directly to the raw string in the model so the user can
+                type / delete / clear freely — validation runs live via
+                `intervalMsErrorMsg` but never rewrites their input. */}
+            <TextField
+              variant="outlined"
+              size="small"
+              label="Interval (ms)"
+              value={macro.intervalMs}
+              onChange={(e) => {
+                macro.setIntervalMs(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              disabled={!macro.sendOnInterval}
+              helperText={macro.intervalMsErrorMsg}
+              error={macro.intervalMsErrorMsg !== ''}
+              sx={{ width: 160 }}
+              data-testid="macro-interval-ms-tf"
+            />
+          </div>
         </BorderedSection>
         <div className="button-row" style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', gap: '10px' }}>
           <Button

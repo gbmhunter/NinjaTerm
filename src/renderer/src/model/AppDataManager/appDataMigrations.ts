@@ -182,6 +182,8 @@ type MigrationMacro = {
   sendOnRxMatch?: boolean;
   rxMatchPattern?: string;
   rxMatchCaseSensitive?: boolean;
+  sendOnInterval?: boolean;
+  intervalMs?: string;
   // Other macro fields exist on the runtime shape but the migration only
   // touches the auto-response fields, so they're not declared here.
 };
@@ -513,6 +515,8 @@ function migrateV17toV18(appData: MigrationAppData): void {
         macroConfig.sendOnRxMatch = macroConfig.sendOnRxMatch ?? false;
         macroConfig.rxMatchPattern = macroConfig.rxMatchPattern ?? '';
         macroConfig.rxMatchCaseSensitive = macroConfig.rxMatchCaseSensitive ?? false;
+        macroConfig.sendOnInterval = macroConfig.sendOnInterval ?? false;
+        macroConfig.intervalMs = macroConfig.intervalMs ?? '1000';
       }
     }
   });

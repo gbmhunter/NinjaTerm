@@ -250,5 +250,61 @@ describe('macro tests', () => {
     expect(macro.sendOnRxMatch).toBe(false);
     expect(macro.rxMatchPattern).toBe('');
     expect(macro.rxMatchCaseSensitive).toBe(false);
+    expect(macro.sendOnInterval).toBe(false);
+    expect(macro.intervalMs).toBe('1000');
+    expect(macro.intervalMsNumber).toBe(1000);
+  });
+
+  test('intervalMsErrorMsg is empty for a positive integer string', () => {
+    const macro = new Macro('M1', () => '\n');
+    expect(macro.intervalMs).toBe('1000');
+    expect(macro.intervalMsErrorMsg).toBe('');
+    macro.setIntervalMs('50');
+    expect(macro.intervalMsErrorMsg).toBe('');
+    expect(macro.intervalMsNumber).toBe(50);
+  });
+
+  test('intervalMsErrorMsg flags empty, zero, negative, decimal, and non-numeric input', () => {
+    const macro = new Macro('M1', () => '\n');
+    macro.setIntervalMs('');
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    expect(macro.intervalMsNumber).toBeNull();
+    macro.setIntervalMs('0');
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    macro.setIntervalMs('-1');
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    macro.setIntervalMs('1.5');
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    macro.setIntervalMs('abc');
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    expect(macro.intervalMsNumber).toBeNull();
+  });
+
+  test('user can clear the interval field mid-edit (raw input is preserved)', () => {
+    const macro = new Macro('M1', () => '\n');
+    macro.setIntervalMs('1000');
+    // User selects all and deletes — input is empty for a moment.
+    macro.setIntervalMs('');
+    expect(macro.intervalMs).toBe(''); // not rewritten to 0 or anything else
+    expect(macro.intervalMsNumber).toBeNull();
+    expect(macro.intervalMsErrorMsg.length).toBeGreaterThan(0);
+    // User types a new value.
+    macro.setIntervalMs('250');
+    expect(macro.intervalMs).toBe('250');
+    expect(macro.intervalMsNumber).toBe(250);
+    expect(macro.intervalMsErrorMsg).toBe('');
+  });
+
+  test('interval fields round-trip through toConfig/loadConfig', () => {
+    const macro = new Macro('M1', () => '\n');
+    macro.setSendOnInterval(true);
+    macro.setIntervalMs('250');
+    const config = macro.toConfig();
+
+    const fresh = new Macro('M1', () => '\n');
+    fresh.loadConfig(config);
+    expect(fresh.sendOnInterval).toBe(true);
+    expect(fresh.intervalMs).toBe('250');
+    expect(fresh.intervalMsNumber).toBe(250);
   });
 });

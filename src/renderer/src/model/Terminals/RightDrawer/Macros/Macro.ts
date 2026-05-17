@@ -41,12 +41,23 @@ export class Macro {
    * macro fires once each time the serial port transitions to OPENED. When
    * `sendOnRxMatch` is true, every finalised RX line is tested against
    * `rxMatchPattern` (interpreted as a regex) and the macro fires for each
-   * matching line. `rxMatchCaseSensitive` controls regex flags.
+   * matching line. `rxMatchCaseSensitive` controls regex flags. When
+   * `sendOnInterval` is true and the port is OPENED, the macro fires every
+   * `intervalMs` milliseconds.
    */
   sendOnConnect: boolean = false;
   sendOnRxMatch: boolean = false;
   rxMatchPattern: string = '';
   rxMatchCaseSensitive: boolean = false;
+  sendOnInterval: boolean = false;
+  /**
+   * Raw user input for the interval, in milliseconds. Stored as a string so
+   * the text field can show whatever the user has typed (including mid-edit
+   * states like an empty box). The parsed value used by the timer comes
+   * from the `intervalMsNumber` getter, which returns `null` if the input
+   * is not a positive integer.
+   */
+  intervalMs: string = '1000';
 
   /** Compile error from the most recent `rxMatchPattern`, or `''` if the pattern is valid (or empty). */
   rxMatchRegexErrorMsg: string = '';
@@ -245,6 +256,8 @@ export class Macro {
     this.sendOnRxMatch = config.sendOnRxMatch ?? false;
     this.rxMatchPattern = config.rxMatchPattern ?? '';
     this.rxMatchCaseSensitive = config.rxMatchCaseSensitive ?? false;
+    this.sendOnInterval = config.sendOnInterval ?? false;
+    this.intervalMs = config.intervalMs ?? '1000';
     this._rxMatchRegexCache = null;
   }
 
@@ -261,6 +274,8 @@ export class Macro {
       sendOnRxMatch: this.sendOnRxMatch,
       rxMatchPattern: this.rxMatchPattern,
       rxMatchCaseSensitive: this.rxMatchCaseSensitive,
+      sendOnInterval: this.sendOnInterval,
+      intervalMs: this.intervalMs,
     };
   }
 
@@ -326,6 +341,44 @@ export class Macro {
     if (this.onChange) {
       this.onChange();
     }
+  }
+
+  setSendOnInterval(value: boolean) {
+    this.sendOnInterval = value;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  setIntervalMs(value: string) {
+    this.intervalMs = value;
+    if (this.onChange) {
+      this.onChange();
+    }
+  }
+
+  /**
+   * Parsed milliseconds from `intervalMs`, or `null` if the string isn't a
+   * clean positive integer. Consumers (timer setup, error display) read this
+   * instead of touching `intervalMs` directly so the UI can hold any raw
+   * input the user has typed without it being silently corrected.
+   */
+  get intervalMsNumber(): number | null {
+    const trimmed = this.intervalMs.trim();
+    if (trimmed === '') return null;
+    // Reject decimals, exponents, and stray characters; accept only digits.
+    if (!/^\d+$/.test(trimmed)) return null;
+    const n = Number(trimmed);
+    if (!Number.isInteger(n) || n <= 0) return null;
+    return n;
+  }
+
+  /** Empty string when `intervalMs` parses to a positive integer, otherwise a user-facing error message. */
+  get intervalMsErrorMsg(): string {
+    if (this.intervalMsNumber === null) {
+      return 'Interval must be a positive integer (milliseconds).';
+    }
+    return '';
   }
 
   /**
