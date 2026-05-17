@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Tooltip } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -52,8 +52,11 @@ export default observer((props: Props) => {
           {/* ================================================================= */}
           {/* TREAT DATA AS */}
           {/* ================================================================= */}
-          <FormControl>
-            <FormLabel>Treat data as:</FormLabel>
+          <BorderedSection
+            title="Treat data as"
+            style={{ margin: 0 }}
+            childStyle={{ display: 'flex', flexDirection: 'column', padding: '5px' }}
+          >
             <RadioGroup
               value={macro.dataType}
               onChange={(e) => {
@@ -69,7 +72,7 @@ export default observer((props: Props) => {
                 <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
-          </FormControl>
+          </BorderedSection>
 
           {/* This div contains the ASCII and HEX settings containers */}
           <div
@@ -209,41 +212,49 @@ export default observer((props: Props) => {
         {/* ================================================================= */}
         {/* MACRO DATA */}
         {/* ================================================================= */}
-        <Tooltip
-          title={
-            <div>
-              If ASCII, all printable characters are allowed. If the "Send On Enter sequence at the end of every line" checkbox is ticked, there will be additional bytes sent at the end of every line.
-              <br />
-              <br />
-              If HEX, only the characters 0-9 and A-F, spaces and new lines are allowed. There must be an even number of characters as to make up a complete number of bytes (e.g. 08 A2 FF). If the "Send break at end of every line of hex" checkbox is ticked, each line has to contain an even number of characters rather than just the whole textbox.
-            </div>
-          }
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
+        <BorderedSection
+          title="Macro Data"
+          style={{ margin: 0 }}
+          childStyle={{ display: 'flex', flexDirection: 'column', padding: '5px' }}
         >
-          <TextField
-            variant="outlined"
-            label="Macro Data"
-            inputProps={{
-              style: {
-                padding: 5,
-              },
-            }}
-            multiline={true}
-            minRows={5}
-            value={macro.data}
-            helperText={macro.errorMsg}
-            error={macro.errorMsg !== ''}
-            onChange={(e) => macro.setData(e.target.value)}
-            onKeyDown={(e) => {
-              e.stopPropagation(); // Don't want the global keydown event to trigger
-            }}
-          />
-        </Tooltip>
+          <Tooltip
+            title={
+              <div>
+                If ASCII, all printable characters are allowed. If the "Send On Enter sequence at the end of every line" checkbox is ticked, there will be additional bytes sent at the end of every line.
+                <br />
+                <br />
+                If HEX, only the characters 0-9 and A-F, spaces and new lines are allowed. There must be an even number of characters as to make up a complete number of bytes (e.g. 08 A2 FF). If the "Send break at end of every line of hex" checkbox is ticked, each line has to contain an even number of characters rather than just the whole textbox.
+              </div>
+            }
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            {/* `variant="standard"` + `disableUnderline` strips MUI's own
+                outline / underline so the surrounding BorderedSection is the
+                only visible chrome — visually consistent with the other
+                bordered boxes in this modal. */}
+            <TextField
+              variant="standard"
+              InputProps={{ disableUnderline: true }}
+              inputProps={{ style: { padding: 5 } }}
+              multiline={true}
+              minRows={5}
+              value={macro.data}
+              helperText={macro.errorMsg}
+              error={macro.errorMsg !== ''}
+              onChange={(e) => macro.setData(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation(); // Don't want the global keydown event to trigger
+              }}
+              fullWidth
+            />
+          </Tooltip>
+        </BorderedSection>
         {/* ================================================================= */}
         {/* TRIGGERS (issue #364: auto-response macros) */}
         {/* ================================================================= */}
         <BorderedSection
           title="Triggers"
+          style={{ margin: 0 }}
           childStyle={{
             display: 'flex',
             flexDirection: 'column',
