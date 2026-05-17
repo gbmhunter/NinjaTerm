@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Tooltip } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Modal, Radio, RadioGroup, Select, TextField, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -52,8 +52,11 @@ export default observer((props: Props) => {
           {/* ================================================================= */}
           {/* TREAT DATA AS */}
           {/* ================================================================= */}
-          <FormControl>
-            <FormLabel>Treat data as:</FormLabel>
+          <BorderedSection
+            title="Treat data as"
+            style={{ margin: 0 }}
+            childStyle={{ display: 'flex', flexDirection: 'column', padding: '5px' }}
+          >
             <RadioGroup
               value={macro.dataType}
               onChange={(e) => {
@@ -69,7 +72,7 @@ export default observer((props: Props) => {
                 <FormControlLabel value={MacroDataType.HEX} control={<Radio data-testid={'macro-data-type-hex-rb'} />} label="HEX" />
               </Tooltip>
             </RadioGroup>
-          </FormControl>
+          </BorderedSection>
 
           {/* This div contains the ASCII and HEX settings containers */}
           <div
@@ -79,10 +82,12 @@ export default observer((props: Props) => {
               flexDirection: 'row',
               flexWrap: 'wrap',
               alignItems: 'flex-start',
+              gap: '16px',
             }}
           >
             <BorderedSection
               title="ASCII Settings"
+              style={{ margin: 0 }}
               childStyle={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -175,6 +180,7 @@ export default observer((props: Props) => {
             </BorderedSection>
             <BorderedSection
               title="Hex Settings"
+              style={{ margin: 0 }}
               childStyle={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -209,36 +215,170 @@ export default observer((props: Props) => {
         {/* ================================================================= */}
         {/* MACRO DATA */}
         {/* ================================================================= */}
-        <Tooltip
-          title={
-            <div>
-              If ASCII, all printable characters are allowed. If the "Send On Enter sequence at the end of every line" checkbox is ticked, there will be additional bytes sent at the end of every line.
-              <br />
-              <br />
-              If HEX, only the characters 0-9 and A-F, spaces and new lines are allowed. There must be an even number of characters as to make up a complete number of bytes (e.g. 08 A2 FF). If the "Send break at end of every line of hex" checkbox is ticked, each line has to contain an even number of characters rather than just the whole textbox.
-            </div>
-          }
-          {...app.settings.displaySettings.getBasicTooltipConfig()}
+        <BorderedSection
+          title="Macro Data"
+          style={{ margin: 0 }}
+          childStyle={{ display: 'flex', flexDirection: 'column', padding: '5px' }}
         >
-          <TextField
-            variant="outlined"
-            label="Macro Data"
-            inputProps={{
-              style: {
-                padding: 5,
-              },
-            }}
-            multiline={true}
-            minRows={5}
-            value={macro.data}
-            helperText={macro.errorMsg}
-            error={macro.errorMsg !== ''}
-            onChange={(e) => macro.setData(e.target.value)}
-            onKeyDown={(e) => {
-              e.stopPropagation(); // Don't want the global keydown event to trigger
-            }}
-          />
-        </Tooltip>
+          <Tooltip
+            title={
+              <div>
+                If ASCII, all printable characters are allowed. If the "Send On Enter sequence at the end of every line" checkbox is ticked, there will be additional bytes sent at the end of every line.
+                <br />
+                <br />
+                If HEX, only the characters 0-9 and A-F, spaces and new lines are allowed. There must be an even number of characters as to make up a complete number of bytes (e.g. 08 A2 FF). If the "Send break at end of every line of hex" checkbox is ticked, each line has to contain an even number of characters rather than just the whole textbox.
+              </div>
+            }
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            {/* `variant="standard"` + `disableUnderline` strips MUI's own
+                outline / underline so the surrounding BorderedSection is the
+                only visible chrome. The lighter inset background makes it
+                obvious that the area is an editable text field. */}
+            <TextField
+              variant="standard"
+              InputProps={{ disableUnderline: true }}
+              inputProps={{ style: { padding: 5 } }}
+              multiline={true}
+              minRows={5}
+              value={macro.data}
+              helperText={macro.errorMsg}
+              error={macro.errorMsg !== ''}
+              onChange={(e) => macro.setData(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation(); // Don't want the global keydown event to trigger
+              }}
+              fullWidth
+              sx={{
+                '& .MuiInputBase-root': {
+                  backgroundColor: '#2a2a2a',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                },
+                '& .MuiInputBase-root.Mui-error': {
+                  backgroundColor: '#3a1f1f',
+                },
+              }}
+            />
+          </Tooltip>
+        </BorderedSection>
+        {/* ================================================================= */}
+        {/* TRIGGERS (issue #364: auto-response macros) */}
+        {/* ================================================================= */}
+        <BorderedSection
+          title="Triggers"
+          style={{ margin: 0 }}
+          childStyle={{
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '5px',
+            gap: '4px',
+          }}
+        >
+          <Tooltip
+            title="Send this macro automatically every time the serial port transitions to OPENED."
+            {...app.settings.displaySettings.getBasicTooltipConfig()}
+          >
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={macro.sendOnConnect}
+                  onChange={(e) => {
+                    macro.setSendOnConnect(e.target.checked);
+                  }}
+                  data-testid="macro-send-on-connect-cb"
+                />
+              }
+              label="Send on connect"
+            />
+          </Tooltip>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+            <Tooltip
+              title="When enabled, every finalised line of received data is tested against the pattern below (interpreted as a JavaScript regex). The macro fires for each line that matches. TX echo is ignored, so a macro can't trigger itself via its own response."
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={macro.sendOnRxMatch}
+                    onChange={(e) => {
+                      macro.setSendOnRxMatch(e.target.checked);
+                    }}
+                    data-testid="macro-send-on-rx-match-cb"
+                  />
+                }
+                label="Send on RX match"
+              />
+            </Tooltip>
+            <TextField
+              variant="outlined"
+              size="small"
+              label="RX match pattern (regex)"
+              value={macro.rxMatchPattern}
+              onChange={(e) => macro.setRxMatchPattern(e.target.value)}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              disabled={!macro.sendOnRxMatch}
+              helperText={macro.rxMatchRegexErrorMsg}
+              error={macro.rxMatchRegexErrorMsg !== ''}
+              sx={{ minWidth: 280 }}
+              data-testid="macro-rx-match-pattern-tf"
+            />
+            <FormControlLabel
+              disabled={!macro.sendOnRxMatch}
+              control={
+                <Checkbox
+                  checked={macro.rxMatchCaseSensitive}
+                  onChange={(e) => {
+                    macro.setRxMatchCaseSensitive(e.target.checked);
+                  }}
+                  data-testid="macro-rx-match-case-sensitive-cb"
+                />
+              }
+              label="Case sensitive"
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+            <Tooltip
+              title="When enabled, the macro is sent every N milliseconds for as long as the serial port is open. The timer pauses on disconnect and resumes (from zero) on the next connect."
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={macro.sendOnInterval}
+                    onChange={(e) => {
+                      macro.setSendOnInterval(e.target.checked);
+                    }}
+                    data-testid="macro-send-on-interval-cb"
+                  />
+                }
+                label="Send on interval"
+              />
+            </Tooltip>
+            {/* Bound directly to the raw string in the model so the user can
+                type / delete / clear freely — validation runs live via
+                `intervalMsErrorMsg` but never rewrites their input. */}
+            <TextField
+              variant="outlined"
+              size="small"
+              label="Interval (ms)"
+              value={macro.intervalMs}
+              onChange={(e) => {
+                macro.setIntervalMs(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+              }}
+              disabled={!macro.sendOnInterval}
+              helperText={macro.intervalMsErrorMsg}
+              error={macro.intervalMsErrorMsg !== ''}
+              sx={{ width: 160 }}
+              data-testid="macro-interval-ms-tf"
+            />
+          </div>
+        </BorderedSection>
         <div className="button-row" style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', gap: '10px' }}>
           <Button
             variant="contained"
