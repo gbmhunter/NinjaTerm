@@ -82,10 +82,12 @@ export default observer((props: Props) => {
               flexDirection: 'row',
               flexWrap: 'wrap',
               alignItems: 'flex-start',
+              gap: '16px',
             }}
           >
             <BorderedSection
               title="ASCII Settings"
+              style={{ margin: 0 }}
               childStyle={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -178,6 +180,7 @@ export default observer((props: Props) => {
             </BorderedSection>
             <BorderedSection
               title="Hex Settings"
+              style={{ margin: 0 }}
               childStyle={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -230,8 +233,8 @@ export default observer((props: Props) => {
           >
             {/* `variant="standard"` + `disableUnderline` strips MUI's own
                 outline / underline so the surrounding BorderedSection is the
-                only visible chrome — visually consistent with the other
-                bordered boxes in this modal. */}
+                only visible chrome. The lighter inset background makes it
+                obvious that the area is an editable text field. */}
             <TextField
               variant="standard"
               InputProps={{ disableUnderline: true }}
@@ -246,6 +249,16 @@ export default observer((props: Props) => {
                 e.stopPropagation(); // Don't want the global keydown event to trigger
               }}
               fullWidth
+              sx={{
+                '& .MuiInputBase-root': {
+                  backgroundColor: '#2a2a2a',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                },
+                '& .MuiInputBase-root.Mui-error': {
+                  backgroundColor: '#3a1f1f',
+                },
+              }}
             />
           </Tooltip>
         </BorderedSection>
@@ -279,24 +292,24 @@ export default observer((props: Props) => {
               label="Send on connect"
             />
           </Tooltip>
-          <Tooltip
-            title="When enabled, every finalised line of received data is tested against the pattern below (interpreted as a JavaScript regex). The macro fires for each line that matches. TX echo is ignored, so a macro can't trigger itself via its own response."
-            {...app.settings.displaySettings.getBasicTooltipConfig()}
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={macro.sendOnRxMatch}
-                  onChange={(e) => {
-                    macro.setSendOnRxMatch(e.target.checked);
-                  }}
-                  data-testid="macro-send-on-rx-match-cb"
-                />
-              }
-              label="Send on RX match"
-            />
-          </Tooltip>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+            <Tooltip
+              title="When enabled, every finalised line of received data is tested against the pattern below (interpreted as a JavaScript regex). The macro fires for each line that matches. TX echo is ignored, so a macro can't trigger itself via its own response."
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={macro.sendOnRxMatch}
+                    onChange={(e) => {
+                      macro.setSendOnRxMatch(e.target.checked);
+                    }}
+                    data-testid="macro-send-on-rx-match-cb"
+                  />
+                }
+                label="Send on RX match"
+              />
+            </Tooltip>
             <TextField
               variant="outlined"
               size="small"
@@ -326,24 +339,24 @@ export default observer((props: Props) => {
               label="Case sensitive"
             />
           </div>
-          <Tooltip
-            title="When enabled, the macro is sent every N milliseconds for as long as the serial port is open. The timer pauses on disconnect and resumes (from zero) on the next connect."
-            {...app.settings.displaySettings.getBasicTooltipConfig()}
-          >
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={macro.sendOnInterval}
-                  onChange={(e) => {
-                    macro.setSendOnInterval(e.target.checked);
-                  }}
-                  data-testid="macro-send-on-interval-cb"
-                />
-              }
-              label="Send on interval"
-            />
-          </Tooltip>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+            <Tooltip
+              title="When enabled, the macro is sent every N milliseconds for as long as the serial port is open. The timer pauses on disconnect and resumes (from zero) on the next connect."
+              {...app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={macro.sendOnInterval}
+                    onChange={(e) => {
+                      macro.setSendOnInterval(e.target.checked);
+                    }}
+                    data-testid="macro-send-on-interval-cb"
+                  />
+                }
+                label="Send on interval"
+              />
+            </Tooltip>
             {/* Bound directly to the raw string in the model so the user can
                 type / delete / clear freely — validation runs live via
                 `intervalMsErrorMsg` but never rewrites their input. */}
