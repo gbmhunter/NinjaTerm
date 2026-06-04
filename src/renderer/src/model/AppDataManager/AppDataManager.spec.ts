@@ -98,6 +98,18 @@ describe('app data manager tests', () => {
     updateAndCompare(savedAppData);
   });
 
+  test('app data can be upgraded from v18', () => {
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v18-app-v5.12.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
+  });
+
+  test('app data can be loaded from v19 (current version)', () => {
+    // v19 is the current LATEST_VERSION, so no migration runs — this guards
+    // that the saved default snapshot still deserialises to a fresh AppData.
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v19-app-v5.13.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
+  });
+
   test('falls back to defaults when localStorage holds invalid JSON', () => {
     // _loadAppDataFromStorage calls JSON.parse() on the raw localStorage value
     // with no try/catch. If a previous version wrote a partial value, or the
@@ -211,6 +223,30 @@ describe('app data manager tests', () => {
     }
     // Other v16 fields must be left untouched.
     expect(appData.profiles?.[1].rootConfig?.settings?.txSettings?.useCtrlCVForCopyPaste).toBe(false);
+  });
+
+  test('migration v18->v19 seeds an empty terminal.filters list everywhere', () => {
+    // v18 input has no `terminal.filters`. After v19 every config slot carries
+    // an empty filters array (no filtering by default). Pre-existing terminal
+    // fields must be left untouched.
+    const v18Input = {
+      version: 18,
+      profiles: [
+        { name: 'p1', rootConfig: { terminal: { rightDrawer: { flowControlIsExpanded: true } } } },
+      ],
+      currentAppConfig: { terminal: { rightDrawer: { flowControlIsExpanded: false } } },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v18Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+    expect(appData.currentAppConfig?.terminal?.filters).toEqual([]);
+    expect(appData.currentAppConfig?.terminal?.rightDrawer?.flowControlIsExpanded).toBe(false);
+    for (const profile of appData.profiles ?? []) {
+      expect(profile.rootConfig?.terminal?.filters).toEqual([]);
+    }
   });
 
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {

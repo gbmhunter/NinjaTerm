@@ -12,6 +12,7 @@ import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
+import { FilterController } from 'src/model/Terminals/Filters/FilterController';
 
 describe('single terminal tests', () => {
   let app: App;
@@ -19,6 +20,7 @@ describe('single terminal tests', () => {
   let dataProcessingSettings: RxSettings;
   let displaySettings: DisplaySettings;
   let snackbarController: SnackbarController;
+  let filterController: FilterController;
   let singleTerminal: SingleTerminal;
   beforeEach(async () => {
     // Tests leave app data in local storage, but each test expects to start with
@@ -29,13 +31,17 @@ describe('single terminal tests', () => {
     dataProcessingSettings = new RxSettings(profileManager);
     displaySettings = new DisplaySettings(profileManager);
     snackbarController = new SnackbarController();
+    filterController = new FilterController(profileManager);
     singleTerminal = new SingleTerminal(
       'test-terminal',
       true,
       dataProcessingSettings,
       displaySettings,
       snackbarController,
-      null
+      null,
+      null,
+      null,
+      filterController
     );
     // Artificially set terminal view height to 100px since there is no UI to set it
     singleTerminal.setTerminalViewHeightPx(100);
@@ -249,6 +255,19 @@ describe('single terminal tests', () => {
   // Filtering tests
   //================================================================================
   describe('filtering tests', () => {
+    // Replace the active filter list with a single substring filter. Passing
+    // '' clears all filters (i.e. no filtering), matching the old single-field
+    // "delete all text to disable" behavior.
+    const setSingleFilter = (pattern: string) => {
+      while (filterController.filters.length > 0) {
+        filterController.deleteFilter(0);
+      }
+      if (pattern !== '') {
+        filterController.addFilter();
+        filterController.filters[0].setPattern(pattern);
+      }
+    };
+
     test('filtered terminal rows setup correctly', () => {
       // With no text yet received, we should just have the cursor on the first and only row. This should not be filtered.
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
@@ -261,7 +280,7 @@ describe('single terminal tests', () => {
     });
 
     test('filter text "1" works', () => {
-      singleTerminal.setFilterText('1');
+      setSingleFilter('1');
       // No data yet, even though this empty row won't match "1", it should still be included
       // because the cursor is on it
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
@@ -290,23 +309,23 @@ describe('single terminal tests', () => {
       // All rows should pass filter
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-      singleTerminal.setFilterText('1');
+      setSingleFilter('1');
       expect(singleTerminal.filteredTerminalRows).toEqual(
         [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
       );
 
-      singleTerminal.setFilterText('2');
+      setSingleFilter('2');
       expect(singleTerminal.filteredTerminalRows).toEqual(
         [ singleTerminal.terminalRows[1], singleTerminal.terminalRows[3] ]
       );
 
-      singleTerminal.setFilterText('3');
+      setSingleFilter('3');
       expect(singleTerminal.filteredTerminalRows).toEqual(
         [ singleTerminal.terminalRows[2], singleTerminal.terminalRows[3] ]
       );
 
       // There is no "4" in the data, so just the cursor row should be shown
-      singleTerminal.setFilterText('4');
+      setSingleFilter('4');
       expect(singleTerminal.filteredTerminalRows).toEqual(
         [ singleTerminal.terminalRows[3] ]
       );
@@ -319,18 +338,67 @@ describe('single terminal tests', () => {
       // All rows should pass filter
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
 
-      singleTerminal.setFilterText('1');
+      setSingleFilter('1');
       expect(singleTerminal.filteredTerminalRows).toEqual(
         [ singleTerminal.terminalRows[0], singleTerminal.terminalRows[3] ]
       );
 
       // Clearing the filter should restore all rows
-      singleTerminal.setFilterText('');
+      setSingleFilter('');
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
     });
 
+    test('multiple filters combine with match-any (OR) semantics', () => {
+      singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'), DataDirection.RX);
+
+      // Two filters: a row is shown if it matches "1" OR "3". Row containing
+      // "2" should be hidden; the cursor row (index 3) always shows.
+      filterController.addFilter();
+      filterController.filters[0].setPattern('1');
+      filterController.addFilter();
+      filterController.filters[1].setPattern('3');
+
+      expect(singleTerminal.filteredTerminalRows).toEqual([
+        singleTerminal.terminalRows[0],
+        singleTerminal.terminalRows[2],
+        singleTerminal.terminalRows[3],
+      ]);
+    });
+
+    test('a disabled filter is ignored', () => {
+      singleTerminal.parseData(stringToUint8Array('1\n2\n3\n'), DataDirection.RX);
+
+      filterController.addFilter();
+      filterController.filters[0].setPattern('1');
+      filterController.addFilter();
+      filterController.filters[1].setPattern('3');
+      // Disable the "3" filter -> only rows matching "1" (plus the cursor row) show.
+      filterController.filters[1].setEnabled(false);
+
+      expect(singleTerminal.filteredTerminalRows).toEqual([
+        singleTerminal.terminalRows[0],
+        singleTerminal.terminalRows[3],
+      ]);
+    });
+
+    test('a regex filter works', () => {
+      singleTerminal.parseData(stringToUint8Array('ERR42\nok\nERR7\n'), DataDirection.RX);
+
+      filterController.addFilter();
+      filterController.filters[0].setPattern('err\\d+');
+      filterController.filters[0].setUseRegex(true);
+
+      // Both ERR rows match the regex (case-insensitive); "ok" is hidden; cursor
+      // row (index 3) always shows.
+      expect(singleTerminal.filteredTerminalRows).toEqual([
+        singleTerminal.terminalRows[0],
+        singleTerminal.terminalRows[2],
+        singleTerminal.terminalRows[3],
+      ]);
+    });
+
     test('filter should work with cursor up escape code', () => {
-      singleTerminal.setFilterText('1');
+      setSingleFilter('1');
 
       // 1A: go up one, puts the cursor at the end of the first row
       singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[1A'), DataDirection.RX);
@@ -341,7 +409,7 @@ describe('single terminal tests', () => {
         [ singleTerminal.terminalRows[0] ]
       );
 
-      singleTerminal.setFilterText('');
+      setSingleFilter('');
 
       // All rows should now pass filter
       expect(singleTerminal.filteredTerminalRows).toEqual(singleTerminal.terminalRows);
