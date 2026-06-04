@@ -7,9 +7,11 @@ import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings'
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
+import { FilterController } from 'src/model/Terminals/Filters/FilterController';
 
 describe('find-in-scrollback', () => {
   let terminal: SingleTerminal;
+  let filterController: FilterController;
 
   beforeEach(() => {
     window.localStorage.clear();
@@ -18,7 +20,8 @@ describe('find-in-scrollback', () => {
     const rxSettings = new RxSettings(profileManager);
     const displaySettings = new DisplaySettings(profileManager);
     const snackbar = new SnackbarController();
-    terminal = new SingleTerminal('test-find', true, rxSettings, displaySettings, snackbar, null);
+    filterController = new FilterController(profileManager);
+    terminal = new SingleTerminal('test-find', true, rxSettings, displaySettings, snackbar, null, null, null, filterController);
     terminal.setTerminalViewHeightPx(100);
   });
 
@@ -168,7 +171,9 @@ describe('find-in-scrollback', () => {
 
   test('find searches within filtered rows only', () => {
     terminal.parseData(stringToUint8Array('apple\nbanana\napricot\n'), DataDirection.RX);
-    terminal.setFilterText('ap'); // filters to apple, apricot (cursor row also included)
+    // Add a single filter 'ap' -> filters to apple, apricot (cursor row also included)
+    filterController.addFilter();
+    filterController.filters[0].setPattern('ap');
     terminal.openFind();
     terminal.setFindQuery('a');
     // All matches should fall within filteredTerminalRows; rowIndex must be a

@@ -1,9 +1,8 @@
-import { z } from 'zod';
 import { makeAutoObservable, computed } from 'mobx';
 
 import { App } from 'src/model/App';
 import { SingleTerminal } from './SingleTerminal/SingleTerminal';
-import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import { FilterController } from './Filters/FilterController';
 import RightDrawer from './RightDrawer/RightDrawer';
 import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
@@ -17,7 +16,12 @@ export default class Terminals {
 
   txTerminal: SingleTerminal;
 
-  filterText: ApplyableTextField;
+  /**
+   * Shared list of view filters. A single instance is passed to both RX
+   * terminals so the same filters apply to the combined TX/RX pane and the
+   * RX-only pane.
+   */
+  filterController: FilterController;
 
   rightDrawer: RightDrawer;
 
@@ -26,13 +30,12 @@ export default class Terminals {
   constructor(app: App) {
     this.app = app;
 
-    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
-    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
+    this.filterController = new FilterController(app.profileManager);
+
+    this.txRxTerminal = new SingleTerminal('tx-rx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer, this.filterController);
+    this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer, this.filterController);
     this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
     this.rightDrawer = new RightDrawer(app);
-
-    this.filterText = new ApplyableTextField('', z.string());
-    this.filterText.setOnApplyChanged(this.onFilterTextApply);
 
     this._loadConfig();
     this.app.profileManager.registerOnProfileLoad(() => {
@@ -56,15 +59,6 @@ export default class Terminals {
       return this.txTerminal;
     }
     return this.txRxTerminal;
-  }
-
-  /**
-   * Needs to be arrow function, passed around as a callback
-   */
-  onFilterTextApply = () => {
-    // Apply filter text to the two terminals which contain RX data
-    this.txRxTerminal.setFilterText(this.filterText.appliedValue);
-    this.rxTerminal.setFilterText(this.filterText.appliedValue);
   }
 
   setShowRightDrawer(show: boolean) {

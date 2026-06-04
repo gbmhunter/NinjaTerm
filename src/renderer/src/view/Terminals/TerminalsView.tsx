@@ -1,13 +1,10 @@
 import {
   Button,
   ButtonPropsColorOverrides,
-  IconButton,
-  InputAdornment,
   Tooltip,
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { OverridableStringUnion } from '@mui/types';
@@ -19,7 +16,7 @@ import { App } from 'src/model/App';
 import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/DisplaySettings';
-import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
+import FilterPopover from './Filters/FilterPopover';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import RightDrawerView from './RightDrawer/RightDrawerView';
 
@@ -147,47 +144,9 @@ export default observer((props: Props) => {
           {isSmallScreen ? '' : 'Clear'}
         </Button>
         {/* ======================================================= */}
-        {/* FILTER TEXT INPUT */}
+        {/* FILTERS (MATCH-ANY) */}
         {/* ======================================================= */}
-        <Tooltip
-          title={
-            <div>
-              Filters the rows of data from the terminal based on the specified search pattern. Useful when you have lots of data and want to focus on a specific subset of
-              information.
-              <br />
-              <ul>
-                <li>The row that the cursor is on is always shown.</li>
-                <li>Delete all text to disable filtering.</li>
-              </ul>
-            </div>
-          }
-          placement="left"
-        >
-          <ApplyableTextFieldView
-            size="small"
-            label="Filter"
-            variant="outlined"
-            applyableTextField={app.terminals.filterText}
-            InputProps={{
-              style: { height: '35px' },
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    edge="end"
-                    color="primary"
-                    onClick={() => {
-                      app.terminals.filterText.setDispValue('');
-                      app.terminals.filterText.apply();
-                    }}
-                  >
-                    <CancelIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: '200px' }}
-          />
-        </Tooltip>
+        <FilterPopover filterController={app.terminals.filterController} />
 
         {/* ==================================================================== */}
         {/* SHOW/HIDE SIDE PANEL BUTTON */}

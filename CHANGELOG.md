@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Multiple terminal filters.** The single filter field is now a toolbar **Filters** popover holding a list of filters; a row is shown if it matches any enabled filter (match-any/OR). Each filter is a substring or regex with an optional case-sensitive toggle. New `FilterController` + `TerminalFilter` model drive `SingleTerminal.filteredTerminalRows`; filters persist per profile (AppData migrated v18→v19).
+
 ## [5.12.0] - 2026-05-17
 
 ### Added

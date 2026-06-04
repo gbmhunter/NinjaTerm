@@ -198,6 +198,9 @@ type MigrationTerminal = {
   rightDrawer?: {
     flowControlIsExpanded?: boolean;
   };
+  // v18->v19 (added) — list of view filters. Loose shape; the runtime
+  // `TerminalFilterData` owns the canonical fields.
+  filters?: unknown[];
 };
 
 /** Shape of a per-profile "rootConfig" (and equivalently of `currentAppConfig`)
@@ -523,6 +526,17 @@ function migrateV17toV18(appData: MigrationAppData): void {
   appData.version = 18;
 }
 
+function migrateV18toV19(appData: MigrationAppData): void {
+  // Add the multiple-terminal-filters list. Replaces the old single in-memory
+  // filter text field (which was never persisted), so there's nothing to carry
+  // forward — every config starts with an empty filter list (no filtering).
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.terminal = rootConfig.terminal ?? {};
+    rootConfig.terminal.filters = rootConfig.terminal.filters ?? [];
+  });
+  appData.version = 19;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -547,6 +561,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 15, apply: migrateV15toV16 },
   { from: 16, apply: migrateV16toV17 },
   { from: 17, apply: migrateV17toV18 },
+  { from: 18, apply: migrateV18toV19 },
 ];
 
 // --------------------------------------------------------------------------

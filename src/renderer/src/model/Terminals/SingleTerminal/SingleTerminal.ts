@@ -23,6 +23,8 @@ import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplayS
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
+import { FilterController } from 'src/model/Terminals/Filters/FilterController';
+import { TerminalFilter } from 'src/model/Terminals/Filters/TerminalFilter';
 import { SoundPlayer } from 'src/model/Util/SoundPlayer';
 import { HighlightRuleSound, HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 
@@ -125,12 +127,6 @@ export class SingleTerminal {
    */
   terminalRows: TerminalRow[];
 
-  /**
-   * The filter text to apply to the terminal. If an empty string, no filtering is
-   * applied.
-   */
-  filterText: string = '';
-
   //======================================================================
   // FIND-IN-SCROLLBACK STATE
   //======================================================================
@@ -153,17 +149,19 @@ export class SingleTerminal {
    * Now implemented as a computed property for better performance.
    */
   get filteredTerminalRows(): TerminalRow[] {
-    if (this.filterText === '') {
+    if (this.activeFilters.length === 0) {
       return this.terminalRows;
     }
-    return this.terminalRows.filter((row, rowIdx) => {
-      // The cursor row always passes the filter
-      if (rowIdx === this.cursorPosition[0]) {
-        return true;
-      }
-      // Otherwise, check if the row text contains the filter text
-      return row.text.includes(this.filterText);
-    });
+    return this.terminalRows.filter((_row, rowIdx) => this._doesRowPassFilter(rowIdx));
+  }
+
+  /**
+   * The currently-active filters from the shared filter controller (enabled,
+   * non-empty, and valid). Empty when there's no controller or no usable
+   * filter — in which case no filtering is applied.
+   */
+  get activeFilters(): TerminalFilter[] {
+    return this.filterController?.activeFilters ?? [];
   }
 
   /**
@@ -414,6 +412,12 @@ export class SingleTerminal {
   soundPlayer: SoundPlayer | null;
 
   /**
+   * Shared list of view filters applied to this terminal (match-any). Null
+   * means no filtering — same reason for optionality as `rulesSettings`.
+   */
+  filterController: FilterController | null;
+
+  /**
    * Highest `uniqueRowId` whose row has already been evaluated for
    * rule-driven sound playback. Cursor row id <= watermark means nothing to
    * do; > watermark means rows have finalised since the last check and we
@@ -441,6 +445,7 @@ export class SingleTerminal {
     onTerminalKeyDown: ((event: React.KeyboardEvent) => Promise<void>) | null,
     rulesSettings: RulesSettings | null = null,
     soundPlayer: SoundPlayer | null = null,
+    filterController: FilterController | null = null,
   ) {
     // Save passed in variables and dependencies
     this.id = id;
@@ -451,6 +456,7 @@ export class SingleTerminal {
     this.onTerminalKeyDown = onTerminalKeyDown;
     this.rulesSettings = rulesSettings;
     this.soundPlayer = soundPlayer;
+    this.filterController = filterController;
 
     autorun(() => {
       if (!this.rxSettings.ansiEscapeCodeParsingEnabled) {
@@ -1804,7 +1810,7 @@ export class SingleTerminal {
     this.setScrollLock(true);
 
     // filteredTerminalRows is now computed automatically
-    // No need to manually set it since it's based on terminalRows and filterText
+    // No need to manually set it since it's based on terminalRows and the active filters
 
     // Clear all styles that ANSI escape codes might
     // have applied
@@ -1869,7 +1875,7 @@ export class SingleTerminal {
     let numFilteredIndexesToRemove = 0;
     for (let idx = 0; idx < numRowsToRemove; idx += 1) {
       const deletedRow = deletedRows[idx];
-      if (this.filterText === '' || deletedRow.text.includes(this.filterText)) {
+      if (this.activeFilters.length === 0 || this._rowMatchesAnyActiveFilter(deletedRow.text)) {
         numFilteredIndexesToRemove += 1;
       }
     }
@@ -1891,11 +1897,6 @@ export class SingleTerminal {
     }
   }
 
-  /**
-   * Call this to set filter text to apply to each row in the terminals buffer. Only
-   * rows containing the filter text will be displayed.
-   * @param filterText
-   */
   //======================================================================
   // FIND-IN-SCROLLBACK ACTIONS
   //======================================================================
@@ -1955,24 +1956,16 @@ export class SingleTerminal {
     return matches[idx];
   }
 
-  setFilterText(filterText: string) {
-    this.filterText = filterText;
-
-    // Because the filter text has changed, we need to recheck every single row of
-    // data
-    // filteredTerminalRows is now computed automatically based on filterText
-    // No need to manually rebuild the filtered array
-    // We could get smart here and modify the scroll position to try
-    // and keep the user in roughly the same "position" as before, i.e.
-    // one way to do it would be to:
-    // 1) Find row at top of terminal before filter text is changed
-    // 2) After filter text is changed, find the closest row that passes the filter to the
-    //    one found in 1) that occurs after (in time).
-    // 3) Set this to the row at the top of the terminal
+  /** True if `rowText` matches at least one active filter (match-any / OR). */
+  _rowMatchesAnyActiveFilter(rowText: string): boolean {
+    return this.activeFilters.some((filter) => filter.matches(rowText));
   }
 
   /**
-   * Checks if the row at the specified index passes the filter.
+   * Checks if the row at the specified index passes the active filters.
+   * Filters combine with match-any (OR) semantics: a row passes if it matches
+   * at least one active filter. The cursor row always passes so the user can
+   * see where input is going.
    *
    * @param rowIdx If rowIdx is outside the bounds of the terminalRows array, this function returns false.
    * @returns True if row passes filter, otherwise false.
@@ -1984,20 +1977,15 @@ export class SingleTerminal {
       // remove row indexes of removed rows from the filtered list
       return false;
     }
-    const row = this.terminalRows[rowIdx];
-    const rowText = row.getText();
-    if (this.filterText === '') {
-      // No filter text, so all rows pass
+    if (this.activeFilters.length === 0) {
+      // No active filters, so all rows pass
       return true;
     }
     if (rowIdx === this.cursorPosition[0]) {
       // The cursor row always passes the filter
       return true;
     }
-    if (rowText.includes(this.filterText)) {
-      return true;
-    }
-    return false;
+    return this._rowMatchesAnyActiveFilter(this.terminalRows[rowIdx].getText());
   }
 
   /**
