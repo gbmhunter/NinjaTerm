@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.13.0] - 2026-06-04
+
 ### Added
 
 - **Multiple terminal filters.** The single filter field is now a toolbar **Filters** popover holding a list of filters; a row is shown if it matches any enabled filter (match-any/OR). Each filter is a substring or regex with an optional case-sensitive toggle. New `FilterController` + `TerminalFilter` model drive `SingleTerminal.filteredTerminalRows`; filters persist per profile (AppData migrated v18→v19).
@@ -1074,6 +1076,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.2...v5.12.0
 [5.11.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.1...v5.11.2
 [5.11.1]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.0...v5.11.1
