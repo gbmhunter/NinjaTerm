@@ -85,10 +85,46 @@ jobs:
       env:
         CSC_IDENTITY_AUTO_DISCOVERY: false
 
-  release:
-    # Tag-push only. Builds signed artifacts on all three platforms and publishes
-    # them to a new GitHub Release via `electron-builder --publish always`.
+  create-draft-release:
+    # Tag-push only. Creates the DRAFT GitHub Release up-front so that:
+    # (a) the three platform `release` jobs below all upload into the same
+    #     draft instead of racing to create one (electron-builder matrix
+    #     builds can otherwise create duplicate releases), and
+    # (b) the release stays invisible to auto-updaters until `publish-release`
+    #     flips it public after every artifact is attached. Previously the
+    #     release went public the moment the first platform finished, so
+    #     clients that checked for updates mid-upload got 404s on latest.yml.
     needs: test-electron
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create draft release for tag (idempotent)
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"
+        PRERELEASE_FLAG=""
+        case "$VERSION" in
+          *-*) PRERELEASE_FLAG="--prerelease" ;;
+        esac
+        if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+          # Re-run of the workflow — release (draft or published) already exists.
+          echo "Release $GITHUB_REF_NAME already exists; not creating another."
+        else
+          gh release create "$GITHUB_REF_NAME" --draft $PRERELEASE_FLAG \
+            --title "$VERSION" \
+            --notes "Build in progress - artifacts are still being uploaded by CI."
+        fi
+
+  release:
+    # Tag-push only. Builds signed artifacts on all three platforms and uploads
+    # them to the DRAFT GitHub Release created by `create-draft-release`
+    # (electron-builder finds the existing draft by tag and uploads into it —
+    # `releaseType: "draft"` in package.json's build.publish config). The
+    # release is made public afterwards by `publish-release`.
+    needs: create-draft-release
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ${{ matrix.os }}
 
@@ -149,10 +185,12 @@ jobs:
         # Publish to GitHub Releases
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  release-notes:
-    # Runs once, after all three platform builds in `release` have uploaded.
-    # Extracts the matching `## [X.Y.Z]` section from CHANGELOG.md and sets it
-    # as the GitHub Release body via `gh release edit`.
+  publish-release:
+    # Runs once, after all three platform builds in `release` have uploaded
+    # their installers AND update manifests (latest*.yml) to the draft release.
+    # Sets the release body from CHANGELOG.md, then flips the draft public.
+    # Publishing last means auto-updaters never see a half-uploaded release,
+    # and if any platform build fails the release stays an invisible draft.
     needs: release
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -178,8 +216,20 @@ jobs:
         ' CHANGELOG.md | sed '/^$/N;/^\n$/D' > release-notes.md
 
         if [ ! -s release-notes.md ]; then
+          # Non-fatal: a missing CHANGELOG section shouldn't block publishing
+          # the release itself (the next step still runs).
           echo "Could not extract CHANGELOG section for $VERSION; leaving release body untouched." >&2
           exit 0
         fi
 
         gh release edit "$GITHUB_REF_NAME" --notes-file release-notes.md
+
+    - name: Publish release (draft -> public)
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION="${GITHUB_REF_NAME#v}"
+        case "$VERSION" in
+          *-*) gh release edit "$GITHUB_REF_NAME" --draft=false --prerelease ;;
+          *)   gh release edit "$GITHUB_REF_NAME" --draft=false --latest ;;
+        esac

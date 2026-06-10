@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **Update checks no longer 404 mid-release.** CI now uploads installers to a draft GitHub Release (new `create-draft-release` job + `releaseType: "draft"`) and the `publish-release` job only makes it public once all platforms' artifacts, including `latest*.yml`, are attached.
+
 ## [5.13.0] - 2026-06-04
 
 ### Added
