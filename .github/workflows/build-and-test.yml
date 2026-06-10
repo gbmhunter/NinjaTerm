@@ -17,7 +17,12 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-15, ubuntu-latest, windows-latest]
+        # Windows pinned to windows-2022 (not windows-latest): the windows-latest
+        # image rolled in Visual Studio 18, which node-gyp 10.x can't detect
+        # (ERR_CHILD_PROCESS_STDIO_MAXBUFFER), breaking native-module builds
+        # during `npm ci`. windows-2022 keeps the VS 2022 toolchain that builds
+        # cleanly. Revisit once node-gyp is upgraded to a VS18-aware version.
+        os: [macos-15, ubuntu-latest, windows-2022]
 
     steps:
     - name: Checkout code
@@ -67,7 +72,7 @@ jobs:
     # signed build + publish on tag pushes.
     #===============================================================
     - name: Package Electron app (Windows)
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2022'
       run: npx electron-builder --win --publish never
       env:
         CSC_IDENTITY_AUTO_DISCOVERY: false
@@ -130,7 +135,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-15]
+        # Windows pinned to windows-2022 — see note in the test-electron matrix.
+        os: [ubuntu-latest, windows-2022, macos-15]
 
     steps:
     - name: Check out Git repository
@@ -160,7 +166,7 @@ jobs:
     # NOTE: More build config is in package.json under the "build" key.
     #===============================================================
     - name: Build/release Electron app (Windows)
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2022'
       run: npx electron-builder --win --publish always
       env:
         # Windows code signing
