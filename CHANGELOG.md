@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **Update checks no longer 404 mid-release.** CI now uploads installers to a draft GitHub Release (new `create-draft-release` job + `releaseType: "draft"`) and the `publish-release` job only makes it public once all platforms' artifacts, including `latest*.yml`, are attached.
+- **Windows CI builds fixed.** Pinned the Windows runner to `windows-2022`; the `windows-latest` image added Visual Studio 18, which `node-gyp` 10.x fails to detect during native-module builds in `npm ci`.
+
 ## [5.13.0] - 2026-06-04
 
 ### Added

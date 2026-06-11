@@ -219,7 +219,7 @@
       "provider": "github",
       "owner": "gbmhunter",
       "repo": "NinjaTerm",
-      "releaseType": "release"
+      "releaseType": "draft"
     }
   },
   "type": "module"

@@ -138,19 +138,25 @@ branch.
 (We use `--preview` rather than `--dry-run` because npm intercepts `--dry-run`
 as one of its own flags before it reaches the script.)
 
-From there CI takes over: it builds and signs all three platforms, creates the
-GitHub Release, uploads the installers / updater manifests, and extracts the
-`## [X.Y.Z]` section from CHANGELOG.md as the Release body. There's no manual
-"create draft release" step any more.
+From there CI takes over: it builds and signs all three platforms, uploads the
+installers / updater manifests to a **draft** GitHub Release, and only flips
+the release public once every artifact is attached (with the `## [X.Y.Z]`
+section from CHANGELOG.md as the Release body). The draft stage matters:
+auto-updaters can't see drafts, so existing installs never hit a 404 on
+`latest.yml` while uploads are still in flight — and if any platform build
+fails, the release stays an invisible draft rather than going out incomplete.
 
 **How CI works:**
 - On every `main` / `dev` push: `test-electron` runs unit tests, the Electron
   e2e suite (Ubuntu), and a packaging smoke-test on all three platforms with
   `--publish never`. No upload.
-- On a `v*` tag push: `test-electron` runs first, then the `release` job
-  rebuilds all three platforms with signing + `electron-builder --publish always`,
-  which creates the GitHub Release and attaches the artifacts. A follow-up
-  `release-notes` job fills the Release body from CHANGELOG via `gh release edit`.
+- On a `v*` tag push: `test-electron` runs first, then `create-draft-release`
+  creates the draft GitHub Release (one canonical release — avoids the
+  electron-builder matrix race that can create duplicates), then the `release`
+  job rebuilds all three platforms with signing + `electron-builder --publish
+  always` (uploading into the draft — `releaseType: "draft"` in package.json's
+  `build.publish`). A final `publish-release` job fills the Release body from
+  CHANGELOG and publishes the draft via `gh release edit --draft=false`.
 
 ## Deployment
 
