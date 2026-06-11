@@ -872,14 +872,17 @@ export class SingleTerminal {
           this.inCSISequence = true;
         }
 
-        if (this.inCSISequence) {
-          // Wait for alphabetic character to end CSI sequence. ASCII letters
-          // are exactly the codes whose lower- and upper-case forms differ;
-          // checking this against the raw code avoids two String.fromCharCode
-          // allocations per byte.
-          const isAsciiLetter =
-            (rxByte >= 0x41 && rxByte <= 0x5A) || (rxByte >= 0x61 && rxByte <= 0x7A);
-          if (isAsciiLetter) {
+        // Wait for the CSI final byte to end the sequence. Per ECMA-48 a CSI
+        // sequence is `ESC [`, optional parameter bytes (0x30-0x3F) and
+        // intermediate bytes (0x20-0x2F), then a single final byte in the range
+        // 0x40-0x7E. That final-byte range is broader than just ASCII letters —
+        // it also includes e.g. `~`, which terminates the VT sequences the
+        // Home/End/PgUp/PgDn/Insert/Delete keys send (ESC[1~ .. ESC[6~). The
+        // `length > 2` guard stops the opening `[` (0x5B, itself inside the
+        // final-byte range) from prematurely ending the sequence.
+        if (this.inCSISequence && this.partialEscapeCode.length > 2) {
+          const isCsiFinalByte = rxByte >= 0x40 && rxByte <= 0x7e;
+          if (isCsiFinalByte) {
             this._parseCSISequence(String.fromCharCode(...this.partialEscapeCode));
             this._resetEscapeCodeParserState();
             this.inIdleState = true;

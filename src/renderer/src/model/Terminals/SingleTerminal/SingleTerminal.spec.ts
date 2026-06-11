@@ -886,6 +886,34 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
     });
   });
+
+  //================================================================================
+  // CSI sequence termination
+  //================================================================================
+  describe('CSI sequence termination', () => {
+    test('ESC[3~ (Delete key VT sequence) is consumed and does not swallow the next char', () => {
+      // 'ab' then ESC[3~ (Delete) then 'c'. The `~` final byte must terminate
+      // the CSI sequence so the following 'c' is printed normally. Before the
+      // fix, `~` did not end the sequence and the next byte was eaten.
+      const data = new Uint8Array([0x61, 0x62, 0x1b, 0x5b, 0x33, 0x7e, 0x63]);
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].char).toBe('c');
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('letter-terminated CSI sequences still work (ESC[1D moves the cursor left)', () => {
+      // Regression guard: broadening the terminator to the full 0x40-0x7E
+      // final-byte range must not break the common letter-terminated codes.
+      const data = new Uint8Array([0x61, 0x62, 0x63, 0x1b, 0x5b, 0x31, 0x44]); // 'abc' + ESC[1D
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+    });
+  });
 });
 
 function printTerminalRows(terminalRows: TerminalRow[]) {
