@@ -608,6 +608,45 @@ export default class FakePortsController {
       )
     );
 
+    // typing with backspace corrections, ~8char/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'typing with backspace corrections, ~8char/s',
+        'Simulates a user typing into a shell and fixing typos with the backspace key, one byte at a time. ' +
+          'Exercises both a lone backspace (0x08) and the classic "\\b \\b" erase sequence. ' +
+          'Pair with the RX "Backspace" setting to see destructive backspace, move-cursor-left, or glyph behaviors.',
+        () => {
+          // The keystroke stream, with embedded backspaces (\b == 0x08).
+          // Line 1: type "helllo" (typo), backspace x3, retype to "hello",
+          //   continue " wrold" (typo), backspace x4, retype to " world".
+          // Line 2: type "abc" then the "\b \b" erase sequence -> "ab".
+          const script =
+            '$ echo helllo\b\b\blo wrold\b\b\b\borld\n' +
+            '$ printf abc\b \b\n';
+          const bytes: number[] = [];
+          for (let i = 0; i < script.length; i++) {
+            bytes.push(script.charCodeAt(i));
+          }
+          let idx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([bytes[idx]]));
+            idx += 1;
+            if (idx === bytes.length) {
+              idx = 0;
+            }
+          }, 120);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
     // bytes 0x00-0xFF, 5chars/s, control and hex glyphs
     //=================================================================================
     this.fakePorts.push(
