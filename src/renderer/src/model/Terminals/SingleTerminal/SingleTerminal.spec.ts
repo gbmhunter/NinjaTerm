@@ -3,6 +3,7 @@ import { expect, test, describe, beforeEach } from 'vitest';
 import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
+  BackspaceBehavior,
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
   TimestampFormat,
@@ -807,6 +808,82 @@ describe('single terminal tests', () => {
         const codePoint = char.char.codePointAt(0);
         expect(codePoint, `codePoint for char ${i} should be ${string.charCodeAt(i)} but is ${codePoint}`).toBe(string.charCodeAt(i));
       }
+    });
+  });
+
+  //================================================================================
+  // Backspace handling
+  //================================================================================
+  describe('backspace handling', () => {
+    test('destructive backspace (default) erases the previous char', () => {
+      // DELETE_CHAR is the default behavior.
+      singleTerminal.parseData(stringToUint8Array('abc\b'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars.length).toBe(3);
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      // 'c' was erased; the cursor now sits on a holder space.
+      expect(chars[2].char).toBe(' ');
+      expect(chars[2].forCursor).toBe(true);
+    });
+
+    test('typing after a destructive backspace overwrites correctly', () => {
+      singleTerminal.parseData(stringToUint8Array('ab\bX'), DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('X');
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+    });
+
+    test('the \\b \\b erase sequence leaves the line clean', () => {
+      singleTerminal.parseData(stringToUint8Array('abc\b \b'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].forCursor).toBe(true);
+    });
+
+    test('DEL (0x7F) is treated as a backspace', () => {
+      const data = new Uint8Array([0x61, 0x62, 0x63, 0x7f]); // 'abc' + DEL
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars.length).toBe(3);
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].forCursor).toBe(true);
+    });
+
+    test('MOVE_CURSOR_LEFT moves the cursor without deleting', () => {
+      dataProcessingSettings.setBackspaceBehavior(BackspaceBehavior.MOVE_CURSOR_LEFT);
+      singleTerminal.parseData(stringToUint8Array('abc\b'), DataDirection.RX);
+
+      // Cursor moved left but 'c' is still present.
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[2].char).toBe('c');
+    });
+
+    test('DO_NOTHING renders the backspace as a control glyph', () => {
+      dataProcessingSettings.setBackspaceBehavior(BackspaceBehavior.DO_NOTHING);
+      singleTerminal.parseData(stringToUint8Array('a\b'), DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      // 0x08 shifted up into the control-glyph PUA range.
+      expect(chars[1].char).toBe(String.fromCharCode(0x08 + 0xe000));
+    });
+
+    test('backspace at the start of the line does nothing', () => {
+      singleTerminal.parseData(stringToUint8Array('\b'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 0]);
+      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
     });
   });
 });

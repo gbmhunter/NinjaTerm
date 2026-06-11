@@ -7,6 +7,7 @@ import { formatTimestamp } from 'src/model/Util/timestamp';
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
+  BackspaceBehavior,
   CarriageReturnCursorBehavior,
   DataType,
   Endianness,
@@ -828,6 +829,29 @@ export class SingleTerminal {
         continue;
       }
 
+      //========================================================================
+      // BACKSPACE HANDLING
+      //========================================================================
+      // 0x08 is ASCII backspace (\b). 0x7F is DEL, which many keyboards and
+      // terminals send for the backspace key, so it's treated the same way.
+      // When the behavior is DO_NOTHING we fall through and the byte is
+      // rendered/swallowed like any other non-visible char.
+      const backspaceBehavior = this.rxSettings.backspaceBehavior;
+      if (
+        this.inIdleState &&
+        (rxByte === 0x08 || rxByte === 0x7f) &&
+        backspaceBehavior !== BackspaceBehavior.DO_NOTHING
+      ) {
+        if (backspaceBehavior === BackspaceBehavior.MOVE_CURSOR_LEFT) {
+          this._cursorLeft(1);
+        } else if (backspaceBehavior === BackspaceBehavior.DELETE_CHAR) {
+          this._backspaceDeleteChar();
+        } else {
+          throw Error('Invalid backspace behavior. backspaceBehavior=' + backspaceBehavior);
+        }
+        continue;
+      }
+
       if (rxByte === 0x1b) {
         this._resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
@@ -1454,6 +1478,32 @@ export class SingleTerminal {
       currRow.terminalChars.splice(this.cursorPosition[1], 1);
     }
     this.cursorPosition[1] -= numColsToLeftAdjusted;
+  }
+
+  /**
+   * Performs a destructive backspace: moves the cursor one column left and
+   * deletes the character there. Does nothing if the cursor is already at the
+   * start of the line (does not wrap up to the previous row, matching typical
+   * terminal backspace behavior).
+   */
+  _backspaceDeleteChar() {
+    if (this.cursorPosition[1] === 0) {
+      return;
+    }
+    // Move left one column. This also drops the trailing cursor-holder space
+    // if the cursor was sitting on it.
+    this._cursorLeft(1);
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    // Delete the character now under the cursor.
+    currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    // Make sure there is still a character at the cursor position to hold the
+    // cursor (needed when we deleted the last character on the row).
+    if (this.cursorPosition[1] === currRow.terminalChars.length) {
+      const spaceTerminalChar = new TerminalChar();
+      spaceTerminalChar.char = ' ';
+      spaceTerminalChar.forCursor = true;
+      currRow.terminalChars.push(spaceTerminalChar);
+    }
   }
 
   /**

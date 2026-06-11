@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Backspace (0x08/DEL 0x7F) handling ([#401](https://github.com/gbmhunter/NinjaTerm/issues/401)).** New RX "Backspace" setting with three behaviors — display as glyph, move cursor left (strict ANSI), or destructive (move left + erase char, the new default). Handled in `SingleTerminal.parseData` via `_backspaceDeleteChar`; AppData migrated v19→v20.
+
 ### Fixed
 
 - **Update checks no longer 404 mid-release.** CI now uploads installers to a draft GitHub Release (new `create-draft-release` job + `releaseType: "draft"`) and the `publish-release` job only makes it public once all platforms' artifacts, including `latest*.yml`, are attached.

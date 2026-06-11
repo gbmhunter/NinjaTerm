@@ -25,7 +25,7 @@
 
 import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
-import { TimestampFormat } from '../Settings/RxSettings/RxSettings';
+import { BackspaceBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
@@ -93,6 +93,8 @@ type MigrationRxSettings = {
   customTimestampFormatString?: string;
   // pre-v3 nested version — deleted in v2->v3
   version?: number;
+  // v19->v20 (added)
+  backspaceBehavior?: BackspaceBehavior;
 };
 
 type MigrationTxSettings = {
@@ -537,6 +539,18 @@ function migrateV18toV19(appData: MigrationAppData): void {
   appData.version = 19;
 }
 
+function migrateV19toV20(appData: MigrationAppData): void {
+  // Add the backspace handling setting. Existing configs adopt the new default
+  // (destructive backspace) so that received/echoed 0x08 and 0x7F bytes erase a
+  // character rather than printing a control glyph.
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    rootConfig.settings.rxSettings = rootConfig.settings.rxSettings ?? {};
+    rootConfig.settings.rxSettings.backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
+  });
+  appData.version = 20;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -562,6 +576,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 16, apply: migrateV16toV17 },
   { from: 17, apply: migrateV17toV18 },
   { from: 18, apply: migrateV18toV19 },
+  { from: 19, apply: migrateV19toV20 },
 ];
 
 // --------------------------------------------------------------------------
