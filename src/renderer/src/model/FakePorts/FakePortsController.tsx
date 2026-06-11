@@ -47,6 +47,25 @@ export default class FakePortsController {
     this.app = app;
 
     //=================================================================================
+    // silent (no data)
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'silent (no data)',
+        'Opens a connection but never sends any data. Useful for testing TX features such as local echo and ' +
+          'backspace handling without any incoming RX data getting in the way — just open it, type, and watch the echo.',
+        () => {
+          // Nothing to schedule; there is no data to emit. Returning null means
+          // there is no interval for the disconnect handler to clear.
+          return null;
+        },
+        (_intervalId: NodeJS.Timeout | null) => {
+          // No interval was created, so there is nothing to tear down.
+        }
+      )
+    );
+
+    //=================================================================================
     // hello world, 0.1lps
     //=================================================================================
     this.fakePorts.push(
