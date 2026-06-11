@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
-import { ConnController } from './ConnController';
+import { ConnController, PortType } from './ConnController';
 import { App } from '../App';
 
 describe('SerialController', () => {
@@ -154,6 +154,28 @@ describe('SerialController', () => {
       expect(throwingDispose).toHaveBeenCalledTimes(1);
       expect(goodDispose).toHaveBeenCalledTimes(1);
       expect(conn.connDisposers).toEqual([]);
+    });
+  });
+
+  describe('writeData', () => {
+    beforeEach(() => {
+      window.localStorage.clear();
+    });
+
+    it('no-ops for fake ports instead of attempting a real serial write', async () => {
+      // Fake ports have no underlying connection. writeData must succeed
+      // silently so the caller can still local-echo the typed bytes — if it
+      // threw "Port not found" here, local echo would never render.
+      const app = new App();
+      const conn: any = app.connController;
+      conn.lastSelectedPortType = PortType.FAKE;
+
+      // Spy on the serial write so we can assert it is never reached.
+      const serialWrite = vi.fn();
+      (window as any).electronAPI = { serial: { writeData: serialWrite } };
+
+      await expect(conn.writeData(Uint8Array.from([0x61, 0x08]))).resolves.toBeUndefined();
+      expect(serialWrite).not.toHaveBeenCalled();
     });
   });
 });

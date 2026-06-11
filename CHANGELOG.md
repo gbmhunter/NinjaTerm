@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- **Local echo now works with fake ports.** `ConnController.writeData` no-ops for fake ports instead of attempting a real serial write (which threw "Port not found" and aborted before the local-echo step), so typed TX bytes are echoed to the terminal.
 - **Update checks no longer 404 mid-release.** CI now uploads installers to a draft GitHub Release (new `create-draft-release` job + `releaseType: "draft"`) and the `publish-release` job only makes it public once all platforms' artifacts, including `latest*.yml`, are attached.
 - **Windows CI builds fixed.** Pinned the Windows runner to `windows-2022`; the `windows-latest` image added Visual Studio 18, which `node-gyp` 10.x fails to detect during native-module builds in `npm ci`.
 
