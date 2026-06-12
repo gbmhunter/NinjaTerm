@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - **Fake port "typing with backspace corrections"** that streams shell-style typing with typo fixes (lone `\b` and the `\b \b` erase sequence), one byte at a time, for testing the new backspace setting.
 - **Fake port "silent (no data)"** that opens a connection but emits nothing — useful for testing local echo / backspace handling by typing, without RX traffic interfering.
 
+### Changed
+
+- **Default Warning/Error highlight rules now ship disabled.** The two starter rules are off out of the box (`makeDefaultHighlightRules`); existing users have them switched off via the v19→v20 AppData migration (custom rules are left untouched).
+
 ### Fixed
 
 - **CSI escape sequences ending in `~` no longer swallow the following byte.** The CSI parser now terminates on the full ECMA-48 final-byte range (0x40–0x7E) instead of just ASCII letters, so the VT sequences sent by the Delete/Home/End/PgUp/PgDn/Insert keys (`ESC[1~`…`ESC[6~`) are parsed cleanly rather than hanging the parser until the next keystroke.

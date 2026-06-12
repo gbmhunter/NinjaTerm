@@ -267,7 +267,7 @@
               {
                 "version": 1,
                 "name": "Warning",
-                "enabled": true,
+                "enabled": false,
                 "pattern": "warning",
                 "caseSensitive": false,
                 "backgroundColor": "#df8004",
@@ -277,7 +277,7 @@
               {
                 "version": 1,
                 "name": "Error",
-                "enabled": true,
+                "enabled": false,
                 "pattern": "error",
                 "caseSensitive": false,
                 "backgroundColor": "#b71c1c",
@@ -554,7 +554,7 @@
           {
             "version": 1,
             "name": "Warning",
-            "enabled": true,
+            "enabled": false,
             "pattern": "warning",
             "caseSensitive": false,
             "backgroundColor": "#df8004",
@@ -564,7 +564,7 @@
           {
             "version": 1,
             "name": "Error",
-            "enabled": true,
+            "enabled": false,
             "pattern": "error",
             "caseSensitive": false,
             "backgroundColor": "#b71c1c",
