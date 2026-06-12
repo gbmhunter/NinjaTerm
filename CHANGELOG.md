@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.14.0] - 2026-06-12
+
 ### Added
 
 - **Backspace (0x08/DEL 0x7F) handling ([#401](https://github.com/gbmhunter/NinjaTerm/issues/401)).** New RX "Backspace" setting with three behaviors — display as glyph, move cursor left (strict ANSI), or destructive (move left + erase char, the new default). Handled in `SingleTerminal.parseData` via `_backspaceDeleteChar`; AppData migrated v19→v20.
@@ -1095,6 +1097,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.13.0...v5.14.0
 [5.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.2...v5.12.0
 [5.11.2]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.1...v5.11.2
