@@ -130,7 +130,18 @@ NinjaTerm defaults to RTT up/down channel 0 (the "Terminal" channel, what `SEGGE
 
 ## ANSI Escape Codes
 
-NinjaTerm supports a number of the most popular ASCII escape codes for manipulating the terminal. They are commonly used for coloring/styling text (e.g. making errors red), moving the cursor around and deleting data (e.g. clearing the screen, or re-writing an existing row). These features are very useful when making interactive prompts.
+NinjaTerm supports a number of the most popular ANSI escape codes for manipulating the terminal. They are commonly used for coloring/styling text (e.g. making errors red), moving the cursor around and deleting data (e.g. clearing the screen, or re-writing an existing row). These features are very useful when making interactive prompts.
+
+Parsing can be toggled with the ANSI escape code parsing setting in `Settings > RX Settings`. `n` is an optional numeric parameter that defaults to `1` (or `0` for Erase in Display). Sequences that are not in the table below are parsed but otherwise ignored.
+
+| Sequence | Name | Effect |
+| --- | --- | --- |
+| `ESC[nA` | Cursor Up (CUU) | Move the cursor up `n` rows (won't go above the first row or into scrollback). |
+| `ESC[nC` | Cursor Forward (CUF) | Move the cursor right `n` columns (capped at the terminal width). |
+| `ESC[nD` | Cursor Back (CUB) | Move the cursor left `n` columns (capped at column 0). |
+| `ESC[nP` | Delete Character (DCH) | Delete `n` characters at the cursor, shifting the rest of the line left. |
+| `ESC[nJ` | Erase in Display (ED) | Clear part of the screen — see below. |
+| `ESC[...m` | Select Graphic Rendition (SGR) | Set text color/style — see below. |
 
 ### Erase in Display (ESC[nJ)
 
@@ -143,6 +154,17 @@ The current rows in view are ignored when performing Erase in Display commands, 
 `ESC[2J` (clear entire screen) will insert enough empty, blank rows into the terminal such that the cursor would be at the top right of the view port with a "blank screen" if the user was not looking in the scrollback.
 
 `ESC[3J` (clear all data from terminal and scrollback buffer) will delete all data in the terminal and the scrollback buffer. This is the same as pressing the clear button in the terminal view.
+
+### Select Graphic Rendition (ESC[...m)
+
+Sets the text style for subsequent characters. Multiple codes can be combined, separated by `;` (e.g. `ESC[1;31m` for bold red). The supported codes are:
+
+- `0` — reset all styles (also the default when no code is given, i.e. `ESC[m`)
+- `1` — bold / increased intensity
+- `30`–`37` — foreground color, `90`–`97` — bright foreground color
+- `40`–`47` — background color, `100`–`107` — bright background color
+
+These can override the default background/TX/RX colors set in `Settings > Display`.
 
 ## Timestamps
 

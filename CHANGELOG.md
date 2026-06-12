@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - **Backspace (0x08/DEL 0x7F) handling ([#401](https://github.com/gbmhunter/NinjaTerm/issues/401)).** New RX "Backspace" setting with three behaviors — display as glyph, move cursor left (strict ANSI), or destructive (move left + erase char, the new default). Handled in `SingleTerminal.parseData` via `_backspaceDeleteChar`; AppData migrated v19→v20.
 - **Fake port "typing with backspace corrections"** that streams shell-style typing with typo fixes (lone `\b` and the `\b \b` erase sequence), one byte at a time, for testing the new backspace setting.
 - **Fake port "silent (no data)"** that opens a connection but emits nothing — useful for testing local echo / backspace handling by typing, without RX traffic interfering.
+- **DCH (Delete Character) escape sequence ([#404](https://github.com/gbmhunter/NinjaTerm/issues/404)).** `ESC[P` / `ESC[nP` deletes characters at the cursor and shifts the rest of the line left, for proper forward-delete emulation. Handled in `SingleTerminal._parseCSISequence` via the new `_deleteChars`.
+- **Manual now lists all supported ANSI escape codes** in a summary table (cursor moves, DCH, Erase in Display, and SGR codes) in the ANSI Escape Codes section.
 
 ### Changed
 

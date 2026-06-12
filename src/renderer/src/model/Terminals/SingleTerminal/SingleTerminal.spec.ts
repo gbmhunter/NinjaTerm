@@ -914,6 +914,75 @@ describe('single terminal tests', () => {
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
     });
   });
+
+  //================================================================================
+  // DCH (Delete Character, ESC[P)
+  //================================================================================
+  describe('DCH delete character', () => {
+    test('ESC[P deletes the character under the cursor and shifts the rest left', () => {
+      // 'abcd', move cursor left 2 (onto 'c'), then ESC[P -> 'abd'.
+      const data = new Uint8Array([
+        0x61, 0x62, 0x63, 0x64, // 'abcd'
+        0x1b, 0x5b, 0x32, 0x44, // ESC[2D (cursor left 2)
+        0x1b, 0x5b, 0x50, // ESC[P (delete 1 char)
+      ]);
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars.length).toBe(3);
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].char).toBe('d');
+      // Cursor stays put.
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+    });
+
+    test('ESC[nP deletes n characters', () => {
+      // 'abcde', move cursor left 3 (onto 'c'), then ESC[2P -> 'abe'.
+      const data = new Uint8Array([
+        0x61, 0x62, 0x63, 0x64, 0x65, // 'abcde'
+        0x1b, 0x5b, 0x33, 0x44, // ESC[3D
+        0x1b, 0x5b, 0x32, 0x50, // ESC[2P
+      ]);
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars.length).toBe(3);
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].char).toBe('e');
+      expect(singleTerminal.cursorPosition).toEqual([0, 2]);
+    });
+
+    test('ESC[P at the end of the line is a no-op', () => {
+      // Nothing to the right of the cursor to delete.
+      const data = new Uint8Array([0x61, 0x62, 0x63, 0x1b, 0x5b, 0x50]); // 'abc' + ESC[P
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].char).toBe('c');
+      // Trailing cursor-holder space remains untouched.
+      expect(chars[3].forCursor).toBe(true);
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('ESC[nP is clamped to the characters remaining on the line', () => {
+      // 'ab', move cursor to start, delete more chars than exist -> empty line.
+      const data = new Uint8Array([
+        0x61, 0x62, // 'ab'
+        0x1b, 0x5b, 0x32, 0x44, // ESC[2D (cursor to col 0)
+        0x1b, 0x5b, 0x39, 0x50, // ESC[9P
+      ]);
+      singleTerminal.parseData(data, DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars.length).toBe(1);
+      expect(chars[0].forCursor).toBe(true);
+      expect(singleTerminal.cursorPosition).toEqual([0, 0]);
+    });
+  });
 });
 
 function printTerminalRows(terminalRows: TerminalRow[]) {
