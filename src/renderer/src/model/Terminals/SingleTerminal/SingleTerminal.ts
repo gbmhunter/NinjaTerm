@@ -7,6 +7,7 @@ import { formatTimestamp } from 'src/model/Util/timestamp';
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
 import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
+  BackspaceBehavior,
   CarriageReturnCursorBehavior,
   DataType,
   Endianness,
@@ -828,6 +829,29 @@ export class SingleTerminal {
         continue;
       }
 
+      //========================================================================
+      // BACKSPACE HANDLING
+      //========================================================================
+      // 0x08 is ASCII backspace (\b). 0x7F is DEL, which many keyboards and
+      // terminals send for the backspace key, so it's treated the same way.
+      // When the behavior is DO_NOTHING we fall through and the byte is
+      // rendered/swallowed like any other non-visible char.
+      const backspaceBehavior = this.rxSettings.backspaceBehavior;
+      if (
+        this.inIdleState &&
+        (rxByte === 0x08 || rxByte === 0x7f) &&
+        backspaceBehavior !== BackspaceBehavior.DO_NOTHING
+      ) {
+        if (backspaceBehavior === BackspaceBehavior.MOVE_CURSOR_LEFT) {
+          this._cursorLeft(1);
+        } else if (backspaceBehavior === BackspaceBehavior.DELETE_CHAR) {
+          this._backspaceDeleteChar();
+        } else {
+          throw Error('Invalid backspace behavior. backspaceBehavior=' + backspaceBehavior);
+        }
+        continue;
+      }
+
       if (rxByte === 0x1b) {
         this._resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
@@ -848,14 +872,17 @@ export class SingleTerminal {
           this.inCSISequence = true;
         }
 
-        if (this.inCSISequence) {
-          // Wait for alphabetic character to end CSI sequence. ASCII letters
-          // are exactly the codes whose lower- and upper-case forms differ;
-          // checking this against the raw code avoids two String.fromCharCode
-          // allocations per byte.
-          const isAsciiLetter =
-            (rxByte >= 0x41 && rxByte <= 0x5A) || (rxByte >= 0x61 && rxByte <= 0x7A);
-          if (isAsciiLetter) {
+        // Wait for the CSI final byte to end the sequence. Per ECMA-48 a CSI
+        // sequence is `ESC [`, optional parameter bytes (0x30-0x3F) and
+        // intermediate bytes (0x20-0x2F), then a single final byte in the range
+        // 0x40-0x7E. That final-byte range is broader than just ASCII letters —
+        // it also includes e.g. `~`, which terminates the VT sequences the
+        // Home/End/PgUp/PgDn/Insert/Delete keys send (ESC[1~ .. ESC[6~). The
+        // `length > 2` guard stops the opening `[` (0x5B, itself inside the
+        // final-byte range) from prematurely ending the sequence.
+        if (this.inCSISequence && this.partialEscapeCode.length > 2) {
+          const isCsiFinalByte = rxByte >= 0x40 && rxByte <= 0x7e;
+          if (isCsiFinalByte) {
             this._parseCSISequence(String.fromCharCode(...this.partialEscapeCode));
             this._resetEscapeCodeParserState();
             this.inIdleState = true;
@@ -1454,6 +1481,32 @@ export class SingleTerminal {
       currRow.terminalChars.splice(this.cursorPosition[1], 1);
     }
     this.cursorPosition[1] -= numColsToLeftAdjusted;
+  }
+
+  /**
+   * Performs a destructive backspace: moves the cursor one column left and
+   * deletes the character there. Does nothing if the cursor is already at the
+   * start of the line (does not wrap up to the previous row, matching typical
+   * terminal backspace behavior).
+   */
+  _backspaceDeleteChar() {
+    if (this.cursorPosition[1] === 0) {
+      return;
+    }
+    // Move left one column. This also drops the trailing cursor-holder space
+    // if the cursor was sitting on it.
+    this._cursorLeft(1);
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    // Delete the character now under the cursor.
+    currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    // Make sure there is still a character at the cursor position to hold the
+    // cursor (needed when we deleted the last character on the row).
+    if (this.cursorPosition[1] === currRow.terminalChars.length) {
+      const spaceTerminalChar = new TerminalChar();
+      spaceTerminalChar.char = ' ';
+      spaceTerminalChar.forCursor = true;
+      currRow.terminalChars.push(spaceTerminalChar);
+    }
   }
 
   /**

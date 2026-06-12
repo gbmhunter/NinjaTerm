@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Backspace (0x08/DEL 0x7F) handling ([#401](https://github.com/gbmhunter/NinjaTerm/issues/401)).** New RX "Backspace" setting with three behaviors — display as glyph, move cursor left (strict ANSI), or destructive (move left + erase char, the new default). Handled in `SingleTerminal.parseData` via `_backspaceDeleteChar`; AppData migrated v19→v20.
+- **Fake port "typing with backspace corrections"** that streams shell-style typing with typo fixes (lone `\b` and the `\b \b` erase sequence), one byte at a time, for testing the new backspace setting.
+- **Fake port "silent (no data)"** that opens a connection but emits nothing — useful for testing local echo / backspace handling by typing, without RX traffic interfering.
+
 ### Fixed
 
+- **CSI escape sequences ending in `~` no longer swallow the following byte.** The CSI parser now terminates on the full ECMA-48 final-byte range (0x40–0x7E) instead of just ASCII letters, so the VT sequences sent by the Delete/Home/End/PgUp/PgDn/Insert keys (`ESC[1~`…`ESC[6~`) are parsed cleanly rather than hanging the parser until the next keystroke.
+- **Local echo now works with fake ports.** `ConnController.writeData` no-ops for fake ports instead of attempting a real serial write (which threw "Port not found" and aborted before the local-echo step), so typed TX bytes are echoed to the terminal.
 - **Update checks no longer 404 mid-release.** CI now uploads installers to a draft GitHub Release (new `create-draft-release` job + `releaseType: "draft"`) and the `publish-release` job only makes it public once all platforms' artifacts, including `latest*.yml`, are attached.
 - **Windows CI builds fixed.** Pinned the Windows runner to `windows-2022`; the `windows-latest` image added Visual Studio 18, which `node-gyp` 10.x fails to detect during native-module builds in `npm ci`.
 

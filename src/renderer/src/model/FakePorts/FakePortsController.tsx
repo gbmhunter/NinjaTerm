@@ -47,6 +47,25 @@ export default class FakePortsController {
     this.app = app;
 
     //=================================================================================
+    // silent (no data)
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'silent (no data)',
+        'Opens a connection but never sends any data. Useful for testing TX features such as local echo and ' +
+          'backspace handling without any incoming RX data getting in the way — just open it, type, and watch the echo.',
+        () => {
+          // Nothing to schedule; there is no data to emit. Returning null means
+          // there is no interval for the disconnect handler to clear.
+          return null;
+        },
+        (_intervalId: NodeJS.Timeout | null) => {
+          // No interval was created, so there is nothing to tear down.
+        }
+      )
+    );
+
+    //=================================================================================
     // hello world, 0.1lps
     //=================================================================================
     this.fakePorts.push(
@@ -597,6 +616,45 @@ export default class FakePortsController {
               testCharIdx = 65;
             }
           }, 200);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    // typing with backspace corrections, ~8char/s
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'typing with backspace corrections, ~8char/s',
+        'Simulates a user typing into a shell and fixing typos with the backspace key, one byte at a time. ' +
+          'Exercises both a lone backspace (0x08) and the classic "\\b \\b" erase sequence. ' +
+          'Pair with the RX "Backspace" setting to see destructive backspace, move-cursor-left, or glyph behaviors.',
+        () => {
+          // The keystroke stream, with embedded backspaces (\b == 0x08).
+          // Line 1: type "helllo" (typo), backspace x3, retype to "hello",
+          //   continue " wrold" (typo), backspace x4, retype to " world".
+          // Line 2: type "abc" then the "\b \b" erase sequence -> "ab".
+          const script =
+            '$ echo helllo\b\b\blo wrold\b\b\b\borld\n' +
+            '$ printf abc\b \b\n';
+          const bytes: number[] = [];
+          for (let i = 0; i < script.length; i++) {
+            bytes.push(script.charCodeAt(i));
+          }
+          let idx = 0;
+          const intervalId = setInterval(() => {
+            app.parseRxData(Uint8Array.from([bytes[idx]]));
+            idx += 1;
+            if (idx === bytes.length) {
+              idx = 0;
+            }
+          }, 120);
           return intervalId;
         },
         (intervalId: NodeJS.Timeout | null) => {

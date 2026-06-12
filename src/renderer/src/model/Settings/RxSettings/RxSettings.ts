@@ -22,6 +22,22 @@ export enum CarriageReturnCursorBehavior {
 }
 
 /**
+ * How to handle a received backspace (0x08) or DEL (0x7F) byte.
+ */
+export enum BackspaceBehavior {
+  // Don't treat it specially; the byte is rendered/swallowed like any other
+  // non-visible char (per the non-visible char display setting). This was the
+  // behavior before backspace handling existed.
+  DO_NOTHING,
+  // Move the cursor one column left without deleting anything (strict ANSI/VT
+  // backspace behavior).
+  MOVE_CURSOR_LEFT,
+  // Move the cursor one column left and delete the character there
+  // (destructive backspace).
+  DELETE_CHAR,
+}
+
+/**
  * Enumerates the possible behaviors for displaying non-visible
  * characters in the terminal. Non-visible is any byte from 0x00-0xFF
  * which is not a visible ASCII character.
@@ -112,6 +128,7 @@ export default class RxSettings {
   swallowNewLine = true;
   carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
   swallowCarriageReturn = true;
+  backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // NUMBER-SPECIFIC SETTINGS
@@ -199,6 +216,7 @@ export default class RxSettings {
     this.swallowNewLine = configToLoad.swallowNewLine;
     this.carriageReturnCursorBehavior = configToLoad.carriageReturnCursorBehavior;
     this.swallowCarriageReturn = configToLoad.swallowCarriageReturn;
+    this.backspaceBehavior = configToLoad.backspaceBehavior;
     this.nonVisibleCharDisplayBehavior = configToLoad.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -254,6 +272,7 @@ export default class RxSettings {
     config.swallowNewLine = this.swallowNewLine;
     config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
     config.swallowCarriageReturn = this.swallowCarriageReturn;
+    config.backspaceBehavior = this.backspaceBehavior;
     config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -324,6 +343,11 @@ export default class RxSettings {
 
   setSwallowCarriageReturn = (value: boolean) => {
     this.swallowCarriageReturn = value;
+    this._saveConfig();
+  };
+
+  setBackspaceBehavior = (value: BackspaceBehavior) => {
+    this.backspaceBehavior = value;
     this._saveConfig();
   };
 

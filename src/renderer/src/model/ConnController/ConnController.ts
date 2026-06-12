@@ -1059,6 +1059,14 @@ export class ConnController {
    */
   writeData = async (bytesToWrite: Uint8Array) => {
 
+    // Fake ports have no real underlying connection to write to. Typed TX is
+    // only used for local echo (and logging), so succeed silently here and let
+    // the caller echo the bytes — otherwise the write would throw "Port not
+    // found" and local echo would never render.
+    if (this.lastSelectedPortType === PortType.FAKE) {
+      return;
+    }
+
     // Check based on connection type
     const connectionType = this.app.settings.portConfiguration.connectionType;
 

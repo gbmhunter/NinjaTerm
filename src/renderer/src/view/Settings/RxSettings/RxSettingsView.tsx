@@ -2,6 +2,7 @@ import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, Inp
 import { observer } from 'mobx-react-lite';
 
 import RxSettings, {
+  BackspaceBehavior,
   CarriageReturnCursorBehavior,
   DataType,
   Endianness,
@@ -286,6 +287,54 @@ function RxSettingsView(props: Props) {
           </BorderedSection>
         </div>{' '}
         {/* End of row with new line and carriage return settings */}
+        {/* =============================================================================== */}
+        {/* BACKSPACE SETTINGS */}
+        {/* =============================================================================== */}
+        <BorderedSection title="Backspace">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              maxWidth: '600px',
+              gap: '20px',
+            }}
+          >
+            <FormControl sx={{ width: 'fit-content' }}>
+              <FormLabel>When a backspace (0x08, \b) or DEL (0x7F) byte is received:</FormLabel>
+              <RadioGroup
+                value={rxSettings.backspaceBehavior}
+                onChange={(e) => {
+                  rxSettings.setBackspaceBehavior(parseInt(e.target.value));
+                }}
+              >
+                {/* DO NOTHING */}
+                <Tooltip
+                  title="Don't interpret backspace bytes. They are displayed as a control glyph (or swallowed) just like any other non-visible character, per the setting below."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={BackspaceBehavior.DO_NOTHING} control={<Radio />} label="Don't interpret (display as a glyph)" />
+                </Tooltip>
+                {/* MOVE CURSOR LEFT */}
+                <Tooltip
+                  title="Move the cursor one column left without deleting anything. This is the strict ANSI/VT backspace behavior (a well-behaved device erases by sending the 3-byte sequence \b \b)."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={BackspaceBehavior.MOVE_CURSOR_LEFT} control={<Radio />} label="Move the cursor one column to the left" />
+                </Tooltip>
+                {/* DELETE CHAR */}
+                <Tooltip
+                  title="Move the cursor one column left and delete the character there (destructive backspace). This erases the previous character, which is usually what you want when typing into a serial console with local echo."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={BackspaceBehavior.DELETE_CHAR} control={<Radio />} label="Move the cursor one column to the left and delete the character" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </div>
+        </BorderedSection>
         {/* =============================================================================== */}
         {/* NON-VISIBLE CHAR DISPLAY */}
         {/* =============================================================================== */}

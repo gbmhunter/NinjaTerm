@@ -1,4 +1,4 @@
-import { CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter, TimestampFormat } from "src/model/Settings/RxSettings/RxSettings";
+import { BackspaceBehavior, CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter, TimestampFormat } from "src/model/Settings/RxSettings/RxSettings";
 
 /**
  * The most up-to-date representation of the RxSettings data stored in the browser's local storage.
@@ -17,6 +17,7 @@ export class RxSettingsData {
   swallowNewLine = true;
   carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
   swallowCarriageReturn = true;
+  backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // NUMBER-SPECIFIC SETTINGS
