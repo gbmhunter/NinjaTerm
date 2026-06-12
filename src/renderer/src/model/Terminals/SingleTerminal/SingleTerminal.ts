@@ -1110,6 +1110,59 @@ export class SingleTerminal {
           console.log(`Number ${numberCode} provided to SGR control sequence unsupported.`);
         }
       }
+    } else if (lastChar === 'P') {
+      //============================================================
+      // DCH Delete Character
+      //============================================================
+      // Syntax: ESC[nP — delete n characters at the cursor position, shifting
+      // the remainder of the line left. n defaults to 1 if not provided. This
+      // is the output-side control a device emits to forward-delete (distinct
+      // from ESC[3~, which is what the Delete *key* sends to the host).
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      if (numberStr === '') {
+        numberStr = '1';
+      }
+      const numCharsToDelete = parseInt(numberStr, 10);
+      if (Number.isNaN(numCharsToDelete)) {
+        console.error(`Number string in Delete Character (DCH) CSI sequence could not be converted into integer. numberStr=${numberStr}.`);
+        return;
+      }
+      this._deleteChars(numCharsToDelete);
+    }
+  }
+
+  /**
+   * Deletes characters at the current cursor position, shifting the remainder
+   * of the line left (the DCH / ESC[nP operation). The cursor does not move.
+   * The trailing space that only holds the cursor is never deleted, so a
+   * forward-delete at the end of the line is a no-op.
+   *
+   * @param numChars The number of characters to delete.
+   */
+  _deleteChars(numChars: number) {
+    if (numChars <= 0) {
+      return;
+    }
+    const currRow = this.terminalRows[this.cursorPosition[0]];
+    const col = this.cursorPosition[1];
+    let numDeletable = currRow.terminalChars.length - col;
+    // Don't count the trailing cursor-holder space as a deletable character.
+    const lastIdx = currRow.terminalChars.length - 1;
+    if (numDeletable > 0 && currRow.terminalChars[lastIdx].forCursor) {
+      numDeletable -= 1;
+    }
+    const numToDelete = Math.min(numChars, numDeletable);
+    if (numToDelete <= 0) {
+      return;
+    }
+    currRow.terminalChars.splice(col, numToDelete);
+    // Make sure there is still a character under the cursor to hold it (needed
+    // when the deletion reached the end of the line).
+    if (col === currRow.terminalChars.length) {
+      const spaceTerminalChar = new TerminalChar();
+      spaceTerminalChar.char = ' ';
+      spaceTerminalChar.forCursor = true;
+      currRow.terminalChars.push(spaceTerminalChar);
     }
   }
 
