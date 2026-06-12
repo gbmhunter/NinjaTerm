@@ -81,6 +81,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       # Noble (Bluetooth) needs bluez dev headers on Ubuntu.
       run: |
+        sudo apt-get update
         sudo apt install -y bluetooth bluez libbluetooth-dev libudev-dev
         npx electron-builder --linux --publish never
 
@@ -178,6 +179,7 @@ jobs:
     - name: Build/release Electron app (Linux)
       if: matrix.os == 'ubuntu-latest'
       run: |
+        sudo apt-get update
         sudo apt install -y bluetooth bluez libbluetooth-dev libudev-dev
         npx electron-builder --linux --publish always
       env:
