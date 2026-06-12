@@ -540,13 +540,28 @@ function migrateV18toV19(appData: MigrationAppData): void {
 }
 
 function migrateV19toV20(appData: MigrationAppData): void {
-  // Add the backspace handling setting. Existing configs adopt the new default
-  // (destructive backspace) so that received/echoed 0x08 and 0x7F bytes erase a
-  // character rather than printing a control glyph.
+  // (1) Add the backspace handling setting. Existing configs adopt the new
+  // default (destructive backspace) so that received/echoed 0x08 and 0x7F bytes
+  // erase a character rather than printing a control glyph.
+  //
+  // (2) The two starter highlight rules (Warning / Error) now ship disabled —
+  // see `makeDefaultHighlightRules`. Most users never customised them and few
+  // want their logs auto-highlighted by default, so switch the defaults off for
+  // existing users. Matched by name so any rules the user added themselves are
+  // left untouched.
   forEachRootConfig(appData, (rootConfig) => {
     rootConfig.settings = rootConfig.settings ?? {};
     rootConfig.settings.rxSettings = rootConfig.settings.rxSettings ?? {};
     rootConfig.settings.rxSettings.backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
+
+    const rules = rootConfig.settings.rulesSettings?.rules;
+    if (rules !== undefined) {
+      for (const rule of rules) {
+        if (rule.name === 'Warning' || rule.name === 'Error') {
+          rule.enabled = false;
+        }
+      }
+    }
   });
   appData.version = 20;
 }

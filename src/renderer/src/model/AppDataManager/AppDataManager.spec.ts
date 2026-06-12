@@ -254,6 +254,56 @@ describe('app data manager tests', () => {
     }
   });
 
+  test('migration v19->v20 disables the default Warning/Error rules but leaves custom rules untouched', () => {
+    // The two starter rules now ship disabled. Existing users get them switched
+    // off too; any rule they added themselves (matched by a different name) is
+    // left exactly as it was.
+    const v19Input = {
+      version: 19,
+      profiles: [
+        {
+          name: 'p1',
+          rootConfig: {
+            settings: {
+              rulesSettings: {
+                rules: [
+                  { name: 'Warning', enabled: true },
+                  { name: 'Error', enabled: true },
+                  { name: 'My custom rule', enabled: true },
+                ],
+              },
+            },
+          },
+        },
+      ],
+      currentAppConfig: {
+        settings: {
+          rulesSettings: {
+            rules: [
+              { name: 'Warning', enabled: true },
+              { name: 'Error', enabled: true },
+            ],
+          },
+        },
+      },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v19Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    const profileRules = appData.profiles?.[0].rootConfig?.settings?.rulesSettings?.rules;
+    expect(profileRules?.find((r: any) => r.name === 'Warning')?.enabled).toBe(false);
+    expect(profileRules?.find((r: any) => r.name === 'Error')?.enabled).toBe(false);
+    // Custom rule is left enabled.
+    expect(profileRules?.find((r: any) => r.name === 'My custom rule')?.enabled).toBe(true);
+
+    const currentRules = appData.currentAppConfig?.settings?.rulesSettings?.rules;
+    expect(currentRules?.every((r: any) => r.enabled === false)).toBe(true);
+  });
+
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {
     // Regression test: `_loadConfig` used to call `applySocketConnTimeout` / `applyRttSpeed`
     // mid-load, both of which save. Because they ran *before* `rttRecentDevices` was read

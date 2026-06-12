@@ -51,12 +51,17 @@ export class HighlightRuleData {
  *
  * Case-insensitive (the default) so `Warning`, `WARNING`, and `warning`
  * all match without users having to write regex flags themselves.
+ *
+ * Both ship DISABLED by default — they're handy templates, but few users
+ * want their logs auto-highlighted out of the box. Existing users get them
+ * switched off too via `migrateV20toV21`.
  */
 export function makeDefaultHighlightRules(): HighlightRuleData[] {
   // Both default rules use LINE scope (inherited from the POD field
   // initializer) so a matching log line lights up across wrap segments.
   const warning = new HighlightRuleData();
   warning.name = 'Warning';
+  warning.enabled = false;
   warning.pattern = 'warning';
   // Material deep-orange 900. Contrast vs white text ≈ 6.7:1 —
   // comfortably above WCAG AA (4.5:1). The vivid #ff9800 we started
@@ -66,6 +71,7 @@ export function makeDefaultHighlightRules(): HighlightRuleData[] {
 
   const error = new HighlightRuleData();
   error.name = 'Error';
+  error.enabled = false;
   error.pattern = 'error';
   // Material red 900. Contrast vs white text ≈ 7.9:1, clearly red.
   error.backgroundColor = '#b71c1c';
