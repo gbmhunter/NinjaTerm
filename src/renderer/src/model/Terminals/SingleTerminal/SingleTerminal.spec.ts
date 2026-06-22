@@ -4,6 +4,7 @@ import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
   BackspaceBehavior,
+  FormFeedBehavior,
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
   TimestampFormat,
@@ -884,6 +885,65 @@ describe('single terminal tests', () => {
 
       expect(singleTerminal.cursorPosition).toEqual([0, 0]);
       expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
+    });
+  });
+
+  //================================================================================
+  // Form feed handling
+  //================================================================================
+  describe('form feed handling', () => {
+    test('DO_NOTHING (default) renders the form feed as a control glyph', () => {
+      // DO_NOTHING is the default behavior, so a received FF is shown as a glyph
+      // like any other non-visible char rather than clearing the screen.
+      singleTerminal.parseData(stringToUint8Array('a\f'), DataDirection.RX);
+
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      // 0x0C shifted up into the control-glyph PUA range.
+      expect(chars[1].char).toBe(String.fromCharCode(0x0c + 0xe000));
+    });
+
+    test('CLEAR_SCREEN_AND_SCROLLBACK resets the terminal like clear()', () => {
+      dataProcessingSettings.setFormFeedBehavior(FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK);
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2\fabc'), DataDirection.RX);
+
+      // Scrollback ('row1') is gone; only the post-FF content remains, starting
+      // at the top of a fresh terminal.
+      expect(singleTerminal.terminalRows.length).toBe(1);
+      const chars = singleTerminal.terminalRows[0].terminalChars;
+      expect(chars[0].char).toBe('a');
+      expect(chars[1].char).toBe('b');
+      expect(chars[2].char).toBe('c');
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('CLEAR_SCREEN is equivalent to the ANSI ESC[2J sequence', () => {
+      // FF with CLEAR_SCREEN should leave the terminal in the same state as
+      // sending the same data followed by an ESC[2J erase-in-display sequence.
+      dataProcessingSettings.setFormFeedBehavior(FormFeedBehavior.CLEAR_SCREEN);
+      singleTerminal.parseData(stringToUint8Array('abc\f'), DataDirection.RX);
+      const ffState = JSON.stringify(singleTerminal.terminalRows);
+      const ffCursor = singleTerminal.cursorPosition;
+
+      // Re-run with an explicit ESC[2J instead of the form feed.
+      singleTerminal.clear();
+      dataProcessingSettings.setFormFeedBehavior(FormFeedBehavior.DO_NOTHING);
+      singleTerminal.parseData(stringToUint8Array('abc\x1b[2J'), DataDirection.RX);
+
+      expect(JSON.stringify(singleTerminal.terminalRows)).toBe(ffState);
+      expect(singleTerminal.cursorPosition).toEqual(ffCursor);
+    });
+
+    test('a form feed mid-escape-sequence is not treated as a clear', () => {
+      // 0x0C appearing inside an (incomplete) escape sequence must not trigger
+      // the clear behavior.
+      dataProcessingSettings.setFormFeedBehavior(FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK);
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2'), DataDirection.RX);
+      // ESC then FF — the FF is consumed as part of escape-code parsing, not a clear.
+      singleTerminal.parseData(new Uint8Array([0x1b, 0x0c]), DataDirection.RX);
+
+      // The two rows are still present (nothing was cleared).
+      expect(singleTerminal.terminalRows.length).toBe(2);
     });
   });
 

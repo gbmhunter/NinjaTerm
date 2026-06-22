@@ -25,7 +25,7 @@
 
 import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
-import { BackspaceBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
+import { BackspaceBehavior, FormFeedBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
@@ -95,6 +95,8 @@ type MigrationRxSettings = {
   version?: number;
   // v19->v20 (added)
   backspaceBehavior?: BackspaceBehavior;
+  // v20->v21 (added)
+  formFeedBehavior?: FormFeedBehavior;
 };
 
 type MigrationTxSettings = {
@@ -566,6 +568,18 @@ function migrateV19toV20(appData: MigrationAppData): void {
   appData.version = 20;
 }
 
+function migrateV20toV21(appData: MigrationAppData): void {
+  // Add the form-feed handling setting. Existing configs adopt the new default
+  // (DO_NOTHING) so a received form feed (FF, 0x0C) continues to be displayed
+  // as a control glyph / swallowed rather than suddenly clearing the screen.
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    rootConfig.settings.rxSettings = rootConfig.settings.rxSettings ?? {};
+    rootConfig.settings.rxSettings.formFeedBehavior = FormFeedBehavior.DO_NOTHING;
+  });
+  appData.version = 21;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -592,6 +606,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 17, apply: migrateV17toV18 },
   { from: 18, apply: migrateV18toV19 },
   { from: 19, apply: migrateV19toV20 },
+  { from: 20, apply: migrateV20toV21 },
 ];
 
 // --------------------------------------------------------------------------

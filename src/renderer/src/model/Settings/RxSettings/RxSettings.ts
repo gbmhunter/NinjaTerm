@@ -38,6 +38,21 @@ export enum BackspaceBehavior {
 }
 
 /**
+ * How to handle a received form-feed (FF, 0x0C) byte.
+ */
+export enum FormFeedBehavior {
+  // Don't treat it specially; the byte is rendered/swallowed like any other
+  // non-visible char (per the non-visible char display setting). This is the
+  // standards-correct default (ECMA-48/VT100 do not clear the screen on FF).
+  DO_NOTHING,
+  // Erase the visible screen but keep the scrollback buffer (equivalent to the
+  // ANSI ESC[2J erase-in-display sequence).
+  CLEAR_SCREEN,
+  // Erase the visible screen and the scrollback buffer (equivalent to ESC[3J).
+  CLEAR_SCREEN_AND_SCROLLBACK,
+}
+
+/**
  * Enumerates the possible behaviors for displaying non-visible
  * characters in the terminal. Non-visible is any byte from 0x00-0xFF
  * which is not a visible ASCII character.
@@ -129,6 +144,7 @@ export default class RxSettings {
   carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
   swallowCarriageReturn = true;
   backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
+  formFeedBehavior = FormFeedBehavior.DO_NOTHING;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
 
   // NUMBER-SPECIFIC SETTINGS
@@ -217,6 +233,7 @@ export default class RxSettings {
     this.carriageReturnCursorBehavior = configToLoad.carriageReturnCursorBehavior;
     this.swallowCarriageReturn = configToLoad.swallowCarriageReturn;
     this.backspaceBehavior = configToLoad.backspaceBehavior;
+    this.formFeedBehavior = configToLoad.formFeedBehavior;
     this.nonVisibleCharDisplayBehavior = configToLoad.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -273,6 +290,7 @@ export default class RxSettings {
     config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
     config.swallowCarriageReturn = this.swallowCarriageReturn;
     config.backspaceBehavior = this.backspaceBehavior;
+    config.formFeedBehavior = this.formFeedBehavior;
     config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -348,6 +366,11 @@ export default class RxSettings {
 
   setBackspaceBehavior = (value: BackspaceBehavior) => {
     this.backspaceBehavior = value;
+    this._saveConfig();
+  };
+
+  setFormFeedBehavior = (value: FormFeedBehavior) => {
+    this.formFeedBehavior = value;
     this._saveConfig();
   };
 

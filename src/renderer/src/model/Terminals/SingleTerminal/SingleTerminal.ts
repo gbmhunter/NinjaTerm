@@ -12,6 +12,7 @@ import RxSettings, {
   DataType,
   Endianness,
   FloatStringConversionMethod,
+  FormFeedBehavior,
   HexCase,
   NewLineCursorBehavior,
   NewLinePlacementOnHexValue,
@@ -852,6 +853,30 @@ export class SingleTerminal {
         continue;
       }
 
+      //========================================================================
+      // FORM FEED HANDLING
+      //========================================================================
+      // 0x0C is ASCII form feed (\f, Ctrl-L). It is not a screen-clear under
+      // ECMA-48/VT100, but many embedded devices send a bare FF expecting the
+      // terminal to clear, so this is offered as an opt-in behavior. When the
+      // behavior is DO_NOTHING we fall through and the byte is
+      // rendered/swallowed like any other non-visible char.
+      const formFeedBehavior = this.rxSettings.formFeedBehavior;
+      if (
+        this.inIdleState &&
+        rxByte === 0x0c &&
+        formFeedBehavior !== FormFeedBehavior.DO_NOTHING
+      ) {
+        if (formFeedBehavior === FormFeedBehavior.CLEAR_SCREEN) {
+          this._eraseVisibleScreen();
+        } else if (formFeedBehavior === FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK) {
+          this.clear();
+        } else {
+          throw Error('Invalid form feed behavior. formFeedBehavior=' + formFeedBehavior);
+        }
+        continue;
+      }
+
       if (rxByte === 0x1b) {
         this._resetEscapeCodeParserState();
         this.inAnsiEscapeCode = true;
@@ -1036,29 +1061,8 @@ export class SingleTerminal {
           currRow.terminalChars[charIdx].style = {};
         }
       } else if (numberN === 2) {
-        // Erase entire screen
-        // User could be scrolled anywhere in the scrollback buffer, we don't want to just
-        // clear the rows being displayed.
-        // 1. Clear all data at or after cursor
-        // 2. Move cursor down one row to new row
-        // 3. Insert enough empty rows after row with cursor to fill the screen
-        this._clearDataFromCursorToEndOfScreen();
-        this._cursorDown(1);
-        // Add empty rows to fill the entire terminal (ignoring scrollback buffer)
-        // Subtract 1 because we already added a row with the cursor
-        const numRowsToAdd = this.terminalHeightChars - 1;
-        // Might not need to add any rows if terminal height is very small
-        // (or 0 if hidden)
-        if (numRowsToAdd > 0) {
-          for (let idx = 0; idx < numRowsToAdd; idx += 1) {
-            this.terminalRows.push(new TerminalRow(this.uniqueRowIndexCount, false));
-            this.uniqueRowIndexCount += 1;
-            // Add to filtered rows if new rows match the filter
-            if (this._doesRowPassFilter(this.terminalRows.length - 1)) {
-              // filteredTerminalRows is now computed automatically
-            }
-          }
-        }
+        // Erase entire screen (visible screen only, scrollback is kept).
+        this._eraseVisibleScreen();
       } else if (numberN === 3) {
         // Clear entire screen and delete all lines saved in the scrollback buffer
         this.clear();
@@ -1188,6 +1192,37 @@ export class SingleTerminal {
     }
     // Now remove all rows past the one the cursor is on
     this.terminalRows.splice(this.cursorPosition[0] + 1);
+  }
+
+  /**
+   * Erase the visible screen while keeping the scrollback buffer, equivalent to
+   * the ANSI ESC[2J erase-in-display sequence. Used by both the ED CSI handler
+   * and the form-feed (FF, 0x0C) clear-screen behavior.
+   *
+   * The user could be scrolled anywhere in the scrollback buffer, so we don't
+   * just clear the rows currently being displayed:
+   * 1. Clear all data at or after the cursor.
+   * 2. Move the cursor down one row to a new row.
+   * 3. Insert enough empty rows after the cursor row to fill the screen.
+   */
+  _eraseVisibleScreen() {
+    this._clearDataFromCursorToEndOfScreen();
+    this._cursorDown(1);
+    // Add empty rows to fill the entire terminal (ignoring scrollback buffer).
+    // Subtract 1 because we already added a row with the cursor.
+    const numRowsToAdd = this.terminalHeightChars - 1;
+    // Might not need to add any rows if terminal height is very small
+    // (or 0 if hidden)
+    if (numRowsToAdd > 0) {
+      for (let idx = 0; idx < numRowsToAdd; idx += 1) {
+        this.terminalRows.push(new TerminalRow(this.uniqueRowIndexCount, false));
+        this.uniqueRowIndexCount += 1;
+        // Add to filtered rows if new rows match the filter
+        if (this._doesRowPassFilter(this.terminalRows.length - 1)) {
+          // filteredTerminalRows is now computed automatically
+        }
+      }
+    }
   }
 
   /**
