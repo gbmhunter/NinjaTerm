@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Form feed (FF, 0x0C) clear-screen handling.** New RX "Form Feed" setting with three behaviors — display as glyph (default), clear the screen (keep scrollback), or clear screen and scrollback. Handled in `SingleTerminal._parseAsciiData` reusing the new `_eraseVisibleScreen` helper; AppData migrated v20→v21.
+
 ## [5.14.0] - 2026-06-12
 
 ### Added

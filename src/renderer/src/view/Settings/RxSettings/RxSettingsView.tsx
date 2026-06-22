@@ -7,6 +7,7 @@ import RxSettings, {
   DataType,
   Endianness,
   FloatStringConversionMethod,
+  FormFeedBehavior,
   HexCase,
   NewLineCursorBehavior,
   NewLinePlacementOnHexValue,
@@ -330,6 +331,54 @@ function RxSettingsView(props: Props) {
                   {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={BackspaceBehavior.DELETE_CHAR} control={<Radio />} label="Move the cursor one column to the left and delete the character" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </div>
+        </BorderedSection>
+        {/* =============================================================================== */}
+        {/* FORM FEED SETTINGS */}
+        {/* =============================================================================== */}
+        <BorderedSection title="Form Feed">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              maxWidth: '600px',
+              gap: '20px',
+            }}
+          >
+            <FormControl sx={{ width: 'fit-content' }}>
+              <FormLabel>When a form feed (0x0C, \f, Ctrl-L) byte is received:</FormLabel>
+              <RadioGroup
+                value={rxSettings.formFeedBehavior}
+                onChange={(e) => {
+                  rxSettings.setFormFeedBehavior(parseInt(e.target.value));
+                }}
+              >
+                {/* DO NOTHING */}
+                <Tooltip
+                  title="Don't interpret form feed bytes. They are displayed as a control glyph (or swallowed) just like any other non-visible character, per the setting below. This is the standards-correct behavior (ECMA-48/VT100 do not clear the screen on form feed)."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={FormFeedBehavior.DO_NOTHING} control={<Radio />} label="Don't interpret (display as a glyph)" />
+                </Tooltip>
+                {/* CLEAR SCREEN */}
+                <Tooltip
+                  title="Erase the visible screen but keep the scrollback buffer (equivalent to the ANSI ESC[2J sequence). Useful for embedded devices that send a bare form feed to clear the terminal."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={FormFeedBehavior.CLEAR_SCREEN} control={<Radio />} label="Clear the screen (keep scrollback)" />
+                </Tooltip>
+                {/* CLEAR SCREEN AND SCROLLBACK */}
+                <Tooltip
+                  title="Erase the visible screen and the scrollback buffer (equivalent to the ANSI ESC[3J sequence)."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK} control={<Radio />} label="Clear the screen and scrollback" />
                 </Tooltip>
               </RadioGroup>
             </FormControl>
