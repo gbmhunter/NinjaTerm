@@ -97,6 +97,7 @@ type MigrationRxSettings = {
   backspaceBehavior?: BackspaceBehavior;
   // v20->v21 (added)
   formFeedBehavior?: FormFeedBehavior;
+  showUnknownEscapeCodes?: boolean;
 };
 
 type MigrationTxSettings = {
@@ -569,13 +570,20 @@ function migrateV19toV20(appData: MigrationAppData): void {
 }
 
 function migrateV20toV21(appData: MigrationAppData): void {
-  // Add the form-feed handling setting. Existing configs adopt the new default
-  // (DO_NOTHING) so a received form feed (FF, 0x0C) continues to be displayed
-  // as a control glyph / swallowed rather than suddenly clearing the screen.
+  // (1) Add the form-feed handling setting. Existing configs adopt the new
+  // default (DO_NOTHING) so a received form feed (FF, 0x0C) continues to be
+  // displayed as a control glyph / swallowed rather than suddenly clearing the
+  // screen.
+  //
+  // (2) Add the show-unknown-escape-codes setting. Existing configs adopt the
+  // new default (false) so unsupported/malformed CSI escape sequences continue
+  // to be silently discarded rather than suddenly appearing inline in the
+  // terminal. Users opt in for troubleshooting.
   forEachRootConfig(appData, (rootConfig) => {
     rootConfig.settings = rootConfig.settings ?? {};
     rootConfig.settings.rxSettings = rootConfig.settings.rxSettings ?? {};
     rootConfig.settings.rxSettings.formFeedBehavior = FormFeedBehavior.DO_NOTHING;
+    rootConfig.settings.rxSettings.showUnknownEscapeCodes = false;
   });
   appData.version = 21;
 }

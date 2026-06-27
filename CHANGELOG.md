@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - **Form feed (FF, 0x0C) clear-screen handling.** New RX "Form Feed" setting with three behaviors — display as glyph (default), clear the screen (keep scrollback), or clear screen and scrollback. Handled in `SingleTerminal._parseAsciiData` reusing the new `_eraseVisibleScreen` helper; AppData migrated v20→v21.
+- **Surface unknown ANSI escape sequences.** New opt-in RX "Show Unknown Escape Codes" setting renders unsupported/malformed CSI sequences (e.g. `ESC[K`, `ESC[6n`, unsupported SGR codes) inline as a highlighted `unknown-escape` marker instead of silently dropping them, via `SingleTerminal._surfaceUnknownEscapeCode`; setting added to the v20→v21 AppData migration.
 
 ## [5.14.0] - 2026-06-12
 

@@ -112,6 +112,29 @@ function RxSettingsView(props: Props) {
                 sx={{ marginBottom: '15px' }}
               />
             </Tooltip>
+            {/* =============================================================================== */}
+            {/* SHOW UNKNOWN ESCAPE CODES */}
+            {/* =============================================================================== */}
+            <Tooltip
+              title="If enabled, CSI escape sequences that are received but not supported by NinjaTerm (or that are malformed) are shown inline in the terminal as a highlighted marker, instead of being silently discarded. Useful for troubleshooting ANSI escape sequences. Requires ANSI escape code parsing to be enabled."
+              placement="top"
+              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="showUnknownEscapeCodes"
+                    checked={rxSettings.showUnknownEscapeCodes}
+                    onChange={(e) => {
+                      rxSettings.setShowUnknownEscapeCodes(e.target.checked);
+                    }}
+                    disabled={rxSettings.dataType !== DataType.ASCII || !rxSettings.ansiEscapeCodeParsingEnabled}
+                  />
+                }
+                label="Show Unknown Escape Codes"
+                sx={{ marginBottom: '15px' }}
+              />
+            </Tooltip>
           </BorderedSection>
 
           <BorderedSection title="Echo" childStyle={{ display: 'flex', flexDirection: 'column' }}>
