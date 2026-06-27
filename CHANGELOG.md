@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - **Form feed (FF, 0x0C) clear-screen handling.** New RX "Form Feed" setting with three behaviors — display as glyph (default), clear the screen (keep scrollback), or clear screen and scrollback. Handled in `SingleTerminal._parseAsciiData` reusing the new `_eraseVisibleScreen` helper; AppData migrated v20→v21.
 - **Surface unknown ANSI escape sequences.** New opt-in RX "Show Unknown Escape Codes" setting renders unsupported/malformed CSI sequences (e.g. `ESC[K`, `ESC[6n`, unsupported SGR codes) inline as a highlighted `unknown-escape` marker instead of silently dropping them, via `SingleTerminal._surfaceUnknownEscapeCode`; setting added to the v20→v21 AppData migration.
+- **Fake port "unsupported escape codes"** that streams a rotating set of CSI sequences NinjaTerm doesn't support and auto-enables "Show Unknown Escape Codes", for testing the surfacing feature.
+- **Search box in the fake port selection dialog** to filter the (now long) list by name/description.
 
 ## [5.14.0] - 2026-06-12
 
