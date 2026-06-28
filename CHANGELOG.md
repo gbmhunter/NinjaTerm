@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.15.0] - 2026-06-28
+
 ### Added
 
 - **Form feed (FF, 0x0C) clear-screen handling.** New RX "Form Feed" setting with three behaviors — display as glyph (default), clear the screen (keep scrollback), or clear screen and scrollback. Handled in `SingleTerminal._parseAsciiData` reusing the new `_eraseVisibleScreen` helper; AppData migrated v20→v21.
@@ -1106,6 +1108,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.14.0...v5.15.0
 [5.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.13.0...v5.14.0
 [5.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.12.0...v5.13.0
 [5.12.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.11.2...v5.12.0
