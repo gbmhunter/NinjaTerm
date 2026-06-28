@@ -7,6 +7,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import SaveAsIcon from '@mui/icons-material/SaveAs';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CssBaseline from '@mui/material/CssBaseline';
 import { SnackbarProvider } from 'notistack';
 
@@ -412,6 +413,28 @@ const AppView = observer(() => {
               data-testid="show-logging-pane-button"
             >
               <SaveAsIcon />
+            </IconButton>
+          </Tooltip>
+          {/* ==================================================== */}
+          {/* HELP BUTTON (opens the online manual) */}
+          {/* ==================================================== */}
+          {/* marginTop: auto pushes Help to the bottom of the sidebar, away from
+              the pane-switching buttons — it opens the external manual rather
+              than switching panes. */}
+          <Tooltip {...app.settings.displaySettings.getBasicTooltipConfig()} title="Open the NinjaTerm manual in your browser." placement="right">
+            <IconButton
+              onClick={async () => {
+                try {
+                  await window.electronAPI.shell.openExternal("https://ninjaterm.mbedded.ninja/manual");
+                } catch (error) {
+                  console.error("Failed to open manual:", error);
+                }
+              }}
+              color="primary"
+              data-testid="show-help-button"
+              sx={{ marginTop: 'auto' }}
+            >
+              <HelpOutlineIcon />
             </IconButton>
           </Tooltip>
         </div>

@@ -1,4 +1,4 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, Tooltip } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import RxSettings, {
@@ -134,6 +134,30 @@ function RxSettingsView(props: Props) {
                 label="Show Unknown Escape Codes"
                 sx={{ marginBottom: '15px' }}
               />
+            </Tooltip>
+            {/* =============================================================================== */}
+            {/* OPEN MANUAL (ANSI escape codes section) */}
+            {/* =============================================================================== */}
+            <Tooltip
+              title="Open the NinjaTerm manual in your browser, at the section listing all supported ANSI escape codes."
+              placement="top"
+              {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+            >
+              <Button
+                variant="outlined"
+                color="primary"
+                size="small"
+                sx={{ textTransform: 'none', alignSelf: 'start' }}
+                onClick={async () => {
+                  try {
+                    await window.electronAPI.shell.openExternal('https://ninjaterm.mbedded.ninja/manual#ansi-escape-codes');
+                  } catch (error) {
+                    console.error('Failed to open manual:', error);
+                  }
+                }}
+              >
+                Open Manual
+              </Button>
             </Tooltip>
           </BorderedSection>
 
