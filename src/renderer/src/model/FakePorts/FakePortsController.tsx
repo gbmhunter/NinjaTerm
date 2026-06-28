@@ -43,6 +43,12 @@ export default class FakePortsController {
 
   fakePortOpen = false;
 
+  /**
+   * Free-text filter applied to the fake port list in the selection dialog.
+   * Matches against both the name and description (case-insensitive).
+   */
+  searchText = '';
+
   constructor(app: App) {
     this.app = app;
 
@@ -560,6 +566,60 @@ export default class FakePortsController {
           app.parseRxData(Uint8Array.from(bytesToSend));
 
           return null;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // unsupported/unknown escape codes (for testing "Show Unknown Escape Codes")
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'unsupported escape codes, ~0.7lps',
+        'Sends a rotating set of CSI escape sequences that NinjaTerm does not support (erase line, cursor moves, DSR, show/hide cursor, save/restore cursor, italic/underline/inverse, 256-colour and true-colour SGR). Enables ANSI parsing and the RX "Show Unknown Escape Codes" setting so each unsupported sequence is surfaced inline as a highlighted marker.',
+        () => {
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
+          app.settings.rxSettings.setShowUnknownEscapeCodes(true);
+          // Some demo sequences are longer than the default 10-char limit (e.g.
+          // true-colour SGR), so raise it enough that they are parsed as a
+          // single sequence rather than being truncated mid-code.
+          app.settings.rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
+          app.settings.rxSettings.maxEscapeCodeLengthChars.apply();
+
+          // Each line is a human-readable label followed by the raw, unsupported
+          // escape sequence — the sequence itself is what gets surfaced.
+          const strings = [
+            'EL erase line (ESC[K): \x1b[K',
+            'EL erase line n=2 (ESC[2K): \x1b[2K',
+            'CUP cursor home (ESC[H): \x1b[H',
+            'CUP cursor position (ESC[5;10H): \x1b[5;10H',
+            'DSR device status report (ESC[6n): \x1b[6n',
+            'show cursor (ESC[?25h): \x1b[?25h',
+            'hide cursor (ESC[?25l): \x1b[?25l',
+            'SCP save cursor (ESC[s): \x1b[s',
+            'RCP restore cursor (ESC[u): \x1b[u',
+            'SGR italic (ESC[3m): \x1b[3mitalic?\x1b[0m',
+            'SGR underline (ESC[4m): \x1b[4munderline?\x1b[0m',
+            'SGR inverse (ESC[7m): \x1b[7minverse?\x1b[0m',
+            'SGR 256-colour fg (ESC[38;5;82m): \x1b[38;5;82mgreen?\x1b[0m',
+            'SGR true-colour fg (ESC[38;2;0;200;0m): \x1b[38;2;0;200;0mgreen?\x1b[0m',
+          ];
+          let stringIdx = 0;
+          const intervalId = setInterval(() => {
+            const textToSend = strings[stringIdx] + '\n';
+            app.parseRxData(new TextEncoder().encode(textToSend));
+            stringIdx += 1;
+            if (stringIdx === strings.length) {
+              stringIdx = 0;
+            }
+          }, 1500);
+          return intervalId;
         },
         (intervalId: NodeJS.Timeout | null) => {
           // Stop the interval
@@ -1456,6 +1516,28 @@ export default class FakePortsController {
 
   setIsDialogOpen(isDialogOpen: boolean) {
     this.isDialogOpen = isDialogOpen;
+  }
+
+  setSearchText(searchText: string) {
+    this.searchText = searchText;
+  }
+
+  /**
+   * The fake ports matching the current search text, each paired with its
+   * original index into `fakePorts`. The original index is preserved because
+   * selection (`selFakePortIdx`) and `openPort()` both index into the full,
+   * unfiltered array.
+   */
+  get filteredFakePorts(): { fakePort: FakePort; idx: number }[] {
+    const withIdx = this.fakePorts.map((fakePort, idx) => ({ fakePort, idx }));
+    const search = this.searchText.trim().toLowerCase();
+    if (search === '') {
+      return withIdx;
+    }
+    return withIdx.filter(
+      ({ fakePort }) =>
+        fakePort.name.toLowerCase().includes(search) || fakePort.description.toLowerCase().includes(search)
+    );
   }
 
   onClick(fakePortIdx: number) {

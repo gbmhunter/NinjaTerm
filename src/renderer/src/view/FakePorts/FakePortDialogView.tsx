@@ -1,4 +1,4 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemButton, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
 import { App } from '../../model/App';
@@ -20,8 +20,21 @@ export default observer((props: Props) => {
     >
       <DialogTitle>{'Select fake port to connect to.'}</DialogTitle>
       <DialogContent>
+        <TextField
+          name="fakePortSearch"
+          label="Search fake ports"
+          variant="outlined"
+          size="small"
+          fullWidth
+          autoFocus
+          value={app.fakePortController.searchText}
+          onChange={(e) => {
+            app.fakePortController.setSearchText(e.target.value);
+          }}
+          sx={{ mt: 1, mb: 1 }}
+        />
         <List dense={true} sx={{ maxHeight: '600px', scroll: 'auto' }}>
-          {app.fakePortController.fakePorts.map((fakePort, idx) => {
+          {app.fakePortController.filteredFakePorts.map(({ fakePort, idx }) => {
             return (
               <ListItem key={idx}>
                 <ListItemButton
@@ -49,6 +62,9 @@ export default observer((props: Props) => {
               </ListItem>
             );
           })}
+          {app.fakePortController.filteredFakePorts.length === 0 && (
+            <Typography sx={{ p: 2, color: 'text.secondary' }}>No fake ports match "{app.fakePortController.searchText}".</Typography>
+          )}
         </List>
       </DialogContent>
       <DialogActions>

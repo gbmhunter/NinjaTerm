@@ -908,7 +908,7 @@ export class SingleTerminal {
         if (this.inCSISequence && this.partialEscapeCode.length > 2) {
           const isCsiFinalByte = rxByte >= 0x40 && rxByte <= 0x7e;
           if (isCsiFinalByte) {
-            this._parseCSISequence(String.fromCharCode(...this.partialEscapeCode));
+            this._parseCSISequence(String.fromCharCode(...this.partialEscapeCode), direction);
             this._resetEscapeCodeParserState();
             this.inIdleState = true;
           }
@@ -954,8 +954,10 @@ export class SingleTerminal {
    *
    * @param ansiEscapeCode Must be in the form "ESC[<remaining data>". This function will validate
    *    the rest of the code, and perform actions on the terminal as required.
+   * @param direction The direction (TX/RX) the data came from, used when an
+   *    unsupported/malformed sequence needs to be surfaced inline.
    */
-  _parseCSISequence(ansiEscapeCode: string) {
+  _parseCSISequence(ansiEscapeCode: string, direction: DataDirection) {
     // The last char is used to work out what kind of CSI sequence it is
     const lastChar = ansiEscapeCode.slice(ansiEscapeCode.length - 1);
     //============================================================
@@ -970,7 +972,8 @@ export class SingleTerminal {
       }
       const numRowsToGoUp = parseInt(numberStr, 10);
       if (Number.isNaN(numRowsToGoUp)) {
-        console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
+        console.error(`Number string in CUU (cursor up) CSI sequence could not converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
         return;
       }
       this._cursorUp(numRowsToGoUp);
@@ -986,7 +989,8 @@ export class SingleTerminal {
       }
       const numColsToGoRight = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoRight)) {
-        console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
+        console.error(`Number string in CUF (cursor forward) CSI sequence could not converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
         return;
       }
       this._cursorRight(numColsToGoRight);
@@ -1002,7 +1006,8 @@ export class SingleTerminal {
       }
       const numColsToGoLeft = parseInt(numberStr, 10);
       if (Number.isNaN(numColsToGoLeft)) {
-        console.error(`Number string in SGR code could not converted into integer. numberStr=${numberStr}.`);
+        console.error(`Number string in CUB (cursor back) CSI sequence could not converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
         return;
       }
       this._cursorLeft(numColsToGoLeft);
@@ -1024,6 +1029,7 @@ export class SingleTerminal {
       const numberN = parseInt(numberStr, 10);
       if (Number.isNaN(numberN)) {
         console.error(`Number string in Erase in Display (ED) CSI sequence could not converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
         return;
       }
       if (numberN === 0) {
@@ -1068,6 +1074,7 @@ export class SingleTerminal {
         this.clear();
       } else {
         console.error(`Number (${numberN}) passed to Erase in Display (ED) CSI sequence not supported.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
       }
     } else if (lastChar === 'm') {
       // SGR
@@ -1087,11 +1094,16 @@ export class SingleTerminal {
       }
       // Split into individual codes
       const numberCodeStrings = numbersAndSemicolons.split(';');
+      // Track whether any individual code was malformed or unsupported, so the
+      // whole sequence can be surfaced once at the end (recognised codes are
+      // still applied).
+      let hadUnsupportedSgrCode = false;
       for (let idx = 0; idx < numberCodeStrings.length; idx += 1) {
         const numberCodeString = numberCodeStrings[idx];
         const numberCode = parseInt(numberCodeString, 10);
         if (Number.isNaN(numberCode)) {
           console.error(`Number string in SGR code could not converted into integer. numberCodeString=${numberCodeString}.`);
+          hadUnsupportedSgrCode = true;
           // Skip processing this number, but continue with the rest
           continue;
         }
@@ -1112,7 +1124,11 @@ export class SingleTerminal {
           this.currBackgroundColorNum = numberCode;
         } else {
           console.log(`Number ${numberCode} provided to SGR control sequence unsupported.`);
+          hadUnsupportedSgrCode = true;
         }
+      }
+      if (hadUnsupportedSgrCode) {
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
       }
     } else if (lastChar === 'P') {
       //============================================================
@@ -1129,9 +1145,40 @@ export class SingleTerminal {
       const numCharsToDelete = parseInt(numberStr, 10);
       if (Number.isNaN(numCharsToDelete)) {
         console.error(`Number string in Delete Character (DCH) CSI sequence could not be converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
         return;
       }
       this._deleteChars(numCharsToDelete);
+    } else {
+      // CSI sequence with a final byte we don't support (e.g. ESC[K erase line,
+      // ESC[H cursor position, ESC[6n device status report, ESC[?25h show
+      // cursor, the ESC[n~ nav-key sequences). Surface it inline for
+      // troubleshooting rather than dropping it. No console log here — these can
+      // arrive frequently (e.g. echoed nav keys) and would spam the console;
+      // _surfaceUnknownEscapeCode is gated behind the user setting.
+      this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
+    }
+  }
+
+  /**
+   * Renders the raw bytes of an unsupported or malformed escape sequence inline
+   * in the terminal, tagged with the `unknown-escape` CSS class so they stand
+   * out from normal output. The ESC byte is rendered as its control glyph so it
+   * is visible. Does nothing unless the user has enabled surfacing of unknown
+   * escape codes — the default is to silently discard them.
+   *
+   * @param ansiEscapeCode The full sequence, in the form "ESC[...".
+   * @param direction The direction (TX/RX) the sequence arrived on.
+   */
+  _surfaceUnknownEscapeCode(ansiEscapeCode: string, direction: DataDirection) {
+    if (!this.rxSettings.showUnknownEscapeCodes) {
+      return;
+    }
+    for (let idx = 0; idx < ansiEscapeCode.length; idx += 1) {
+      this._maybeAddVisibleByteAndTimestamp(ansiEscapeCode.charCodeAt(idx), direction, {
+        forceVisibleAsGlyph: true,
+        extraClassName: 'unknown-escape',
+      });
     }
   }
 
@@ -1767,13 +1814,29 @@ export class SingleTerminal {
    *   will be displayed. If the number is not in the valid ASCII range, the character might be displayed as a special glyph
    *   depending on the data processing settings.
    */
-  _maybeAddVisibleByteAndTimestamp(rxByte: number, direction: DataDirection) {
+  _maybeAddVisibleByteAndTimestamp(
+    rxByte: number,
+    direction: DataDirection,
+    options?: { forceVisibleAsGlyph?: boolean; extraClassName?: string }
+  ) {
+    // Read options via optional chaining rather than defaulting the parameter to
+    // a fresh `{}` — this is called per visible byte on the hot path and a
+    // per-char allocation would add needless GC pressure.
     const nonVisibleCharDisplayBehavior = this.rxSettings.nonVisibleCharDisplayBehavior;
 
     let char: string;
     if (rxByte >= 0x20 && rxByte <= 0x7e) {
       // Is printable ASCII character, no shifting needed
       char = String.fromCharCode(rxByte);
+    } else if (options?.forceVisibleAsGlyph) {
+      // Caller (e.g. surfacing an unknown escape sequence) wants this
+      // non-visible byte shown regardless of the swallow setting: control chars
+      // as their PUA control glyph, everything else as a hex glyph.
+      if (rxByte <= 0x7f) {
+        char = String.fromCharCode(rxByte + START_OF_CONTROL_GLYPHS);
+      } else {
+        char = String.fromCharCode(rxByte + START_OF_HEX_GLYPHS);
+      }
     } else {
       // We have either a control char or not in ASCII range (0x80 and above).
       // What we do depends on data processing setting
@@ -1835,10 +1898,10 @@ export class SingleTerminal {
       }
     }
 
-    this.addVisibleChar(char, direction);
+    this.addVisibleChar(char, direction, options?.extraClassName);
   }
 
-  addVisibleChar(char: string, direction: DataDirection) {
+  addVisibleChar(char: string, direction: DataDirection, extraClassName?: string) {
     const terminalChar = new TerminalChar();
     terminalChar.char = char;
 
@@ -1886,6 +1949,13 @@ export class SingleTerminal {
         // Bright background colors
         classList.push(`b${this.currBackgroundColorNum}`);
       }
+    }
+
+    // Extra caller-supplied class (e.g. 'unknown-escape' for surfaced escape
+    // sequences) is appended last so it can override the colour/direction
+    // classes via CSS specificity.
+    if (extraClassName !== undefined) {
+      classList.push(extraClassName);
     }
 
     terminalChar.className = classList.join(' ');

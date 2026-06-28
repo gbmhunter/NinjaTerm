@@ -1,7 +1,7 @@
 import { expect, test, describe, beforeEach } from 'vitest';
 
 import { stringToUint8Array } from 'src/model/Util/Util';
-import { DataDirection, SingleTerminal, START_OF_HEX_GLYPHS } from './SingleTerminal';
+import { DataDirection, SingleTerminal, START_OF_CONTROL_GLYPHS, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
   BackspaceBehavior,
   FormFeedBehavior,
@@ -249,6 +249,62 @@ describe('single terminal tests', () => {
       // We expect the class name to be an empty string now, as we have called clear()
       for (let i = 0; i < 7; i++) {
         expect(singleTerminal.terminalRows[0].terminalChars[i].className).not.toContain('f31');
+      }
+    });
+  });
+
+  //================================================================================
+  // Unknown escape code surfacing tests
+  //================================================================================
+  describe('unknown escape code surfacing', () => {
+    const escGlyph = String.fromCharCode(0x1b + START_OF_CONTROL_GLYPHS);
+
+    test('unsupported CSI final byte is surfaced when enabled', () => {
+      dataProcessingSettings.showUnknownEscapeCodes = true;
+      // ESC[6n is the Device Status Report request, which NinjaTerm does not support.
+      singleTerminal.parseData(stringToUint8Array('\x1B[6n'), DataDirection.RX);
+      const row = singleTerminal.terminalRows[0];
+      // ESC, [, 6, n, then the cursor-holder space
+      expect(row.terminalChars.length).toBe(5);
+      expect(row.terminalChars[0].char).toBe(escGlyph);
+      expect(row.terminalChars[1].char).toBe('[');
+      expect(row.terminalChars[2].char).toBe('6');
+      expect(row.terminalChars[3].char).toBe('n');
+      for (let i = 0; i < 4; i++) {
+        expect(row.terminalChars[i].className).toContain('unknown-escape');
+      }
+    });
+
+    test('unsupported CSI final byte is silently discarded when disabled (default)', () => {
+      expect(dataProcessingSettings.showUnknownEscapeCodes).toBe(false);
+      singleTerminal.parseData(stringToUint8Array('\x1B[6n'), DataDirection.RX);
+      const row = singleTerminal.terminalRows[0];
+      // Only the cursor-holder space remains — the sequence was dropped.
+      expect(row.terminalChars.length).toBe(1);
+      expect(row.terminalChars[0].char).toBe(' ');
+    });
+
+    test('unsupported SGR code is surfaced when enabled', () => {
+      dataProcessingSettings.showUnknownEscapeCodes = true;
+      // 99 is not a recognised SGR code.
+      singleTerminal.parseData(stringToUint8Array('\x1B[99m'), DataDirection.RX);
+      const row = singleTerminal.terminalRows[0];
+      // ESC, [, 9, 9, m, then the cursor-holder space
+      expect(row.terminalChars.length).toBe(6);
+      expect(row.terminalChars[0].char).toBe(escGlyph);
+      for (let i = 0; i < 5; i++) {
+        expect(row.terminalChars[i].className).toContain('unknown-escape');
+      }
+    });
+
+    test('supported escape sequence is never surfaced', () => {
+      dataProcessingSettings.showUnknownEscapeCodes = true;
+      singleTerminal.parseData(stringToUint8Array('\x1B[31mred'), DataDirection.RX);
+      const row = singleTerminal.terminalRows[0];
+      // Just "red" + cursor; the recognised colour sequence is applied, not surfaced.
+      expect(row.terminalChars.length).toBe(4);
+      for (const terminalChar of row.terminalChars) {
+        expect(terminalChar.className).not.toContain('unknown-escape');
       }
     });
   });

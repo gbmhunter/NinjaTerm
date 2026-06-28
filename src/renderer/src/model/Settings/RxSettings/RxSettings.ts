@@ -138,6 +138,11 @@ export default class RxSettings {
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
   maxEscapeCodeLengthChars = new ApplyableNumberField("10", z.coerce.number().min(2));
+  // When enabled, CSI escape sequences that are received but not supported (or
+  // are malformed) are rendered inline in the terminal as a highlighted marker
+  // rather than being silently discarded. A troubleshooting aid, off by default
+  // so normal output is unaffected.
+  showUnknownEscapeCodes = false;
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;
@@ -227,6 +232,7 @@ export default class RxSettings {
     this.ansiEscapeCodeParsingEnabled = configToLoad.ansiEscapeCodeParsingEnabled;
     this.maxEscapeCodeLengthChars.setDispValue(configToLoad.maxEscapeCodeLengthChars.toString());
     this.maxEscapeCodeLengthChars.apply();
+    this.showUnknownEscapeCodes = configToLoad.showUnknownEscapeCodes;
     this.localTxEcho = configToLoad.localTxEcho;
     this.newLineCursorBehavior = configToLoad.newLineCursorBehavior;
     this.swallowNewLine = configToLoad.swallowNewLine;
@@ -284,6 +290,7 @@ export default class RxSettings {
     // ASCII-SPECIFIC SETTINGS
     config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
     config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.appliedValue;
+    config.showUnknownEscapeCodes = this.showUnknownEscapeCodes;
     config.localTxEcho = this.localTxEcho;
     config.newLineCursorBehavior = this.newLineCursorBehavior;
     config.swallowNewLine = this.swallowNewLine;
@@ -336,6 +343,11 @@ export default class RxSettings {
 
   setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
     this.ansiEscapeCodeParsingEnabled = value;
+    this._saveConfig();
+  };
+
+  setShowUnknownEscapeCodes = (value: boolean) => {
+    this.showUnknownEscapeCodes = value;
     this._saveConfig();
   };
 

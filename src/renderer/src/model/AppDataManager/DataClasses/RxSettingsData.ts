@@ -12,6 +12,7 @@ export class RxSettingsData {
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
   maxEscapeCodeLengthChars = 10;
+  showUnknownEscapeCodes = false;
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;

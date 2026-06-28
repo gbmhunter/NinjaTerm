@@ -176,3 +176,14 @@
   background-color: rgb(255, 152, 0); /* saturated amber */
   color: #111;
 }
+
+/* UNKNOWN / UNSUPPORTED ESCAPE SEQUENCES */
+/*================================================================*/
+/* Applied to each char of an escape sequence that was received but not
+   supported (or was malformed), when the "Show Unknown Escape Codes" setting is
+   enabled. The `span` prefix lifts the specificity above the single-class SGR
+   colour rules (.f31 etc.) so the marker styling always wins. */
+span.unknown-escape {
+  background-color: var(--vga-bright-magenta);
+  color: rgb(0, 0, 0);
+}

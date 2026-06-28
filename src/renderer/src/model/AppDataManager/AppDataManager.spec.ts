@@ -108,9 +108,7 @@ describe('app data manager tests', () => {
     updateAndCompare(savedAppData);
   });
 
-  test('app data can be loaded from v20 (current version)', () => {
-    // v20 is the current LATEST_VERSION, so no migration runs — this guards
-    // that the saved default snapshot still deserialises to a fresh AppData.
+  test('app data can be upgraded from v20', () => {
     const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v20-app-v5.14.0-default.json', 'utf8'));
     updateAndCompare(savedAppData);
   });
