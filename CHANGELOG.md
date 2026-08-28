@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **`npm run release` no longer cuts a real release when you asked for a preview.** `npm run` consumes any `--flag` after the script name and never forwards it, so `npm run release <version> --preview` dropped the flag and published; `scripts/release.mjs` now also reads the `npm_config_*` variables npm sets for swallowed flags, warning and honouring them, and the documented form is `npm run release -- <version> --preview`.
+
 ## [5.16.0] - 2026-08-28
 
 ### Added

@@ -5,16 +5,22 @@
 // extracted from CHANGELOG.
 //
 // Usage:
-//   npm run release 5.11.0          # or any explicit semver
-//   npm run release v5.11.0         # v-prefix accepted, normalized away
-//   npm run release 5.11.0-rc.1     # prerelease
-//   npm run release 5.11.0 --preview
-//   npm run release 5.11.0 --allow-dev
+//   npm run release 5.11.0             # or any explicit semver
+//   npm run release v5.11.0            # v-prefix accepted, normalized away
+//   npm run release 5.11.0-rc.1        # prerelease
+//   npm run release -- 5.11.0 --preview
+//   npm run release -- 5.11.0 --allow-dev
 //
-// NB: we use `--preview` instead of `--dry-run` because npm itself intercepts
-// `--dry-run` as one of its own CLI flags before passing args through to the
-// script (unless you write `npm run release -- 5.11.0 --dry-run`). Easier to
-// rename than to rely on users remembering the `--` separator.
+// NB: flags need the `--` separator. `npm run` treats ANY `--flag` after the
+// script name as one of its own config options and does not forward it to the
+// script — this is not special to npm's own flag names, so renaming the flag
+// does not help. Without the separator, `npm run release 5.11.0 --preview`
+// arrives here with no `--preview` in argv and cuts a real release.
+//
+// Because getting that wrong publishes something, we also read the
+// `npm_config_*` variables npm sets for the flags it swallowed, and honour
+// them. So the un-separated form warns rather than silently doing the
+// dangerous thing.
 
 import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -23,8 +29,31 @@ import { dirname, join } from 'node:path';
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
-const preview = args.includes('--preview');
-const allowDev = args.includes('--allow-dev');
+
+/**
+ * True if `--<flag>` was passed, whether it reached argv or npm swallowed it
+ * into a `npm_config_*` environment variable (npm lowercases the name and turns
+ * dashes into underscores). Warns in the swallowed case so the correct
+ * invocation gets learned, but still honours the flag — silently ignoring a
+ * swallowed `--preview` would cut a real release.
+ */
+const hasFlag = (flag) => {
+  if (args.includes(`--${flag}`)) {
+    return true;
+  }
+  if (process.env[`npm_config_${flag.replace(/-/g, '_')}`] === 'true') {
+    console.warn(
+      `Warning: npm consumed "--${flag}" instead of passing it to this script; honouring it anyway.\n` +
+        `         Use the "--" separator to pass flags through directly:\n` +
+        `           npm run release -- <version> --${flag}`,
+    );
+    return true;
+  }
+  return false;
+};
+
+const preview = hasFlag('preview');
+const allowDev = hasFlag('allow-dev');
 const rawVersionArg = args.find((a) => !a.startsWith('--'));
 
 if (!rawVersionArg) {

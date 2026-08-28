@@ -132,11 +132,20 @@ The script runs typecheck + unit tests + the snapshot preflight, finalizes
 CHANGELOG (moves `Unreleased` into a dated section and adds the compare link),
 writes `package.json`, commits `Release v{X.Y.Z}`, tags `v{X.Y.Z}` (annotated),
 and pushes `main` with the tag. Pass `--preview` to see what the changes would
-look like without writing anything, or `--allow-dev` to release from the `dev`
-branch.
+look like without writing anything, or `--allow-dev` to release from a non-`main`
+branch. **Flags need the `--` separator:**
 
-(We use `--preview` rather than `--dry-run` because npm intercepts `--dry-run`
-as one of its own flags before it reaches the script.)
+```
+npm run release -- 5.11.0 --preview
+npm run release -- 5.11.0 --allow-dev
+```
+
+`npm run` treats any `--flag` after the script name as one of its own config
+options and never forwards it, so `npm run release 5.11.0 --preview` (no
+separator) would otherwise cut a real release. The script defends against that
+by also reading the `npm_config_*` variables npm sets for flags it swallowed —
+it warns and honours the flag rather than releasing — but the `--` form is the
+one to use.
 
 From there CI takes over: it builds and signs all three platforms, uploads the
 installers / updater manifests to a **draft** GitHub Release, and only flips
