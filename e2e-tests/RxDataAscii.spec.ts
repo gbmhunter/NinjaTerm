@@ -255,6 +255,15 @@ test.describe('RX data (Electron)', () => {
 
   test('escape code over max size should not lock up parser', async () => {
     await appTestHarness.openPortAndGoToTerminalView();
+
+    // Pin the max escape code length rather than relying on whatever the default
+    // happens to be, so this test keeps testing the bail-out behavior if the
+    // default changes.
+    await appTestHarness.page.evaluate(() => {
+      window.app.settings.rxSettings.maxEscapeCodeLengthChars.setDispValue('10');
+      window.app.settings.rxSettings.maxEscapeCodeLengthChars.apply();
+    });
+
     // ESC byte then 0-7, this is 9 bytes in all
     await appTestHarness.sendTextToTerminal('\x1B01234567');
 

@@ -53,6 +53,33 @@ export enum FormFeedBehavior {
 }
 
 /**
+ * The character encoding of received data, i.e. how bytes are turned into the
+ * characters shown in the terminal.
+ *
+ * All of these encodings agree on bytes 0x00-0x7F — below 0x20 is a control
+ * character and 0x20-0x7E is printable ASCII — and differ only in what 0x80 and
+ * above mean. That is why only the high bytes are actually decoded.
+ *
+ * This is a separate question from `NonVisibleCharDisplayBehaviors`, which
+ * decides how bytes that *aren't* text get displayed.
+ */
+export enum CharacterEncoding {
+  // 7-bit ASCII: bytes 0x80+ are not text. They are rendered or swallowed as
+  // non-visible characters per the non-visible char display setting. This is the
+  // original NinjaTerm behavior and stays the default, because for a debugging
+  // tool seeing the raw byte value is usually more useful than guessing an
+  // encoding.
+  ASCII,
+  // Bytes 0x80+ are UTF-8. Multi-byte sequences are accumulated across chunks.
+  // Invalid sequences fall back to hex glyphs so the raw bytes stay visible.
+  UTF8,
+  // Bytes 0x80+ are code page 437, the original IBM PC / MS-DOS character set.
+  // This is what DOS-style text-mode UIs use to draw frames and borders (e.g.
+  // byte 0xDA is the top-left corner, 0xC4 the horizontal line).
+  CP437,
+}
+
+/**
  * Enumerates the possible behaviors for displaying non-visible
  * characters in the terminal. Non-visible is any byte from 0x00-0xFF
  * which is not a visible ASCII character.
@@ -137,7 +164,11 @@ export default class RxSettings {
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = new ApplyableNumberField("10", z.coerce.number().min(2));
+  // Sequences longer than this are abandoned and emitted as plain data, so this
+  // has to comfortably fit the longest sequence we want to handle. 25 covers
+  // three-digit CUP coordinates (ESC[100;120H) and true-colour SGR
+  // (ESC[38;2;255;255;255m) with room to spare.
+  maxEscapeCodeLengthChars = new ApplyableNumberField("25", z.coerce.number().min(2));
   // When enabled, CSI escape sequences that are received but not supported (or
   // are malformed) are rendered inline in the terminal as a highlighted marker
   // rather than being silently discarded. A troubleshooting aid, off by default
@@ -151,6 +182,7 @@ export default class RxSettings {
   backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
   formFeedBehavior = FormFeedBehavior.DO_NOTHING;
   nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
+  characterEncoding = CharacterEncoding.ASCII;
 
   // NUMBER-SPECIFIC SETTINGS
   numberType = NumberType.HEX;
@@ -240,6 +272,7 @@ export default class RxSettings {
     this.swallowCarriageReturn = configToLoad.swallowCarriageReturn;
     this.backspaceBehavior = configToLoad.backspaceBehavior;
     this.formFeedBehavior = configToLoad.formFeedBehavior;
+    this.characterEncoding = configToLoad.characterEncoding;
     this.nonVisibleCharDisplayBehavior = configToLoad.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -298,6 +331,7 @@ export default class RxSettings {
     config.swallowCarriageReturn = this.swallowCarriageReturn;
     config.backspaceBehavior = this.backspaceBehavior;
     config.formFeedBehavior = this.formFeedBehavior;
+    config.characterEncoding = this.characterEncoding;
     config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
 
     // NUMBER-SPECIFIC SETTINGS
@@ -383,6 +417,11 @@ export default class RxSettings {
 
   setFormFeedBehavior = (value: FormFeedBehavior) => {
     this.formFeedBehavior = value;
+    this._saveConfig();
+  };
+
+  setCharacterEncoding = (value: CharacterEncoding) => {
+    this.characterEncoding = value;
     this._saveConfig();
   };
 

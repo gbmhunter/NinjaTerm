@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { App } from 'src/model/App';
 import ApplyableTextFieldView from 'src/view/Components/ApplyableTextFieldView';
-import { DataViewConfiguration, TerminalHeightMode, dataViewConfigEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { DataViewConfiguration, TerminalFont, TerminalHeightMode, dataViewConfigEnumToDisplayName, terminalFontEnumToDisplayName } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import PopoverColorPicker from 'src/view/Components/PopoverColorPicker';
 
 interface Props {
@@ -108,6 +108,56 @@ export default observer((props: Props) => {
           sx={{ marginBottom: "20px" }}
         />
       </Tooltip>
+
+      {/* ============================================================== */}
+      {/* TERMINAL FONT */}
+      {/* ============================================================== */}
+      <Tooltip
+        title='The font used to display data in the terminal. The bundled NinjaTerm font covers ASCII only; pick "IBM VGA (DOS/CP437)" for the box-drawing characters that text-mode applications draw frames and borders with, or "Custom..." to name any monospace font installed on your computer. Characters missing from the selected font fall back to a system monospace font, so the character grid always lines up.'
+        placement="right"
+        {...app.settings.displaySettings.getBasicTooltipConfig()}
+      >
+        <FormControl sx={{ minWidth: 160, marginBottom: '20px' }} size="small">
+          <InputLabel>Terminal Font</InputLabel>
+          <Select
+            name="terminalFont"
+            data-testid="terminal-font-select"
+            value={app.settings.displaySettings.terminalFont}
+            onChange={(e) => {
+              app.settings.displaySettings.setTerminalFont(e.target.value as TerminalFont);
+            }}
+          >
+            {Object.values(TerminalFont).map((terminalFont) => {
+              return (
+                <MenuItem key={terminalFont} value={terminalFont}>
+                  {terminalFontEnumToDisplayName[terminalFont]}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+      </Tooltip>
+
+      {/* =============================================================================== */}
+      {/* CUSTOM TERMINAL FONT NAME */}
+      {/* =============================================================================== */}
+      {app.settings.displaySettings.terminalFont === TerminalFont.CUSTOM && (
+        <Tooltip
+          title='The font family name to use, exactly as the font is named on your system (e.g. "Perfect DOS VGA 437"). The font has to already be installed on this computer. If it cannot be found, the terminal falls back to the default font.'
+          followCursor
+          {...app.settings.displaySettings.getBasicTooltipConfig()}
+        >
+          <ApplyableTextFieldView
+            id="outlined-basic"
+            name="terminalFontCustomName"
+            label="Custom Font Family"
+            variant="outlined"
+            size="small"
+            applyableTextField={app.settings.displaySettings.terminalFontCustomName}
+            sx={{ marginBottom: '20px' }}
+          />
+        </Tooltip>
+      )}
 
       {/* =============================================================================== */}
       {/* TERMINAL WIDTH (IN CHARS) */}

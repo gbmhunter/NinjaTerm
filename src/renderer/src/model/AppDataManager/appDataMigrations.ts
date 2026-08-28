@@ -24,8 +24,8 @@
  */
 
 import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
-import DisplaySettings, { TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
-import { BackspaceBehavior, FormFeedBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
+import DisplaySettings, { TerminalFont, TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
+import { BackspaceBehavior, CharacterEncoding, FormFeedBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
@@ -84,6 +84,9 @@ type MigrationDisplaySettings = {
   // v10->v11
   tooltipsEnabled?: boolean;
   tooltipDelayMs?: number;
+  // v21->v22 (added)
+  terminalFont?: TerminalFont;
+  terminalFontCustomName?: string;
 };
 
 type MigrationRxSettings = {
@@ -98,6 +101,10 @@ type MigrationRxSettings = {
   // v20->v21 (added)
   formFeedBehavior?: FormFeedBehavior;
   showUnknownEscapeCodes?: boolean;
+  // v21->v22 (default raised from 10 to 25)
+  maxEscapeCodeLengthChars?: number;
+  // v21->v22 (added)
+  characterEncoding?: CharacterEncoding;
 };
 
 type MigrationTxSettings = {
@@ -588,6 +595,42 @@ function migrateV20toV21(appData: MigrationAppData): void {
   appData.version = 21;
 }
 
+/** The max-escape-code-length default up to and including v21. */
+const V21_MAX_ESCAPE_CODE_LENGTH_CHARS = 10;
+
+function migrateV21toV22(appData: MigrationAppData): void {
+  // (1) The max escape code length default is raised from 10 to 25. The old
+  // default was too short for some sequences we now support — ESC[100;120H (CUP
+  // with three-digit coordinates) is 12 characters and would have been abandoned
+  // mid-sequence and printed as plain data. Only configs still sitting on the
+  // old default are moved up; anything the user chose themselves is left alone.
+  //
+  // (2) and (3) add the character encoding and terminal font settings. Existing
+  // configs adopt the new defaults in both cases, so the terminal keeps looking
+  // and behaving exactly as it did.
+  forEachRootConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    rootConfig.settings.rxSettings = rootConfig.settings.rxSettings ?? {};
+    const rxSettings = rootConfig.settings.rxSettings;
+    if (
+      rxSettings.maxEscapeCodeLengthChars === undefined ||
+      rxSettings.maxEscapeCodeLengthChars === V21_MAX_ESCAPE_CODE_LENGTH_CHARS
+    ) {
+      rxSettings.maxEscapeCodeLengthChars = 25;
+    }
+
+    // (3) Add the character encoding setting. Existing configs adopt the new
+    // default (ASCII), which is the behavior they already had: bytes 0x80 and
+    // above are shown as glyphs rather than decoded as text.
+    rxSettings.characterEncoding = CharacterEncoding.ASCII;
+
+    rootConfig.settings.displaySettings = rootConfig.settings.displaySettings ?? {};
+    rootConfig.settings.displaySettings.terminalFont = TerminalFont.NINJATERM;
+    rootConfig.settings.displaySettings.terminalFontCustomName = '';
+  });
+  appData.version = 22;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -615,6 +658,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 18, apply: migrateV18toV19 },
   { from: 19, apply: migrateV19toV20 },
   { from: 20, apply: migrateV20toV21 },
+  { from: 21, apply: migrateV21toV22 },
 ];
 
 // --------------------------------------------------------------------------

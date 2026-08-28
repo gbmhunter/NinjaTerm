@@ -9,6 +9,7 @@ import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
   BackspaceBehavior,
   CarriageReturnCursorBehavior,
+  CharacterEncoding,
   DataType,
   Endianness,
   FloatStringConversionMethod,
@@ -25,6 +26,7 @@ import DisplaySettings, { TerminalHeightMode } from 'src/model/Settings/DisplayS
 import { SelectionController, SelectionInfo } from 'src/model/SelectionController/SelectionController';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
 import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
+import { CP437_HIGH_BYTES_TO_UNICODE } from 'src/model/Terminals/SingleTerminal/cp437';
 import { FilterController } from 'src/model/Terminals/Filters/FilterController';
 import { TerminalFilter } from 'src/model/Terminals/Filters/TerminalFilter';
 import { SoundPlayer } from 'src/model/Util/SoundPlayer';
@@ -344,6 +346,21 @@ export class SingleTerminal {
   partialEscapeCode: number[];
 
   /**
+   * Bytes of an in-flight multi-byte UTF-8 sequence, and how many bytes the
+   * lead byte says the sequence has. Only used when the character encoding is
+   * UTF-8. A sequence can straddle a chunk boundary, so partial sequences are
+   * held here between calls to `parseData`.
+   *
+   * Like the escape-code accumulator above, this is per-terminal rather than
+   * per-direction, so TX data echoed into the middle of a partial RX sequence
+   * would corrupt it. That needs local echo plus RX arriving mid-character, so
+   * it is left as-is for the same reason the escape-code parser does.
+   */
+  partialUtf8Bytes: number[];
+
+  numUtf8BytesExpected: number;
+
+  /**
    * Cached timestamp string and the millisecond it was formatted from.
    * `_maybeAddVisibleByteAndTimestamp` checks `cachedTimestampMs` against
    * `Date.now()` and reuses `cachedTimestampString` if they match. With chunky
@@ -497,6 +514,8 @@ export class SingleTerminal {
     this.inAnsiEscapeCode = false;
     this.partialEscapeCode = [];
     this.inCSISequence = false;
+    this.partialUtf8Bytes = [];
+    this.numUtf8BytesExpected = 0;
     this.boldOrIncreasedIntensity = false;
 
     this.currForegroundColorNum = null;
@@ -504,6 +523,14 @@ export class SingleTerminal {
 
     // Register listener for whenever the number type is changed, and clear the partial number buffer.
     reaction(() => this.rxSettings.numberType, this.clearPartialNumberBuffer);
+
+    // If the character encoding changes mid-stream, any bytes held for an
+    // in-flight UTF-8 sequence will never be completed under the new encoding,
+    // so emit them as glyphs rather than losing them.
+    reaction(
+      () => this.rxSettings.characterEncoding,
+      () => this._flushPartialUtf8Bytes(DataDirection.RX),
+    );
 
     makeAutoObservable(this, {
       filteredTerminalRows: computed,
@@ -587,6 +614,26 @@ export class SingleTerminal {
 
   get verticalRowPaddingPx() {
     return this.displaySettings.verticalRowPaddingPx.appliedValue;
+  }
+
+  /** The CSS font-family stack for terminal rows, from the display settings. */
+  get terminalFontFamily() {
+    return this.displaySettings.terminalFontFamily;
+  }
+
+  /**
+   * Index of the first row of the visible screen, i.e. the row that ANSI escape
+   * sequences treat as row 1. The screen is the last `terminalHeightChars` rows
+   * of data; everything before that is scrollback, which escape sequences are
+   * never allowed to address. If there isn't a full screen's worth of rows yet,
+   * the screen starts at the very first row.
+   */
+  get screenStartRowIdx() {
+    const startRowIdx = this.terminalRows.length - this.terminalHeightChars;
+    if (startRowIdx < 0) {
+      return 0;
+    }
+    return startRowIdx;
   }
 
   /**
@@ -737,6 +784,15 @@ export class SingleTerminal {
       // const char = dataAsStr[idx];
       // This console print is very useful when debugging
       // console.log(`char: "${char}", 0x${char.charCodeAt(0).toString(16)}`);
+
+      // A byte below 0x80 can never be part of a multi-byte UTF-8 sequence, so
+      // if one arrives while we are holding a partial sequence, that sequence
+      // was truncated. Surface the held bytes now, before this byte is handled
+      // as a newline/escape/printable char — otherwise they would sit in the
+      // buffer indefinitely and be emitted out of order (or never).
+      if (this.partialUtf8Bytes.length > 0 && rxByte < 0x80) {
+        this._flushPartialUtf8Bytes(direction);
+      }
 
       //========================================================================
       // NEW LINE HANDLING
@@ -943,10 +999,133 @@ export class SingleTerminal {
         continue;
       }
 
-      // If we get here we are not receiving an ANSI escape code,
-      // so send byte to be printed to the terminal.
+      // If we get here we are not receiving an ANSI escape code, so the byte is
+      // data to be printed. Bytes 0x80 and above are only text if the user has
+      // selected a character encoding that says so — otherwise they fall
+      // through to _maybeAddVisibleByteAndTimestamp and are shown as glyphs.
+      if (rxByte >= 0x80 && this.rxSettings.characterEncoding !== CharacterEncoding.ASCII) {
+        this._decodeAndAddHighByte(rxByte, direction);
+        continue;
+      }
+
       this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
     }
+  }
+
+  /**
+   * Handles a received byte of 0x80 or above when a character encoding other
+   * than ASCII is selected, turning it into a displayable character.
+   *
+   * CP437 is a straight table lookup. UTF-8 needs state, because a character is
+   * up to four bytes and the sequence can be split across chunks (serial data
+   * arrives in arbitrary-sized chunks), so partial sequences are held in
+   * `partialUtf8Bytes` until they complete.
+   *
+   * Anything that isn't valid UTF-8 is emitted as hex glyphs rather than a
+   * U+FFFD replacement character — NinjaTerm is a debugging tool, so seeing the
+   * actual byte values that arrived is more useful than seeing that something
+   * was undecodable.
+   *
+   * @param rxByte The received byte. Must be >= 0x80.
+   * @param direction The direction (TX/RX) the byte came from.
+   */
+  _decodeAndAddHighByte(rxByte: number, direction: DataDirection) {
+    if (this.rxSettings.characterEncoding === CharacterEncoding.CP437) {
+      this._addDecodedCodePoint(CP437_HIGH_BYTES_TO_UNICODE[rxByte - 0x80], direction);
+      return;
+    }
+
+    // UTF-8 from here on.
+    if (this.partialUtf8Bytes.length === 0) {
+      // Expecting a lead byte. 110xxxxx = 2 bytes, 1110xxxx = 3, 11110xxx = 4.
+      // A 10xxxxxx here is a continuation byte with no lead (or the tail of a
+      // sequence we already gave up on), and 0xF8-0xFF is never valid UTF-8.
+      let numBytesExpected = 0;
+      if (rxByte >= 0xc0 && rxByte <= 0xdf) {
+        numBytesExpected = 2;
+      } else if (rxByte >= 0xe0 && rxByte <= 0xef) {
+        numBytesExpected = 3;
+      } else if (rxByte >= 0xf0 && rxByte <= 0xf7) {
+        numBytesExpected = 4;
+      } else {
+        this._maybeAddVisibleByteAndTimestamp(rxByte, direction);
+        return;
+      }
+      this.partialUtf8Bytes.push(rxByte);
+      this.numUtf8BytesExpected = numBytesExpected;
+      return;
+    }
+
+    // Mid-sequence, so this must be a continuation byte (10xxxxxx).
+    if (rxByte < 0x80 || rxByte > 0xbf) {
+      // Truncated sequence. Flush what we held as hex glyphs, then reprocess
+      // this byte as the start of something new.
+      this._flushPartialUtf8Bytes(direction);
+      this._decodeAndAddHighByte(rxByte, direction);
+      return;
+    }
+
+    this.partialUtf8Bytes.push(rxByte);
+    if (this.partialUtf8Bytes.length < this.numUtf8BytesExpected) {
+      // Still waiting on more bytes, possibly from the next chunk.
+      return;
+    }
+
+    // Sequence complete — combine the payload bits into a code point.
+    const numBytes = this.partialUtf8Bytes.length;
+    const leadByteMask = numBytes === 2 ? 0x1f : numBytes === 3 ? 0x0f : 0x07;
+    let codePoint = this.partialUtf8Bytes[0] & leadByteMask;
+    for (let idx = 1; idx < numBytes; idx += 1) {
+      codePoint = (codePoint << 6) | (this.partialUtf8Bytes[idx] & 0x3f);
+    }
+
+    // Reject overlong encodings (the same code point encoded in more bytes than
+    // needed), UTF-16 surrogate halves, and anything past the Unicode maximum.
+    // All three are invalid UTF-8 and an overlong form can be a security
+    // problem, so they are surfaced as the raw bytes instead.
+    const minCodePointForLength = numBytes === 2 ? 0x80 : numBytes === 3 ? 0x800 : 0x10000;
+    if (
+      codePoint < minCodePointForLength ||
+      codePoint > 0x10ffff ||
+      (codePoint >= 0xd800 && codePoint <= 0xdfff)
+    ) {
+      this._flushPartialUtf8Bytes(direction);
+      return;
+    }
+
+    this.partialUtf8Bytes = [];
+    this.numUtf8BytesExpected = 0;
+    this._addDecodedCodePoint(codePoint, direction);
+  }
+
+  /**
+   * Emits the bytes of an incomplete or invalid UTF-8 sequence as hex glyphs and
+   * clears the partial-sequence state.
+   *
+   * @param direction The direction (TX/RX) the bytes came from.
+   */
+  _flushPartialUtf8Bytes(direction: DataDirection) {
+    const bytesToFlush = this.partialUtf8Bytes;
+    this.partialUtf8Bytes = [];
+    this.numUtf8BytesExpected = 0;
+    for (let idx = 0; idx < bytesToFlush.length; idx += 1) {
+      this._maybeAddVisibleByteAndTimestamp(bytesToFlush[idx], direction);
+    }
+  }
+
+  /**
+   * Adds an already-decoded Unicode code point to the terminal, adding a
+   * timestamp first if the cursor is at the start of a line.
+   *
+   * This is the decoded-character counterpart to
+   * `_maybeAddVisibleByteAndTimestamp`, which works on raw bytes.
+   *
+   * @param codePoint The Unicode code point to display.
+   * @param direction The direction (TX/RX) the character came from.
+   */
+  _addDecodedCodePoint(codePoint: number, direction: DataDirection) {
+    this._maybeAddTimestamp(direction);
+    this.addVisibleChar(String.fromCodePoint(codePoint), direction);
   }
 
   /**
@@ -977,6 +1156,23 @@ export class SingleTerminal {
         return;
       }
       this._cursorUp(numRowsToGoUp);
+    } else if (lastChar === 'B') {
+      //============================================================
+      // CUD Cursor Down
+      //============================================================
+      // Extract number in the form ESC[nB
+      let numberStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      // If there was no number provided, assume it was '1' (default)
+      if (numberStr === '') {
+        numberStr = '1';
+      }
+      const numRowsToGoDown = parseInt(numberStr, 10);
+      if (Number.isNaN(numRowsToGoDown)) {
+        console.error(`Number string in CUD (cursor down) CSI sequence could not converted into integer. numberStr=${numberStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
+        return;
+      }
+      this._cursorDownWithinScreen(numRowsToGoDown);
     } else if (lastChar === 'C') {
       //============================================================
       // CUC - Cursor Forward
@@ -1011,6 +1207,37 @@ export class SingleTerminal {
         return;
       }
       this._cursorLeft(numColsToGoLeft);
+    } else if (lastChar === 'H' || lastChar === 'f') {
+      //============================================================
+      // CUP Cursor Position (and HVP, its identical alias)
+      //============================================================
+      // Syntax: ESC[<row>;<col>H, where row and col are 1-based and relative to
+      // the top-left of the visible screen (not the scrollback buffer). Either
+      // parameter can be omitted and defaults to 1, so ESC[H (home), ESC[5H,
+      // ESC[;10H and ESC[5;10H are all valid. ESC[<row>;<col>f (HVP) does the
+      // same thing on real terminals, so it is handled identically here.
+      const paramsStr = ansiEscapeCode.slice(2, ansiEscapeCode.length - 1);
+      const paramStrs = paramsStr === '' ? [] : paramsStr.split(';');
+      if (paramStrs.length > 2) {
+        console.error(`Too many parameters in CUP (cursor position) CSI sequence. paramsStr=${paramsStr}.`);
+        this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
+        return;
+      }
+      const rowAndCol = [1, 1];
+      for (let idx = 0; idx < paramStrs.length; idx += 1) {
+        // An omitted parameter (e.g. the row in "ESC[;10H") keeps the default of 1
+        if (paramStrs[idx] === '') {
+          continue;
+        }
+        const param = parseInt(paramStrs[idx], 10);
+        if (Number.isNaN(param)) {
+          console.error(`Number string in CUP (cursor position) CSI sequence could not be converted into integer. numberStr=${paramStrs[idx]}.`);
+          this._surfaceUnknownEscapeCode(ansiEscapeCode, direction);
+          return;
+        }
+        rowAndCol[idx] = param;
+      }
+      this._cursorTo(rowAndCol[0], rowAndCol[1]);
     } else if (lastChar === 'J') {
       //============================================================
       // ED Erase in Display
@@ -1045,10 +1272,7 @@ export class SingleTerminal {
         // const numRowsInViewport = Math.floor(this.terminalViewHeightPx / rowHeight_px);
         // Find first row which would be considered part of the terminal if you
         // excluded scrollback
-        let startRowIdx = this.terminalRows.length - this.terminalHeightChars;
-        if (startRowIdx < 0) {
-          startRowIdx = 0;
-        }
+        const startRowIdx = this.screenStartRowIdx;
         // Make sure the cursor is not above the first row
         if (this.cursorPosition[0] < startRowIdx) {
           console.warn('Got ESC[1J (erase in display, from start of screen to cursor) escape code. Cursor is above the first row that would be considered part of the terminal if you excluded scrollback. Not erasing anything.');
@@ -1151,8 +1375,8 @@ export class SingleTerminal {
       this._deleteChars(numCharsToDelete);
     } else {
       // CSI sequence with a final byte we don't support (e.g. ESC[K erase line,
-      // ESC[H cursor position, ESC[6n device status report, ESC[?25h show
-      // cursor, the ESC[n~ nav-key sequences). Surface it inline for
+      // ESC[6n device status report, ESC[?25h show cursor, the ESC[n~ nav-key
+      // sequences). Surface it inline for
       // troubleshooting rather than dropping it. No console log here — these can
       // arrive frequently (e.g. echoed nav keys) and would spam the console;
       // _surfaceUnknownEscapeCode is gated behind the user setting.
@@ -1780,6 +2004,71 @@ export class SingleTerminal {
   }
 
   /**
+   * Moves the cursor down the specified number of rows, stopping at the bottom
+   * of the screen. This is the CUD (ESC[nB) operation.
+   *
+   * Unlike `_cursorDown`, this never scrolls the terminal. It will create rows
+   * to fill out a screen that isn't full yet, but once the screen is full the
+   * cursor stops on the last row rather than pushing existing data up into the
+   * scrollback buffer — the mirror image of `_cursorUp` refusing to move up into
+   * scrollback.
+   *
+   * @param numRows The number of rows to move down.
+   */
+  _cursorDownWithinScreen(numRows: number) {
+    if (numRows <= 0) {
+      return;
+    }
+    const lastScreenRowIdx = this.screenStartRowIdx + this.terminalHeightChars - 1;
+    let targetRowIdx = this.cursorPosition[0] + numRows;
+    if (targetRowIdx > lastScreenRowIdx) {
+      targetRowIdx = lastScreenRowIdx;
+    }
+    if (targetRowIdx > this.cursorPosition[0]) {
+      this._cursorDown(targetRowIdx - this.cursorPosition[0]);
+    }
+  }
+
+  /**
+   * Moves the cursor to an absolute position, i.e. the CUP (ESC[row;colH)
+   * operation. Row and column are 1-based and relative to the top-left of the
+   * visible screen, so the scrollback buffer is never addressable.
+   *
+   * Row is clamped to the terminal height and column to the terminal width, and
+   * 0 is treated as 1 (the first row/column), matching real terminals. If the
+   * terminal does not yet hold a full screen's worth of rows, the missing rows
+   * are created so that a "goto" into a mostly-empty terminal behaves the same
+   * way it would on a real one.
+   *
+   * @param row The 1-based row to move to, relative to the top of the screen.
+   * @param col The 1-based column to move to.
+   */
+  _cursorTo(row: number, col: number) {
+    const clampedRow = Math.min(Math.max(row, 1), this.terminalHeightChars);
+    const clampedCol = Math.min(Math.max(col, 1), this.displaySettings.terminalWidthChars.appliedValue);
+
+    const targetRowIdx = this.screenStartRowIdx + clampedRow - 1;
+    const targetColIdx = clampedCol - 1;
+
+    // Move there with the incremental cursor functions rather than just
+    // assigning cursorPosition, as they handle creating rows, padding rows out
+    // with spaces, keeping the filtered rows in sync, and the bookkeeping for
+    // the trailing space that only exists to hold the cursor. Vertical movement
+    // has to come first, since moving up/down pads the destination row out to
+    // the *current* column.
+    if (targetRowIdx > this.cursorPosition[0]) {
+      this._cursorDown(targetRowIdx - this.cursorPosition[0]);
+    } else if (targetRowIdx < this.cursorPosition[0]) {
+      this._cursorUp(this.cursorPosition[0] - targetRowIdx);
+    }
+    if (targetColIdx > this.cursorPosition[1]) {
+      this._cursorRight(targetColIdx - this.cursorPosition[1]);
+    } else if (targetColIdx < this.cursorPosition[1]) {
+      this._cursorLeft(this.cursorPosition[1] - targetColIdx);
+    }
+  }
+
+  /**
    * Adds a visible character to the terminal at the current cursor position. Also adds a timestamp if:
    * - The cursor is at the start of a line
    * - The line wasn't created due to wrapping
@@ -1859,6 +2148,20 @@ export class SingleTerminal {
     }
 
     // If we get here, we are definitely adding a visible character
+    this._maybeAddTimestamp(direction);
+
+    this.addVisibleChar(char, direction, options?.extraClassName);
+  }
+
+  /**
+   * Adds a timestamp at the cursor if the cursor is at the start of a line that
+   * wasn't created by wrapping, and timestamps are enabled. Called immediately
+   * before adding a visible character, by both the raw-byte and the
+   * decoded-code-point paths.
+   *
+   * @param direction The direction (TX/RX) of the data the timestamp precedes.
+   */
+  _maybeAddTimestamp(direction: DataDirection) {
     // If at start of line, and line wasn't created due to wrapping, add timestamp first!
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     const startOfLineNotDueToWrapping = rowToInsertInto.wasCreatedDueToWrapping == false && this.cursorPosition[1] === 0;
@@ -1897,8 +2200,6 @@ export class SingleTerminal {
         this.addVisibleChar(timestampString[idx], direction);
       }
     }
-
-    this.addVisibleChar(char, direction, options?.extraClassName);
   }
 
   addVisibleChar(char: string, direction: DataDirection, extraClassName?: string) {

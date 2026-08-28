@@ -1,4 +1,4 @@
-import DisplaySettings, { DataViewConfiguration, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import DisplaySettings, { DataViewConfiguration, TerminalFont, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
 export const DEFAULT_BACKGROUND_COLOR = '#000000';
 export const DEFAULT_TX_COLOR = '#ffffff';
@@ -11,6 +11,8 @@ export class DisplaySettingsData {
   verticalRowPaddingPx = 5;
   terminalWidthChars = 120;
   terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+  terminalFont = TerminalFont.NINJATERM;
+  terminalFontCustomName = '';
   terminalHeightChars = 25;
   scrollbackBufferSizeRows = 2000;
   dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;

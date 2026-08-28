@@ -137,11 +137,21 @@ Parsing can be toggled with the ANSI escape code parsing setting in `Settings > 
 | Sequence | Name | Effect |
 | --- | --- | --- |
 | `ESC[nA` | Cursor Up (CUU) | Move the cursor up `n` rows (won't go above the first row or into scrollback). |
+| `ESC[nB` | Cursor Down (CUD) | Move the cursor down `n` rows (won't go past the last row of the screen). |
 | `ESC[nC` | Cursor Forward (CUF) | Move the cursor right `n` columns (capped at the terminal width). |
 | `ESC[nD` | Cursor Back (CUB) | Move the cursor left `n` columns (capped at column 0). |
+| `ESC[r;cH` | Cursor Position (CUP) | Move the cursor to row `r`, column `c` — see below. |
 | `ESC[nP` | Delete Character (DCH) | Delete `n` characters at the cursor, shifting the rest of the line left. |
 | `ESC[nJ` | Erase in Display (ED) | Clear part of the screen — see below. |
 | `ESC[...m` | Select Graphic Rendition (SGR) | Set text color/style — see below. |
+
+### Cursor Position (ESC[r;cH)
+
+`ESC[r;cH` moves the cursor to row `r`, column `c`. Both are 1-based and measured from the top-left of the terminal view, **not** from the start of the scrollback buffer — so `ESC[1;1H` ("home") goes to the top-left of the current screen and the scrollback buffer can never be overwritten.
+
+Either parameter can be left out and defaults to `1`, so `ESC[H`, `ESC[5H` and `ESC[;10H` are all valid. `ESC[r;cf` (Horizontal Vertical Position, HVP) does exactly the same thing. The row is capped at the terminal height and the column at the terminal width (both set in `Settings > Display`). If the terminal doesn't yet hold a full screen of rows, blank rows are added as needed.
+
+Note that the whole sequence has to fit within the max. escape code length set in `Settings > RX Settings` (25 characters by default, which comfortably covers three-digit rows and columns).
 
 ### Erase in Display (ESC[nJ)
 
@@ -206,6 +216,38 @@ By default, if you enter TX data into a terminal it will jump to the bottom of t
 ### Customizable Default Background, TX Text, and RX Text Colors
 
 Tailor your terminal's appearance by setting default colors for the background, TX (transmitted) text, and RX (received) text. Find these options in `Settings > Display`. Note that ANSI escape codes for colors can override these defaults if ANSI escape code parsing is enabled.
+
+### Character Encoding
+
+The character encoding of received data — how the incoming bytes are turned into the characters you see — is set in `Settings > RX Settings`:
+
+| Option | Description |
+| --- | --- |
+| ASCII only (default) | 7-bit ASCII. Bytes `0x80`+ aren't text, so they're shown as hex glyphs (or swallowed) per the non-visible character setting. Best for general debugging, where the raw byte value is what matters. |
+| UTF-8 | Decode bytes `0x80`+ as UTF-8. Characters split across separate reads from the port are handled. Bytes that aren't valid UTF-8 fall back to hex glyphs so they stay visible. |
+| CP437 (DOS) | Decode bytes `0x80`+ as code page 437, the original IBM PC / MS-DOS character set. |
+
+All three agree on the bytes below `0x80` — control characters below `0x20`, printable ASCII from `0x20` to `0x7E` — so in practice the choice only changes what the bytes from `0x80` up mean.
+
+CP437 is the one to pick for DOS-style text-mode output, where a single byte is a single box-drawing character — e.g. byte `0xDA` is `┌` and `0xC4` is `─`. Devices that send UTF-8 (three bytes per box-drawing character) want the UTF-8 option instead.
+
+This setting decides how bytes are *decoded*; the Terminal Font setting below decides whether the resulting characters have glyphs to draw with. You need both for text-mode frames to display.
+
+### Terminal Font
+
+The font used to display data in the terminal can be changed in `Settings > Display`:
+
+| Option | Description |
+| --- | --- |
+| NinjaTerm (default) | NinjaTerm's own font. Covers ASCII only. |
+| IBM VGA (DOS/CP437) | The bundled IBM VGA 8x16 DOS text-mode font. Covers the CP437 box-drawing and block characters, so text-mode frames and borders drawn with `─│┌┐└┘├┤` render properly. |
+| Perfect DOS VGA 437 | The bundled Perfect DOS VGA 437 font, another DOS text-mode font that also covers the CP437 box-drawing characters. |
+| System monospace | Whatever monospace font your operating system provides (Consolas, Menlo, DejaVu Sans Mono, ...). |
+| Custom... | Any monospace font already installed on your computer, named in the "Custom Font Family" box that appears — e.g. `Perfect DOS VGA 437`. |
+
+Characters missing from the selected font fall back to a system monospace font, so the terminal's character grid always stays aligned. Combined with the cursor positioning escape codes above, this is what makes full-screen text-mode user interfaces display correctly.
+
+The bundled IBM VGA font is from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR, used under a [CC BY-SA 4.0](http://creativecommons.org/licenses/by-sa/4.0/) license. Perfect DOS VGA 437 is by [Zeh Fernando](https://www.zehfernando.com/), used under the author's own free-redistribution terms.
 
 ### Clear App Data
 

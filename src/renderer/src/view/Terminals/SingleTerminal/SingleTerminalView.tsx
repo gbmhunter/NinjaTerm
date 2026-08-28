@@ -473,8 +473,12 @@ export default observer((props: Props) => {
           ref={terminalDiv}
           style={{
             height: '100%',
-            // This sets the font for displayed data in the terminal
-            fontFamily: 'Consolas, Menlo, monospace',
+            // This sets the font for displayed data in the terminal. The row
+            // divs pick it up via the --terminal-font-family custom property
+            // (the .fixedSizeList rule in the CSS module is more specific than
+            // this inline style, so it has to come through the property).
+            fontFamily: terminal.terminalFontFamily,
+            ['--terminal-font-family' as string]: terminal.terminalFontFamily,
 
             // This sets the terminal text color
             color: terminal.defaultRxColor,

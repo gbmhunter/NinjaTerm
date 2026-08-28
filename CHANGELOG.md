@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **CUP (Cursor Position) escape sequence ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** `ESC[r;cH` (and its `ESC[r;cf`/HVP alias) moves the cursor to an absolute row/column relative to the top-left of the screen, so full-screen text-mode UIs can repaint in place. Handled in `SingleTerminal._parseCSISequence` via the new `_cursorTo`.
+- **CUD (Cursor Down) escape sequence.** `ESC[nB` moves the cursor down `n` rows, stopping at the bottom of the screen instead of scrolling data into the scrollback buffer (the mirror of CUU's existing guard). Fills the gap left by CUU/CUF/CUB already being supported; handled via the new `SingleTerminal._cursorDownWithinScreen`.
+- **Character encoding setting for received bytes 0x80+ ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** New `Settings > RX Settings > Character Encoding` decodes high bytes as UTF-8 or CP437 (DOS) instead of always showing them as hex glyphs, which is what lets a device's box-drawing output actually render as frames. Handled by `SingleTerminal._decodeAndAddHighByte`; UTF-8 sequences split across reads are reassembled and invalid ones fall back to hex glyphs.
+- **Fake port "text-mode dashboard"** that draws a CP437 box-drawing framed dashboard once and then repaints just the value fields with CUP, for testing absolute cursor positioning and CP437 decoding.
+- **Terminal font selector ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** New `Settings > Display > Terminal Font` chooses NinjaTerm's own font (default), one of two bundled DOS text-mode fonts covering the CP437 box-drawing characters, the system monospace font, or any locally-installed font; stack built by `terminalFontFamily` in `DisplaySettings.ts`. Bundled fonts are IBM VGA 8x16 from [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/) by VileR (CC BY-SA 4.0) and [Perfect DOS VGA 437](https://www.dafont.com/perfect-dos-vga-437.font) by Zeh Fernando (free redistribution per the author's terms).
+- **Playwright coverage for text-mode graphics** (`e2e-tests/TextModeGraphics.spec.ts`). Drives the encoding radios and font dropdown through the real UI, and asserts what only a renderer can check: that the bundled `@font-face` families resolve, and that box-drawing characters measure the same cell width as ASCII so the character grid holds.
+
+### Changed
+
+- **Max. escape code length now defaults to 25 characters, up from 10.** The old limit abandoned sequences such as `ESC[100;120H` (three-digit CUP coordinates) mid-code and printed them as plain data. AppData migrated v21→v22, which only moves configs still on the old default.
+
+### Fixed
+
+- **Box-drawing and other non-ASCII characters no longer break the character grid.** The bundled NinjaTerm font covers only ASCII and the private-use control/hex glyph blocks, and the terminal declared it with no fallback, so anything else (e.g. `─│┌┐` used for text-mode frames) fell back to the browser's default proportional font. The terminal row font stack now always ends in a real monospace family.
+
 ## [5.15.0] - 2026-06-28
 
 ### Added

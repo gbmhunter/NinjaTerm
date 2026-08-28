@@ -1,4 +1,4 @@
-import { BackspaceBehavior, CarriageReturnCursorBehavior, DataType, Endianness, FloatStringConversionMethod, FormFeedBehavior, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter, TimestampFormat } from "src/model/Settings/RxSettings/RxSettings";
+import { BackspaceBehavior, CarriageReturnCursorBehavior, CharacterEncoding, DataType, Endianness, FloatStringConversionMethod, FormFeedBehavior, HexCase, NewLineCursorBehavior, NewLinePlacementOnHexValue, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter, TimestampFormat } from "src/model/Settings/RxSettings/RxSettings";
 
 /**
  * The most up-to-date representation of the RxSettings data stored in the browser's local storage.
@@ -11,8 +11,9 @@ export class RxSettingsData {
 
   // ASCII-SPECIFIC SETTINGS
   ansiEscapeCodeParsingEnabled = true;
-  maxEscapeCodeLengthChars = 10;
+  maxEscapeCodeLengthChars = 25;
   showUnknownEscapeCodes = false;
+  characterEncoding = CharacterEncoding.ASCII;
   localTxEcho = false;
   newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
   swallowNewLine = true;

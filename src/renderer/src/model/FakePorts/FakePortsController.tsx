@@ -3,7 +3,7 @@ import { makeAutoObservable } from 'mobx';
 import { App, MainPanes } from 'src/model/App';
 import { PortType } from '@/model/ConnController/ConnController';
 import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
-import { DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
+import { CharacterEncoding, DataType, NewLineCursorBehavior, NonVisibleCharDisplayBehaviors, NumberType, PaddingCharacter } from 'src/model/Settings/RxSettings/RxSettings';
 import { generateRandomString } from 'src/model/Util/Util';
 import { DetectionMode } from '../Graphing/Graphing';
 
@@ -582,13 +582,13 @@ export default class FakePortsController {
     this.fakePorts.push(
       new FakePort(
         'unsupported escape codes, ~0.7lps',
-        'Sends a rotating set of CSI escape sequences that NinjaTerm does not support (erase line, cursor moves, DSR, show/hide cursor, save/restore cursor, italic/underline/inverse, 256-colour and true-colour SGR). Enables ANSI parsing and the RX "Show Unknown Escape Codes" setting so each unsupported sequence is surfaced inline as a highlighted marker.',
+        'Sends a rotating set of CSI escape sequences that NinjaTerm does not support (erase line, DSR, show/hide cursor, save/restore cursor, italic/underline/inverse, 256-colour and true-colour SGR). Enables ANSI parsing and the RX "Show Unknown Escape Codes" setting so each unsupported sequence is surfaced inline as a highlighted marker.',
         () => {
           app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
           app.settings.rxSettings.setShowUnknownEscapeCodes(true);
-          // Some demo sequences are longer than the default 10-char limit (e.g.
-          // true-colour SGR), so raise it enough that they are parsed as a
-          // single sequence rather than being truncated mid-code.
+          // The longest demo sequence (true-colour SGR) is 15 chars, which the
+          // default limit covers, but pin it anyway so the demo still works if
+          // the user has lowered their own limit.
           app.settings.rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
           app.settings.rxSettings.maxEscapeCodeLengthChars.apply();
 
@@ -597,8 +597,6 @@ export default class FakePortsController {
           const strings = [
             'EL erase line (ESC[K): \x1b[K',
             'EL erase line n=2 (ESC[2K): \x1b[2K',
-            'CUP cursor home (ESC[H): \x1b[H',
-            'CUP cursor position (ESC[5;10H): \x1b[5;10H',
             'DSR device status report (ESC[6n): \x1b[6n',
             'show cursor (ESC[?25h): \x1b[?25h',
             'hide cursor (ESC[?25l): \x1b[?25l',
@@ -619,6 +617,83 @@ export default class FakePortsController {
               stringIdx = 0;
             }
           }, 1500);
+          return intervalId;
+        },
+        (intervalId: NodeJS.Timeout | null) => {
+          // Stop the interval
+          if (intervalId !== null) {
+            clearInterval(intervalId);
+          }
+        }
+      )
+    );
+
+    //=================================================================================
+    // text-mode dashboard (for testing CUP cursor positioning)
+    //=================================================================================
+    this.fakePorts.push(
+      new FakePort(
+        'text-mode dashboard, 2 updates/s',
+        'Draws a CP437 box-drawing framed dashboard once, then uses CUP (ESC[row;colH) to repaint just the value fields in place, twice a second. Enables ANSI parsing and CP437 decoding. Exercises absolute cursor positioning the way a full-screen DOS text-mode UI would. Pair with a DOS terminal font in Settings > Display for the authentic look.',
+        () => {
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(true);
+          // The frame is drawn with raw CP437 bytes, exactly as a DOS-style
+          // device would send them, so the terminal has to be decoding CP437 for
+          // them to come out as box-drawing characters rather than hex glyphs.
+          app.settings.rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
+
+          // Send raw bytes rather than TextEncoder-ing a string: every byte here
+          // is one character on the wire, which is the whole point of CP437.
+          const send = (bytes: number[]) => {
+            app.parseRxData(Uint8Array.from(bytes));
+          };
+          // ASCII text -> bytes, for the labels.
+          const ascii = (text: string) => Array.from(text, (char) => char.charCodeAt(0));
+          // CP437 box-drawing bytes.
+          const TOP_LEFT = 0xda;
+          const TOP_RIGHT = 0xbf;
+          const BOTTOM_LEFT = 0xc0;
+          const BOTTOM_RIGHT = 0xd9;
+          const HORIZONTAL = 0xc4;
+          const VERTICAL = 0xb3;
+          const TEE_LEFT = 0xc3;
+          const TEE_RIGHT = 0xb4;
+          const INNER_WIDTH = 28;
+          const horizontalRun = new Array(INNER_WIDTH).fill(HORIZONTAL);
+          // A row of the frame: an edge byte, padded content, an edge byte.
+          const framedRow = (left: number, content: string, right: number) => [
+            left,
+            ...ascii(content.padEnd(INNER_WIDTH)),
+            right,
+            ...ascii('\n'),
+          ];
+
+          // Clear the screen and draw the frame. Every update after this jumps
+          // straight to the field it wants with CUP, so the frame is only ever
+          // drawn once.
+          send([
+            ...ascii('\x1b[2J\x1b[1;1H'),
+            TOP_LEFT, ...horizontalRun, TOP_RIGHT, ...ascii('\n'),
+            ...framedRow(VERTICAL, ' NinjaTerm text-mode demo', VERTICAL),
+            TEE_LEFT, ...horizontalRun, TEE_RIGHT, ...ascii('\n'),
+            ...framedRow(VERTICAL, ' Ticks   :', VERTICAL),
+            ...framedRow(VERTICAL, ' Voltage :', VERTICAL),
+            ...framedRow(VERTICAL, ' State   :', VERTICAL),
+            BOTTOM_LEFT, ...horizontalRun, BOTTOM_RIGHT,
+          ]);
+
+          const states = ['IDLE', 'ARMED', 'RUNNING', 'FAULT'];
+          let tick = 0;
+          const intervalId = setInterval(() => {
+            tick += 1;
+            // Column 12 is just past the ":" of each label. Values are padded out
+            // to a fixed width so a shorter one fully overwrites a longer one.
+            const voltage = (3.3 + Math.sin(tick / 5) * 0.2).toFixed(3) + ' V';
+            const state = states[tick % states.length];
+            send(ascii('\x1b[4;12H' + tick.toString().padEnd(15)));
+            send(ascii('\x1b[5;12H' + voltage.padEnd(15)));
+            send(ascii('\x1b[6;12H' + state.padEnd(15)));
+          }, 500);
           return intervalId;
         },
         (intervalId: NodeJS.Timeout | null) => {

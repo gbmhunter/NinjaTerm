@@ -4,6 +4,7 @@ import { stringToUint8Array } from 'src/model/Util/Util';
 import { DataDirection, SingleTerminal, START_OF_CONTROL_GLYPHS, START_OF_HEX_GLYPHS } from './SingleTerminal';
 import RxSettings, {
   BackspaceBehavior,
+  CharacterEncoding,
   FormFeedBehavior,
   NewLineCursorBehavior,
   NonVisibleCharDisplayBehaviors,
@@ -1097,6 +1098,354 @@ describe('single terminal tests', () => {
       expect(chars.length).toBe(1);
       expect(chars[0].forCursor).toBe(true);
       expect(singleTerminal.cursorPosition).toEqual([0, 0]);
+    });
+  });
+
+  //================================================================================
+  // CUP (cursor position) tests
+  //================================================================================
+  describe('CUP cursor position', () => {
+    /**
+     * Returns the text of each terminal row, for compact assertions about where
+     * characters ended up after a cursor jump.
+     */
+    const rowsAsText = () =>
+      singleTerminal.terminalRows.map((row) => row.terminalChars.map((char) => char.char).join(''));
+
+    beforeEach(() => {
+      // Pin the terminal height so the screen origin (which CUP is relative to)
+      // is not at the mercy of the char size / view height maths.
+      displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+      displaySettings.terminalHeightChars.setDispValue('5');
+      displaySettings.terminalHeightChars.apply();
+    });
+
+    test('ESC[r;cH moves the cursor to an absolute position', () => {
+      singleTerminal.parseData(stringToUint8Array('\x1B[3;5Hx'), DataDirection.RX);
+
+      // Row 3, col 5 (1-based) is row index 2, col index 4. Rows and columns are
+      // created/padded as needed to get there (the rows jumped over are padded
+      // out the same way a newline pads them).
+      expect(rowsAsText()).toEqual([' ', ' ', '    x ']);
+      expect(singleTerminal.cursorPosition).toEqual([2, 5]);
+    });
+
+    test('ESC[H homes the cursor', () => {
+      singleTerminal.parseData(stringToUint8Array('row1\nrow2\x1B[HX'), DataDirection.RX);
+
+      // Overwrites the first char of the first row, leaving row 2 alone.
+      expect(rowsAsText()).toEqual(['Xow1 ', 'row2 ']);
+      expect(singleTerminal.cursorPosition).toEqual([0, 1]);
+    });
+
+    test('omitted CUP parameters default to 1', () => {
+      // ESC[4H is row 4, column 1. ESC[;3H is row 1, column 3.
+      singleTerminal.parseData(stringToUint8Array('\x1B[4Ha\x1B[;3Hb'), DataDirection.RX);
+
+      expect(rowsAsText()).toEqual(['  b ', '  ', '  ', 'a ']);
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('ESC[0;0H is treated the same as ESC[1;1H', () => {
+      singleTerminal.parseData(stringToUint8Array('abc\x1B[0;0HX'), DataDirection.RX);
+
+      expect(rowsAsText()).toEqual(['Xbc']);
+      expect(singleTerminal.cursorPosition).toEqual([0, 1]);
+    });
+
+    test('ESC[r;cf (HVP) behaves the same as CUP', () => {
+      singleTerminal.parseData(stringToUint8Array('\x1B[2;3fx'), DataDirection.RX);
+
+      expect(rowsAsText()).toEqual([' ', '  x ']);
+      expect(singleTerminal.cursorPosition).toEqual([1, 3]);
+    });
+
+    test('CUP row is clamped to the terminal height', () => {
+      // Terminal height is 5, so row 99 lands on row 5 (row index 4).
+      singleTerminal.parseData(stringToUint8Array('\x1B[99;1Hx'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([4, 1]);
+    });
+
+    test('CUP column is clamped to the terminal width', () => {
+      displaySettings.terminalWidthChars.setDispValue('10');
+      displaySettings.terminalWidthChars.apply();
+
+      singleTerminal.parseData(stringToUint8Array('\x1B[1;99H'), DataDirection.RX);
+
+      // Column 99 is clamped to column 10, the last column, i.e. col index 9.
+      expect(singleTerminal.cursorPosition).toEqual([0, 9]);
+    });
+
+    test('CUP is relative to the screen, not the scrollback buffer', () => {
+      // 7 rows of data with a terminal height of 5 means the screen starts at
+      // row index 2, so ESC[1;1H must land there rather than on row index 0.
+      singleTerminal.parseData(stringToUint8Array('r1\nr2\nr3\nr4\nr5\nr6\nr7'), DataDirection.RX);
+      expect(singleTerminal.terminalRows.length).toBe(7);
+
+      singleTerminal.parseData(stringToUint8Array('\x1B[1;1HX'), DataDirection.RX);
+
+      expect(rowsAsText()).toEqual(['r1', 'r2', 'X3 ', 'r4 ', 'r5 ', 'r6 ', 'r7 ']);
+      expect(singleTerminal.cursorPosition).toEqual([2, 1]);
+    });
+
+    test('a CUP with a malformed parameter is not applied', () => {
+      // '?' is not a number, so the whole sequence is ignored and the cursor
+      // stays where it was.
+      singleTerminal.parseData(stringToUint8Array('abc\x1B[?;2H'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('a CUP with too many parameters is not applied', () => {
+      singleTerminal.parseData(stringToUint8Array('abc\x1B[1;2;3H'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+
+    test('a three-digit CUP fits inside the default max escape code length', () => {
+      // ESC[100;120H is 12 chars. The default limit used to be 10, which
+      // abandoned the sequence mid-code and printed it as plain data.
+      displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+      displaySettings.terminalHeightChars.setDispValue('100');
+      displaySettings.terminalHeightChars.apply();
+
+      singleTerminal.parseData(stringToUint8Array('\x1B[100;120H'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([99, 119]);
+    });
+  });
+
+  //================================================================================
+  // CUD (cursor down) tests
+  //================================================================================
+  describe('CUD cursor down', () => {
+    beforeEach(() => {
+      displaySettings.setTerminalHeightMode(TerminalHeightMode.FIXED_HEIGHT);
+      displaySettings.terminalHeightChars.setDispValue('5');
+      displaySettings.terminalHeightChars.apply();
+    });
+
+    test('ESC[B moves the cursor down one row, keeping the column', () => {
+      singleTerminal.parseData(stringToUint8Array('abc\x1B[Bx'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([1, 4]);
+      // The new row is padded out to the cursor column, then 'x' lands there.
+      expect(singleTerminal.terminalRows[1].terminalChars.map((c) => c.char).join('')).toBe('   x ');
+    });
+
+    test('ESC[nB moves the cursor down n rows', () => {
+      singleTerminal.parseData(stringToUint8Array('\x1B[3B'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([3, 0]);
+    });
+
+    test('CUD stops at the bottom of the screen rather than scrolling', () => {
+      // Terminal height is 5, so with a fresh terminal the cursor can get to
+      // row index 4 at most, and no scrollback is created.
+      singleTerminal.parseData(stringToUint8Array('\x1B[99B'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([4, 0]);
+      expect(singleTerminal.terminalRows.length).toBe(5);
+    });
+
+    test('CUD on a full screen does not push data into the scrollback buffer', () => {
+      // 7 rows of data with a height of 5 means the screen is rows 2..6. The
+      // cursor is on the last row already, so CUD must be a no-op.
+      singleTerminal.parseData(stringToUint8Array('r1\nr2\nr3\nr4\nr5\nr6\nr7'), DataDirection.RX);
+      expect(singleTerminal.cursorPosition).toEqual([6, 2]);
+
+      singleTerminal.parseData(stringToUint8Array('\x1B[4B'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([6, 2]);
+      expect(singleTerminal.terminalRows.length).toBe(7);
+    });
+
+    test('CUU then CUD returns the cursor to where it started', () => {
+      singleTerminal.parseData(stringToUint8Array('r1\nr2\nr3'), DataDirection.RX);
+      const startPosition = [...singleTerminal.cursorPosition];
+
+      singleTerminal.parseData(stringToUint8Array('\x1B[2A\x1B[2B'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual(startPosition);
+    });
+
+    test('a CUD with a malformed parameter is not applied', () => {
+      singleTerminal.parseData(stringToUint8Array('abc\x1B[?B'), DataDirection.RX);
+
+      expect(singleTerminal.cursorPosition).toEqual([0, 3]);
+    });
+  });
+
+  //================================================================================
+  // Character encoding
+  //================================================================================
+  describe('character encoding', () => {
+    /** The text of row 0, which is where all of these tests write. */
+    const rowText = () => singleTerminal.terminalRows[0].terminalChars.map((c) => c.char).join('');
+
+    test('ASCII (default) shows bytes 0x80+ as hex glyphs', () => {
+      expect(dataProcessingSettings.characterEncoding).toBe(CharacterEncoding.ASCII);
+
+      // 0xDA is the CP437 top-left corner, but without an encoding selected it
+      // is just a non-visible byte.
+      singleTerminal.parseData(new Uint8Array([0xda]), DataDirection.RX);
+
+      expect(rowText().codePointAt(0)).toBe(START_OF_HEX_GLYPHS + 0xda);
+    });
+
+    describe('CP437', () => {
+      beforeEach(() => {
+        dataProcessingSettings.setCharacterEncoding(CharacterEncoding.CP437);
+      });
+
+      test('box-drawing bytes become box-drawing characters', () => {
+        // 0xDA 0xC4 0xBF is the top edge of a DOS frame: ┌─┐
+        singleTerminal.parseData(new Uint8Array([0xda, 0xc4, 0xbf]), DataDirection.RX);
+
+        expect(rowText()).toBe('┌─┐ ');
+      });
+
+      test('the full high range round-trips to the expected code points', () => {
+        // Spot-check the corners of the table and a few well-known entries.
+        const cases: [number, string][] = [
+          [0x80, 'Ç'], // Ç
+          [0xb0, '░'], // ░ light shade
+          [0xb3, '│'], // │
+          [0xc4, '─'], // ─
+          [0xd9, '┘'], // ┘
+          [0xdb, '█'], // █ full block
+          [0xe3, 'π'], // π
+          [0xfe, '■'], // ■
+        ];
+        singleTerminal.parseData(new Uint8Array(cases.map(([byte]) => byte)), DataDirection.RX);
+
+        expect(rowText()).toBe(cases.map(([, char]) => char).join('') + ' ');
+      });
+
+      test('ASCII bytes are unaffected', () => {
+        singleTerminal.parseData(stringToUint8Array('abc'), DataDirection.RX);
+
+        expect(rowText()).toBe('abc ');
+      });
+
+      test('escape codes still work alongside CP437 data', () => {
+        // Draw a corner, jump home with CUP, overwrite it.
+        singleTerminal.parseData(new Uint8Array([0xda, 0xda, 0x1b, 0x5b, 0x48, 0xc4]), DataDirection.RX);
+
+        expect(rowText()).toBe('─┌');
+      });
+
+      test('a full text-mode frame drawn with CP437 and CUP renders correctly', () => {
+        // The end-to-end case from issue #411: a DOS-style device draws a framed
+        // box with raw CP437 bytes, then uses CUP to repaint a field inside it.
+        const ascii = (text: string) => Array.from(text, (char) => char.charCodeAt(0));
+        singleTerminal.parseData(
+          Uint8Array.from([
+            ...ascii('\x1B[2J\x1B[1;1H'),
+            0xda, 0xc4, 0xc4, 0xc4, 0xbf, ...ascii('\n'), // ┌───┐
+            0xb3, ...ascii(' hi '), 0xb3, ...ascii('\n'), // │ hi │
+            0xc0, 0xc4, 0xc4, 0xc4, 0xd9, // └───┘
+            ...ascii('\x1B[2;3H'), 0xdb, // jump inside the frame, draw a block
+          ]),
+          DataDirection.RX
+        );
+
+        const drawnRows = singleTerminal.terminalRows
+          .map((row) => row.terminalChars.map((char) => char.char).join('').trimEnd())
+          .filter((row) => row !== '');
+        // The block landed on the 'h', leaving the 'i'.
+        expect(drawnRows).toEqual(['┌───┐', '│ █i │', '└───┘']);
+      });
+    });
+
+    describe('UTF-8', () => {
+      beforeEach(() => {
+        dataProcessingSettings.setCharacterEncoding(CharacterEncoding.UTF8);
+      });
+
+      test('a multi-byte character is decoded', () => {
+        // ┌ is E2 94 8C in UTF-8.
+        singleTerminal.parseData(new TextEncoder().encode('┌'), DataDirection.RX);
+
+        expect(rowText()).toBe('┌ ');
+      });
+
+      test('two-, three- and four-byte characters all decode', () => {
+        // é (2 bytes), ─ (3 bytes), 😀 (4 bytes, a surrogate pair in JS).
+        singleTerminal.parseData(new TextEncoder().encode('é─\u{1F600}'), DataDirection.RX);
+
+        expect(rowText()).toBe('é─\u{1F600} ');
+      });
+
+      test('a character split across two chunks is still decoded', () => {
+        // This is the case that matters for serial data, which arrives in
+        // arbitrary chunks.
+        const bytes = new TextEncoder().encode('┌');
+        singleTerminal.parseData(bytes.slice(0, 1), DataDirection.RX);
+        // Nothing is displayed yet — the sequence is incomplete. The row
+        // holds only the trailing space that carries the cursor.
+        expect(rowText()).toBe(' ');
+
+        singleTerminal.parseData(bytes.slice(1), DataDirection.RX);
+
+        expect(rowText()).toBe('┌ ');
+      });
+
+      test('a lone continuation byte falls back to a hex glyph', () => {
+        singleTerminal.parseData(new Uint8Array([0x8c]), DataDirection.RX);
+
+        expect(rowText().codePointAt(0)).toBe(START_OF_HEX_GLYPHS + 0x8c);
+      });
+
+      test('a truncated sequence is flushed as hex glyphs', () => {
+        // E2 94 starts a 3-byte character, then 'A' arrives instead of the third
+        // byte. The two held bytes are surfaced and the 'A' prints normally.
+        singleTerminal.parseData(new Uint8Array([0xe2, 0x94, 0x41]), DataDirection.RX);
+
+        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        expect(chars.slice(0, 3)).toEqual([START_OF_HEX_GLYPHS + 0xe2, START_OF_HEX_GLYPHS + 0x94, 0x41]);
+      });
+
+      test('an overlong encoding is rejected rather than decoded', () => {
+        // C0 80 is an overlong encoding of NUL. Accepting these is a known
+        // security problem, so the raw bytes are surfaced instead.
+        singleTerminal.parseData(new Uint8Array([0xc0, 0x80]), DataDirection.RX);
+
+        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        expect(chars.slice(0, 2)).toEqual([START_OF_HEX_GLYPHS + 0xc0, START_OF_HEX_GLYPHS + 0x80]);
+      });
+
+      test('a surrogate half is rejected rather than decoded', () => {
+        // ED A0 80 would decode to U+D800, which is not a valid character.
+        singleTerminal.parseData(new Uint8Array([0xed, 0xa0, 0x80]), DataDirection.RX);
+
+        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        expect(chars.slice(0, 3)).toEqual([
+          START_OF_HEX_GLYPHS + 0xed,
+          START_OF_HEX_GLYPHS + 0xa0,
+          START_OF_HEX_GLYPHS + 0x80,
+        ]);
+      });
+
+      test('switching encoding flushes a held partial sequence', () => {
+        // Otherwise the bytes would sit in the buffer forever, since the new
+        // encoding will never complete the sequence.
+        singleTerminal.parseData(new Uint8Array([0xe2, 0x94]), DataDirection.RX);
+        expect(rowText()).toBe(' ');
+
+        dataProcessingSettings.setCharacterEncoding(CharacterEncoding.ASCII);
+
+        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        expect(chars.slice(0, 2)).toEqual([START_OF_HEX_GLYPHS + 0xe2, START_OF_HEX_GLYPHS + 0x94]);
+      });
+
+      test('a UTF-8 character does not break escape code parsing', () => {
+        singleTerminal.parseData(new TextEncoder().encode('─\x1B[H│'), DataDirection.RX);
+
+        // CUP homed the cursor, so the second box char overwrote the first.
+        expect(rowText()).toBe('│ ');
+      });
     });
   });
 });

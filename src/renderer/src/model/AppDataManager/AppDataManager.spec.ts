@@ -6,6 +6,8 @@ import { AppDataManager } from './AppDataManager';
 import { AppData, LATEST_VERSION } from './DataClasses/AppData';
 import { migrateAppData } from './appDataMigrations';
 import { App } from '../App';
+import { TerminalFont } from '../Settings/DisplaySettings/DisplaySettings';
+import { CharacterEncoding } from '../Settings/RxSettings/RxSettings';
 
 beforeEach(() => {
   // Clear local storage, because otherwise jsdom persists storage
@@ -300,6 +302,74 @@ describe('app data manager tests', () => {
 
     const currentRules = appData.currentAppConfig?.settings?.rulesSettings?.rules;
     expect(currentRules?.every((r: any) => r.enabled === false)).toBe(true);
+  });
+
+  test('migration v21->v22 raises the max escape code length default but keeps a custom value', () => {
+    // The default goes 10 -> 25 because the old limit was too short for some
+    // sequences NinjaTerm now supports (e.g. ESC[100;120H). A config still on
+    // the old default is moved up; a value the user picked is left alone.
+    const v21Input = {
+      version: 21,
+      profiles: [
+        {
+          name: 'on the old default',
+          rootConfig: { settings: { rxSettings: { maxEscapeCodeLengthChars: 10 } } },
+        },
+        {
+          name: 'customised',
+          rootConfig: { settings: { rxSettings: { maxEscapeCodeLengthChars: 40 } } },
+        },
+      ],
+      currentAppConfig: { settings: { rxSettings: { maxEscapeCodeLengthChars: 10 } } },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v21Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    expect(appData.profiles?.[0].rootConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
+    // Custom value survives.
+    expect(appData.profiles?.[1].rootConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(40);
+    expect(appData.currentAppConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
+  });
+
+  test('migration v21->v22 adds the terminal font settings', () => {
+    // Existing configs adopt the new defaults, so the terminal keeps looking
+    // exactly as it did before the font selector existed.
+    const v21Input = {
+      version: 21,
+      profiles: [{ name: 'p1', rootConfig: { settings: {} } }],
+      currentAppConfig: { settings: {} },
+    };
+
+    const { appData, unknownVersion } = migrateAppData(v21Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    for (const rootConfig of [appData.profiles?.[0].rootConfig, appData.currentAppConfig]) {
+      expect(rootConfig?.settings?.displaySettings?.terminalFont).toBe(TerminalFont.NINJATERM);
+      expect(rootConfig?.settings?.displaySettings?.terminalFontCustomName).toBe('');
+    }
+  });
+
+  test('migration v21->v22 adds the character encoding setting', () => {
+    // ASCII is the behavior existing configs already had — bytes 0x80+ shown as
+    // glyphs rather than decoded as text — so nothing changes for them.
+    const v21Input = {
+      version: 21,
+      profiles: [{ name: 'p1', rootConfig: { settings: {} } }],
+      currentAppConfig: { settings: {} },
+    };
+
+    const { appData, unknownVersion } = migrateAppData(v21Input);
+
+    expect(unknownVersion).toBe(false);
+    for (const rootConfig of [appData.profiles?.[0].rootConfig, appData.currentAppConfig]) {
+      expect(rootConfig?.settings?.rxSettings?.characterEncoding).toBe(CharacterEncoding.ASCII);
+    }
   });
 
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {

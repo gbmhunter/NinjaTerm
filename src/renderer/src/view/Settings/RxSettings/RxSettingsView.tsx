@@ -7,6 +7,7 @@ import RxSettings, {
   DataType,
   Endianness,
   FloatStringConversionMethod,
+  CharacterEncoding,
   FormFeedBehavior,
   HexCase,
   NewLineCursorBehavior,
@@ -426,6 +427,54 @@ function RxSettingsView(props: Props) {
                   {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
                 >
                   <FormControlLabel value={FormFeedBehavior.CLEAR_SCREEN_AND_SCROLLBACK} control={<Radio />} label="Clear the screen and scrollback" />
+                </Tooltip>
+              </RadioGroup>
+            </FormControl>
+          </div>
+        </BorderedSection>
+        {/* =============================================================================== */}
+        {/* CHARACTER ENCODING */}
+        {/* =============================================================================== */}
+        <BorderedSection title="Character Encoding">
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              maxWidth: '600px',
+              gap: '20px',
+            }}
+          >
+            <FormControl sx={{ width: 'fit-content' }}>
+              <FormLabel>Interpret received data as:</FormLabel>
+              <RadioGroup
+                value={rxSettings.characterEncoding}
+                onChange={(e) => {
+                  rxSettings.setCharacterEncoding(parseInt(e.target.value));
+                }}
+              >
+                {/* ASCII ONLY */}
+                <Tooltip
+                  title="Bytes 0x80 and above are not treated as text. They are displayed as hex glyphs (or swallowed) per the non-visible character setting below. Best for general debugging, where seeing the raw byte value matters more than reading it as text."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={CharacterEncoding.ASCII} control={<Radio />} label="ASCII only (show 0x80+ as glyphs)" />
+                </Tooltip>
+                {/* UTF-8 */}
+                <Tooltip
+                  title="Decode bytes 0x80 and above as UTF-8. Multi-byte characters split across separate reads from the port are handled. Bytes that are not valid UTF-8 fall back to hex glyphs so they stay visible."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={CharacterEncoding.UTF8} control={<Radio />} label="UTF-8" />
+                </Tooltip>
+                {/* CP437 */}
+                <Tooltip
+                  title="Decode bytes 0x80 and above as code page 437, the original IBM PC / MS-DOS character set. This is what DOS-style text-mode applications use to draw frames and borders (e.g. byte 0xDA is the top-left corner and 0xC4 the horizontal line). Pair with a DOS terminal font in Settings > Display."
+                  placement="right"
+                  {...rxSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+                >
+                  <FormControlLabel value={CharacterEncoding.CP437} control={<Radio />} label="CP437 (DOS)" />
                 </Tooltip>
               </RadioGroup>
             </FormControl>

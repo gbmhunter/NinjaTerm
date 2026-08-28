@@ -41,6 +41,25 @@
   src: url(../../fonts/NinjaTerm-Regular.woff2);
 }
 
+/* The IBM VGA 8x16 DOS font, offered as a terminal font option because it covers
+the CP437 box-drawing characters that text-mode UIs draw frames with. From The
+Ultimate Oldschool PC Font Pack by VileR, CC BY-SA 4.0 — see
+../../fonts/README.md. */
+@font-face {
+  font-family: WebPlusIBMVGA;
+  src: url(../../fonts/WebPlus_IBM_VGA_8x16.woff);
+}
+
+/* Perfect DOS VGA 437, another terminal font option covering the CP437
+box-drawing characters. This is the "Win" variant of the font, which is the one
+that maps the box-drawing glyphs at their real Unicode codepoints (U+2500+)
+rather than at the legacy DOS byte positions. By Zeh Fernando, free to
+redistribute — see ../../fonts/README.md. */
+@font-face {
+  font-family: PerfectDOSVGA437;
+  src: url(../../fonts/PerfectDOSVGA437.woff);
+}
+
 
 .fixedSizeList div div {
   /* This is to prevent text with spaces in it from wrapping when the terminal pane width shrinks
@@ -50,8 +69,17 @@
   "white-space: nowrap" worked, but made spaces collapse when flex was applied, as flex turns all children into
   block elements. "whitespace: pre" prevents that. */
   white-space: pre;
-  font-family: NinjaTerm;
-  /* font-family: Consolas, monospace; */
+  /* Set from the "Terminal font" display setting — see `terminalFontFamily` in
+  DisplaySettings.ts, which builds the whole stack. The literal fallback here
+  matches TERMINAL_FONT_FALLBACK_STACK and only applies if the custom property
+  is somehow missing.
+
+  The stack always keeps NinjaTerm (the only source of the private-use
+  control-glyph and hex-glyph characters) and ends in a generic monospace
+  family, so that characters no font in front of them covers — box-drawing
+  characters in particular — still render at a fixed width instead of falling
+  back to the browser's default proportional font and breaking the grid. */
+  font-family: var(--terminal-font-family, NinjaTerm, Consolas, Menlo, 'DejaVu Sans Mono', monospace);
 
   /* This is to center the chars in the middle of their row, prevents clipping of the cursor when on the first row */
   display: flex;

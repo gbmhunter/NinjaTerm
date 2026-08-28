@@ -26,6 +26,52 @@ export enum TerminalHeightMode {
   FIXED_HEIGHT = 'Fixed', // Terminal height is set to a fixed number of rows specified in the terminal height field.
 }
 
+/** The font used to render data in the terminal. */
+export enum TerminalFont {
+  NINJATERM = 'NinjaTerm', // The bundled NinjaTerm font. ASCII only.
+  IBM_VGA = 'IBM VGA', // The bundled IBM VGA 8x16 DOS font. Covers CP437, including box-drawing characters.
+  PERFECT_DOS_VGA = 'Perfect DOS VGA 437', // The bundled Perfect DOS VGA 437 font. Also covers the CP437 box-drawing characters.
+  SYSTEM_MONOSPACE = 'System monospace', // Whatever the OS provides (Consolas/Menlo/DejaVu Sans Mono/...).
+  CUSTOM = 'Custom', // A font family named by the user in terminalFontCustomName.
+}
+
+// Maps the enums to human-readable names for display
+export const terminalFontEnumToDisplayName: {
+  [key: string]: string;
+} = {
+  [TerminalFont.NINJATERM]: 'NinjaTerm (default)',
+  [TerminalFont.IBM_VGA]: 'IBM VGA (DOS/CP437)',
+  [TerminalFont.PERFECT_DOS_VGA]: 'Perfect DOS VGA 437',
+  [TerminalFont.SYSTEM_MONOSPACE]: 'System monospace',
+  [TerminalFont.CUSTOM]: 'Custom...',
+};
+
+/**
+ * The CSS font-family names for the bundled fonts, as declared by the
+ * `@font-face` rules in `SingleTerminalView.module.css`.
+ */
+const NINJATERM_FONT_FAMILY = 'NinjaTerm';
+const IBM_VGA_FONT_FAMILY = 'WebPlusIBMVGA';
+const PERFECT_DOS_VGA_FONT_FAMILY = 'PerfectDOSVGA437';
+
+/**
+ * A good monospace font per platform (Windows / macOS / Linux), tried before
+ * falling back to whatever generic `monospace` resolves to.
+ */
+const SYSTEM_MONOSPACE_FAMILIES = 'Consolas, Menlo, "DejaVu Sans Mono"';
+
+/**
+ * Always appended to the terminal's font-family stack.
+ *
+ * The NinjaTerm font is the only place the private-use control-glyph (U+E000+)
+ * and hex-glyph (U+E100+) characters exist, so it has to stay reachable
+ * whichever font the user picks. The generic monospace families after it catch
+ * anything neither the chosen font nor NinjaTerm covers (e.g. box-drawing
+ * characters when the NinjaTerm font is selected), so that such characters are
+ * still rendered at a fixed width and the terminal's character grid holds.
+ */
+export const TERMINAL_FONT_FALLBACK_STACK = `${NINJATERM_FONT_FAMILY}, ${SYSTEM_MONOSPACE_FAMILIES}, monospace`;
+
 export default class DisplaySettings {
   profileManager: AppDataManager;
 
@@ -40,6 +86,16 @@ export default class DisplaySettings {
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
 
   terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+
+  terminalFont = TerminalFont.NINJATERM;
+
+  /**
+   * The font family to use when `terminalFont` is CUSTOM. Free text, since it
+   * names a font installed on the user's machine (e.g. "Perfect DOS VGA 437").
+   * Not validated — if the font isn't installed the stack just falls through to
+   * the next family.
+   */
+  terminalFontCustomName = new ApplyableTextField('', z.string());
 
   /**
    * Must be a positive integer in the range [1, 100].
@@ -80,6 +136,7 @@ export default class DisplaySettings {
     this.defaultRxTextColor.setOnApplyChanged(() => this._saveConfig());
     this.tabStopWidth.setOnApplyChanged(() => this._saveConfig());
     this.tooltipDelayMs.setOnApplyChanged(() => this._saveConfig());
+    this.terminalFontCustomName.setOnApplyChanged(() => this._saveConfig());
 
     this._loadConfig();
     this.profileManager.registerOnProfileLoad(() => {
@@ -97,6 +154,43 @@ export default class DisplaySettings {
     this.terminalHeightMode = value;
     this._saveConfig();
   };
+
+  setTerminalFont = (value: TerminalFont) => {
+    this.terminalFont = value;
+    this._saveConfig();
+  };
+
+  /**
+   * The complete CSS `font-family` value for terminal rows: the user's chosen
+   * font, followed by the fallback stack that keeps the private-use glyphs and
+   * the character grid working. See `TERMINAL_FONT_FALLBACK_STACK`.
+   */
+  get terminalFontFamily(): string {
+    let chosenFamily: string | null = null;
+    if (this.terminalFont === TerminalFont.NINJATERM) {
+      // Already the first entry of the fallback stack.
+      chosenFamily = null;
+    } else if (this.terminalFont === TerminalFont.IBM_VGA) {
+      chosenFamily = IBM_VGA_FONT_FAMILY;
+    } else if (this.terminalFont === TerminalFont.PERFECT_DOS_VGA) {
+      chosenFamily = PERFECT_DOS_VGA_FONT_FAMILY;
+    } else if (this.terminalFont === TerminalFont.SYSTEM_MONOSPACE) {
+      // The system families have to go in front of NinjaTerm to win for the ASCII
+      // range too. They are already in the fallback stack, so build the whole
+      // stack here rather than appending and listing them twice.
+      return `${SYSTEM_MONOSPACE_FAMILIES}, ${NINJATERM_FONT_FAMILY}, monospace`;
+    } else if (this.terminalFont === TerminalFont.CUSTOM) {
+      const customName = this.terminalFontCustomName.appliedValue.trim();
+      // An empty custom name would produce a leading comma and invalidate the
+      // whole declaration, so treat it as "no choice" and use the default.
+      chosenFamily = customName === '' ? null : `"${customName.replace(/"/g, '')}"`;
+    }
+
+    if (chosenFamily === null) {
+      return TERMINAL_FONT_FALLBACK_STACK;
+    }
+    return `${chosenFamily}, ${TERMINAL_FONT_FALLBACK_STACK}`;
+  }
 
   setRxColorEqualToTx = () => {
     this.defaultRxTextColor.setDispValue(this.defaultTxTextColor.appliedValue);
@@ -146,6 +240,8 @@ export default class DisplaySettings {
     config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
     config.terminalWidthChars = this.terminalWidthChars.appliedValue;
     config.terminalHeightMode = this.terminalHeightMode;
+    config.terminalFont = this.terminalFont;
+    config.terminalFontCustomName = this.terminalFontCustomName.appliedValue;
     config.terminalHeightChars = this.terminalHeightChars.appliedValue;
     config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
     config.dataViewConfiguration = this.dataViewConfiguration;
@@ -173,6 +269,9 @@ export default class DisplaySettings {
     this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
     this.terminalWidthChars.apply({notify: false});
     this.terminalHeightMode = configToLoad.terminalHeightMode;
+    this.terminalFont = configToLoad.terminalFont;
+    this.terminalFontCustomName.setDispValue(configToLoad.terminalFontCustomName);
+    this.terminalFontCustomName.apply({notify: false});
     this.terminalHeightChars.setDispValue(configToLoad.terminalHeightChars.toString());
     this.terminalHeightChars.apply({notify: false});
     this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
