@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.16.0] - 2026-08-28
+
 ### Added
 
 - **CUP (Cursor Position) escape sequence ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** `ESC[r;cH` (and its `ESC[r;cf`/HVP alias) moves the cursor to an absolute row/column relative to the top-left of the screen, so full-screen text-mode UIs can repaint in place. Handled in `SingleTerminal._parseCSISequence` via the new `_cursorTo`.
@@ -1125,6 +1127,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.15.0...v5.16.0
 [5.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.14.0...v5.15.0
 [5.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.13.0...v5.14.0
 [5.13.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.12.0...v5.13.0
