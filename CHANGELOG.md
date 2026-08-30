@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.17.0] - 2026-08-30
+
 ### Added
 
 - **Presets ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** `Settings > Presets` (now first in the settings list) is a single list of built-in presets — "DOS text-mode (CP437)", "Hex dump", "Zephyr / RTOS shell", "Plain-text log capture" — alongside the ones you save yourself. Applying one shows a before/after diff first and can be undone.
@@ -1144,6 +1146,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.16.0...v5.17.0
 [5.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.15.0...v5.16.0
 [5.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.14.0...v5.15.0
 [5.14.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.13.0...v5.14.0
