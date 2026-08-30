@@ -4,15 +4,11 @@ import { PortInfo } from '@serialport/bindings-interface';
 
 import { ConnState } from '../Settings/PortSettings/PortSettings';
 import { App } from '../App';
-import { AppData } from './DataClasses/AppData';
-import { Profile } from './DataClasses/Profile';
+import { AppData, LATEST_VERSION } from './DataClasses/AppData';
+import { StoredPreset } from './DataClasses/StoredPreset';
 import { migrateAppData } from './appDataMigrations';
 import { log } from '@/model/Util/Log';
-
-export class LastUsedSerialPort {
-  path: string = '';
-  portState: ConnState = ConnState.CLOSED;
-}
+import { ConfigBranch, ALL_PRESET_CATEGORIES, PresetCategory, capturePatch } from '@/model/Presets/PresetScope';
 
 /**
  * Alias to the up-to-date version of the app data class.
@@ -26,13 +22,13 @@ export class AppDataManager {
 
   appData: AppData;
 
-  _profileChangeCallbacks: (() => void)[] = [];
+  _configReloadCallbacks: { branches: ConfigBranch[]; callback: () => void }[] = [];
 
   /**
    * Represents the name of the last profile that was applied to the app. Used for displaying
    * in various places such as the toolbar.
    */
-  lastAppliedProfileName: string = 'No profile';
+  lastAppliedPresetName: string = 'No preset';
 
   constructor(app: App) {
     this.app = app;
@@ -83,16 +79,48 @@ export class AppDataManager {
         return;
       }
       // Compare the JSON strings of the profiles to work out if they are different
-      if (JSON.stringify(appDataInStorage.profiles) !== JSON.stringify(this.appData.profiles)) {
-        log.info('Profiles changed. Reloading profiles...');
-        // Reload just the profiles, we don't want to overwrite the current app config
-        this.appData.profiles = appDataInStorage.profiles;
+      // This path bypasses migration, so ignore anything not already at the
+      // current version rather than letting an older window blank the list.
+      if (!Array.isArray(appDataInStorage.presets) || appDataInStorage.version !== LATEST_VERSION) {
+        return;
+      }
+      if (JSON.stringify(appDataInStorage.presets) !== JSON.stringify(this.appData.presets)) {
+        log.info('Presets changed. Reloading presets...');
+        // Reload just the presets, we don't want to overwrite the current app config
+        this.appData.presets = appDataInStorage.presets;
       }
     }
   }
 
-  registerOnProfileLoad = (callback: () => void) => {
-    this._profileChangeCallbacks.push(callback);
+  /**
+   * Ask to be told when the config is reloaded.
+   *
+   * @param branches The config branches this callback cares about. It is only
+   *    invoked when one of them is among those that changed, so a preset that
+   *    only touches RX settings doesn't make the rules pane rebuild its list and
+   *    close its edit modal, or make the logger do an IPC round-trip.
+   * @param callback Normally a settings class's `_loadConfig`.
+   */
+  registerOnConfigReload = (branches: ConfigBranch[], callback: () => void) => {
+    this._configReloadCallbacks.push({ branches, callback });
+  };
+
+  /**
+   * Tell every registered part of the app to re-read `currentAppConfig`.
+   *
+   * Called after the config tree is replaced wholesale (loading a profile) or
+   * patched in place (applying a preset). Each registered callback is a
+   * settings class's `_loadConfig()`, which re-reads its own slice — including
+   * doing the setDispValue()/apply() two-step for applyable fields.
+   */
+  notifyConfigReloaded = (changedBranches?: ConfigBranch[]) => {
+    for (const { branches, callback } of this._configReloadCallbacks) {
+      // Undefined means "everything changed", which is what a wholesale config
+      // replacement does.
+      if (changedBranches === undefined || branches.some((b) => changedBranches.includes(b))) {
+        callback();
+      }
+    }
   };
 
   _loadAppDataFromStorage = () => {
@@ -169,136 +197,79 @@ export class AppDataManager {
   };
 
   /**
-   * Create a new profile (with default config) and add it to the list of profiles.
-   */
-  newProfile = () => {
-    // Calculate name for new profile, in the form "New profile X" where X is the next number
-    let nextProfileNum = 1;
-    const newProfileName = 'New profile';
-    let newProfileNameToCheck = newProfileName + ' ' + nextProfileNum;
-    while (this.appData.profiles.find((profile) => profile.name === newProfileNameToCheck) !== undefined) {
-      nextProfileNum++;
-      newProfileNameToCheck = newProfileName + ' ' + nextProfileNum;
-    }
-    // At this point newProfileNameToCheck is the name we want
-    const newProfile = new Profile(newProfileNameToCheck);
-    this.appData.profiles.push(newProfile);
-    this.saveAppData();
-
-    // Automatically save the current app state to the newly created profile
-    // and silence the snackbar message
-    this.saveCurrentAppConfigToProfile(this.appData.profiles.length - 1, true);
-  };
-
-  /**
-   * Delete the profile at the provided index and save the profiles to local storage.
-   * @param profileIdx The index of the profile to delete.
-   */
-  deleteProfile = (profileIdx: number) => {
-    this.appData.profiles.splice(profileIdx, 1);
-    this.saveAppData();
-  };
-
-  /**
-   * Apply the profile at the provided index to the current app config (i.e. update the app
-   * to reflect the profile).
+   * Create a preset capturing the current app state, and add it to the list.
    *
-   * Will attempt to connect to the serial port specified in the profile if it is available.
-   *
-   * @param profileIdx The index of the profile to apply to the app.
+   * @param name What to call it.
+   * @param scope Which categories it covers. Defaults to everything, which is
+   *    what a profile always was.
    */
-  applyProfileToApp = async (profileIdx: number) => {
-    const profile = this.appData.profiles[profileIdx];
-
-    // Check the last connected serial port of the profile and compare with
-    // currently connected one
-    const profileLastUsedPortPath = profile.rootConfig.lastUsedSerialPort.path;
-    const currentPortPath = this.appData.currentAppConfig.lastUsedSerialPort.path;
-
-    let weNeedToConnect = false;
-    let matchedAvailablePorts: PortInfo[] = [];
-    let snackbarMessage = `Profile "${profile.name}" loaded.`;
-    let snackbarVariant: VariantType = 'success';
-    if (profileLastUsedPortPath == '{}') {
-      // No connection info to act on — leave default `false`.
-    } else if (profileLastUsedPortPath === currentPortPath) {
-      // Same serial port, no need to disconnect and connect.
-      // There is a chance we are not connected to the right one due to
-      // ambiguity, but if already connected it is a better user experience to
-      // not disconnect on the high chance it is the correct port.
-      snackbarMessage += '\nAlready connected port matches one specified in profile. Leaving port connected.';
-    } else {
-      // They are both different and the profile one is non-empty. Check to see if the profile ports is available
-      log.info('Port infos are both different and non-empty. Checking if ports are available...');
-      const availablePortsResult = await window.electronAPI.serial.listPorts();
-      if (!availablePortsResult.success) {
-        throw new Error('Failed to list available ports.');
-      }
-      const availablePorts = availablePortsResult.ports!;
-      matchedAvailablePorts = availablePorts.filter((port) => port.path === profileLastUsedPortPath);
-
-      if (matchedAvailablePorts.length === 0) {
-        // The profile port is not available
-        snackbarMessage += '\nNo available port matches the profile port info. No connecting to any.';
-        snackbarVariant = 'warning';
-      } else if (matchedAvailablePorts.length === 1) {
-        // The profile port is available
-        weNeedToConnect = true;
-      } else {
-        // Multiple ports match, ambiguous — don't connect to any.
-        snackbarMessage += '\nMultiple available ports info match the profile port info (ambiguous). Not connecting to any.';
-        snackbarVariant = 'warning';
-      }
-    }
-
-    // Only disconnect if we have found a valid port to connect to
-    if (weNeedToConnect) {
-      if (this.app.connController.connState === ConnState.OPENED) {
-        await this.app.connController.closeConnection({ silenceSnackbar: true });
-      } else if (this.app.connController.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
-        this.app.connController.stopWaitingToReopenPort();
-      }
-    }
-    // Update the current app config from the provided profile,
-    // and then save this new app config
-    this.appData.currentAppConfig = JSON.parse(JSON.stringify(profile.rootConfig));
+  newPreset = (name: string, scope: PresetCategory[] = ALL_PRESET_CATEGORIES) => {
+    const preset = new StoredPreset(name, scope, capturePatch(this.appData.currentAppConfig, scope));
+    this.appData.presets.push(preset);
     this.saveAppData();
-
-    // Need to tell the rest of the app to update
-    this._profileChangeCallbacks.forEach((callback) => {
-      callback();
-    });
-
-    this.lastAppliedProfileName = profile.name;
-
-    // Now connect to the port if we need to
-    if (weNeedToConnect) {
-      this.app.connController.setSelectedPort(matchedAvailablePorts[0]);
-      await this.app.connController.openConnection({ silenceSnackbar: true });
-      snackbarMessage += '\nConnected to port with info: "' + profileLastUsedPortPath + '".';
-    }
-
-    // Post message to snackbar
-    this.app.snackbar.sendToSnackbar(snackbarMessage, snackbarVariant);
+    return this.appData.presets.length - 1;
   };
 
   /**
-   * Save the current app config to the provided profile and the save the profiles to local storage.
-   * @param profileIdx The index of the profile to save the current app config to.
+   * A name not already taken by a saved preset, in the form "New preset N".
    */
-  saveCurrentAppConfigToProfile = (profileIdx: number, noSnackbar = false) => {
-    log.info('Saving current app config to profile...');
-    const profile = this.appData.profiles[profileIdx];
-    profile.rootConfig = JSON.parse(JSON.stringify(this.appData.currentAppConfig));
+  nextUnusedPresetName = () => {
+    let nextNum = 1;
+    let candidate = 'New preset 1';
+    while (this.appData.presets.find((preset) => preset.name === candidate) !== undefined) {
+      nextNum += 1;
+      candidate = `New preset ${nextNum}`;
+    }
+    return candidate;
+  };
+
+  /**
+   * Delete the preset at the provided index.
+   * @param presetIdx The index of the preset to delete.
+   */
+  deletePreset = (presetIdx: number) => {
+    this.appData.presets.splice(presetIdx, 1);
+    this.saveAppData();
+  };
+
+  /**
+   * Re-capture the current app state into an existing preset, keeping its scope.
+   *
+   * @param presetIdx The index of the preset to overwrite.
+   * @param scope Optionally change what it covers at the same time.
+   */
+  savePreset = (presetIdx: number, scope?: PresetCategory[], noSnackbar = false) => {
+    const preset = this.appData.presets[presetIdx];
+    if (scope !== undefined) {
+      preset.scope = [...scope];
+    }
+    preset.config = capturePatch(this.appData.currentAppConfig, preset.scope);
     this.saveAppData();
 
-    // Although we are not loading a profile, saving the app state to a profile
-    // is essentially the same thing, so update the name (this is used in the app title)
-    this.lastAppliedProfileName = profile.name;
+    // Saving the current state into a preset leaves the app matching that
+    // preset, same as applying it, so the window title follows.
+    this.lastAppliedPresetName = preset.name;
 
-    // Post message to snackbar
     if (!noSnackbar) {
-      this.app.snackbar.sendToSnackbar('Profile "' + profile.name + '" saved.', 'success');
+      this.app.snackbar.sendToSnackbar(`Preset "${preset.name}" saved.`, 'success');
     }
+  };
+
+  /**
+   * Apply the stored preset at the provided index.
+   *
+   * @param presetIdx The index of the preset to apply.
+   */
+  applyStoredPreset = async (presetIdx: number) => {
+    const stored = this.appData.presets[presetIdx];
+    await this.app.presetController.applyPreset({
+      id: `user-${presetIdx}`,
+      name: stored.name,
+      description: '',
+      details: '',
+      source: 'user',
+      scope: stored.scope,
+      patch: JSON.parse(JSON.stringify(stored.config)),
+    });
   };
 }

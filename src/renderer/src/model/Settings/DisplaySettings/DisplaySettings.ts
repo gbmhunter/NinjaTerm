@@ -80,8 +80,14 @@ export default class DisplaySettings {
 
   /**
    * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
+   *
+   * Zero is allowed, and is what the bundled DOS fonts need. They are bitmap
+   * fonts whose glyphs fill their cell exactly (ascent - descent == 1 em), so
+   * any padding at all leaves a gap between rows and the vertical strokes of
+   * box-drawing characters no longer join up. NinjaTerm's own font has built-in
+   * leading (1.17 em) and wants a few pixels here.
    */
-  verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(1));
+  verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(0));
 
   terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
 
@@ -139,7 +145,7 @@ export default class DisplaySettings {
     this.terminalFontCustomName.setOnApplyChanged(() => this._saveConfig());
 
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.displaySettings'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this);

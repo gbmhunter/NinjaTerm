@@ -286,9 +286,8 @@ export class ConnController {
         }, 1000);
 
         // Remember this port so it can be reopened if the app is restarted
-        const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-        lastUsedSerialPort.path = selectedPort.path;
-        lastUsedSerialPort.portState = ConnState.OPENED;
+        this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath =
+          selectedPort.path;
         this.app.profileManager.saveAppData();
 
       } catch (error) {
@@ -550,8 +549,6 @@ export class ConnController {
         }
 
         this.currentPortPath = null;
-        const lastUsedSerialPort = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort;
-        lastUsedSerialPort.portState = ConnState.CLOSED;
 
         this.disposeConnListeners();
 
@@ -822,7 +819,8 @@ export class ConnController {
           }
         } else {
           // Serial port reconnection logic (existing)
-          const lastUsedPortPath = this.app.profileManager.appData.currentAppConfig.lastUsedSerialPort.path;
+          const lastUsedPortPath =
+            this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath;
           if (!lastUsedPortPath) {
             console.log('No last used port path found, stopping polling');
             this.stopPollingForReconnection();

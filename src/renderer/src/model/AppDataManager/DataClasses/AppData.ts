@@ -1,16 +1,20 @@
 import { makeAutoObservable } from "mobx";
 
-import { Profile } from "./Profile";
+import { StoredPreset } from "./StoredPreset";
 import { ProfileConfig } from "./ProfileConfig";
 
-export const LATEST_VERSION = 22;
+export const LATEST_VERSION = 23;
 
 export class AppData {
   // Version of the AppData class.
   // Increment this whenever the AppData class structure changes.
   version = LATEST_VERSION;
 
-  profiles: Profile[] = [];
+  /**
+   * The presets the user has saved. Built-in presets are defined in code, not
+   * stored here. Profiles from before v23 became full-scope entries in this list.
+   */
+  presets: StoredPreset[] = [];
 
   /**
    * Represents the current application configuration. This is saved regularly so that when the app reloads,
@@ -36,8 +40,8 @@ export class AppData {
   mcpPort = 3579;
 
   constructor() {
-    this.profiles = [];
-    this.profiles.push(new Profile('Default profile'));
+    this.presets = [];
+    this.presets.push(new StoredPreset('Default profile'));
     makeAutoObservable(this);
   }
 }

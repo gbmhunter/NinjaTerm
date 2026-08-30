@@ -26,6 +26,20 @@ export class PortSettingsData {
 
   // Socket connection settings
   connectionType: ConnectionType = ConnectionType.SERIAL_PORT;
+
+  /**
+   * The serial port last connected to, so it can be reopened on restart.
+   *
+   * Lives here with the rest of the connection settings. It used to be its own
+   * top-level branch of the profile config, left over from when serial was the
+   * only connection type — which meant the address you connect to was stored
+   * apart from everything else about connecting, but only for serial. A socket
+   * host, RTT device and BLE UUIDs were always in here.
+   *
+   * Written by ConnController on open; there is no runtime mirror of it on
+   * PortSettings because nothing in the UI edits it directly.
+   */
+  lastUsedSerialPortPath = '';
   socketHost = '127.0.0.1';
   socketPort = 5000;
   socketConnTimeoutMs = PortSettings.SOCKET_CONN_TIMEOUT_DEFAULT_MS;

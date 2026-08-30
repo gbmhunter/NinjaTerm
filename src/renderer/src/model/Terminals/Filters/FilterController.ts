@@ -22,7 +22,7 @@ export class FilterController {
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['terminal.filters'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this);

@@ -226,7 +226,7 @@ export default class RxSettings {
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.rxSettings'], () => {
       this._loadConfig();
     });
 
@@ -252,7 +252,26 @@ export default class RxSettings {
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }
 
+  /**
+   * True while `_loadConfig` is running. Several of the applyable fields below have
+   * an on-apply callback wired to `_saveConfig`, and `_saveConfig` writes every
+   * runtime field back into the very config object `_loadConfig` is reading from. So
+   * an apply that fires part-way through a load would overwrite the fields not read
+   * yet with whatever the runtime still holds. This guard makes saving a no-op for
+   * the duration, matching what PortSettings does for the same reason.
+   */
+  _isLoading = false;
+
   _loadConfig = () => {
+    this._isLoading = true;
+    try {
+      this._loadConfigInner();
+    } finally {
+      this._isLoading = false;
+    }
+  };
+
+  _loadConfigInner = () => {
     const configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
 
     /**
@@ -317,6 +336,10 @@ export default class RxSettings {
   };
 
   _saveConfig = () => {
+    // See `_isLoading`. Writing back mid-load would clobber the values still to be read.
+    if (this._isLoading) {
+      return;
+    }
     const config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
     config.dataType = this.dataType;
 

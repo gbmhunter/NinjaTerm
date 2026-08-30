@@ -35,7 +35,7 @@ const mockAppDataManager = {
       }
     }
   },
-  registerOnProfileLoad: vi.fn(),
+  registerOnConfigReload: vi.fn(),
   saveAppData: vi.fn()
 } as unknown as AppDataManager;
 

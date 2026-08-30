@@ -51,8 +51,8 @@ function updateAndCompare(savedAppData: any) {
   // includes the users home directory (e.g. "logDirectory": "C:\\Users\\geoff\\NinjaTerm\\logs")
   // We need to overwrite these paths before comparing
   function userSpecificReplacer(appData: AppData) {
-    for (let i = 0; i < appData.profiles.length; i++) {
-      appData.profiles[i].rootConfig.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
+    for (let i = 0; i < appData.presets.length; i++) {
+      appData.presets[i].config.settings!.logSettings!.logDirectory = '/home/pretend_user/NinjaTerm/logs';
     }
     appData.currentAppConfig.settings.logSettings.logDirectory = '/home/pretend_user/NinjaTerm/logs';
     return appData;
@@ -73,16 +73,16 @@ describe('app data manager tests', () => {
   test('default profile should be created', () => {
     const app = new App();
     const profileManager = new AppDataManager(app);
-    expect(profileManager.appData.profiles.length).toEqual(1);
-    expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
+    expect(profileManager.appData.presets.length).toEqual(1);
+    expect(profileManager.appData.presets[0].name).toEqual('Default profile');
   });
 
   test('new profile can be created', () => {
     const app = new App();
     const profileManager = new AppDataManager(app);
-    profileManager.newProfile();
-    expect(profileManager.appData.profiles.length).toEqual(2);
-    expect(profileManager.appData.profiles[1].name).toEqual('New profile 1');
+    profileManager.newPreset(profileManager.nextUnusedPresetName());
+    expect(profileManager.appData.presets.length).toEqual(2);
+    expect(profileManager.appData.presets[1].name).toEqual('New preset 1');
   });
 
   test('app data can be upgraded from v2', () => {
@@ -127,8 +127,8 @@ describe('app data manager tests', () => {
     expect(() => new AppDataManager(app)).not.toThrow();
 
     const profileManager = new AppDataManager(app);
-    expect(profileManager.appData.profiles.length).toEqual(1);
-    expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
+    expect(profileManager.appData.presets.length).toEqual(1);
+    expect(profileManager.appData.presets[0].name).toEqual('Default profile');
   });
 
   test('falls back to defaults when localStorage holds an unknown future version', () => {
@@ -145,8 +145,8 @@ describe('app data manager tests', () => {
     const app = new App();
     expect(() => new AppDataManager(app)).not.toThrow();
     const profileManager = new AppDataManager(app);
-    expect(profileManager.appData.profiles.length).toEqual(1);
-    expect(profileManager.appData.profiles[0].name).toEqual('Default profile');
+    expect(profileManager.appData.presets.length).toEqual(1);
+    expect(profileManager.appData.presets[0].name).toEqual('Default profile');
   });
 
   test('migration v17->v18 strips soundsSettings and seeds empty rulesSettings', () => {
@@ -200,8 +200,8 @@ describe('app data manager tests', () => {
       expect(rules[1].scope).toBe('line');
     };
     checkSlot(appData.currentAppConfig?.settings);
-    for (const p of appData.profiles ?? []) {
-      checkSlot(p.rootConfig?.settings);
+    for (const p of appData.presets ?? []) {
+      checkSlot(p.config?.settings);
     }
   });
 
@@ -223,11 +223,11 @@ describe('app data manager tests', () => {
     expect(wasChanged).toBe(true);
     expect(appData.version).toBe(LATEST_VERSION);
     expect(appData.currentAppConfig?.settings?.txSettings?.useCtrlFForFind).toBe(true);
-    for (const profile of appData.profiles ?? []) {
-      expect(profile.rootConfig?.settings?.txSettings?.useCtrlFForFind).toBe(true);
+    for (const preset of appData.presets ?? []) {
+      expect(preset.config?.settings?.txSettings?.useCtrlFForFind).toBe(true);
     }
     // Other v16 fields must be left untouched.
-    expect(appData.profiles?.[1].rootConfig?.settings?.txSettings?.useCtrlCVForCopyPaste).toBe(false);
+    expect(appData.presets?.[1].config?.settings?.txSettings?.useCtrlCVForCopyPaste).toBe(false);
   });
 
   test('migration v18->v19 seeds an empty terminal.filters list everywhere', () => {
@@ -294,7 +294,7 @@ describe('app data manager tests', () => {
     expect(wasChanged).toBe(true);
     expect(appData.version).toBe(LATEST_VERSION);
 
-    const profileRules = appData.profiles?.[0].rootConfig?.settings?.rulesSettings?.rules;
+    const profileRules = appData.presets?.[0].config?.settings?.rulesSettings?.rules;
     expect(profileRules?.find((r: any) => r.name === 'Warning')?.enabled).toBe(false);
     expect(profileRules?.find((r: any) => r.name === 'Error')?.enabled).toBe(false);
     // Custom rule is left enabled.
@@ -329,9 +329,9 @@ describe('app data manager tests', () => {
     expect(wasChanged).toBe(true);
     expect(appData.version).toBe(LATEST_VERSION);
 
-    expect(appData.profiles?.[0].rootConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
+    expect(appData.presets?.[0].config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
     // Custom value survives.
-    expect(appData.profiles?.[1].rootConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(40);
+    expect(appData.presets?.[1].config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(40);
     expect(appData.currentAppConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
   });
 
@@ -349,7 +349,7 @@ describe('app data manager tests', () => {
     expect(unknownVersion).toBe(false);
     expect(appData.version).toBe(LATEST_VERSION);
 
-    for (const rootConfig of [appData.profiles?.[0].rootConfig, appData.currentAppConfig]) {
+    for (const rootConfig of [appData.presets?.[0].config, appData.currentAppConfig]) {
       expect(rootConfig?.settings?.displaySettings?.terminalFont).toBe(TerminalFont.NINJATERM);
       expect(rootConfig?.settings?.displaySettings?.terminalFontCustomName).toBe('');
     }
@@ -367,9 +367,40 @@ describe('app data manager tests', () => {
     const { appData, unknownVersion } = migrateAppData(v21Input);
 
     expect(unknownVersion).toBe(false);
-    for (const rootConfig of [appData.profiles?.[0].rootConfig, appData.currentAppConfig]) {
+    for (const rootConfig of [appData.presets?.[0].config, appData.currentAppConfig]) {
       expect(rootConfig?.settings?.rxSettings?.characterEncoding).toBe(CharacterEncoding.ASCII);
     }
+  });
+
+  test('migration v22->v23 turns every stored profile into a full-scope preset', () => {
+    // Profiles and presets merged into one concept. An existing profile was a
+    // complete snapshot including the serial port, so it has to come across
+    // covering every category — otherwise applying it would silently do less
+    // than loading it used to.
+    const v22Input = {
+      version: 22,
+      profiles: [
+        { name: 'Work bench', rootConfig: { settings: { rxSettings: {} } } },
+        { name: 'Other board', rootConfig: { settings: {} } },
+      ],
+      currentAppConfig: { settings: {} },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v22Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    // The old key is gone, replaced by the new one.
+    expect((appData as { profiles?: unknown }).profiles).toBeUndefined();
+    expect(appData.presets?.length).toBe(2);
+    expect(appData.presets?.[0].name).toBe('Work bench');
+
+    // Full scope, and matching what a freshly created preset covers.
+    const freshScope = new AppData().presets[0].scope;
+    expect(appData.presets?.[0].scope).toEqual([...freshScope]);
+    expect(appData.presets?.[1].scope).toEqual([...freshScope]);
   });
 
   test('pushRttRecentDevice persists across a reload of AppDataManager', () => {

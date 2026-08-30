@@ -67,7 +67,7 @@ export default class TxSettings {
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.txSettings'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this); // Make sure this is at the end of the constructor

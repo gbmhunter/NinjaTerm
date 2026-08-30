@@ -11,7 +11,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import MonitorIcon from '@mui/icons-material/Monitor';
 import RuleIcon from '@mui/icons-material/Rule';
 import SettingsIcon from '@mui/icons-material/Settings';
-import PersonIcon from '@mui/icons-material/Person';
+import TuneIcon from '@mui/icons-material/Tune';
 import { observer } from 'mobx-react-lite';
 
 import { App } from '../../model/App';
@@ -22,7 +22,7 @@ import DataProcessingSettingsView from './RxSettings/RxSettingsView';
 import DisplaySettingsView from './DisplaySettings/DisplaySettingsView';
 import TxSettingsView from './TxSettings/TxSettingsView';
 import GeneralSettingsView from './GeneralSettings/GeneralSettingsView';
-import ProfileSettingsView from './ProfileSettings/ProfileSettingsView';
+import PresetsView from './Presets/PresetsView';
 import RulesSettingsView from './RulesSettings/RulesSettingsView';
 
 interface Props {
@@ -42,6 +42,21 @@ type Group = {
 };
 
 const groups: Group[] = [
+  {
+    // Deliberately first. Someone who opens Settings and is faced with ~90
+    // options should hit the task-shaped entry point before the mechanism-shaped
+    // ones. The pane hosts the built-in presets and the user's saved profiles.
+    heading: 'Get started',
+    sections: [
+      {
+        id: SettingsCategories.PROFILES,
+        label: 'Presets',
+        icon: <TuneIcon fontSize="small" />,
+        // Unchanged: e2e tests and ElectronUtil.goToProfiles depend on it.
+        testId: 'profile-settings-button',
+      },
+    ],
+  },
   {
     heading: 'Communication',
     sections: [
@@ -89,12 +104,6 @@ const groups: Group[] = [
         icon: <SettingsIcon fontSize="small" />,
         testId: 'general-settings-button',
       },
-      {
-        id: SettingsCategories.PROFILES,
-        label: 'Profiles',
-        icon: <PersonIcon fontSize="small" />,
-        testId: 'profile-settings-button',
-      },
     ],
   },
 ];
@@ -119,7 +128,7 @@ function SettingsDialog(props: Props) {
       <GeneralSettingsView generalSettings={app.settings.generalSettings} app={app} />
     ),
     [SettingsCategories.PROFILES]: (
-      <ProfileSettingsView profileManager={app.profileManager} profilesSettings={app.settings.profilesSettings} />
+      <PresetsView app={app} />
     ),
     [SettingsCategories.RULES]: (
       <RulesSettingsView app={app} />

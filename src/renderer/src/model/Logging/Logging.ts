@@ -81,7 +81,7 @@ export default class Logging {
     this.initializeFromProfile();
 
     // Register for profile changes to update log directory when profiles are switched
-    this.app.profileManager.registerOnProfileLoad(() => {
+    this.app.profileManager.registerOnConfigReload(['settings.logSettings'], () => {
       this.onProfileChanged();
     });
   }

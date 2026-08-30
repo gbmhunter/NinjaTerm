@@ -641,6 +641,11 @@ export default class FakePortsController {
           // device would send them, so the terminal has to be decoding CP437 for
           // them to come out as box-drawing characters rather than hex glyphs.
           app.settings.rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
+          // Timestamps are inserted as ordinary characters at the start of a
+          // row, so they take up columns this demo doesn't know about and every
+          // ESC[row;colH lands that far to the left, painting values into the
+          // middle of the timestamp instead of into the frame.
+          app.settings.rxSettings.setAddTimestamps(false);
 
           // Send raw bytes rather than TextEncoder-ing a string: every byte here
           // is one character on the wire, which is the whole point of CP437.

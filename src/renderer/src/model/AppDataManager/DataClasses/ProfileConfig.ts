@@ -1,5 +1,4 @@
 import { RightDrawerConfig } from 'src/model/Terminals/RightDrawer/RightDrawer';
-import { LastUsedSerialPort } from '../AppDataManager';
 import { MacroControllerData } from './MacroControllerData';
 import { SettingsData } from './SettingsData';
 import { TerminalFilterData } from './TerminalFilterData';
@@ -15,8 +14,6 @@ export class ProfileConfig {
     // Ordered list of view filters (match-any). Empty = no filtering.
     filters: [] as TerminalFilterData[],
   };
-
-  lastUsedSerialPort = new LastUsedSerialPort();
 
   settings = new SettingsData();
 }

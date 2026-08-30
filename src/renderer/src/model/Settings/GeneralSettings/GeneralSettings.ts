@@ -26,7 +26,7 @@ export default class GeneralSettings {
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.generalSettings'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this); // Make sure this is at the end of the constructor

@@ -7,8 +7,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Presets ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** `Settings > Presets` (now first in the settings list) is a single list of built-in presets — "DOS text-mode (CP437)", "Hex dump", "Zephyr / RTOS shell", "Plain-text log capture" — alongside the ones you save yourself. Applying one shows a before/after diff first and can be undone.
+- **Presets record what they cover.** Saving one asks which categories to capture (connection, RX, display, logging, macros, ...), so a logging preset needn't carry your connection settings while a preset for a particular board is mostly about them. Applying only writes the branches in scope, and only reloads the parts of the app that own them.
+- **Profiles are now presets.** They were two names for the same idea, differing only in scope. Existing profiles migrate to presets covering everything, so applying one does exactly what loading it used to; AppData migrated v22→v23.
+
+### Changed
+
+- **The last-used serial port moved into the connection settings.** It was a top-level branch of its own, left from when serial was the only connection type, so the address you connect to was stored apart from everything else about connecting — and only for serial, since a socket host, RTT device and BLE UUIDs were always in the port settings. The write-only `portState` field went with it. Folded into the v22→v23 migration.
+
 ### Fixed
 
+- **Vertical row padding can now be set to 0, and the DOS preset sets it ([#411](https://github.com/gbmhunter/NinjaTerm/issues/411)).** The field rejected anything below 1, but the bundled DOS fonts are bitmap fonts whose glyphs fill their cell exactly, so any padding leaves a gap between rows and the vertical strokes of a box-drawing frame stop joining up.
+- **RX settings no longer reset themselves when a preset or profile is applied.** `RxSettings._loadConfig` applied its editable fields without suppressing the save callback, so a value that changed part-way through a load wrote the running state back over the fields not yet read, losing them. Now guarded with the `_isLoading` pattern `PortSettings` already used.
+- **Macros are restored when a preset or profile is applied.** `MacroController` never registered for config reloads, so everything else came back while the macros stayed on the previous ones until the app was restarted.
 - **`npm run release` no longer cuts a real release when you asked for a preview.** `npm run` consumes any `--flag` after the script name and never forwards it, so `npm run release <version> --preview` dropped the flag and published; `scripts/release.mjs` now also reads the `npm_config_*` variables npm sets for swallowed flags, warning and honouring them, and the documented form is `npm run release -- <version> --preview`.
 
 ## [5.16.0] - 2026-08-28

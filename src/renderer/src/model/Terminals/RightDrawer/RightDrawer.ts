@@ -40,7 +40,7 @@ export default class RightDrawer {
     this.profileManager = app.profileManager;
     this.macroController = new MacroController(app);
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['terminal.rightDrawer'], () => {
       this._loadConfig();
     });
 

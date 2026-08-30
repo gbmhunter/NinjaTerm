@@ -437,6 +437,14 @@ export class ElectronAppTestHarness {
     await this.dismissTooltipsAndClick('[data-testid="display-settings-button"]');
   };
 
+  /** Opens Settings and selects the Presets category (which also hosts profiles). */
+  goToPresets = async () => {
+    await this.dismissTooltipsAndClick('[data-testid="settings-button"]');
+    await this.page.waitForTimeout(300);
+    await this.dismissTooltipsAndClick('[data-testid="profile-settings-button"]');
+    await this.page.waitForTimeout(300);
+  };
+
   goToGeneralSettings = async () => {
     await this.dismissTooltipsAndClick('[data-testid="settings-button"]');
     await this.page.waitForTimeout(300);

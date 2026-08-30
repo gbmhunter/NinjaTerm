@@ -7,7 +7,6 @@ import RxSettings from './RxSettings/RxSettings';
 import DisplaySettings from './DisplaySettings/DisplaySettings';
 import { PortSettings } from './PortSettings/PortSettings';
 import GeneralSettings from './GeneralSettings/GeneralSettings';
-import ProfilesSettings from './ProfileSettings/ProfileSettings';
 import RulesSettings from './RulesSettings/RulesSettings';
 import { App } from '../App';
 
@@ -38,7 +37,6 @@ export class Settings {
 
   generalSettings: GeneralSettings;
 
-  profilesSettings: ProfilesSettings;
 
   rulesSettings: RulesSettings;
 
@@ -56,7 +54,6 @@ export class Settings {
     this.rxSettings = new RxSettings(this.app.profileManager);
     this.displaySettings = new DisplaySettings(this.app.profileManager);
     this.generalSettings = new GeneralSettings(this.app.profileManager);
-    this.profilesSettings = new ProfilesSettings(this.app.profileManager);
     this.rulesSettings = new RulesSettings(this.app.profileManager);
     makeAutoObservable(this); // Make sure this is at the end of the constructor
   }

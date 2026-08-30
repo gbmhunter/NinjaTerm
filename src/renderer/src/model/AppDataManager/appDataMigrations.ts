@@ -67,6 +67,8 @@ type MigrationPortSettings = {
   rttRecentDevices?: string[];
   // v15->v16
   rttServerExePathUserModified?: boolean;
+  // v22->v23 (moved here from the top-level lastUsedSerialPort branch)
+  lastUsedSerialPortPath?: string;
 };
 
 type MigrationDisplaySettings = {
@@ -221,6 +223,7 @@ type MigrationTerminal = {
 export type MigrationRootConfig = {
   settings?: MigrationSettings;
   terminal?: MigrationTerminal;
+  /** Removed in v22->v23, folded into `settings.portSettings`. */
   lastUsedSerialPort?: MigrationLastUsedSerialPort;
 };
 
@@ -229,13 +232,23 @@ type MigrationProfile = {
   rootConfig: MigrationRootConfig;
 };
 
+/** Shape of a saved preset from v23 onwards. */
+type MigrationPreset = {
+  name?: string;
+  scope?: string[];
+  config?: MigrationRootConfig;
+};
+
 /** Top-level shape during migration. Same structure as the runtime `AppData`
  *  but every field optional, and migrations are written against this loose
  *  type. The exit-condition validation in `migrateAppData` checks the result
  *  is at the latest version before handing it back. */
 export type MigrationAppData = {
   version: number;
-  profiles: MigrationProfile[];
+  /** Renamed to `presets` in v23; optional so post-v23 data type-checks. */
+  profiles?: MigrationProfile[];
+  // v22->v23
+  presets?: MigrationPreset[];
   currentAppConfig: MigrationRootConfig;
   // v3->v4
   autoUpdatesEnabled?: boolean;
@@ -258,7 +271,9 @@ function forEachRootConfig(
   appData: MigrationAppData,
   apply: (rootConfig: MigrationRootConfig) => void,
 ): void {
-  for (const profile of appData.profiles) {
+  // Only used by migrations up to v22, i.e. before profiles were renamed to
+  // presets. A migration from v23 onwards needs to walk `appData.presets`.
+  for (const profile of appData.profiles ?? []) {
     apply(profile.rootConfig);
   }
   apply(appData.currentAppConfig);
@@ -347,7 +362,7 @@ function migrateV4toV5(appData: MigrationAppData): void {
   // Backfill detectionMode if a v3 blob landed here without it. Only walks
   // profiles (matches the original migration's behaviour, which omitted
   // currentAppConfig).
-  for (const profile of appData.profiles) {
+  for (const profile of appData.profiles ?? []) {
     const graphingSettings = profile.rootConfig.settings?.graphingSettings;
     if (graphingSettings && !graphingSettings.detectionMode) {
       graphingSettings.detectionMode = 'Basic Prefix Mode';
@@ -632,6 +647,81 @@ function migrateV21toV22(appData: MigrationAppData): void {
 }
 
 /**
+ * Every preset category as of v23, frozen.
+ *
+ * Deliberately a literal rather than an import of the live list: a category
+ * added in some later version must not retroactively change what this migration
+ * produced. If a v24 adds one, the app-data snapshot tests will fail, which is
+ * the signal that a v23->v24 migration is needed to widen existing full-scope
+ * presets.
+ *
+ * Sorted, because `normalizeScope` sorts and the snapshot tests compare the
+ * serialised arrays element by element.
+ */
+const V23_ALL_CATEGORIES = [
+  'connection',
+  'display',
+  'filters',
+  'general',
+  'graphing',
+  'layout',
+  'logging',
+  'macros',
+  'rules',
+  'rx',
+  'tx',
+];
+
+/**
+ * Folds the top-level `lastUsedSerialPort` branch into the port settings.
+ *
+ * It was its own branch from back when serial was the only connection type,
+ * which left the address you connect to stored apart from everything else about
+ * connecting — but only for serial, since a socket host, RTT device and BLE
+ * UUIDs were always in `portSettings`.
+ *
+ * `portState` is dropped rather than moved. It was written on open and close but
+ * never read for any decision; its only reader was a column in the old profiles
+ * table.
+ */
+function moveLastUsedSerialPortIntoPortSettings(
+  rootConfig: MigrationRootConfig,
+): MigrationRootConfig {
+  const path = rootConfig.lastUsedSerialPort?.path ?? '';
+  rootConfig.settings = rootConfig.settings ?? {};
+  rootConfig.settings.portSettings = rootConfig.settings.portSettings ?? {};
+  rootConfig.settings.portSettings.lastUsedSerialPortPath = path;
+  delete rootConfig.lastUsedSerialPort;
+  return rootConfig;
+}
+
+function migrateV22toV23(appData: MigrationAppData): void {
+  // Profiles and presets merge into one concept, distinguished by what each
+  // covers rather than by where it came from.
+  //
+  // Every existing profile was a complete snapshot of the config including the
+  // serial port, so each becomes a preset covering every category. Applying one
+  // then does exactly what loading it used to.
+  //
+  // The top-level `lastUsedSerialPort` branch also folds into the port settings
+  // here, so everything about connecting lives in one place.
+  //
+  // Note this walks `appData.profiles` directly rather than using
+  // `forEachRootConfig`: scope lives on the wrapper next to the name, and
+  // `currentAppConfig` has no wrapper.
+  appData.presets = (appData.profiles ?? []).map((profile) => ({
+    name: profile.name,
+    scope: [...V23_ALL_CATEGORIES],
+    config: moveLastUsedSerialPortIntoPortSettings(profile.rootConfig),
+  }));
+  delete appData.profiles;
+
+  appData.currentAppConfig = moveLastUsedSerialPortIntoPortSettings(appData.currentAppConfig);
+
+  appData.version = 23;
+}
+
+/**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
  * less than the latest. Adding a new migration is one row here plus its
@@ -659,6 +749,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 19, apply: migrateV19toV20 },
   { from: 20, apply: migrateV20toV21 },
   { from: 21, apply: migrateV21toV22 },
+  { from: 22, apply: migrateV22toV23 },
 ];
 
 // --------------------------------------------------------------------------

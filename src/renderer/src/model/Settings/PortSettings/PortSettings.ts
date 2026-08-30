@@ -151,7 +151,7 @@ export class PortSettings {
     this.baudRateInputValue = this.baudRate.toString();
     // this.config =
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.portSettings'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this);

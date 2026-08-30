@@ -26,7 +26,7 @@ export default class RulesSettings {
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
     this._loadConfig();
-    this.profileManager.registerOnProfileLoad(() => {
+    this.profileManager.registerOnConfigReload(['settings.rulesSettings'], () => {
       this._loadConfig();
     });
     makeAutoObservable(this);

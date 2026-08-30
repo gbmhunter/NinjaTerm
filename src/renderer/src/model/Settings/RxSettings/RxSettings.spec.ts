@@ -1,0 +1,90 @@
+import { expect, test, describe, beforeEach } from 'vitest';
+
+import { App } from 'src/model/App';
+import { CharacterEncoding } from './RxSettings';
+
+describe('RX settings persistence', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  //================================================================================
+  // Regression tests for _loadConfig clobbering itself
+  //
+  // `_loadConfig` reads field by field out of the stored config, and six of the
+  // applyable fields it sets have an on-apply callback wired to `_saveConfig`.
+  // `_saveConfig` writes *every* runtime RX field back into that same stored config
+  // object, so an apply that fires part-way through a load overwrites the fields
+  // that haven't been read yet with whatever the runtime currently holds.
+  //
+  // This does NOT happen during construction: the constructor calls `_loadConfig()`
+  // before it registers the on-apply callbacks, so nothing is listening. It happens
+  // on the *second* code path into `_loadConfig` — the `registerOnProfileLoad`
+  // callback, which runs on profile load and preset apply, by which time the
+  // callbacks are wired.
+  //================================================================================
+
+  test('loading a profile restores every RX setting, not just the ones before the first apply', () => {
+    // `maxEscapeCodeLengthChars` is applied near the top of `_loadConfig`. Once the
+    // profile's value differs from the running one, the save it triggers writes the
+    // current runtime values — still the defaults at that point in the load — over
+    // roughly thirty RX fields further down the profile's config.
+    const app = new App();
+    const rxSettings = app.settings.rxSettings;
+
+    rxSettings.maxEscapeCodeLengthChars.setDispValue('40');
+    rxSettings.maxEscapeCodeLengthChars.apply();
+    rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
+    rxSettings.setAddTimestamps(true);
+    rxSettings.numberSeparator.setDispValue('-');
+    rxSettings.numberSeparator.apply();
+    rxSettings.setShowWarningOnRxBreakSignal(false);
+
+    // Snapshot that state into a profile, then move everything back to defaults.
+    const savedProfileIdx = app.profileManager.newPreset('Saved');
+
+    rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
+    rxSettings.maxEscapeCodeLengthChars.apply();
+    rxSettings.setCharacterEncoding(CharacterEncoding.ASCII);
+    rxSettings.setAddTimestamps(false);
+    rxSettings.numberSeparator.setDispValue(' ');
+    rxSettings.numberSeparator.apply();
+    rxSettings.setShowWarningOnRxBreakSignal(true);
+
+    return app.profileManager.applyStoredPreset(savedProfileIdx).then(() => {
+      expect(rxSettings.maxEscapeCodeLengthChars.appliedValue).toBe(40);
+      // These four are all read *after* the maxEscapeCodeLengthChars apply.
+      expect(rxSettings.characterEncoding).toBe(CharacterEncoding.CP437);
+      expect(rxSettings.addTimestamps).toBe(true);
+      expect(rxSettings.numberSeparator.appliedValue).toBe('-');
+      expect(rxSettings.showWarningOnRxBreakSignal).toBe(false);
+    });
+  });
+
+  test('a reload does not overwrite the stored config with runtime defaults', () => {
+    // Tighter version of the above, asserting on the stored config rather than the
+    // runtime objects, so a regression is obvious even if the runtime happens to
+    // agree by coincidence.
+    const app = new App();
+    const rxSettings = app.settings.rxSettings;
+
+    rxSettings.maxEscapeCodeLengthChars.setDispValue('40');
+    rxSettings.maxEscapeCodeLengthChars.apply();
+    rxSettings.setCharacterEncoding(CharacterEncoding.CP437);
+
+    const savedProfileIdx = app.profileManager.newPreset('Saved');
+    const savedRxConfig = JSON.stringify(
+      app.profileManager.appData.presets[savedProfileIdx].config.settings!.rxSettings,
+    );
+
+    rxSettings.maxEscapeCodeLengthChars.setDispValue('25');
+    rxSettings.maxEscapeCodeLengthChars.apply();
+    rxSettings.setCharacterEncoding(CharacterEncoding.ASCII);
+
+    return app.profileManager.applyStoredPreset(savedProfileIdx).then(() => {
+      expect(
+        JSON.stringify(app.profileManager.appData.currentAppConfig.settings.rxSettings),
+      ).toBe(savedRxConfig);
+    });
+  });
+});

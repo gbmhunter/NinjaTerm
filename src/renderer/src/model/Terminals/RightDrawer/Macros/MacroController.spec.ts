@@ -324,3 +324,47 @@ describe('MacroController interval triggers (issue #364)', () => {
     expect(writeSpy).toHaveBeenCalledTimes(5);
   });
 });
+
+describe('MacroController profile loading', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  test('macros are restored when a profile is loaded', () => {
+    // Regression test: MacroController called _loadConfig() in its constructor but
+    // never registered for profile loads, so loading a profile restored every other
+    // part of the config while the macros stayed on the previous profile's values
+    // until the app was restarted.
+    const app = new App();
+    const macroController = app.terminals.rightDrawer.macroController;
+    asciiMacro(macroController.macrosArray[0], 'reset\n');
+    macroController.macrosArray[0].setSendOnConnect(true);
+
+    const savedProfileIdx = app.profileManager.newPreset('Saved');
+
+    asciiMacro(macroController.macrosArray[0], 'other\n');
+    macroController.macrosArray[0].setSendOnConnect(false);
+
+    return app.profileManager.applyStoredPreset(savedProfileIdx).then(() => {
+      expect(macroController.macrosArray[0].data).toBe('reset\n');
+      expect(macroController.macrosArray[0].sendOnConnect).toBe(true);
+    });
+  });
+
+  test('loading a profile closes the macro edit modal', () => {
+    // Every Macro object is replaced on load, so a modal left open would be left
+    // holding a macro that is no longer in the array.
+    const app = new App();
+    const macroController = app.terminals.rightDrawer.macroController;
+
+    const savedProfileIdx = app.profileManager.newPreset('Saved');
+
+    macroController.setMacroToDisplayInModal(macroController.macrosArray[0]);
+    macroController.setIsModalOpen(true);
+
+    return app.profileManager.applyStoredPreset(savedProfileIdx).then(() => {
+      expect(macroController.isModalOpen).toBe(false);
+      expect(macroController.macroToDisplayInModal).toBe(null);
+    });
+  });
+});

@@ -92,7 +92,7 @@ export default observer((props: Props) => {
       {/* VERTICAL ROW PADDING */}
       {/* =============================================================================== */}
       <Tooltip
-        title="The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data."
+        title="The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data. Set this to 0 when using a DOS font, otherwise the gap between rows breaks up the vertical strokes of box-drawing characters."
         followCursor
         {...app.settings.displaySettings.getBasicTooltipConfig()}
       >

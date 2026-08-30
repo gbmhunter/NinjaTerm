@@ -38,7 +38,7 @@ export default class Terminals {
     this.rightDrawer = new RightDrawer(app);
 
     this._loadConfig();
-    this.app.profileManager.registerOnProfileLoad(() => {
+    this.app.profileManager.registerOnConfigReload(['terminal.rightDrawer'], () => {
       this._loadConfig();
     });
 

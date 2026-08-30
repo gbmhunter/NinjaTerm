@@ -224,7 +224,7 @@ class Graphing {
 		this._loadConfig();
 
 		// Register callback to load settings when profile changes
-		this.appDataManager.registerOnProfileLoad(this._loadConfig);
+		this.appDataManager.registerOnConfigReload(['settings.graphingSettings'], this._loadConfig);
 
 		// this.graphData.push({ x: 0, y: 0 });
 		// this.graphData.push({ x: 10, y: 10 });

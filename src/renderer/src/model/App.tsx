@@ -11,6 +11,7 @@ import packageDotJson from '../../../../package.json' with { type: 'json' };
 import { Settings, SettingsCategories } from './Settings/Settings';
 import { DataViewConfiguration } from './Settings/DisplaySettings/DisplaySettings';
 import SnackbarController from './SnackbarController/SnackbarController';
+import { PresetController } from './Presets/PresetController';
 import Graphing from './Graphing/Graphing';
 import Logging from './Logging/Logging';
 import FakePortsController from './FakePorts/FakePortsController';
@@ -129,6 +130,8 @@ export class App {
 
   snackbar: SnackbarController;
 
+  presetController: PresetController;
+
   shownMainPane: MainPanes;
 
   terminals: Terminals;
@@ -179,6 +182,9 @@ export class App {
 
     this.snackbar = new SnackbarController();
 
+    // Needs profileManager, settings and snackbar to already exist.
+    this.presetController = new PresetController(this);
+
     this.performanceMonitor = new PerformanceMonitor();
 
     this.connController = new ConnController(this);
@@ -200,7 +206,7 @@ export class App {
 
     // Listen for changes to the last applied profile name, and update the app title
     this.titleReactionDispose = reaction(
-      () => this.profileManager.lastAppliedProfileName,
+      () => this.profileManager.lastAppliedPresetName,
       this.onLastAppliedProfileNameChanged,
     );
     this.onLastAppliedProfileNameChanged();
@@ -248,7 +254,7 @@ export class App {
 
   onLastAppliedProfileNameChanged = () => {
     // Set the title of the app to the last applied profile name
-    document.title = `NinjaTerm - ${this.profileManager.lastAppliedProfileName}`;
+    document.title = `NinjaTerm - ${this.profileManager.lastAppliedPresetName}`;
   };
 
   /**

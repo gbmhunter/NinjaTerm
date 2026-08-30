@@ -1,4 +1,4 @@
-import { comparer, makeAutoObservable, reaction } from "mobx";
+import { comparer, makeAutoObservable, reaction, runInAction } from "mobx";
 
 import { App } from "src/model/App";
 import { Macro, TxStepBreak, TxStepData } from "./Macro";
@@ -47,6 +47,13 @@ export class MacroController {
     makeAutoObservable(this); // Make sure this near the end
 
     this._loadConfig();
+
+    // Macros are part of a profile, so they have to be re-read when one is
+    // loaded. Without this, loading a profile restored everything except the
+    // macros, which kept the previous profile's until the app restarted.
+    this.app.profileManager.registerOnConfigReload(['terminal.macroController'], () => {
+      this._loadConfig();
+    });
 
     // Drive interval-trigger timers: whenever the port's connection state or
     // any macro's `sendOnInterval` / `intervalMs` changes, recompute which
@@ -139,13 +146,25 @@ export class MacroController {
   _loadConfig() {
     const configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.macroController;
 
-    // If we get here we loaded a valid config. Apply config.
-    this.recreateMacros(configToLoad.macroConfigs.length);
-    for (let i = 0; i < configToLoad.macroConfigs.length; i++) {
-      const macroConfig = configToLoad.macroConfigs[i];
-      const macro = this.macrosArray[i];
-      macro.loadConfig(macroConfig);
-    };
+    // Batched: recreateMacros() splices macrosArray, which the interval-timer
+    // reaction tracks. Without this the reaction would fire mid-rebuild, once
+    // per macro, against a half-populated array.
+    runInAction(() => {
+      // The modal holds a reference to a Macro object, and every one of them is
+      // about to be replaced. Close it rather than leave it pointing at a macro
+      // that is no longer in the array (RulesSettings._loadConfig does the same
+      // for its rule edit modal).
+      this.macroToDisplayInModal = null;
+      this.isModalOpen = false;
+
+      // If we get here we loaded a valid config. Apply config.
+      this.recreateMacros(configToLoad.macroConfigs.length);
+      for (let i = 0; i < configToLoad.macroConfigs.length; i++) {
+        const macroConfig = configToLoad.macroConfigs[i];
+        const macro = this.macrosArray[i];
+        macro.loadConfig(macroConfig);
+      }
+    });
   }
 
   /**

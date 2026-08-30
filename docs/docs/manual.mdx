@@ -40,6 +40,41 @@ For the web-based version, you'll need:
 - **Firefox**: Requires the [WebSerial for Firefox extension](https://addons.mozilla.org/en-US/firefox/addon/webserial-for-firefox/)
 - **Safari**: Not supported
 
+## Presets
+
+NinjaTerm has a lot of settings, and for any given device only a handful of them matter. Presets configure that handful for you. Find them in `Settings > Presets`, which is the first entry in the settings list.
+
+| Preset | What it's for |
+| --- | --- |
+| DOS text-mode (CP437) | Devices that draw menus, frames and borders using the original IBM PC character set — one byte per box-drawing character. Sets CP437 decoding, ANSI escape code parsing, and a DOS font in an 80x25 terminal. |
+| Hex dump | Inspecting a binary protocol byte by byte, as zero-padded uppercase hex. |
+| Zephyr / RTOS shell | An interactive shell on an embedded target: coloured log levels, line editing, and CR-terminated commands. |
+| Plain-text log capture | Leaving a device running and reading back what it printed, with an ISO 8601 timestamp on every line and a large scrollback buffer. |
+
+Applying a preset changes only the settings it covers, and shows you exactly which ones will change before it does anything — which is also the quickest way to learn where the relevant settings live. You can undo a preset immediately after applying it.
+
+### Saving your own presets
+
+**Save current settings as preset...** captures how NinjaTerm is set up right now. You choose what it should cover with a set of checkboxes:
+
+| Covers | What goes in |
+| --- | --- |
+| Connection settings | The connection type, the address (serial port, BLE device, socket address or RTT device), and the connection parameters |
+| RX data handling | How received bytes are decoded and displayed |
+| TX / key behaviour | What the Enter, Backspace and Delete keys send |
+| Display | Font, terminal size, colours, scrollback |
+| Logging, Highlight rules, Macros, Filters, Graphing, General, Drawer layout | As named |
+
+Everything starts ticked, so saving captures your setup whole. Untick whatever shouldn't travel with it — this is what makes one preset different from another. A preset for capturing logs has no business carrying connection settings, while a preset for a particular board is mostly about them.
+
+Ticked categories are saved in full. That includes settings naming something on this machine — the log directory, or a particular debug probe — because if you set logging up for a board, reapplying its preset should put the logs back in the same place. The one thing not saved is the recently-used device list, which is a history rather than a setting.
+
+A preset that covers everything behaves exactly like a saved profile did in earlier versions of NinjaTerm: applying it restores your whole setup, and reconnects to the port it was saved with.
+
+### What happened to profiles?
+
+Profiles and presets used to be two separate things. They are now one, and the difference between them is simply what each one covers. Anything you saved as a profile is still there, listed as a preset covering everything including its serial port, and applying it does exactly what loading it used to.
+
 ## Connection Types
 
 NinjaTerm supports the following connection types:
@@ -153,6 +188,10 @@ Either parameter can be left out and defaults to `1`, so `ESC[H`, `ESC[5H` and `
 
 Note that the whole sequence has to fit within the max. escape code length set in `Settings > RX Settings` (25 characters by default, which comfortably covers three-digit rows and columns).
 
+:::warning
+Turn **timestamps off** when a device positions the cursor. Timestamps are inserted as ordinary characters at the start of each row, so they take up columns your device doesn't know about, and every absolute position lands that far to the left — painting values into the middle of the timestamp instead of where you meant. The "DOS text-mode (CP437)" preset turns them off for you.
+:::
+
 ### Erase in Display (ESC[nJ)
 
 The current rows in view are ignored when performing Erase in Display commands, as the user could be viewing old data in the scrollback buffer while the cursor is still at the bottom row of data.
@@ -231,6 +270,12 @@ All three agree on the bytes below `0x80` — control characters below `0x20`, p
 
 CP437 is the one to pick for DOS-style text-mode output, where a single byte is a single box-drawing character — e.g. byte `0xDA` is `┌` and `0xC4` is `─`. Devices that send UTF-8 (three bytes per box-drawing character) want the UTF-8 option instead.
 
+Which to use is really a question about your firmware's source file, not your device. If your toolchain saves source as UTF-8 (STM32CubeIDE does, for example) you have two options:
+
+- Pick **UTF-8** in NinjaTerm and write the box-drawing characters directly in your source: `printf("┌───┐")`. The compiler encodes them as UTF-8 and NinjaTerm decodes them back.
+- Pick **CP437** and emit the raw bytes with hex escapes: `printf("\xDA\xC4\xC4\xC4\xBF")`. More faithful to a real DOS device, but harder to read in the source.
+
+
 This setting decides how bytes are *decoded*; the Terminal Font setting below decides whether the resulting characters have glyphs to draw with. You need both for text-mode frames to display.
 
 ### Terminal Font
@@ -242,6 +287,10 @@ The font used to display data in the terminal can be changed in `Settings > Disp
 | NinjaTerm (default) | NinjaTerm's own font. Covers ASCII only. |
 | IBM VGA (DOS/CP437) | The bundled IBM VGA 8x16 DOS text-mode font. Covers the CP437 box-drawing and block characters, so text-mode frames and borders drawn with `─│┌┐└┘├┤` render properly. |
 | Perfect DOS VGA 437 | The bundled Perfect DOS VGA 437 font, another DOS text-mode font that also covers the CP437 box-drawing characters. |
+
+:::tip
+Both DOS fonts are bitmap fonts whose glyphs fill their cell exactly, so set **Vertical Row Padding** to `0` when you use one. Any padding leaves a gap between rows, and the vertical strokes of a box-drawing frame stop joining up. The "DOS text-mode (CP437)" preset does this for you. NinjaTerm's own font has built-in spacing and looks better with a few pixels of padding.
+:::
 | System monospace | Whatever monospace font your operating system provides (Consolas, Menlo, DejaVu Sans Mono, ...). |
 | Custom... | Any monospace font already installed on your computer, named in the "Custom Font Family" box that appears — e.g. `Perfect DOS VGA 437`. |
 

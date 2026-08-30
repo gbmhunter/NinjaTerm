@@ -12,6 +12,28 @@ describe('display settings', () => {
   });
 
   //================================================================================
+  // Row padding
+  //================================================================================
+  test('a vertical row padding of zero is allowed', () => {
+    // Reported on issue #411. The bundled DOS fonts need exactly zero to render
+    // box-drawing frames without gaps between rows, but the field rejected
+    // anything below 1, so it was impossible to set.
+    displaySettings.verticalRowPaddingPx.setDispValue('0');
+    displaySettings.verticalRowPaddingPx.apply();
+
+    expect(displaySettings.verticalRowPaddingPx.appliedValue).toBe(0);
+  });
+
+  test('a negative vertical row padding is still rejected', () => {
+    // Rows would overlap and clip. Zero already makes the DOS fonts exact,
+    // because their glyphs are precisely one em tall.
+    displaySettings.verticalRowPaddingPx.setDispValue('-2');
+    displaySettings.verticalRowPaddingPx.apply();
+
+    expect(displaySettings.verticalRowPaddingPx.appliedValue).not.toBe(-2);
+  });
+
+  //================================================================================
   // Terminal font
   //================================================================================
   describe('terminal font family', () => {
