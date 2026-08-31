@@ -38,6 +38,13 @@ ninjaterm/
 
 ## Development
 
+Node 22 is the supported version, pinned in `.node-version` (and separately in
+`docs/.node-version` and `web/.node-version` for those sub-projects). CI reads
+those files rather than hardcoding a version, so bumping one is a one-line
+change. 22 is chosen to match the Node that Electron itself bundles — Electron
+38.3.0 ships Node 22.20.0 — so the toolchain and the shipped runtime agree.
+`nvm use` and `fnm` both read `.node-version`.
+
 Clone this repo. Then run `npm install` to install dependencies:
 
 ```bash
