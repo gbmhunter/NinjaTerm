@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 import { App } from 'src/model/App';
 import { ConfigPatch, Preset } from './Preset';
@@ -209,25 +209,32 @@ export class PresetController {
       }
     }
 
-    // Snapshot only what this preset covers, so undoing it can't roll back an
-    // unrelated setting the user changed by hand in between.
-    const values: Record<string, unknown> = {};
-    for (const branch of branches) {
-      values[branch] = JSON.parse(JSON.stringify(getAtPath(config, branch) ?? null));
-    }
-    this._undoSnapshot = { branches, values };
+    // Everything below mutates observables, and must say so explicitly.
+    // `makeAutoObservable` wraps this method in an action, but an action only
+    // covers up to the first `await` -- the continuation after one runs outside
+    // it. Without this, every field the patch touches trips MobX's strict-mode
+    // warning once the settings are on screen and therefore observed.
+    runInAction(() => {
+      // Snapshot only what this preset covers, so undoing it can't roll back an
+      // unrelated setting the user changed by hand in between.
+      const values: Record<string, unknown> = {};
+      for (const branch of branches) {
+        values[branch] = JSON.parse(JSON.stringify(getAtPath(config, branch) ?? null));
+      }
+      this._undoSnapshot = { branches, values };
 
-    for (const [path, value] of flattenPatch(preset.patch)) {
-      setAtPath(config, path, value);
-    }
+      for (const [path, value] of flattenPatch(preset.patch)) {
+        setAtPath(config, path, value);
+      }
 
-    this.app.profileManager.saveAppData();
-    // Before opening the port, so the preset's baud rate is live by the time it
-    // does.
-    this._notifyBranchesChanged(branches);
+      this.app.profileManager.saveAppData();
+      // Before opening the port, so the preset's baud rate is live by the time it
+      // does.
+      this._notifyBranchesChanged(branches);
 
-    this.app.profileManager.lastAppliedPresetName = preset.name;
-    this.presetPendingConfirmation = null;
+      this.app.profileManager.lastAppliedPresetName = preset.name;
+      this.presetPendingConfirmation = null;
+    });
 
     let message = `Applied the "${preset.name}" preset.`;
     let variant: 'success' | 'warning' = 'success';

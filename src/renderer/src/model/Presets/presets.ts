@@ -199,10 +199,9 @@ const BUILT_IN_PRESET_DEFS: BuiltInPresetDef[] = [
     details:
       'For instruments that expect one complete command per message, SCPI over TCP being ' +
       'the common case. A bar appears below the terminal: type a command, press Enter, and ' +
-      'the whole line is sent in one write instead of one write per keystroke. Many ' +
-      'instruments ignore a command that arrives split across several TCP segments. Local ' +
+      'the whole line is sent in one write instead of one write per keystroke. Local ' +
       'echo is turned on so you can see what you sent, since instruments do not echo, and ' +
-      'ANSI parsing is turned off because they send plain text.',
+      'ANSI parsing is turned off.',
     keywords: 'scpi instrument line mode tcp socket visa lxi command query idn one write segment',
     patch: {
       settings: {

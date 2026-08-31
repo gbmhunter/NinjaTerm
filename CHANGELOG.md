@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- **Applying a preset no longer logs a MobX strict-mode warning for every setting it changes.** `applyPreset` became async during the preset merge, and an action only covers a method up to its first `await`, so the continuation that writes the config ran outside one; wrapped in `runInAction`.
 - **Pressing Enter with "send a break signal" selected no longer also issues an empty write.** The Enter handler sent the break inline and then fell through to the write at the end of `handleTerminalKeyDown` with no bytes to send.
 
 ## [5.17.0] - 2026-08-30

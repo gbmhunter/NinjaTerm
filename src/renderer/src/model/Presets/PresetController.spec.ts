@@ -1,4 +1,5 @@
-import { expect, test, describe, beforeEach } from 'vitest';
+import { expect, test, describe, beforeEach, afterEach, vi } from 'vitest';
+import { configure } from 'mobx';
 
 import { App } from 'src/model/App';
 import { CharacterEncoding, DataType, NumberType } from 'src/model/Settings/RxSettings/RxSettings';
@@ -24,6 +25,51 @@ describe('preset controller', () => {
   });
 
   const currentSettings = () => app.profileManager.appData.currentAppConfig.settings;
+
+  describe('mobx strict mode', () => {
+    // `applyPreset` is async, and `makeAutoObservable` only wraps a method in an
+    // action up to its first `await` -- the continuation after one runs outside
+    // it. In the running app that meant every patched field logged a strict-mode
+    // warning as soon as the settings were on screen and therefore observed.
+    //
+    // The default is `enforceActions: 'observed'`, which stays quiet in a test
+    // where nothing observes the values, so this raises it to 'always' to make
+    // the violation detectable at all.
+    let warnSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      configure({ enforceActions: 'always' });
+      warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      warnSpy.mockRestore();
+      configure({ enforceActions: 'observed' });
+    });
+
+    const mobxWarnings = () =>
+      warnSpy.mock.calls
+        .map((args) => args.join(' '))
+        .filter((message) => message.includes('[MobX]'));
+
+    test('applying a preset does not modify observables outside an action', async () => {
+      await app.presetController.applyPreset(presetById('zephyr-shell'));
+      expect(mobxWarnings()).toEqual([]);
+    });
+
+    test('applying the defaults preset does not modify observables outside an action', async () => {
+      // The widest patch there is, so it touches the most observables.
+      await app.presetController.applyPreset(presetById('ninjaterm-default'));
+      expect(mobxWarnings()).toEqual([]);
+    });
+
+    test('undoing a preset does not modify observables outside an action', async () => {
+      await app.presetController.applyPreset(presetById('hex-dump'));
+      warnSpy.mockClear();
+      app.presetController.undoLastPreset();
+      expect(mobxWarnings()).toEqual([]);
+    });
+  });
 
   test('applying a preset updates the live settings objects', async () => {
     await app.presetController.applyPreset(presetById('dos-cp437'));
