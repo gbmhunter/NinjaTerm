@@ -69,6 +69,7 @@ const groups: Group[] = [
         id: SettingsCategories.TX_SETTINGS,
         label: 'TX Settings',
         icon: <ArrowUpwardIcon fontSize="small" />,
+        testId: 'tx-settings-button',
       },
       {
         id: SettingsCategories.RX_SETTINGS,

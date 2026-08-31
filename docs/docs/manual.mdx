@@ -221,6 +221,28 @@ You can enable timestamps for received data, which will appear at the start of e
 
 The format of the timestamp is customizable, with a number of common formats predefined, as well as the ability to enter a custom format.
 
+## Sending Data (TX Mode)
+
+`Settings > TX Settings > TX Mode` controls when what you type is actually sent.
+
+**Character** (the default) sends each keystroke the moment you press it, which is how a
+traditional terminal behaves. This is what you want when you are talking to something with a
+shell or command-line interface, where the device echoes characters back and handles its own
+line editing.
+
+**Line** buffers what you type into a bar below the terminal and sends the whole line as a
+single write when you press Enter. Press Up and Down in the bar to recall previously sent
+lines, and Escape to clear it.
+
+Line mode matters for more than convenience. In character mode each keystroke is a separate
+write, and over a TCP socket that means a separate segment per character — typing `*IDN?` and
+pressing Enter puts six segments on the wire. Devices that expect one command per datagram,
+most commonly SCPI instruments over TCP, will ignore a command that arrives split up like
+that. Line mode sends it in one piece.
+
+The line terminator is still whatever you have chosen under `When enter is pressed`, so line
+mode and character mode agree on what ends a line.
+
 ## Bottom Toolbar
 
 The bottom toolbar provides a quick overview of the current state of the application. Many of the bits of information are clickable, allowing you to quickly navigate to the relevant settings.

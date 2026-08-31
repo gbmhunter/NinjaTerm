@@ -26,6 +26,7 @@
 import { ConnState, ConnectionType, PortSettings } from '../Settings/PortSettings/PortSettings';
 import DisplaySettings, { TerminalFont, TerminalHeightMode } from '../Settings/DisplaySettings/DisplaySettings';
 import { BackspaceBehavior, CharacterEncoding, FormFeedBehavior, TimestampFormat } from '../Settings/RxSettings/RxSettings';
+import { TxMode } from '../Settings/TxSettings/TxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
@@ -116,6 +117,8 @@ type MigrationTxSettings = {
   useCtrlCVForCopyPaste?: boolean;
   // v16->v17
   useCtrlFForFind?: boolean;
+  // v23->v24
+  txMode?: TxMode;
 };
 
 type MigrationGraphingSettings = {
@@ -275,6 +278,26 @@ function forEachRootConfig(
   // presets. A migration from v23 onwards needs to walk `appData.presets`.
   for (const profile of appData.profiles ?? []) {
     apply(profile.rootConfig);
+  }
+  apply(appData.currentAppConfig);
+}
+
+/**
+ * The v23-and-later equivalent of `forEachRootConfig`. From v23 the saved
+ * configs live in `appData.presets[i].config` rather than
+ * `appData.profiles[i].rootConfig`, so migrations from v23 onwards must walk
+ * this instead.
+ */
+function forEachPresetConfig(
+  appData: MigrationAppData,
+  apply: (rootConfig: MigrationRootConfig) => void,
+): void {
+  for (const preset of appData.presets ?? []) {
+    // `config` is optional on the loose migration type; a preset without one
+    // has nothing to migrate.
+    if (preset.config !== undefined) {
+      apply(preset.config);
+    }
   }
   apply(appData.currentAppConfig);
 }
@@ -721,6 +744,22 @@ function migrateV22toV23(appData: MigrationAppData): void {
   appData.version = 23;
 }
 
+function migrateV23toV24(appData: MigrationAppData): void {
+  // Add the TX mode setting. Existing configs adopt the new default
+  // (CHARACTER), which is the only behavior they have ever had: every
+  // keystroke is written the moment it is pressed.
+  //
+  // Note this walks `appData.presets`, not `appData.profiles` -- see
+  // `forEachPresetConfig`.
+  forEachPresetConfig(appData, (rootConfig) => {
+    rootConfig.settings = rootConfig.settings ?? {};
+    rootConfig.settings.txSettings = rootConfig.settings.txSettings ?? {};
+    rootConfig.settings.txSettings.txMode = TxMode.CHARACTER;
+  });
+
+  appData.version = 24;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -750,6 +789,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 20, apply: migrateV20toV21 },
   { from: 21, apply: migrateV21toV22 },
   { from: 22, apply: migrateV22toV23 },
+  { from: 23, apply: migrateV23toV24 },
 ];
 
 // --------------------------------------------------------------------------

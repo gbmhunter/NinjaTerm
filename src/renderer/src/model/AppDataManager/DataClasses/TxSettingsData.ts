@@ -1,6 +1,12 @@
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior, TxMode } from 'src/model/Settings/TxSettings/TxSettings';
 
 export class TxSettingsData {
+  /**
+   * Whether keystrokes go out as they are typed (character mode) or are
+   * buffered into a line sent as a single write on Enter (line mode).
+   */
+  txMode = TxMode.CHARACTER;
+
   enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
 
   /**

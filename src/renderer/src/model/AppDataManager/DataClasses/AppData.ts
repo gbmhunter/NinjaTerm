@@ -3,7 +3,7 @@ import { makeAutoObservable } from "mobx";
 import { StoredPreset } from "./StoredPreset";
 import { ProfileConfig } from "./ProfileConfig";
 
-export const LATEST_VERSION = 23;
+export const LATEST_VERSION = 24;
 
 export class AppData {
   // Version of the AppData class.

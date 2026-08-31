@@ -19,6 +19,7 @@ import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/Displa
 import FilterPopover from './Filters/FilterPopover';
 import { portStateToButtonProps } from 'src/view/Components/PortStateToButtonProps';
 import RightDrawerView from './RightDrawer/RightDrawerView';
+import TxLineBar from './TxLineBar';
 
 interface Props {
   app: App;
@@ -187,7 +188,12 @@ export default observer((props: Props) => {
           overflow: 'hidden', padding: '3px' }} // Hide overflow to allow for correct sizing. But this
                                                 // blocks the outer flow effect, so add 3px padding
         >
-        {terminals}
+        {/* Terminals plus the TX line bar, in a column so the bar spans the
+            terminal panes only and not the right drawer beside them. */}
+        <div style={{ flexGrow: 1, minWidth: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {terminals}
+          <TxLineBar app={app} />
+        </div>
         {/* ==================================================================== */}
         {/* RIGHT DRAWER (wrapped in a div so we can hide it all) */}
         {/* ==================================================================== */}

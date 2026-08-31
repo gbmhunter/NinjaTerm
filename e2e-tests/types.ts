@@ -6,4 +6,6 @@ declare global {
   }
 
   var _testWrittenData: number[];
+  /** One entry per serial:write-data call, holding that call's bytes. */
+  var _testWriteChunks: number[][];
 }

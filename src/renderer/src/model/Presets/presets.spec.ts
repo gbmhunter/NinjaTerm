@@ -7,6 +7,9 @@ import { flattenPatch } from './PresetController';
 import { branchesInPatch, deriveScope, getAtPath, normalizeScope } from './PresetScope';
 import { PRESET_FIELD_LABELS } from './presetFieldLabels';
 
+/** The preset whose job is to restore the shipped defaults. */
+const DEFAULTS_PRESET_ID = 'ninjaterm-default';
+
 describe('built-in presets', () => {
   test('ids are unique, stable-looking and kebab-case', () => {
     // Ids end up in data-testids, so treat them as public surface.
@@ -84,13 +87,67 @@ describe('built-in presets', () => {
 
   test('every preset changes something relative to the defaults', () => {
     // A preset that matches the defaults exactly is dead weight, and almost
-    // certainly a mistake.
+    // certainly a mistake. The one deliberate exception is the preset whose
+    // entire job is to restore those defaults -- covered by its own tests below.
     const defaults = new ProfileConfig();
     for (const preset of BUILT_IN_PRESETS) {
+      if (preset.id === DEFAULTS_PRESET_ID) {
+        continue;
+      }
       const differing = flattenPatch(preset.patch).filter(
         ([path, value]) => getAtPath(defaults, path) !== value,
       );
       expect(differing.length, `${preset.id} matches the defaults exactly`).toBeGreaterThan(0);
+    }
+  });
+
+  test('the defaults preset restores every value to its default', () => {
+    // The inverse of the test above, and the whole contract of this preset: if
+    // any patched value drifts from the shipped default, applying it would
+    // leave the user somewhere that isn't "default".
+    const defaults = new ProfileConfig();
+    const preset = BUILT_IN_PRESETS.find((candidate) => candidate.id === DEFAULTS_PRESET_ID);
+    expect(preset, 'the defaults preset must exist').toBeDefined();
+
+    const differing = flattenPatch(preset!.patch).filter(
+      ([path, value]) => getAtPath(defaults, path) !== value,
+    );
+    expect(differing, 'these paths do not match the shipped defaults').toEqual([]);
+  });
+
+  test('the defaults preset covers the whole of RX, TX and display', () => {
+    // Built from the data classes rather than hand-authored, so a newly added
+    // setting is picked up automatically. This asserts that actually happens --
+    // a missed field would silently survive a "reset to defaults".
+    const defaults = new ProfileConfig() as unknown as Record<string, any>;
+    const preset = BUILT_IN_PRESETS.find((candidate) => candidate.id === DEFAULTS_PRESET_ID);
+    const patched = new Set(flattenPatch(preset!.patch).map(([path]) => path));
+
+    for (const branch of ['rxSettings', 'txSettings', 'displaySettings']) {
+      for (const [key, value] of Object.entries(defaults.settings[branch])) {
+        const path = `settings.${branch}.${key}`;
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+          continue;
+        }
+        // Colours and tooltip preferences are taste and accessibility choices,
+        // deliberately left alone like every other built-in leaves them.
+        if (BUILT_IN_FORBIDDEN_PATHS.includes(path)) {
+          expect(patched.has(path), `${path} should NOT be reset`).toBe(false);
+          continue;
+        }
+        expect(patched.has(path), `${path} is missing from the defaults preset`).toBe(true);
+      }
+    }
+  });
+
+  test("the defaults preset leaves the user's own data alone", () => {
+    // Resetting settings must not double as "delete my macros, highlight rules
+    // and filters", which would make this preset a trap.
+    const preset = BUILT_IN_PRESETS.find((candidate) => candidate.id === DEFAULTS_PRESET_ID);
+    const branches = branchesInPatch(preset!.patch);
+
+    for (const branch of ['terminal.macroController', 'terminal.filters', 'settings.rulesSettings', 'settings.logSettings', 'settings.portSettings']) {
+      expect(branches, `the defaults preset must not touch ${branch}`).not.toContain(branch);
     }
   });
 

@@ -18,7 +18,8 @@ import FakePortsController from './FakePorts/FakePortsController';
 import { ConnState } from './Settings/PortSettings/PortSettings';
 import Terminals from './Terminals/Terminals';
 import { SingleTerminal, DataDirection } from './Terminals/SingleTerminal/SingleTerminal';
-import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from './Settings/TxSettings/TxSettings';
+import { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior, TxMode, enterKeyBytes } from './Settings/TxSettings/TxSettings';
+import TxLineController, { focusTxLineBar } from './TxLine/TxLineController';
 import { SelectionInfo } from './SelectionController/SelectionController';
 import { isRunningOnWindows } from './Util/Util';
 import { AppDataManager } from './AppDataManager/AppDataManager';
@@ -130,6 +131,9 @@ export class App {
 
   snackbar: SnackbarController;
 
+  /** Holds the line being composed when TX line mode is active. */
+  txLineController: TxLineController;
+
   presetController: PresetController;
 
   shownMainPane: MainPanes;
@@ -192,6 +196,8 @@ export class App {
     this.soundPlayer = new SoundPlayer();
 
     this.terminals = new Terminals(this);
+
+    this.txLineController = new TxLineController();
 
     this.numBytesReceived = 0;
     this.numBytesTransmitted = 0;
@@ -847,6 +853,16 @@ export class App {
       return;
     }
 
+    // In line mode a paste belongs in the buffer, not straight down the wire.
+    // (When the line bar itself has focus this method has already returned via
+    // isTypingInField, and the browser's native paste handles it.) Any newlines
+    // are kept verbatim, so the pasted block still leaves as a single write.
+    if (this.settings.txSettings.txMode === TxMode.LINE) {
+      this.txLineController.setPendingLine(this.txLineController.pendingLine + text);
+      focusTxLineBar();
+      return;
+    }
+
     // Convert string to Uint8Array
     const dataAsUint8Array = new TextEncoder().encode(text);
     await this.writeBytesToSerialPort(dataAsUint8Array);
@@ -987,6 +1003,18 @@ export class App {
       return;
     }
 
+    // In line mode nothing is sent per-keystroke; the line bar owns the text
+    // until Enter. The bar normally has focus, but the terminal can still hold
+    // it (e.g. straight after a click), so forward a printable key into the
+    // buffer and move focus there rather than dropping the keystroke.
+    if (this.settings.txSettings.txMode === TxMode.LINE) {
+      if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        this.txLineController.setPendingLine(this.txLineController.pendingLine + event.key);
+      }
+      focusTxLineBar();
+      return;
+    }
+
     // Serial port is open, let's send it to the serial
     // port
 
@@ -1034,17 +1062,13 @@ export class App {
         return;
       }
     } else if (event.key === 'Enter') {
-      if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_LF) {
-        bytesToWrite.push(0x0a);
-      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CR) {
-        bytesToWrite.push(0x0d);
-      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_CRLF) {
-        bytesToWrite.push(0x0d);
-        bytesToWrite.push(0x0a);
-      } else if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_BREAK) {
-        await this.sendBreakSignal();
+      if (this.settings.txSettings.enterKeyPressBehavior === EnterKeyPressBehavior.SEND_BREAK) {
+        // A break is a line condition, not a character. Flag it so the send at
+        // the bottom sends the break instead of falling through to an
+        // (empty) write.
+        sendBreakSignal = true;
       } else {
-        throw Error('Unsupported enter key press behavior!');
+        bytesToWrite.push(...enterKeyBytes(this.settings.txSettings.enterKeyPressBehavior));
       }
     } else if (event.key.length === 1 && alphaNumericChars.includes(event.key)) {
       // Pressed key is alphanumeric
@@ -1122,6 +1146,42 @@ export class App {
       await this.writeBytesToSerialPort(Uint8Array.from(bytesToWrite));
     }
   };
+
+  /**
+   * Sends the line currently held in the TX line bar, then clears it.
+   *
+   * The whole line -- text plus terminator -- goes out in ONE call to
+   * `writeBytesToSerialPort`, and so one call to `ConnController.writeData`.
+   * That is the entire point of line mode: character mode writes once per
+   * keystroke, which on a socket means one TCP segment per character, and
+   * instruments that parse one datagram per command ignore the result.
+   * See issue #410.
+   */
+  async sendPendingLine() {
+    if (this.connController.connState !== ConnState.OPENED) {
+      this.snackbar.sendToSnackbar('Cannot send, the connection is not open.', 'error');
+      return;
+    }
+
+    const behavior = this.settings.txSettings.enterKeyPressBehavior;
+    const bytesToWrite = this.txLineController.buildBytes(behavior);
+
+    if (this.settings.displaySettings.autoScrollLockOnTx) {
+      this.terminals.activeTerminal.setScrollLock(true);
+    }
+
+    if (bytesToWrite.length > 0) {
+      await this.writeBytesToSerialPort(bytesToWrite);
+    }
+
+    // A break is a line condition rather than a character, so it follows the
+    // text out-of-band. Matches what character mode does on Enter.
+    if (behavior === EnterKeyPressBehavior.SEND_BREAK) {
+      await this.sendBreakSignal();
+    }
+
+    this.txLineController.commitToHistory();
+  }
 
   /**
    * Sends a break signal to the serial port for 200ms. Port must be open otherwise an error will be shown.

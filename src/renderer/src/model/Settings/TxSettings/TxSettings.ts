@@ -8,6 +8,37 @@ export enum EnterKeyPressBehavior {
   SEND_BREAK = 'Send break', // Send the break signal (not a character)
 }
 
+export enum TxMode {
+  /** Send each keystroke down the wire the moment it is pressed. */
+  CHARACTER = 'Character',
+  /** Compose a line in the input bar, then send it as a single write on Enter. */
+  LINE = 'Line',
+}
+
+/**
+ * The bytes that terminate a line for a given Enter-key behavior.
+ *
+ * Shared by character mode (one keystroke at a time) and line mode (the whole
+ * line in one write) so the two cannot drift apart.
+ *
+ * Returns an empty array for SEND_BREAK: a break is a line-condition on the
+ * wire rather than a character, so it is sent out-of-band by the caller.
+ */
+export function enterKeyBytes(behavior: EnterKeyPressBehavior): number[] {
+  switch (behavior) {
+    case EnterKeyPressBehavior.SEND_LF:
+      return [0x0a];
+    case EnterKeyPressBehavior.SEND_CR:
+      return [0x0d];
+    case EnterKeyPressBehavior.SEND_CRLF:
+      return [0x0d, 0x0a];
+    case EnterKeyPressBehavior.SEND_BREAK:
+      return [];
+    default:
+      throw Error('Unsupported enter key press behavior!');
+  }
+}
+
 export enum BackspaceKeyPressBehavior {
   SEND_BACKSPACE,
   SEND_DELETE,
@@ -22,6 +53,17 @@ export enum DeleteKeyPressBehavior {
 export default class TxSettings {
 
   profileManager: AppDataManager;
+
+  /**
+   * Whether keystrokes are sent as they are typed, or buffered into a line
+   * that is sent in one go when Enter is pressed.
+   *
+   * Line mode exists because character mode issues one write (and so, on a
+   * socket, one TCP segment) per keystroke. Devices that parse one datagram
+   * per command -- SCPI instruments over TCP being the common case -- ignore
+   * a command that arrives fragmented across several segments.
+   */
+  txMode = TxMode.CHARACTER;
 
   enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
 
@@ -76,6 +118,7 @@ export default class TxSettings {
   _loadConfig = () => {
     const configToLoad = this.profileManager.appData.currentAppConfig.settings.txSettings;
 
+    this.txMode = configToLoad.txMode;
     this.enterKeyPressBehavior = configToLoad.enterKeyPressBehavior;
     this.backspaceKeyPressBehavior = configToLoad.backspaceKeyPressBehavior;
     this.deleteKeyPressBehavior = configToLoad.deleteKeyPressBehavior;
@@ -88,6 +131,7 @@ export default class TxSettings {
   _saveConfig = () => {
     const config = this.profileManager.appData.currentAppConfig.settings.txSettings;
 
+    config.txMode = this.txMode;
     config.enterKeyPressBehavior = this.enterKeyPressBehavior;
     config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
     config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
@@ -97,6 +141,11 @@ export default class TxSettings {
     config.useCtrlFForFind = this.useCtrlFForFind;
 
     this.profileManager.saveAppData();
+  };
+
+  setTxMode = (value: TxMode) => {
+    this.txMode = value;
+    this._saveConfig();
   };
 
   setEnterKeyPressBehavior = (value: EnterKeyPressBehavior) => {

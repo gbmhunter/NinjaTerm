@@ -39,6 +39,16 @@ export class ElectronAppTestHarness {
    */
   writtenData: number[] = [];
 
+  /**
+   * One entry per call to `serial:write-data`, each holding that call's bytes.
+   *
+   * `writtenData` above flattens every write into a single byte array, which
+   * cannot distinguish six one-byte writes from one six-byte write. That is
+   * exactly the distinction TX line mode is about (issue #410), so the chunk
+   * boundaries are captured separately here.
+   */
+  writeChunks: number[][] = [];
+
   electronApp!: ElectronApplication;
 
   /** The main page of the Electron app. Saved in setupElectronApp(). */
@@ -182,6 +192,13 @@ export class ElectronAppTestHarness {
         }
         global._testWrittenData.push(...data);
 
+        // Also record this write's bytes as their own chunk, so tests can
+        // assert on how many writes happened, not just the bytes overall.
+        if (!global._testWriteChunks) {
+          global._testWriteChunks = [];
+        }
+        global._testWriteChunks.push(Array.from(data));
+
         return { success: true };
       });
 
@@ -202,6 +219,7 @@ export class ElectronAppTestHarness {
     // Initialize the global test data storage in the main process
     await this.electronApp.evaluate(() => {
       global._testWrittenData = [];
+      global._testWriteChunks = [];
     });
   };
 
@@ -209,13 +227,22 @@ export class ElectronAppTestHarness {
    * Retrieves captured written data from the main process and updates writtenData.
    */
   updateWrittenDataFromMainProcess = async () => {
-    const capturedData = await this.electronApp.evaluate(() => {
+    const captured = await this.electronApp.evaluate(() => {
       const data = global._testWrittenData || [];
+      const chunks = global._testWriteChunks || [];
       global._testWrittenData = []; // Clear after retrieving
-      return data;
+      global._testWriteChunks = [];
+      return { data, chunks };
     });
 
-    this.writtenData.push(...capturedData);
+    this.writtenData.push(...captured.data);
+    this.writeChunks.push(...captured.chunks);
+  };
+
+  /** Clears both the flattened written data and the per-write chunks. */
+  clearWrittenData = () => {
+    this.writtenData = [];
+    this.writeChunks = [];
   };
 
   /**
@@ -442,6 +469,14 @@ export class ElectronAppTestHarness {
     await this.dismissTooltipsAndClick('[data-testid="settings-button"]');
     await this.page.waitForTimeout(300);
     await this.dismissTooltipsAndClick('[data-testid="profile-settings-button"]');
+    await this.page.waitForTimeout(300);
+  };
+
+  /** Opens Settings and selects the TX Settings category. */
+  goToTxSettings = async () => {
+    await this.dismissTooltipsAndClick('[data-testid="settings-button"]');
+    await this.page.waitForTimeout(300);
+    await this.dismissTooltipsAndClick('[data-testid="tx-settings-button"]');
     await this.page.waitForTimeout(300);
   };
 

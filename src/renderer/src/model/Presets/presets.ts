@@ -15,11 +15,71 @@ import {
   BackspaceKeyPressBehavior,
   DeleteKeyPressBehavior,
   EnterKeyPressBehavior,
+  TxMode,
 } from 'src/model/Settings/TxSettings/TxSettings';
 import { TerminalFont, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 
-import { BuiltInPresetDef, Preset } from './Preset';
+import { DisplaySettingsData } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
+import { RxSettingsData } from 'src/model/AppDataManager/DataClasses/RxSettingsData';
+import { TxSettingsData } from 'src/model/AppDataManager/DataClasses/TxSettingsData';
+
+import { BUILT_IN_FORBIDDEN_PATHS, BuiltInPresetDef, ConfigPatch, Preset } from './Preset';
 import { deriveScope } from './PresetScope';
+
+/**
+ * The branches the "NinjaTerm defaults" preset restores, each paired with a
+ * freshly-constructed defaults object for that branch.
+ *
+ * These three data classes are imported rather than the whole `ProfileConfig`
+ * on purpose: `ProfileConfig` reaches into the Terminals module graph, which
+ * imports back round to here, and the resulting cycle leaves it undefined at
+ * the point this module builds its presets. Each of these only imports the
+ * settings enums this file already uses.
+ */
+const DEFAULTS_PRESET_BRANCHES: ReadonlyArray<[string, () => object]> = [
+  ['rxSettings', () => new RxSettingsData()],
+  ['txSettings', () => new TxSettingsData()],
+  ['displaySettings', () => new DisplaySettingsData()],
+];
+
+/**
+ * Builds the patch for the "NinjaTerm defaults" preset from a fresh
+ * `ProfileConfig`, rather than hand-authoring a hundred default values that
+ * would silently rot the first time a default changed.
+ *
+ * Only the RX, TX and display branches are restored. Everything else is either
+ * off-limits to a built-in (`BUILT_IN_FORBIDDEN_BRANCHES`) or is the user's own
+ * data -- macros, highlight rules, filters, the log directory, the connection
+ * settings. A preset that silently deleted those would be a trap, not a reset.
+ * Colours and tooltip preferences are skipped for the same reason the other
+ * built-ins skip them: they are taste and accessibility choices, not part of the
+ * task.
+ */
+function buildDefaultsPatch(): ConfigPatch {
+  const settings: Record<string, Record<string, unknown>> = {};
+
+  for (const [branchName, makeDefaults] of DEFAULTS_PRESET_BRANCHES) {
+    const branchPath = `settings.${branchName}`;
+    const copied: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(makeDefaults())) {
+      // Every field in these branches is a scalar today. A nested object would
+      // need its own path handling to stay labelled, so skip rather than emit
+      // a path the confirmation dialog can't name.
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        continue;
+      }
+      if (BUILT_IN_FORBIDDEN_PATHS.includes(`${branchPath}.${key}`)) {
+        continue;
+      }
+      copied[key] = value;
+    }
+
+    settings[branchName] = copied;
+  }
+
+  return { settings } as ConfigPatch;
+}
 
 /**
  * The built-in presets, in the order they are listed in the UI.
@@ -133,6 +193,37 @@ const BUILT_IN_PRESET_DEFS: BuiltInPresetDef[] = [
     },
   },
   {
+    id: 'line-mode',
+    name: 'Line mode (SCPI instruments)',
+    description: 'Compose a whole command and send it as a single write.',
+    details:
+      'For instruments that expect one complete command per message, SCPI over TCP being ' +
+      'the common case. A bar appears below the terminal: type a command, press Enter, and ' +
+      'the whole line is sent in one write instead of one write per keystroke. Many ' +
+      'instruments ignore a command that arrives split across several TCP segments. Local ' +
+      'echo is turned on so you can see what you sent, since instruments do not echo, and ' +
+      'ANSI parsing is turned off because they send plain text.',
+    keywords: 'scpi instrument line mode tcp socket visa lxi command query idn one write segment',
+    patch: {
+      settings: {
+        txSettings: {
+          txMode: TxMode.LINE,
+          // IEEE 488.2 terminates a message with LF; instruments that want CRLF
+          // accept it too, but LF alone is the safer default.
+          enterKeyPressBehavior: EnterKeyPressBehavior.SEND_LF,
+        },
+        rxSettings: {
+          dataType: DataType.ASCII,
+          // Instruments echo nothing back, so without this you never see what
+          // you sent alongside the reply.
+          localTxEcho: true,
+          // Replies are plain ASCII; there are no escape sequences to interpret.
+          ansiEscapeCodeParsingEnabled: false,
+        },
+      },
+    },
+  },
+  {
     id: 'plain-text-log',
     name: 'Plain-text log capture',
     description: 'Long-running capture of human-readable output, with timestamps.',
@@ -155,6 +246,18 @@ const BUILT_IN_PRESET_DEFS: BuiltInPresetDef[] = [
         },
       },
     },
+  },
+  {
+    id: 'ninjaterm-default',
+    name: 'NinjaTerm defaults',
+    description: 'Put the RX, TX and display settings back to how they ship.',
+    details:
+      'For getting back to a known state after experimenting. Restores every RX, TX and ' +
+      'display setting to its default. Your connection settings, macros, highlight rules, ' +
+      'filters, logging and colour scheme are left exactly as they are -- this undoes ' +
+      'settings changes, it does not delete anything you have made.',
+    keywords: 'default defaults reset restore factory stock original start over clean revert',
+    patch: buildDefaultsPatch(),
   },
 ];
 

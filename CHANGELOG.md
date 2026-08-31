@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- **Two new built-in presets.** "Line mode (SCPI instruments)" turns on line mode with the RX/TX settings instruments expect, and "NinjaTerm defaults" puts the RX, TX and display settings back to how they ship — leaving your connection settings, macros, highlight rules, filters and logging untouched. The defaults preset is built from the settings data classes, so a newly added setting is covered automatically.
+- **TX line mode ([#410](https://github.com/gbmhunter/NinjaTerm/issues/410)).** `Settings > TX Settings > TX Mode` can now buffer typing into a line bar below the terminal and send the whole line as a *single* write on Enter, with history recall on Up/Down. Character mode writes once per keystroke — so one TCP segment per character — which devices that parse one datagram per command, such as SCPI instruments over TCP, ignore. AppData migrated v23→v24.
+
+### Fixed
+
+- **Pressing Enter with "send a break signal" selected no longer also issues an empty write.** The Enter handler sent the break inline and then fell through to the write at the end of `handleTerminalKeyDown` with no bytes to send.
+
 ## [5.17.0] - 2026-08-30
 
 ### Added

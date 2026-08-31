@@ -15,8 +15,9 @@ import {
   BackspaceKeyPressBehavior,
   DeleteKeyPressBehavior,
   EnterKeyPressBehavior,
+  TxMode,
 } from 'src/model/Settings/TxSettings/TxSettings';
-import { TerminalFont, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
+import { DataViewConfiguration, TerminalFont, TerminalHeightMode } from 'src/model/Settings/DisplaySettings/DisplaySettings';
 import { PRESET_CATEGORIES } from './PresetScope';
 
 /**
@@ -53,10 +54,24 @@ export const PRESET_FIELD_LABELS: Record<string, string> = {
   'settings.rxSettings.preventValuesWrappingAcrossRows': 'RX › Prevent values wrapping across rows',
   'settings.rxSettings.insertNewLineOnMatchedValue': 'RX › Insert new line on value',
 
+  'settings.rxSettings.customTimestampFormatString': 'RX › Custom timestamp format',
+  'settings.rxSettings.endianness': 'RX › Endianness',
+  'settings.rxSettings.floatStringConversionMethod': 'RX › Float conversion',
+  'settings.rxSettings.floatNumOfDecimalPlaces': 'RX › Float decimal places',
+  'settings.rxSettings.maxEscapeCodeLengthChars': 'RX › Max escape code length',
+  'settings.rxSettings.newLineMatchValueAsHex': 'RX › New line match value',
+  'settings.rxSettings.newLinePlacementOnHexValue': 'RX › New line placement',
+  'settings.rxSettings.showUnknownEscapeCodes': 'RX › Show unknown escape codes',
+  'settings.rxSettings.showWarningOnRxBreakSignal': 'RX › Warn on break signal',
+
+  'settings.txSettings.txMode': 'TX › TX mode',
   'settings.txSettings.enterKeyPressBehavior': 'TX › Enter key',
   'settings.txSettings.backspaceKeyPressBehavior': 'TX › Backspace key',
   'settings.txSettings.deleteKeyPressBehavior': 'TX › Delete key',
   'settings.txSettings.send0x01Thru0x1AWhenCtrlAThruZPressed': 'TX › Send 0x01-0x1A for Ctrl+A-Z',
+  'settings.txSettings.sendEscCharWhenAltKeyPressed': 'TX › Send ESC for Alt+key',
+  'settings.txSettings.useCtrlCVForCopyPaste': 'TX › Ctrl+C/V copy and paste',
+  'settings.txSettings.useCtrlFForFind': 'TX › Ctrl+F opens Find',
 
   'settings.displaySettings.terminalFont': 'Display › Terminal font',
   'settings.displaySettings.charSizePx': 'Display › Character size',
@@ -65,6 +80,10 @@ export const PRESET_FIELD_LABELS: Record<string, string> = {
   'settings.displaySettings.terminalHeightMode': 'Display › Terminal height mode',
   'settings.displaySettings.terminalHeightChars': 'Display › Terminal height',
   'settings.displaySettings.scrollbackBufferSizeRows': 'Display › Scrollback buffer size',
+  'settings.displaySettings.terminalFontCustomName': 'Display › Custom font name',
+  'settings.displaySettings.dataViewConfiguration': 'Display › Terminal layout',
+  'settings.displaySettings.tabStopWidth': 'Display › Tab stop width',
+  'settings.displaySettings.autoScrollLockOnTx': 'Display › Auto-scroll on TX',
 };
 
 /**
@@ -85,11 +104,13 @@ const PRESET_FIELD_ENUMS: Record<string, object> = {
   'settings.rxSettings.numberType': NumberType,
   'settings.rxSettings.hexCase': HexCase,
   'settings.rxSettings.paddingCharacter': PaddingCharacter,
+  'settings.txSettings.txMode': TxMode,
   'settings.txSettings.enterKeyPressBehavior': EnterKeyPressBehavior,
   'settings.txSettings.backspaceKeyPressBehavior': BackspaceKeyPressBehavior,
   'settings.txSettings.deleteKeyPressBehavior': DeleteKeyPressBehavior,
   'settings.displaySettings.terminalFont': TerminalFont,
   'settings.displaySettings.terminalHeightMode': TerminalHeightMode,
+  'settings.displaySettings.dataViewConfiguration': DataViewConfiguration,
 };
 
 /** "ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS" -> "Ascii control glyphs and hex glyphs" */

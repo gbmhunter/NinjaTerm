@@ -1,7 +1,7 @@
-import { Checkbox, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Tooltip } from '@mui/material';
+import { Button, Checkbox, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 
-import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior } from 'src/model/Settings/TxSettings/TxSettings';
+import TxSettings, { BackspaceKeyPressBehavior, DeleteKeyPressBehavior, EnterKeyPressBehavior, TxMode } from 'src/model/Settings/TxSettings/TxSettings';
 import BorderedSection from 'src/view/Components/BorderedSection';
 
 interface Props {
@@ -13,6 +13,58 @@ function TxSettingsView(props: Props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}>
+      {/* =============================================================================== */}
+      {/* TX MODE */}
+      {/* =============================================================================== */}
+      <BorderedSection
+        title="TX Mode"
+        childStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
+        style={{ width: '400px' }}
+      >
+        <FormControl>
+          <FormLabel>How typed data is sent:</FormLabel>
+          <RadioGroup
+            value={txSettings.txMode}
+            onChange={(e) => {
+              txSettings.setTxMode(e.target.value as any);
+            }}
+            data-testid="tx-mode-radio-group"
+          >
+            {/* CHARACTER MODE */}
+            <Tooltip title="Send each keystroke the moment it is pressed. This is how a traditional terminal behaves, and is what you want when talking to something with a shell or command-line interface." placement="right" {...txSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+              <FormControlLabel value={TxMode.CHARACTER} control={<Radio />} label="Character (send as you type)" data-testid="tx-mode-character" />
+            </Tooltip>
+            {/* LINE MODE */}
+            <Tooltip title="Compose a line in the bar below the terminal and send the whole thing as a single write when you press Enter. Some devices - SCPI instruments over TCP being the common case - only accept a command that arrives in one piece, and will ignore one split across a write per character." placement="right" {...txSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}>
+              <FormControlLabel value={TxMode.LINE} control={<Radio />} label="Line (send on Enter, as one write)" data-testid="tx-mode-line" />
+            </Tooltip>
+          </RadioGroup>
+        </FormControl>
+        {/* =============================================================================== */}
+        {/* OPEN MANUAL (TX mode section) */}
+        {/* =============================================================================== */}
+        <Tooltip
+          title="Open the NinjaTerm manual in your browser, at the section explaining the difference between character and line mode."
+          placement="top"
+          {...txSettings.profileManager.app.settings.displaySettings.getBasicTooltipConfig()}
+        >
+          <Button
+            variant="outlined"
+            color="primary"
+            size="small"
+            sx={{ textTransform: 'none', alignSelf: 'start', marginTop: '8px' }}
+            onClick={async () => {
+              try {
+                await window.electronAPI.shell.openExternal('https://ninjaterm.mbedded.ninja/manual#sending-data-tx-mode');
+              } catch (error) {
+                console.error('Failed to open manual:', error);
+              }
+            }}
+          >
+            Open Manual
+          </Button>
+        </Tooltip>
+      </BorderedSection>
       {/* =============================================================================== */}
       {/* ENTER PRESSED */}
       {/* =============================================================================== */}
