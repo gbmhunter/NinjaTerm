@@ -1,0 +1,50 @@
+# Builds the Docusaurus documentation site and deploys it to Cloudflare Pages
+# (ninjaterm.mbedded.ninja). See MIGRATION-CLOUDFLARE.md.
+#
+# Direct Upload rather than a Pages Git integration: connecting the repo to
+# Pages needs an OAuth flow in the dashboard, and this keeps the deploy
+# definition in the repo instead.
+name: Deploy docs
+
+on:
+  push:
+    branches: [main]
+    # Only when the docs actually change, so an Electron-app commit doesn't
+    # trigger a site deploy.
+    paths:
+      - 'docs/**'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+# A newer commit supersedes an in-flight deploy rather than racing it.
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: docs/.node-version
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - run: npm ci
+        working-directory: docs
+
+      - run: npm run build
+        working-directory: docs
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: docs
+          command: pages deploy build --project-name=ninjaterm-docs --branch=main

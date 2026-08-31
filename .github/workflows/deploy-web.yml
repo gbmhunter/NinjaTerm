@@ -1,0 +1,50 @@
+# Builds the Vite web app and deploys it to Cloudflare Pages
+# (ninjaterm-app.mbedded.ninja). See MIGRATION-CLOUDFLARE.md.
+#
+# Direct Upload rather than a Pages Git integration: connecting the repo to
+# Pages needs an OAuth flow in the dashboard, and this keeps the deploy
+# definition in the repo instead.
+name: Deploy web app
+
+on:
+  push:
+    branches: [main]
+    # Only when the web app actually changes, so an Electron-app commit doesn't
+    # trigger a site deploy.
+    paths:
+      - 'web/**'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+# A newer commit supersedes an in-flight deploy rather than racing it.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: web/.node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - run: npm ci
+        working-directory: web
+
+      - run: npm run build
+        working-directory: web
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: web
+          command: pages deploy dist --project-name=ninjaterm-app --branch=main

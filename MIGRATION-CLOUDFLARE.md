@@ -61,8 +61,10 @@ Cloudflare's edge instead of out to the Pages origin, so it could never
 complete. Setting the records to **DNS-only** (grey cloud) resolved it
 immediately. That also matches how they were configured for Netlify.
 
-The remaining manual step is deploys on push — see below. Until that is wired
-up, a docs change needs a manual `wrangler pages deploy`.
+Deploys on push are wired up too: `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` are repository secrets, and
+`.github/workflows/deploy-docs.yml` / `deploy-web.yml` build and upload each
+site when its own directory changes.
 
 ## Deploying: Direct Upload from GitHub Actions (recommended)
 
@@ -78,7 +80,9 @@ Create an API token at *My Profile → API Tokens* with:
   (only needed for attaching the custom domains)
 
 Store it as the repository secret `CLOUDFLARE_API_TOKEN`, plus
-`CLOUDFLARE_ACCOUNT_ID`. Do not commit it or paste it into a chat.
+`CLOUDFLARE_ACCOUNT_ID` (`gh secret set CLOUDFLARE_API_TOKEN` reads the value
+from stdin, so it stays out of your shell history and the process list). Do not
+commit it or paste it into a chat.
 
 Both projects already exist, so this is only for reference if one is ever
 recreated:
@@ -133,8 +137,10 @@ The web app version is the same with `docs` → `web`, `build` → `dist`, and
 `--project-name=ninjaterm-app`. Keep the `paths:` filter so a change to the
 Electron app doesn't redeploy both sites.
 
-These workflows are **not committed yet** — they would fail on every push until
-the two secrets exist. Add the secrets first, then add the files.
+Both workflows are committed and the secrets are set, so this is a description
+of what is running rather than something to do. Each is also
+`workflow_dispatch`-able for a manual redeploy, and uses a `concurrency` group
+so a newer commit supersedes an in-flight deploy instead of racing it.
 
 ## Custom domains and DNS
 
