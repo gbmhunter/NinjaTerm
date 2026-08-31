@@ -1,0 +1,5 @@
+# Cloudflare Pages configuration for the NinjaTerm web app
+# (ninjaterm-app.mbedded.ninja). Replaces the previous netlify.toml.
+name = "ninjaterm-app"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-08-31"

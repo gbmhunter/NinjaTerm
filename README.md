@@ -169,7 +169,9 @@ fails, the release stays an invisible draft rather than going out incomplete.
 
 ## Deployment
 
-Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automatically deploys when the `main` branch is updated. Netlify also creates preview deploys on pull requests (link will be automatically posted into the PR comments).
+Cloudflare Pages hosts the documentation site at `ninjaterm.mbedded.ninja`, built from `docs/`. See [MIGRATION-CLOUDFLARE.md](MIGRATION-CLOUDFLARE.md) for the project settings and how deploys are triggered.
+
+Previously hosted on Netlify, which paused both projects in August 2026 when the account ran out of usage credits.
 
 ## Web App
 
@@ -177,7 +179,7 @@ NinjaTerm used to be a progressive web app (PWA). This older web app is now loca
 
 This is no longer being updated and is in maintenance mode only.
 
-The web app is deployed by Netlify to `ninjaterm-app.mbedded.ninja`.
+The web app is deployed by Cloudflare Pages to `ninjaterm-app.mbedded.ninja`, built from `web/`.
 
 ### styled_default is not a function
 

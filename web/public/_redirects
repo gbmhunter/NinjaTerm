@@ -1,0 +1,3 @@
+# react-router serves every route from index.html; without this, a deep link
+# or a refresh away from / returns 404.
+/*  /index.html  200

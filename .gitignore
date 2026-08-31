@@ -30,3 +30,8 @@ yarn-error.log*
 .claude/settings.local.json
 
 out/
+
+# Local secrets. CLOUDFLARE_API_TOKEN lives here for Pages deploys -- never commit.
+.env
+.env.*
+!.env.example

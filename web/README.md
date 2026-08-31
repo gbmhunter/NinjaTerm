@@ -83,7 +83,7 @@ Arduino sketches in `arduino-serial` allow you to program different applications
 
 ## Deployment
 
-Netlify is used to deploy and host the static NinjaTerm HTML/JS. Netlify automatically deploys when the `main` branch is updated. Netlify also creates preview deploys on pull requests (link will be automatically posted into the PR comments).
+Cloudflare Pages hosts this app at `ninjaterm-app.mbedded.ninja`. See [MIGRATION-CLOUDFLARE.md](../MIGRATION-CLOUDFLARE.md) in the repository root for the project settings.
 
 ## Code Architecture
 

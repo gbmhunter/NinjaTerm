@@ -1,0 +1,9 @@
+# Cloudflare Pages configuration for the NinjaTerm documentation site
+# (ninjaterm.mbedded.ninja). Replaces the previous netlify.toml.
+#
+# Only the build output directory lives here. The build command and root
+# directory are set per-project (dashboard, or the --project-name/working
+# directory used by `wrangler pages deploy`); see MIGRATION-CLOUDFLARE.md.
+name = "ninjaterm-docs"
+pages_build_output_dir = "build"
+compatibility_date = "2026-08-31"
