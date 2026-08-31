@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [5.18.0] - 2026-08-31
+
 ### Added
 
 - **Two new built-in presets.** "Line mode (SCPI instruments)" turns on line mode with the RX/TX settings instruments expect, and "NinjaTerm defaults" puts the RX, TX and display settings back to how they ship — leaving your connection settings, macros, highlight rules, filters and logging untouched. The defaults preset is built from the settings data classes, so a newly added setting is covered automatically.
@@ -1156,6 +1158,7 @@ Fixed bug where pressing Ctrl-Shift-C to copy text from a terminal would enable 
 - Added special delete behaviour for backspace button when in "send on enter" mode, closes #90.
 
 [unreleased]: https://github.com/gbmhunter/NinjaTerm/compare/v5.9.0...HEAD
+[5.18.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.17.0...v5.18.0
 [5.17.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.16.0...v5.17.0
 [5.16.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.15.0...v5.16.0
 [5.15.0]: https://github.com/gbmhunter/NinjaTerm/compare/v5.14.0...v5.15.0
