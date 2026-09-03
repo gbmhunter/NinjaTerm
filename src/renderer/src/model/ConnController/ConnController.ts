@@ -1071,18 +1071,18 @@ export class ConnController {
     // Check if we're using serial port or socket connection
     if (connectionType === ConnectionType.SERIAL_PORT) {
       // Serial port connection
-      const result = await window.electronAPI.serial.writeData(this.currentPortPath!, Array.from(bytesToWrite));
+      const result = await window.electronAPI.serial.writeData(this.currentPortPath!, bytesToWrite);
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }
     } else if (connectionType === ConnectionType.SOCKET) {
       // Socket connection
-      const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, Array.from(bytesToWrite));
+      const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, bytesToWrite);
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }
     } else if (connectionType === ConnectionType.RTT) {
-      const result = await window.electronAPI.rtt.writeData(this.currentRttConnectionId!, Array.from(bytesToWrite));
+      const result = await window.electronAPI.rtt.writeData(this.currentRttConnectionId!, bytesToWrite);
       if (!result.success) {
         throw new Error(result.error || 'Failed to write data');
       }

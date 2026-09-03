@@ -184,14 +184,17 @@ export function initializeSerialHandlers(mainWindow: BrowserWindow) {
     activeSerialPorts.clear();
   });
 
-  ipcMain.handle('serial:write-data', async (event, portPath: string, data: number[]) => {
+  ipcMain.handle('serial:write-data', async (event, portPath: string, data: Uint8Array) => {
     try {
       const port = activeSerialPorts.get(portPath);
       if (!port) {
         return { success: false, error: 'Port not found' };
       }
 
-      const buffer = Buffer.from(data);
+      // `data` arrives as a Uint8Array: structured clone carries typed arrays
+      // natively. The number[] this used to take cost a boxed value per byte
+      // across the bridge, on the TX path.
+      const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
       await new Promise<void>((resolve, reject) => {
         port.write(buffer, (err) => {
           if (err) {
@@ -279,11 +282,11 @@ export function getActivePortPath(): string | null {
 /**
  * Write bytes to an open serial port. Used by the MCP service.
  */
-export function writeToPort(portPath: string, data: number[]): Promise<void> {
+export function writeToPort(portPath: string, data: Uint8Array): Promise<void> {
   const port = activeSerialPorts.get(portPath);
   if (!port) return Promise.reject(new Error(`Port not open: ${portPath}`));
   return new Promise((resolve, reject) => {
-    port.write(Buffer.from(data), (err) => {
+    port.write(Buffer.from(data.buffer, data.byteOffset, data.byteLength), (err) => {
       if (err) reject(err); else resolve();
     });
   });

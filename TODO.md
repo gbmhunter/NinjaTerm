@@ -292,11 +292,11 @@ partition changes, and only readable by main through `executeJavaScript`.
       Combined with `"files": ["node_modules/**/*"]` in the electron-builder
       config, there is real risk of shipping the toolchain in the installer. Move
       them and compare packaged size before/after.
-- [ ] **IPC sends bytes as `number[]`.** `serial:write-data` still does
-      (`preload/index.ts:35`). Structured clone handles
-      `Uint8Array`/`ArrayBuffer` natively and ~10x cheaper. RX already does the
-      right thing (Buffer). `fs:write-file` was converted alongside the logging
-      fix on 2026-09-03.
+- [x] **IPC sends bytes as `number[]`.** (done 2026-09-03) All write channels
+      now take `Uint8Array`: `fs:write-file` alongside the logging fix, then
+      `serial:write-data`, `socket:write-data` and `rtt:write-data` together
+      (they shared the one `Array.from` site in `ConnController.writeData`).
+      Bluetooth already did. RX was always a Buffer.
 - [ ] **1646 lines of test fixtures ship in the renderer bundle.**
       `FakePortsController.tsx` builds ~25 fake ports eagerly in a field
       initializer on `App`. Make it a dynamic `import()` when the dialog opens —

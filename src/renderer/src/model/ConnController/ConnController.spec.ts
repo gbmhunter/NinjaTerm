@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
 import { ConnController, PortType } from './ConnController';
 import { App } from '../App';
+import { ConnectionType } from '../Settings/PortSettings/PortSettings';
 
 describe('SerialController', () => {
   describe('sortSerialPortsNaturally', () => {
@@ -176,6 +177,32 @@ describe('SerialController', () => {
 
       await expect(conn.writeData(Uint8Array.from([0x61, 0x08]))).resolves.toBeUndefined();
       expect(serialWrite).not.toHaveBeenCalled();
+    });
+
+    it('hands the bytes to the transport as a Uint8Array, not a number[]', async () => {
+      // These IPC channels used to take `number[]`, so `writeData` converted
+      // with `Array.from` on every write — a boxed value per byte across the
+      // bridge, on the TX path. Structured clone carries typed arrays natively.
+      // Asserting the type here because a regression would still "work", just
+      // slowly and with a per-byte allocation.
+      const app = new App();
+      const conn: any = app.connController;
+      conn.lastSelectedPortType = PortType.REAL;
+      conn.currentPortPath = 'COM1';
+      app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
+
+      const serialWrite = vi.fn().mockResolvedValue({ success: true });
+      (window as any).electronAPI = { serial: { writeData: serialWrite } };
+
+      const bytes = Uint8Array.from([0x61, 0x62, 0x63]);
+      await conn.writeData(bytes);
+
+      expect(serialWrite).toHaveBeenCalledTimes(1);
+      const [portPath, payload] = serialWrite.mock.calls[0];
+      expect(portPath).toBe('COM1');
+      expect(payload).toBeInstanceOf(Uint8Array);
+      expect(Array.isArray(payload)).toBe(false);
+      expect(Array.from(payload as Uint8Array)).toEqual([0x61, 0x62, 0x63]);
     });
   });
 });
