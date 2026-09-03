@@ -64,7 +64,7 @@ describe('single terminal tests', () => {
       expect(singleTerminal.cursorPosition[1]).toBe(3);
       // We should have four spaces in the second row, the last one holding the
       // cursor
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(4);
+      expect(singleTerminal.terminalRows[1].length).toBe(4);
 
       singleTerminal._cursorUp(1);
       expect(singleTerminal.cursorPosition[0]).toBe(0);
@@ -133,17 +133,17 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
 
       // Check 1st row
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(4);
-      expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe('1');
-      expect(singleTerminal.terminalRows[0].terminalChars[1].char).toBe('2');
-      expect(singleTerminal.terminalRows[0].terminalChars[2].char).toBe('3');
-      expect(singleTerminal.terminalRows[0].terminalChars[3].char).toBe(
+      expect(singleTerminal.terminalRows[0].length).toBe(4);
+      expect(singleTerminal.terminalRows[0].charAt(0)).toBe('1');
+      expect(singleTerminal.terminalRows[0].charAt(1)).toBe('2');
+      expect(singleTerminal.terminalRows[0].charAt(2)).toBe('3');
+      expect(singleTerminal.terminalRows[0].charAt(3)).toBe(
         String.fromCharCode('\n'.charCodeAt(0) + 0xe000)
       );
 
       // Check 2nd row
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(1);
-      expect(singleTerminal.terminalRows[1].terminalChars[0].char).toBe(' ');
+      expect(singleTerminal.terminalRows[1].length).toBe(1);
+      expect(singleTerminal.terminalRows[1].charAt(0)).toBe(' ');
     });
 
     test('hex glyphs are rendered correctly', () => {
@@ -163,17 +163,17 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
 
       // Check 1st row
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(4);
-      expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe('1');
-      expect(singleTerminal.terminalRows[0].terminalChars[1].char).toBe('2');
-      expect(singleTerminal.terminalRows[0].terminalChars[2].char).toBe('3');
-      expect(singleTerminal.terminalRows[0].terminalChars[3].char).toBe(
+      expect(singleTerminal.terminalRows[0].length).toBe(4);
+      expect(singleTerminal.terminalRows[0].charAt(0)).toBe('1');
+      expect(singleTerminal.terminalRows[0].charAt(1)).toBe('2');
+      expect(singleTerminal.terminalRows[0].charAt(2)).toBe('3');
+      expect(singleTerminal.terminalRows[0].charAt(3)).toBe(
         String.fromCharCode('\n'.charCodeAt(0) + 0xe100)
       );
 
       // Check 2nd row
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(1);
-      expect(singleTerminal.terminalRows[1].terminalChars[0].char).toBe(' ');
+      expect(singleTerminal.terminalRows[1].length).toBe(1);
+      expect(singleTerminal.terminalRows[1].charAt(0)).toBe(' ');
     });
 
     test('disabling new line parsing works', () => {
@@ -197,14 +197,14 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(1);
 
       // Check 1st row
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(5);
-      expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe('1');
-      expect(singleTerminal.terminalRows[0].terminalChars[1].char).toBe('2');
-      expect(singleTerminal.terminalRows[0].terminalChars[2].char).toBe('3');
-      expect(singleTerminal.terminalRows[0].terminalChars[3].char).toBe(
+      expect(singleTerminal.terminalRows[0].length).toBe(5);
+      expect(singleTerminal.terminalRows[0].charAt(0)).toBe('1');
+      expect(singleTerminal.terminalRows[0].charAt(1)).toBe('2');
+      expect(singleTerminal.terminalRows[0].charAt(2)).toBe('3');
+      expect(singleTerminal.terminalRows[0].charAt(3)).toBe(
         String.fromCharCode('\n'.charCodeAt(0) + 0xe000)
       );
-      expect(singleTerminal.terminalRows[0].terminalChars[4].char).toBe(' ');
+      expect(singleTerminal.terminalRows[0].charAt(4)).toBe(' ');
     });
 
     test('wrapping flag set correctly', () => {
@@ -227,10 +227,10 @@ describe('single terminal tests', () => {
 
       // First char should have a "tx" class, second char a "rx" class
       // These are needed so that the user can color TX and RX text differently
-      expect(singleTerminal.terminalRows[0].terminalChars[0].className).toContain('tx');
-      expect(singleTerminal.terminalRows[0].terminalChars[0].className).not.toContain('rx');
-      expect(singleTerminal.terminalRows[0].terminalChars[1].className).toContain('rx');
-      expect(singleTerminal.terminalRows[0].terminalChars[1].className).not.toContain('tx');
+      expect(singleTerminal.terminalRows[0].classNameAt(0)).toContain('tx');
+      expect(singleTerminal.terminalRows[0].classNameAt(0)).not.toContain('rx');
+      expect(singleTerminal.terminalRows[0].classNameAt(1)).toContain('rx');
+      expect(singleTerminal.terminalRows[0].classNameAt(1)).not.toContain('tx');
     });
   });
 
@@ -240,16 +240,16 @@ describe('single terminal tests', () => {
   describe('escape code tests', () => {
     test('clear() clears colour styles', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[31mred'), DataDirection.RX);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(4); // "red" + cursor
+      expect(singleTerminal.terminalRows[0].length).toBe(4); // "red" + cursor
       for (let i = 0; i < 3; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].className).toContain('f31');
+        expect(singleTerminal.terminalRows[0].classNameAt(i)).toContain('f31');
       }
       singleTerminal.clear();
       singleTerminal.parseData(stringToUint8Array('default'), DataDirection.RX);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(8); // "default" + cursor
+      expect(singleTerminal.terminalRows[0].length).toBe(8); // "default" + cursor
       // We expect the class name to be an empty string now, as we have called clear()
       for (let i = 0; i < 7; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].className).not.toContain('f31');
+        expect(singleTerminal.terminalRows[0].classNameAt(i)).not.toContain('f31');
       }
     });
   });
@@ -266,13 +266,13 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[6n'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
       // ESC, [, 6, n, then the cursor-holder space
-      expect(row.terminalChars.length).toBe(5);
-      expect(row.terminalChars[0].char).toBe(escGlyph);
-      expect(row.terminalChars[1].char).toBe('[');
-      expect(row.terminalChars[2].char).toBe('6');
-      expect(row.terminalChars[3].char).toBe('n');
+      expect(row.length).toBe(5);
+      expect(row.charAt(0)).toBe(escGlyph);
+      expect(row.charAt(1)).toBe('[');
+      expect(row.charAt(2)).toBe('6');
+      expect(row.charAt(3)).toBe('n');
       for (let i = 0; i < 4; i++) {
-        expect(row.terminalChars[i].className).toContain('unknown-escape');
+        expect(row.classNameAt(i)).toContain('unknown-escape');
       }
     });
 
@@ -281,8 +281,8 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[6n'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
       // Only the cursor-holder space remains — the sequence was dropped.
-      expect(row.terminalChars.length).toBe(1);
-      expect(row.terminalChars[0].char).toBe(' ');
+      expect(row.length).toBe(1);
+      expect(row.charAt(0)).toBe(' ');
     });
 
     test('unsupported SGR code is surfaced when enabled', () => {
@@ -291,10 +291,10 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[99m'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
       // ESC, [, 9, 9, m, then the cursor-holder space
-      expect(row.terminalChars.length).toBe(6);
-      expect(row.terminalChars[0].char).toBe(escGlyph);
+      expect(row.length).toBe(6);
+      expect(row.charAt(0)).toBe(escGlyph);
       for (let i = 0; i < 5; i++) {
-        expect(row.terminalChars[i].className).toContain('unknown-escape');
+        expect(row.classNameAt(i)).toContain('unknown-escape');
       }
     });
 
@@ -303,9 +303,9 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('\x1B[31mred'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
       // Just "red" + cursor; the recognised colour sequence is applied, not surfaced.
-      expect(row.terminalChars.length).toBe(4);
-      for (const terminalChar of row.terminalChars) {
-        expect(terminalChar.className).not.toContain('unknown-escape');
+      expect(row.length).toBe(4);
+      for (let i = 0; i < row.length; i += 1) {
+        expect(row.classNameAt(i)).not.toContain('unknown-escape');
       }
     });
   });
@@ -553,17 +553,17 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "2025-06-03T16:35:07.123 "
       // This is 26 chars. So the total length of the row should be 26 (timestamp and space) + 3 (data) + 1 (cursor) = 30
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+      expect(singleTerminal.terminalRows[0].length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
       // Extract the timestamp from the first row
-      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].text.slice(0, NUM_CHARS_IN_TIMESTAMP);
       // Parse the ISO-without-tz form back to a Date by appending the local
       // offset; assert it's within a second of "now".
       const timestampFromTerminal = new Date(timestampFromTerminalStr.trim()).getTime();
       expect(Math.abs(timestampFromTerminal - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
-      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const restOfText = singleTerminal.terminalRows[0].text.slice(NUM_CHARS_IN_TIMESTAMP);
       expect(restOfText).toBe('123 ');
     });
 
@@ -577,10 +577,10 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "2025-06-03T16:35:07.123 "
       // This is 26 chars. So the total length of the row should be 26 (timestamp and space) + 3 (data) = 29
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 3);
+      expect(singleTerminal.terminalRows[0].length).toBe(NUM_CHARS_IN_TIMESTAMP + 3);
 
       // There should be no timestamp yet on the second row, since we haven't received a visible character on that row yet
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(1);
+      expect(singleTerminal.terminalRows[1].length).toBe(1);
 
       // Send some more data
       singleTerminal.parseData(stringToUint8Array('456'), DataDirection.RX);
@@ -589,7 +589,7 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
 
       // Now we should have a timestamp and the data on the second row. Also cursor so one extra char.
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+      expect(singleTerminal.terminalRows[1].length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
     });
 
     test('UNIX_SECONDS timestamp format works', () => {
@@ -607,17 +607,17 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "1748991831"
       // Total length will be 10 (timestamp) + 1 (space) + 3 (data) + 1 (cursor) = 15
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+      expect(singleTerminal.terminalRows[0].length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
       // Extract the timestamp from the first row
-      let timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      let timestampFromTerminalStr = singleTerminal.terminalRows[0].text.slice(0, NUM_CHARS_IN_TIMESTAMP);
       // Remove space from the end
       timestampFromTerminalStr = timestampFromTerminalStr.slice(0, -1);
       const timestampFromTerminalMs = parseInt(timestampFromTerminalStr, 10) * 1000;
       expect(Math.abs(timestampFromTerminalMs - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
-      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const restOfText = singleTerminal.terminalRows[0].text.slice(NUM_CHARS_IN_TIMESTAMP);
       expect(restOfText).toBe('123 ');
     });
 
@@ -636,17 +636,17 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "1748991831.123"
       // Total length will be 15 (timestamp) + 1 (space) + 3 (data) + 1 (cursor) = 20
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+      expect(singleTerminal.terminalRows[0].length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
       // Extract the timestamp from the first row, format is 'X.SSS '.
-      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].text.slice(0, NUM_CHARS_IN_TIMESTAMP);
       // Parse "<unix_seconds>.<ms>" back into a ms value.
       const [secStr, msStr] = timestampFromTerminalStr.trim().split('.');
       const timestampFromTerminalMs = parseInt(secStr, 10) * 1000 + parseInt(msStr, 10);
       expect(Math.abs(timestampFromTerminalMs - Date.now())).toBeLessThan(2000);
 
       // Now check the rest of the text, which should be "123 "
-      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const restOfText = singleTerminal.terminalRows[0].text.slice(NUM_CHARS_IN_TIMESTAMP);
       expect(restOfText).toBe('123 ');
     });
 
@@ -669,10 +669,10 @@ describe('single terminal tests', () => {
 
       // The timestamp should have been printed in the format "2025 "
       // Total length will be 5 (year + space) + 3 (data) + 1 (cursor) = 9
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
+      expect(singleTerminal.terminalRows[0].length).toBe(NUM_CHARS_IN_TIMESTAMP + 4);
 
       // Extract the timestamp from the first row
-      const timestampFromTerminalStr = singleTerminal.terminalRows[0].terminalChars.slice(0, NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const timestampFromTerminalStr = singleTerminal.terminalRows[0].text.slice(0, NUM_CHARS_IN_TIMESTAMP);
 
       // Make sure the year is within 1 year of the current year (we could be unlucky and run the test across midnight
       // and the year changes)
@@ -683,7 +683,7 @@ describe('single terminal tests', () => {
       expect(timestampYear).toBeLessThanOrEqual(currentYear + 1);
 
       // Now check the rest of the text, which should be "123 "
-      const restOfText = singleTerminal.terminalRows[0].terminalChars.slice(NUM_CHARS_IN_TIMESTAMP).map(char => char.char).join('');
+      const restOfText = singleTerminal.terminalRows[0].text.slice(NUM_CHARS_IN_TIMESTAMP);
       expect(restOfText).toBe('123 ');
     });
 
@@ -696,8 +696,8 @@ describe('single terminal tests', () => {
 
       // There should be no timestamp on the first row, since it is empty. There should be a single
       // placeholder char.
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
-      expect(singleTerminal.terminalRows[0].terminalChars[0].char).toBe(' ');
+      expect(singleTerminal.terminalRows[0].length).toBe(1);
+      expect(singleTerminal.terminalRows[0].charAt(0)).toBe(' ');
     });
 
     test('timestamps are not added to new lines created due to wrapping', () => {
@@ -718,13 +718,13 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
 
       // Don't validate the timestamp in first line, just make sure it's full of data
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(TERMINAL_WIDTH_CHARS);
+      expect(singleTerminal.terminalRows[0].length).toBe(TERMINAL_WIDTH_CHARS);
       // Expect the second line to contain the "345" and the cursor
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(4);
-      expect(singleTerminal.terminalRows[1].terminalChars[0].char).toBe('3');
-      expect(singleTerminal.terminalRows[1].terminalChars[1].char).toBe('4');
-      expect(singleTerminal.terminalRows[1].terminalChars[2].char).toBe('5');
-      expect(singleTerminal.terminalRows[1].terminalChars[3].char).toBe(' '); // cursor
+      expect(singleTerminal.terminalRows[1].length).toBe(4);
+      expect(singleTerminal.terminalRows[1].charAt(0)).toBe('3');
+      expect(singleTerminal.terminalRows[1].charAt(1)).toBe('4');
+      expect(singleTerminal.terminalRows[1].charAt(2)).toBe('5');
+      expect(singleTerminal.terminalRows[1].charAt(3)).toBe(' '); // cursor
     });
 
     test('line can wrap in the middle of a timestamp', () => {
@@ -745,9 +745,9 @@ describe('single terminal tests', () => {
       expect(singleTerminal.terminalRows.length).toBe(2);
 
       // Don't validate the timestamp in first line, just make sure it's full of data
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(TERMINAL_WIDTH_CHARS);
+      expect(singleTerminal.terminalRows[0].length).toBe(TERMINAL_WIDTH_CHARS);
       // Length of second row should be remainder of timestamp length (26 - 20 = 6) + data (5) + cursor (1)
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(NUM_CHARS_IN_TIMESTAMP - TERMINAL_WIDTH_CHARS + 5 + 1);
+      expect(singleTerminal.terminalRows[1].length).toBe(NUM_CHARS_IN_TIMESTAMP - TERMINAL_WIDTH_CHARS + 5 + 1);
     });
   });
 
@@ -760,9 +760,9 @@ describe('single terminal tests', () => {
       expect(singleTerminal.cursorPosition[0]).toBe(0);
       expect(singleTerminal.cursorPosition[1]).toBe(8);
       // Check that spaces were added up to the cursor
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(9); // 8 spaces + cursor
+      expect(singleTerminal.terminalRows[0].length).toBe(9); // 8 spaces + cursor
       for (let i = 3; i < 8; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].char).toBe(' ');
+        expect(singleTerminal.terminalRows[0].charAt(i)).toBe(' ');
       }
     });
 
@@ -772,9 +772,9 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('1\t'), DataDirection.RX);
       expect(singleTerminal.cursorPosition[0]).toBe(0);
       expect(singleTerminal.cursorPosition[1]).toBe(4);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(5); // 4 spaces + cursor
+      expect(singleTerminal.terminalRows[0].length).toBe(5); // 4 spaces + cursor
       for (let i = 1; i < 4; i++) {
-        expect(singleTerminal.terminalRows[0].terminalChars[i].char).toBe(' ');
+        expect(singleTerminal.terminalRows[0].charAt(i)).toBe(' ');
       }
     });
 
@@ -790,11 +790,11 @@ describe('single terminal tests', () => {
       expect(singleTerminal.cursorPosition[1]).toBe(10); // Should be at the end of the line (terminal width)
       expect(singleTerminal.terminalRows.length).toBe(1); // Should be only one row
       // Original 9 chars + 1 space for tab + 1 char for cursor = 11
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
-      expect(singleTerminal.terminalRows[0].terminalChars[9].char).toBe(' '); // The space added by tab
-      expect(singleTerminal.terminalRows[0].terminalChars[9].forCursor).toBe(false);
-      expect(singleTerminal.terminalRows[0].terminalChars[10].char).toBe(' '); // The cursor char
-      expect(singleTerminal.terminalRows[0].terminalChars[10].forCursor).toBe(true);
+      expect(singleTerminal.terminalRows[0].length).toBe(11);
+      expect(singleTerminal.terminalRows[0].charAt(9)).toBe(' '); // The space added by tab
+      expect(singleTerminal.terminalRows[0].isForCursor(9)).toBe(false);
+      expect(singleTerminal.terminalRows[0].charAt(10)).toBe(' '); // The cursor char
+      expect(singleTerminal.terminalRows[0].isForCursor(10)).toBe(true);
     });
 
     test('tab when already at a tab stop moves to next tab stop', () => {
@@ -814,8 +814,8 @@ describe('single terminal tests', () => {
       // Next tab stop is at col 8. Only 1 space needed.
       expect(singleTerminal.cursorPosition[0]).toBe(0);
       expect(singleTerminal.cursorPosition[1]).toBe(8);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(9);
-      expect(singleTerminal.terminalRows[0].terminalChars[7].char).toBe(' ');
+      expect(singleTerminal.terminalRows[0].length).toBe(9);
+      expect(singleTerminal.terminalRows[0].charAt(7)).toBe(' ');
     });
 
     test('a line full of tab stops should not wrap', () => {
@@ -829,15 +829,15 @@ describe('single terminal tests', () => {
       expect(singleTerminal.cursorPosition[0]).toBe(0);
       expect(singleTerminal.cursorPosition[1]).toBe(10);
       expect(singleTerminal.terminalRows.length).toBe(1);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
+      expect(singleTerminal.terminalRows[0].length).toBe(11);
       // Now sending two printable chars should place 1 at the last position
       // on the first line, and the second char at the start of the second line
       singleTerminal.parseData(stringToUint8Array('12'), DataDirection.RX);
       expect(singleTerminal.cursorPosition[0]).toBe(1);
       expect(singleTerminal.cursorPosition[1]).toBe(1);
       expect(singleTerminal.terminalRows.length).toBe(2);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(11);
-      expect(singleTerminal.terminalRows[1].terminalChars.length).toBe(2);
+      expect(singleTerminal.terminalRows[0].length).toBe(11);
+      expect(singleTerminal.terminalRows[1].length).toBe(2);
     });
   });
 
@@ -851,19 +851,19 @@ describe('single terminal tests', () => {
       // First 5 bytes should be rendered as hex glyphs, the last 3 should be rendered as the text "LED"
       const data = new Uint8Array([0xFB, 0x1B, 0x00, 0x03, 0x00, 0x4C, 0x45, 0x44]);
       singleTerminal.parseData(data, DataDirection.RX);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(data.length + 1); // +1 for cursor
+      expect(singleTerminal.terminalRows[0].length).toBe(data.length + 1); // +1 for cursor
       const row = singleTerminal.terminalRows[0];
       // Check code points of the chars added to the row
       for (let i = 0; i < 5; i++) {
-        const char = row.terminalChars[i];
-        const codePoint = char.char.codePointAt(0);
+        const char = row.chars[i];
+        const codePoint = char.codePointAt(0);
         expect(codePoint, `codePoint for char ${i} should be ${START_OF_HEX_GLYPHS + data[i]} but is ${codePoint}`).toBe(START_OF_HEX_GLYPHS + data[i]);
       }
       const ledOffset = 5;
       const string = "LED";
       for (let i = 0; i < string.length; i++) {
-        const char = row.terminalChars[i + ledOffset];
-        const codePoint = char.char.codePointAt(0);
+        const char = row.chars[i + ledOffset];
+        const codePoint = char.codePointAt(0);
         expect(codePoint, `codePoint for char ${i} should be ${string.charCodeAt(i)} but is ${codePoint}`).toBe(string.charCodeAt(i));
       }
     });
@@ -878,21 +878,21 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('abc\b'), DataDirection.RX);
 
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars.length).toBe(3);
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
+      const row = singleTerminal.terminalRows[0];
+      expect(row.length).toBe(3);
+      expect(row.charAt(0)).toBe('a');
+      expect(row.charAt(1)).toBe('b');
       // 'c' was erased; the cursor now sits on a holder space.
-      expect(chars[2].char).toBe(' ');
-      expect(chars[2].forCursor).toBe(true);
+      expect(row.charAt(2)).toBe(' ');
+      expect(row.isForCursor(2)).toBe(true);
     });
 
     test('typing after a destructive backspace overwrites correctly', () => {
       singleTerminal.parseData(stringToUint8Array('ab\bX'), DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('X');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[0]).toBe('a');
+      expect(chars[1]).toBe('X');
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
     });
 
@@ -900,10 +900,10 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(stringToUint8Array('abc\b \b'), DataDirection.RX);
 
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].forCursor).toBe(true);
+      const row = singleTerminal.terminalRows[0];
+      expect(row.charAt(0)).toBe('a');
+      expect(row.charAt(1)).toBe('b');
+      expect(row.isForCursor(2)).toBe(true);
     });
 
     test('DEL (0x7F) is treated as a backspace', () => {
@@ -911,10 +911,10 @@ describe('single terminal tests', () => {
       singleTerminal.parseData(data, DataDirection.RX);
 
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars.length).toBe(3);
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].forCursor).toBe(true);
+      const row = singleTerminal.terminalRows[0];
+      expect(row.length).toBe(3);
+      expect(row.charAt(1)).toBe('b');
+      expect(row.isForCursor(2)).toBe(true);
     });
 
     test('MOVE_CURSOR_LEFT moves the cursor without deleting', () => {
@@ -923,25 +923,25 @@ describe('single terminal tests', () => {
 
       // Cursor moved left but 'c' is still present.
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[2].char).toBe('c');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[2]).toBe('c');
     });
 
     test('DO_NOTHING renders the backspace as a control glyph', () => {
       dataProcessingSettings.setBackspaceBehavior(BackspaceBehavior.DO_NOTHING);
       singleTerminal.parseData(stringToUint8Array('a\b'), DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[0]).toBe('a');
       // 0x08 shifted up into the control-glyph PUA range.
-      expect(chars[1].char).toBe(String.fromCharCode(0x08 + 0xe000));
+      expect(chars[1]).toBe(String.fromCharCode(0x08 + 0xe000));
     });
 
     test('backspace at the start of the line does nothing', () => {
       singleTerminal.parseData(stringToUint8Array('\b'), DataDirection.RX);
 
       expect(singleTerminal.cursorPosition).toEqual([0, 0]);
-      expect(singleTerminal.terminalRows[0].terminalChars.length).toBe(1);
+      expect(singleTerminal.terminalRows[0].length).toBe(1);
     });
   });
 
@@ -954,10 +954,10 @@ describe('single terminal tests', () => {
       // like any other non-visible char rather than clearing the screen.
       singleTerminal.parseData(stringToUint8Array('a\f'), DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[0]).toBe('a');
       // 0x0C shifted up into the control-glyph PUA range.
-      expect(chars[1].char).toBe(String.fromCharCode(0x0c + 0xe000));
+      expect(chars[1]).toBe(String.fromCharCode(0x0c + 0xe000));
     });
 
     test('CLEAR_SCREEN_AND_SCROLLBACK resets the terminal like clear()', () => {
@@ -967,10 +967,10 @@ describe('single terminal tests', () => {
       // Scrollback ('row1') is gone; only the post-FF content remains, starting
       // at the top of a fresh terminal.
       expect(singleTerminal.terminalRows.length).toBe(1);
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].char).toBe('c');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[0]).toBe('a');
+      expect(chars[1]).toBe('b');
+      expect(chars[2]).toBe('c');
       expect(singleTerminal.cursorPosition).toEqual([0, 3]);
     });
 
@@ -1015,10 +1015,10 @@ describe('single terminal tests', () => {
       const data = new Uint8Array([0x61, 0x62, 0x1b, 0x5b, 0x33, 0x7e, 0x63]);
       singleTerminal.parseData(data, DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].char).toBe('c');
+      const chars = singleTerminal.terminalRows[0].chars;
+      expect(chars[0]).toBe('a');
+      expect(chars[1]).toBe('b');
+      expect(chars[2]).toBe('c');
       expect(singleTerminal.cursorPosition).toEqual([0, 3]);
     });
 
@@ -1045,11 +1045,11 @@ describe('single terminal tests', () => {
       ]);
       singleTerminal.parseData(data, DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
+      const chars = singleTerminal.terminalRows[0].chars;
       expect(chars.length).toBe(3);
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].char).toBe('d');
+      expect(chars[0]).toBe('a');
+      expect(chars[1]).toBe('b');
+      expect(chars[2]).toBe('d');
       // Cursor stays put.
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
     });
@@ -1063,11 +1063,11 @@ describe('single terminal tests', () => {
       ]);
       singleTerminal.parseData(data, DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
+      const chars = singleTerminal.terminalRows[0].chars;
       expect(chars.length).toBe(3);
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].char).toBe('e');
+      expect(chars[0]).toBe('a');
+      expect(chars[1]).toBe('b');
+      expect(chars[2]).toBe('e');
       expect(singleTerminal.cursorPosition).toEqual([0, 2]);
     });
 
@@ -1076,12 +1076,12 @@ describe('single terminal tests', () => {
       const data = new Uint8Array([0x61, 0x62, 0x63, 0x1b, 0x5b, 0x50]); // 'abc' + ESC[P
       singleTerminal.parseData(data, DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars[0].char).toBe('a');
-      expect(chars[1].char).toBe('b');
-      expect(chars[2].char).toBe('c');
+      const row = singleTerminal.terminalRows[0];
+      expect(row.charAt(0)).toBe('a');
+      expect(row.charAt(1)).toBe('b');
+      expect(row.charAt(2)).toBe('c');
       // Trailing cursor-holder space remains untouched.
-      expect(chars[3].forCursor).toBe(true);
+      expect(row.isForCursor(3)).toBe(true);
       expect(singleTerminal.cursorPosition).toEqual([0, 3]);
     });
 
@@ -1094,9 +1094,9 @@ describe('single terminal tests', () => {
       ]);
       singleTerminal.parseData(data, DataDirection.RX);
 
-      const chars = singleTerminal.terminalRows[0].terminalChars;
-      expect(chars.length).toBe(1);
-      expect(chars[0].forCursor).toBe(true);
+      const row = singleTerminal.terminalRows[0];
+      expect(row.length).toBe(1);
+      expect(row.isForCursor(0)).toBe(true);
       expect(singleTerminal.cursorPosition).toEqual([0, 0]);
     });
   });
@@ -1110,7 +1110,7 @@ describe('single terminal tests', () => {
      * characters ended up after a cursor jump.
      */
     const rowsAsText = () =>
-      singleTerminal.terminalRows.map((row) => row.terminalChars.map((char) => char.char).join(''));
+      singleTerminal.terminalRows.map((row) => row.text);
 
     beforeEach(() => {
       // Pin the terminal height so the screen origin (which CUP is relative to)
@@ -1231,7 +1231,7 @@ describe('single terminal tests', () => {
 
       expect(singleTerminal.cursorPosition).toEqual([1, 4]);
       // The new row is padded out to the cursor column, then 'x' lands there.
-      expect(singleTerminal.terminalRows[1].terminalChars.map((c) => c.char).join('')).toBe('   x ');
+      expect(singleTerminal.terminalRows[1].text).toBe('   x ');
     });
 
     test('ESC[nB moves the cursor down n rows', () => {
@@ -1282,7 +1282,7 @@ describe('single terminal tests', () => {
   //================================================================================
   describe('character encoding', () => {
     /** The text of row 0, which is where all of these tests write. */
-    const rowText = () => singleTerminal.terminalRows[0].terminalChars.map((c) => c.char).join('');
+    const rowText = () => singleTerminal.terminalRows[0].text;
 
     test('ASCII (default) shows bytes 0x80+ as hex glyphs', () => {
       expect(dataProcessingSettings.characterEncoding).toBe(CharacterEncoding.ASCII);
@@ -1352,7 +1352,7 @@ describe('single terminal tests', () => {
         );
 
         const drawnRows = singleTerminal.terminalRows
-          .map((row) => row.terminalChars.map((char) => char.char).join('').trimEnd())
+          .map((row) => row.text.trimEnd())
           .filter((row) => row !== '');
         // The block landed on the 'h', leaving the 'i'.
         expect(drawnRows).toEqual(['┌───┐', '│ █i │', '└───┘']);
@@ -1403,7 +1403,7 @@ describe('single terminal tests', () => {
         // byte. The two held bytes are surfaced and the 'A' prints normally.
         singleTerminal.parseData(new Uint8Array([0xe2, 0x94, 0x41]), DataDirection.RX);
 
-        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        const chars = singleTerminal.terminalRows[0].chars.map((c) => c.codePointAt(0));
         expect(chars.slice(0, 3)).toEqual([START_OF_HEX_GLYPHS + 0xe2, START_OF_HEX_GLYPHS + 0x94, 0x41]);
       });
 
@@ -1412,7 +1412,7 @@ describe('single terminal tests', () => {
         // security problem, so the raw bytes are surfaced instead.
         singleTerminal.parseData(new Uint8Array([0xc0, 0x80]), DataDirection.RX);
 
-        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        const chars = singleTerminal.terminalRows[0].chars.map((c) => c.codePointAt(0));
         expect(chars.slice(0, 2)).toEqual([START_OF_HEX_GLYPHS + 0xc0, START_OF_HEX_GLYPHS + 0x80]);
       });
 
@@ -1420,7 +1420,7 @@ describe('single terminal tests', () => {
         // ED A0 80 would decode to U+D800, which is not a valid character.
         singleTerminal.parseData(new Uint8Array([0xed, 0xa0, 0x80]), DataDirection.RX);
 
-        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        const chars = singleTerminal.terminalRows[0].chars.map((c) => c.codePointAt(0));
         expect(chars.slice(0, 3)).toEqual([
           START_OF_HEX_GLYPHS + 0xed,
           START_OF_HEX_GLYPHS + 0xa0,
@@ -1436,7 +1436,7 @@ describe('single terminal tests', () => {
 
         dataProcessingSettings.setCharacterEncoding(CharacterEncoding.ASCII);
 
-        const chars = singleTerminal.terminalRows[0].terminalChars.map((c) => c.char.codePointAt(0));
+        const chars = singleTerminal.terminalRows[0].chars.map((c) => c.codePointAt(0));
         expect(chars.slice(0, 2)).toEqual([START_OF_HEX_GLYPHS + 0xe2, START_OF_HEX_GLYPHS + 0x94]);
       });
 
@@ -1454,14 +1454,8 @@ function printTerminalRows(terminalRows: TerminalRow[]) {
   /**
    * Helper function to print the terminal rows to the console.
    */
-  // Iterate over each row and print the terminalChars
+  // Iterate over each row and print its text
   for (let i = 0; i < terminalRows.length; i += 1) {
-    const row = terminalRows[i];
-    let terminalRowText = '';
-    for (let j = 0; j < row.terminalChars.length; j += 1) {
-      const char = row.terminalChars[j];
-      terminalRowText += char.char;
-    }
-    console.log(`row[${i}]="${terminalRowText}"`);
+    console.log(`row[${i}]="${terminalRows[i].text}"`);
   }
 }

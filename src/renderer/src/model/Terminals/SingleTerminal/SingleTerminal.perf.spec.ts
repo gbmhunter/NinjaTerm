@@ -6,6 +6,8 @@ import DisplaySettings from 'src/model/Settings/DisplaySettings/DisplaySettings'
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
 import { App } from 'src/model/App';
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
+import RulesSettings from 'src/model/Settings/RulesSettings/RulesSettings';
+import { HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRuleData';
 
 /**
  * Throughput benchmarks for the SingleTerminal byte-parsing hot path.
@@ -118,4 +120,207 @@ describe('SingleTerminal parsing throughput', () => {
     // floor is loose because variance on this scenario is real (±20%).
     expect(mbPerSec).toBeGreaterThan(0.015);
   }, 30_000);
+});
+
+/**
+ * Render-path benchmarks.
+ *
+ * The parsing benchmarks above measure getting bytes *into* the row model.
+ * These measure getting them back *out* again — the work the React view does
+ * on every re-render, which while data is streaming happens many times a
+ * second:
+ *
+ *   - `SingleTerminalView`'s row renderer calls `TerminalRow.getSpans()` for
+ *     every visible row (~50 rows for a maximised window).
+ *   - `getSpans` is cache-keyed on `terminalCharsHash`, so before this was
+ *     changed the hash was rebuilt for every visible row on every render even
+ *     on a cache hit.
+ *   - `SingleTerminal.highlightMatches` / `findMatches` read `row.text` for
+ *     every row in the *whole* scrollback, not just the visible window.
+ *
+ * `text` and the old `terminalCharsHash` are both O(row length) walks, so
+ * these scenarios are the ones that move when the row storage model changes.
+ * Reported as rows/sec rather than MB/s — the unit of render work is a row,
+ * not a byte.
+ */
+describe('SingleTerminal render-path throughput', () => {
+  const VISIBLE_ROWS = 50;
+  /** Minimal stand-in for the CSS-module object `getSpans` expects. */
+  const STYLES = { cursorFocused: 'cursorFocused' };
+
+  function makeTerminal(withRules: boolean): SingleTerminal {
+    window.localStorage.clear();
+    const app = new App();
+    const profileManager = new AppDataManager(app);
+    const rxSettings = new RxSettings(profileManager);
+    const displaySettings = new DisplaySettings(profileManager);
+    const snackbarController = new SnackbarController();
+
+    let rulesSettings: RulesSettings | null = null;
+    if (withRules) {
+      rulesSettings = new RulesSettings(profileManager);
+      rulesSettings.addRule();
+      const rule = rulesSettings.rules[0];
+      rule.setPattern('ERROR|WARN');
+      rule.setScope(HighlightScope.MATCH);
+      rule.setEnabled(true);
+    }
+
+    const terminal = new SingleTerminal(
+      'perf-render-terminal',
+      true,
+      rxSettings,
+      displaySettings,
+      snackbarController,
+      null,
+      rulesSettings,
+    );
+    terminal.setTerminalViewHeightPx(VISIBLE_ROWS * 20);
+    return terminal;
+  }
+
+  /** Fills the terminal with `numRows` rows of realistic log-ish text. */
+  function fillScrollback(terminal: SingleTerminal, numRows: number) {
+    const line = '[INFO ] sensor sample temp=21.5 hum=40 volt=3.302 seq=012345\n';
+    const payload = new TextEncoder().encode(line.repeat(numRows));
+    terminal.parseData(payload, DataDirection.RX);
+  }
+
+  function report(label: string, rows: number, elapsedMs: number): number {
+    const rowsPerSec = rows / (elapsedMs / 1000);
+    // eslint-disable-next-line no-console
+    console.log(
+      `[perf] ${label}: ${rows} rows in ${elapsedMs.toFixed(1)} ms ` +
+      `-> ${Math.round(rowsPerSec)} rows/s`
+    );
+    return rowsPerSec;
+  }
+
+  test('getSpans over the visible window (simulates one repaint)', () => {
+    const terminal = makeTerminal(false);
+    fillScrollback(terminal, 2000);
+
+    // Warm up so the JIT and the per-row span caches have both settled — this
+    // measures the steady-state repaint cost, which is the cache-*hit* path.
+    const warmupRows = terminal.filteredTerminalRows.slice(-VISIBLE_ROWS);
+    for (const row of warmupRows) {
+      row.getSpans(terminal.id, terminal.cursorPosition, null, STYLES);
+    }
+
+    const iterations = 200;
+    const start = performance.now();
+    for (let i = 0; i < iterations; i += 1) {
+      const rows = terminal.filteredTerminalRows;
+      const visible = rows.slice(-VISIBLE_ROWS);
+      const cursorRow = rows[terminal.cursorPosition[0]] ?? null;
+      for (const row of visible) {
+        row.getSpans(terminal.id, terminal.cursorPosition, cursorRow, STYLES);
+      }
+    }
+    const elapsedMs = performance.now() - start;
+
+    const rowsPerSec = report(
+      'render-getSpans-cache-hit',
+      VISIBLE_ROWS * iterations,
+      elapsedMs
+    );
+    // Loose floor. A maximised window repainting at 20 Hz needs 1000 rows/s
+    // just to keep up, so anything near that is a real problem.
+    expect(rowsPerSec).toBeGreaterThan(2000);
+  }, 60_000);
+
+  test('getSpans after new data invalidates the row cache', () => {
+    const terminal = makeTerminal(false);
+    fillScrollback(terminal, 2000);
+
+    // Each iteration appends a line (as a real RX chunk would) and then
+    // repaints the visible window, so the tail rows miss their span cache.
+    // This is the true steady-state cost while data is streaming in.
+    const chunk = new TextEncoder().encode('[INFO ] another line of streamed output\n');
+    const iterations = 200;
+
+    terminal.parseData(chunk, DataDirection.RX); // warmup
+
+    const start = performance.now();
+    for (let i = 0; i < iterations; i += 1) {
+      terminal.parseData(chunk, DataDirection.RX);
+      const rows = terminal.filteredTerminalRows;
+      const visible = rows.slice(-VISIBLE_ROWS);
+      const cursorRow = rows[terminal.cursorPosition[0]] ?? null;
+      for (const row of visible) {
+        row.getSpans(terminal.id, terminal.cursorPosition, cursorRow, STYLES);
+      }
+    }
+    const elapsedMs = performance.now() - start;
+
+    const rowsPerSec = report(
+      'render-getSpans-streaming',
+      VISIBLE_ROWS * iterations,
+      elapsedMs
+    );
+    expect(rowsPerSec).toBeGreaterThan(1000);
+  }, 60_000);
+
+  test('highlight rule scan over the whole scrollback', () => {
+    const terminal = makeTerminal(true);
+    fillScrollback(terminal, 2000);
+
+    // `highlightMatches` is a MobX computed, but it is invalidated every time
+    // a row is added — i.e. on every RX chunk. Appending a chunk per iteration
+    // reproduces that, so this measures the real recompute cost rather than a
+    // cached read.
+    const chunk = new TextEncoder().encode('[ERROR] request handler blew up\n');
+    const iterations = 100;
+
+    terminal.parseData(chunk, DataDirection.RX);
+    void terminal.highlightMatchesByRow; // warmup
+
+    const start = performance.now();
+    let matchRowCount = 0;
+    for (let i = 0; i < iterations; i += 1) {
+      terminal.parseData(chunk, DataDirection.RX);
+      matchRowCount += terminal.highlightMatchesByRow.size;
+    }
+    const elapsedMs = performance.now() - start;
+
+    // Sanity check that the scan actually finds the rule's matches — a
+    // benchmark that silently measures a no-op is worse than no benchmark.
+    expect(matchRowCount).toBeGreaterThan(0);
+
+    const rowsPerSec = report(
+      'render-highlight-scan',
+      terminal.terminalRows.length * iterations,
+      elapsedMs
+    );
+    expect(rowsPerSec).toBeGreaterThan(20_000);
+  }, 60_000);
+
+  test('row.text materialisation over the whole scrollback', () => {
+    const terminal = makeTerminal(false);
+    fillScrollback(terminal, 2000);
+
+    // Isolates the `row.text` cost that the highlight/find scans pay. Reading
+    // `.text` off every row is the single most repeated per-row operation in
+    // the render path.
+    const iterations = 100;
+    let totalChars = 0;
+    for (const row of terminal.terminalRows) totalChars += row.text.length; // warmup
+
+    const start = performance.now();
+    for (let i = 0; i < iterations; i += 1) {
+      for (const row of terminal.terminalRows) {
+        totalChars += row.text.length;
+      }
+    }
+    const elapsedMs = performance.now() - start;
+
+    expect(totalChars).toBeGreaterThan(0);
+
+    const rowsPerSec = report(
+      'render-row-text',
+      terminal.terminalRows.length * iterations,
+      elapsedMs
+    );
+    expect(rowsPerSec).toBeGreaterThan(50_000);
+  }, 60_000);
 });

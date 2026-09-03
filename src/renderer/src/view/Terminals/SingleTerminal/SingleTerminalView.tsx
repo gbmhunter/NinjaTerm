@@ -22,97 +22,138 @@ interface Props {
   testId: string;
 }
 
+/**
+ * What the row renderer needs, threaded through react-window's `itemData`.
+ * Memoized by the parent so its identity is stable between renders.
+ */
+interface RowData {
+  rows: TerminalRow[];
+  terminal: SingleTerminal;
+}
+
 interface RowProps {
-  data: TerminalRow[]; // This is the array of indexes into the terminalRows array
-  index: number; // This is the index into the data array above
+  data: RowData;
+  index: number; // Index into `data.rows`
   style: React.CSSProperties;
+}
+
+/**
+ * Renders one terminal row.
+ *
+ * WARNING: This MUST stay at module scope. It used to be declared inside the
+ * parent component's body, which created a new component *type* on every
+ * parent render — so React saw a different element type for every row and
+ * unmounted/remounted every visible row's DOM on every RX chunk, and the
+ * `React.memo` wrapper could never hit. Same lesson as
+ * `outerListElementMemoized` further down this file.
+ *
+ * `observer` from mobx-react-lite already wraps the component in `React.memo`,
+ * so no extra memo is needed here.
+ */
+const Row = observer((rowProps: RowProps) => {
+  const { data, index, style } = rowProps;
+  const { rows, terminal } = data;
+  const terminalRowToRender = rows[index];
+  const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
+
+  // Find-match ranges for this row (if any). Reads `findMatchesByRow` so
+  // MobX re-renders this row when the find state changes.
+  const rowFindMatches = terminal.findMatchesByRow.get(index);
+  const currentMatch = terminal.currentMatch;
+  const findRanges = rowFindMatches
+    ? rowFindMatches.map((m) => ({
+        colStart: m.colStart,
+        colEnd: m.colEnd,
+        isCurrent:
+          currentMatch !== null &&
+          currentMatch.rowIndex === m.rowIndex &&
+          currentMatch.colStart === m.colStart,
+      }))
+    : [];
+  // Stable string for the useMemo dependency array.
+  const findRangesKey = findRanges
+    .map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`)
+    .join(',');
+
+  // Highlight-rule ranges for this row (if any). Reads
+  // `highlightMatchesByRow` so MobX re-renders when rule state changes.
+  const rowHighlightMatches = terminal.highlightMatchesByRow.get(index);
+  const highlightRanges = rowHighlightMatches
+    ? rowHighlightMatches.map((m) => ({
+        colStart: m.colStart,
+        colEnd: m.colEnd,
+        backgroundColor: m.backgroundColor,
+      }))
+    : [];
+  const highlightRangesKey = highlightRanges
+    .map((r) => `${r.colStart}-${r.colEnd}-${r.backgroundColor}`)
+    .join(',');
+
+  // `TerminalRow` holds no MobX state, so reading the row alone would never
+  // re-render this component when incoming data changes its characters. Read
+  // the terminal's chunk-level signal to subscribe to content changes, and use
+  // the row's own (non-reactive) counter to decide whether the spans below
+  // actually need rebuilding. See `SingleTerminal.renderVersion`.
+  void terminal.renderVersion;
+  const rowRevision = terminalRowToRender.revision;
+
+  // Use memoized span generation from TerminalRow.
+  const spans = useMemo(() => {
+    // The TerminalRow span generator always applies `styles.cursorFocused`
+    // to the cursor cell. For output-only terminals (RX pane in split
+    // mode) we want no cursor at all, so swap the class for an empty
+    // string — the span is still emitted but carries no cursor styling.
+    const cursorClass = terminal.showCursor ? styles.cursorFocused : '';
+    const stylesWithCursor = { ...styles, cursorFocused: cursorClass };
+
+    return terminalRowToRender.getSpans(
+      terminal.id,
+      terminal.cursorPosition,
+      terminalRowCursorIsOn,
+      stylesWithCursor,
+      findRanges,
+      highlightRanges,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    terminalRowToRender,
+    rowRevision,
+    terminal,
+    cursorRowIdxOf(terminal),
+    cursorColIdxOf(terminal),
+    terminal.showCursor,
+    terminalRowCursorIsOn?.uniqueRowId,
+    findRangesKey,
+    highlightRangesKey,
+  ]);
+
+  // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal
+  // ID because there could be multiple terminals on the page (all with their own row-1, row-2, e.t.c)
+  const uniqueTerminalRowId = terminal.id + '-row-' + terminalRowToRender.uniqueRowId;
+
+  return (
+    <div id={uniqueTerminalRowId} className="terminal-row" style={style}>
+      {spans}
+    </div>
+  );
+});
+
+/**
+ * Pulled out into named helpers so the `useMemo` dependency array holds plain
+ * identifiers rather than `terminal.cursorPosition[0]` index expressions,
+ * which ESLint's exhaustive-deps rule cannot statically check.
+ */
+function cursorRowIdxOf(terminal: SingleTerminal): number {
+  return terminal.cursorPosition[0];
+}
+function cursorColIdxOf(terminal: SingleTerminal): number {
+  return terminal.cursorPosition[1];
 }
 
 export default observer((props: Props) => {
   const { terminal, displaySettings, directionLabel, testId } = props;
 
   const reactWindowRef = useRef<FixedSizeList>(null);
-
-  const Row = React.memo(observer((rowProps: RowProps) => {
-    const { data, index, style } = rowProps;
-    const terminalRowToRender = data[index];
-    const terminalRowCursorIsOn = terminal.terminalRows[terminal.cursorPosition[0]];
-
-    // Find-match ranges for this row (if any). Reads `findMatchesByRow` so
-    // MobX re-renders this row when the find state changes.
-    const rowFindMatches = terminal.findMatchesByRow.get(index);
-    const currentMatch = terminal.currentMatch;
-    const findRanges = rowFindMatches
-      ? rowFindMatches.map((m) => ({
-          colStart: m.colStart,
-          colEnd: m.colEnd,
-          isCurrent:
-            currentMatch !== null &&
-            currentMatch.rowIndex === m.rowIndex &&
-            currentMatch.colStart === m.colStart,
-        }))
-      : [];
-    // Stable string for the useMemo dependency array.
-    const findRangesKey = findRanges
-      .map((r) => `${r.colStart}-${r.colEnd}-${r.isCurrent ? 'c' : 'n'}`)
-      .join(',');
-
-    // Highlight-rule ranges for this row (if any). Reads
-    // `highlightMatchesByRow` so MobX re-renders when rule state changes.
-    const rowHighlightMatches = terminal.highlightMatchesByRow.get(index);
-    const highlightRanges = rowHighlightMatches
-      ? rowHighlightMatches.map((m) => ({
-          colStart: m.colStart,
-          colEnd: m.colEnd,
-          backgroundColor: m.backgroundColor,
-        }))
-      : [];
-    const highlightRangesKey = highlightRanges
-      .map((r) => `${r.colStart}-${r.colEnd}-${r.backgroundColor}`)
-      .join(',');
-
-    // Use memoized span generation from TerminalRow.
-    // `Row` is a nested function component (declared inside the parent's
-    // body) so ESLint's rules-of-hooks heuristic flags this useMemo as
-    // a hook-in-callback. It's actually a valid hook call site — `Row` is
-    // returned to react-window as the row renderer. Disable just this one.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const spans = useMemo(() => {
-      // The TerminalRow span generator always applies `styles.cursorFocused`
-      // to the cursor cell. For output-only terminals (RX pane in split
-      // mode) we want no cursor at all, so swap the class for an empty
-      // string — the span is still emitted but carries no cursor styling.
-      const cursorClass = terminal.showCursor ? styles.cursorFocused : '';
-      const stylesWithCursor = { ...styles, cursorFocused: cursorClass };
-
-      return terminalRowToRender.getSpans(
-        terminal.id,
-        terminal.cursorPosition,
-        terminalRowCursorIsOn,
-        stylesWithCursor,
-        findRanges,
-        highlightRanges,
-      );
-    }, [
-      terminalRowToRender.terminalCharsHash,
-      terminal.cursorPosition[0],
-      terminal.cursorPosition[1],
-      terminal.showCursor,
-      terminalRowCursorIsOn?.uniqueRowId,
-      findRangesKey,
-      highlightRangesKey,
-    ]);
-
-    // Make a ID that is unique in the entire DOM tree. This means that we have to append the terminal
-    // ID because there could be multiple terminals on the page (all with their own row-1, row-2, e.t.c)
-    const uniqueTerminalRowId = terminal.id + '-row-' + terminalRowToRender.uniqueRowId;
-
-    return (
-      <div id={uniqueTerminalRowId} className="terminal-row" style={style}>
-        {spans}
-      </div>
-    );
-  }));
 
   // Run this after every render, even though we only need to do it if
   // a new row has been added. It's too computationally expensive to
@@ -268,7 +309,7 @@ export default observer((props: Props) => {
       }
       if (!lastVisible) return true; // entire selection off-screen — nothing to highlight
       effectiveLastRowId = terminal.id + '-row-' + lastVisible.uniqueRowId;
-      effectiveLastColIdx = lastVisible.terminalChars.length;
+      effectiveLastColIdx = lastVisible.length;
     }
 
     SelectionController.selectTerminalText(
@@ -334,6 +375,14 @@ export default observer((props: Props) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  // Bundle what the module-scope `Row` renderer needs into react-window's
+  // `itemData`. Memoized so a parent re-render that didn't actually change the
+  // row list doesn't hand every row a new props object.
+  const rowData = useMemo(
+    () => ({ rows: terminal.filteredTerminalRows, terminal }),
+    [terminal.filteredTerminalRows, terminal]
+  );
 
   // WARNING: Must use memoized component here, if not, it gets recreated on each render of
   // the terminal and the scroll gets messed up. Spent a lot of time working this out :-O
@@ -507,7 +556,7 @@ export default observer((props: Props) => {
             // Add a bit of padding to the height
             itemSize={terminal.charSizePx + terminal.verticalRowPaddingPx}
             width="100%"
-            itemData={terminal.filteredTerminalRows}
+            itemData={rowData}
             itemCount={terminal.filteredTerminalRows.length}
             onScroll={(scrollProps) => {
               terminal.fixedSizedListOnScroll(scrollProps);
