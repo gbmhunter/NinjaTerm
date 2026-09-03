@@ -12,17 +12,24 @@ import { HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRu
 /**
  * Throughput benchmarks for the SingleTerminal byte-parsing hot path.
  *
- * These tests are intentionally generous on the assertion bound — the *number*
- * printed to stdout (MB/s) is what matters. Run before and after a perf change
- * and compare. The remaining hot spots, in rough order of cost:
- *   - per-char `addVisibleChar` MobX-observable push to terminalRows[i]
+ * The *number* printed to stdout (MB/s) is what matters — run before and after
+ * a perf change and compare, and record it in
+ * `performance-profiles/THROUGHPUT_BASELINES.md`. The assertion floors are
+ * catastrophe guards, not regression detectors: the parse scenarios are only
+ * ~1.5x apart between the current and previous row model, so no floor can both
+ * pass reliably and detect a regression of that size.
+ *
+ * The remaining hot spots, in rough order of cost:
+ *   - `String.fromCharCode` + `chars.push` per byte in `TerminalRow.appendChar`
  *   - row creation + `_addOrRemoveRowFromFilteredRows` on every wrap
- *   - moment().format() on the first non-cache-hit visible byte of a new ms
+ *   - timestamps are emitted one character at a time through `addVisibleChar`
  *
  * Past regressions to guard against:
  *   - _parseAsciiData() Array.shift() loop (O(n^2) on chunk size) — fixed
  *   - partialEscapeCode += String.fromCharCode(b) per byte — fixed
  *   - moment() per line regardless of millisecond — fixed (cached at ms)
+ *   - one MobX change notification per received byte — fixed (rows hold no
+ *     MobX state; `SingleTerminal.renderVersion` signals once per chunk)
  */
 describe('SingleTerminal parsing throughput', () => {
   let singleTerminal: SingleTerminal;
@@ -103,7 +110,11 @@ describe('SingleTerminal parsing throughput', () => {
     const payload = new TextEncoder().encode(text);
 
     const mbPerSec = measure('ansi-heavy', payload, 4);
-    expect(mbPerSec).toBeGreaterThan(0.1);
+    // 0.07, matching plain-ASCII, for the same reason: this scenario has been
+    // observed as low as 0.083 MB/s on a loaded dev machine, so the old 0.1
+    // floor was already failing intermittently. CI's slowest runner
+    // (ubuntu-latest, not windows) clocked 0.133.
+    expect(mbPerSec).toBeGreaterThan(0.07);
   }, 30_000);
 
   test('timestamps enabled (per-line moment formatting)', () => {
@@ -132,9 +143,10 @@ describe('SingleTerminal parsing throughput', () => {
  *
  *   - `SingleTerminalView`'s row renderer calls `TerminalRow.getSpans()` for
  *     every visible row (~50 rows for a maximised window).
- *   - `getSpans` is cache-keyed on `terminalCharsHash`, so before this was
- *     changed the hash was rebuilt for every visible row on every render even
- *     on a cache hit.
+ *   - `getSpans` is cache-keyed on the row's `revision` counter. Before the
+ *     storage change it hashed every char and class in the row instead, so the
+ *     hash was rebuilt for every visible row on every render even on a cache
+ *     hit.
  *   - `SingleTerminal.highlightMatches` / `findMatches` read `row.text` for
  *     every row in the *whole* scrollback, not just the visible window.
  *
@@ -224,9 +236,12 @@ describe('SingleTerminal render-path throughput', () => {
       VISIBLE_ROWS * iterations,
       elapsedMs
     );
-    // Loose floor. A maximised window repainting at 20 Hz needs 1000 rows/s
-    // just to keep up, so anything near that is a real problem.
-    expect(rowsPerSec).toBeGreaterThan(2000);
+    // Floors on these render scenarios are set ~3x below the lowest value
+    // observed across ~13 runs on a dev machine (including under load) and all
+    // three CI runners, which is tight enough to catch a real regression while
+    // absorbing the +/-20% run-to-run variance this file documents.
+    // Lowest observed here: 331k rows/s (loaded dev machine); CI 408k-957k.
+    expect(rowsPerSec).toBeGreaterThan(100_000);
   }, 60_000);
 
   test('getSpans after new data invalidates the row cache', () => {
@@ -258,7 +273,8 @@ describe('SingleTerminal render-path throughput', () => {
       VISIBLE_ROWS * iterations,
       elapsedMs
     );
-    expect(rowsPerSec).toBeGreaterThan(1000);
+    // Lowest observed: 77k rows/s (loaded dev machine); CI 130k-213k.
+    expect(rowsPerSec).toBeGreaterThan(25_000);
   }, 60_000);
 
   test('highlight rule scan over the whole scrollback', () => {
@@ -292,7 +308,8 @@ describe('SingleTerminal render-path throughput', () => {
       terminal.terminalRows.length * iterations,
       elapsedMs
     );
-    expect(rowsPerSec).toBeGreaterThan(20_000);
+    // Lowest observed: 495k rows/s (loaded dev machine); CI 1.9M-2.3M.
+    expect(rowsPerSec).toBeGreaterThan(150_000);
   }, 60_000);
 
   test('row.text materialisation over the whole scrollback', () => {
@@ -321,6 +338,7 @@ describe('SingleTerminal render-path throughput', () => {
       terminal.terminalRows.length * iterations,
       elapsedMs
     );
-    expect(rowsPerSec).toBeGreaterThan(50_000);
+    // Lowest observed: 897k rows/s (loaded dev machine); CI 5.0M-7.8M.
+    expect(rowsPerSec).toBeGreaterThan(250_000);
   }, 60_000);
 });

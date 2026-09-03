@@ -177,6 +177,34 @@ The flat storage is still what delivers the render-path gains (7-12×), since
 object array. The two changes are complementary: neither alone would have moved
 both columns.
 
+### CI reference numbers (for setting assertion floors)
+
+From the `Build and Test` run on PR #412, all three runners. Useful because the
+assertion floors in the perf spec have to pass on the slowest of these, and the
+intuition about which runner that is turns out to be wrong.
+
+| Scenario | ubuntu-latest | windows-2022 | macos-15 |
+|---|---|---|---|
+| plain-ASCII | **0.128** | 0.133 | 0.256 MB/s |
+| large-single-chunk-256KB | **0.122** | 0.139 | 0.291 MB/s |
+| ansi-heavy | **0.133** | 0.144 | 0.275 MB/s |
+| timestamps-many-short-lines | **0.027** | 0.034 | 0.059 MB/s |
+| render-getSpans-cache-hit | 945k | **408k** | 957k rows/s |
+| render-getSpans-streaming | 200k | **130k** | 213k rows/s |
+| render-highlight-scan | 2119k | **1855k** | 2317k rows/s |
+| render-row-text | 7304k | **5016k** | 7833k rows/s |
+
+Notes:
+- **ubuntu-latest is the slowest runner for the parse scenarios**, not windows —
+  the older floor comments assume windows.
+- macOS is roughly 2x faster than either on parse, which is why this file's
+  per-host caveat matters.
+- Perf spec wall time: 23.3s (ubuntu), 22.8s (windows), 11.4s (macOS) — about
+  23s of a ~33s unit-test run. The four parse scenarios are 87% of that; the
+  four render scenarios add ~3s.
+- Floors are set ~3x below the lowest value seen across these runners *and* a
+  loaded dev machine, which reads lower than CI on the render scenarios.
+
 Remaining hot spots for a future pass, in rough order:
 - `String.fromCharCode` + `chars.push` per byte in `TerminalRow.appendChar`.
   A preallocated `Uint16Array` of code points with a lazily-joined `text` would
