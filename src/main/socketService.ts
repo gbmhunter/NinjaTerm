@@ -275,14 +275,17 @@ export function initializeSocketHandlers(mainWindow: BrowserWindow) {
     activeSockets.clear();
   });
 
-  ipcMain.handle('socket:write-data', async (event, connectionId: string, data: number[]) => {
+  ipcMain.handle('socket:write-data', async (event, connectionId: string, data: Uint8Array) => {
     try {
       const socket = activeSockets.get(connectionId);
       if (!socket) {
         return { success: false, error: 'Socket not found' };
       }
 
-      const buffer = Buffer.from(data);
+      // `data` arrives as a Uint8Array: structured clone carries typed arrays
+      // natively. The number[] this used to take cost a boxed value per byte
+      // across the bridge, on the TX path.
+      const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
       await new Promise<void>((resolve, reject) => {
         socket.write(buffer, (err) => {
           if (err) {

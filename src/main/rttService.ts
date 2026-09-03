@@ -422,7 +422,7 @@ export function initializeRttHandlers(mainWindow: BrowserWindow) {
     return { success: true };
   });
 
-  ipcMain.handle('rtt:write-data', async (_event, connectionId: string, data: number[]) => {
+  ipcMain.handle('rtt:write-data', async (_event, connectionId: string, data: Uint8Array) => {
     if (!activeSession || activeSession.connectionId !== connectionId) {
       return { success: false, error: 'No matching RTT session.' };
     }
@@ -430,7 +430,8 @@ export function initializeRttHandlers(mainWindow: BrowserWindow) {
       return { success: false, error: 'RTT session is closing.' };
     }
     try {
-      const buf = Buffer.from(data);
+      // See the serial handler: Uint8Array crosses the bridge natively.
+      const buf = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
       const written = activeSession.api.rttWrite(activeSession.channel, buf, buf.length);
       if (written < 0) {
         return { success: false, error: `RTT write failed: ${describeJLinkError(written)}.` };

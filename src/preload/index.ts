@@ -33,7 +33,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     listPorts: () => ipcRenderer.invoke('serial:list-ports'),
     openPort: (options: OpenOptions) => ipcRenderer.invoke('serial:open-port', options),
     closePort: (portPath: string) => ipcRenderer.invoke('serial:close-port', portPath),
-    writeData: (portPath: string, data: number[]) => ipcRenderer.invoke('serial:write-data', portPath, data),
+    writeData: (portPath: string, data: Uint8Array) => ipcRenderer.invoke('serial:write-data', portPath, data),
 
     // Event listeners
     onDataReceived: (callback: (portPath: string, data: number[]) => void) =>
@@ -118,7 +118,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     connect: (options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string; channel: number }) =>
       ipcRenderer.invoke('rtt:connect', options),
     disconnect: (connectionId: string) => ipcRenderer.invoke('rtt:disconnect', connectionId),
-    writeData: (connectionId: string, data: number[]) => ipcRenderer.invoke('rtt:write-data', connectionId, data),
+    writeData: (connectionId: string, data: Uint8Array) => ipcRenderer.invoke('rtt:write-data', connectionId, data),
     browseExe: () => ipcRenderer.invoke('rtt:browse-exe'),
     resolveExePath: (userPath: string) => ipcRenderer.invoke('rtt:resolve-exe-path', userPath),
 
@@ -149,7 +149,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   socket: {
     connect: (options: { host: string; port: number }) => ipcRenderer.invoke('socket:connect', options),
     disconnect: (connectionId: string) => ipcRenderer.invoke('socket:disconnect', connectionId),
-    writeData: (connectionId: string, data: number[]) => ipcRenderer.invoke('socket:write-data', connectionId, data),
+    writeData: (connectionId: string, data: Uint8Array) => ipcRenderer.invoke('socket:write-data', connectionId, data),
 
     // Event listeners
     onDataReceived: (callback: (connectionId: string, data: Buffer) => void) =>
@@ -242,7 +242,7 @@ export interface ElectronAPI {
     listPorts(): Promise<{ success: boolean; ports?: PortInfo[]; error?: string }>;
     openPort(options: OpenOptions): Promise<{ success: boolean; error?: string }>;
     closePort(portPath: string): Promise<{ success: boolean; error?: string }>;
-    writeData(portPath: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    writeData(portPath: string, data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (portPath: string, data: Buffer) => void): Disposer;
     onError(callback: (portPath: string, error: string) => void): Disposer;
     onPortClosed(callback: (portPath: string) => void): Disposer;
@@ -280,7 +280,7 @@ export interface ElectronAPI {
   socket: {
     connect(options: { host: string; port: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
     disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
-    writeData(connectionId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    writeData(connectionId: string, data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     onDataReceived(callback: (connectionId: string, data: Buffer) => void): Disposer;
     onError(callback: (connectionId: string, error: string) => void): Disposer;
     onClosed(callback: (connectionId: string) => void): Disposer;
@@ -290,7 +290,7 @@ export interface ElectronAPI {
   rtt: {
     connect(options: { device: string; interfaceType: 'SWD' | 'JTAG'; speedKHz: number; serverExePath: string; jLinkSerialNumber: string; channel: number }): Promise<{ success: boolean; connectionId?: string; error?: string }>;
     disconnect(connectionId: string): Promise<{ success: boolean; error?: string }>;
-    writeData(connectionId: string, data: number[]): Promise<{ success: boolean; error?: string }>;
+    writeData(connectionId: string, data: Uint8Array): Promise<{ success: boolean; error?: string }>;
     browseExe(): Promise<{ success: boolean; canceled?: boolean; path?: string }>;
     resolveExePath(userPath: string): Promise<{ success: boolean; path: string | null }>;
     onDataReceived(callback: (connectionId: string, data: Buffer) => void): Disposer;

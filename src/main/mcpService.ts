@@ -207,7 +207,8 @@ export class McpService {
         }
         try {
           const text = append_newline ? data + '\n' : data;
-          const bytes = Array.from(Buffer.from(text, 'utf-8'));
+          // Buffer is a Uint8Array, which is what writeToPort takes.
+          const bytes = Buffer.from(text, 'utf-8');
           await writeToPort(portPath, bytes);
           return { content: [{ type: 'text' as const, text: `Sent ${bytes.length} bytes to ${portPath}.` }] };
         } catch (err) {
