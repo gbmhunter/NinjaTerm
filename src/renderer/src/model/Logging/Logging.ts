@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction, toJS } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
 import { App } from 'src/model/App';
@@ -35,10 +35,35 @@ export default class Logging {
   intervalId: NodeJS.Timeout | null = null;
 
   /**
-   * Stored data to be written to the file, until the next file write
-   * is scheduled
+   * Data received since the last successful write, held as the original chunks
+   * rather than flattened into one byte array.
+   *
+   * Deliberately not observable, and not flattened per byte. This used to be an
+   * observable `number[]` filled via `bufferedData.push(...rxData)`, which
+   * spread the chunk into function arguments — throwing
+   * `RangeError: Maximum call stack size exceeded` past ~65k bytes, which one
+   * large RTT or socket read reaches — and fired one MobX change notification
+   * per received byte. Nothing outside this class reads it.
+   *
+   * Chunks are retained by reference. Every caller (`App.parseRxData`,
+   * `App.writeBytesToSerialPort`) hands over a freshly created `Uint8Array`
+   * that it never touches again, so there is no aliasing risk; a caller that
+   * reused its buffer would require a copy on ingest here.
    */
-  bufferedData: number[] = [];
+  private bufferedChunks: Uint8Array[] = [];
+
+  /** Total bytes across `bufferedChunks`, tracked so writes needn't re-sum. */
+  private bufferedByteCount = 0;
+
+  /**
+   * Tail of the chain of writes issued so far.
+   *
+   * Writes must not overlap. Two concurrent appends both read the buffer
+   * before either clears it, so the same bytes get written twice and can land
+   * out of order — a 1s interval tick firing while a slow write is still in
+   * flight was enough to corrupt the log. Every call chains behind the last.
+   */
+  private writeChain: Promise<void> = Promise.resolve();
 
   /**
    * ApplyableTextField for custom filename. Initialized from profile data.
@@ -75,7 +100,14 @@ export default class Logging {
   constructor(app: App) {
     this.app = app;
 
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      // The write buffer is imperative plumbing, not UI state — nothing
+      // outside this class reads it, and making it observable is what put a
+      // change notification on every received byte.
+      bufferedChunks: false,
+      bufferedByteCount: false,
+      writeChain: false,
+    } as any);
 
     // Initialize logging settings from profile
     this.initializeFromProfile();
@@ -220,7 +252,7 @@ export default class Logging {
       }
     } else if (fileBehavior === ExistingFileBehaviors.OVERWRITE) {
       // Overwrite by writing empty content to the file
-      await window.electronAPI.fs.writeFile(this.activeFilePath, [], false);
+      await window.electronAPI.fs.writeFile(this.activeFilePath, new Uint8Array(0), false);
     } else {
       throw Error(`Unknown value for existingFileBehavior: ${fileBehavior} (type: ${typeof fileBehavior})`);
     }
@@ -242,7 +274,7 @@ export default class Logging {
     if (this.isLogging === false || this.logRawRxData === false) {
       return;
     }
-    this.bufferedData.push(...rxData);
+    this._bufferChunk(rxData);
   }
 
   handleTxData(txData: Uint8Array) {
@@ -250,43 +282,104 @@ export default class Logging {
     if (this.isLogging === false || this.logRawTxData === false) {
       return;
     }
-    this.bufferedData.push(...txData);
+    this._bufferChunk(txData);
   }
 
-  async writeBufferedDataToDisk() {
-    if (this.activeFilePath === null || this.bufferedData.length === 0) {
+  private _bufferChunk(data: Uint8Array) {
+    if (data.length === 0) {
+      return;
+    }
+    this.bufferedChunks.push(data);
+    this.bufferedByteCount += data.length;
+  }
+
+  /**
+   * Writes everything buffered so far to the log file.
+   *
+   * The returned promise resolves when *this* write has finished. Calls are
+   * serialised via `writeChain`, so an interval tick arriving mid-write queues
+   * behind the in-flight write instead of racing it.
+   */
+  writeBufferedDataToDisk(): Promise<void> {
+    this.writeChain = this.writeChain.then(() => this._writeOnce());
+    return this.writeChain;
+  }
+
+  /**
+   * Performs a single write.
+   *
+   * Never rejects: a rejection would poison `writeChain` and silently stop
+   * every future write for the rest of the session.
+   */
+  private async _writeOnce(): Promise<void> {
+    if (this.activeFilePath === null || this.bufferedChunks.length === 0) {
       return;
     }
 
+    // Take the buffer *before* awaiting. The previous version cleared it after
+    // the await, so everything that arrived while the write was in flight was
+    // discarded — and counted towards `numBytesWritten` regardless.
+    const chunks = this.bufferedChunks;
+    const byteCount = this.bufferedByteCount;
+    this.bufferedChunks = [];
+    this.bufferedByteCount = 0;
+
+    const payload = Logging._concatChunks(chunks, byteCount);
+
     try {
       // Write the buffered data to the file (append mode)
-      const result = await window.electronAPI.fs.writeFile(
-        this.activeFilePath,
-        toJS(this.bufferedData), // Convert Mobx to plain JS array for serialization
-        true);
+      const result = await window.electronAPI.fs.writeFile(this.activeFilePath, payload, true);
 
       if (result.success) {
         runInAction(() => {
-          this.numBytesWritten! += this.bufferedData.length;
-          this.fileSizeBytes! += this.bufferedData.length;
-          // Clear the buffer
-          this.bufferedData = [];
+          this.numBytesWritten! += byteCount;
+          this.fileSizeBytes! += byteCount;
         });
       } else {
+        this._requeue(chunks, byteCount);
         console.error('Failed to write to log file:', result.error);
         this.app.snackbar.sendToSnackbar(`Failed to write to log file: ${result.error}`, 'error');
       }
     } catch (error) {
+      this._requeue(chunks, byteCount);
       console.error('Error writing buffered data to disk:', error);
       this.app.snackbar.sendToSnackbar(`Error writing to log file: ${error}`, 'error');
     }
   }
 
+  /**
+   * Returns an unwritten batch to the head of the buffer so the next tick
+   * retries it. It goes back in *front* of anything that arrived meanwhile —
+   * order matters in a log file.
+   */
+  private _requeue(chunks: Uint8Array[], byteCount: number) {
+    // `concat`, not `unshift(...chunks)`: spreading would reintroduce the
+    // argument-count limit this class was just fixed for.
+    this.bufferedChunks = chunks.concat(this.bufferedChunks);
+    this.bufferedByteCount += byteCount;
+  }
+
+  /** Flattens buffered chunks into the single array the IPC write takes. */
+  private static _concatChunks(chunks: Uint8Array[], byteCount: number): Uint8Array {
+    if (chunks.length === 1) {
+      return chunks[0];
+    }
+    const out = new Uint8Array(byteCount);
+    let offset = 0;
+    for (const chunk of chunks) {
+      out.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return out;
+  }
+
   async stopLogging() {
     // Stop the repeated writing to disk of buffered data in the future
     clearInterval(this.intervalId!);
+    this.intervalId = null;
 
-    // Write the last of the buffered data to disk
+    // Write the last of the buffered data to disk. This chains behind any
+    // in-flight write, so data buffered during that write is flushed too.
     await this.writeBufferedDataToDisk();
 
     runInAction(() => {
