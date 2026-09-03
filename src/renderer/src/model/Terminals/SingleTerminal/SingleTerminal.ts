@@ -5,7 +5,6 @@ import { ListOnScrollProps } from 'react-window';
 import { formatTimestamp } from 'src/model/Util/timestamp';
 
 import TerminalRow from 'src/view/Terminals/SingleTerminal/TerminalRow';
-import TerminalChar from 'src/view/Terminals/SingleTerminal/SingleTerminalChar';
 import RxSettings, {
   BackspaceBehavior,
   CarriageReturnCursorBehavior,
@@ -48,7 +47,7 @@ export enum DataDirection {
 /**
  * Represents a single match for the Find feature. Row index is into
  * `filteredTerminalRows`, columns are character offsets into that row's
- * `terminalChars` array. `colEnd` is exclusive.
+ * row. `colEnd` is exclusive.
  */
 export interface FindMatch {
   rowIndex: number;
@@ -131,6 +130,24 @@ export class SingleTerminal {
    */
   terminalRows: TerminalRow[];
 
+  /**
+   * Reactive signal for the *contents* of `terminalRows`.
+   *
+   * `terminalRows` is `observable.shallow`, so MobX notices rows being added
+   * or removed but not a row's characters changing. `TerminalRow` itself holds
+   * no MobX state (see that class's comment — a per-byte change notification
+   * was measured as the parse-path bottleneck), so this counter carries that
+   * information instead. It is bumped once per received chunk rather than once
+   * per byte, which is all a renderer can act on anyway.
+   *
+   * Every computed that reads row *contents* — `filteredTerminalRows`,
+   * `findMatches`, `highlightMatches` — must read this so it invalidates, and
+   * the view's row renderer reads it so rows repaint. `_bumpRenderVersion` is
+   * called from `parseData` and `clear`, which between them cover every path
+   * that mutates a row.
+   */
+  renderVersion: number = 0;
+
   //======================================================================
   // FIND-IN-SCROLLBACK STATE
   //======================================================================
@@ -153,6 +170,10 @@ export class SingleTerminal {
    * Now implemented as a computed property for better performance.
    */
   get filteredTerminalRows(): TerminalRow[] {
+    // Row *contents* are not observable — see `renderVersion`. Filters match
+    // on row text, so this read is what makes the filter re-run when incoming
+    // data changes a row rather than adding one.
+    void this.renderVersion;
     if (this.activeFilters.length === 0) {
       return this.terminalRows;
     }
@@ -175,6 +196,9 @@ export class SingleTerminal {
    * automatically when query, case-sensitivity, or rows change.
    */
   get findMatches(): FindMatch[] {
+    // Matches are computed from row text, which is not observable — see
+    // `renderVersion`.
+    void this.renderVersion;
     if (!this.isFindOpen || this.findQuery === '') {
       return [];
     }
@@ -225,6 +249,9 @@ export class SingleTerminal {
    * last when iterating).
    */
   get highlightMatches(): HighlightMatch[] {
+    // Matches are computed from row text, which is not observable — see
+    // `renderVersion`.
+    void this.renderVersion;
     if (this.rulesSettings === null) return [];
     const matches: HighlightMatch[] = [];
     const rows = this.filteredTerminalRows;
@@ -263,7 +290,7 @@ export class SingleTerminal {
           re.lastIndex = 0;
           if (!re.test(group.combinedText)) continue;
           for (const rowIndex of group.rowIndexes) {
-            const rowLen = rows[rowIndex].terminalChars.length;
+            const rowLen = rows[rowIndex].length;
             if (rowLen === 0) continue;
             matches.push({
               rowIndex,
@@ -371,6 +398,23 @@ export class SingleTerminal {
    */
   private cachedTimestampMs: number = -1;
   private cachedTimestampString: string = '';
+
+  /**
+   * Memo backing `_classNameForCurrentStyle`. Holds the direction + SGR state
+   * the cached class string was built from, so the (common) unchanged-style
+   * case costs five primitive comparisons instead of rebuilding the string.
+   *
+   * Self-invalidating: the comparison is against the live `currForegroundColorNum`
+   * etc., so an SGR sequence changing the style is picked up on the next call
+   * with no explicit invalidation needed.
+   */
+  private _styleCacheValid: boolean = false;
+  private _styleCacheDirection: DataDirection | null = null;
+  private _styleCacheFg: number | null = null;
+  private _styleCacheBg: number | null = null;
+  private _styleCacheBold: boolean = false;
+  private _styleCacheExtra: string | undefined = undefined;
+  private _styleCacheResult: string = '';
 
   defaultBackgroundColor: string;
   defaultTxColor: string;
@@ -533,7 +577,17 @@ export class SingleTerminal {
     );
 
     makeAutoObservable(this, {
-      filteredTerminalRows: computed,
+      // `equals: () => false` is load-bearing, not a micro-optimisation knob.
+      //
+      // With no active filters this getter returns `this.terminalRows` itself,
+      // so when a chunk appends characters to an existing row the recomputed
+      // value is reference-equal to the previous one and MobX's default
+      // comparer would swallow the change — observers would never learn that
+      // row contents moved (rows themselves are not observable; see
+      // `renderVersion`). Declaring the value as never-equal makes the
+      // notification propagate whenever a dependency actually changed.
+      // Covered by `Reactivity.spec.ts`.
+      filteredTerminalRows: computed({ equals: () => false }),
       findMatches: computed,
       findMatchesByRow: computed,
       currentMatch: computed,
@@ -541,7 +595,17 @@ export class SingleTerminal {
       highlightMatchesByRow: computed,
       terminalRows: observable.shallow, // Only observe array changes, not individual row changes
       lastKnownSelectionInfo: false, // Not MobX-tracked; updated during renders, not via actions
-    });
+      // Style-string memo. Imperative optimisation touched on the per-byte hot
+      // path — making these observable would add notifications per char, which
+      // is exactly what the memo exists to avoid.
+      _styleCacheValid: false,
+      _styleCacheDirection: false,
+      _styleCacheFg: false,
+      _styleCacheBg: false,
+      _styleCacheBold: false,
+      _styleCacheExtra: false,
+      _styleCacheResult: false,
+    } as any);
   }
 
   /**
@@ -598,7 +662,7 @@ export class SingleTerminal {
 
   copyAllTextToClipboard() {
     const textToCopy = this.terminalRows
-      .map((row) => row.terminalChars.map((char) => char.char).join(''))
+      .map((row) => row.text)
       .join('\n');
     navigator.clipboard.writeText(textToCopy).then(() => {
       this.snackbarController.sendToSnackbar('Copied to clipboard', 'success');
@@ -751,6 +815,22 @@ export class SingleTerminal {
     // which the unit tests rely on, and which avoids reaction-scheduler
     // pitfalls in production.
     this._checkFinalisedRowsForSounds();
+
+    // Publish everything this chunk changed in one go. Rows are not
+    // individually observable, so this is what tells the view (and the
+    // find/highlight/filter computeds) that contents moved. Once per chunk,
+    // not once per byte — see `renderVersion`.
+    this._bumpRenderVersion();
+  }
+
+  /**
+   * Signals that row contents have changed. See `renderVersion`.
+   *
+   * Anything that mutates a `TerminalRow` outside of `parseData` or `clear`
+   * must call this, or the change will sit in the model without repainting.
+   */
+  _bumpRenderVersion() {
+    this.renderVersion += 1;
   }
 
   _parseAsciiData(data: Uint8Array, direction: DataDirection) {
@@ -1280,15 +1360,15 @@ export class SingleTerminal {
         }
         // Entirely clear all rows from the start row to the row with the cursor
         for (let rowIdx = startRowIdx; rowIdx < this.cursorPosition[0]; rowIdx += 1) {
-          this.terminalRows[rowIdx].terminalChars = [];
+          this.terminalRows[rowIdx].clearChars();
           this._addOrRemoveRowFromFilteredRows(rowIdx);
         }
         // Turns all chars into spaces on the row with the cursor up to the cursor position
         const currRow = this.terminalRows[this.cursorPosition[0]];
         for (let charIdx = 0; charIdx < this.cursorPosition[1]; charIdx += 1) {
-          currRow.terminalChars[charIdx].char = ' ';
-          currRow.terminalChars[charIdx].forCursor = false;
-          currRow.terminalChars[charIdx].style = {};
+          // Keeps the cell's existing styling — an erase leaves the background
+          // colour in place, it only blanks the character.
+          currRow.eraseToSpace(charIdx);
         }
       } else if (numberN === 2) {
         // Erase entire screen (visible screen only, scrollback is kept).
@@ -1420,24 +1500,21 @@ export class SingleTerminal {
     }
     const currRow = this.terminalRows[this.cursorPosition[0]];
     const col = this.cursorPosition[1];
-    let numDeletable = currRow.terminalChars.length - col;
+    let numDeletable = currRow.length - col;
     // Don't count the trailing cursor-holder space as a deletable character.
-    const lastIdx = currRow.terminalChars.length - 1;
-    if (numDeletable > 0 && currRow.terminalChars[lastIdx].forCursor) {
+    const lastIdx = currRow.length - 1;
+    if (numDeletable > 0 && currRow.isForCursor(lastIdx)) {
       numDeletable -= 1;
     }
     const numToDelete = Math.min(numChars, numDeletable);
     if (numToDelete <= 0) {
       return;
     }
-    currRow.terminalChars.splice(col, numToDelete);
+    currRow.spliceChars(col, numToDelete);
     // Make sure there is still a character under the cursor to hold it (needed
     // when the deletion reached the end of the line).
-    if (col === currRow.terminalChars.length) {
-      const spaceTerminalChar = new TerminalChar();
-      spaceTerminalChar.char = ' ';
-      spaceTerminalChar.forCursor = true;
-      currRow.terminalChars.push(spaceTerminalChar);
+    if (col === currRow.length) {
+      currRow.appendChar(' ', '', true);
     }
   }
 
@@ -1447,13 +1524,10 @@ export class SingleTerminal {
     // First, remove all chars at the cursor position or beyond
     // on the current row
     const currRow = this.terminalRows[this.cursorPosition[0]];
-    const numCharsToDeleteOnCurrRow = currRow.terminalChars.length - this.cursorPosition[1];
-    currRow.terminalChars.splice(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
+    const numCharsToDeleteOnCurrRow = currRow.length - this.cursorPosition[1];
+    currRow.spliceChars(this.cursorPosition[1], numCharsToDeleteOnCurrRow);
     // Add cursor char at current position
-    const cursorChar = new TerminalChar();
-    cursorChar.char = ' ';
-    cursorChar.forCursor = true;
-    currRow.terminalChars.push(cursorChar);
+    currRow.appendChar(' ', '', true);
     // The cursor has not changed row so we do not need to check if this row
     // still passes the filter
 
@@ -1836,8 +1910,8 @@ export class SingleTerminal {
     const currRow = this.terminalRows[this.cursorPosition[0]];
     // Check if terminal char we are moving from is only for cursor, and
     // is so, delete it
-    if (currRow.terminalChars[this.cursorPosition[1]].forCursor) {
-      currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    if (currRow.isForCursor(this.cursorPosition[1])) {
+      currRow.spliceChars(this.cursorPosition[1], 1);
     }
     this.cursorPosition[1] -= numColsToLeftAdjusted;
   }
@@ -1857,14 +1931,11 @@ export class SingleTerminal {
     this._cursorLeft(1);
     const currRow = this.terminalRows[this.cursorPosition[0]];
     // Delete the character now under the cursor.
-    currRow.terminalChars.splice(this.cursorPosition[1], 1);
+    currRow.spliceChars(this.cursorPosition[1], 1);
     // Make sure there is still a character at the cursor position to hold the
     // cursor (needed when we deleted the last character on the row).
-    if (this.cursorPosition[1] === currRow.terminalChars.length) {
-      const spaceTerminalChar = new TerminalChar();
-      spaceTerminalChar.char = ' ';
-      spaceTerminalChar.forCursor = true;
-      currRow.terminalChars.push(spaceTerminalChar);
+    if (this.cursorPosition[1] === currRow.length) {
+      currRow.appendChar(' ', '', true);
     }
   }
 
@@ -1885,18 +1956,12 @@ export class SingleTerminal {
 
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
       const currRow = this.terminalRows[this.cursorPosition[0]];
-      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
-      if (existingChar.forCursor) {
-        existingChar.forCursor = false;
-      }
+      currRow.clearForCursorAt(this.cursorPosition[1]);
 
       this.cursorPosition[1] += 1;
       // If there is no character here, add one for cursor
-      if (this.cursorPosition[1] === currRow.terminalChars.length) {
-        const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = ' ';
-        spaceTerminalChar.forCursor = true;
-        currRow.terminalChars.push(spaceTerminalChar);
+      if (this.cursorPosition[1] === currRow.length) {
+        currRow.appendChar(' ', '', true);
       }
     }
   }
@@ -1923,10 +1988,7 @@ export class SingleTerminal {
 
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
       const currRow = this.terminalRows[oldRowIdx];
-      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
-      if (existingChar.forCursor) {
-        existingChar.forCursor = false;
-      }
+      currRow.clearForCursorAt(this.cursorPosition[1]);
 
       const newRowIdx = oldRowIdx - 1;
       // Update cursor to new row
@@ -1938,11 +2000,8 @@ export class SingleTerminal {
 
       const newRow = this.terminalRows[newRowIdx];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
-      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
-        const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = ' ';
-        // newTerminalChar.forCursor = true;
-        newRow.terminalChars.push(newTerminalChar);
+      while (this.cursorPosition[1] >= newRow.length) {
+        newRow.appendChar(' ', '');
       }
 
       // Because the cursor is now on the row above what it used to be on,
@@ -1963,10 +2022,7 @@ export class SingleTerminal {
     for (let numRowsGoneDown = 0; numRowsGoneDown < numRows; numRowsGoneDown += 1) {
       // If we are moving off a character which was specifically for the cursor, now we consider it an actual space, and so set forCursor to false
       const currRow = this.terminalRows[this.cursorPosition[0]];
-      const existingChar = currRow.terminalChars[this.cursorPosition[1]];
-      if (existingChar.forCursor) {
-        existingChar.forCursor = false;
-      }
+      currRow.clearForCursorAt(this.cursorPosition[1]);
 
       // Now move cursor position down 1 row
       this.cursorPosition[0] += 1;
@@ -1995,10 +2051,8 @@ export class SingleTerminal {
 
       const newRow = this.terminalRows[this.cursorPosition[0]];
       // Add empty spaces in this new row (if needed) up to the current cursor column position
-      while (this.cursorPosition[1] >= newRow.terminalChars.length) {
-        const newTerminalChar = new TerminalChar();
-        newTerminalChar.char = ' ';
-        newRow.terminalChars.push(newTerminalChar);
+      while (this.cursorPosition[1] >= newRow.length) {
+        newRow.appendChar(' ', '');
       }
     }
   }
@@ -2202,9 +2256,29 @@ export class SingleTerminal {
     }
   }
 
-  addVisibleChar(char: string, direction: DataDirection, extraClassName?: string) {
-    const terminalChar = new TerminalChar();
-    terminalChar.char = char;
+  /**
+   * Builds the CSS class string for the current direction + SGR state.
+   *
+   * Memoised on the state it depends on. The class list only changes when the
+   * direction, foreground/background colour, bold flag or the caller's extra
+   * class changes — that is, once per escape sequence rather than once per
+   * received byte — but this used to be rebuilt for every char, allocating an
+   * array, up to four template strings and a joined string each time.
+   *
+   * Returning the *same string reference* for an unchanged style also makes
+   * `TerminalRow.appendChar`'s run-continuation check a pointer comparison.
+   */
+  private _classNameForCurrentStyle(direction: DataDirection, extraClassName?: string): string {
+    if (
+      this._styleCacheValid &&
+      direction === this._styleCacheDirection &&
+      this.currForegroundColorNum === this._styleCacheFg &&
+      this.currBackgroundColorNum === this._styleCacheBg &&
+      this.boldOrIncreasedIntensity === this._styleCacheBold &&
+      extraClassName === this._styleCacheExtra
+    ) {
+      return this._styleCacheResult;
+    }
 
     // This stores all classes we wish to apply to the char
     const classList = [];
@@ -2259,13 +2333,24 @@ export class SingleTerminal {
       classList.push(extraClassName);
     }
 
-    terminalChar.className = classList.join(' ');
+    this._styleCacheResult = classList.join(' ');
+    this._styleCacheDirection = direction;
+    this._styleCacheFg = this.currForegroundColorNum;
+    this._styleCacheBg = this.currBackgroundColorNum;
+    this._styleCacheBold = this.boldOrIncreasedIntensity;
+    this._styleCacheExtra = extraClassName;
+    this._styleCacheValid = true;
+    return this._styleCacheResult;
+  }
+
+  addVisibleChar(char: string, direction: DataDirection, extraClassName?: string) {
+    const className = this._classNameForCurrentStyle(direction, extraClassName);
 
     const rowToInsertInto = this.terminalRows[this.cursorPosition[0]];
     // Cursor should always be at a valid and pre-existing character position
     // Most of the time cursor will at a " " inserted for holding the cursor at
     // the end of all pre-existing text.
-    rowToInsertInto.terminalChars[this.cursorPosition[1]] = terminalChar;
+    rowToInsertInto.setChar(this.cursorPosition[1], char, className);
     // Increment cursor, move to next row if we have hit max char width
     // NOTE: Max. width may change at any time, and may reduce to a smaller value even
     // when chars are currently being inserted beyond the end. Thus the >= comparison here.
@@ -2279,11 +2364,8 @@ export class SingleTerminal {
     } else {
       this.cursorPosition[1] += 1;
       // Add space here is there is no text
-      if (this.cursorPosition[1] === rowToInsertInto.terminalChars.length) {
-        const spaceTerminalChar = new TerminalChar();
-        spaceTerminalChar.char = ' ';
-        spaceTerminalChar.forCursor = true;
-        rowToInsertInto.terminalChars.push(spaceTerminalChar);
+      if (this.cursorPosition[1] === rowToInsertInto.length) {
+        rowToInsertInto.appendChar(' ', '', true);
       }
     }
   }
@@ -2308,11 +2390,11 @@ export class SingleTerminal {
     // as the user cannot create a terminal text selection that starts prior to it
     const terminalRow = new TerminalRow(this.uniqueRowIndexCount, false);
     this.uniqueRowIndexCount += 1;
-    const terminalChar = new TerminalChar();
-    terminalChar.char = ' ';
-    terminalChar.forCursor = true;
-    terminalRow.terminalChars.push(terminalChar);
+    terminalRow.appendChar(' ', '', true);
     this.terminalRows.push(terminalRow);
+
+    // Rows are not individually observable — see `renderVersion`.
+    this._bumpRenderVersion();
 
     this.rowToScrollLockTo = 0;
 

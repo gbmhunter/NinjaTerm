@@ -550,7 +550,7 @@ export class App {
           const lines = params.lines ?? 50;
           const terminal = this.terminals.txRxTerminal;
           const rows = terminal.terminalRows.slice(-lines);
-          const text = rows.map((row: any) => row.terminalChars.map((c: any) => c.char).join('')).join('\n');
+          const text = rows.map((row) => row.text).join('\n');
           data = { text };
         } else if (method === 'get_connection_status') {
           data = {

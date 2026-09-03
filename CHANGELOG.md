@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- **The terminal handles incoming data ~1.5x faster and repaints 2-12x faster.** `TerminalRow` stores a flat `chars` array plus run-length `styleRuns` instead of an object per column, row contents moved off MobX onto a per-chunk `SingleTerminal.renderVersion` signal, and the `SingleTerminalView` row renderer was hoisted to module scope. Numbers and method in [`performance-profiles/THROUGHPUT_BASELINES.md`](performance-profiles/THROUGHPUT_BASELINES.md).
+
 ## [5.18.0] - 2026-08-31
 
 ### Added

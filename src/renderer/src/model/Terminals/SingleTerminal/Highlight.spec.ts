@@ -156,7 +156,7 @@ describe('SingleTerminal LINE-scope highlights', () => {
     const matches = h.terminal.highlightMatchesByRow.get(0) ?? [];
     expect(matches.length).toBe(1);
     expect(matches[0].colStart).toBe(0);
-    expect(matches[0].colEnd).toBe(row0.terminalChars.length);
+    expect(matches[0].colEnd).toBe(row0.length);
   });
 
   test('LINE scope leaves non-matching rows alone', () => {
@@ -193,7 +193,7 @@ describe('SingleTerminal LINE-scope highlights', () => {
       const rowMatches = h.terminal.highlightMatchesByRow.get(i) ?? [];
       expect(rowMatches.length).toBe(1);
       expect(rowMatches[0].colStart).toBe(0);
-      expect(rowMatches[0].colEnd).toBe(rows[i].terminalChars.length);
+      expect(rowMatches[0].colEnd).toBe(rows[i].length);
     }
   });
 
@@ -206,7 +206,7 @@ describe('SingleTerminal LINE-scope highlights', () => {
     // One narrow match from "foo" rule + one full-row range from "bar" rule.
     expect(matches.length).toBe(2);
     expect(matches.some((m) => m.backgroundColor === '#0a0' && m.colEnd - m.colStart === 3)).toBe(true);
-    expect(matches.some((m) => m.backgroundColor === '#a00' && m.colEnd === row0.terminalChars.length)).toBe(true);
+    expect(matches.some((m) => m.backgroundColor === '#a00' && m.colEnd === row0.length)).toBe(true);
   });
 });
 
