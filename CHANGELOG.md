@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+
+- **Log files no longer lose data, or duplicate it.** Anything that arrived while a write was in flight was discarded by the buffer clear that ran *after* the write (and counted as written anyway), and two overlapping writes each wrote the same bytes; `Logging` now takes the buffer before awaiting and serialises writes.
+- **Logging no longer crashes on a large chunk.** `bufferedData.push(...rxData)` spread the chunk into function arguments, throwing `RangeError` past ~65k bytes — reachable in one RTT or socket read. The buffer holds `Uint8Array` chunks instead, which also drops a MobX notification per received byte.
+
 ### Changed
 
 - **The terminal handles incoming data ~1.5x faster and repaints 2-12x faster.** `TerminalRow` stores a flat `chars` array plus run-length `styleRuns` instead of an object per column, row contents moved off MobX onto a per-chunk `SingleTerminal.renderVersion` signal, and the `SingleTerminalView` row renderer was hoisted to module scope. Numbers and method in [`performance-profiles/THROUGHPUT_BASELINES.md`](performance-profiles/THROUGHPUT_BASELINES.md).

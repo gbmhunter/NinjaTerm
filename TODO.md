@@ -13,7 +13,7 @@ Items are grouped: **[perf]**, **[arch]**, **[bug]**, **[security]**,
 ## Suggested order
 
 1. ~~Hoist `Row` out of the component body~~ — **done 2026-09-03**
-2. Fix the Logging bugs — data loss is the worst kind
+2. ~~Fix the Logging bugs~~ — **done 2026-09-03**
 3. ~~Cache the per-char className + delete `TerminalChar.style`~~ — **done 2026-09-03**
 4. Electron hardening pass (CSP, nav guards, `openExternal`, DevTools install)
 5. `dependencies`/`devDependencies` split, check installer size
@@ -22,8 +22,8 @@ Items are grouped: **[perf]**, **[arch]**, **[bug]**, **[security]**,
 8. Declarative settings schema
 
 Items 1, 3 and 7 landed together — they are all in the terminal hot path and
-share `SingleTerminal.perf.spec.ts` as their verification. Next up is item 2
-(the Logging data-loss bug), then item 4.
+share `SingleTerminal.perf.spec.ts` as their verification. Item 2 followed.
+Next up is item 4 (Electron hardening).
 
 ---
 
@@ -205,7 +205,7 @@ The CHANGELOG shows this is a bug factory:
 
 ## 4. Concrete bugs  [bug]
 
-- [ ] **Log data loss + wrong byte count.** `Logging.ts:256-280`.
+- [x] **Log data loss + wrong byte count.** (done 2026-09-03) `Logging.ts:256-280`.
       `writeBufferedDataToDisk` snapshots the buffer, `await`s the IPC write, then
       does `this.numBytesWritten += this.bufferedData.length` and
       `this.bufferedData = []`. Anything appended during the await is counted but
@@ -218,7 +218,7 @@ The CHANGELOG shows this is a bug factory:
       // on failure, prepend toWrite back
       ```
 
-- [ ] **Logging can blow the stack on a fast burst.** `Logging.ts:245,253`.
+- [x] **Logging can blow the stack on a fast burst.** (done 2026-09-03) `Logging.ts:245,253`.
       `this.bufferedData.push(...rxData)` spreads a `Uint8Array` into function
       arguments; V8 throws `RangeError: Maximum call stack size exceeded` around
       65k-125k elements. A single large RTT or socket chunk gets there. Also
@@ -292,10 +292,11 @@ partition changes, and only readable by main through `executeJavaScript`.
       Combined with `"files": ["node_modules/**/*"]` in the electron-builder
       config, there is real risk of shipping the toolchain in the installer. Move
       them and compare packaged size before/after.
-- [ ] **IPC sends bytes as `number[]`.** `serial:write-data`, `fs:write-file`
-      (`preload/index.ts:35,70`). Structured clone handles
+- [ ] **IPC sends bytes as `number[]`.** `serial:write-data` still does
+      (`preload/index.ts:35`). Structured clone handles
       `Uint8Array`/`ArrayBuffer` natively and ~10x cheaper. RX already does the
-      right thing (Buffer).
+      right thing (Buffer). `fs:write-file` was converted alongside the logging
+      fix on 2026-09-03.
 - [ ] **1646 lines of test fixtures ship in the renderer bundle.**
       `FakePortsController.tsx` builds ~25 fake ports eagerly in a field
       initializer on `App`. Make it a dynamic `import()` when the dialog opens —

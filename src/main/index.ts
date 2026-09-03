@@ -300,9 +300,12 @@ ipcMain.handle('fs:select-directory', async () => {
   }
 });
 
-ipcMain.handle('fs:write-file', async (event, filePath: string, data: number[], append: boolean = true) => {
+// `data` arrives as a Uint8Array: structured clone carries typed arrays
+// natively, whereas the number[] this used to take cost a per-byte boxed
+// value on the way across for every log write.
+ipcMain.handle('fs:write-file', async (event, filePath: string, data: Uint8Array, append: boolean = true) => {
   try {
-    const buffer = Buffer.from(data);
+    const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
 
     if (append) {
       await fs.appendFile(filePath, buffer);

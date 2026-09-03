@@ -66,7 +66,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File system operations
   fs: {
     selectDirectory: () => ipcRenderer.invoke('fs:select-directory'),
-    writeFile: (filePath: string, data: number[], append?: boolean) =>
+    writeFile: (filePath: string, data: Uint8Array, append?: boolean) =>
       ipcRenderer.invoke('fs:write-file', filePath, data, append),
     getFileSize: (filePath: string) => ipcRenderer.invoke('fs:get-file-size', filePath),
     fileExists: (filePath: string) => ipcRenderer.invoke('fs:file-exists', filePath),
@@ -253,7 +253,7 @@ export interface ElectronAPI {
   };
   fs: {
     selectDirectory(): Promise<{ success: boolean; path?: string; canceled?: boolean; error?: string }>;
-    writeFile(filePath: string, data: number[], append?: boolean): Promise<{ success: boolean; error?: string }>;
+    writeFile(filePath: string, data: Uint8Array, append?: boolean): Promise<{ success: boolean; error?: string }>;
     getFileSize(filePath: string): Promise<{ success: boolean; size?: number; error?: string }>;
     fileExists(filePath: string): Promise<{ success: boolean; exists?: boolean; error?: string }>;
     getDefaultLogDirectory(): Promise<{ success: boolean; path?: string; error?: string }>;
