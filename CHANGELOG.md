@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- **Recording TX/RX throughput samples is no longer O(n) per chunk.** The rate-tracking arrays trimmed a single entry off the front on every push once at their cap, and were MobX-observable with no reactive observer; they now trim in batches and are plain arrays.
 - **Transmitted data no longer crosses the process boundary as a boxed value per byte.** The `serial`, `socket` and `rtt` write channels take a `Uint8Array` instead of a `number[]`, so `ConnController.writeData` hands its bytes straight to the transport; Bluetooth already did this.
 - **The terminal handles incoming data ~1.5x faster and repaints 2-12x faster.** `TerminalRow` stores a flat `chars` array plus run-length `styleRuns` instead of an object per column, row contents moved off MobX onto a per-chunk `SingleTerminal.renderVersion` signal, and the `SingleTerminalView` row renderer was hoisted to module scope. Numbers and method in [`performance-profiles/THROUGHPUT_BASELINES.md`](performance-profiles/THROUGHPUT_BASELINES.md).
 
