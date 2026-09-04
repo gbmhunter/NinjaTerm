@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- **Applying a preset that names a serial port now connects to that port.** `setSelectedPort` wrote a `serialPortInfo` field nothing read, so the open used whichever port was selected in the UI — or failed outright — while the snackbar reported the preset's port. The serial reconnection poller went through the same call and was equally ineffective.
 - **Packaged builds no longer download the React DevTools extension on every launch.** `installExtension` ran unconditionally, so a shipped build fetched an extension from Google's CDN at startup and installed it with file access; now guarded by `app.isPackaged`.
 - **NinjaTerm no longer contacts Google Fonts or Ko-fi's CDN at runtime.** The `kofi-button` package injected a remote stylesheet and two CDN images every time the terminal pane mounted; replaced by a local `KofiDonateButton` drawn with an MUI icon, which opens the Ko-fi page in your browser via `shell.openExternal`.
 - **External links open in your browser instead of inside NinjaTerm.** The two `target="_blank"` links (Moment.js docs, Ko-fi button) opened an Electron window that inherits the preload bridge; `setWindowOpenHandler` now denies in-app windows and hands http(s) URLs to the OS.

@@ -158,8 +158,10 @@ repeat the same fan-out.
       `BluetoothLEController` is already a separate class doing its own connect —
       that's the shape, it just isn't a shared interface yet.
 
-- [ ] Add unit tests for the transports. `ConnController.spec.ts` exists but the
-      transports themselves have zero coverage today.
+- [x] Add unit tests for the connection lifecycle. (done 2026-09-04)
+      `ConnController.characterisation.spec.ts` pins open/close/write/dispose
+      for serial, socket and RTT as a safety net for the refactor. It found a
+      live bug on the way in: `setSelectedPort` wrote a field nothing read.
 
 Prerequisite for multiple simultaneous connections (see features).
 

@@ -75,23 +75,11 @@ export class ConnController {
    */
   private connDisposers: Array<() => void> = [];
 
-  // Port information for reconnection purposes
-  serialPortInfo: Partial<PortInfo> | null = null;
-
-  // Socket information for reconnection purposes
+  /**
+   * Socket host/port captured at open time, so a reconnect targets the endpoint
+   * that was actually connected to rather than whatever the settings say now.
+   */
   socketConnectionInfo: { host: string; port: number } | null = null;
-
-  // RTT connection info (captured at open time for display / reconnection)
-  rttConnectionInfo: {
-    device: string;
-    interfaceType: 'SWD' | 'JTAG';
-    speedKHz: number;
-    serverExePath: string;
-    jLinkSerialNumber: string;
-  } | null = null;
-
-  // Bluetooth device information for reconnection purposes
-  bluetoothDeviceInfo: { deviceId: string; deviceName?: string } | null = null;
 
   bluetoothLEController: BluetoothLEController;
 
@@ -261,8 +249,6 @@ export class ConnController {
         runInAction(() => {
           // Stop any existing polling since we're now connected
           this.stopPollingForReconnection();
-          // Save port info for reconnection - selectedPort is already a PortInfo object
-          this.serialPortInfo = selectedPort;
           this.connState = ConnState.OPENED;
         });
 
@@ -434,13 +420,6 @@ export class ConnController {
         }
 
         this.currentRttConnectionId = result.connectionId!;
-        this.rttConnectionInfo = {
-          device: portConfig.rttDevice,
-          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
-          speedKHz: portConfig.rttSpeedKHz,
-          serverExePath: portConfig.rttServerExePath,
-          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
-        };
 
         this.connDisposers.push(
           window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
@@ -862,14 +841,19 @@ export class ConnController {
     }
   }
 
-    /**
+  /**
    * Set the port which will be used if open() is called.
+   *
+   * Writes the same field `openConnection` reads. It used to set a separate
+   * `serialPortInfo` that nothing ever read, so the two callers — a preset that
+   * names a port, and the reconnection poller when a port reappears — silently
+   * had no effect, and the open used whatever was selected in the UI instead.
    *
    * @param port The serial port info to set as the selected port.
    */
-    setSelectedPort = (port: PortInfo) => {
-      this.serialPortInfo = port;
-    };
+  setSelectedPort = (port: PortInfo) => {
+    this.app.settings.portConfiguration.setSelectedSerialPort(port);
+  };
 
   setDtr(dtr: boolean) {
     this.currentFlowControlState.dtr = dtr;
