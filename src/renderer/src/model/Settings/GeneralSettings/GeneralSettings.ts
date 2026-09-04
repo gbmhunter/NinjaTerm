@@ -1,15 +1,31 @@
 import { makeAutoObservable } from "mobx";
 import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
+import { GeneralSettingsConfig } from "src/model/AppDataManager/DataClasses/GeneralSettingsData";
+import { SettingsBranch } from "../SettingsBranch";
 
 export default class GeneralSettings {
   profileManager: AppDataManager;
 
-  whenPastingOnWindowsReplaceCRLFWithLF = true;
-  whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = true;
-  
+  /** See `SettingsBranch` for how this class relates to `GeneralSettingsConfig`. */
+  private readonly branch = new SettingsBranch<GeneralSettingsConfig>(
+    'settings.generalSettings',
+    (config) => config.settings.generalSettings,
+  );
+
+  get whenPastingOnWindowsReplaceCRLFWithLF() { return this.branch.data.whenPastingOnWindowsReplaceCRLFWithLF; }
+  setWhenPastingOnWindowsReplaceCRLFWithLF = this.branch.setter('whenPastingOnWindowsReplaceCRLFWithLF');
+
+  get whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping() { return this.branch.data.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping; }
+  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.branch.setter('whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping');
+
   // Performance test results (not persisted, session-only)
   performanceTestResults: string | null = null;
   isRunningPerformanceTest = false;
+
+  //================================================================================
+  // App-level settings. These live on the root of `appData`, not in the per-profile
+  // config, because they affect the whole application rather than one setup.
+  //================================================================================
 
   get autoUpdatesEnabled() {
     return this.profileManager.appData.autoUpdatesEnabled;
@@ -25,22 +41,9 @@ export default class GeneralSettings {
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this._loadConfig();
-    this.profileManager.registerOnConfigReload(['settings.generalSettings'], () => {
-      this._loadConfig();
-    });
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
+    this.branch.attach(profileManager);
+    makeAutoObservable<GeneralSettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
   }
-
-  setWhenPastingOnWindowsReplaceCRLFWithLF = (value: boolean) => {
-    this.whenPastingOnWindowsReplaceCRLFWithLF = value;
-    this._saveConfig();
-  };
-
-  setWhenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = (value: boolean) => {
-    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = value;
-    this._saveConfig();
-  };
 
   setAutoUpdatesEnabled = (value: boolean) => {
     this.profileManager.appData.autoUpdatesEnabled = value;
@@ -74,22 +77,6 @@ export default class GeneralSettings {
 
   setIsRunningPerformanceTest = (isRunning: boolean) => {
     this.isRunningPerformanceTest = isRunning;
-  };
-
-  _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.settings.generalSettings;
-
-    config.whenPastingOnWindowsReplaceCRLFWithLF = this.whenPastingOnWindowsReplaceCRLFWithLF;
-    config.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
-
-    this.profileManager.saveAppData();
-  };
-
-  _loadConfig = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.settings.generalSettings;
-
-    this.whenPastingOnWindowsReplaceCRLFWithLF = configToLoad.whenPastingOnWindowsReplaceCRLFWithLF;
-    this.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping = configToLoad.whenCopyingToClipboardDoNotAddLFIfRowWasCreatedDueToWrapping;
   };
 
   clearAppDataAndRefresh = () => {

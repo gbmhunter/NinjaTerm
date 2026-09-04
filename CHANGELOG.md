@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- **Toggling ANSI parsing from a fake port now sticks.** `FakePortsController` wrote `rxSettings.ansiEscapeCodeParsingEnabled` directly, which only ever reached the runtime copy of the setting; the persisted value kept the old state and a preset or restart silently reverted it. Seven such writes now go through the setter — and the settings classes no longer *have* a runtime copy to bypass.
 - **Applying a preset that names a serial port now connects to that port.** `setSelectedPort` wrote a `serialPortInfo` field nothing read, so the open used whichever port was selected in the UI — or failed outright — while the snackbar reported the preset's port. The serial reconnection poller went through the same call and was equally ineffective.
 - **Packaged builds no longer download the React DevTools extension on every launch.** `installExtension` ran unconditionally, so a shipped build fetched an extension from Google's CDN at startup and installed it with file access; now guarded by `app.isPackaged`.
 - **NinjaTerm no longer contacts Google Fonts or Ko-fi's CDN at runtime.** The `kofi-button` package injected a remote stylesheet and two CDN images every time the terminal pane mounted; replaced by a local `KofiDonateButton` drawn with an MUI icon, which opens the Ko-fi page in your browser via `shell.openExternal`.
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- **Each setting now has exactly one copy.** The five settings classes kept a runtime field per setting and synced it with the persisted `*Data` object by hand (`_loadConfig`/`_saveConfig`/`_isLoading`); they are now thin typed façades over the persisted object via `SettingsBranch`, so there is nothing to load, save back, or guard. Root cause was the config tree being observable only on the second launch, not the first — fixed in `AppDataManager`. −485 lines; the baud-rate, socket-timeout, RTT-speed and RTT-channel inputs now validate as you type like every other field.
 - **Connection handling is now one state machine over a `Transport` interface, not five copies of one.** `ConnController.openConnection` was a ~370-line if/else per connection type, with close, unexpected-close and reconnection each repeating the same fan-out; serial, socket, RTT, Bluetooth and fake ports now implement a common interface and the controller is 1082 lines down to 653.
 - **Recording TX/RX throughput samples is no longer O(n) per chunk.** The rate-tracking arrays trimmed a single entry off the front on every push once at their cap, and were MobX-observable with no reactive observer; they now trim in batches and are plain arrays.
 - **Transmitted data no longer crosses the process boundary as a boxed value per byte.** The `serial`, `socket` and `rtt` write channels take a `Uint8Array` instead of a `number[]`, so `ConnController.writeData` hands its bytes straight to the transport; Bluetooth already did this.

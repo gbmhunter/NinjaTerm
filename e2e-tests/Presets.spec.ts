@@ -75,7 +75,7 @@ test.describe('settings presets (Electron)', () => {
     await appTestHarness.openPortAndGoToTerminalView();
 
     const before = await appTestHarness.page.evaluate(() => ({
-      baudRate: window.app.settings.portConfiguration.baudRate,
+      baudRate: window.app.settings.portConfiguration.baudRate.appliedValue,
       connState: window.app.connController.connState,
     }));
 
@@ -85,7 +85,7 @@ test.describe('settings presets (Electron)', () => {
     await expect(appTestHarness.page.getByTestId('preset-confirm-dialog')).toHaveCount(0);
 
     const after = await appTestHarness.page.evaluate(() => ({
-      baudRate: window.app.settings.portConfiguration.baudRate,
+      baudRate: window.app.settings.portConfiguration.baudRate.appliedValue,
       connState: window.app.connController.connState,
     }));
 

@@ -1,5 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { TxSettingsData } from 'src/model/AppDataManager/DataClasses/TxSettingsData';
+import { SettingsBranch } from '../SettingsBranch';
 
 export enum EnterKeyPressBehavior {
   SEND_LF = 'Send LF',
@@ -54,6 +56,12 @@ export default class TxSettings {
 
   profileManager: AppDataManager;
 
+  /** See `SettingsBranch` for how this class relates to `TxSettingsData`. */
+  private readonly branch = new SettingsBranch<TxSettingsData>(
+    'settings.txSettings',
+    (config) => config.settings.txSettings,
+  );
+
   /**
    * Whether keystrokes are sent as they are typed, or buffered into a line
    * that is sent in one go when Enter is pressed.
@@ -63,25 +71,26 @@ export default class TxSettings {
    * per command -- SCPI instruments over TCP being the common case -- ignore
    * a command that arrives fragmented across several segments.
    */
-  txMode = TxMode.CHARACTER;
+  get txMode() { return this.branch.data.txMode; }
+  setTxMode = this.branch.setter('txMode');
 
-  enterKeyPressBehavior = EnterKeyPressBehavior.SEND_LF;
+  get enterKeyPressBehavior() { return this.branch.data.enterKeyPressBehavior; }
+  setEnterKeyPressBehavior = this.branch.setter('enterKeyPressBehavior');
 
-  /**
-   * What to do when the user presses the backspace key.
-   */
-  backspaceKeyPressBehavior = BackspaceKeyPressBehavior.SEND_BACKSPACE;
+  /** What to do when the user presses the backspace key. */
+  get backspaceKeyPressBehavior() { return this.branch.data.backspaceKeyPressBehavior; }
+  setBackspaceKeyPressBehavior = this.branch.setter('backspaceKeyPressBehavior');
 
-  /**
-   * What to do when the user presses the delete key.
-   */
-  deleteKeyPressBehavior = DeleteKeyPressBehavior.SEND_VT_SEQUENCE;
+  /** What to do when the user presses the delete key. */
+  get deleteKeyPressBehavior() { return this.branch.data.deleteKeyPressBehavior; }
+  setDeleteKeyPressBehavior = this.branch.setter('deleteKeyPressBehavior');
 
   /**
    * If true, hex bytes 0x01-0x1A will be sent when the user
    * presses Ctrl+A thru Ctrl+Z
    */
-  send0x01Thru0x1AWhenCtrlAThruZPressed = true;
+  get send0x01Thru0x1AWhenCtrlAThruZPressed() { return this.branch.data.send0x01Thru0x1AWhenCtrlAThruZPressed; }
+  setSend0x01Thru0x1AWhenCtrlAThruZPressed = this.branch.setter('send0x01Thru0x1AWhenCtrlAThruZPressed');
 
   /**
    * If true, [ESC] + <char> will be sent when the user presses
@@ -89,14 +98,16 @@ export default class TxSettings {
    *
    * This emulates standard meta key behavior in most terminals.
    */
-  sendEscCharWhenAltKeyPressed = true;
+  get sendEscCharWhenAltKeyPressed() { return this.branch.data.sendEscCharWhenAltKeyPressed; }
+  setSendEscCharWhenAltKeyPressed = this.branch.setter('sendEscCharWhenAltKeyPressed');
 
   /**
    * If true, Ctrl+C copies selected text to clipboard (like Windows Terminal/iTerm2).
    * If no text is selected, Ctrl+C sends 0x03 as normal. Ctrl+V always pastes from clipboard.
    * If false, Ctrl+C/V always send control codes (0x03/0x16); use Ctrl+Shift+C/V for copy/paste.
    */
-  useCtrlCVForCopyPaste = true;
+  get useCtrlCVForCopyPaste() { return this.branch.data.useCtrlCVForCopyPaste; }
+  setUseCtrlCVForCopyPaste = this.branch.setter('useCtrlCVForCopyPaste');
 
   /**
    * If true (default), Ctrl+F opens the in-pane Find bar. If false, Ctrl+F
@@ -104,82 +115,12 @@ export default class TxSettings {
    * is sent to the connected device. The on-screen Find magnifier buttons
    * work regardless of this setting.
    */
-  useCtrlFForFind = true;
+  get useCtrlFForFind() { return this.branch.data.useCtrlFForFind; }
+  setUseCtrlFForFind = this.branch.setter('useCtrlFForFind');
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this._loadConfig();
-    this.profileManager.registerOnConfigReload(['settings.txSettings'], () => {
-      this._loadConfig();
-    });
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
-  }
-
-  _loadConfig = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.settings.txSettings;
-
-    this.txMode = configToLoad.txMode;
-    this.enterKeyPressBehavior = configToLoad.enterKeyPressBehavior;
-    this.backspaceKeyPressBehavior = configToLoad.backspaceKeyPressBehavior;
-    this.deleteKeyPressBehavior = configToLoad.deleteKeyPressBehavior;
-    this.send0x01Thru0x1AWhenCtrlAThruZPressed = configToLoad.send0x01Thru0x1AWhenCtrlAThruZPressed;
-    this.sendEscCharWhenAltKeyPressed = configToLoad.sendEscCharWhenAltKeyPressed;
-    this.useCtrlCVForCopyPaste = configToLoad.useCtrlCVForCopyPaste;
-    this.useCtrlFForFind = configToLoad.useCtrlFForFind;
-  };
-
-  _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.settings.txSettings;
-
-    config.txMode = this.txMode;
-    config.enterKeyPressBehavior = this.enterKeyPressBehavior;
-    config.backspaceKeyPressBehavior = this.backspaceKeyPressBehavior;
-    config.deleteKeyPressBehavior = this.deleteKeyPressBehavior;
-    config.send0x01Thru0x1AWhenCtrlAThruZPressed = this.send0x01Thru0x1AWhenCtrlAThruZPressed;
-    config.sendEscCharWhenAltKeyPressed = this.sendEscCharWhenAltKeyPressed;
-    config.useCtrlCVForCopyPaste = this.useCtrlCVForCopyPaste;
-    config.useCtrlFForFind = this.useCtrlFForFind;
-
-    this.profileManager.saveAppData();
-  };
-
-  setTxMode = (value: TxMode) => {
-    this.txMode = value;
-    this._saveConfig();
-  };
-
-  setEnterKeyPressBehavior = (value: EnterKeyPressBehavior) => {
-    this.enterKeyPressBehavior = value;
-    this._saveConfig();
-  };
-
-  setBackspaceKeyPressBehavior = (value: BackspaceKeyPressBehavior) => {
-    this.backspaceKeyPressBehavior = value;
-    this._saveConfig();
-  };
-
-  setDeleteKeyPressBehavior = (value: DeleteKeyPressBehavior) => {
-    this.deleteKeyPressBehavior = value;
-    this._saveConfig();
-  };
-
-  setSend0x01Thru0x1AWhenCtrlAThruZPressed = (value: boolean) => {
-    this.send0x01Thru0x1AWhenCtrlAThruZPressed = value;
-    this._saveConfig();
-  }
-
-  setSendEscCharWhenAltKeyPressed = (value: boolean) => {
-    this.sendEscCharWhenAltKeyPressed = value;
-    this._saveConfig();
-  }
-
-  setUseCtrlCVForCopyPaste = (value: boolean) => {
-    this.useCtrlCVForCopyPaste = value;
-    this._saveConfig();
-  }
-
-  setUseCtrlFForFind = (value: boolean) => {
-    this.useCtrlFForFind = value;
-    this._saveConfig();
+    this.branch.attach(profileManager);
+    makeAutoObservable<TxSettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
   }
 }

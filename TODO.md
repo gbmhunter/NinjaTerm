@@ -20,7 +20,7 @@ Items are grouped: **[perf]**, **[arch]**, **[bug]**, **[security]**,
 5. `dependencies`/`devDependencies` split, check installer size
 6. ~~`Transport` interface~~ — **done 2026-09-04**. Unblocks tabs and file transfer.
 7. ~~Row data model rewrite~~ — **done 2026-09-03**
-8. Declarative settings schema
+8. ~~Declarative settings schema~~ — **done 2026-09-04**, as a single-source-of-truth façade rather than a schema; see §3.
 
 Items 1, 3 and 7 landed together — they are all in the terminal hot path and
 share `SingleTerminal.perf.spec.ts` as their verification. Item 2 followed.
@@ -167,6 +167,40 @@ Prerequisite for multiple simultaneous connections (see features).
 
 ---
 
+## 3. Six settings classes hand-rolling identical load/save plumbing  [arch] — DONE 2026-09-04
+
+**Status: done, but not as sketched below.** The descriptor-list idea would have
+generated the load/save code while keeping both copies of every setting. The
+actual root cause was the *copies*: they existed because the persisted config
+tree was only observable on the second launch (MobX deep conversion skips class
+instances, and `new AppData()` is one). With that fixed in `AppDataManager`,
+each settings class is a thin typed façade over the persisted object
+(`SettingsBranch`) — `get x() { return this.branch.data.x }` plus
+`setX = this.branch.setter('x')` — and there is nothing to load, save, or guard.
+Net −485 lines; `SettingsReactivity.spec.ts` and `SettingsBranch.spec.ts` pin
+the observability and the undo/subtree-replacement case.
+
+Found on the way:
+
+- [ ] **`socketConnTimeoutMs` is a dead setting.** It has a UI field, validation
+      and persistence, and nothing reads it — the socket connect never passes a
+      timeout. Either wire it into `socket:connect` or remove it (needs a
+      migration + UI change, so not done here).
+- [ ] **`RxSettingsView` reaches `displaySettings` via
+      `rxSettings.profileManager.app.settings.displaySettings`** (5 sites) to get
+      tooltip config. It has `app` in scope; use it. `profileManager` was kept
+      public on the settings classes only so this didn't break.
+- [x] Seven direct writes to `rxSettings.ansiEscapeCodeParsingEnabled` in
+      `FakePortsController` bypassed the setter and never persisted. Caught by
+      the getter-based façade at compile time; fixed.
+- [ ] **`RulesSettings`, `Logging`, `Graphing` and the `terminal.*` branches**
+      still hand-roll load/save. They hold collections, not flat settings, so
+      `SettingsBranch` doesn't apply as-is; a collection-shaped equivalent is the
+      natural follow-up.
+
+<details>
+<summary>Original analysis (kept for context)</summary>
+
 ## 3. Six settings classes hand-rolling identical load/save plumbing  [arch]
 
 `RxSettings`, `TxSettings`, `DisplaySettings`, `PortSettings`, `GeneralSettings`,
@@ -203,6 +237,8 @@ The CHANGELOG shows this is a bug factory:
 - [ ] Once that lands, derive `appDataMigrations.ts` (829 lines) and the
       "NinjaTerm defaults" preset from the same source of truth. The defaults
       preset is already built from the data classes, so this is half done.
+
+</details>
 
 ---
 

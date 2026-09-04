@@ -48,7 +48,7 @@ export class SerialTransport implements Transport {
     try {
       const result = await window.electronAPI.serial.openPort({
         path: selectedPort.path,
-        baudRate: config.baudRate,
+        baudRate: config.baudRate.appliedValue,
         dataBits: config.numDataBits,
         parity: config.parity,
         stopBits: config.stopBits,

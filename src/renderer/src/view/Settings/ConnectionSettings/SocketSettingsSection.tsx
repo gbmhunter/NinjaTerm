@@ -143,21 +143,21 @@ function SocketSettingsSection(props: Props) {
       >
         <TextField
           label="Connection timeout (ms)"
-          value={app.settings.portConfiguration.socketConnTimeoutDispMs}
+          value={app.settings.portConfiguration.socketConnTimeoutMs.dispValue}
           disabled={app.connController.connState !== ConnState.CLOSED}
-          error={app.settings.portConfiguration.socketConnTimeoutErrorMsg !== ''}
-          helperText={app.settings.portConfiguration.socketConnTimeoutErrorMsg || 'Timeout in milliseconds'}
+          error={!app.settings.portConfiguration.socketConnTimeoutMs.isValid}
+          helperText={app.settings.portConfiguration.socketConnTimeoutMs.errorMsg || 'Timeout in milliseconds'}
           onChange={(e) => {
-            app.settings.portConfiguration.setSocketConnTimeoutDispMs(e.target.value);
+            app.settings.portConfiguration.socketConnTimeoutMs.setDispValue(e.target.value);
           }}
           onKeyDown={async (e) => {
             if (e.key === 'Enter') {
-              await app.settings.portConfiguration.applySocketConnTimeout();
+              app.settings.portConfiguration.socketConnTimeoutMs.apply();
             }
             e.stopPropagation();
           }}
           onBlur={async () => {
-            await app.settings.portConfiguration.applySocketConnTimeout();
+            app.settings.portConfiguration.socketConnTimeoutMs.apply();
           }}
           sx={{ width: 180, marginTop: '30px' }}
           size="small"

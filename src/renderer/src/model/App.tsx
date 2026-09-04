@@ -575,7 +575,7 @@ export class App {
           data = {
             state: this.connController.connState,
             portPath: this.settings.portConfiguration.selectedSerialPort?.path ?? null,
-            baudRate: this.settings.portConfiguration.baudRate,
+            baudRate: this.settings.portConfiguration.baudRate.appliedValue,
           };
         } else {
           throw new Error(`Unknown MCP method: ${method}`);

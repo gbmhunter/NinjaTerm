@@ -586,7 +586,7 @@ export class ConnController {
     }
 
     // If there are baud rate validation errors, can't open
-    if (this.app.settings.portConfiguration.baudRateErrorMsg !== '') {
+    if (!this.app.settings.portConfiguration.baudRate.isValid) {
       return false;
     }
 
@@ -613,7 +613,7 @@ export class ConnController {
       }
 
       // Check if the socket connection timeout is valid
-      if (this.app.settings.portConfiguration.socketConnTimeoutErrorMsg !== '') {
+      if (!this.app.settings.portConfiguration.socketConnTimeoutMs.isValid) {
         return false;
       }
 
@@ -626,7 +626,7 @@ export class ConnController {
       if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
         return false;
       }
-      if (portConfig.rttSpeedErrorMsg !== '') {
+      if (!portConfig.rttSpeedKHz.isValid) {
         return false;
       }
       return true;
