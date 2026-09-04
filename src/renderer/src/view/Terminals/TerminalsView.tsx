@@ -8,11 +8,11 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { OverridableStringUnion } from '@mui/types';
-import KofiButton from 'kofi-button';
 import { observer } from 'mobx-react-lite';
 import 'react-resizable/css/styles.css';
 
 import { App } from 'src/model/App';
+import KofiDonateButton from 'src/view/Components/KofiDonateButton';
 import { ConnState } from 'src/model/Settings/PortSettings/PortSettings';
 import SingleTerminalView from './SingleTerminal/SingleTerminalView';
 import { DataViewConfiguration } from 'src/model/Settings/DisplaySettings/DisplaySettings';
@@ -177,7 +177,7 @@ export default observer((props: Props) => {
         <Typography sx={{ marginLeft: 'auto' }}>v{app.version}</Typography>
 
         {/* ============================ Ko-Fi "Donate" button =========================== */}
-        <KofiButton color="#29abe0" title="Donate" kofiID="M4M8CBE56" />
+        <KofiDonateButton kofiId="M4M8CBE56" compact={isSmallScreen} />
       </div>
       <div
         className="terminals-and-drawer-row"

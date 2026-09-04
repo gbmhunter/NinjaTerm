@@ -15,7 +15,8 @@ Items are grouped: **[perf]**, **[arch]**, **[bug]**, **[security]**,
 1. ~~Hoist `Row` out of the component body~~ — **done 2026-09-03**
 2. ~~Fix the Logging bugs~~ — **done 2026-09-03**
 3. ~~Cache the per-char className + delete `TerminalChar.style`~~ — **done 2026-09-03**
-4. Electron hardening pass (CSP, nav guards, `openExternal`, DevTools install)
+4. ~~DevTools install + window-open guard~~ — **done 2026-09-04**. CSP and the
+   `openExternal` allowlist deliberately not done; see §5.
 5. `dependencies`/`devDependencies` split, check installer size
 6. `Transport` interface — unblocks tabs and file transfer
 7. ~~Row data model rewrite~~ — **done 2026-09-03**
@@ -233,10 +234,7 @@ The CHANGELOG shows this is a bug factory:
       disconnects without closing the session) leaks the entire stream into
       main-process memory. Cap with a ring buffer, drop-oldest.
 
-- [ ] **React DevTools installs in production.** `index.ts:226`.
-      `installExtension(REACT_DEVELOPER_TOOLS, ...)` is unconditional inside
-      `app.whenReady()`, so shipped installs try to fetch a Chrome extension from
-      the network on every launch, with `allowFileAccess: true`. Guard with
+- [x] **React DevTools installs in production.** (done 2026-09-04) Guarded with
       `if (!app.isPackaged)`.
 
 - [ ] **`stopCpuMonitoring()` is a no-op.** `App.tsx:437-440`. The
@@ -255,14 +253,25 @@ The CHANGELOG shows this is a bug factory:
 Foundation is solid — `contextIsolation: true`, `nodeIntegration: false`, a real
 preload bridge with per-listener disposers. Gaps:
 
-- [ ] **No CSP.** The block is commented out at `index.ts:186-196`. Since content
-      is `loadFile`-ed locally, add a strict `default-src 'self'` rather than
-      leaving it off.
-- [ ] **No navigation guards.** No `setWindowOpenHandler` and no `will-navigate`
-      handler anywhere in `src/main/`. A stray link becomes an in-app browser with
-      the preload attached.
-- [ ] **`shell:open-external` takes any URL** (`index.ts:402`) with no scheme
-      allowlist. Restrict to `https:` / `http:` / `mailto:`.
+- [ ] **No CSP.** The block is commented out at `index.ts:186-196`. Deliberately
+      deferred: the renderer loads only local files and there is no reachable
+      injection sink (the one `dangerouslySetInnerHTML` is inside `kofi-button`
+      and was fed hardcoded constants — and it went away with `kofi-button` on
+      2026-09-04), so a CSP guards against a future mistake rather than a
+      present hole. The runtime fetches that were the best argument for one
+      (Google Fonts, Ko-fi CDN) are gone, so a strict policy should now be a
+      much closer fit if it is ever wanted.
+- [x] **No `setWindowOpenHandler`.** (done 2026-09-04) The two `target="_blank"`
+      links opened an Electron window inheriting the preload. The handler now
+      denies in-app windows and routes http(s) to the OS browser.
+- [ ] **No `will-navigate` guard.** Lower value than the above: there is no
+      in-place navigation vector today (every link either goes through
+      `shell.openExternal` or carries `target="_blank"`). Worth adding if a
+      plain `<a href>` ever appears.
+- [ ] **`shell:open-external` takes any URL** (`index.ts`) with no scheme
+      allowlist. Deliberately deferred: all four call sites pass hardcoded HTTPS
+      URLs, so this only matters once something else is already compromised. The
+      `setWindowOpenHandler` added 2026-09-04 does scheme-check its own URLs.
 - [ ] **`fs:write-file` writes anywhere** (`index.ts:302`) with no path
       validation. Constrain to the log directory the renderer already picked via
       `fs:select-directory`.
@@ -305,6 +314,10 @@ partition changes, and only readable by main through `executeJavaScript`.
       `socketService`, `rttService`, `mcpService`, `MainBluetoothService` — zero
       coverage, and they hold the port lifecycle and batching logic. `Logging` is
       also uncovered, and has two of the bugs above.
+- [ ] **`App.spec.ts` rate-tracking tests are flaky under load.** Both run
+      ~1.6s in isolation but were seen at 5.1s against a 5s timeout when the
+      full suite runs in parallel alongside other work. They use real timers.
+      Either raise the timeout or drive them with fake timers.
 - [ ] **README says `tests/`, the directory is `e2e-tests/`.**
 - [ ] **`web/`** (180 tracked files, maintenance-mode) would be cleaner as an
       archived branch or a separate repo.
