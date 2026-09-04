@@ -256,10 +256,11 @@ preload bridge with per-listener disposers. Gaps:
 - [ ] **No CSP.** The block is commented out at `index.ts:186-196`. Deliberately
       deferred: the renderer loads only local files and there is no reachable
       injection sink (the one `dangerouslySetInnerHTML` is inside `kofi-button`
-      and is fed hardcoded constants), so a CSP guards against a future mistake
-      rather than a present hole. It *would* block the Google Fonts stylesheet
-      and Ko-fi CDN images that `kofi-button` pulls at runtime — which is the
-      better reason to want one, and also why it isn't a drop-in.
+      and was fed hardcoded constants — and it went away with `kofi-button` on
+      2026-09-04), so a CSP guards against a future mistake rather than a
+      present hole. The runtime fetches that were the best argument for one
+      (Google Fonts, Ko-fi CDN) are gone, so a strict policy should now be a
+      much closer fit if it is ever wanted.
 - [x] **No `setWindowOpenHandler`.** (done 2026-09-04) The two `target="_blank"`
       links opened an Electron window inheriting the preload. The handler now
       denies in-app windows and routes http(s) to the OS browser.
@@ -313,6 +314,10 @@ partition changes, and only readable by main through `executeJavaScript`.
       `socketService`, `rttService`, `mcpService`, `MainBluetoothService` — zero
       coverage, and they hold the port lifecycle and batching logic. `Logging` is
       also uncovered, and has two of the bugs above.
+- [ ] **`App.spec.ts` rate-tracking tests are flaky under load.** Both run
+      ~1.6s in isolation but were seen at 5.1s against a 5s timeout when the
+      full suite runs in parallel alongside other work. They use real timers.
+      Either raise the timeout or drive them with fake timers.
 - [ ] **README says `tests/`, the directory is `e2e-tests/`.**
 - [ ] **`web/`** (180 tracked files, maintenance-mode) would be cleaner as an
       archived branch or a separate repo.

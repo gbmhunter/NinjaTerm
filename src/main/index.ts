@@ -164,11 +164,11 @@ function createWindow(): void {
   // file writes, serial control, the MCP server) in front of whatever site was
   // linked.
   //
-  // There are two `target="_blank"` links in the UI: the Moment.js format docs
-  // in RX Settings, and the Ko-fi button (whose markup comes from the
-  // `kofi-button` package, so it can't be routed through `shell.openExternal`
-  // at the call site the way the manual links are). Both belong in the user's
-  // own browser.
+  // The one `target="_blank"` link left in the UI is the Moment.js format docs
+  // in RX Settings; everything else already goes through `shell.openExternal`.
+  // This handler is kept as the categorical guard, so a link added later — or
+  // one rendered by a dependency, as the Ko-fi button used to be — can't open
+  // a privileged window by default.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     let parsed: URL;
     try {
