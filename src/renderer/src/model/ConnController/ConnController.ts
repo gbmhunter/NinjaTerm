@@ -5,6 +5,12 @@ import { App, MainPanes } from '../App';
 import { ConnState, ConnectionType } from '../Settings/PortSettings/PortSettings';
 import { BluetoothLEController } from './BluetoothLEController';
 import { log } from '../Util/Log';
+import { Transport, TransportCallbacks } from './Transports/Transport';
+import { SerialTransport } from './Transports/SerialTransport';
+import { SocketTransport } from './Transports/SocketTransport';
+import { RttTransport } from './Transports/RttTransport';
+import { BleTransport } from './Transports/BleTransport';
+import { FakeTransport } from './Transports/FakeTransport';
 
 export enum PortType {
   REAL,
@@ -15,11 +21,17 @@ export enum PortType {
 }
 
 /**
- * Class responsible for all high-level connection related functionality.
+ * Owns the connection state machine, independent of how bytes actually move.
  *
- * This used to be in App but moved here when the amount of logic was getting large.
+ * Everything medium-specific lives behind the `Transport` interface — which IPC
+ * channel to call, what identifies a connection, and the listeners it
+ * registered. This class owns what is common to all of them: the state machine,
+ * the progress modal, snackbars, the reconnection timer, and flow control.
  *
- * This supports different types of connections (serial port, socket, Bluetooth).
+ * `openConnection` used to be a ~370-line if/else over five connection types,
+ * with `closeConnection`, `handlePortClosed` and the reconnection poller each
+ * repeating the same fan-out. Adding a transport now means writing a
+ * `Transport` and adding one line to `_buildTransports`.
  */
 export class ConnController {
 
@@ -31,26 +43,14 @@ export class ConnController {
     dcd: boolean; // DCE -> DTE. Data Carrier Detect. Read only.
   };
 
-  // Current port path for IPC communication
-  currentPortPath: string | null = null;
-
-  // Current socket connection ID for IPC communication
-  currentSocketConnectionId: string | null = null;
-
-  // Current RTT connection ID for IPC communication
-  currentRttConnectionId: string | null = null;
-
   /**
-   * Ring buffer of recent log lines from the spawned JLinkGDBServer process, shown in the
-   * Connection Settings pane so users can diagnose target-detection failures.
+   * One transport per connection type, built once in the constructor.
+   * Adding a connection type means adding an entry here and nothing else.
    */
-  rttServerLogLines: string[] = [];
-  // Capped to keep the Connection Settings log pane from bloating memory or re-render cost
-  // during long-running sessions that emit periodic log noise.
-  static RTT_SERVER_LOG_MAX_LINES = 100;
+  private transports!: Map<PortType, Transport>;
 
-  // Current Bluetooth device ID for IPC communication
-  currentBluetoothDeviceId: string | null = null;
+  /** The transport backing the current — or most recent — connection. */
+  private activeTransport: Transport | null = null;
 
   /**
    * The state of the connection.
@@ -65,42 +65,21 @@ export class ConnController {
 
   private app: App;
 
-  /**
-   * Disposers for IPC listeners registered against the active connection.
-   * Each `on*` call returns a disposer that removes only its own callback;
-   * we collect them here and clear the lot on close. Replaces the old
-   * `removeAllListeners(channel)` hammer, which nuked every subscriber on
-   * the channel and required keeping a hand-maintained list of channel
-   * names in sync between the open and close paths.
-   */
-  private connDisposers: Array<() => void> = [];
-
-  /**
-   * Socket host/port captured at open time, so a reconnect targets the endpoint
-   * that was actually connected to rather than whatever the settings say now.
-   */
-  socketConnectionInfo: { host: string; port: number } | null = null;
-
-  bluetoothLEController: BluetoothLEController;
-
   // Auto-reconnection polling
   private reconnectionPollingInterval: NodeJS.Timeout | null = null;
-  private readonly RECONNECTION_POLLING_INTERVAL_MS = 500; // Poll every 500ms for serial ports
-  private readonly SOCKET_RECONNECTION_INTERVAL_MS = 5000; // Poll every 5 seconds for sockets
-  // RTT can poll fast: when no probe is plugged in, JLINKARM_EMU_GetList returns 0
-  // synchronously with no I/O, so a tight cadence is cheap. Tries are gated by
-  // rttReconnectInFlight so a slow attach doesn't stack overlapping retries.
-  private readonly RTT_RECONNECTION_INTERVAL_MS = 500;
 
   private flowControlPollingTimer: NodeJS.Timeout | null = null;
 
   /**
-   * Gate for the RTT reconnection polling loop. RTT reconnection attempts spawn J-Link
-   * Commander and wait for it to attach to the target, which can take multiple seconds —
-   * longer than the polling interval. Without this gate, timer ticks would stack up
-   * parallel reconnection attempts and step on each other.
+   * Gate for the reconnection polling loop.
+   *
+   * An attempt can take longer than the polling interval — RTT spawns J-Link
+   * Commander and waits for it to attach, which is seconds. Without this gate
+   * timer ticks stack up parallel attempts that step on each other.
    */
-  private rttReconnectInFlight = false;
+  private reconnectInFlight = false;
+
+  bluetoothLEController: BluetoothLEController;
 
   /**
    * Creates a new ConnController instance.
@@ -118,9 +97,80 @@ export class ConnController {
     };
 
     this.bluetoothLEController = new BluetoothLEController(app);
+    this._buildTransports();
 
     // Make sure to do this at the end of the constructor
     makeAutoObservable(this);
+  }
+
+  /** Instantiates one transport per connection type. */
+  private _buildTransports() {
+    const serial = new SerialTransport(this.app);
+    this.transports = new Map<PortType, Transport>([
+      [PortType.REAL, serial],
+      [PortType.FAKE, new FakeTransport(this.app)],
+      [PortType.SOCKET, new SocketTransport(this.app)],
+      [PortType.RTT, new RttTransport(this.app)],
+      [PortType.BLUETOOTH, new BleTransport(this.app, this.bluetoothLEController)],
+    ]);
+  }
+
+  /**
+   * The transport for the currently selected connection type.
+   *
+   * Serial is the one type with two transports behind it: the "fake port"
+   * generators share the serial connection type but produce their own data,
+   * and which one is live is remembered in `lastSelectedPortType`.
+   */
+  private _selectTransport(): Transport {
+    const connectionType = this.app.settings.portConfiguration.connectionType;
+    switch (connectionType) {
+      case ConnectionType.SERIAL_PORT:
+        return this.lastSelectedPortType === PortType.FAKE
+          ? this.transports.get(PortType.FAKE)!
+          : this.transports.get(PortType.REAL)!;
+      case ConnectionType.FAKE:
+        return this.transports.get(PortType.FAKE)!;
+      case ConnectionType.SOCKET:
+        return this.transports.get(PortType.SOCKET)!;
+      case ConnectionType.RTT:
+        return this.transports.get(PortType.RTT)!;
+      case ConnectionType.BLUETOOTH_LE:
+        return this.transports.get(PortType.BLUETOOTH)!;
+      default:
+        throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
+    }
+  }
+
+  /**
+   * The callbacks handed to every transport. Identical for all of them — which
+   * is the point: a transport only has to say *that* data arrived, not what to
+   * do about it.
+   */
+  private _transportCallbacks(): TransportCallbacks {
+    return {
+      onData: (bytes: Uint8Array) => this.app.parseRxData(bytes),
+      onError: (message: string) => {
+        this.app.snackbar.sendToSnackbar(message, 'error');
+        log.error(message);
+      },
+      onClosed: () => this.handlePortClosed(),
+    };
+  }
+
+  /**
+   * Path of the open serial port, or null.
+   *
+   * A read-only view onto the serial transport, which owns the value. Kept
+   * because the e2e IPC-mocking suite asserts on it.
+   */
+  get currentPortPath(): string | null {
+    return (this.transports.get(PortType.REAL) as SerialTransport).openPortPath;
+  }
+
+  /** Recent JLinkGDBServer output, shown in the Connection Settings pane. */
+  get rttServerLogLines(): string[] {
+    return (this.transports.get(PortType.RTT) as RttTransport).serverLogLines;
   }
 
   cleanup() {
@@ -129,375 +179,93 @@ export class ConnController {
   }
 
   /**
-   * Calls every captured IPC listener disposer and resets the list. Safe to
-   * call multiple times.
+   * Asks every transport to drop the listeners it registered. Safe to call
+   * multiple times.
    */
   private disposeConnListeners() {
-    for (const dispose of this.connDisposers) {
-      try {
-        dispose();
-      } catch (err) {
-        log.error('IPC listener disposer threw. err=', err);
-      }
+    for (const transport of this.transports.values()) {
+      transport.disposeListeners();
     }
-    this.connDisposers = [];
   }
 
   /**
-   * Opens the selected connection. This depends on the selected connection type, and the relevant connection settings per type.
+   * Opens the selected connection, whatever type it is.
    *
-   * @param obj Optional object with the following properties:
-   * @param obj.silenceSnackbar If true, the snackbar will not be shown when the port is opened successfully.
-   * @returns {Promise<bool>} A promise that contains true if the port was opened successfully, false otherwise.
+   * @param obj.silenceSnackbar Suppress the success/failure toast. Used by the
+   *    reconnection poller, which would otherwise toast on every retry.
+   * @param obj.suppressProgressModal Suppress the circular-progress modal,
+   *    which is disruptive during background reconnection.
+   * @returns True if the connection was opened.
    */
   async openConnection({ silenceSnackbar = false, suppressProgressModal = false } = {}) {
-    // Determine the port type based on connection type
-    const connectionType = this.app.settings.portConfiguration.connectionType;
+    const transport = this._selectTransport();
 
-    // The circular-progress modal is disruptive during background reconnection polling, so
-    // callers can opt out. Open/close it via this local helper everywhere below.
+    const validationError = transport.validate();
+    if (validationError !== null) {
+      this.app.snackbar.sendToSnackbar(validationError, 'error');
+      return false;
+    }
+
     const showProgressModal = (show: boolean) => {
       if (!suppressProgressModal) this.app.setShowCircularProgressModal(show);
     };
 
-    if (connectionType === ConnectionType.SERIAL_PORT) {
-      // Handle fake ports
-      if (this.lastSelectedPortType === PortType.FAKE) {
-        this.app.fakePortController.openPort();
-        // Clear the partial number buffers in all terminals
-        this.app.terminals.txTerminal.clearPartialNumberBuffer();
-        this.app.terminals.rxTerminal.clearPartialNumberBuffer();
-        this.app.terminals.txRxTerminal.clearPartialNumberBuffer();
-
-        // Navigate to the terminal pane if option is selected in Port Configuration settings
-        if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
-          this.app.setShownMainPane(MainPanes.TERMINAL);
-        }
-        return true;
-      }
-
-      // Handle real serial ports
-      const selectedPort = this.app.settings.portConfiguration.selectedSerialPort;
-      if (!selectedPort) {
-        this.app.snackbar.sendToSnackbar('No serial port selected. Please select a port from the Port Settings.', 'error');
-        return false;
-      }
-
-      // Set the port type to REAL since we're opening a real serial port
-      this.lastSelectedPortType = PortType.REAL;
-
-      // Show the circular progress modal when trying to open the port
-      showProgressModal(true);
-
-      try {
-        // Make direct IPC call to open the port
-        const result = await window.electronAPI.serial.openPort({
-          path: selectedPort.path,
-          baudRate: this.app.settings.portConfiguration.baudRate,
-          dataBits: this.app.settings.portConfiguration.numDataBits,
-          parity: this.app.settings.portConfiguration.parity,
-          stopBits: this.app.settings.portConfiguration.stopBits,
-
-          // Flow control settings
-          rtscts: this.app.settings.portConfiguration.rtscts,
-          xon: this.app.settings.portConfiguration.xon,
-          xoff: this.app.settings.portConfiguration.xoff,
-          xany: this.app.settings.portConfiguration.xany,
-          hupcl: this.app.settings.portConfiguration.hupcl,
-        });
-
-        if (!result.success) {
-          throw new Error(result.error);
-        }
-
-        // Store the current port path for IPC communication
-        this.currentPortPath = selectedPort.path;
-
-        // Set up IPC event listeners for data reception. Capture each disposer
-        // so close/reconnect can remove only the listeners we registered.
-        this.connDisposers.push(
-          window.electronAPI.serial.onDataReceived((portPath: string, data: Buffer) => {
-            if (portPath === this.currentPortPath) {
-              // Buffer can be used directly as Uint8Array - much faster than conversion
-              const uint8Array = new Uint8Array(data);
-              this.app.parseRxData(uint8Array);
-            }
-          })
-        );
-
-        // Listen for errors
-        this.connDisposers.push(
-          window.electronAPI.serial.onError((portPath: string, error: string) => {
-            if (portPath === this.currentPortPath) {
-              this.app.snackbar.sendToSnackbar(`Serial port error: ${error}`, 'error');
-              this.handlePortError();
-            }
-          })
-        );
-
-        // Listen for port close events. Fires whether the close was triggered
-        // by us or by the device disappearing.
-        this.connDisposers.push(
-          window.electronAPI.serial.onPortClosed((portPath: string) => {
-            console.log('onPortClosed() called. portPath=', portPath);
-            if (portPath === this.currentPortPath) {
-              this.handlePortClosed();
-            }
-          })
-        );
-
-        runInAction(() => {
-          // Stop any existing polling since we're now connected
-          this.stopPollingForReconnection();
-          this.connState = ConnState.OPENED;
-        });
-
-        // Create timer to poll the readable signals across IPC
-        // Save timer to we can clear it when the app is closed
-        this.flowControlPollingTimer = setInterval(async () => {
-          if (!this.currentPortPath) {
-            return;
-          }
-          const response = await window.electronAPI.serial.getFlowControlSignals(this.currentPortPath);
-          if (!response.success) {
-            console.error('Error getting flow control signals:', response.error);
-            return;
-          }
-          // Update the flow control state
-          runInAction(() => {
-            this.currentFlowControlState.dsr = response.signals!.dsr || false;
-            this.currentFlowControlState.cts = response.signals!.cts || false;
-            this.currentFlowControlState.dcd = response.signals!.dcd || false;
-          });
-        }, 1000);
-
-        // Remember this port so it can be reopened if the app is restarted
-        this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath =
-          selectedPort.path;
-        this.app.profileManager.saveAppData();
-
-      } catch (error) {
-        const msg = `Error opening serial port: ${error}`;
-        this.app.snackbar.sendToSnackbar(msg, 'error');
-        console.error(msg);
-        showProgressModal(false);
-        return false;
-      }
-
-      if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar('Serial port opened.', 'success');
-      }
-
+    showProgressModal(true);
+    let outcome;
+    try {
+      outcome = await transport.open(this._transportCallbacks());
+    } finally {
       showProgressModal(false);
+    }
 
-      // Create custom GA4 event to see how many ports have been opened in NinjaTerm
-      await window.electronAPI.analytics.event('port_open');
-    } else if (connectionType === ConnectionType.SOCKET) {
-      // Socket connection logic
-      const host = this.app.settings.portConfiguration.socketHost;
-      const port = this.app.settings.portConfiguration.socketPort;
-
-      if (!host || port <= 0 || port > 65535) {
-        this.app.snackbar.sendToSnackbar('Invalid socket host or port. Please check the Connection Configuration.', 'error');
-        return false;
-      }
-
-      // Show the circular progress modal when trying to connect to socket
-      showProgressModal(true);
-
-      try {
-        // Make direct IPC call to connect to socket
-        const result = await window.electronAPI.socket.connect({
-          host: host,
-          port: port
-        });
-
-        if (!result.success) {
-          throw new Error(result.error);
-        }
-
-        // Store the current connection ID for IPC communication
-        this.currentSocketConnectionId = result.connectionId!;
-
-        // Save socket connection info for reconnection purposes
-        this.socketConnectionInfo = { host, port };
-
-        // Set up IPC event listeners for data reception
-        this.connDisposers.push(
-          window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
-            if (connectionId === this.currentSocketConnectionId) {
-              // Buffer can be used directly as Uint8Array - much faster than conversion
-              const uint8Array = new Uint8Array(data);
-              this.app.parseRxData(uint8Array);
-            }
-          })
-        );
-
-        // Listen for errors
-        this.connDisposers.push(
-          window.electronAPI.socket.onError((connectionId: string, error: string) => {
-            if (connectionId === this.currentSocketConnectionId) {
-              this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
-              this.handlePortError();
-            }
-          })
-        );
-
-        // Listen for socket close events
-        this.connDisposers.push(
-          window.electronAPI.socket.onClosed((connectionId: string) => {
-            console.log('onSocketClosed() called. connectionId=', connectionId);
-            if (connectionId === this.currentSocketConnectionId) {
-              this.handlePortClosed();
-            }
-          })
-        );
-
-        runInAction(() => {
-          // Stop any existing polling since we're now connected
-          this.stopPollingForReconnection();
-          this.connState = ConnState.OPENED;
-          this.lastSelectedPortType = PortType.SOCKET;
-        });
-
-        if (!silenceSnackbar) {
-          this.app.snackbar.sendToSnackbar(`Socket connected to ${host}:${port}.`, 'success');
-        }
-
-        showProgressModal(false);
-
-        // Create custom GA4 event to see how many socket connections have been opened in NinjaTerm
-        await window.electronAPI.analytics.event('socket_connect');
-      } catch (error) {
-        const msg = `Error connecting to socket: ${error}`;
-        this.app.snackbar.sendToSnackbar(msg, 'error');
-        console.error(msg);
-        showProgressModal(false);
-        return false;
-      }
-    } else if (connectionType === ConnectionType.RTT) {
-      // Segger RTT connection via JLinkGDBServer
-      const portConfig = this.app.settings.portConfiguration;
-      if (!portConfig.rttDevice || portConfig.rttDevice.trim() === '') {
-        this.app.snackbar.sendToSnackbar('No RTT target device specified. Set the device (e.g. nRF52832_xxAA) in Connection Settings.', 'error');
-        return false;
-      }
-
-      showProgressModal(true);
-
-      // Clear previous server log so the user sees only output from this attempt.
-      runInAction(() => {
-        this.rttServerLogLines = [];
-      });
-
-      // Register the server log listener before connect so we capture startup messages.
-      this.connDisposers.push(
-        window.electronAPI.rtt.onServerLog((connectionId: string, line: string) => {
-          if (connectionId === this.currentRttConnectionId || this.currentRttConnectionId === null) {
-            runInAction(() => {
-              this.rttServerLogLines.push(line);
-              const overflow = this.rttServerLogLines.length - ConnController.RTT_SERVER_LOG_MAX_LINES;
-              if (overflow > 0) {
-                this.rttServerLogLines.splice(0, overflow);
-              }
-            });
-          }
-        })
-      );
-
-      try {
-        const result = await window.electronAPI.rtt.connect({
-          device: portConfig.rttDevice,
-          interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
-          speedKHz: portConfig.rttSpeedKHz,
-          serverExePath: portConfig.rttServerExePath,
-          jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
-          channel: portConfig.rttChannel,
-        });
-
-        if (!result.success) {
-          throw new Error(result.error);
-        }
-
-        this.currentRttConnectionId = result.connectionId!;
-
-        this.connDisposers.push(
-          window.electronAPI.rtt.onDataReceived((connectionId: string, data: Buffer) => {
-            if (connectionId === this.currentRttConnectionId) {
-              const uint8Array = new Uint8Array(data);
-              this.app.parseRxData(uint8Array);
-            }
-          })
-        );
-
-        this.connDisposers.push(
-          window.electronAPI.rtt.onError((connectionId: string, error: string) => {
-            if (connectionId === this.currentRttConnectionId) {
-              this.app.snackbar.sendToSnackbar(`RTT error: ${error}`, 'error');
-              this.handlePortError();
-            }
-          })
-        );
-
-        this.connDisposers.push(
-          window.electronAPI.rtt.onClosed((connectionId: string) => {
-            if (connectionId === this.currentRttConnectionId) {
-              this.handlePortClosed();
-            }
-          })
-        );
-
-        runInAction(() => {
-          this.stopPollingForReconnection();
-          this.connState = ConnState.OPENED;
-          this.lastSelectedPortType = PortType.RTT;
-        });
-
-        if (!silenceSnackbar) {
-          this.app.snackbar.sendToSnackbar(`RTT connected (${portConfig.rttDevice}).`, 'success');
-        }
-
-        // Promote this device to the top of the recently-used list now that we know it works.
-        this.app.settings.portConfiguration.pushRttRecentDevice(portConfig.rttDevice);
-
-        showProgressModal(false);
-        await window.electronAPI.analytics.event('rtt_connect');
-      } catch (error) {
-        const msg = `Error connecting via RTT: ${error}`;
-        // Always log to the dev console — useful for diagnostics — but only toast on
-        // user-initiated attempts. Background reconnection polling passes
-        // silenceSnackbar=true so a failed retry while the cable is still out doesn't
-        // spam a snackbar every 5 seconds.
+    if (!outcome.success) {
+      // `error === undefined` means the transport has already told the user
+      // what went wrong — Bluetooth reports its own failures as it scans.
+      if (outcome.error !== undefined) {
+        const msg = `Error opening connection: ${outcome.error}`;
+        log.error(msg);
         console.error(msg);
         if (!silenceSnackbar) {
           this.app.snackbar.sendToSnackbar(msg, 'error');
         }
-        // Drop any IPC listeners we registered for this attempt (the server-log listener
-        // is registered before connect to capture startup messages). Without this, a
-        // failed attempt leaves the listener attached and the next attempt stacks
-        // another, so each line gets emitted N times after N failures.
-        this.disposeConnListeners();
-        showProgressModal(false);
-        return false;
       }
-    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      showProgressModal(true);
-      const connectResult = await this.bluetoothLEController.connect();
-      showProgressModal(false);
-      if (!connectResult.success) {
-        // The BluetoothLEController will have already shown a snackbar error, we just need to return false here
-        return false;
-      }
-    } else {
-      throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
+      return false;
     }
 
-    // Clear the partial number buffers in all terminals
+    this.activeTransport = transport;
+
+    // Fake ports and Bluetooth drive `connState` from inside their own
+    // controllers, so setting it again here would fight them.
+    if (!transport.selfManagesState) {
+      runInAction(() => {
+        this.stopPollingForReconnection();
+        this.lastSelectedPortType = transport.kind;
+        this.connState = ConnState.OPENED;
+      });
+
+      if (!silenceSnackbar) {
+        this.app.snackbar.sendToSnackbar(transport.openedMessage(), 'success');
+      }
+    } else {
+      this.stopPollingForReconnection();
+    }
+
+    // Flow control signals are a serial-only concept, and the only part of a
+    // connection that has to be polled rather than pushed.
+    if (transport.kind === PortType.REAL) {
+      this.startFlowControlPolling();
+    }
+
+    if (transport.openAnalyticsEvent !== null) {
+      await window.electronAPI.analytics.event(transport.openAnalyticsEvent);
+    }
+
+    // A partially-received number from a previous session would otherwise be
+    // completed by the first bytes of this one.
     this.app.terminals.txTerminal.clearPartialNumberBuffer();
     this.app.terminals.rxTerminal.clearPartialNumberBuffer();
     this.app.terminals.txRxTerminal.clearPartialNumberBuffer();
 
-    // Navigate to the terminal pane if option is selected in Port Configuration settings
     if (this.app.settings.portConfiguration.connectToSerialPortAsSoonAsItIsSelected) {
       this.app.setShownMainPane(MainPanes.TERMINAL);
     }
@@ -512,106 +280,31 @@ export class ConnController {
    * @param silenceSnackbar If true, the snackbar will not be shown when the port is closed successfully.
    */
   async closeConnection({ goToReopenState = false, silenceSnackbar = false } = {}) {
-    const connectionType = this.app.settings.portConfiguration.connectionType;
-    if (connectionType === ConnectionType.SERIAL_PORT) {
-      if (this.lastSelectedPortType === PortType.REAL) {
-        if (this.currentPortPath) {
-          // Make direct IPC call to close the port
-          const result = await window.electronAPI.serial.closePort(this.currentPortPath);
-          if (!result.success) {
-            console.error('Error closing port:', result.error);
-          }
-        }
+    const transport = this.activeTransport ?? this._selectTransport();
 
-        if (!silenceSnackbar) {
-          this.app.snackbar.sendToSnackbar('Serial port closed.', 'success');
-        }
+    await transport.close();
 
-        this.currentPortPath = null;
-
-        this.disposeConnListeners();
-
-        this.app.profileManager.saveAppData();
-      } else if (this.lastSelectedPortType === PortType.FAKE) {
-        this.app.fakePortController.closePort();
-      }
-    } else if (connectionType === ConnectionType.SOCKET) {
-      if (this.currentSocketConnectionId) {
-        // Make direct IPC call to disconnect the socket
-        const result = await window.electronAPI.socket.disconnect(this.currentSocketConnectionId);
-        if (!result.success) {
-          console.error('Error disconnecting socket:', result.error);
-        }
-      }
-
-      if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar('Socket disconnected.', 'success');
-      }
-
-      this.currentSocketConnectionId = null;
-
-      this.disposeConnListeners();
-    } else if (connectionType === ConnectionType.RTT) {
-      if (this.currentRttConnectionId) {
-        const result = await window.electronAPI.rtt.disconnect(this.currentRttConnectionId);
-        if (!result.success) {
-          console.error('Error disconnecting RTT:', result.error);
-        }
-      }
-
-      if (!silenceSnackbar) {
-        this.app.snackbar.sendToSnackbar('RTT disconnected.', 'success');
-      }
-
-      this.currentRttConnectionId = null;
-
-      this.disposeConnListeners();
-    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      // The Bluetooth LE controller handles closing the Bluetooth connection
-      this.bluetoothLEController.close();
-    } else if (connectionType === ConnectionType.FAKE) {
-      this.app.fakePortController.closePort();
-    } else {
-      throw Error('Unsupported port type!');
+    if (!transport.selfManagesState && !silenceSnackbar) {
+      this.app.snackbar.sendToSnackbar(transport.closedMessage(), 'success');
     }
 
-    //==============================================
-    // CODE BELOW IS THE SAME FOR ALL CONNECTION TYPES
-    //==============================================
-
-    // Wrap in action
     runInAction(() => {
       if (goToReopenState) {
         this.connState = ConnState.CLOSED_BUT_WILL_REOPEN;
-        // Start polling for Bluetooth device reconnection
         this.startPollingForReconnection();
       } else {
-        // Stop polling if we're explicitly closing the device
         this.stopPollingForReconnection();
         this.connState = ConnState.CLOSED;
       }
     });
 
-    // No matter what type, clear the flow control polling timer
-    if (this.flowControlPollingTimer) {
-      clearInterval(this.flowControlPollingTimer);
-      this.flowControlPollingTimer = null;
-    }
-
-    // Reset the flow control state
-    runInAction(() => {
-      this.currentFlowControlState.dtr = false;
-      this.currentFlowControlState.dsr = false;
-      this.currentFlowControlState.rts = false;
-      this.currentFlowControlState.cts = false;
-      this.currentFlowControlState.dcd = false;
-    });
+    this.stopFlowControlPolling();
   }
 
   stopWaitingToReopenPort() {
-    // Bluetooth logic is in the BluetoothLEController, for other connection types the logic is in this class.
-    if (this.app.settings.portConfiguration.connectionType === ConnectionType.BLUETOOTH_LE) {
-      this.bluetoothLEController.stopPollingForReconnection();
+    const transport = this.activeTransport ?? this._selectTransport();
+    if (transport.selfManagesReconnection) {
+      (transport as BleTransport).stopSelfManagedReconnection();
     } else {
       this.stopPollingForReconnection();
     }
@@ -619,49 +312,64 @@ export class ConnController {
   }
 
   /**
-   * Handles serial port errors
-   */
-  private handlePortError() {
-    // Handle various error types here if needed
-    console.log('Serial port error occurred');
-  }
-
-  /**
-   * Handles unexpected port close events
+   * Handles the connection going away without us asking, e.g. the device being
+   * unplugged or the far end of a socket hanging up.
    */
   private handlePortClosed() {
-    console.log('handleUnexpectedPortClose() called');
+    console.log('handlePortClosed() called');
     // We might have already closed the port, so don't do anything if it's already closed
     if (this.connState === ConnState.CLOSED || this.connState === ConnState.CLOSED_BUT_WILL_REOPEN) {
       return;
     }
 
-    // If the port was closed unexpectedly, we might want to reopen it.
     if (this.app.settings.portConfiguration.reopenSerialPortIfUnexpectedlyClosed) {
       this.setPortState(ConnState.CLOSED_BUT_WILL_REOPEN);
-      // Start polling for the port to become available again
       this.startPollingForReconnection();
     } else {
       this.setPortState(ConnState.CLOSED);
     }
-    // Clear connection identifiers and remove the listeners that this
-    // connection registered.
-    if (this.lastSelectedPortType === PortType.SOCKET) {
-      this.currentSocketConnectionId = null;
-    } else if (this.lastSelectedPortType === PortType.RTT) {
-      this.currentRttConnectionId = null;
-    } else {
-      this.currentPortPath = null;
-    }
-    this.disposeConnListeners();
 
-    // No matter what type, clear the flow control polling timer
+    // The handle is gone; drop it and the listeners bound to it so a stale
+    // event can't be mistaken for a live one.
+    const transport = this.activeTransport;
+    if (transport !== null) {
+      (transport as { forgetConnection?: () => void }).forgetConnection?.();
+      transport.disposeListeners();
+    }
+
+    this.stopFlowControlPolling();
+  }
+
+  /**
+   * Polls the readable flow control signals across IPC. Serial only — no other
+   * transport has them.
+   */
+  private startFlowControlPolling() {
+    this.stopFlowControlPolling();
+    this.flowControlPollingTimer = setInterval(async () => {
+      const portPath = (this.transports.get(PortType.REAL) as SerialTransport).openPortPath;
+      if (portPath === null) {
+        return;
+      }
+      const response = await window.electronAPI.serial.getFlowControlSignals(portPath);
+      if (!response.success) {
+        console.error('Error getting flow control signals:', response.error);
+        return;
+      }
+      runInAction(() => {
+        this.currentFlowControlState.dsr = response.signals!.dsr || false;
+        this.currentFlowControlState.cts = response.signals!.cts || false;
+        this.currentFlowControlState.dcd = response.signals!.dcd || false;
+      });
+    }, 1000);
+  }
+
+  /** Stops flow control polling and clears the signal state. */
+  private stopFlowControlPolling() {
     if (this.flowControlPollingTimer) {
       clearInterval(this.flowControlPollingTimer);
       this.flowControlPollingTimer = null;
     }
-
-    // Reset the flow control state
     runInAction(() => {
       this.currentFlowControlState.dtr = false;
       this.currentFlowControlState.dsr = false;
@@ -671,163 +379,55 @@ export class ConnController {
     });
   }
 
-  setPortState(newPortState: ConnState) {
-    this.connState = newPortState;
-  }
-
   /**
-   * Starts polling for the previously used port to become available again.
-   * This is called when the port state is set to CLOSED_BUT_WILL_REOPEN.
+   * Retries the active transport until it comes back.
+   *
+   * Every transport reconnects the same way — check a cheap precondition, then
+   * just open again. Only the precondition differs: serial waits for its port
+   * path to reappear in the OS port list rather than trying to open a device
+   * that is not plugged in, while socket and RTT let the attempt itself be the
+   * test.
    */
   private startPollingForReconnection() {
-    if (this.reconnectionPollingInterval) {
-      clearInterval(this.reconnectionPollingInterval);
+    this.stopPollingForReconnection();
+
+    const transport = this.activeTransport;
+    if (transport === null || transport.selfManagesReconnection) {
+      // Bluetooth runs its own scan-based loop; there is nothing useful for the
+      // shared poller to do.
+      return;
     }
 
-    // Determine connection type and set appropriate polling interval
-    const isSocket = this.lastSelectedPortType === PortType.SOCKET;
-    const isRtt = this.lastSelectedPortType === PortType.RTT;
-    const pollingInterval = isSocket
-      ? this.SOCKET_RECONNECTION_INTERVAL_MS
-      : isRtt
-        ? this.RTT_RECONNECTION_INTERVAL_MS
-        : this.RECONNECTION_POLLING_INTERVAL_MS;
-    const connectionType = isSocket ? 'socket' : isRtt ? 'RTT' : 'port';
-
-    console.log(`Starting polling for ${connectionType} reconnection... (${pollingInterval}ms interval)`);
+    console.log(`Starting reconnection polling (${transport.reconnectIntervalMs}ms interval)`);
 
     this.reconnectionPollingInterval = setInterval(async () => {
+      // An attempt can outlast the interval, so never run two at once.
+      if (this.reconnectInFlight) return;
+
+      if (this.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
+        this.stopPollingForReconnection();
+        return;
+      }
+
+      this.reconnectInFlight = true;
       try {
-        // Only poll if we're still in the CLOSED_BUT_WILL_REOPEN state
-        if (this.connState !== ConnState.CLOSED_BUT_WILL_REOPEN) {
-          this.stopPollingForReconnection();
+        if (!(await transport.canAttemptReconnect())) {
           return;
         }
-
-        if (isRtt) {
-          // RTT reconnection: just call openConnection with the stored RTT settings. It will
-          // re-spawn J-Link Commander and re-establish the socket. We gate with an in-flight
-          // flag because a single attempt can take longer than the polling interval.
-          if (this.rttReconnectInFlight) return;
-          this.rttReconnectInFlight = true;
-          try {
-            const rttDevice = this.app.settings.portConfiguration.rttDevice;
-            console.log(`Attempting RTT reconnection to device "${rttDevice}"...`);
-            const ok = await this.openConnection({ silenceSnackbar: true, suppressProgressModal: true });
-            if (ok) {
-              this.stopPollingForReconnection();
-              this.app.snackbar.sendToSnackbar(
-                `Automatically reconnected RTT to "${rttDevice}".`,
-                'success',
-              );
-            }
-          } finally {
-            this.rttReconnectInFlight = false;
-          }
-        } else if (isSocket) {
-          // Socket reconnection logic
-          if (!this.socketConnectionInfo) {
-            console.log('No socket connection info found, stopping polling');
-            this.stopPollingForReconnection();
-            return;
-          }
-
-          console.log(`Attempting to reconnect to socket ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}...`);
-
-          try {
-            // Attempt to reconnect to the socket (this will not show the modal)
-            const result = await window.electronAPI.socket.connect({
-              host: this.socketConnectionInfo.host,
-              port: this.socketConnectionInfo.port
-            });
-
-            if (result.success) {
-              console.log('Socket reconnection successful');
-              this.stopPollingForReconnection();
-
-              // Store the new connection ID
-              this.currentSocketConnectionId = result.connectionId!;
-
-              // Drop any listeners left over from the previous connection
-              // before registering fresh ones — without this, every successful
-              // auto-reconnect adds another set of handlers and the same byte
-              // would fire parseRxData N times after N reconnects.
-              this.disposeConnListeners();
-
-              // Set up IPC event listeners for the reconnected socket
-              this.connDisposers.push(
-                window.electronAPI.socket.onDataReceived((connectionId: string, data: Buffer) => {
-                  if (connectionId === this.currentSocketConnectionId) {
-                    // Buffer can be used directly as Uint8Array - much faster than conversion
-                    const uint8Array = new Uint8Array(data);
-                    this.app.parseRxData(uint8Array);
-                  }
-                })
-              );
-
-              this.connDisposers.push(
-                window.electronAPI.socket.onError((connectionId: string, error: string) => {
-                  if (connectionId === this.currentSocketConnectionId) {
-                    this.app.snackbar.sendToSnackbar(`Socket error: ${error}`, 'error');
-                    this.handlePortError();
-                  }
-                })
-              );
-
-              this.connDisposers.push(
-                window.electronAPI.socket.onClosed((connectionId: string) => {
-                  console.log('onSocketClosed() called during reconnection. connectionId=', connectionId);
-                  if (connectionId === this.currentSocketConnectionId) {
-                    this.handlePortClosed();
-                  }
-                })
-              );
-
-              runInAction(() => {
-                this.connState = ConnState.OPENED;
-              });
-
-              this.app.snackbar.sendToSnackbar(
-                `Automatically reconnected to socket: ${this.socketConnectionInfo.host}:${this.socketConnectionInfo.port}`,
-                'success'
-              );
-            }
-          } catch (socketError) {
-            // Silently continue polling - connection failed but we'll try again
-            console.log('Socket reconnection attempt failed:', socketError);
-          }
-        } else {
-          // Serial port reconnection logic (existing)
-          const lastUsedPortPath =
-            this.app.profileManager.appData.currentAppConfig.settings.portSettings.lastUsedSerialPortPath;
-          if (!lastUsedPortPath) {
-            console.log('No last used port path found, stopping polling');
-            this.stopPollingForReconnection();
-            return;
-          }
-
-          // Check if the port is available
-          const result = await window.electronAPI.serial.listPorts();
-          if (!result.success) {
-            console.error('Failed to list ports during reconnection polling:', result.error);
-            return;
-          }
-
-          const availablePorts = result.ports || [];
-          const matchingPort = availablePorts.find(port => port.path === lastUsedPortPath);
-          if (matchingPort) {
-            console.log('Found matching port for reconnection:', matchingPort.path);
-            this.stopPollingForReconnection();
-            // Set the selected port and attempt to reconnect
-            this.setSelectedPort(matchingPort);
-            await this.openConnection({ silenceSnackbar: true });
-            this.app.snackbar.sendToSnackbar(`Automatically reconnected to port: ${matchingPort.path}`, 'success');
-          }
+        const reopened = await this.openConnection({
+          silenceSnackbar: true,
+          suppressProgressModal: true,
+        });
+        if (reopened) {
+          this.stopPollingForReconnection();
+          this.app.snackbar.sendToSnackbar(transport.reconnectedMessage(), 'success');
         }
       } catch (error) {
-        console.error(`Error during ${connectionType} reconnection polling:`, error);
+        console.error('Error during reconnection polling:', error);
+      } finally {
+        this.reconnectInFlight = false;
       }
-    }, pollingInterval);
+    }, transport.reconnectIntervalMs);
   }
 
   /**
@@ -854,6 +454,10 @@ export class ConnController {
   setSelectedPort = (port: PortInfo) => {
     this.app.settings.portConfiguration.setSelectedSerialPort(port);
   };
+
+  setPortState(newPortState: ConnState) {
+    this.connState = newPortState;
+  }
 
   setDtr(dtr: boolean) {
     this.currentFlowControlState.dtr = dtr;
@@ -1040,43 +644,10 @@ export class ConnController {
    * @param bytesToWrite The data to write.
    */
   writeData = async (bytesToWrite: Uint8Array) => {
-
-    // Fake ports have no real underlying connection to write to. Typed TX is
-    // only used for local echo (and logging), so succeed silently here and let
-    // the caller echo the bytes — otherwise the write would throw "Port not
-    // found" and local echo would never render.
-    if (this.lastSelectedPortType === PortType.FAKE) {
-      return;
-    }
-
-    // Check based on connection type
-    const connectionType = this.app.settings.portConfiguration.connectionType;
-
-    // Check if we're using serial port or socket connection
-    if (connectionType === ConnectionType.SERIAL_PORT) {
-      // Serial port connection
-      const result = await window.electronAPI.serial.writeData(this.currentPortPath!, bytesToWrite);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to write data');
-      }
-    } else if (connectionType === ConnectionType.SOCKET) {
-      // Socket connection
-      const result = await window.electronAPI.socket.writeData(this.currentSocketConnectionId!, bytesToWrite);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to write data');
-      }
-    } else if (connectionType === ConnectionType.RTT) {
-      const result = await window.electronAPI.rtt.writeData(this.currentRttConnectionId!, bytesToWrite);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to write data');
-      }
-    } else if (connectionType === ConnectionType.BLUETOOTH_LE) {
-      // Bluetooth connection
-      this.bluetoothLEController.sendData(bytesToWrite);
-    } else {
-      // No active connection
-      return;
-    }
-
-  }
+    // Fake ports have no real underlying connection to write to, but the write
+    // must still succeed: typed TX is used for local echo and logging, and
+    // throwing "Port not found" here would stop both. `FakeTransport.write` is
+    // a deliberate no-op rather than a special case in this method.
+    await this._selectTransport().write(bytesToWrite);
+  };
 }

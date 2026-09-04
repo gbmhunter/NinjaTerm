@@ -3,6 +3,7 @@ import type { Mock } from 'vitest';
 
 import { App } from '../App';
 import { ConnController, PortType } from './ConnController';
+import { RTT_SERVER_LOG_MAX_LINES } from './Transports/RttTransport';
 import { ConnectionType, ConnState } from '../Settings/PortSettings/PortSettings';
 
 /**
@@ -299,11 +300,11 @@ describe('ConnController connection lifecycle', () => {
     it('caps the server log ring buffer', async () => {
       await openRtt();
       const emit = handlers['rtt:log'][0];
-      for (let i = 0; i < ConnController.RTT_SERVER_LOG_MAX_LINES + 50; i += 1) {
+      for (let i = 0; i < RTT_SERVER_LOG_MAX_LINES + 50; i += 1) {
         emit('rtt-1', `line ${i}`);
       }
 
-      expect(conn.rttServerLogLines.length).toBe(ConnController.RTT_SERVER_LOG_MAX_LINES);
+      expect(conn.rttServerLogLines.length).toBe(RTT_SERVER_LOG_MAX_LINES);
       // Oldest dropped, newest kept.
       expect(conn.rttServerLogLines[conn.rttServerLogLines.length - 1]).toContain('line 149');
     });
