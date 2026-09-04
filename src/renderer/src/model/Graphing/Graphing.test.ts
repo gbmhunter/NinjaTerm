@@ -8,15 +8,19 @@ const mockSnackbar = {
   sendToSnackbar: vi.fn()
 } as unknown as SnackbarController;
 
-const mockAppDataManager = {
+// A fresh mock per test. `Graphing` writes its settings straight into this
+// object (it is the only copy of each setting), so a shared one would leak
+// state between tests. The old version got away with sharing by accident:
+// `makeAutoObservable` deep-cloned the plain-object mock into each instance.
+const makeMockAppDataManager = () => ({
   appData: {
     currentAppConfig: {
       settings: {
         graphingSettings: {
           graphingEnabled: false,
           processingTrigger: 'LF (\\n)',
-          maxBufferSize: '1000',
-          maxNumDataPoints: '500',
+          maxBufferSize: 1000,
+          maxNumDataPoints: 500,
           xVarSource: 'Received Time',
           xVarPrefix: 'x=',
           yVarPrefix: 'y=',
@@ -25,26 +29,27 @@ const mockAppDataManager = {
           customValueSeparator: ',',
           clearPlotOnNewValues: true,
           xAxisRangeMode: 'Auto',
-          xAxisRangeMin: '0',
-          xAxisRangeMax: '100',
+          xAxisRangeMin: 0,
+          xAxisRangeMax: 100,
           yAxisRangeMode: 'Auto',
-          yAxisRangeMin: '0',
-          yAxisRangeMax: '100',
-          xVarUnit: 's'
+          yAxisRangeMin: 0,
+          yAxisRangeMax: 100,
+          xVarUnit: 's',
+          detectionMode: 'Basic Prefix Mode',
         }
       }
     }
   },
   registerOnConfigReload: vi.fn(),
   saveAppData: vi.fn()
-} as unknown as AppDataManager;
+} as unknown as AppDataManager);
 
 describe('graphing tests', () => {
   let graphing: Graphing;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    graphing = new Graphing(mockSnackbar, mockAppDataManager);
+    graphing = new Graphing(mockSnackbar, makeMockAppDataManager());
     graphing.setGraphingEnabled(true);
   });
 

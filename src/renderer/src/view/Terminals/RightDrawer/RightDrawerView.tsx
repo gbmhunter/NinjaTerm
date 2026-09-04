@@ -162,28 +162,28 @@ export default observer((props: Props) => {
                     <TextField
                       {...params}
                       label="Baud rate"
-                      error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
-                      helperText={app.settings.portConfiguration.baudRateErrorMsg}
+                      error={!app.settings.portConfiguration.baudRate.isValid}
+                      helperText={app.settings.portConfiguration.baudRate.errorMsg}
                       onKeyDown={async (e) => {
                         if (e.key === 'Enter') {
                           // Apply baud rate
-                          await app.settings.portConfiguration.setBaudRate();
+                          app.settings.portConfiguration.baudRate.apply();
                         }
                         // Prevent the global keydown event from being triggered
                         e.stopPropagation();
                       }}
                       onBlur={async () => {
                         // Apply baud rate
-                        await app.settings.portConfiguration.setBaudRate();
+                        app.settings.portConfiguration.baudRate.apply();
                       }}
                     />
                   )}
                   disabled={app.connController.connState !== ConnState.CLOSED && !app.settings.portConfiguration.allowSettingsChangesWhenOpen}
                   sx={{ mt: 1, width: 160 }}
                   size="small"
-                  inputValue={app.settings.portConfiguration.baudRateInputValue}
+                  inputValue={app.settings.portConfiguration.baudRate.dispValue}
                   onInputChange={(event, newInputValue) => {
-                    app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
+                    app.settings.portConfiguration.baudRate.setDispValue(newInputValue);
                   }}
                 />
               </Tooltip>

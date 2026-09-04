@@ -9,19 +9,16 @@ describe('RX settings persistence', () => {
   });
 
   //================================================================================
-  // Regression tests for _loadConfig clobbering itself
+  // Regression tests for applying a preset losing settings.
   //
-  // `_loadConfig` reads field by field out of the stored config, and six of the
-  // applyable fields it sets have an on-apply callback wired to `_saveConfig`.
-  // `_saveConfig` writes *every* runtime RX field back into that same stored config
-  // object, so an apply that fires part-way through a load overwrites the fields
-  // that haven't been read yet with whatever the runtime currently holds.
-  //
-  // This does NOT happen during construction: the constructor calls `_loadConfig()`
-  // before it registers the on-apply callbacks, so nothing is listening. It happens
-  // on the *second* code path into `_loadConfig` — the `registerOnProfileLoad`
-  // callback, which runs on profile load and preset apply, by which time the
-  // callbacks are wired.
+  // These were written against the old two-copy design, where `_loadConfig` read
+  // the stored config field by field while applyable fields' on-apply callbacks
+  // could fire `_saveConfig` part-way through and overwrite the fields not yet
+  // read. That code no longer exists: the persisted object is the only copy
+  // (see `SettingsBranch`), so there is nothing to clobber. The tests stay
+  // because what they assert — that applying a saved preset restores every RX
+  // setting and leaves the stored config exactly as the preset had it — is the
+  // behaviour that matters, however it is implemented.
   //================================================================================
 
   test('loading a profile restores every RX setting, not just the ones before the first apply', () => {

@@ -13,10 +13,13 @@ export class GraphingSettingsData {
 
   /**
    * The maximum size of the receive buffer before it is cleared.
+   *
+   * This and the other numeric fields here were stored as strings until app
+   * data v25 (see `migrateV24toV25`).
    */
-  maxBufferSize = '1000';
+  maxBufferSize = 1000;
 
-  maxNumDataPoints = '500';
+  maxNumDataPoints = 500;
 
   xVarSource = 'Received Time';
 
@@ -41,15 +44,15 @@ export class GraphingSettingsData {
 
   xAxisRangeMode = 'Auto';
 
-  xAxisRangeMin = '0';
+  xAxisRangeMin = 0;
 
-  xAxisRangeMax = '100';
+  xAxisRangeMax = 100;
 
   yAxisRangeMode = 'Auto';
 
-  yAxisRangeMin = '0';
+  yAxisRangeMin = 0;
 
-  yAxisRangeMax = '100';
+  yAxisRangeMax = 100;
 
   xVarUnit = 's';
 

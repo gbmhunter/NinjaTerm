@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
-import { ApplyableNumberField, ApplyableTextField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
-import { DEFAULT_TAB_STOP_WIDTH } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
+import type { DisplaySettingsData } from 'src/model/AppDataManager/DataClasses/DisplaySettingsData';
+import { SettingsBranch } from '../SettingsBranch';
 
 /** Enumerates the different possible ways the TX and RX data
  * can be displayed. One of these may be active at any one time.
@@ -75,8 +75,18 @@ export const TERMINAL_FONT_FALLBACK_STACK = `${NINJATERM_FONT_FAMILY}, ${SYSTEM_
 export default class DisplaySettings {
   profileManager: AppDataManager;
 
-  // 14px is a good default size for the terminal text
-  charSizePx = new ApplyableNumberField('14', z.coerce.number().int().min(1));
+  /** See `SettingsBranch` for how this class relates to `DisplaySettingsData`. */
+  private readonly branch = new SettingsBranch<DisplaySettingsData>(
+    'settings.displaySettings',
+    (config) => config.settings.displaySettings,
+  );
+
+  // Tooltip defaults. Referenced by `DisplaySettingsData`, so they stay here.
+  static DEFAULT_TOOLTIP_DELAY_MS = 1000;
+  static DEFAULT_TOOLTIPS_ENABLED = true;
+
+  // 14px (see `DisplaySettingsData`) is a good default size for the terminal text
+  charSizePx = this.branch.applyableNumber('charSizePx', z.coerce.number().int().min(1));
 
   /**
    * The amount of vertical padding to apply (in pixels) to apply above and below the characters in each row. The char size plus this row padding determines the total row height. Decrease for a denser display of data.
@@ -87,13 +97,15 @@ export default class DisplaySettings {
    * box-drawing characters no longer join up. NinjaTerm's own font has built-in
    * leading (1.17 em) and wants a few pixels here.
    */
-  verticalRowPaddingPx = new ApplyableNumberField('5', z.coerce.number().int().min(0));
+  verticalRowPaddingPx = this.branch.applyableNumber('verticalRowPaddingPx', z.coerce.number().int().min(0));
 
-  terminalWidthChars = new ApplyableNumberField('120', z.coerce.number().int().min(1));
+  terminalWidthChars = this.branch.applyableNumber('terminalWidthChars', z.coerce.number().int().min(1));
 
-  terminalHeightMode = TerminalHeightMode.AUTO_HEIGHT;
+  get terminalHeightMode() { return this.branch.data.terminalHeightMode; }
+  setTerminalHeightMode = this.branch.setter('terminalHeightMode');
 
-  terminalFont = TerminalFont.NINJATERM;
+  get terminalFont() { return this.branch.data.terminalFont; }
+  setTerminalFont = this.branch.setter('terminalFont');
 
   /**
    * The font family to use when `terminalFont` is CUSTOM. Free text, since it
@@ -101,70 +113,37 @@ export default class DisplaySettings {
    * Not validated — if the font isn't installed the stack just falls through to
    * the next family.
    */
-  terminalFontCustomName = new ApplyableTextField('', z.string());
+  terminalFontCustomName = this.branch.applyableText('terminalFontCustomName', z.string());
 
-  /**
-   * Must be a positive integer in the range [1, 100].
-   */
-  terminalHeightChars = new ApplyableNumberField('25', z.coerce.number().int().min(1).max(100));
+  /** Must be a positive integer in the range [1, 100]. */
+  terminalHeightChars = this.branch.applyableNumber('terminalHeightChars', z.coerce.number().int().min(1).max(100));
 
-  scrollbackBufferSizeRows = new ApplyableNumberField('2000', z.coerce.number().int().min(1));
+  scrollbackBufferSizeRows = this.branch.applyableNumber('scrollbackBufferSizeRows', z.coerce.number().int().min(1));
 
-  dataViewConfiguration = DataViewConfiguration.SINGLE_TERMINAL;
+  get dataViewConfiguration() { return this.branch.data.dataViewConfiguration; }
+  setDataViewConfiguration = this.branch.setter('dataViewConfiguration');
 
-  tabStopWidth = new ApplyableNumberField(DEFAULT_TAB_STOP_WIDTH.toString(), z.coerce.number().int().min(1).max(16));
+  tabStopWidth = this.branch.applyableNumber('tabStopWidth', z.coerce.number().int().min(1).max(16));
 
   // Color fields
-  // Values can just be made up here, they will be overridden by the settings
-  defaultBackgroundColor = new ApplyableTextField('', z.string());
-  defaultTxTextColor = new ApplyableTextField('', z.string());
-  defaultRxTextColor = new ApplyableTextField('', z.string());
+  defaultBackgroundColor = this.branch.applyableText('defaultBackgroundColor', z.string());
+  defaultTxTextColor = this.branch.applyableText('defaultTxTextColor', z.string());
+  defaultRxTextColor = this.branch.applyableText('defaultRxTextColor', z.string());
 
-  autoScrollLockOnTx: boolean = true;
+  get autoScrollLockOnTx() { return this.branch.data.autoScrollLockOnTx; }
+  setAutoScrollLockOnTx = this.branch.setter('autoScrollLockOnTx');
 
   // Tooltip settings
-  static DEFAULT_TOOLTIP_DELAY_MS = 1000;
-  static DEFAULT_TOOLTIPS_ENABLED = true;
-  tooltipsEnabled: boolean = DisplaySettings.DEFAULT_TOOLTIPS_ENABLED;
-  tooltipDelayMs = new ApplyableNumberField(
-    DisplaySettings.DEFAULT_TOOLTIP_DELAY_MS.toString(),
-    z.coerce.number().int().min(0).max(5000));
+  get tooltipsEnabled() { return this.branch.data.tooltipsEnabled; }
+  setTooltipsEnabled = this.branch.setter('tooltipsEnabled');
+
+  tooltipDelayMs = this.branch.applyableNumber('tooltipDelayMs', z.coerce.number().int().min(0).max(5000));
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this.charSizePx.setOnApplyChanged(() => this._saveConfig());
-    this.verticalRowPaddingPx.setOnApplyChanged(() => this._saveConfig());
-    this.terminalWidthChars.setOnApplyChanged(() => this._saveConfig());
-    this.terminalHeightChars.setOnApplyChanged(() => this._saveConfig());
-    this.scrollbackBufferSizeRows.setOnApplyChanged(() => this._saveConfig());
-    this.defaultBackgroundColor.setOnApplyChanged(() => this._saveConfig());
-    this.defaultTxTextColor.setOnApplyChanged(() => this._saveConfig());
-    this.defaultRxTextColor.setOnApplyChanged(() => this._saveConfig());
-    this.tabStopWidth.setOnApplyChanged(() => this._saveConfig());
-    this.tooltipDelayMs.setOnApplyChanged(() => this._saveConfig());
-    this.terminalFontCustomName.setOnApplyChanged(() => this._saveConfig());
-
-    this._loadConfig();
-    this.profileManager.registerOnConfigReload(['settings.displaySettings'], () => {
-      this._loadConfig();
-    });
-    makeAutoObservable(this);
+    this.branch.attach(profileManager);
+    makeAutoObservable<DisplaySettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
   }
-
-  setDataViewConfiguration = (value: DataViewConfiguration) => {
-    this.dataViewConfiguration = value;
-    this._saveConfig();
-  };
-
-  setTerminalHeightMode = (value: TerminalHeightMode) => {
-    this.terminalHeightMode = value;
-    this._saveConfig();
-  };
-
-  setTerminalFont = (value: TerminalFont) => {
-    this.terminalFont = value;
-    this._saveConfig();
-  };
 
   /**
    * The complete CSS `font-family` value for terminal rows: the user's chosen
@@ -203,16 +182,6 @@ export default class DisplaySettings {
     this.defaultRxTextColor.apply();
   };
 
-  setAutoScrollLockOnTx = (value: boolean) => {
-    this.autoScrollLockOnTx = value;
-    this._saveConfig();
-  };
-
-  setTooltipsEnabled = (value: boolean) => {
-    this.tooltipsEnabled = value;
-    this._saveConfig();
-  };
-
   /**
    * Get the basic dynamic tooltip configuration. This takes into account the user's tooltip preferences, which includes whether tooltips are enabled and the delay time.
    * @returns The tooltip configuration.
@@ -234,66 +203,5 @@ export default class DisplaySettings {
       enterNextDelay: 100,
       leaveDelay: 50,
     };
-  };
-
-  /**
-   * Save the relevant settings from this class into the current app config in the profile manager.
-   */
-  _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.settings.displaySettings;
-
-    config.charSizePx = this.charSizePx.appliedValue;
-    config.verticalRowPaddingPx = this.verticalRowPaddingPx.appliedValue;
-    config.terminalWidthChars = this.terminalWidthChars.appliedValue;
-    config.terminalHeightMode = this.terminalHeightMode;
-    config.terminalFont = this.terminalFont;
-    config.terminalFontCustomName = this.terminalFontCustomName.appliedValue;
-    config.terminalHeightChars = this.terminalHeightChars.appliedValue;
-    config.scrollbackBufferSizeRows = this.scrollbackBufferSizeRows.appliedValue;
-    config.dataViewConfiguration = this.dataViewConfiguration;
-    config.defaultBackgroundColor = this.defaultBackgroundColor.appliedValue;
-    config.defaultTxTextColor = this.defaultTxTextColor.appliedValue;
-    config.defaultRxTextColor = this.defaultRxTextColor.appliedValue;
-    config.tabStopWidth = this.tabStopWidth.appliedValue;
-    config.autoScrollLockOnTx = this.autoScrollLockOnTx;
-    config.tooltipsEnabled = this.tooltipsEnabled;
-    config.tooltipDelayMs = this.tooltipDelayMs.appliedValue;
-
-    this.profileManager.saveAppData();
-  };
-
-  /**
-   * Load the relevant settings from the current app config in the profile manager into this class.
-   */
-  _loadConfig = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.settings.displaySettings;
-
-    this.charSizePx.setDispValue(configToLoad.charSizePx.toString());
-    this.charSizePx.apply({notify: false});
-    this.verticalRowPaddingPx.setDispValue(configToLoad.verticalRowPaddingPx.toString());
-    this.verticalRowPaddingPx.apply({notify: false});
-    this.terminalWidthChars.setDispValue(configToLoad.terminalWidthChars.toString());
-    this.terminalWidthChars.apply({notify: false});
-    this.terminalHeightMode = configToLoad.terminalHeightMode;
-    this.terminalFont = configToLoad.terminalFont;
-    this.terminalFontCustomName.setDispValue(configToLoad.terminalFontCustomName);
-    this.terminalFontCustomName.apply({notify: false});
-    this.terminalHeightChars.setDispValue(configToLoad.terminalHeightChars.toString());
-    this.terminalHeightChars.apply({notify: false});
-    this.scrollbackBufferSizeRows.setDispValue(configToLoad.scrollbackBufferSizeRows.toString());
-    this.scrollbackBufferSizeRows.apply({notify: false});
-    this.dataViewConfiguration = configToLoad.dataViewConfiguration;
-    this.defaultBackgroundColor.setDispValue(configToLoad.defaultBackgroundColor);
-    this.defaultBackgroundColor.apply({notify: false});
-    this.defaultTxTextColor.setDispValue(configToLoad.defaultTxTextColor);
-    this.defaultTxTextColor.apply({notify: false});
-    this.defaultRxTextColor.setDispValue(configToLoad.defaultRxTextColor);
-    this.defaultRxTextColor.apply({notify: false});
-    this.tabStopWidth.setDispValue(configToLoad.tabStopWidth?.toString() || '8');
-    this.tabStopWidth.apply({notify: false});
-    this.autoScrollLockOnTx = configToLoad.autoScrollLockOnTx;
-    this.tooltipsEnabled = configToLoad.tooltipsEnabled;
-    this.tooltipDelayMs.setDispValue(configToLoad.tooltipDelayMs.toString());
-    this.tooltipDelayMs.apply({notify: false});
   };
 }

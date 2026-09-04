@@ -115,6 +115,19 @@ describe('app data manager tests', () => {
     updateAndCompare(savedAppData);
   });
 
+  test('app data can be upgraded from v24', () => {
+    const savedAppData = JSON.parse(fs.readFileSync('./local-storage-data/appData-v24-app-v5.18.0-default.json', 'utf8'));
+    updateAndCompare(savedAppData);
+  });
+
+  test('the current-version snapshot matches a fresh AppData', () => {
+    // The release preflight requires this file to exist; this checks it is
+    // also *right*, since it was derived from the v24 snapshot by hand.
+    const savedAppData = JSON.parse(fs.readFileSync(`./local-storage-data/appData-v${LATEST_VERSION}-app-v5.19.0-default.json`, 'utf8'));
+    expect(savedAppData.version).toBe(LATEST_VERSION);
+    updateAndCompare(savedAppData);
+  });
+
   test('falls back to defaults when localStorage holds invalid JSON', () => {
     // _loadAppDataFromStorage calls JSON.parse() on the raw localStorage value
     // with no try/catch. If a previous version wrote a partial value, or the
@@ -333,6 +346,47 @@ describe('app data manager tests', () => {
     // Custom value survives.
     expect(appData.presets?.[1].config?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(40);
     expect(appData.currentAppConfig?.settings?.rxSettings?.maxEscapeCodeLengthChars).toBe(25);
+  });
+
+  test('migration v24->v25 stores the graphing numbers as numbers and drops rightDrawer.version', () => {
+    const v24Input = {
+      version: 24,
+      presets: [
+        {
+          name: 'p1',
+          config: {
+            settings: { graphingSettings: { maxBufferSize: '2500', xAxisRangeMin: '-1.5', yAxisRangeMax: 'garbage' } },
+            terminal: { rightDrawer: { version: 1, showRightDrawer: false } },
+          },
+        },
+        // A preset whose patch doesn't touch graphing or the drawer at all.
+        { name: 'p2', config: { settings: { rxSettings: {} } } },
+      ],
+      currentAppConfig: {
+        settings: { graphingSettings: { maxBufferSize: '1000', maxNumDataPoints: '500', xAxisRangeMin: '0', xAxisRangeMax: '100', yAxisRangeMin: '0', yAxisRangeMax: '100' } },
+        terminal: { rightDrawer: { version: 1, showRightDrawer: true } },
+      },
+    };
+
+    const { appData, wasChanged, unknownVersion } = migrateAppData(v24Input);
+
+    expect(unknownVersion).toBe(false);
+    expect(wasChanged).toBe(true);
+    expect(appData.version).toBe(LATEST_VERSION);
+
+    const p1 = appData.presets?.[0].config;
+    expect(p1?.settings?.graphingSettings?.maxBufferSize).toBe(2500);
+    expect(p1?.settings?.graphingSettings?.xAxisRangeMin).toBe(-1.5);
+    // Unparseable falls back to the data-class default rather than NaN.
+    expect(p1?.settings?.graphingSettings?.yAxisRangeMax).toBe(100);
+    expect(p1?.terminal?.rightDrawer).toEqual({ showRightDrawer: false });
+
+    expect(appData.presets?.[1].config?.settings?.graphingSettings).toBeUndefined();
+
+    expect(appData.currentAppConfig.settings?.graphingSettings).toEqual({
+      maxBufferSize: 1000, maxNumDataPoints: 500, xAxisRangeMin: 0, xAxisRangeMax: 100, yAxisRangeMin: 0, yAxisRangeMax: 100,
+    });
+    expect(appData.currentAppConfig.terminal?.rightDrawer).toEqual({ showRightDrawer: true });
   });
 
   test('migration v21->v22 adds the terminal font settings', () => {

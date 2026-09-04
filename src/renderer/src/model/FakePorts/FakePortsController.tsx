@@ -884,7 +884,7 @@ export default class FakePortsController {
         'graph data, x=2, y=10, 0.5points/s',
         'Sends data that can be graphed.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           let testCharIdx = 0;
           const intervalId = setInterval(() => {
             const rxData = new TextEncoder().encode('x=2,y=10\n');
@@ -914,7 +914,7 @@ export default class FakePortsController {
         () => {
           // Disable ANSI escape code parsing for graph data, as it's likely not needed
           // and could interfere if the generated numbers accidentally form escape codes.
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
 
           let n = 0; // Iteration counter for sine wave progression
           const intervalMilliseconds = 200; // 5 points per second (1000ms / 200ms = 5)
@@ -1276,7 +1276,7 @@ export default class FakePortsController {
         'Command Based Graphing Demo: Single Plot, Single Trace',
         'Demonstrates command based graphing with a single plot and a single trace. Uses a single command per line.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
@@ -1316,7 +1316,7 @@ export default class FakePortsController {
         'Command Based Graphing Demo: Single Plot, 3 Traces',
         'Demonstrates command based graphing with a single plot and multiple traces. Uses a single command per line.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
@@ -1367,7 +1367,7 @@ export default class FakePortsController {
         'Command Based Graphing Demo: XY Position (Data X-axis)',
         'Demonstrates command based graphing with explicit x,y coordinate plotting for position tracking.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.graphing.setGraphingEnabled(true);
 
           // Setup sequence - create plot and traces
@@ -1413,7 +1413,7 @@ export default class FakePortsController {
         'Three Phase and Temperature Sensor Plots',
         'Demonstrates two plots: three-phase sine waves and temperature sensors.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
           app.graphing.setGraphingEnabled(true);
           app.graphing.setDetectionMode(DetectionMode.ADVANCED_CMD);
 
@@ -1497,7 +1497,7 @@ export default class FakePortsController {
         'Creating and Deleting Figures',
         'Demonstrates command based graphing with creating, clearing, and deleting figures and traces.',
         () => {
-          app.settings.rxSettings.ansiEscapeCodeParsingEnabled = false;
+          app.settings.rxSettings.setAnsiEscapeCodeParsingEnabled(false);
 
           let phase = 0; // 0: setup, 1: data, 2: clear, 3: new plot, 4: more data, 5: delete
           let dataCounter = 0;

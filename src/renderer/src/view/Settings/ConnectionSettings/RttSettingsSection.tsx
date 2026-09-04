@@ -134,21 +134,21 @@ function RttSettingsSection(props: Props) {
         >
           <TextField
             label="Speed (kHz)"
-            value={app.settings.portConfiguration.rttSpeedDispKHz}
+            value={app.settings.portConfiguration.rttSpeedKHz.dispValue}
             disabled={app.connController.connState !== ConnState.CLOSED}
-            error={app.settings.portConfiguration.rttSpeedErrorMsg !== ''}
-            helperText={app.settings.portConfiguration.rttSpeedErrorMsg || `${PortSettings.RTT_SPEED_MIN_KHZ}-${PortSettings.RTT_SPEED_MAX_KHZ} kHz`}
+            error={!app.settings.portConfiguration.rttSpeedKHz.isValid}
+            helperText={app.settings.portConfiguration.rttSpeedKHz.errorMsg || `${PortSettings.RTT_SPEED_MIN_KHZ}-${PortSettings.RTT_SPEED_MAX_KHZ} kHz`}
             onChange={(e) => {
-              app.settings.portConfiguration.setRttSpeedDispKHz(e.target.value);
+              app.settings.portConfiguration.rttSpeedKHz.setDispValue(e.target.value);
             }}
             onKeyDown={async (e) => {
               if (e.key === 'Enter') {
-                app.settings.portConfiguration.applyRttSpeed();
+                app.settings.portConfiguration.rttSpeedKHz.apply();
               }
               e.stopPropagation();
             }}
             onBlur={() => {
-              app.settings.portConfiguration.applyRttSpeed();
+              app.settings.portConfiguration.rttSpeedKHz.apply();
             }}
             sx={{ width: 140 }}
             size="small"
@@ -162,21 +162,21 @@ function RttSettingsSection(props: Props) {
         >
           <TextField
             label="RTT channel"
-            value={app.settings.portConfiguration.rttChannelDisp}
+            value={app.settings.portConfiguration.rttChannel.dispValue}
             disabled={app.connController.connState !== ConnState.CLOSED}
-            error={app.settings.portConfiguration.rttChannelErrorMsg !== ''}
-            helperText={app.settings.portConfiguration.rttChannelErrorMsg || `${PortSettings.RTT_CHANNEL_MIN}-${PortSettings.RTT_CHANNEL_MAX} (0 = Terminal)`}
+            error={!app.settings.portConfiguration.rttChannel.isValid}
+            helperText={app.settings.portConfiguration.rttChannel.errorMsg || `${PortSettings.RTT_CHANNEL_MIN}-${PortSettings.RTT_CHANNEL_MAX} (0 = Terminal)`}
             onChange={(e) => {
-              app.settings.portConfiguration.setRttChannelDisp(e.target.value);
+              app.settings.portConfiguration.rttChannel.setDispValue(e.target.value);
             }}
             onKeyDown={async (e) => {
               if (e.key === 'Enter') {
-                app.settings.portConfiguration.applyRttChannel();
+                app.settings.portConfiguration.rttChannel.apply();
               }
               e.stopPropagation();
             }}
             onBlur={() => {
-              app.settings.portConfiguration.applyRttChannel();
+              app.settings.portConfiguration.rttChannel.apply();
             }}
             sx={{ width: 120 }}
             size="small"

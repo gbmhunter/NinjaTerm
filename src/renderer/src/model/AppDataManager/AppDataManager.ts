@@ -99,7 +99,10 @@ export class AppDataManager {
    *    invoked when one of them is among those that changed, so a preset that
    *    only touches RX settings doesn't make the rules pane rebuild its list and
    *    close its edit modal, or make the logger do an IPC round-trip.
-   * @param callback Normally a settings class's `_loadConfig`.
+   * @param callback For the flat settings classes this is `SettingsBranch`'s
+   *    reload handler (re-resolve the branch object, re-seed applyable
+   *    fields); for collection-shaped state such as rules, macros and filters it
+   *    is still a hand-written `_loadConfig`.
    */
   registerOnConfigReload = (branches: ConfigBranch[], callback: () => void) => {
     this._configReloadCallbacks.push({ branches, callback });
@@ -108,10 +111,12 @@ export class AppDataManager {
   /**
    * Tell every registered part of the app to re-read `currentAppConfig`.
    *
-   * Called after the config tree is replaced wholesale (loading a profile) or
-   * patched in place (applying a preset). Each registered callback is a
-   * settings class's `_loadConfig()`, which re-reads its own slice — including
-   * doing the setDispValue()/apply() two-step for applyable fields.
+   * Called after the config tree is replaced wholesale (loading a profile, or
+   * undoing a preset) or patched in place (applying a preset). Plain settings
+   * fields need nothing here — they read through to the tree — but each
+   * `SettingsBranch` re-resolves its branch object (undo swaps it) and re-seeds
+   * the display strings of its applyable fields, and the collection-shaped
+   * controllers re-read their slice.
    */
   notifyConfigReloaded = (changedBranches?: ConfigBranch[]) => {
     for (const { branches, callback } of this._configReloadCallbacks) {
@@ -125,7 +130,6 @@ export class AppDataManager {
 
   _loadAppDataFromStorage = () => {
     const appDataAsJson = window.localStorage.getItem(APP_DATA_STORAGE_KEY);
-    // let profileManagerData: ProfileManagerData;
     let appData: AppData;
     if (appDataAsJson === null) {
       // No config key found in users store, create one!
@@ -135,7 +139,7 @@ export class AppDataManager {
       window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
     } else {
       // A version of app data was found in local storage. Load it.
-      let appDataUnknownVersion: any;
+      let appDataUnknownVersion: unknown;
       try {
         appDataUnknownVersion = JSON.parse(appDataAsJson);
       } catch (err) {
@@ -144,21 +148,39 @@ export class AppDataManager {
         // renderer dead on launch with no way to recover. Fall back to a
         // fresh default and overwrite the bad value.
         log.error('Failed to parse app data from local storage. Falling back to defaults. err=', err);
+        appDataUnknownVersion = null;
+      }
+
+      if (appDataUnknownVersion === null) {
         appData = new AppData();
         window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
-        this.appData = appData;
-        return;
-      }
-      let wasChanged;
-      ({ appData, wasChanged } = this._updateAppData(appDataUnknownVersion));
-
-      if (wasChanged) {
-        window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
+      } else {
+        let wasChanged;
+        ({ appData, wasChanged } = this._updateAppData(appDataUnknownVersion));
+        if (wasChanged) {
+          window.localStorage.setItem(APP_DATA_STORAGE_KEY, JSON.stringify(appData));
+        }
       }
     }
 
-    // Load data into class
-    this.appData = appData;
+    // Every path lands here, and every path must produce the *same kind* of
+    // tree: plain objects all the way down.
+    //
+    // The loaded-from-storage path already does — `JSON.parse` yields plain
+    // objects, which the `makeAutoObservable(this)` in the constructor then
+    // deep-converts into observables. The fresh-install and corrupt-fallback
+    // paths used to hand over `new AppData()` instead: a class instance whose
+    // nested `ProfileConfig` / `SettingsData` / `*Data` members are class
+    // instances too, and MobX's deep conversion deliberately leaves class
+    // instances alone. So on a first launch every settings leaf was a dead
+    // plain property nothing could observe, while on the second launch the
+    // same leaf was observable. The settings classes kept a private copy of
+    // every field to hide that, which is where their sync bugs came from.
+    //
+    // Round-tripping through JSON here makes the fresh path identical to the
+    // loaded one. The class methods on `AppData` are lost, but nothing relied
+    // on them — the loaded path never had them either.
+    this.appData = JSON.parse(JSON.stringify(appData)) as AppData;
   };
 
   /**

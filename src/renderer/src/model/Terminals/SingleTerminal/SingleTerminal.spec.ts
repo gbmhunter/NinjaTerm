@@ -261,7 +261,7 @@ describe('single terminal tests', () => {
     const escGlyph = String.fromCharCode(0x1b + START_OF_CONTROL_GLYPHS);
 
     test('unsupported CSI final byte is surfaced when enabled', () => {
-      dataProcessingSettings.showUnknownEscapeCodes = true;
+      dataProcessingSettings.setShowUnknownEscapeCodes(true);
       // ESC[6n is the Device Status Report request, which NinjaTerm does not support.
       singleTerminal.parseData(stringToUint8Array('\x1B[6n'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
@@ -286,7 +286,7 @@ describe('single terminal tests', () => {
     });
 
     test('unsupported SGR code is surfaced when enabled', () => {
-      dataProcessingSettings.showUnknownEscapeCodes = true;
+      dataProcessingSettings.setShowUnknownEscapeCodes(true);
       // 99 is not a recognised SGR code.
       singleTerminal.parseData(stringToUint8Array('\x1B[99m'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
@@ -299,7 +299,7 @@ describe('single terminal tests', () => {
     });
 
     test('supported escape sequence is never surfaced', () => {
-      dataProcessingSettings.showUnknownEscapeCodes = true;
+      dataProcessingSettings.setShowUnknownEscapeCodes(true);
       singleTerminal.parseData(stringToUint8Array('\x1B[31mred'), DataDirection.RX);
       const row = singleTerminal.terminalRows[0];
       // Just "red" + cursor; the recognised colour sequence is applied, not surfaced.

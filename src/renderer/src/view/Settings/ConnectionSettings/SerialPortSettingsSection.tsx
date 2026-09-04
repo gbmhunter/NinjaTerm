@@ -167,25 +167,25 @@ function SerialPortSettingsSection(props: Props) {
               <TextField
                 {...params}
                 label="Baud rate"
-                error={app.settings.portConfiguration.baudRateErrorMsg !== ''}
-                helperText={app.settings.portConfiguration.baudRateErrorMsg}
+                error={!app.settings.portConfiguration.baudRate.isValid}
+                helperText={app.settings.portConfiguration.baudRate.errorMsg}
                 onKeyDown={async (e) => {
                   if (e.key === 'Enter') {
-                    await app.settings.portConfiguration.setBaudRate();
+                    app.settings.portConfiguration.baudRate.apply();
                   }
                   e.stopPropagation();
                 }}
                 onBlur={async () => {
-                  await app.settings.portConfiguration.setBaudRate();
+                  app.settings.portConfiguration.baudRate.apply();
                 }}
               />
             )}
             disabled={isPortSettingsDisabled}
             sx={{ m: 1, width: 160 }}
             size="small"
-            inputValue={app.settings.portConfiguration.baudRateInputValue}
+            inputValue={app.settings.portConfiguration.baudRate.dispValue}
             onInputChange={(event, newInputValue) => {
-              app.settings.portConfiguration.setBaudRateInputValue(newInputValue);
+              app.settings.portConfiguration.baudRate.setDispValue(newInputValue);
             }}
           />
         </Tooltip>

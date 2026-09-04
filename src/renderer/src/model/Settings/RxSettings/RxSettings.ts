@@ -1,8 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import { z } from "zod";
 
-import { ApplyableNumberField, ApplyableTextField } from "src/view/Components/ApplyableTextField";
 import { AppDataManager } from "src/model/AppDataManager/AppDataManager";
+import type { RxSettingsData } from "src/model/AppDataManager/DataClasses/RxSettingsData";
+import { SettingsBranch } from "../SettingsBranch";
 
 export enum DataType {
   ASCII,
@@ -157,396 +158,151 @@ export default class RxSettings {
 
   profileManager: AppDataManager;
 
-  /**
-   * How to interpret the received data from the serial port.
-   */
-  dataType = DataType.ASCII;
-
-  // ASCII-SPECIFIC SETTINGS
-  ansiEscapeCodeParsingEnabled = true;
-  // Sequences longer than this are abandoned and emitted as plain data, so this
-  // has to comfortably fit the longest sequence we want to handle. 25 covers
-  // three-digit CUP coordinates (ESC[100;120H) and true-colour SGR
-  // (ESC[38;2;255;255;255m) with room to spare.
-  maxEscapeCodeLengthChars = new ApplyableNumberField("25", z.coerce.number().min(2));
-  // When enabled, CSI escape sequences that are received but not supported (or
-  // are malformed) are rendered inline in the terminal as a highlighted marker
-  // rather than being silently discarded. A troubleshooting aid, off by default
-  // so normal output is unaffected.
-  showUnknownEscapeCodes = false;
-  localTxEcho = false;
-  newLineCursorBehavior = NewLineCursorBehavior.CARRIAGE_RETURN_AND_NEW_LINE;
-  swallowNewLine = true;
-  carriageReturnCursorBehavior = CarriageReturnCursorBehavior.DO_NOTHING;
-  swallowCarriageReturn = true;
-  backspaceBehavior = BackspaceBehavior.DELETE_CHAR;
-  formFeedBehavior = FormFeedBehavior.DO_NOTHING;
-  nonVisibleCharDisplayBehavior = NonVisibleCharDisplayBehaviors.ASCII_CONTROL_GLYPHS_AND_HEX_GLYPHS;
-  characterEncoding = CharacterEncoding.ASCII;
-
-  // NUMBER-SPECIFIC SETTINGS
-  numberType = NumberType.HEX;
-  endianness = Endianness.LITTLE_ENDIAN;
-  numberSeparator = new ApplyableTextField(" ", z.string());
-  preventValuesWrappingAcrossRows = true;
-  insertNewLineOnMatchedValue = false;
-  newLineMatchValueAsHex = new ApplyableTextField(
-    "00",
-    z
-    .string()
-    .regex(/^([0-9A-Fa-f]*)$/, "Must be a valid hex number.")
+  /** See `SettingsBranch` for how this class relates to `RxSettingsData`. */
+  private readonly branch = new SettingsBranch<RxSettingsData>(
+    'settings.rxSettings',
+    (config) => config.settings.rxSettings,
   );
-  newLinePlacementOnHexValue = NewLinePlacementOnHexValue.BEFORE;
-  padValues = true;
-  paddingCharacter = PaddingCharacter.ZERO;
+
+  /** How to interpret the received data from the serial port. */
+  get dataType() { return this.branch.data.dataType; }
+  setDataType = this.branch.setter('dataType');
+
+  //=================================================================
+  // ASCII-SPECIFIC SETTINGS
+  //=================================================================
+
+  get ansiEscapeCodeParsingEnabled() { return this.branch.data.ansiEscapeCodeParsingEnabled; }
+  setAnsiEscapeCodeParsingEnabled = this.branch.setter('ansiEscapeCodeParsingEnabled');
+
+  /**
+   * Sequences longer than this are abandoned and emitted as plain data, so this
+   * has to comfortably fit the longest sequence we want to handle. The default of
+   * 25 (see `RxSettingsData`) covers three-digit CUP coordinates (ESC[100;120H)
+   * and true-colour SGR (ESC[38;2;255;255;255m) with room to spare.
+   */
+  maxEscapeCodeLengthChars = this.branch.applyableNumber('maxEscapeCodeLengthChars', z.coerce.number().min(2));
+
+  /**
+   * When enabled, CSI escape sequences that are received but not supported (or
+   * are malformed) are rendered inline in the terminal as a highlighted marker
+   * rather than being silently discarded. A troubleshooting aid, off by default
+   * so normal output is unaffected.
+   */
+  get showUnknownEscapeCodes() { return this.branch.data.showUnknownEscapeCodes; }
+  setShowUnknownEscapeCodes = this.branch.setter('showUnknownEscapeCodes');
+
+  get localTxEcho() { return this.branch.data.localTxEcho; }
+  setLocalTxEcho = this.branch.setter('localTxEcho');
+
+  get newLineCursorBehavior() { return this.branch.data.newLineCursorBehavior; }
+  setNewLineCursorBehavior = this.branch.setter('newLineCursorBehavior');
+
+  get swallowNewLine() { return this.branch.data.swallowNewLine; }
+  setSwallowNewLine = this.branch.setter('swallowNewLine');
+
+  get carriageReturnCursorBehavior() { return this.branch.data.carriageReturnCursorBehavior; }
+  setCarriageReturnBehavior = this.branch.setter('carriageReturnCursorBehavior');
+
+  get swallowCarriageReturn() { return this.branch.data.swallowCarriageReturn; }
+  setSwallowCarriageReturn = this.branch.setter('swallowCarriageReturn');
+
+  get backspaceBehavior() { return this.branch.data.backspaceBehavior; }
+  setBackspaceBehavior = this.branch.setter('backspaceBehavior');
+
+  get formFeedBehavior() { return this.branch.data.formFeedBehavior; }
+  setFormFeedBehavior = this.branch.setter('formFeedBehavior');
+
+  get characterEncoding() { return this.branch.data.characterEncoding; }
+  setCharacterEncoding = this.branch.setter('characterEncoding');
+
+  get nonVisibleCharDisplayBehavior() { return this.branch.data.nonVisibleCharDisplayBehavior; }
+  setNonVisibleCharDisplayBehavior = this.branch.setter('nonVisibleCharDisplayBehavior');
+
+  //=================================================================
+  // NUMBER-SPECIFIC SETTINGS
+  //=================================================================
+
+  get numberType() { return this.branch.data.numberType; }
+  setNumberType = this.branch.setter('numberType');
+
+  get endianness() { return this.branch.data.endianness; }
+  setEndianness = this.branch.setter('endianness');
+
+  numberSeparator = this.branch.applyableText('numberSeparator', z.string());
+
+  get preventValuesWrappingAcrossRows() { return this.branch.data.preventValuesWrappingAcrossRows; }
+  setPreventHexValuesWrappingAcrossRows = this.branch.setter('preventValuesWrappingAcrossRows');
+
+  get insertNewLineOnMatchedValue() { return this.branch.data.insertNewLineOnMatchedValue; }
+  setInsertNewLineOnValue = this.branch.setter('insertNewLineOnMatchedValue');
+
+  newLineMatchValueAsHex = this.branch.applyableText(
+    'newLineMatchValueAsHex',
+    z.string().regex(/^([0-9A-Fa-f]*)$/, "Must be a valid hex number."),
+  );
+
+  get newLinePlacementOnHexValue() { return this.branch.data.newLinePlacementOnHexValue; }
+  setNewLinePlacementOnValue = this.branch.setter('newLinePlacementOnHexValue');
+
+  get padValues() { return this.branch.data.padValues; }
+  setPadValues = this.branch.setter('padValues');
+
+  get paddingCharacter() { return this.branch.data.paddingCharacter; }
+  setPaddingCharacter = this.branch.setter('paddingCharacter');
 
   /**
    * Set to -1 for automatic padding, which will pad up to the largest possible value
    * for the selected number type.
    */
-  numPaddingChars = new ApplyableNumberField('-1', z.coerce.number().min(-1).max(100).int());
+  numPaddingChars = this.branch.applyableNumber('numPaddingChars', z.coerce.number().min(-1).max(100).int());
 
+  //=================================================================
   // HEX SPECIFIC SETTINGS
-  numBytesPerHexNumber = new ApplyableNumberField('1', z.coerce.number().min(1).max(10).int());
-  hexCase = HexCase.UPPERCASE;
-  prefixHexValuesWith0x = false;
+  //=================================================================
 
+  numBytesPerHexNumber = this.branch.applyableNumber('numBytesPerHexNumber', z.coerce.number().min(1).max(10).int());
+
+  get hexCase() { return this.branch.data.hexCase; }
+  setHexCase = this.branch.setter('hexCase');
+
+  get prefixHexValuesWith0x() { return this.branch.data.prefixHexValuesWith0x; }
+  setPrefixHexValuesWith0x = this.branch.setter('prefixHexValuesWith0x');
+
+  //=================================================================
   // FLOAT SPECIFIC SETTINGS
-  floatStringConversionMethod = FloatStringConversionMethod.TO_STRING;
-  floatNumOfDecimalPlaces = new ApplyableNumberField("5", z.coerce.number().min(0).max(100).int());
+  //=================================================================
 
+  get floatStringConversionMethod() { return this.branch.data.floatStringConversionMethod; }
+  setFloatStringConversionMethod = this.branch.setter('floatStringConversionMethod');
+
+  floatNumOfDecimalPlaces = this.branch.applyableNumber('floatNumOfDecimalPlaces', z.coerce.number().min(0).max(100).int());
+
+  //=================================================================
   // TIMESTAMP SETTINGS
-  addTimestamps = false;
-  timestampFormat = TimestampFormat.ISO8601_WITHOUT_TIMEZONE;
-  customTimestampFormatString = new ApplyableTextField("", z.string()); // Default in settings
+  //=================================================================
 
+  get addTimestamps() { return this.branch.data.addTimestamps; }
+  setAddTimestamps = this.branch.setter('addTimestamps');
+
+  get timestampFormat() { return this.branch.data.timestampFormat; }
+  setTimestampFormat = this.branch.setter('timestampFormat');
+
+  customTimestampFormatString = this.branch.applyableText('customTimestampFormatString', z.string());
+
+  //=================================================================
   // OTHER SETTINGS
-  showWarningOnRxBreakSignal = true;
+  //=================================================================
+
+  get showWarningOnRxBreakSignal() { return this.branch.data.showWarningOnRxBreakSignal; }
+  setShowWarningOnRxBreakSignal = this.branch.setter('showWarningOnRxBreakSignal');
 
   constructor(profileManager: AppDataManager) {
     this.profileManager = profileManager;
-    this._loadConfig();
-    this.profileManager.registerOnConfigReload(['settings.rxSettings'], () => {
-      this._loadConfig();
-    });
-
-    // Connect all applyable fields to the save function
-    this.maxEscapeCodeLengthChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.numberSeparator.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.newLineMatchValueAsHex.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.numPaddingChars.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.floatNumOfDecimalPlaces.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    this.customTimestampFormatString.setOnApplyChanged(() => {
-      this._saveConfig();
-    });
-    makeAutoObservable(this); // Make sure this is at the end of the constructor
+    this.branch.attach(profileManager);
+    makeAutoObservable<RxSettings, 'branch'>(this, { branch: false }); // Make sure this is at the end of the constructor
   }
 
-  /**
-   * True while `_loadConfig` is running. Several of the applyable fields below have
-   * an on-apply callback wired to `_saveConfig`, and `_saveConfig` writes every
-   * runtime field back into the very config object `_loadConfig` is reading from. So
-   * an apply that fires part-way through a load would overwrite the fields not read
-   * yet with whatever the runtime still holds. This guard makes saving a no-op for
-   * the duration, matching what PortSettings does for the same reason.
-   */
-  _isLoading = false;
-
-  _loadConfig = () => {
-    this._isLoading = true;
-    try {
-      this._loadConfigInner();
-    } finally {
-      this._isLoading = false;
-    }
-  };
-
-  _loadConfigInner = () => {
-    const configToLoad = this.profileManager.appData.currentAppConfig.settings.rxSettings
-
-    /**
-     * How to interpret the received data from the serial port.
-     */
-    this.dataType = configToLoad.dataType;
-
-    // ASCII-SPECIFIC SETTINGS
-    this.ansiEscapeCodeParsingEnabled = configToLoad.ansiEscapeCodeParsingEnabled;
-    this.maxEscapeCodeLengthChars.setDispValue(configToLoad.maxEscapeCodeLengthChars.toString());
-    this.maxEscapeCodeLengthChars.apply();
-    this.showUnknownEscapeCodes = configToLoad.showUnknownEscapeCodes;
-    this.localTxEcho = configToLoad.localTxEcho;
-    this.newLineCursorBehavior = configToLoad.newLineCursorBehavior;
-    this.swallowNewLine = configToLoad.swallowNewLine;
-    this.carriageReturnCursorBehavior = configToLoad.carriageReturnCursorBehavior;
-    this.swallowCarriageReturn = configToLoad.swallowCarriageReturn;
-    this.backspaceBehavior = configToLoad.backspaceBehavior;
-    this.formFeedBehavior = configToLoad.formFeedBehavior;
-    this.characterEncoding = configToLoad.characterEncoding;
-    this.nonVisibleCharDisplayBehavior = configToLoad.nonVisibleCharDisplayBehavior;
-
-    // NUMBER-SPECIFIC SETTINGS
-    this.numberType = configToLoad.numberType;
-    this.endianness = configToLoad.endianness;
-    this.numberSeparator.setDispValue(configToLoad.numberSeparator);
-    this.numberSeparator.apply();
-    this.preventValuesWrappingAcrossRows = configToLoad.preventValuesWrappingAcrossRows;
-    this.insertNewLineOnMatchedValue = configToLoad.insertNewLineOnMatchedValue;
-    this.newLineMatchValueAsHex.setDispValue(configToLoad.newLineMatchValueAsHex);
-    this.newLineMatchValueAsHex.apply();
-    this.newLinePlacementOnHexValue = configToLoad.newLinePlacementOnHexValue;
-    this.padValues = configToLoad.padValues;
-    this.paddingCharacter = configToLoad.paddingCharacter;
-
-    /**
-     * Set to -1 for automatic padding, which will pad up to the largest possible value
-     * for the selected number type.
-     */
-    this.numPaddingChars.setDispValue(configToLoad.numPaddingChars.toString());
-    this.numPaddingChars.apply();
-
-    // HEX SPECIFIC SETTINGS
-    this.numBytesPerHexNumber.setDispValue(configToLoad.numBytesPerHexNumber.toString());
-    this.numBytesPerHexNumber.apply();
-    this.hexCase = configToLoad.hexCase;
-    this.prefixHexValuesWith0x = configToLoad.prefixHexValuesWith0x;
-
-    // FLOAT SPECIFIC SETTINGS
-    this.floatStringConversionMethod = configToLoad.floatStringConversionMethod;
-    this.floatNumOfDecimalPlaces.setDispValue(configToLoad.floatNumOfDecimalPlaces.toString());
-    this.floatNumOfDecimalPlaces.apply();
-
-    // TIMESTAMPS SETTINGS
-    this.addTimestamps = configToLoad.addTimestamps;
-    this.timestampFormat = configToLoad.timestampFormat;
-    this.customTimestampFormatString.setDispValue(configToLoad.customTimestampFormatString);
-    this.customTimestampFormatString.apply();
-
-    // OTHER SETTINGS
-    this.showWarningOnRxBreakSignal = configToLoad.showWarningOnRxBreakSignal;
-  };
-
-  _saveConfig = () => {
-    // See `_isLoading`. Writing back mid-load would clobber the values still to be read.
-    if (this._isLoading) {
-      return;
-    }
-    const config = this.profileManager.appData.currentAppConfig.settings.rxSettings;
-    config.dataType = this.dataType;
-
-    // ASCII-SPECIFIC SETTINGS
-    config.ansiEscapeCodeParsingEnabled = this.ansiEscapeCodeParsingEnabled;
-    config.maxEscapeCodeLengthChars = this.maxEscapeCodeLengthChars.appliedValue;
-    config.showUnknownEscapeCodes = this.showUnknownEscapeCodes;
-    config.localTxEcho = this.localTxEcho;
-    config.newLineCursorBehavior = this.newLineCursorBehavior;
-    config.swallowNewLine = this.swallowNewLine;
-    config.carriageReturnCursorBehavior = this.carriageReturnCursorBehavior;
-    config.swallowCarriageReturn = this.swallowCarriageReturn;
-    config.backspaceBehavior = this.backspaceBehavior;
-    config.formFeedBehavior = this.formFeedBehavior;
-    config.characterEncoding = this.characterEncoding;
-    config.nonVisibleCharDisplayBehavior = this.nonVisibleCharDisplayBehavior;
-
-    // NUMBER-SPECIFIC SETTINGS
-    config.numberType = this.numberType;
-    config.endianness = this.endianness;
-    config.numberSeparator = this.numberSeparator.appliedValue;
-    config.preventValuesWrappingAcrossRows = this.preventValuesWrappingAcrossRows;
-    config.insertNewLineOnMatchedValue = this.insertNewLineOnMatchedValue;
-    config.newLineMatchValueAsHex = this.newLineMatchValueAsHex.appliedValue;
-    config.newLinePlacementOnHexValue = this.newLinePlacementOnHexValue;
-    config.padValues = this.padValues;
-    config.paddingCharacter = this.paddingCharacter;
-    config.numPaddingChars = this.numPaddingChars.appliedValue;
-
-    // HEX SPECIFIC SETTINGS
-    config.numBytesPerHexNumber = this.numBytesPerHexNumber.appliedValue;
-    config.hexCase = this.hexCase;
-    config.prefixHexValuesWith0x = this.prefixHexValuesWith0x;
-
-    // FLOAT SPECIFIC SETTINGS
-    config.floatStringConversionMethod = this.floatStringConversionMethod;
-    config.floatNumOfDecimalPlaces = this.floatNumOfDecimalPlaces.appliedValue;
-
-    // TIMESTAMPS SETTINGS
-    config.addTimestamps = this.addTimestamps;
-    config.timestampFormat = this.timestampFormat;
-    config.customTimestampFormatString = this.customTimestampFormatString.appliedValue;
-
-    // OTHER SETTINGS
-    config.showWarningOnRxBreakSignal = this.showWarningOnRxBreakSignal;
-
-    this.profileManager.saveAppData();
-  };
-
-  setDataType = (value: DataType) => {
-    this.dataType = value;
-    this._saveConfig();
-  };
-
-  //=================================================================
-  // ASCII-SPECIFIC SETTINGS
-  //=================================================================
-
-  setAnsiEscapeCodeParsingEnabled = (value: boolean) => {
-    this.ansiEscapeCodeParsingEnabled = value;
-    this._saveConfig();
-  };
-
-  setShowUnknownEscapeCodes = (value: boolean) => {
-    this.showUnknownEscapeCodes = value;
-    this._saveConfig();
-  };
-
-  setLocalTxEcho = (value: boolean) => {
-    this.localTxEcho = value;
-    this._saveConfig();
-  };
-
-  setNewLineCursorBehavior = (value: NewLineCursorBehavior) => {
-    this.newLineCursorBehavior = value;
-    this._saveConfig();
-  };
-
-  setSwallowNewLine = (value: boolean) => {
-    this.swallowNewLine = value;
-    this._saveConfig();
-  };
-
-  setCarriageReturnBehavior = (value: CarriageReturnCursorBehavior) => {
-    this.carriageReturnCursorBehavior = value;
-    this._saveConfig();
-  };
-
-  setSwallowCarriageReturn = (value: boolean) => {
-    this.swallowCarriageReturn = value;
-    this._saveConfig();
-  };
-
-  setBackspaceBehavior = (value: BackspaceBehavior) => {
-    this.backspaceBehavior = value;
-    this._saveConfig();
-  };
-
-  setFormFeedBehavior = (value: FormFeedBehavior) => {
-    this.formFeedBehavior = value;
-    this._saveConfig();
-  };
-
-  setCharacterEncoding = (value: CharacterEncoding) => {
-    this.characterEncoding = value;
-    this._saveConfig();
-  };
-
-  setNonVisibleCharDisplayBehavior = (value: NonVisibleCharDisplayBehaviors) => {
-    this.nonVisibleCharDisplayBehavior = value;
-    this._saveConfig();
-  };
-
-  //=================================================================
-  // NUMBER-SPECIFIC SETTINGS
-  //=================================================================
-
-  setNumberType = (value: NumberType) => {
-    this.numberType = value;
-    this._saveConfig();
-  }
-
-  setEndianness = (value: Endianness) => {
-    this.endianness = value;
-    this._saveConfig();
-  };
-
-  setPreventHexValuesWrappingAcrossRows = (value: boolean) => {
-    this.preventValuesWrappingAcrossRows = value;
-    this._saveConfig();
-  };
-
-  setInsertNewLineOnValue = (value: boolean) => {
-    this.insertNewLineOnMatchedValue = value;
-    this._saveConfig();
-  };
-
-  setNewLinePlacementOnValue = (value: NewLinePlacementOnHexValue) => {
-    this.newLinePlacementOnHexValue = value;
-    this._saveConfig();
-  };
-
-  setPadValues = (value: boolean) => {
-    this.padValues = value;
-    this._saveConfig();
-  }
-
-  setPaddingCharacter = (value: PaddingCharacter) => {
-    this.paddingCharacter = value;
-    this._saveConfig();
-  }
-
-  //=================================================================
-  // HEX SPECIFIC SETTINGS
-  //=================================================================
-
-  setHexCase = (value: HexCase) => {
-    this.hexCase = value;
-    this._saveConfig();
-  };
-
-  setPrefixHexValuesWith0x = (value: boolean) => {
-    this.prefixHexValuesWith0x = value;
-    this._saveConfig();
-  };
-
-  //=================================================================
-  // FLOAT SPECIFIC SETTINGS
-  //=================================================================
-
-  setFloatStringConversionMethod = (value: FloatStringConversionMethod) => {
-    this.floatStringConversionMethod = value;
-    this._saveConfig();
-  };
-
-  //=================================================================
-  // TIMESTAMP SETTINGS
-  //=================================================================
-
-  /**
-   * Enable/disable adding timestamps to the start of each line of received data.
-   * @param value True if timestamps should be added to the terminal, false otherwise.
-   */
-  setAddTimestamps = (value: boolean) => {
-    this.addTimestamps = value;
-    this._saveConfig();
-  };
-
-  setTimestampFormat = (value: TimestampFormat) => {
-    this.timestampFormat = value;
-    this._saveConfig();
-  };
-
-  //=================================================================
-  // OTHER SETTINGS
-  //=================================================================
-
-  setShowWarningOnRxBreakSignal = (value: boolean) => {
-    this.showWarningOnRxBreakSignal = value;
-    this._saveConfig();
-  };
-
-  /**
-   * Provides a descriptive name for the currently selected data type for the app
-   * to display in the toolbar.
-   * @returns The descriptive name as a string.
-   */
   getDataTypeNameForToolbarDisplay = () => {
     return RxSettings.computeDataTypeNameForToolbarDisplay(this.dataType, this.numberType);
   };

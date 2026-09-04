@@ -77,10 +77,10 @@ export class RttTransport implements Transport {
       const result = await window.electronAPI.rtt.connect({
         device: portConfig.rttDevice,
         interfaceType: portConfig.rttInterface as 'SWD' | 'JTAG',
-        speedKHz: portConfig.rttSpeedKHz,
+        speedKHz: portConfig.rttSpeedKHz.appliedValue,
         serverExePath: portConfig.rttServerExePath,
         jLinkSerialNumber: portConfig.rttJLinkSerialNumber,
-        channel: portConfig.rttChannel,
+        channel: portConfig.rttChannel.appliedValue,
       });
 
       if (!result.success) {

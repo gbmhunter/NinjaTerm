@@ -192,7 +192,7 @@ describe('SerialController', () => {
       // slowly and with a per-byte allocation.
       const app = new App();
       const conn: any = app.connController;
-        app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
+        app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
       // The serial transport owns the port path now.
       (conn.transports.get(ConnectionType.SERIAL_PORT) as any).portPath = 'COM1';
 

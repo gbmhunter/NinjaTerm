@@ -2,8 +2,9 @@ import { makeAutoObservable } from 'mobx';
 import { z } from 'zod';
 
 import SnackbarController from 'src/model/SnackbarController/SnackbarController';
-import { ApplyableTextField, ApplyableNumberField } from 'src/view/Components/ApplyableTextField';
 import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import type { GraphingSettingsData } from 'src/model/AppDataManager/DataClasses/GraphingSettingsData';
+import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
 class Point {
 	x: number = 0;
@@ -69,10 +70,19 @@ class Graphing {
 	appDataManager: AppDataManager;
 
 	/**
+	 * The persisted graphing settings — the only copy of each setting. See
+	 * `SettingsBranch`.
+	 */
+	private readonly branch = new SettingsBranch<GraphingSettingsData>('settings.graphingSettings', (c) => c.settings.graphingSettings);
+
+	/**
 	 * Whether or not graphing is enabled. If true, RX data will be parsed for
 	 * graphing data.
 	 */
-	graphingEnabled = false;
+	get graphingEnabled() {
+		return this.branch.data.graphingEnabled;
+	}
+	setGraphingEnabled = this.branch.setter('graphingEnabled');
 
 	/**
 	 * Array of colors to cycle through when no color is specified for traces.
@@ -112,21 +122,31 @@ class Graphing {
 		'Custom',
 	]
 
-	processingTrigger = this.processingTriggers[0];
+	get processingTrigger() {
+		return this.branch.data.processingTrigger;
+	}
+	setProcessingTrigger = this.branch.setter('processingTrigger');
 
 	/**
 	 * The detection mode determines how graphing data is parsed.
 	 * Basic Prefix Mode: Uses processing triggers and y= prefix (legacy)
 	 * Advanced Cmd Mode: Uses $NT:GPH: commands with ; termination
+	 *
+	 * Persisted as the enum's string value.
 	 */
-	detectionMode = DetectionMode.BASIC_PREFIX;
+	get detectionMode(): DetectionMode {
+		return this.branch.data.detectionMode as DetectionMode;
+	}
+	setDetectionMode = (mode: DetectionMode) => {
+		this.branch.set('detectionMode', mode);
+	};
 
 	/**
-	     * The maximum size of the receive buffer before it is cleared.
-	     */
-	maxBufferSize = new ApplyableNumberField('1000', z.coerce.number().int().min(1).max(10000));
+	 * The maximum size of the receive buffer before it is cleared.
+	 */
+	maxBufferSize = this.branch.applyableNumber('maxBufferSize', z.coerce.number().int().min(1).max(10000));
 
-	maxNumDataPoints = new ApplyableNumberField('500', z.coerce.number().int().min(1).max(2000));
+	maxNumDataPoints = this.branch.applyableNumber('maxNumDataPoints', z.coerce.number().int().min(1).max(2000));
 
 	xVarSources = [
 		'Received Time', // Received time since last reset
@@ -134,16 +154,22 @@ class Graphing {
 		'In Data', // X values extracted from data, just like y values
 	]
 
-	xVarSource = this.xVarSources[0]
+	get xVarSource() {
+		return this.branch.data.xVarSource;
+	}
+	setXVarSource = this.branch.setter('xVarSource');
 
-	xVarPrefix = new ApplyableTextField('x=', z.string());
+	xVarPrefix = this.branch.applyableText('xVarPrefix', z.string());
 
-	yVarPrefix = new ApplyableTextField('y=', z.string());
+	yVarPrefix = this.branch.applyableText('yVarPrefix', z.string());
 
 	/**
 	 * Whether multiple values per buffer are enabled
 	 */
-	multipleValuesPerBuffer = false;
+	get multipleValuesPerBuffer() {
+		return this.branch.data.multipleValuesPerBuffer;
+	}
+	setMultipleValuesPerBuffer = this.branch.setter('multipleValuesPerBuffer');
 
 	valueSeparators = [
 		'Comma (,)',
@@ -151,40 +177,62 @@ class Graphing {
 		'Custom',
 	]
 
-	valueSeparator = this.valueSeparators[0];
+	get valueSeparator() {
+		return this.branch.data.valueSeparator;
+	}
+	setValueSeparator = this.branch.setter('valueSeparator');
 
-	customValueSeparator = new ApplyableTextField(',', z.string());
+	customValueSeparator = this.branch.applyableText('customValueSeparator', z.string());
 
 	/**
 	 * Whether to clear existing plot data when new values arrive.
 	 * Only applicable when multipleValuesPerBuffer is enabled.
 	 */
-	clearPlotOnNewValues = true;
+	get clearPlotOnNewValues() {
+		return this.branch.data.clearPlotOnNewValues;
+	}
+	setClearPlotOnNewValues = this.branch.setter('clearPlotOnNewValues');
 
 	axisRangeModes = [
 		'Auto',
 		'Fixed',
 	]
 
-	xAxisRangeMode = this.axisRangeModes[0];
+	get xAxisRangeMode() {
+		return this.branch.data.xAxisRangeMode;
+	}
+	setXAxisRangeMode = this.branch.setter('xAxisRangeMode');
 
-	xAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
+	/**
+	 * Each max field validates against its applied min, so a change to a min
+	 * re-validates the max (`_onMinRangeChanged`). Declaration order matters:
+	 * on a reload the fields are re-seeded in this order, min before max.
+	 */
+	xAxisRangeMin = this.branch.applyableNumber('xAxisRangeMin', z.coerce.number(), () => this._onMinRangeChanged());
 
-	xAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+	xAxisRangeMax = this.branch.applyableNumber('xAxisRangeMax', z.coerce.number().refine(
 		(val) => val > this.xAxisRangeMin.appliedValue,
 		{ message: "Maximum must be greater than minimum" }
 	));
 
-	yAxisRangeMode = this.axisRangeModes[0];
+	get yAxisRangeMode() {
+		return this.branch.data.yAxisRangeMode;
+	}
+	setYAxisRangeMode = this.branch.setter('yAxisRangeMode');
 
-	yAxisRangeMin = new ApplyableNumberField('0', z.coerce.number());
+	yAxisRangeMin = this.branch.applyableNumber('yAxisRangeMin', z.coerce.number(), () => this._onMinRangeChanged());
 
-	yAxisRangeMax = new ApplyableNumberField('100', z.coerce.number().refine(
+	yAxisRangeMax = this.branch.applyableNumber('yAxisRangeMax', z.coerce.number().refine(
 		(val) => val > this.yAxisRangeMin.appliedValue,
 		{ message: "Maximum must be greater than minimum" }
 	));
 
-	xVarUnit = 's';
+	/**
+	 * Unit shown for the X variable. Persisted, but nothing sets it yet.
+	 */
+	get xVarUnit() {
+		return this.branch.data.xVarUnit;
+	}
 
 	/**
 	 * Holds data that has been received but no data separator has been found yet.
@@ -208,67 +256,9 @@ class Graphing {
 	constructor(snackbar: SnackbarController, appDataManager: AppDataManager) {
 		this.snackbar = snackbar;
 		this.appDataManager = appDataManager;
+		this.branch.attach(appDataManager);
 
-		// Set up callbacks to save config when ApplyableTextField/ApplyableNumberField values change
-		this.maxBufferSize.setOnApplyChanged(() => this._saveConfig());
-		this.maxNumDataPoints.setOnApplyChanged(() => this._saveConfig());
-		this.xVarPrefix.setOnApplyChanged(() => this._saveConfig());
-		this.yVarPrefix.setOnApplyChanged(() => this._saveConfig());
-		this.customValueSeparator.setOnApplyChanged(() => this._saveConfig());
-		this.xAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
-		this.xAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
-		this.yAxisRangeMin.setOnApplyChanged(() => this._onMinRangeChanged());
-		this.yAxisRangeMax.setOnApplyChanged(() => this._saveConfig());
-
-		// Load initial settings
-		this._loadConfig();
-
-		// Register callback to load settings when profile changes
-		this.appDataManager.registerOnConfigReload(['settings.graphingSettings'], this._loadConfig);
-
-		// this.graphData.push({ x: 0, y: 0 });
-		// this.graphData.push({ x: 10, y: 10 });
-		makeAutoObservable(this);
-	}
-
-	setGraphingEnabled = (graphingEnabled: boolean) => {
-		this.graphingEnabled = graphingEnabled;
-		this._saveConfig();
-	}
-
-	setProcessingTrigger = (value: string) => {
-		this.processingTrigger = value;
-		this._saveConfig();
-	}
-
-	setXVarSource = (value: string) => {
-		this.xVarSource = value;
-		this._saveConfig();
-	}
-
-	setXAxisRangeMode = (value: string) => {
-		this.xAxisRangeMode = value;
-		this._saveConfig();
-	}
-
-	setYAxisRangeMode = (value: string) => {
-		this.yAxisRangeMode = value;
-		this._saveConfig();
-	}
-
-	setMultipleValuesPerBuffer = (value: boolean) => {
-		this.multipleValuesPerBuffer = value;
-		this._saveConfig();
-	}
-
-	setValueSeparator = (value: string) => {
-		this.valueSeparator = value;
-		this._saveConfig();
-	}
-
-	setClearPlotOnNewValues = (value: boolean) => {
-		this.clearPlotOnNewValues = value;
-		this._saveConfig();
+		makeAutoObservable<Graphing, 'branch'>(this, { branch: false });
 	}
 
 	/**
@@ -284,11 +274,6 @@ class Graphing {
 			default:
 				return '\n'; // Default to LF
 		}
-	}
-
-	setDetectionMode = (mode: DetectionMode) => {
-		this.detectionMode = mode;
-		this._saveConfig();
 	}
 
 	/**
@@ -967,75 +952,15 @@ class Graphing {
 		}
 	}
 
-	_saveConfig = () => {
-		const config = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
-
-		config.graphingEnabled = this.graphingEnabled;
-		config.processingTrigger = this.processingTrigger;
-		config.maxBufferSize = this.maxBufferSize.appliedValue.toString();
-		config.maxNumDataPoints = this.maxNumDataPoints.appliedValue.toString();
-		config.xVarSource = this.xVarSource;
-		config.xVarPrefix = this.xVarPrefix.appliedValue;
-		config.yVarPrefix = this.yVarPrefix.appliedValue;
-		config.multipleValuesPerBuffer = this.multipleValuesPerBuffer;
-		config.valueSeparator = this.valueSeparator;
-		config.customValueSeparator = this.customValueSeparator.appliedValue;
-		config.clearPlotOnNewValues = this.clearPlotOnNewValues;
-		config.xAxisRangeMode = this.xAxisRangeMode;
-		config.xAxisRangeMin = this.xAxisRangeMin.appliedValue.toString();
-		config.xAxisRangeMax = this.xAxisRangeMax.appliedValue.toString();
-		config.yAxisRangeMode = this.yAxisRangeMode;
-		config.yAxisRangeMin = this.yAxisRangeMin.appliedValue.toString();
-		config.yAxisRangeMax = this.yAxisRangeMax.appliedValue.toString();
-		config.xVarUnit = this.xVarUnit;
-		config.detectionMode = this.detectionMode;
-
-		this.appDataManager.saveAppData();
-	};
-
-	_loadConfig = () => {
-		const configToLoad = this.appDataManager.appData.currentAppConfig.settings.graphingSettings;
-
-		this.graphingEnabled = configToLoad.graphingEnabled;
-		this.processingTrigger = configToLoad.processingTrigger;
-		this.maxBufferSize.setDispValue(configToLoad.maxBufferSize);
-		this.maxBufferSize.apply({notify: false});
-		this.maxNumDataPoints.setDispValue(configToLoad.maxNumDataPoints);
-		this.maxNumDataPoints.apply({notify: false});
-		this.xVarSource = configToLoad.xVarSource;
-		this.xVarPrefix.setDispValue(configToLoad.xVarPrefix);
-		this.xVarPrefix.apply({notify: false});
-		this.yVarPrefix.setDispValue(configToLoad.yVarPrefix);
-		this.yVarPrefix.apply({notify: false});
-		this.multipleValuesPerBuffer = configToLoad.multipleValuesPerBuffer;
-		this.valueSeparator = configToLoad.valueSeparator;
-		this.customValueSeparator.setDispValue(configToLoad.customValueSeparator);
-		this.customValueSeparator.apply({notify: false});
-		this.clearPlotOnNewValues = configToLoad.clearPlotOnNewValues;
-		this.xAxisRangeMode = configToLoad.xAxisRangeMode;
-		this.xAxisRangeMin.setDispValue(configToLoad.xAxisRangeMin);
-		this.xAxisRangeMin.apply({notify: false});
-		this.xAxisRangeMax.setDispValue(configToLoad.xAxisRangeMax);
-		this.xAxisRangeMax.apply({notify: false});
-		this.yAxisRangeMode = configToLoad.yAxisRangeMode;
-		this.yAxisRangeMin.setDispValue(configToLoad.yAxisRangeMin);
-		this.yAxisRangeMin.apply({notify: false});
-		this.yAxisRangeMax.setDispValue(configToLoad.yAxisRangeMax);
-		this.yAxisRangeMax.apply({notify: false});
-		this.xVarUnit = configToLoad.xVarUnit;
-
-		// Load detection mode with fallback to Basic Prefix Mode for backward compatibility
-		this.detectionMode = (configToLoad.detectionMode as DetectionMode) || DetectionMode.BASIC_PREFIX;
-	};
-
-	_onMinRangeChanged = () => {
-		// When min values change, re-validate the max fields by re-running their validation
+	/**
+	 * The max fields' schemas refine against the applied min values, so a change
+	 * to a min re-runs the max validation. The branch has already persisted the
+	 * new min by the time this runs.
+	 */
+	private _onMinRangeChanged() {
 		this.xAxisRangeMax.setDispValue(this.xAxisRangeMax.dispValue);
 		this.yAxisRangeMax.setDispValue(this.yAxisRangeMax.dispValue);
-
-		// Save config
-		this._saveConfig();
-	};
+	}
 }
 
 export default Graphing;
