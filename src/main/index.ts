@@ -158,6 +158,37 @@ function createWindow(): void {
   // Maximize the window (by default it starts of at a small size)
   mainWindow.maximize();
 
+  // Nothing in NinjaTerm should open a window *inside* the app. Electron's
+  // default is to create one that inherits this window's webPreferences —
+  // including the preload — which would put `window.electronAPI` (arbitrary
+  // file writes, serial control, the MCP server) in front of whatever site was
+  // linked.
+  //
+  // There are two `target="_blank"` links in the UI: the Moment.js format docs
+  // in RX Settings, and the Ko-fi button (whose markup comes from the
+  // `kofi-button` package, so it can't be routed through `shell.openExternal`
+  // at the call site the way the manual links are). Both belong in the user's
+  // own browser.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      log.warn('Blocked window.open for an unparseable URL: ', url);
+      return { action: 'deny' };
+    }
+    // Only hand http(s) to the OS. `shell.openExternal` will happily launch a
+    // `file://` or `smb://` URL with the system's default handler.
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+      shell.openExternal(url).catch((err) => {
+        log.error('Failed to open external URL: ', url, ' err=', err);
+      });
+    } else {
+      log.warn('Blocked window.open for a non-http(s) URL: ', url);
+    }
+    return { action: 'deny' };
+  });
+
   // Load the app
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
@@ -223,9 +254,15 @@ app.whenReady().then(async () => {
     console.log('Detected CI environment. Bluetooth service not loaded.');
   }
 
-  installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
-    .then((ext) => console.log(`Added Extension:  ${ext.name}`))
-    .catch((err) => console.log('An error occurred: ', err));
+  // Development only. This used to run unconditionally, so every launch of a
+  // packaged build fetched an extension from Google's CDN and installed it into
+  // the app with file access — a startup network round-trip, a phone-home, and
+  // a supply-chain dependency, none of which a shipped build should have.
+  if (!app.isPackaged) {
+    installExtension(REACT_DEVELOPER_TOOLS, { loadExtensionOptions: { allowFileAccess: true } })
+      .then((ext) => console.log(`Added Extension:  ${ext.name}`))
+      .catch((err) => console.log('An error occurred: ', err));
+  }
 
   // Start auto-updater after app is ready and window is created
   // Only check for updates in production builds
