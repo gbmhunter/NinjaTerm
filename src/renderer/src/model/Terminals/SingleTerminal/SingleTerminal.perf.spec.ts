@@ -14,10 +14,21 @@ import { HighlightScope } from 'src/model/AppDataManager/DataClasses/HighlightRu
  *
  * The *number* printed to stdout (MB/s) is what matters — run before and after
  * a perf change and compare, and record it in
- * `performance-profiles/THROUGHPUT_BASELINES.md`. The assertion floors are
- * catastrophe guards, not regression detectors: the parse scenarios are only
- * ~1.5x apart between the current and previous row model, so no floor can both
- * pass reliably and detect a regression of that size.
+ * `performance-profiles/THROUGHPUT_BASELINES.md`.
+ *
+ * The parse floors below are **catastrophe guards, not regression detectors**,
+ * and are set deliberately low. Two facts force that:
+ *
+ *  - The current and previous row models are only ~1.5x apart, so no floor can
+ *    both pass reliably and catch a regression of that size. Pretending
+ *    otherwise just produces a flaky test.
+ *  - A loaded machine is easily 2-3x slower than an idle one. plain-ASCII has
+ *    been seen at 0.064 MB/s during a parallel build having measured 0.146
+ *    moments earlier, which tripped a 0.07 floor for no reason.
+ *
+ * So they are pitched to catch a *collapse* — the Array.shift() O(n^2) bug
+ * measured 0.010 MB/s — and nothing finer. Only a human comparing the recorded
+ * numbers catches a real regression.
  *
  * The remaining hot spots, in rough order of cost:
  *   - `String.fromCharCode` + `chars.push` per byte in `TerminalRow.appendChar`
@@ -80,12 +91,9 @@ describe('SingleTerminal parsing throughput', () => {
     const payload = new TextEncoder().encode(text);
 
     const mbPerSec = measure('plain-ASCII', payload, 4);
-    // Loose floor — the printed number is the metric, this just guards
-    // against catastrophic regressions (e.g. an O(n^2) loop creeping back in).
-    // 0.07 not 0.1: a slow GitHub-hosted windows-latest runner clocked 0.0997
-    // MB/s — within noise of a healthy ~0.15 MB/s baseline but enough to flake
-    // a 0.1 floor.
-    expect(mbPerSec).toBeGreaterThan(0.07);
+    // Healthy is ~0.15 idle, ~0.13 on CI's slowest runner. See the header for
+    // why this floor sits so far below that.
+    expect(mbPerSec).toBeGreaterThan(0.04);
   }, 30_000);
 
   test('large single chunk (stresses Array.shift O(n^2))', () => {
@@ -98,9 +106,9 @@ describe('SingleTerminal parsing throughput', () => {
     const payload = new TextEncoder().encode(text);
 
     const mbPerSec = measure('large-single-chunk-256KB', payload, 1);
-    // This scenario is the canary for an Array.shift O(n^2) regression.
-    // Pre-fix throughput was ~0.010 MB/s; current floor ≈0.15 MB/s.
-    expect(mbPerSec).toBeGreaterThan(0.08);
+    // The canary for an Array.shift O(n^2) regression, which measured 0.010
+    // MB/s. Healthy is ~0.19, so 0.04 still separates the two clearly.
+    expect(mbPerSec).toBeGreaterThan(0.04);
   }, 30_000);
 
   test('ANSI-heavy stream (color escape codes)', () => {
@@ -110,11 +118,9 @@ describe('SingleTerminal parsing throughput', () => {
     const payload = new TextEncoder().encode(text);
 
     const mbPerSec = measure('ansi-heavy', payload, 4);
-    // 0.07, matching plain-ASCII, for the same reason: this scenario has been
-    // observed as low as 0.083 MB/s on a loaded dev machine, so the old 0.1
-    // floor was already failing intermittently. CI's slowest runner
-    // (ubuntu-latest, not windows) clocked 0.133.
-    expect(mbPerSec).toBeGreaterThan(0.07);
+    // Healthy is ~0.15 idle, 0.133 on CI's slowest runner (ubuntu-latest, not
+    // windows as the older comments here assumed).
+    expect(mbPerSec).toBeGreaterThan(0.04);
   }, 30_000);
 
   test('timestamps enabled (per-line moment formatting)', () => {
@@ -127,9 +133,10 @@ describe('SingleTerminal parsing throughput', () => {
     const payload = new TextEncoder().encode(text);
 
     const mbPerSec = measure('timestamps-many-short-lines', payload, 4);
-    // Pre-cache throughput was ~0.020 MB/s; current floor ≈0.025 MB/s. The
-    // floor is loose because variance on this scenario is real (±20%).
-    expect(mbPerSec).toBeGreaterThan(0.015);
+    // Healthy is ~0.034 idle, 0.027 on CI's slowest runner. Scaled to keep the
+    // same ~4x headroom as the other parse scenarios — the old 0.015 was only
+    // ~1.8x below the CI number, which is not enough under load.
+    expect(mbPerSec).toBeGreaterThan(0.008);
   }, 30_000);
 });
 
