@@ -25,8 +25,6 @@ export default class Terminals {
 
   rightDrawer: RightDrawer;
 
-  showRightDrawer = true;
-
   constructor(app: App) {
     this.app = app;
 
@@ -36,11 +34,6 @@ export default class Terminals {
     this.rxTerminal = new SingleTerminal('rx-terminal', false, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer, this.filterController);
     this.txTerminal = new SingleTerminal('tx-terminal', true, app.settings.rxSettings, app.settings.displaySettings, app.snackbar, app.handleTerminalKeyDown, app.settings.rulesSettings, app.soundPlayer);
     this.rightDrawer = new RightDrawer(app);
-
-    this._loadConfig();
-    this.app.profileManager.registerOnConfigReload(['terminal.rightDrawer'], () => {
-      this._loadConfig();
-    });
 
     makeAutoObservable(this, {
       activeTerminal: computed,
@@ -61,19 +54,15 @@ export default class Terminals {
     return this.txRxTerminal;
   }
 
-  setShowRightDrawer(show: boolean) {
-    this.showRightDrawer = show;
-    this._saveConfig();
+  /**
+   * Whether the right drawer is shown. The setting lives with the drawer
+   * (`RightDrawerConfig`); this is kept here for its existing callers.
+   */
+  get showRightDrawer() {
+    return this.rightDrawer.showRightDrawer;
   }
 
-  _saveConfig = () => {
-    const config = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
-    config.showRightDrawer = this.showRightDrawer;
-    this.app.profileManager.saveAppData();
-  };
-
-  _loadConfig = () => {
-    const configToLoad = this.app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
-    this.showRightDrawer = configToLoad.showRightDrawer;
-  };
+  setShowRightDrawer(show: boolean) {
+    this.rightDrawer.setShowRightDrawer(show);
+  }
 }

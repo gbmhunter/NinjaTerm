@@ -2,7 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { z } from 'zod';
 
 import { App } from 'src/model/App';
-import { ApplyableTextField } from 'src/view/Components/ApplyableTextField';
+import type { LogSettingsData } from 'src/model/AppDataManager/DataClasses/LogSettingsData';
+import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
 export enum WhatToNameTheFile {
   CURRENT_DATETIME,
@@ -21,9 +22,65 @@ export default class Logging {
   app: App;
 
   /**
-   * If dirPath is null, then no directory has been selected yet.
+   * The persisted log settings — the only copy of each setting. See
+   * `SettingsBranch`.
+   *
+   * There is deliberately no "ignore reloads while logging" guard any more.
+   * The settings a running log depends on (directory, file name,
+   * existing-file behaviour) are read once in `startLogging`, and the two read
+   * live (`logRawTxData`/`logRawRxData`) are ones a user applying a preset
+   * would expect to take effect.
    */
-  dirPath: string | null = null;
+  private readonly branch = new SettingsBranch<LogSettingsData>('settings.logSettings', (c) => c.settings.logSettings);
+
+  /**
+   * Directory log files are written to. Null only until the platform default
+   * has been fetched from the main process (see `_useDefaultLogDirectoryIfUnset`).
+   */
+  get dirPath(): string | null {
+    return this.branch.data.logDirectory;
+  }
+  setDirPath = this.branch.setter('logDirectory');
+
+  /**
+   * File name used when `whatToNameTheFile` is CUSTOM.
+   */
+  customFileName = this.branch.applyableText(
+    'customFileName',
+    z.string().min(1).regex(new RegExp(/^[\w,\s.-]+$/), 'Filename should contain only alphanumeric characters, spaces, periods, and dashes.'),
+  );
+
+  /**
+   * What naming scheme to use for log files.
+   */
+  get whatToNameTheFile() {
+    return this.branch.data.whatToNameTheFile;
+  }
+  setWhatToNameTheFile = this.branch.setter('whatToNameTheFile');
+
+  /**
+   * How to handle existing files when logging is started.
+   */
+  get existingFileBehavior() {
+    return this.branch.data.existingFileBehavior;
+  }
+  setExistingFileBehavior = this.branch.setter('existingFileBehavior');
+
+  /**
+   * Whether to log raw transmitted data to the log file.
+   */
+  get logRawTxData() {
+    return this.branch.data.logRawTxData;
+  }
+  setLogRawTxData = this.branch.setter('logRawTxData');
+
+  /**
+   * Whether to log raw received data to the log file.
+   */
+  get logRawRxData() {
+    return this.branch.data.logRawRxData;
+  }
+  setLogRawRxData = this.branch.setter('logRawRxData');
 
   /**
    * Full path to the active log file when logging is in progress.
@@ -65,32 +122,6 @@ export default class Logging {
    */
   private writeChain: Promise<void> = Promise.resolve();
 
-  /**
-   * ApplyableTextField for custom filename. Initialized from profile data.
-   */
-  customFileName!: ApplyableTextField;
-
-  /**
-   * What naming scheme to use for log files. This is a cached observable copy
-   * of the value stored in the profile.
-   */
-  whatToNameTheFile: WhatToNameTheFile = WhatToNameTheFile.CURRENT_DATETIME;
-
-  /**
-   * How to handle existing files when logging is started.
-   */
-  existingFileBehavior: ExistingFileBehaviors = ExistingFileBehaviors.APPEND;
-
-  /**
-   * Whether to log raw transmitted data to the log file.
-   */
-  logRawTxData: boolean = false;
-
-  /**
-   * Whether to log raw received data to the log file.
-   */
-  logRawRxData: boolean = true;
-
   activeFilename: string | null = null;
 
   numBytesWritten: number | null = null;
@@ -99,70 +130,43 @@ export default class Logging {
 
   constructor(app: App) {
     this.app = app;
+    this.branch.attach(app.profileManager);
 
-    makeAutoObservable(this, {
+    makeAutoObservable<Logging, 'branch' | 'bufferedChunks' | 'bufferedByteCount' | 'writeChain'>(this, {
+      branch: false,
       // The write buffer is imperative plumbing, not UI state — nothing
       // outside this class reads it, and making it observable is what put a
       // change notification on every received byte.
       bufferedChunks: false,
       bufferedByteCount: false,
       writeChain: false,
-    } as any);
+    });
 
-    // Initialize logging settings from profile
-    this.initializeFromProfile();
-
-    // Register for profile changes to update log directory when profiles are switched
-    this.app.profileManager.registerOnConfigReload(['settings.logSettings'], () => {
-      this.onProfileChanged();
+    // A config with no log directory (first run, or a preset that never set
+    // one) gets the platform default — now, and after any reload that leaves
+    // it empty.
+    void this._useDefaultLogDirectoryIfUnset();
+    app.profileManager.registerOnConfigReload(['settings.logSettings'], () => {
+      void this._useDefaultLogDirectoryIfUnset();
     });
   }
 
   /**
-   * Initializes all logging settings from the current profile config.
+   * Fills in the log directory from the main process's default when the config
+   * has none, and persists it so it is remembered.
    */
-  private async initializeFromProfile() {
+  private async _useDefaultLogDirectoryIfUnset() {
+    if (this.dirPath) {
+      return;
+    }
     try {
-      const logSettings = this.app.profileManager.appData.currentAppConfig.settings.logSettings;
-
-      // Initialize all logging properties from profile
-      runInAction(() => {
-        this.whatToNameTheFile = logSettings.whatToNameTheFile;
-        this.existingFileBehavior = logSettings.existingFileBehavior;
-        this.logRawTxData = logSettings.logRawTxData;
-        this.logRawRxData = logSettings.logRawRxData;
-      });
-
-      // Initialize the ApplyableTextField for custom filename
-      this.customFileName = new ApplyableTextField(
-        logSettings.customFileName,
-        z.string().min(1).regex(new RegExp(/^[\w,\s.-]+$/), 'Filename should contain only alphanumeric characters, spaces, periods, and dashes.'),
-      );
-
-      // Set up a listener to save custom filename changes back to profile
-      this.customFileName.setOnApplyChanged(() => {
-        this.saveSettingsToProfile();
-      });
-
-      // Initialize log directory
-      if (logSettings.logDirectory) {
-        // Use the directory from the profile
-        runInAction(() => {
-          this.dirPath = logSettings.logDirectory!;
-        });
-      } else {
-        // No directory set in profile, use and save the default
-        const result = await window.electronAPI.fs.getDefaultLogDirectory();
-        if (result.success && result.path) {
-          runInAction(() => {
-            this.dirPath = result.path!;
-          });
-          // Save the default directory to the profile so it's remembered
-          this.saveSettingsToProfile();
-        }
+      const result = await window.electronAPI.fs.getDefaultLogDirectory();
+      // Re-check: the user may have picked a directory while this was in flight.
+      if (result.success && result.path && !this.dirPath) {
+        this.setDirPath(result.path);
       }
     } catch (error) {
-      console.error('Failed to initialize logging settings from profile:', error);
+      console.error('Failed to get the default log directory:', error);
     }
   }
 
@@ -175,36 +179,12 @@ export default class Logging {
       const result = await window.electronAPI.fs.selectDirectory();
 
       if (result.success && result.path) {
-        runInAction(() => {
-          this.dirPath = result.path!;
-        });
-        // Save all settings to the current profile
-        this.saveSettingsToProfile();
+        this.setDirPath(result.path);
       }
       // If canceled, result.canceled will be true, but we don't need to handle it
     } catch (e) {
       console.error('Failed to open directory picker:', e);
     }
-  }
-
-  setWhatToNameTheFile(value: WhatToNameTheFile) {
-    this.whatToNameTheFile = value;
-    this.saveSettingsToProfile();
-  }
-
-  setExistingFileBehavior(value: ExistingFileBehaviors) {
-    this.existingFileBehavior = value;
-    this.saveSettingsToProfile();
-  }
-
-  setLogRawTxData(value: boolean) {
-    this.logRawTxData = value;
-    this.saveSettingsToProfile();
-  }
-
-  setLogRawRxData(value: boolean) {
-    this.logRawRxData = value;
-    this.saveSettingsToProfile();
   }
 
   get canStartStopLogging() {
@@ -389,37 +369,5 @@ export default class Logging {
       this.numBytesWritten = null;
       this.fileSizeBytes = null;
     });
-  }
-
-  /**
-   * Called when a profile is changed/loaded. Updates all logging settings from the new profile.
-   */
-  private async onProfileChanged() {
-    // Don't change settings if currently logging, as this could cause issues
-    if (this.isLogging) {
-      console.log('Profile changed while logging is active. Logging settings will not be changed.');
-      return;
-    }
-
-    // Reinitialize all settings from the new profile
-    await this.initializeFromProfile();
-  }
-
-  /**
-   * Saves all logging settings to the current profile config.
-   */
-  private saveSettingsToProfile() {
-    const logSettings = this.app.profileManager.appData.currentAppConfig.settings.logSettings;
-
-    // Update all logging settings
-    logSettings.logDirectory = this.dirPath;
-    logSettings.whatToNameTheFile = this.whatToNameTheFile;
-    logSettings.existingFileBehavior = this.existingFileBehavior;
-    logSettings.logRawTxData = this.logRawTxData;
-    logSettings.logRawRxData = this.logRawRxData;
-    logSettings.customFileName = this.customFileName.appliedValue;
-
-    // Save to storage
-    this.app.profileManager.saveAppData();
   }
 }

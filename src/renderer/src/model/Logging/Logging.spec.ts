@@ -35,9 +35,10 @@ describe('Logging', () => {
     window.localStorage.clear();
     app = new App();
     logging = app.logging;
-    // `initializeFromProfile` is async and fire-and-forget from the
-    // constructor; set the directory directly so tests don't race it.
-    logging.dirPath = '/logs';
+    // The constructor fetches the default log directory asynchronously and
+    // only fills it in if none is set by the time it resolves, so setting one
+    // here is not raced.
+    logging.setDirPath('/logs');
     await logging.startLogging();
     // Drop the writeFile call that OVERWRITE mode may have made, so each test
     // sees only its own writes.

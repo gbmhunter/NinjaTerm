@@ -30,6 +30,7 @@ import { TxMode } from '../Settings/TxSettings/TxSettings';
 import { DEFAULT_BACKGROUND_COLOR, DEFAULT_TX_COLOR, DEFAULT_RX_COLOR } from './DataClasses/DisplaySettingsData';
 import { LATEST_VERSION } from './DataClasses/AppData';
 import { makeDefaultHighlightRules } from './DataClasses/HighlightRuleData';
+import { GraphingSettingsData } from './DataClasses/GraphingSettingsData';
 
 // --------------------------------------------------------------------------
 // Types
@@ -122,11 +123,12 @@ type MigrationTxSettings = {
 };
 
 type MigrationGraphingSettings = {
-  // v3->v4 (added wholesale)
+  // v3->v4 (added wholesale). The six numeric fields were strings until
+  // v24->v25 converted them.
   graphingEnabled?: boolean;
   processingTrigger?: string;
-  maxBufferSize?: string;
-  maxNumDataPoints?: string;
+  maxBufferSize?: string | number;
+  maxNumDataPoints?: string | number;
   xVarSource?: string;
   xVarPrefix?: string;
   yVarPrefix?: string;
@@ -135,11 +137,11 @@ type MigrationGraphingSettings = {
   customValueSeparator?: string;
   clearPlotOnNewValues?: boolean;
   xAxisRangeMode?: string;
-  xAxisRangeMin?: string;
-  xAxisRangeMax?: string;
+  xAxisRangeMin?: string | number;
+  xAxisRangeMax?: string | number;
   yAxisRangeMode?: string;
-  yAxisRangeMin?: string;
-  yAxisRangeMax?: string;
+  yAxisRangeMin?: string | number;
+  yAxisRangeMax?: string | number;
   xVarUnit?: string;
   detectionMode?: string;
   // v5->v6 (renamed to processingTrigger)
@@ -214,6 +216,8 @@ type MigrationTerminal = {
   macroController?: MigrationMacroController;
   rightDrawer?: {
     flowControlIsExpanded?: boolean;
+    // Dead per-branch version field, removed in v24->v25.
+    version?: number;
   };
   // v18->v19 (added) — list of view filters. Loose shape; the runtime
   // `TerminalFilterData` owns the canonical fields.
@@ -760,6 +764,46 @@ function migrateV23toV24(appData: MigrationAppData): void {
   appData.version = 24;
 }
 
+/** The graphing settings that were persisted as strings until v25. */
+const GRAPHING_NUMERIC_KEYS = [
+  'maxBufferSize',
+  'maxNumDataPoints',
+  'xAxisRangeMin',
+  'xAxisRangeMax',
+  'yAxisRangeMin',
+  'yAxisRangeMax',
+] as const;
+
+function migrateV24toV25(appData: MigrationAppData): void {
+  // Graphing's numeric settings were stored as strings ('1000', '0') -- the
+  // only place in the tree that did so -- because the runtime parsed them on
+  // load and stringified them on save. The persisted object is now the only
+  // copy of each setting (see SettingsBranch), so they are stored as numbers
+  // like every other numeric setting. Anything unparseable takes the default.
+  const defaults = new GraphingSettingsData();
+  forEachPresetConfig(appData, (rootConfig) => {
+    const graphingSettings = rootConfig.settings?.graphingSettings;
+    if (graphingSettings !== undefined) {
+      for (const key of GRAPHING_NUMERIC_KEYS) {
+        const value = graphingSettings[key];
+        if (typeof value === 'string') {
+          const parsed = Number(value);
+          graphingSettings[key] = value.trim() !== '' && Number.isFinite(parsed) ? parsed : defaults[key];
+        }
+      }
+    }
+
+    // The right drawer carried its own `version` field from before the
+    // app-wide migrations existed; nothing has read it since. Drop it, as an
+    // earlier migration did for `macroController.version`.
+    if (rootConfig.terminal?.rightDrawer !== undefined) {
+      delete rootConfig.terminal.rightDrawer.version;
+    }
+  });
+
+  appData.version = 25;
+}
+
 /**
  * Ordered table of migrations. Each entry knows the version it consumes; the
  * loop in `migrateAppData` runs them in order while the data's version is
@@ -790,6 +834,7 @@ const MIGRATIONS: ReadonlyArray<{ from: number; apply: (appData: MigrationAppDat
   { from: 21, apply: migrateV21toV22 },
   { from: 22, apply: migrateV22toV23 },
   { from: 23, apply: migrateV23toV24 },
+  { from: 24, apply: migrateV24toV25 },
 ];
 
 // --------------------------------------------------------------------------

@@ -1,16 +1,13 @@
 import { makeAutoObservable } from 'mobx';
 import { MacroController } from './Macros/MacroController';
 import { App } from 'src/model/App';
-import { AppDataManager } from 'src/model/AppDataManager/AppDataManager';
+import { SettingsBranch } from 'src/model/Settings/SettingsBranch';
 
+/**
+ * Persisted right-drawer state. Everything in this class must be POD and
+ * serializable to JSON.
+ */
 export class RightDrawerConfig {
-  /**
-   * Increment this version number if you need to update this data in this class.
-   * This will cause the app to ignore whatever is in local storage and use the defaults,
-   * updating to this new version.
-   */
-  version = 1;
-
   showRightDrawer = true;
 
   rightDrawerWidth_px = 400;
@@ -25,83 +22,57 @@ export class RightDrawerConfig {
 }
 
 export default class RightDrawer {
-
-  profileManager: AppDataManager;
   macroController: MacroController;
 
-  drawerWidth_px = 400;
+  /**
+   * The persisted drawer state — the only copy of each setting. See
+   * `SettingsBranch`. `Terminals.showRightDrawer` reads through to this same
+   * branch.
+   */
+  private readonly branch = new SettingsBranch<RightDrawerConfig>('terminal.rightDrawer', (c) => c.terminal.rightDrawer);
 
-  quickPortSettingsIsExpanded = false;
-  otherQuickSettingsIsExpanded = false;
-  macrosIsExpanded = false;
-  flowControlIsExpanded = false;
-  constructor(app: App) {
-
-    this.profileManager = app.profileManager;
-    this.macroController = new MacroController(app);
-    this._loadConfig();
-    this.profileManager.registerOnConfigReload(['terminal.rightDrawer'], () => {
-      this._loadConfig();
-    });
-
-    makeAutoObservable(this); // Make sure this near the end
+  get showRightDrawer() {
+    return this.branch.data.showRightDrawer;
   }
+  setShowRightDrawer = this.branch.setter('showRightDrawer');
 
-  handleQuickPortSettingsAccordionChange =  (event: React.SyntheticEvent, isExpanded: boolean) => {
-    this.quickPortSettingsIsExpanded = isExpanded;
-    this._saveConfig();
+  get drawerWidth_px() {
+    return this.branch.data.rightDrawerWidth_px;
+  }
+  setDrawerWidth = this.branch.setter('rightDrawerWidth_px');
+
+  get quickPortSettingsIsExpanded() {
+    return this.branch.data.quickPortSettingsIsExpanded;
+  }
+  handleQuickPortSettingsAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    this.branch.set('quickPortSettingsIsExpanded', isExpanded);
   };
 
-  handleOtherQuickSettingsAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
-    this.otherQuickSettingsIsExpanded = isExpanded;
-    this._saveConfig();
+  get otherQuickSettingsIsExpanded() {
+    return this.branch.data.otherQuickSettingsIsExpanded;
+  }
+  handleOtherQuickSettingsAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    this.branch.set('otherQuickSettingsIsExpanded', isExpanded);
   };
 
-  handleMacrosAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
-    this.macrosIsExpanded = isExpanded;
-    this._saveConfig();
+  get macrosIsExpanded() {
+    return this.branch.data.macrosIsExpanded;
+  }
+  handleMacrosAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    this.branch.set('macrosIsExpanded', isExpanded);
   };
 
-  handleFlowControlAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
-    this.flowControlIsExpanded = isExpanded;
-    this._saveConfig();
+  get flowControlIsExpanded() {
+    return this.branch.data.flowControlIsExpanded;
+  }
+  handleFlowControlAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+    this.branch.set('flowControlIsExpanded', isExpanded);
   };
 
-  _saveConfig = () => {
-    const config = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+  constructor(app: App) {
+    this.macroController = new MacroController(app);
+    this.branch.attach(app.profileManager);
 
-    config.rightDrawerWidth_px = this.drawerWidth_px;
-
-    config.quickPortSettingsIsExpanded = this.quickPortSettingsIsExpanded;
-    config.otherQuickSettingsIsExpanded = this.otherQuickSettingsIsExpanded;
-    config.macrosIsExpanded = this.macrosIsExpanded;
-    config.flowControlIsExpanded = this.flowControlIsExpanded;
-    this.profileManager.saveAppData();
-  };
-
-  _loadConfig = () => {
-    let configToLoad = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
-    //===============================================
-    // UPGRADE PATH
-    //===============================================
-    const latestVersion = new RightDrawerConfig().version;
-    if (configToLoad.version === latestVersion) {
-      // Do nothing
-    } else {
-      console.log(`Out-of-date config version ${configToLoad.version} found.` + ` Updating to version ${latestVersion}.`);
-      this._saveConfig();
-      configToLoad = this.profileManager.appData.currentAppConfig.terminal.rightDrawer;
-    }
-
-    this.drawerWidth_px = configToLoad.rightDrawerWidth_px;
-    this.quickPortSettingsIsExpanded = configToLoad.quickPortSettingsIsExpanded;
-    this.otherQuickSettingsIsExpanded = configToLoad.otherQuickSettingsIsExpanded;
-    this.macrosIsExpanded = configToLoad.macrosIsExpanded;
-    this.flowControlIsExpanded = configToLoad.flowControlIsExpanded;
-  };
-
-  setDrawerWidth(width: number) {
-    this.drawerWidth_px = width;
-    this._saveConfig();
+    makeAutoObservable<RightDrawer, 'branch'>(this, { branch: false }); // Make sure this near the end
   }
 }

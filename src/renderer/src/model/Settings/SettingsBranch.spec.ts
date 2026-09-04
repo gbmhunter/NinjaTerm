@@ -3,6 +3,7 @@ import { autorun } from 'mobx';
 
 import { App } from 'src/model/App';
 import { RxSettingsData } from 'src/model/AppDataManager/DataClasses/RxSettingsData';
+import { WhatToNameTheFile } from 'src/model/Logging/Logging';
 import { CharacterEncoding, DataType } from './RxSettings/RxSettings';
 
 /**
@@ -145,5 +146,84 @@ describe('settings façade', () => {
     app.settings.txSettings.setUseCtrlFForFind(false);
     const again = new App();
     expect(again.settings.txSettings.useCtrlFForFind).toBe(false);
+  });
+
+  test('Graphing stores its numeric applyables as numbers and re-validates max against min', () => {
+    const graphing = app.graphing;
+    const persisted = () => app.profileManager.appData.currentAppConfig.settings.graphingSettings;
+
+    graphing.maxBufferSize.setDispValue('2000');
+    graphing.maxBufferSize.apply();
+    // Was persisted as the string '2000' before app data v25.
+    expect(persisted().maxBufferSize).toBe(2000);
+
+    // xAxisRangeMax's schema refines against the applied xAxisRangeMin, so
+    // raising the min past the max must flag the max as invalid.
+    graphing.xAxisRangeMax.setDispValue('50');
+    graphing.xAxisRangeMax.apply();
+    expect(persisted().xAxisRangeMax).toBe(50);
+    graphing.xAxisRangeMin.setDispValue('60');
+    graphing.xAxisRangeMin.apply();
+    expect(persisted().xAxisRangeMin).toBe(60);
+    expect(graphing.xAxisRangeMax.isValid).toBe(false);
+  });
+
+  test('applying a preset re-seeds Graphing min before max, so a valid saved range stays valid', async () => {
+    const graphing = app.graphing;
+    // Save a preset with the range [200, 300], then move the live range down
+    // to [0, 100] so applying the preset has to raise both bounds.
+    graphing.xAxisRangeMax.setDispValue('300');
+    graphing.xAxisRangeMax.apply();
+    graphing.xAxisRangeMin.setDispValue('200');
+    graphing.xAxisRangeMin.apply();
+    const presetIdx = app.profileManager.newPreset('Wide');
+    graphing.xAxisRangeMin.setDispValue('0');
+    graphing.xAxisRangeMin.apply();
+    graphing.xAxisRangeMax.setDispValue('100');
+    graphing.xAxisRangeMax.apply();
+
+    await app.profileManager.applyStoredPreset(presetIdx);
+
+    expect(graphing.xAxisRangeMin.appliedValue).toBe(200);
+    expect(graphing.xAxisRangeMax.appliedValue).toBe(300);
+    expect(graphing.xAxisRangeMax.isValid).toBe(true);
+  });
+
+  test('Logging setters write the persisted object; a preset re-seeds the file name field', async () => {
+    const logging = app.logging;
+    logging.setLogRawTxData(true);
+    logging.setWhatToNameTheFile(WhatToNameTheFile.CUSTOM);
+    const stored = JSON.parse(window.localStorage.getItem('appData')!);
+    expect(stored.currentAppConfig.settings.logSettings.logRawTxData).toBe(true);
+    expect(stored.currentAppConfig.settings.logSettings.whatToNameTheFile).toBe(WhatToNameTheFile.CUSTOM);
+
+    logging.customFileName.setDispValue('preset.log');
+    logging.customFileName.apply();
+    const presetIdx = app.profileManager.newPreset('Saved');
+    logging.customFileName.setDispValue('other.log');
+    logging.customFileName.apply();
+
+    await app.profileManager.applyStoredPreset(presetIdx);
+
+    expect(logging.customFileName.dispValue).toBe('preset.log');
+    expect(logging.customFileName.appliedValue).toBe('preset.log');
+  });
+
+  test('Terminals.showRightDrawer and RightDrawer share the one persisted branch', () => {
+    const terminals = app.terminals;
+    const persisted = () => app.profileManager.appData.currentAppConfig.terminal.rightDrawer;
+
+    terminals.setShowRightDrawer(false);
+    expect(terminals.rightDrawer.showRightDrawer).toBe(false);
+    expect(persisted().showRightDrawer).toBe(false);
+
+    // Runtime name differs from the persisted one; both must move together.
+    terminals.rightDrawer.setDrawerWidth(300);
+    expect(terminals.rightDrawer.drawerWidth_px).toBe(300);
+    expect(persisted().rightDrawerWidth_px).toBe(300);
+
+    const again = new App();
+    expect(again.terminals.showRightDrawer).toBe(false);
+    expect(again.terminals.rightDrawer.drawerWidth_px).toBe(300);
   });
 });

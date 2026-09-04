@@ -193,10 +193,13 @@ Found on the way:
 - [x] Seven direct writes to `rxSettings.ansiEscapeCodeParsingEnabled` in
       `FakePortsController` bypassed the setter and never persisted. Caught by
       the getter-based façade at compile time; fixed.
-- [ ] **`RulesSettings`, `Logging`, `Graphing` and the `terminal.*` branches**
-      still hand-roll load/save. They hold collections, not flat settings, so
-      `SettingsBranch` doesn't apply as-is; a collection-shaped equivalent is the
-      natural follow-up.
+- [x] `Graphing`, `Logging`, `RightDrawer` and `Terminals` were flat settings
+      too and are converted the same way. Graphing's numeric fields were the
+      only ones persisted as strings; app data v25 makes them numbers.
+- [ ] **`RulesSettings`, `MacroController` and `FilterController`** still
+      hand-roll load/save. They hold *collections* (arrays of rules, macros,
+      filters), so `SettingsBranch` doesn't apply as-is; a collection-shaped
+      equivalent is the natural follow-up.
 
 <details>
 <summary>Original analysis (kept for context)</summary>
