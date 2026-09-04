@@ -1,4 +1,4 @@
-import { PortType } from '../ConnController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 
 /**
  * Callbacks a transport invokes for the lifetime of an open connection.
@@ -45,8 +45,22 @@ export interface OpenOutcome {
  * registry in `ConnController`, with no new branches anywhere else.
  */
 export interface Transport {
-  /** Which `PortType` this transport provides. */
-  readonly kind: PortType;
+  /**
+   * Which connection type this transport provides.
+   *
+   * Not unique: `FakeTransport` also reports `SERIAL_PORT`, because a fake port
+   * impersonates one and every user-facing branch should treat it as such.
+   */
+  readonly kind: ConnectionType;
+
+  /**
+   * True if this transport has RS-232 control lines worth polling.
+   *
+   * Only a real serial port does. Asking by capability rather than testing the
+   * kind keeps the fake transport — which reports `SERIAL_PORT` — from having
+   * its non-existent signals polled once a second.
+   */
+  readonly supportsFlowControl: boolean;
 
   /**
    * How often the reconnection poller should retry this transport.

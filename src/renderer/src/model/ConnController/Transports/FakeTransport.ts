@@ -1,5 +1,5 @@
 import { App } from '../../App';
-import { PortType } from '../ConnController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
 /**
@@ -11,7 +11,8 @@ import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
  * `ConnController.writeData` throwing "Port not found" would stop that.
  */
 export class FakeTransport implements Transport {
-  readonly kind = PortType.FAKE;
+  readonly kind = ConnectionType.SERIAL_PORT;
+  readonly supportsFlowControl = false;
   readonly openAnalyticsEvent = null;
   readonly selfManagesReconnection = false;
   readonly selfManagesState = true;

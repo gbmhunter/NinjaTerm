@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
-import { ConnController, PortType } from './ConnController';
+import { ConnController } from './ConnController';
 import { App } from '../App';
 import { ConnectionType } from '../Settings/PortSettings/PortSettings';
 
@@ -149,7 +149,7 @@ describe('SerialController', () => {
       // sibling listener for the rest of the session.
       const app = new App();
       const conn: any = app.connController;
-      const serial: any = conn.transports.get(PortType.SERIAL);
+      const serial: any = conn.transports.get(ConnectionType.SERIAL_PORT);
 
       const throwingDispose = vi.fn(() => { throw new Error('boom'); });
       const goodDispose = vi.fn();
@@ -174,7 +174,7 @@ describe('SerialController', () => {
       // threw "Port not found" here, local echo would never render.
       const app = new App();
       const conn: any = app.connController;
-      conn.lastSelectedPortType = PortType.FAKE;
+      conn.useFakeSerialPort = true;
 
       // Spy on the serial write so we can assert it is never reached.
       const serialWrite = vi.fn();
@@ -192,10 +192,9 @@ describe('SerialController', () => {
       // slowly and with a per-byte allocation.
       const app = new App();
       const conn: any = app.connController;
-      conn.lastSelectedPortType = PortType.SERIAL;
-      app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
+        app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
       // The serial transport owns the port path now.
-      (conn.transports.get(PortType.SERIAL) as any).portPath = 'COM1';
+      (conn.transports.get(ConnectionType.SERIAL_PORT) as any).portPath = 'COM1';
 
       const serialWrite = vi.fn().mockResolvedValue({ success: true });
       (window as any).electronAPI = { serial: { writeData: serialWrite } };

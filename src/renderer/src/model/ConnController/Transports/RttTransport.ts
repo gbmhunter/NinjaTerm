@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 
 import { App } from '../../App';
-import { PortType } from '../ConnController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
 /** Cap on the server log ring buffer shown in the Connection Settings pane. */
@@ -16,7 +16,8 @@ export const RTT_SERVER_LOG_MAX_LINES = 100;
  * successful attach can take several seconds — longer than the interval.
  */
 export class RttTransport implements Transport {
-  readonly kind = PortType.RTT;
+  readonly kind = ConnectionType.RTT;
+  readonly supportsFlowControl = false;
   readonly reconnectIntervalMs = 500;
   readonly openAnalyticsEvent = 'rtt_connect';
   readonly selfManagesReconnection = false;

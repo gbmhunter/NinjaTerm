@@ -1,6 +1,6 @@
 import { App } from '../../App';
-import { PortType } from '../ConnController';
 import { BluetoothLEController } from '../BluetoothLEController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
 /**
@@ -17,7 +17,8 @@ import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
  * own loop instead.
  */
 export class BleTransport implements Transport {
-  readonly kind = PortType.BLUETOOTH;
+  readonly kind = ConnectionType.BLUETOOTH_LE;
+  readonly supportsFlowControl = false;
   readonly openAnalyticsEvent = null;
   readonly selfManagesReconnection = true;
   readonly selfManagesState = true;

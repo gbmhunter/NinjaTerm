@@ -1,5 +1,5 @@
 import { App } from '../../App';
-import { PortType } from '../ConnController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
 /**
@@ -10,7 +10,8 @@ import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
  * in-flight attempts.
  */
 export class SocketTransport implements Transport {
-  readonly kind = PortType.SOCKET;
+  readonly kind = ConnectionType.SOCKET;
+  readonly supportsFlowControl = false;
   readonly reconnectIntervalMs = 5000;
   readonly openAnalyticsEvent = 'socket_connect';
   readonly selfManagesReconnection = false;

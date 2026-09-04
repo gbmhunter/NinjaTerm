@@ -13,24 +13,6 @@ import { BleTransport } from './Transports/BleTransport';
 import { FakeTransport } from './Transports/FakeTransport';
 
 /**
- * Which `Transport` is in play.
- *
- * Nearly a duplicate of `ConnectionType`, which is the user-facing setting, and
- * the two are mapped in `ConnController._selectTransport`. They differ in one
- * place that matters: `ConnectionType.SERIAL_PORT` covers both a real port and
- * a "fake port" data generator, so it maps to either `SERIAL` or `FAKE` here
- * depending on `lastSelectedPortType`. Collapsing them into one enum would need
- * an app-data migration, since `ConnectionType` is persisted and this is not.
- */
-export enum PortType {
-  SERIAL,
-  FAKE,
-  SOCKET,
-  BLUETOOTH,
-  RTT,
-}
-
-/**
  * Owns the connection state machine, independent of how bytes actually move.
  *
  * Everything medium-specific lives behind the `Transport` interface — which IPC
@@ -57,7 +39,18 @@ export class ConnController {
    * One transport per connection type, built once in the constructor.
    * Adding a connection type means adding an entry here and nothing else.
    */
-  private transports!: Map<PortType, Transport>;
+  private transports!: Map<ConnectionType, Transport>;
+
+  /**
+   * Stands in for the serial transport while a fake port is running.
+   *
+   * Kept out of `transports` deliberately: a fake port is not a connection
+   * type the user picks, it is a generator impersonating a serial port for
+   * testing. Everything user-facing — the status bar, the right drawer's
+   * serial sections, the settings pane — should and does keep treating the
+   * connection as `SERIAL_PORT` while one is open.
+   */
+  private fakeTransport!: FakeTransport;
 
   /** The transport backing the current — or most recent — connection. */
   private activeTransport: Transport | null = null;
@@ -70,13 +63,13 @@ export class ConnController {
   connState = ConnState.CLOSED;
 
   /**
-   * Which transport was last opened.
+   * True while a fake-port generator is standing in for a real serial port.
    *
-   * Only load-bearing for telling a real serial port from a fake one: both
-   * share `ConnectionType.SERIAL_PORT`, so this is what `_selectTransport`
-   * disambiguates with. `FakePortsController` sets it when a fake port opens.
+   * Set by `FakePortsController` when one is opened. Not persisted: a fake
+   * port is a debugging aid, and restoring one on the next launch would be
+   * surprising.
    */
-  lastSelectedPortType = PortType.SERIAL;
+  useFakeSerialPort = false;
 
   private app: App;
 
@@ -120,40 +113,31 @@ export class ConnController {
 
   /** Instantiates one transport per connection type. */
   private _buildTransports() {
-    this.transports = new Map<PortType, Transport>([
-      [PortType.SERIAL, new SerialTransport(this.app)],
-      [PortType.FAKE, new FakeTransport(this.app)],
-      [PortType.SOCKET, new SocketTransport(this.app)],
-      [PortType.RTT, new RttTransport(this.app)],
-      [PortType.BLUETOOTH, new BleTransport(this.app, this.bluetoothLEController)],
+    this.transports = new Map<ConnectionType, Transport>([
+      [ConnectionType.SERIAL_PORT, new SerialTransport(this.app)],
+      [ConnectionType.SOCKET, new SocketTransport(this.app)],
+      [ConnectionType.RTT, new RttTransport(this.app)],
+      [ConnectionType.BLUETOOTH_LE, new BleTransport(this.app, this.bluetoothLEController)],
     ]);
+    this.fakeTransport = new FakeTransport(this.app);
   }
 
   /**
    * The transport for the currently selected connection type.
    *
-   * Serial is the one type with two transports behind it: the "fake port"
-   * generators share the serial connection type but produce their own data,
-   * and which one is live is remembered in `lastSelectedPortType`.
+   * A straight lookup, with one stand-in: while a fake port is running it
+   * backs `SERIAL_PORT` in place of the real serial transport.
    */
   private _selectTransport(): Transport {
     const connectionType = this.app.settings.portConfiguration.connectionType;
-    switch (connectionType) {
-      case ConnectionType.SERIAL_PORT:
-        return this.lastSelectedPortType === PortType.FAKE
-          ? this.transports.get(PortType.FAKE)!
-          : this.transports.get(PortType.SERIAL)!;
-      case ConnectionType.FAKE:
-        return this.transports.get(PortType.FAKE)!;
-      case ConnectionType.SOCKET:
-        return this.transports.get(PortType.SOCKET)!;
-      case ConnectionType.RTT:
-        return this.transports.get(PortType.RTT)!;
-      case ConnectionType.BLUETOOTH_LE:
-        return this.transports.get(PortType.BLUETOOTH)!;
-      default:
-        throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
+    if (connectionType === ConnectionType.SERIAL_PORT && this.useFakeSerialPort) {
+      return this.fakeTransport;
     }
+    const transport = this.transports.get(connectionType);
+    if (transport === undefined) {
+      throw Error(`Unsupported connection type. connectionType=${connectionType}.`);
+    }
+    return transport;
   }
 
   /**
@@ -179,12 +163,12 @@ export class ConnController {
    * because the e2e IPC-mocking suite asserts on it.
    */
   get currentPortPath(): string | null {
-    return (this.transports.get(PortType.SERIAL) as SerialTransport).openPortPath;
+    return (this.transports.get(ConnectionType.SERIAL_PORT) as SerialTransport).openPortPath;
   }
 
   /** Recent JLinkGDBServer output, shown in the Connection Settings pane. */
   get rttServerLogLines(): string[] {
-    return (this.transports.get(PortType.RTT) as RttTransport).serverLogLines;
+    return (this.transports.get(ConnectionType.RTT) as RttTransport).serverLogLines;
   }
 
   cleanup() {
@@ -200,6 +184,7 @@ export class ConnController {
     for (const transport of this.transports.values()) {
       transport.disposeListeners();
     }
+    this.fakeTransport.disposeListeners();
   }
 
   /**
@@ -253,7 +238,6 @@ export class ConnController {
     if (!transport.selfManagesState) {
       runInAction(() => {
         this.stopPollingForReconnection();
-        this.lastSelectedPortType = transport.kind;
         this.connState = ConnState.OPENED;
       });
 
@@ -264,9 +248,9 @@ export class ConnController {
       this.stopPollingForReconnection();
     }
 
-    // Flow control signals are a serial-only concept, and the only part of a
-    // connection that has to be polled rather than pushed.
-    if (transport.kind === PortType.SERIAL) {
+    // Flow control signals are the only part of a connection that has to be
+    // polled rather than pushed, and only real serial ports have them.
+    if (transport.supportsFlowControl) {
       this.startFlowControlPolling();
     }
 
@@ -361,7 +345,7 @@ export class ConnController {
   private startFlowControlPolling() {
     this.stopFlowControlPolling();
     this.flowControlPollingTimer = setInterval(async () => {
-      const portPath = (this.transports.get(PortType.SERIAL) as SerialTransport).openPortPath;
+      const portPath = (this.transports.get(ConnectionType.SERIAL_PORT) as SerialTransport).openPortPath;
       if (portPath === null) {
         return;
       }
@@ -606,8 +590,8 @@ export class ConnController {
       return false;
     }
 
-    // Check if it's a fake port (always ready if fake)
-    if (this.lastSelectedPortType === PortType.FAKE) {
+    // A fake port needs no configuration to be openable.
+    if (this.useFakeSerialPort) {
       return true;
     }
 

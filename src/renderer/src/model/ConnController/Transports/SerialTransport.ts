@@ -1,5 +1,5 @@
 import { App } from '../../App';
-import { PortType } from '../ConnController';
+import { ConnectionType } from '../../Settings/PortSettings/PortSettings';
 import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
 
 /**
@@ -11,7 +11,8 @@ import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
  * than asking whether it is back.
  */
 export class SerialTransport implements Transport {
-  readonly kind = PortType.SERIAL;
+  readonly kind = ConnectionType.SERIAL_PORT;
+  readonly supportsFlowControl = true;
   readonly reconnectIntervalMs = 500;
   readonly openAnalyticsEvent = 'port_open';
   readonly selfManagesReconnection = false;
