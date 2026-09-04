@@ -12,8 +12,18 @@ import { RttTransport } from './Transports/RttTransport';
 import { BleTransport } from './Transports/BleTransport';
 import { FakeTransport } from './Transports/FakeTransport';
 
+/**
+ * Which `Transport` is in play.
+ *
+ * Nearly a duplicate of `ConnectionType`, which is the user-facing setting, and
+ * the two are mapped in `ConnController._selectTransport`. They differ in one
+ * place that matters: `ConnectionType.SERIAL_PORT` covers both a real port and
+ * a "fake port" data generator, so it maps to either `SERIAL` or `FAKE` here
+ * depending on `lastSelectedPortType`. Collapsing them into one enum would need
+ * an app-data migration, since `ConnectionType` is persisted and this is not.
+ */
 export enum PortType {
-  REAL,
+  SERIAL,
   FAKE,
   SOCKET,
   BLUETOOTH,
@@ -59,9 +69,14 @@ export class ConnController {
    */
   connState = ConnState.CLOSED;
 
-  // Remembers the last selected port type, so open() and close()
-  // know what type of port to operate on
-  lastSelectedPortType = PortType.REAL;
+  /**
+   * Which transport was last opened.
+   *
+   * Only load-bearing for telling a real serial port from a fake one: both
+   * share `ConnectionType.SERIAL_PORT`, so this is what `_selectTransport`
+   * disambiguates with. `FakePortsController` sets it when a fake port opens.
+   */
+  lastSelectedPortType = PortType.SERIAL;
 
   private app: App;
 
@@ -105,9 +120,8 @@ export class ConnController {
 
   /** Instantiates one transport per connection type. */
   private _buildTransports() {
-    const serial = new SerialTransport(this.app);
     this.transports = new Map<PortType, Transport>([
-      [PortType.REAL, serial],
+      [PortType.SERIAL, new SerialTransport(this.app)],
       [PortType.FAKE, new FakeTransport(this.app)],
       [PortType.SOCKET, new SocketTransport(this.app)],
       [PortType.RTT, new RttTransport(this.app)],
@@ -128,7 +142,7 @@ export class ConnController {
       case ConnectionType.SERIAL_PORT:
         return this.lastSelectedPortType === PortType.FAKE
           ? this.transports.get(PortType.FAKE)!
-          : this.transports.get(PortType.REAL)!;
+          : this.transports.get(PortType.SERIAL)!;
       case ConnectionType.FAKE:
         return this.transports.get(PortType.FAKE)!;
       case ConnectionType.SOCKET:
@@ -165,7 +179,7 @@ export class ConnController {
    * because the e2e IPC-mocking suite asserts on it.
    */
   get currentPortPath(): string | null {
-    return (this.transports.get(PortType.REAL) as SerialTransport).openPortPath;
+    return (this.transports.get(PortType.SERIAL) as SerialTransport).openPortPath;
   }
 
   /** Recent JLinkGDBServer output, shown in the Connection Settings pane. */
@@ -252,7 +266,7 @@ export class ConnController {
 
     // Flow control signals are a serial-only concept, and the only part of a
     // connection that has to be polled rather than pushed.
-    if (transport.kind === PortType.REAL) {
+    if (transport.kind === PortType.SERIAL) {
       this.startFlowControlPolling();
     }
 
@@ -347,7 +361,7 @@ export class ConnController {
   private startFlowControlPolling() {
     this.stopFlowControlPolling();
     this.flowControlPollingTimer = setInterval(async () => {
-      const portPath = (this.transports.get(PortType.REAL) as SerialTransport).openPortPath;
+      const portPath = (this.transports.get(PortType.SERIAL) as SerialTransport).openPortPath;
       if (portPath === null) {
         return;
       }

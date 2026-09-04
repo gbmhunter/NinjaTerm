@@ -111,7 +111,7 @@ describe('ConnController connection lifecycle', () => {
   async function openSerial() {
     app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
     app.settings.portConfiguration.selectedSerialPort = { path: 'COM3' };
-    conn.lastSelectedPortType = PortType.REAL;
+    conn.lastSelectedPortType = PortType.SERIAL;
     return conn.openConnection();
   }
 
@@ -384,7 +384,7 @@ describe('ConnController connection lifecycle', () => {
       app.settings.portConfiguration.selectedSerialPort = { path: 'COM1' };
 
       conn.setSelectedPort({ path: 'COM7' } as any);
-      conn.lastSelectedPortType = PortType.REAL;
+      conn.lastSelectedPortType = PortType.SERIAL;
       await conn.openConnection();
 
       const openedWith = (window.electronAPI.serial.openPort as unknown as Mock).mock.calls[0][0];

@@ -11,7 +11,7 @@ import { OpenOutcome, Transport, TransportCallbacks } from './Transport';
  * than asking whether it is back.
  */
 export class SerialTransport implements Transport {
-  readonly kind = PortType.REAL;
+  readonly kind = PortType.SERIAL;
   readonly reconnectIntervalMs = 500;
   readonly openAnalyticsEvent = 'port_open';
   readonly selfManagesReconnection = false;

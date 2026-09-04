@@ -149,7 +149,7 @@ describe('SerialController', () => {
       // sibling listener for the rest of the session.
       const app = new App();
       const conn: any = app.connController;
-      const serial: any = conn.transports.get(PortType.REAL);
+      const serial: any = conn.transports.get(PortType.SERIAL);
 
       const throwingDispose = vi.fn(() => { throw new Error('boom'); });
       const goodDispose = vi.fn();
@@ -192,10 +192,10 @@ describe('SerialController', () => {
       // slowly and with a per-byte allocation.
       const app = new App();
       const conn: any = app.connController;
-      conn.lastSelectedPortType = PortType.REAL;
+      conn.lastSelectedPortType = PortType.SERIAL;
       app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
       // The serial transport owns the port path now.
-      (conn.transports.get(PortType.REAL) as any).portPath = 'COM1';
+      (conn.transports.get(PortType.SERIAL) as any).portPath = 'COM1';
 
       const serialWrite = vi.fn().mockResolvedValue({ success: true });
       (window as any).electronAPI = { serial: { writeData: serialWrite } };
