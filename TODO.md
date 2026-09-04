@@ -18,7 +18,7 @@ Items are grouped: **[perf]**, **[arch]**, **[bug]**, **[security]**,
 4. ~~DevTools install + window-open guard~~ — **done 2026-09-04**. CSP and the
    `openExternal` allowlist deliberately not done; see §5.
 5. `dependencies`/`devDependencies` split, check installer size
-6. `Transport` interface — unblocks tabs and file transfer
+6. ~~`Transport` interface~~ — **done 2026-09-04**. Unblocks tabs and file transfer.
 7. ~~Row data model rewrite~~ — **done 2026-09-03**
 8. Declarative settings schema
 

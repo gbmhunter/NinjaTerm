@@ -41,8 +41,16 @@ export enum FlowControl {
   HARDWARE = 'hardware',
 };
 
+/**
+ * How the app connects to a device. Persisted, so the string values are part of
+ * the app-data format and must not change.
+ *
+ * Fake ports are deliberately absent: they are a debugging aid that stands in
+ * for a real serial port, so they run behind `SERIAL_PORT` and everything
+ * user-facing keeps treating the connection as serial. Which transport actually
+ * backs it is `ConnController.useFakeSerialPort`.
+ */
 export enum ConnectionType {
-  FAKE = 'fake',
   SERIAL_PORT = 'serial_port',
   SOCKET = 'socket',
   BLUETOOTH_LE = 'bluetooth',
@@ -458,7 +466,12 @@ export class PortSettings {
     this.allowSettingsChangesWhenOpen = configToLoad.allowSettingsChangesWhenOpen;
 
     // Load socket settings
-    this.connectionType = configToLoad.connectionType;
+    // Fall back rather than trust the stored value: a config written by an
+    // older version can name a connection type that no longer exists, and an
+    // unresolvable one would throw when opening.
+    this.connectionType = Object.values(ConnectionType).includes(configToLoad.connectionType)
+      ? configToLoad.connectionType
+      : ConnectionType.SERIAL_PORT;
     this.socketHost = configToLoad.socketHost;
     this.socketPort = configToLoad.socketPort;
     this.socketConnTimeoutDispMs = configToLoad.socketConnTimeoutMs.toString();

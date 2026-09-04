@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Mock } from 'vitest';
 
 import { App } from '../App';
-import { ConnController, PortType } from './ConnController';
+import { ConnController } from './ConnController';
+import { RTT_SERVER_LOG_MAX_LINES } from './Transports/RttTransport';
 import { ConnectionType, ConnState } from '../Settings/PortSettings/PortSettings';
 
 /**
@@ -110,7 +111,6 @@ describe('ConnController connection lifecycle', () => {
   async function openSerial() {
     app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
     app.settings.portConfiguration.selectedSerialPort = { path: 'COM3' };
-    conn.lastSelectedPortType = PortType.REAL;
     return conn.openConnection();
   }
 
@@ -299,11 +299,11 @@ describe('ConnController connection lifecycle', () => {
     it('caps the server log ring buffer', async () => {
       await openRtt();
       const emit = handlers['rtt:log'][0];
-      for (let i = 0; i < ConnController.RTT_SERVER_LOG_MAX_LINES + 50; i += 1) {
+      for (let i = 0; i < RTT_SERVER_LOG_MAX_LINES + 50; i += 1) {
         emit('rtt-1', `line ${i}`);
       }
 
-      expect(conn.rttServerLogLines.length).toBe(ConnController.RTT_SERVER_LOG_MAX_LINES);
+      expect(conn.rttServerLogLines.length).toBe(RTT_SERVER_LOG_MAX_LINES);
       // Oldest dropped, newest kept.
       expect(conn.rttServerLogLines[conn.rttServerLogLines.length - 1]).toContain('line 149');
     });
@@ -367,6 +367,46 @@ describe('ConnController connection lifecycle', () => {
   });
 
   //================================================================
+  // FAKE PORTS
+  //================================================================
+  describe('fake serial ports', () => {
+    it('a fake port backs SERIAL_PORT without touching the connection type', async () => {
+      // A fake port impersonates a serial port on purpose: the status bar, the
+      // right drawer's serial sections and the settings pane all branch on
+      // `connectionType === SERIAL_PORT`, and should keep doing so while one is
+      // open. Only which transport is selected changes.
+      app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
+      app.connController.useFakeSerialPort = true;
+
+      await conn.openConnection();
+
+      expect(app.settings.portConfiguration.connectionType).toBe(ConnectionType.SERIAL_PORT);
+      // No real port was opened.
+      expect(window.electronAPI.serial.openPort).not.toHaveBeenCalled();
+    });
+
+    it('writes to a fake port succeed silently rather than throwing', async () => {
+      // Typed characters still have to reach local echo and the logger, so a
+      // write must not fail just because there is no device behind it.
+      app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
+      app.connController.useFakeSerialPort = true;
+
+      await expect(conn.writeData(Uint8Array.from([0x61]))).resolves.toBeUndefined();
+      expect(window.electronAPI.serial.writeData).not.toHaveBeenCalled();
+    });
+
+    it('clearing the fake flag returns SERIAL_PORT to the real transport', async () => {
+      app.settings.portConfiguration.setConnectionType(ConnectionType.SERIAL_PORT);
+      app.settings.portConfiguration.selectedSerialPort = { path: 'COM3' };
+      app.connController.useFakeSerialPort = false;
+
+      await conn.openConnection();
+
+      expect(window.electronAPI.serial.openPort).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  //================================================================
   // PORT SELECTION
   //================================================================
   describe('setSelectedPort', () => {
@@ -383,8 +423,7 @@ describe('ConnController connection lifecycle', () => {
       app.settings.portConfiguration.selectedSerialPort = { path: 'COM1' };
 
       conn.setSelectedPort({ path: 'COM7' } as any);
-      conn.lastSelectedPortType = PortType.REAL;
-      await conn.openConnection();
+        await conn.openConnection();
 
       const openedWith = (window.electronAPI.serial.openPort as unknown as Mock).mock.calls[0][0];
       expect(openedWith.path).toBe('COM7');

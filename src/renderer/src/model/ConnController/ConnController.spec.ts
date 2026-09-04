@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PortInfo } from '@serialport/bindings-interface';
-import { ConnController, PortType } from './ConnController';
+import { ConnController } from './ConnController';
 import { App } from '../App';
 import { ConnectionType } from '../Settings/PortSettings/PortSettings';
 
@@ -124,19 +124,23 @@ describe('SerialController', () => {
       window.localStorage.clear();
     });
 
-    it('cleanup() invokes every captured disposer and clears the list', () => {
+    it('cleanup() asks every transport to drop its listeners', () => {
+      // Disposers moved from a single list on ConnController to each transport,
+      // which now owns the listeners it registered. What matters is unchanged:
+      // cleanup() must reach all of them.
       const app = new App();
       const conn: any = app.connController;
 
-      const dispose1 = vi.fn();
-      const dispose2 = vi.fn();
-      conn.connDisposers.push(dispose1, dispose2);
+      const spies = [...conn.transports.values()].map((t: any) =>
+        vi.spyOn(t, 'disposeListeners')
+      );
 
       conn.cleanup();
 
-      expect(dispose1).toHaveBeenCalledTimes(1);
-      expect(dispose2).toHaveBeenCalledTimes(1);
-      expect(conn.connDisposers).toEqual([]);
+      expect(spies.length).toBeGreaterThan(0);
+      for (const spy of spies) {
+        expect(spy).toHaveBeenCalledTimes(1);
+      }
     });
 
     it('a throwing disposer does not block the rest', () => {
@@ -145,16 +149,17 @@ describe('SerialController', () => {
       // sibling listener for the rest of the session.
       const app = new App();
       const conn: any = app.connController;
+      const serial: any = conn.transports.get(ConnectionType.SERIAL_PORT);
 
       const throwingDispose = vi.fn(() => { throw new Error('boom'); });
       const goodDispose = vi.fn();
-      conn.connDisposers.push(throwingDispose, goodDispose);
+      serial.disposers.push(throwingDispose, goodDispose);
 
-      conn.cleanup();
+      serial.disposeListeners();
 
       expect(throwingDispose).toHaveBeenCalledTimes(1);
       expect(goodDispose).toHaveBeenCalledTimes(1);
-      expect(conn.connDisposers).toEqual([]);
+      expect(serial.disposers).toEqual([]);
     });
   });
 
@@ -169,7 +174,7 @@ describe('SerialController', () => {
       // threw "Port not found" here, local echo would never render.
       const app = new App();
       const conn: any = app.connController;
-      conn.lastSelectedPortType = PortType.FAKE;
+      conn.useFakeSerialPort = true;
 
       // Spy on the serial write so we can assert it is never reached.
       const serialWrite = vi.fn();
@@ -187,9 +192,9 @@ describe('SerialController', () => {
       // slowly and with a per-byte allocation.
       const app = new App();
       const conn: any = app.connController;
-      conn.lastSelectedPortType = PortType.REAL;
-      conn.currentPortPath = 'COM1';
-      app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
+        app.settings.portConfiguration.connectionType = ConnectionType.SERIAL_PORT;
+      // The serial transport owns the port path now.
+      (conn.transports.get(ConnectionType.SERIAL_PORT) as any).portPath = 'COM1';
 
       const serialWrite = vi.fn().mockResolvedValue({ success: true });
       (window as any).electronAPI = { serial: { writeData: serialWrite } };
