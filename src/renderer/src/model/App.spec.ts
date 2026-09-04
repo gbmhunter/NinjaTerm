@@ -28,9 +28,11 @@ describe('App rate-tracking buffers', () => {
     }
 
     const length = (app as any).rxDataPoints.length;
-    // Loose cap; a real fix would use a much smaller ring buffer (e.g. 1024).
-    // The point is to fail clearly while there is *no* cap at all.
-    expect(length).toBeLessThan(10_000);
+    // Recording lets the array overshoot MAX_DATA_POINTS (2048) and trims back
+    // in one splice when it reaches DATA_POINT_TRIM_AT (4096), so 4096 is the
+    // real ceiling. Asserting that rather than a loose bound means this also
+    // catches the trim threshold being raised by accident.
+    expect(length).toBeLessThanOrEqual(4096);
   });
 
   test('txDataPoints stays bounded under a tight burst between cleanup ticks', () => {
@@ -42,6 +44,6 @@ describe('App rate-tracking buffers', () => {
     }
 
     const length = (app as any).txDataPoints.length;
-    expect(length).toBeLessThan(10_000);
+    expect(length).toBeLessThanOrEqual(4096);
   });
 });

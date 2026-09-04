@@ -99,7 +99,17 @@ export class App {
   // real transport would produce in that window.
   private readonly MAX_DATA_POINTS = 2048;
 
-  // Arrays to track byte counts over time
+  /**
+   * Trim point for the arrays below. Recording lets them overshoot `MAX_DATA_POINTS`
+   * and then trims back in one splice, rather than splicing a single entry off the
+   * front on every push — that is O(n) in the array length, so once at the cap it
+   * made recording a data point O(n) instead of O(1). The overshoot is harmless:
+   * `updateTransmissionRates` filters by timestamp regardless.
+   */
+  private readonly DATA_POINT_TRIM_AT = 2 * 2048;
+
+  // Arrays to track byte counts over time. Deliberately not observable — see the
+  // `makeAutoObservable` call in the constructor.
   private rxDataPoints: Array<{ timestamp: number; bytes: number }> = [];
   private txDataPoints: Array<{ timestamp: number; bytes: number }> = [];
 
@@ -255,7 +265,15 @@ export class App {
     // Initialize CPU monitoring
     this.startCpuMonitoring();
 
-    makeAutoObservable(this); // Make sure this near the end
+    makeAutoObservable(this, {
+      // Nothing observes these reactively: they are read only by
+      // `updateTransmissionRates`, on a timer, which writes the `rxRateBps` /
+      // `txRateBps` observables the status bar actually watches. Leaving them
+      // observable put a MobX change notification on every recorded chunk for
+      // no subscriber.
+      rxDataPoints: false,
+      txDataPoints: false,
+    } as any); // Make sure this near the end
   }
 
   onLastAppliedProfileNameChanged = () => {
@@ -357,14 +375,21 @@ export class App {
    * Records a data point for RX rate calculation.
    */
   private recordRxDataPoint(bytes: number) {
-    this.rxDataPoints.push({
+    this._recordDataPoint(this.rxDataPoints, bytes);
+  }
+
+  /**
+   * Appends a data point, trimming the oldest entries once the array has grown
+   * past `DATA_POINT_TRIM_AT`. Shared by the RX and TX recorders, which differed
+   * only in which array they touched.
+   */
+  private _recordDataPoint(points: Array<{ timestamp: number; bytes: number }>, bytes: number) {
+    points.push({
       timestamp: Date.now(),
       bytes: bytes
     });
-    if (this.rxDataPoints.length > this.MAX_DATA_POINTS) {
-      // Drop the oldest entries. Splice from index 0 keeps the tail in place
-      // and is fine at this small scale (cap is 2048).
-      this.rxDataPoints.splice(0, this.rxDataPoints.length - this.MAX_DATA_POINTS);
+    if (points.length >= this.DATA_POINT_TRIM_AT) {
+      points.splice(0, points.length - this.MAX_DATA_POINTS);
     }
   }
 
@@ -372,13 +397,7 @@ export class App {
    * Records a data point for TX rate calculation.
    */
   private recordTxDataPoint(bytes: number) {
-    this.txDataPoints.push({
-      timestamp: Date.now(),
-      bytes: bytes
-    });
-    if (this.txDataPoints.length > this.MAX_DATA_POINTS) {
-      this.txDataPoints.splice(0, this.txDataPoints.length - this.MAX_DATA_POINTS);
-    }
+    this._recordDataPoint(this.txDataPoints, bytes);
   }
 
   /**

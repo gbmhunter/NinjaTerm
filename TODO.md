@@ -314,10 +314,12 @@ partition changes, and only readable by main through `executeJavaScript`.
       `socketService`, `rttService`, `mcpService`, `MainBluetoothService` — zero
       coverage, and they hold the port lifecycle and batching logic. `Logging` is
       also uncovered, and has two of the bugs above.
-- [ ] **`App.spec.ts` rate-tracking tests are flaky under load.** Both run
-      ~1.6s in isolation but were seen at 5.1s against a 5s timeout when the
-      full suite runs in parallel alongside other work. They use real timers.
-      Either raise the timeout or drive them with fake timers.
+- [x] **`App.spec.ts` rate-tracking tests are flaky under load.** (done
+      2026-09-04) Not a timer problem — the tests were doing real work. Fixed at
+      the source: recording a data point spliced one entry off the front of a
+      2048-element array on every push once at the cap (O(n) per push), and the
+      arrays were MobX-observable despite nothing observing them reactively.
+      1681ms/1584ms -> 107ms/60ms.
 - [ ] **README says `tests/`, the directory is `e2e-tests/`.**
 - [ ] **`web/`** (180 tracked files, maintenance-mode) would be cleaner as an
       archived branch or a separate repo.
