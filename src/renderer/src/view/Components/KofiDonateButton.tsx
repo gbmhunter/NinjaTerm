@@ -1,5 +1,6 @@
-import { Button, Tooltip } from '@mui/material';
-import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import { Box, Button, Tooltip } from '@mui/material';
+
+import kofiSymbol from './kofi_symbol.svg';
 
 /** Ko-fi's brand blue, carried over from the button this replaces. */
 const KOFI_BLUE = '#29abe0';
@@ -21,9 +22,14 @@ interface Props {
  * embedded work, so a donate button is not worth a phone-home to two third
  * parties — and on an air-gapped machine those requests just hang.
  *
- * This draws the same idea locally: brand blue, white bold label, a wiggling
- * cup. The cup is MUI's `LocalCafe` icon rather than Ko-fi's logo asset, so
- * nothing has to be bundled or fetched.
+ * This draws the same button locally: brand blue, white bold label, and Ko-fi's
+ * official cup symbol from their brand pack (`kofi_symbol.svg`, alongside this
+ * file). Vite inlines it as a data URI — it is under the 4 KB asset limit — so
+ * the mark ships inside the bundle with no request of any kind.
+ *
+ * The symbol is kept as the unmodified file rather than pasted in as JSX paths,
+ * so refreshing it from Ko-fi's brand pack later is a straight file copy. The
+ * `alt` is empty because the button's own label and tooltip already name it.
  *
  * The click goes through `shell.openExternal` rather than an `<a href>`, so
  * the page opens in the user's own browser. (The `setWindowOpenHandler` in the
@@ -42,7 +48,7 @@ export default function KofiDonateButton({ kofiId, compact = false }: Props) {
       <Button
         variant="contained"
         onClick={openKofiPage}
-        startIcon={<LocalCafeIcon />}
+        startIcon={<Box component="img" src={kofiSymbol} alt="" sx={{ height: '18px' }} />}
         data-testid="kofi-donate-button"
         sx={{
           backgroundColor: KOFI_BLUE,
