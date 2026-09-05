@@ -269,7 +269,7 @@ The CHANGELOG shows this is a bug factory:
       IPC-serialising a JS number array. Store `Uint8Array` chunks in a **plain**
       (non-observable) array and concat once at write time.
 
-- [ ] **MCP `rxBuffer` grows without bound.** `mcpService.ts:170`.
+- [x] **MCP `rxBuffer` grows without bound.** (done 2026-09-05, `RxStreamBuffer`) `mcpService.ts:170`.
       `session.rxBuffer.text += text` on every RX chunk, cleared only when a
       client *reads* the resource. A client that subscribes and never reads (or
       disconnects without closing the session) leaks the entire stream into
@@ -278,11 +278,11 @@ The CHANGELOG shows this is a bug factory:
 - [x] **React DevTools installs in production.** (done 2026-09-04) Guarded with
       `if (!app.isPackaged)`.
 
-- [ ] **`stopCpuMonitoring()` is a no-op.** `App.tsx:437-440`. The
+- [x] **`stopCpuMonitoring()` is a no-op.** (done 2026-09-05) `App.tsx:437-440`. The
       `requestAnimationFrame` loop it claims to stop keeps running. Capture the
       rAF handle and cancel it.
 
-- [ ] **Find is substring-only** while Filters and Highlight Rules both support
+- [x] **Find is substring-only** (done 2026-09-05) while Filters and Highlight Rules both support
       regex. `SingleTerminal.ts:180-199` uses `indexOf`; compare
       `TerminalFilter.ts:45-76`. Inconsistent, and regex-in-find is what you
       actually want in a 100k-line scrollback.

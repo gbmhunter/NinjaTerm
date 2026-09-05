@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { Mock } from 'vitest';
 
 import { App } from '../App';
@@ -105,6 +105,12 @@ describe('ConnController connection lifecycle', () => {
 
     app = new App();
     conn = app.connController;
+  });
+
+  afterEach(() => {
+    // Tests that leave a port open have started the flow-control poll; without
+    // this it outlives the test and fires against a torn-down environment.
+    app.cleanup();
   });
 
   /** Points the app at a serial port and opens it. */

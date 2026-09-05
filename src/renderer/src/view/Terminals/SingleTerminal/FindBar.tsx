@@ -54,7 +54,20 @@ export default observer((props: Props) => {
   const total = matches.length;
   const currentNumber = total === 0 ? 0 : terminal.currentMatchIndex + 1;
   const hasQuery = terminal.findQuery.length > 0;
+  const regexErrorMsg = terminal.findRegex.errorMsg;
+  const hasRegexError = regexErrorMsg !== '';
   const noMatchesForQuery = hasQuery && total === 0;
+
+  const toggleSx = (on: boolean) => ({
+    color: on ? '#ffb74d' : 'rgba(255, 255, 255, 0.6)',
+    padding: '2px 6px',
+    fontSize: '13px',
+    fontWeight: 600,
+    lineHeight: 1,
+    borderRadius: '3px',
+    // Outline the toggle when active so it reads as "on" even at a glance.
+    border: on ? '1px solid #ffb74d' : '1px solid transparent',
+  });
 
   return (
     <div
@@ -117,6 +130,8 @@ export default observer((props: Props) => {
 
       <span
         data-testid={`${terminal.id}-find-count`}
+        // The full compile error is too long for the bar; hover for it.
+        title={regexErrorMsg}
         style={{
           color: noMatchesForQuery ? '#e57373' : 'rgba(255, 255, 255, 0.75)',
           fontSize: '12px',
@@ -124,26 +139,28 @@ export default observer((props: Props) => {
           textAlign: 'center',
         }}
       >
-        {hasQuery ? `${currentNumber} / ${total}` : ''}
+        {hasRegexError ? 'Invalid' : hasQuery ? `${currentNumber} / ${total}` : ''}
       </span>
 
       <Tooltip title="Match case" disableInteractive>
         <IconButton
           size="small"
           onClick={() => terminal.setFindCaseSensitive(!terminal.findCaseSensitive)}
-          sx={{
-            color: terminal.findCaseSensitive ? '#ffb74d' : 'rgba(255, 255, 255, 0.6)',
-            padding: '2px 6px',
-            fontSize: '13px',
-            fontWeight: 600,
-            lineHeight: 1,
-            borderRadius: '3px',
-            // Outline the toggle when active so it reads as "on" even at a glance.
-            border: terminal.findCaseSensitive ? '1px solid #ffb74d' : '1px solid transparent',
-          }}
+          sx={toggleSx(terminal.findCaseSensitive)}
           data-testid={`${terminal.id}-find-case-toggle`}
         >
           Aa
+        </IconButton>
+      </Tooltip>
+
+      <Tooltip title="Use regular expression" disableInteractive>
+        <IconButton
+          size="small"
+          onClick={() => terminal.setFindUseRegex(!terminal.findUseRegex)}
+          sx={toggleSx(terminal.findUseRegex)}
+          data-testid={`${terminal.id}-find-regex-toggle`}
+        >
+          .*
         </IconButton>
       </Tooltip>
 

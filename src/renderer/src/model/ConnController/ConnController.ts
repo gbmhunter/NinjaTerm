@@ -173,6 +173,10 @@ export class ConnController {
 
   cleanup() {
     this.stopPollingForReconnection();
+    // Was missing, so the 1s flow-control poll outlived the controller: in the
+    // app it ran until the window unloaded, and in tests a leaked interval
+    // fired after the file was torn down and surfaced as an unhandled rejection.
+    this.stopFlowControlPolling();
     this.disposeConnListeners();
   }
 
@@ -349,16 +353,22 @@ export class ConnController {
       if (portPath === null) {
         return;
       }
-      const response = await window.electronAPI.serial.getFlowControlSignals(portPath);
-      if (!response.success) {
-        console.error('Error getting flow control signals:', response.error);
-        return;
+      // An async interval callback has nobody awaiting it, so anything thrown
+      // here is an unhandled rejection. Log and try again next tick instead.
+      try {
+        const response = await window.electronAPI.serial.getFlowControlSignals(portPath);
+        if (!response?.success) {
+          console.error('Error getting flow control signals:', response?.error);
+          return;
+        }
+        runInAction(() => {
+          this.currentFlowControlState.dsr = response.signals?.dsr || false;
+          this.currentFlowControlState.cts = response.signals?.cts || false;
+          this.currentFlowControlState.dcd = response.signals?.dcd || false;
+        });
+      } catch (error) {
+        console.error('Error getting flow control signals:', error);
       }
-      runInAction(() => {
-        this.currentFlowControlState.dsr = response.signals!.dsr || false;
-        this.currentFlowControlState.cts = response.signals!.cts || false;
-        this.currentFlowControlState.dcd = response.signals!.dcd || false;
-      });
     }, 1000);
   }
 

@@ -161,6 +161,13 @@ export class SingleTerminal {
   /** Whether the find query is matched case-sensitively. */
   findCaseSensitive: boolean = false;
 
+  /**
+   * Whether the find query is a regular expression rather than a substring.
+   * Filters and highlight rules both take regex; find not doing so was the
+   * odd one out.
+   */
+  findUseRegex: boolean = false;
+
   /** Index into `findMatches` of the "current" match (the one auto-scrolled to). */
   currentMatchIndex: number = 0;
 
@@ -190,10 +197,27 @@ export class SingleTerminal {
   }
 
   /**
+   * The compiled find regex when `findUseRegex` is on, plus the compile error
+   * for the Find bar to show. `regex` is null in substring mode, for an empty
+   * query, or when the pattern does not compile. Always compiled with `g` so
+   * `findMatches` can walk every hit in a row.
+   */
+  get findRegex(): { regex: RegExp | null; errorMsg: string } {
+    if (!this.findUseRegex || this.findQuery === '') {
+      return { regex: null, errorMsg: '' };
+    }
+    try {
+      return { regex: new RegExp(this.findQuery, this.findCaseSensitive ? 'g' : 'gi'), errorMsg: '' };
+    } catch (e) {
+      return { regex: null, errorMsg: e instanceof Error ? e.message : 'Invalid regex' };
+    }
+  }
+
+  /**
    * All matches of the active find query within `filteredTerminalRows`, in
    * top-to-bottom, left-to-right order. Empty when find is closed, the
    * query is empty, or there are no hits. Computed property — recomputed
-   * automatically when query, case-sensitivity, or rows change.
+   * automatically when query, case-sensitivity, regex mode, or rows change.
    */
   get findMatches(): FindMatch[] {
     // Matches are computed from row text, which is not observable — see
@@ -202,12 +226,32 @@ export class SingleTerminal {
     if (!this.isFindOpen || this.findQuery === '') {
       return [];
     }
-    const query = this.findCaseSensitive ? this.findQuery : this.findQuery.toLowerCase();
-    if (query.length === 0) {
-      return [];
-    }
     const matches: FindMatch[] = [];
     const rows = this.filteredTerminalRows;
+
+    if (this.findUseRegex) {
+      const re = this.findRegex.regex;
+      if (re === null) {
+        return [];
+      }
+      for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const rowText = rows[rowIndex].text;
+        re.lastIndex = 0;
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(rowText)) !== null) {
+          if (m[0].length === 0) {
+            // A zero-width match (e.g. `x*` on a row with no x) has nothing to
+            // highlight and would never advance `lastIndex` on its own.
+            re.lastIndex += 1;
+            continue;
+          }
+          matches.push({ rowIndex, colStart: m.index, colEnd: m.index + m[0].length });
+        }
+      }
+      return matches;
+    }
+
+    const query = this.findCaseSensitive ? this.findQuery : this.findQuery.toLowerCase();
     for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
       const rowText = rows[rowIndex].text;
       const haystack = this.findCaseSensitive ? rowText : rowText.toLowerCase();
@@ -588,6 +632,7 @@ export class SingleTerminal {
       // notification propagate whenever a dependency actually changed.
       // Covered by `Reactivity.spec.ts`.
       filteredTerminalRows: computed({ equals: () => false }),
+      findRegex: computed,
       findMatches: computed,
       findMatchesByRow: computed,
       currentMatch: computed,
@@ -2517,6 +2562,11 @@ export class SingleTerminal {
 
   setFindCaseSensitive(value: boolean) {
     this.findCaseSensitive = value;
+    this.currentMatchIndex = 0;
+  }
+
+  setFindUseRegex(value: boolean) {
+    this.findUseRegex = value;
     this.currentMatchIndex = 0;
   }
 
